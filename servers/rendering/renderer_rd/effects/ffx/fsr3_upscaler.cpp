@@ -54,6 +54,12 @@ static void fsr3_recv_message(FfxMsgType type, const wchar_t* message) {
 }
 
 FSR3UpscalerContext::~FSR3UpscalerContext() {
+	FFXCommonContext::Resources &resources = FFXCommonContext::get_singleton()->scratch.resources;
+
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, reconstructed_prev_nearest_depth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_depth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_motion_vectors, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
+
 	ffxFsr3UpscalerContextDestroy(&fsr_context);
 }
 
@@ -199,7 +205,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
 		pass.sampled_texture_bindings = {
-			FfxResourceBinding{ 0, 0, 0, L"r_reconstructed_prev_nearest_depth" },
+			FfxResourceBinding{ 0, 0, 0, L"r_reconstructed_previous_nearest_depth" },
 			FfxResourceBinding{ 1, 0, 0, L"r_dilated_motion_vectors" },
 			FfxResourceBinding{ 2, 0, 0, L"r_dilated_depth" },
 			FfxResourceBinding{ 3, 0, 0, L"r_reactive_mask" },
@@ -267,16 +273,16 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_exposure" },
 			FfxResourceBinding{ 1, 0, 0, L"r_dilated_reactive_masks" },
 			FfxResourceBinding{ 2, 0, 0, L"r_input_motion_vectors" },
-			FfxResourceBinding{ 3, 0, 0, L"r_internal_upscaled" },
+			FfxResourceBinding{ 3, 0, 0, L"r_internal_upscaled_color" },
 			FfxResourceBinding{ 4, 0, 0, L"r_lanczos_lut" },
 			FfxResourceBinding{ 5, 0, 0, L"r_farthest_depth_mip1" },
 			FfxResourceBinding{ 6, 0, 0, L"r_current_luma" },
 			FfxResourceBinding{ 7, 0, 0, L"r_luma_instability" },
-			FfxResourceBinding{ 8, 0, 0, L"r_input_color" },
+			FfxResourceBinding{ 8, 0, 0, L"r_input_color_jittered" },
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 9, 0, 0, L"rw_internal_upscaled" },
+			FfxResourceBinding{ 9, 0, 0, L"rw_internal_upscaled_color" },
 			FfxResourceBinding{ 10, 0, 0, L"rw_upscaled_output" },
 			FfxResourceBinding{ 11, 0, 0, L"rw_new_locks" },
 		};
@@ -313,6 +319,29 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
+		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_DEBUG_VIEW];
+		pass.shader = &shaders.debug_view;
+		pass.shader->initialize(modes_single, general_defines);
+		pass.shader_version = pass.shader->version_create();
+
+		pass.sampled_texture_bindings = {
+			FfxResourceBinding{ 0, 0, 0, L"r_dilated_reactive_masks" },
+			FfxResourceBinding{ 1, 0, 0, L"r_dilated_motion_vectors" },
+			FfxResourceBinding{ 2, 0, 0, L"r_dilated_depth" },
+			FfxResourceBinding{ 3, 0, 0, L"r_internal_upscaled_color" },
+			FfxResourceBinding{ 4, 0, 0, L"r_input_exposure" },
+		};
+
+		pass.storage_texture_bindings = {
+			FfxResourceBinding{ 5, 0, 0, L"rw_upscaled_output" },
+		};
+
+		pass.uniform_bindings = {
+			FfxResourceBinding{ 6, 0, 0, L"cbFSR3Upscaler" },
+		};
+	}
+
+	{
 		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_GENERATE_REACTIVE];
 		pass.shader = &shaders.autogen_reactive;
 		pass.shader->initialize(modes_with_fp16, general_defines);
@@ -321,17 +350,19 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 
 		pass.sampled_texture_bindings = {
 			FfxResourceBinding{ 0, 0, 0, L"r_input_opaque_only" },
-			FfxResourceBinding{ 1, 0, 0, L"r_input_color" },
+			FfxResourceBinding{ 1, 0, 0, L"r_input_color_jittered" },
 		};
 
 		pass.storage_texture_bindings = {
 			FfxResourceBinding{ 2, 0, 0, L"rw_output_autoreactive" },
-			FfxResourceBinding{ 3, 0, 0, L"rw_output_autocomposition" },
+			// Though this binding is present in the GLSL source, but the FSR3 CXX side doesn't register it at all.
+			// So we must comment it out to avoid runtime errors.
+			// FfxResourceBinding{ 3, 0, 0, L"rw_output_autocomposition" },
 		};
 
 		pass.uniform_bindings = {
 			FfxResourceBinding{ 4, 0, 0, L"cbFSR3Upscaler" },
-			FfxResourceBinding{ 5, 0, 0, L"cbReactive" },
+			FfxResourceBinding{ 5, 0, 0, L"cbGenerateReactive" },
 		};
 	}
 }
@@ -340,6 +371,11 @@ FSR3UpscalerEffect::~FSR3UpscalerEffect() {
 	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
 
 	for (uint32_t i = 0; i < FFX_FSR3UPSCALER_PASS_COUNT; i++) {
+		if (i == FFX_FSR3UPSCALER_PASS_TCR_AUTOGENERATE) {
+			// These passes are not even created, so no need to be freed
+			continue;
+		}
+
 		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[i].shader_version);
 	}
 }
@@ -347,6 +383,9 @@ FSR3UpscalerEffect::~FSR3UpscalerEffect() {
 FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, Size2i p_target_size) {
 	FSR3UpscalerContext *context = memnew(RendererRD::FSR3UpscalerContext);
 	context->fsr_desc.flags = FFX_FSR3UPSCALER_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR3UPSCALER_ENABLE_DEPTH_INVERTED;
+#ifdef DEV_ENABLED
+	context->fsr_desc.flags |= FFX_FSR3UPSCALER_ENABLE_DEBUG_CHECKING;
+#endif
 	context->fsr_desc.maxRenderSize.width = p_internal_size.x;
 	context->fsr_desc.maxRenderSize.height = p_internal_size.y;
 	context->fsr_desc.maxUpscaleSize.width = p_target_size.x;
@@ -356,6 +395,31 @@ FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, 
 	FFXCommonContext::get_singleton()->create_ffx_interface(&context->fsr_desc.backendInterface);
 	FfxErrorCode result = ffxFsr3UpscalerContextCreate(&context->fsr_context, &context->fsr_desc);
 	if (result == FFX_OK) {
+		FfxFsr3UpscalerSharedResourceDescriptions shared_resource_descriptions;
+		ffxFsr3UpscalerGetSharedResourceDescriptions(&context->fsr_context, &shared_resource_descriptions);
+
+		// Create shared resources
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.reconstructedPrevNearestDepth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->reconstructed_prev_nearest_depth);
+		if (result != FFX_OK) {
+			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
+			memdelete(context);
+			return nullptr;
+		}
+
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedDepth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->dilated_depth);
+		if (result != FFX_OK) {
+			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
+			memdelete(context);
+			return nullptr;
+		}
+
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedMotionVectors, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->dilated_motion_vectors);
+		if (result != FFX_OK) {
+			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
+			memdelete(context);
+			return nullptr;
+		}
+
 		return context;
 	} else {
 		memdelete(context);
@@ -372,14 +436,24 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	RID reactive = p_params.reactive;
 	RID exposure = p_params.exposure;
 	RID output = p_params.output;
+
+	FFXCommonContext::Scratch &scratch = FFXCommonContext::get_singleton()->scratch;
+
+	RID reconstructed_prev_nearest_depth = scratch.resources.rids[p_params.context->reconstructed_prev_nearest_depth.internalIndex];
+	RID dilated_depth = scratch.resources.rids[p_params.context->dilated_depth.internalIndex];
+	RID dilated_motion_vectors = scratch.resources.rids[p_params.context->dilated_motion_vectors.internalIndex];
+
 	dispatch_desc.commandList = nullptr;
-	dispatch_desc.color = FFXCommonContext::get_resource_rd(&color, L"color");
-	dispatch_desc.depth = FFXCommonContext::get_resource_rd(&depth, L"depth");
-	dispatch_desc.motionVectors = FFXCommonContext::get_resource_rd(&velocity, L"velocity");
-	dispatch_desc.reactive = FFXCommonContext::get_resource_rd(&reactive, L"reactive");
-	dispatch_desc.exposure = FFXCommonContext::get_resource_rd(&exposure, L"exposure");
+	dispatch_desc.color = FFXCommonContext::get_ffx_resource(&color, L"color");
+	dispatch_desc.depth = FFXCommonContext::get_ffx_resource(&depth, L"depth");
+	dispatch_desc.reconstructedPrevNearestDepth = FFXCommonContext::get_ffx_resource(&reconstructed_prev_nearest_depth, L"reconstructed_prev_nearest_depth");
+	dispatch_desc.dilatedDepth = FFXCommonContext::get_ffx_resource(&dilated_depth, L"dilated_depth");
+	dispatch_desc.dilatedMotionVectors = FFXCommonContext::get_ffx_resource(&dilated_motion_vectors, L"dilated_motion_vectors");
+	dispatch_desc.motionVectors = FFXCommonContext::get_ffx_resource(&velocity, L"velocity");
+	dispatch_desc.reactive = FFXCommonContext::get_ffx_resource(&reactive, L"reactive");
+	dispatch_desc.exposure = FFXCommonContext::get_ffx_resource(&exposure, L"exposure");
 	dispatch_desc.transparencyAndComposition = {};
-	dispatch_desc.output = FFXCommonContext::get_resource_rd(&output, L"output");
+	dispatch_desc.output = FFXCommonContext::get_ffx_resource(&output, L"output");
 	dispatch_desc.jitterOffset.x = p_params.jitter.x;
 	dispatch_desc.jitterOffset.y = p_params.jitter.y;
 	dispatch_desc.motionVectorScale.x = float(p_params.internal_size.width);
@@ -403,16 +477,8 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	// When Godot adds a deferred renderer, we can re-enable this.
 	FfxFsr3UpscalerGenerateReactiveDescription reactive_desc = {};
 
-	// RendererRD::MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
+	MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
 
 	FfxErrorCode result = ffxFsr3UpscalerContextDispatch(&p_params.context->fsr_context, &dispatch_desc);
-
-	// Note: `dilatedDepth`, `dilatedMotionVectors` and `reconstructedPrevNearestDepth` are shared with the FSR3 Framegen effect.
-	// We need to capture them if we want to use both effects in the same frame.
-	// But now only FSR3 Upscaler is supported so we can clear them empty.
-	dispatch_desc.dilatedDepth = {};
-	dispatch_desc.dilatedMotionVectors = {};
-	dispatch_desc.reconstructedPrevNearestDepth = {};
-
 	ERR_FAIL_COND(result != FFX_OK);
 }

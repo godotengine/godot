@@ -370,7 +370,7 @@ void FSR2Effect::upscale(const Parameters &p_params) {
 	dispatch_desc.autoReactiveScale = 1.0f;
 	dispatch_desc.autoReactiveMax = 1.0f;
 
-	RendererRD::MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
+	MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
 
 	FfxErrorCode result = ffxFsr2ContextDispatch(&p_params.context->fsr_context, &dispatch_desc);
 	ERR_FAIL_COND(result != FFX_OK);

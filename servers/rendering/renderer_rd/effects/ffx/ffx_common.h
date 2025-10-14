@@ -152,7 +152,7 @@ public:
 	static void create_ffx_interface(FfxInterface *p_interface, Scratch *p_scratch, Device *p_device);
 	static RID create_clamp_sampler(RD::SamplerFilter filter);
 
-	static FfxResource get_resource_rd(RID *p_rid, const wchar_t *p_name);
+	static FfxResource get_ffx_resource(RID *p_rid, const wchar_t *p_name);
 	static RD::TextureType ffx_resource_type_to_rd_texture_type(FfxResourceType p_type);
 	static FfxResourceType rd_texture_type_to_ffx_resource_type(RD::TextureType p_type);
 	static RD::DataFormat ffx_surface_format_to_rd_format(FfxSurfaceFormat p_format);

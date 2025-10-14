@@ -1030,6 +1030,8 @@ static FfxErrorCode fsr3upscalerDispatch(FfxFsr3UpscalerContext_Private* context
         context->constants.frameIndex += 1.0f;
     }
 
+	memcpy(context->constants.reprojectionMatrix, params->reprojectionMatrix, sizeof(context->constants.reprojectionMatrix));
+
     // reactive mask bias
     const int32_t threadGroupWorkRegionDim = 8;
     const int32_t dispatchSrcX = (context->constants.renderSize[0] + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;

@@ -77,6 +77,11 @@ typedef struct Fsr3UpscalerConstants {
     float                       shadingChangeScale;
     float                       accumulationAddedPerFrame;
     float                       minDisocclusionAccumulation;
+
+	// GODOT BEGINS
+	float                       pad[3];
+	float                       reprojectionMatrix[16];
+	// GODOT ENDS
 } Fsr3UpscalerConstants;
 
 struct FfxFsr3UpscalerContextDescription;

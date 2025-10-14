@@ -37,6 +37,7 @@ void WriteUpscaledOutput(FFX_MIN16_U2 iPxHrPos, FfxFloat32x3 fUpscaledColor)
 }
 
 #if FSR_RCAS_PREFER_PAIRED_VERSION
+
     #define FSR_RCAS_HX2 1
     FfxFloat16x4 FsrRcasLoadHx2(FfxInt16x2 p)
     {
@@ -50,7 +51,28 @@ void WriteUpscaledOutput(FFX_MIN16_U2 iPxHrPos, FfxFloat32x3 fUpscaledColor)
         b = FfxFloat16x2(b * e);
     }
 
-	#include "../fsr1/ffx_fsr1.h"
+#else
+
+	#define FSR_RCAS_F 1
+	FfxFloat32x4 FsrRcasLoadF(FfxInt32x2 p)
+	{
+		FfxFloat32x4 fColor = LoadRCAS_Input(p);
+
+		fColor.rgb *= Exposure();
+
+		return fColor;
+	}
+	void FsrRcasInputF(inout FfxFloat32 r, inout FfxFloat32 g, inout FfxFloat32 b) {}
+
+#endif // #if FSR_RCAS_PREFER_PAIRED_VERSION
+
+// GODOT BEGINS
+// Workaround for Godot GLSL processor not supporting conditional include.
+// Thus we have to take the include statement out of the conditional block.
+
+#include "../fsr1/ffx_fsr1.h"
+
+#if FSR_RCAS_PREFER_PAIRED_VERSION
 
 	void CurrFilterPaired(FFX_MIN16_U2 pos)
     {
@@ -66,19 +88,8 @@ void WriteUpscaledOutput(FFX_MIN16_U2 iPxHrPos, FfxFloat32x3 fUpscaledColor)
         pos.x += 8;
         WriteUpscaledOutput(pos, FfxFloat16x3(cr.y, cg.y, cb.y)); //TODO: fix type
     }
+
 #else
-    #define FSR_RCAS_F 1
-    FfxFloat32x4 FsrRcasLoadF(FfxInt32x2 p)
-    {
-        FfxFloat32x4 fColor = LoadRCAS_Input(p);
-
-        fColor.rgb *= Exposure();
-
-        return fColor;
-    }
-    void FsrRcasInputF(inout FfxFloat32 r, inout FfxFloat32 g, inout FfxFloat32 b) {}
-
-    #include "../fsr1/ffx_fsr1.h"
 
     void CurrFilter(FFX_MIN16_U2 pos)
     {
@@ -91,6 +102,7 @@ void WriteUpscaledOutput(FFX_MIN16_U2 iPxHrPos, FfxFloat32x3 fUpscaledColor)
     }
 
 #endif // #if FSR_RCAS_PREFER_PAIRED_VERSION
+// GODOT ENDS
 
 void RCAS(FfxUInt32x3 LocalThreadId, FfxUInt32x3 WorkGroupId, FfxUInt32x3 Dtid)
 {

@@ -36,7 +36,10 @@
 #endif
 #define FSR2_BIND_SRV_INTERNAL_UPSCALED                      3
 #define FSR2_BIND_SRV_LOCK_STATUS                            4
+// GODOT BEGINS
+// See `fsr2.cpp` for reason of commenting this out
 //#define FSR2_BIND_SRV_INPUT_DEPTH_CLIP                       5
+// GODOT ENDS
 #define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                   6
 #define FSR2_BIND_SRV_LUMA_INSTABILITY                       7
 #define FSR2_BIND_SRV_LANCZOS_LUT                            8
