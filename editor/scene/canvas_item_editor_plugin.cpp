@@ -4497,6 +4497,32 @@ void CanvasItemEditor::_selection_changed() {
 		temp_pivot = Vector2(Math::INF, Math::INF);
 		viewport->queue_redraw();
 	}
+
+	// Check to redraw to clear anything drawn from visible selections if no selections are visible.
+	bool has_visible = false;
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+		if (!ci || !ci->is_visible_in_tree()) {
+			continue;
+		}
+
+		Viewport *vp = ci->get_viewport();
+		if (vp && !vp->is_visible_subviewport()) {
+			continue;
+		}
+
+		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+		if (se) {
+			has_visible = true;
+			break;
+		}
+	}
+	if (had_visible_selection != has_visible) {
+		if (!has_visible) {
+			viewport->queue_redraw();
+		}
+		had_visible_selection = has_visible;
+	}
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
