@@ -160,6 +160,7 @@ class ProjectManager : public Control {
 	Button *rename_btn = nullptr;
 	Button *duplicate_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
+	Button *show_in_fm_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
 
@@ -194,6 +195,7 @@ class ProjectManager : public Control {
 	void _rename_project();
 	void _duplicate_project();
 	void _duplicate_project_with_action(PostDuplicateAction p_action);
+	void _show_project_in_file_manager();
 	void _erase_project();
 	void _erase_missing_projects();
 	void _erase_project_confirm();
