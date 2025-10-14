@@ -1,7 +1,7 @@
 // This file is part of the FidelityFX SDK.
 //
 // Copyright (C) 2024 Advanced Micro Devices, Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -337,7 +337,7 @@ layout (set = 0, binding = 101 /*1001*/) uniform sampler s_LinearClamp;
 #endif
 #if defined(FSR2_BIND_SRV_DILATED_REACTIVE_MASKS)
 	layout (set = 0, binding = FSR2_BIND_SRV_DILATED_REACTIVE_MASKS)                  uniform texture2D  r_dilated_reactive_masks;
-#endif			 
+#endif
 #if defined(FSR2_BIND_SRV_PREV_PRE_ALPHA_COLOR)
 	layout(set = 0, binding = FSR2_BIND_SRV_PREV_PRE_ALPHA_COLOR) 				      uniform texture2D  r_input_prev_color_pre_alpha;
 #endif
@@ -384,14 +384,14 @@ layout (set = 0, binding = 101 /*1001*/) uniform sampler s_LinearClamp;
 #endif
 #if defined FSR2_BIND_UAV_DILATED_REACTIVE_MASKS
 	layout (set = 0, binding = FSR2_BIND_UAV_DILATED_REACTIVE_MASKS, rg8)                 writeonly uniform image2D	 rw_dilated_reactive_masks;
-#endif 
-#if defined FSR2_BIND_UAV_EXPOSURE 
+#endif
+#if defined FSR2_BIND_UAV_EXPOSURE
 	layout (set = 0, binding = FSR2_BIND_UAV_EXPOSURE, rg32f)                         uniform image2D    rw_exposure;
 #endif
 #if defined FSR2_BIND_UAV_AUTO_EXPOSURE
 	layout(set = 0, binding = FSR2_BIND_UAV_AUTO_EXPOSURE, rg32f)                         uniform image2D    rw_auto_exposure;
 #endif
-#if defined FSR2_BIND_UAV_SPD_GLOBAL_ATOMIC 
+#if defined FSR2_BIND_UAV_SPD_GLOBAL_ATOMIC
 	layout (set = 0, binding = FSR2_BIND_UAV_SPD_GLOBAL_ATOMIC, r32ui)       coherent uniform uimage2D   rw_spd_global_atomic;
 #endif
 
@@ -429,7 +429,7 @@ FfxFloat32 LoadInputDepth(FfxInt32x2 iPxPos)
 }
 #endif
 
-#if defined(FSR2_BIND_SRV_REACTIVE_MASK) 
+#if defined(FSR2_BIND_SRV_REACTIVE_MASK)
 FfxFloat32 LoadReactiveMask(FfxInt32x2 iPxPos)
 {
 	// GODOT BEGINS
@@ -482,11 +482,11 @@ FfxFloat32x2 LoadInputMotionVector(FfxInt32x2 iPxDilatedMotionVectorPos)
 	{
 		FfxFloat32 fSrcDepth = LoadInputDepth(iPxDilatedMotionVectorPos);
 		FfxFloat32x2 fUv = (iPxDilatedMotionVectorPos + FfxFloat32(0.5)) / RenderSize();
-		fSrcMotionVector = FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS_FUNCTION(fUv, fSrcDepth, cbFSR2.mReprojectionMatrix);
+		fSrcMotionVector = FFX_FSR_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS_FUNCTION(fUv, fSrcDepth, cbFSR2.mReprojectionMatrix);
 	}
 #endif
 	// GODOT ENDS
-	
+
 	FfxFloat32x2 fUvMotionVector = fSrcMotionVector * MotionVectorScale();
 
 #if FFX_FSR2_OPTION_JITTERED_MOTION_VECTORS
@@ -663,7 +663,7 @@ void StoreDilatedDepth(FFX_PARAMETER_IN FfxInt32x2 iPxPos, FFX_PARAMETER_IN FfxF
 }
 #endif
 
-#if defined(FSR2_BIND_UAV_DILATED_MOTION_VECTORS) 
+#if defined(FSR2_BIND_UAV_DILATED_MOTION_VECTORS)
 void StoreDilatedMotionVector(FFX_PARAMETER_IN FfxInt32x2 iPxPos, FFX_PARAMETER_IN FfxFloat32x2 fMotionVector)
 {
 	imageStore(rw_dilated_motion_vectors, iPxPos, vec4(fMotionVector, 0.0f, 0.0f));
@@ -732,7 +732,7 @@ FfxFloat32 AutoExposure()
 FfxFloat32 SampleLanczos2Weight(FfxFloat32 x)
 {
 #if defined(FSR2_BIND_SRV_LANCZOS_LUT)
-	return textureLod(sampler2D(r_lanczos_lut, s_LinearClamp), FfxFloat32x2(x / 2.0f, 0.5f), 0.0f).x; 
+	return textureLod(sampler2D(r_lanczos_lut, s_LinearClamp), FfxFloat32x2(x / 2.0f, 0.5f), 0.0f).x;
 #else
     return 0.f;
 #endif

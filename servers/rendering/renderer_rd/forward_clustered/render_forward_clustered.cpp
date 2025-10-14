@@ -1759,6 +1759,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			break;
 		case RS::VIEWPORT_SCALING_3D_MODE_FSR3:
 			scale_type = SCALE_FSR3;
+			break;
 		case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 #ifdef METAL_MFXTEMPORAL_ENABLED
 			scale_type = SCALE_MFX;
@@ -2479,8 +2480,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				exposure = luminance->get_current_luminance_buffer(rb);
 			}
 
-			RD::get_singleton()->draw_command_begin_label("FSR3Upscaler");
-			RENDER_TIMESTAMP("FSR3Upscaler");
+			RD::get_singleton()->draw_command_begin_label("FSR3 Upscaler");
+			RENDER_TIMESTAMP("FSR3 Upscaler");
 
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 				real_t fov = p_render_data->scene_data->cam_projection.get_fov();

@@ -213,6 +213,11 @@ typedef struct FfxFsr3UpscalerDispatchDescription {
     float                       cameraFovAngleVertical;             ///< The camera angle field of view in the vertical direction (expressed in radians).
     float                       viewSpaceToMetersFactor;            ///< The scale factor to convert view space units to meters
     uint32_t                    flags;                              ///< combination of FfxFsr3UpscalerDispatchFlags
+
+	// GODOT BEGINS
+	float                       reprojectionMatrix[16];
+	// GODOT ENDS
+
 } FfxFsr3UpscalerDispatchDescription;
 
 /// A structure encapsulating the parameters for automatic generation of a reactive mask

@@ -460,10 +460,11 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommon::Scratch &p_scratch, co
 		storage_uniform.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		storage_uniform.binding = p_job.pipeline.uavTextureBindings[i].slotIndex;
 
-		if (p_job.uavTextures[i].mip > 0) {
+		int mipCount = p_scratch.resources.descriptions[p_job.uavTextures[i].resource.internalIndex].mipCount;
+		if (mipCount > 1) {
 			LocalVector<RID> &mip_slice_rids = p_scratch.resources.mip_slice_rids[p_job.uavTextures[i].resource.internalIndex];
 			if (mip_slice_rids.is_empty()) {
-				mip_slice_rids.resize(p_scratch.resources.descriptions[p_job.uavTextures[i].resource.internalIndex].mipCount);
+				mip_slice_rids.resize(mipCount);
 			}
 
 			ERR_FAIL_COND_V(p_job.uavTextures[i].mip >= mip_slice_rids.size(), FFX_ERROR_INVALID_ARGUMENT);
@@ -531,6 +532,10 @@ static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCo
 			case FFX_GPU_JOB_COMPUTE: {
 				error_code = execute_gpu_job_compute_rd(scratch, job.computeJobDescriptor, p_effect_context_id);
 			} break;
+			case FFX_GPU_JOB_DISCARD: {
+				// Discard is a DX12-only concept, so nothing has to be done.
+				// The DX12 backend handles this automatically.
+			} break;
 			default: {
 				error_code = FFX_ERROR_INVALID_ARGUMENT;
 			} break;
@@ -538,6 +543,9 @@ static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCo
 
 		if (error_code != FFX_OK) {
 			scratch.gpu_jobs.clear();
+#ifdef DEV_ENABLED
+			ERR_PRINT(vformat("FFX GPU job failed with code %d", error_code));
+#endif
 			return error_code;
 		}
 	}

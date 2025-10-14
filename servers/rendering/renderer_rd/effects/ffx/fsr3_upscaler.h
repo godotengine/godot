@@ -32,6 +32,7 @@
 
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_accumulate_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_autogen_reactive_pass.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_debug_view_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_luma_instability_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_luma_pyramid_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr3upscaler/fsr3upscaler_prepare_inputs_pass.glsl.gen.h"
@@ -51,6 +52,11 @@ public:
 	FFXCommonContext *ffx_common_context;
 	FfxFsr3UpscalerContext fsr_context;
 	FfxFsr3UpscalerContextDescription fsr_desc;
+
+	// Output resources from FSR3 Upscaler that are required for frame generation
+	FfxResourceInternal reconstructed_prev_nearest_depth;
+	FfxResourceInternal dilated_depth;
+	FfxResourceInternal dilated_motion_vectors;
 
 	~FSR3UpscalerContext();
 };
@@ -92,6 +98,7 @@ private:
 		Fsr3UpscalerLumaInstabilityPassShaderRD luma_instability;
 		Fsr3UpscalerAccumulatePassShaderRD accumulate;
 		Fsr3UpscalerRcasPassShaderRD rcas;
+		Fsr3UpscalerDebugViewPassShaderRD debug_view;
 		Fsr3UpscalerAutogenReactivePassShaderRD autogen_reactive;
 	} shaders;
 };
