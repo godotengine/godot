@@ -1030,7 +1030,9 @@ static FfxErrorCode fsr3upscalerDispatch(FfxFsr3UpscalerContext_Private* context
         context->constants.frameIndex += 1.0f;
     }
 
+	// GODOT BEGINS
 	memcpy(context->constants.reprojectionMatrix, params->reprojectionMatrix, sizeof(context->constants.reprojectionMatrix));
+	// GODOT ENDS
 
     // reactive mask bias
     const int32_t threadGroupWorkRegionDim = 8;

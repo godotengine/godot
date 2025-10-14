@@ -67,7 +67,10 @@
         FfxFloat32    fMinDisocclusionAccumulation;
 
     	// GODOT BEGINS
-    	FfxFloat32    fPad[3];
+    	// Do not change this to an array, as arrays have different alignment requirements
+    	FfxFloat32    fPad1;
+    	FfxFloat32    fPad2;
+    	FfxFloat32    fPad3;
     	mat4          mReprojectionMatrix;
     	// GODOT ENDS
 	} cbFSR3Upscaler;
