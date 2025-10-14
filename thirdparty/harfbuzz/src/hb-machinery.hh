@@ -70,11 +70,18 @@ static inline Type& StructAtOffsetUnaligned(void *P, unsigned int offset)
  * Any extra arguments are forwarded to get_size, so for example
  * it can work with UnsizedArrayOf<> as well. */
 template <typename Type, typename TObject, typename ...Ts>
-static inline const Type& StructAfter(const TObject &X, Ts... args)
-{ return StructAtOffset<Type>(&X, X.get_size(args...)); }
+static inline auto StructAfter(const TObject &X, Ts... args) HB_AUTO_RETURN((
+  StructAtOffset<Type>(&X, X.get_size(std::forward<Ts> (args)...))
+))
+/* The is_const shenanigans is to avoid ambiguous overload with gcc-8.
+ * It disables this path when TObject is const.
+ * See: https://github.com/harfbuzz/harfbuzz/issues/5429 */
 template <typename Type, typename TObject, typename ...Ts>
-static inline Type& StructAfter(TObject &X, Ts... args)
-{ return StructAtOffset<Type>(&X, X.get_size(args...)); }
+static inline auto StructAfter(TObject &X, Ts... args) HB_AUTO_RETURN((
+  sizeof(int[std::is_const<TObject>::value ? -1 : +1]) > 0 ?
+  StructAtOffset<Type>(&X, X.get_size(std::forward<Ts> (args)...))
+  : *reinterpret_cast<Type*> (0)
+))
 
 
 /*
