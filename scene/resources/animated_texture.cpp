@@ -30,6 +30,7 @@
 
 #include "animated_texture.h"
 
+#include "core/object/message_queue.h"
 #include "core/os/os.h"
 #include "servers/rendering/rendering_server.h"
 
