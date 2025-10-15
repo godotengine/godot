@@ -4344,16 +4344,10 @@ String String::simplify_path() const {
 		} else {
 			// Windows-style drive path, like C:/ or C:\.
 			p = s.find(":/");
-			int first_separator = -1;
 			if (p == -1) {
 				p = s.find(":\\");
-				if (p != -1) {
-					first_separator = s.find_char('\\');
-				}
-			} else {
-				first_separator = s.find_char('/');
 			}
-			if (p != -1 && p < first_separator) {
+			if (p != -1 && p < s.find_char('/')) {
 				drive = s.substr(0, p + 2);
 				s = s.substr(p + 2);
 				is_sys_absolute_path = true;
