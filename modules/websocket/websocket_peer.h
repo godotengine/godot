@@ -61,6 +61,11 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _accept_stream_bind_compat_107871(const Ref<StreamPeer> &p_stream);
+	static void _bind_compatibility_methods();
+#endif
+
 	Vector<String> supported_protocols;
 	Vector<String> handshake_headers;
 

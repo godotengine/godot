@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "websocket_peer.h"
+#include "websocket_peer.compat.inc"
 
 WebSocketPeer *(*WebSocketPeer::_create)(bool p_notify_postinitialize) = nullptr;
 
