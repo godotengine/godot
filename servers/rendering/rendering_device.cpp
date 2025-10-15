@@ -7102,9 +7102,6 @@ void RenderingDevice::finalize() {
 	// Delete everything the graph has created.
 	draw_graph.finalize();
 
-	// Free FFX context if created
-	RendererRD::FFXCommonContext::free_singleton();
-
 	// Free all resources.
 	_free_rids(render_pipeline_owner, "Pipeline");
 	_free_rids(compute_pipeline_owner, "Compute");

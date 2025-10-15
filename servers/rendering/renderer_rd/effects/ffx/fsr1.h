@@ -42,7 +42,7 @@
 namespace RendererRD {
 class FSR1Context {
 public:
-	FFXCommonContext *ffx_common_context;
+	FFXCommon::Scratch scratch;
 	FfxFsr1Context fsr_context;
 	FfxFsr1ContextDescription fsr_desc;
 
@@ -58,12 +58,14 @@ public:
 	void ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) final;
 	void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) final;
 
-	FSR1Context *create_context(Size2i p_internal_size, Size2i p_target_size, RD::DataFormat p_output_format) const;
+	FSR1Context *create_context(Size2i p_internal_size, Size2i p_target_size, RD::DataFormat p_output_format);
 
 private:
 	struct {
 		Fsr1EasuPassShaderRD easu;
 		Fsr1RcasPassShaderRD rcas;
 	} shaders;
+
+	FFXCommon::Device device;
 };
 } //namespace RendererRD
