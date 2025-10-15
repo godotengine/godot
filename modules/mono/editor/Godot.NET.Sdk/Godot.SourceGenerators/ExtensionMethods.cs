@@ -3,30 +3,31 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Godot.SourceGenerators
 {
     internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
-            this GeneratorExecutionContext context, string property, out string? value
-        ) => context.AnalyzerConfigOptions.GlobalOptions
-            .TryGetValue("build_property." + property, out value);
+            this AnalyzerConfigOptionsProvider provider, string property, out string? value
+        ) => provider.GlobalOptions.TryGetValue("build_property." + property, out value);
 
-        public static bool AreGodotSourceGeneratorsDisabled(this GeneratorExecutionContext context)
+        public static bool AreGodotSourceGeneratorsDisabled(this AnalyzerConfigOptionsProvider context)
             => context.TryGetGlobalAnalyzerProperty("GodotSourceGenerators", out string? toggle) &&
                toggle != null &&
                toggle.Equals("disabled", StringComparison.OrdinalIgnoreCase);
 
-        public static bool IsGodotToolsProject(this GeneratorExecutionContext context)
+        public static bool IsGodotToolsProject(this AnalyzerConfigOptionsProvider context)
             => context.TryGetGlobalAnalyzerProperty("IsGodotToolsProject", out string? toggle) &&
                toggle != null &&
                toggle.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-        public static bool IsGodotSourceGeneratorDisabled(this GeneratorExecutionContext context, string generatorName) =>
+        public static bool IsGodotSourceGeneratorDisabled(this AnalyzerConfigOptionsProvider context, string generatorName) =>
             AreGodotSourceGeneratorsDisabled(context) ||
             (context.TryGetGlobalAnalyzerProperty("GodotDisabledSourceGenerators", out string? disabledGenerators) &&
             disabledGenerators != null &&
@@ -81,13 +82,11 @@ namespace Godot.SourceGenerators
             return godotClassName ?? nativeType.Name;
         }
 
-        private static bool TryGetGodotScriptClass(
-            this ClassDeclarationSyntax cds, Compilation compilation,
+        public static bool TryGetGodotScriptClass(
+            this ClassDeclarationSyntax cds, SemanticModel sm,
             out INamedTypeSymbol? symbol
         )
         {
-            var sm = compilation.GetSemanticModel(cds.SyntaxTree);
-
             var classTypeSymbol = sm.GetDeclaredSymbol(cds);
 
             if (classTypeSymbol?.BaseType == null
@@ -101,16 +100,23 @@ namespace Godot.SourceGenerators
             return true;
         }
 
-        public static IEnumerable<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> SelectGodotScriptClasses(
-            this IEnumerable<ClassDeclarationSyntax> source,
-            Compilation compilation
-        )
+        public static IncrementalValuesProvider<GodotClassData> CreateValuesProviderForGodotClasses(this SyntaxValueProvider provider, Func<SyntaxNode, CancellationToken, bool>? customPredicate = null, Func<GeneratorSyntaxContext, CancellationToken, GodotClassData>? customTransform = null)
         {
-            foreach (var cds in source)
-            {
-                if (cds.TryGetGodotScriptClass(compilation, out var symbol))
-                    yield return (cds, symbol!);
-            }
+            return provider.CreateSyntaxProvider(
+                // By default select class declarations that inherit from something
+                // since Godot classes must at least inherit from Godot.Object
+                predicate: customPredicate ?? (static (s, _) =>
+                    s is ClassDeclarationSyntax { BaseList.Types.Count: > 0 }),
+                // Filter out non-Godot classes and retrieve the symbol
+                transform: customTransform ?? (static (ctx, _) =>
+                {
+                    var cds = (ClassDeclarationSyntax)ctx.Node;
+                    if (!cds.TryGetGodotScriptClass(ctx.SemanticModel, out var symbol))
+                        return null!;
+
+                    return new GodotClassData(cds, symbol!);
+                })
+            ).Where(static x => x?.Symbol != null);
         }
 
         public static bool IsNested(this TypeDeclarationSyntax cds)

@@ -6,7 +6,7 @@ namespace Godot.SourceGenerators.Internal;
 internal static class Common
 {
     public static void ReportNonPartialUnmanagedCallbacksClass(
-        GeneratorExecutionContext context,
+        SourceProductionContext context,
         ClassDeclarationSyntax cds, INamedTypeSymbol symbol
     )
     {
@@ -30,11 +30,12 @@ internal static class Common
     }
 
     public static void ReportNonPartialUnmanagedCallbacksOuterClass(
-        GeneratorExecutionContext context,
+        SourceProductionContext context,
+        Compilation compilation,
         TypeDeclarationSyntax outerTypeDeclSyntax
     )
     {
-        var outerSymbol = context.Compilation
+        var outerSymbol = compilation
             .GetSemanticModel(outerTypeDeclSyntax.SyntaxTree)
             .GetDeclaredSymbol(outerTypeDeclSyntax);
 

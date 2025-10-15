@@ -12,9 +12,9 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators.Tests;
 
 public static class CSharpSourceGeneratorVerifier<TSourceGenerator>
-where TSourceGenerator : ISourceGenerator, new()
+where TSourceGenerator : IIncrementalGenerator, new()
 {
-    public class Test : CSharpSourceGeneratorTest<TSourceGenerator, XUnitVerifier>
+    public class Test : CSharpSourceGeneratorTest<EmptySourceGeneratorProvider, XUnitVerifier>
     {
         public Test()
         {
@@ -28,6 +28,10 @@ where TSourceGenerator : ISourceGenerator, new()
                 return project.Solution;
             });
         }
+
+        // IIncrementalGenerator does not exist in tests yet, must cast.
+        protected override IEnumerable<ISourceGenerator> GetSourceGenerators() =>
+            new[] { new TSourceGenerator().AsSourceGenerator() };
     }
 
     public static Task Verify(string source, params string[] generatedSources)

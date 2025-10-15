@@ -5,17 +5,23 @@ using Microsoft.CodeAnalysis.Text;
 namespace Godot.SourceGenerators
 {
     [Generator]
-    public class GodotPluginsInitializerGenerator : ISourceGenerator
+    public class GodotPluginsInitializerGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            var isGodotToolsProject = context.AnalyzerConfigOptionsProvider.Select((provider, _) => provider.IsGodotToolsProject() || provider.IsGodotSourceGeneratorDisabled("GodotPluginsInitializer"));
+
+            context.RegisterSourceOutput(isGodotToolsProject, static (spc, source) =>
+            {
+                if (source)
+                    return;
+
+                Execute(spc);
+            });
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static void Execute(SourceProductionContext context)
         {
-            if (context.IsGodotToolsProject() || context.IsGodotSourceGeneratorDisabled("GodotPluginsInitializer"))
-                return;
-
             string source =
                 @"using System;
 using System.Runtime.InteropServices;

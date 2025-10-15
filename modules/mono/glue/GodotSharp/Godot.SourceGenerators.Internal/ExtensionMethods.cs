@@ -12,45 +12,33 @@ internal static class ExtensionMethods
         => symbol.GetAttributes()
             .FirstOrDefault(a => a.AttributeClass?.IsGenerateUnmanagedCallbacksAttribute() ?? false);
 
-    private static bool HasGenerateUnmanagedCallbacksAttribute(
-        this ClassDeclarationSyntax cds, Compilation compilation,
+    public static bool HasGenerateUnmanagedCallbacksAttribute(
+        this ClassDeclarationSyntax cds, SemanticModel sm,
         out INamedTypeSymbol? symbol
     )
     {
-        var sm = compilation.GetSemanticModel(cds.SyntaxTree);
-
-        var classTypeSymbol = sm.GetDeclaredSymbol(cds);
-        if (classTypeSymbol == null)
+        foreach (var attrListSyntax in cds.AttributeLists)
         {
-            symbol = null;
-            return false;
+            foreach (var attrSyntax in attrListSyntax.Attributes)
+            {
+                if (sm.GetSymbolInfo(attrSyntax).Symbol is not IMethodSymbol attrSymbol)
+                    continue;
+
+                INamedTypeSymbol attrTypeSymbol = attrSymbol.ContainingType;
+                if (!attrTypeSymbol.IsGenerateUnmanagedCallbacksAttribute())
+                    continue;
+
+                symbol = sm.GetDeclaredSymbol(cds);
+                return symbol != null;
+            }
         }
 
-        if (!classTypeSymbol.GetAttributes()
-                .Any(a => a.AttributeClass?.IsGenerateUnmanagedCallbacksAttribute() ?? false))
-        {
-            symbol = null;
-            return false;
-        }
-
-        symbol = classTypeSymbol;
-        return true;
+        symbol = null;
+        return false;
     }
 
-    private static bool IsGenerateUnmanagedCallbacksAttribute(this INamedTypeSymbol symbol)
+    public static bool IsGenerateUnmanagedCallbacksAttribute(this INamedTypeSymbol symbol)
         => symbol.FullQualifiedNameOmitGlobal() == GeneratorClasses.GenerateUnmanagedCallbacksAttr;
-
-    public static IEnumerable<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> SelectUnmanagedCallbacksClasses(
-        this IEnumerable<ClassDeclarationSyntax> source,
-        Compilation compilation
-    )
-    {
-        foreach (var cds in source)
-        {
-            if (cds.HasGenerateUnmanagedCallbacksAttribute(compilation, out var symbol))
-                yield return (cds, symbol!);
-        }
-    }
 
     public static bool IsNested(this TypeDeclarationSyntax cds)
         => cds.Parent is TypeDeclarationSyntax;
