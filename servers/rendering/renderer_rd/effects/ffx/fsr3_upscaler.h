@@ -49,7 +49,7 @@
 namespace RendererRD {
 class FSR3UpscalerContext {
 public:
-	FFXCommonContext *ffx_common_context;
+	FFXCommon::Scratch scratch;
 	FfxFsr3UpscalerContext fsr_context;
 	FfxFsr3UpscalerContextDescription fsr_desc;
 
@@ -101,5 +101,7 @@ private:
 		Fsr3UpscalerDebugViewPassShaderRD debug_view;
 		Fsr3UpscalerAutogenReactivePassShaderRD autogen_reactive;
 	} shaders;
+
+	FFXCommon::Device device;
 };
 } //namespace RendererRD

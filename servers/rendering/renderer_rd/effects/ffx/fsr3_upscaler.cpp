@@ -54,18 +54,15 @@ static void fsr3_recv_message(FfxMsgType type, const wchar_t *message) {
 }
 
 FSR3UpscalerContext::~FSR3UpscalerContext() {
-	FFXCommonContext::Resources &resources = FFXCommonContext::get_singleton()->scratch.resources;
-
-	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, reconstructed_prev_nearest_depth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
-	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_depth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
-	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_motion_vectors, FFX_EFFECT_CONTEXT_FSR3_UPSCALE);
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, reconstructed_prev_nearest_depth, -1);
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_depth, -1);
+	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_motion_vectors, -1);
 
 	ffxFsr3UpscalerContextDestroy(&fsr_context);
 }
 
 FSR3UpscalerEffect::FSR3UpscalerEffect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
-	FfxDeviceCapabilities &capabilities = device.capabilities;
+	FfxDeviceCapabilities capabilities = FFXCommon::get_device_capabilities();
 
 	String general_defines =
 			"\n#define FFX_GPU\n"
@@ -92,7 +89,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	// error if the bindings do not match.
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_PREPARE_INPUTS];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_PREPARE_INPUTS];
 		pass.shader = &shaders.prepare_inputs;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -118,7 +115,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_LUMA_PYRAMID];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_LUMA_PYRAMID];
 		pass.shader = &shaders.luma_pyramid;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -148,7 +145,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_SHADING_CHANGE_PYRAMID];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_SHADING_CHANGE_PYRAMID];
 		pass.shader = &shaders.shading_change_pyramid;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -178,7 +175,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_SHADING_CHANGE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_SHADING_CHANGE];
 		pass.shader = &shaders.shading_change;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -198,7 +195,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_PREPARE_REACTIVITY];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_PREPARE_REACTIVITY];
 		pass.shader = &shaders.prepare_reactivity;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -228,7 +225,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_LUMA_INSTABILITY];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_LUMA_INSTABILITY];
 		pass.shader = &shaders.luma_instability;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -263,7 +260,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 
 		// Workaround: Disable FP16 path for the accumulate pass on NVIDIA due to reduced occupancy and high VRAM throughput.
 		const bool fp16_path_supported = RD::get_singleton()->get_device_vendor_name() != "NVIDIA";
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_ACCUMULATE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_ACCUMULATE];
 		pass.shader = &shaders.accumulate;
 		pass.shader->initialize(accumulate_modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -292,13 +289,13 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 		};
 
 		// Sharpen pass is a clone of the accumulate pass with the sharpening variant.
-		FFXCommonContext::Pass &sharpen_pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_ACCUMULATE_SHARPEN];
+		FFXCommon::Pass &sharpen_pass = device.passes[FFX_FSR3UPSCALER_PASS_ACCUMULATE_SHARPEN];
 		sharpen_pass = pass;
 		sharpen_pass.shader_variant = pass.shader_variant + 1;
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_RCAS];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_RCAS];
 		pass.shader = &shaders.rcas;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -319,7 +316,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_DEBUG_VIEW];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_DEBUG_VIEW];
 		pass.shader = &shaders.debug_view;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -342,7 +339,7 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[FFX_FSR3UPSCALER_PASS_GENERATE_REACTIVE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR3UPSCALER_PASS_GENERATE_REACTIVE];
 		pass.shader = &shaders.autogen_reactive;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -365,10 +362,14 @@ FSR3UpscalerEffect::FSR3UpscalerEffect() {
 			FfxResourceBinding{ 5, 0, 0, L"cbGenerateReactive" },
 		};
 	}
+
+	device.linear_clamp_sampler = FFXCommon::create_clamp_sampler(RD::SAMPLER_FILTER_LINEAR);
+	device.point_clamp_sampler = FFXCommon::create_clamp_sampler(RD::SAMPLER_FILTER_NEAREST);
 }
 
 FSR3UpscalerEffect::~FSR3UpscalerEffect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
+	RD::get_singleton()->free_rid(device.point_clamp_sampler);
+	RD::get_singleton()->free_rid(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR3UPSCALER_PASS_COUNT; i++) {
 		if (i == FFX_FSR3UPSCALER_PASS_TCR_AUTOGENERATE) {
@@ -376,7 +377,7 @@ FSR3UpscalerEffect::~FSR3UpscalerEffect() {
 			continue;
 		}
 
-		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR3_UPSCALE].passes[i].shader_version);
+		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }
 
@@ -392,28 +393,28 @@ FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, 
 	context->fsr_desc.maxUpscaleSize.height = p_target_size.y;
 	context->fsr_desc.fpMessage = fsr3_recv_message;
 
-	FFXCommonContext::get_singleton()->create_ffx_interface(&context->fsr_desc.backendInterface);
+	FFXCommon::create_ffx_interface(&context->fsr_desc.backendInterface, &context->scratch, &device);
 	FfxErrorCode result = ffxFsr3UpscalerContextCreate(&context->fsr_context, &context->fsr_desc);
 	if (result == FFX_OK) {
 		FfxFsr3UpscalerSharedResourceDescriptions shared_resource_descriptions;
 		ffxFsr3UpscalerGetSharedResourceDescriptions(&context->fsr_context, &shared_resource_descriptions);
 
 		// Create shared resources
-		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.reconstructedPrevNearestDepth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->reconstructed_prev_nearest_depth);
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.reconstructedPrevNearestDepth, -1, &context->reconstructed_prev_nearest_depth);
 		if (result != FFX_OK) {
 			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
 			memdelete(context);
 			return nullptr;
 		}
 
-		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedDepth, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->dilated_depth);
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedDepth, -1, &context->dilated_depth);
 		if (result != FFX_OK) {
 			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
 			memdelete(context);
 			return nullptr;
 		}
 
-		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedMotionVectors, FFX_EFFECT_CONTEXT_FSR3_UPSCALE, &context->dilated_motion_vectors);
+		result = context->fsr_desc.backendInterface.fpCreateResource(&context->fsr_desc.backendInterface, &shared_resource_descriptions.dilatedMotionVectors, -1, &context->dilated_motion_vectors);
 		if (result != FFX_OK) {
 			ERR_PRINT("Failed to create FSR3 Upscaler shared resource: reconstructed_prev_nearest_depth.");
 			memdelete(context);
@@ -437,23 +438,23 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	RID exposure = p_params.exposure;
 	RID output = p_params.output;
 
-	FFXCommonContext::Scratch &scratch = FFXCommonContext::get_singleton()->scratch;
+	FFXCommon::Scratch &scratch = p_params.context->scratch;
 
 	RID reconstructed_prev_nearest_depth = scratch.resources.rids[p_params.context->reconstructed_prev_nearest_depth.internalIndex];
 	RID dilated_depth = scratch.resources.rids[p_params.context->dilated_depth.internalIndex];
 	RID dilated_motion_vectors = scratch.resources.rids[p_params.context->dilated_motion_vectors.internalIndex];
 
 	dispatch_desc.commandList = nullptr;
-	dispatch_desc.color = FFXCommonContext::get_ffx_resource(&color, L"color");
-	dispatch_desc.depth = FFXCommonContext::get_ffx_resource(&depth, L"depth");
-	dispatch_desc.reconstructedPrevNearestDepth = FFXCommonContext::get_ffx_resource(&reconstructed_prev_nearest_depth, L"reconstructed_prev_nearest_depth");
-	dispatch_desc.dilatedDepth = FFXCommonContext::get_ffx_resource(&dilated_depth, L"dilated_depth");
-	dispatch_desc.dilatedMotionVectors = FFXCommonContext::get_ffx_resource(&dilated_motion_vectors, L"dilated_motion_vectors");
-	dispatch_desc.motionVectors = FFXCommonContext::get_ffx_resource(&velocity, L"velocity");
-	dispatch_desc.reactive = FFXCommonContext::get_ffx_resource(&reactive, L"reactive");
-	dispatch_desc.exposure = FFXCommonContext::get_ffx_resource(&exposure, L"exposure");
+	dispatch_desc.color = FFXCommon::get_resource_rd(&color, L"color");
+	dispatch_desc.depth = FFXCommon::get_resource_rd(&depth, L"depth");
+	dispatch_desc.reconstructedPrevNearestDepth = FFXCommon::get_resource_rd(&reconstructed_prev_nearest_depth, L"reconstructed_prev_nearest_depth");
+	dispatch_desc.dilatedDepth = FFXCommon::get_resource_rd(&dilated_depth, L"dilated_depth");
+	dispatch_desc.dilatedMotionVectors = FFXCommon::get_resource_rd(&dilated_motion_vectors, L"dilated_motion_vectors");
+	dispatch_desc.motionVectors = FFXCommon::get_resource_rd(&velocity, L"velocity");
+	dispatch_desc.reactive = FFXCommon::get_resource_rd(&reactive, L"reactive");
+	dispatch_desc.exposure = FFXCommon::get_resource_rd(&exposure, L"exposure");
 	dispatch_desc.transparencyAndComposition = {};
-	dispatch_desc.output = FFXCommonContext::get_ffx_resource(&output, L"output");
+	dispatch_desc.output = FFXCommon::get_resource_rd(&output, L"output");
 	dispatch_desc.jitterOffset.x = p_params.jitter.x;
 	dispatch_desc.jitterOffset.y = p_params.jitter.y;
 	dispatch_desc.motionVectorScale.x = float(p_params.internal_size.width);
