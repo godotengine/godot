@@ -2472,7 +2472,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RD::get_singleton()->draw_command_end_label();
 		} else if (scale_type == SCALE_FSR3) {
-			// TODO: Add FSR3 upscale
 			rb_data->ensure_fsr3_upscaler(fsr3_upscaler_effect);
 
 			RID exposure;
