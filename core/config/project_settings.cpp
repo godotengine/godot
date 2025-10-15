@@ -790,12 +790,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		resource_path = current_dir;
 		resource_path = resource_path.replace_char('\\', '/'); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
-		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
+		if (err == OK) {
 #ifdef OVERRIDE_ENABLED
-			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
-			if (!disable_override) {
-				_load_settings_text(current_dir.path_join("override.cfg"));
+			if (!p_ignore_override) {
+				// Optional, we don't mind if it fails.
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text(current_dir.path_join("override.cfg"));
+				}
 			}
 #endif // OVERRIDE_ENABLED
 			found = true;
