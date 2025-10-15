@@ -139,7 +139,7 @@ private:
 		int32_t section[4];
 		int32_t target[2];
 		uint32_t flags;
-		uint32_t pad;
+		float luminance_multiplier;
 		// Glow.
 		float glow_strength;
 		float glow_bloom;

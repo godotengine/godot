@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/callable_bind.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
