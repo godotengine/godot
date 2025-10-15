@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "core/string/ustring.h"
+#include "core/templates/bit_field.h"
+
 class RenderingShaderLibrary {
 public:
 	enum FeatureBits {
