@@ -123,12 +123,18 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
 		Array array = p_mesh->surface_get_arrays(surface_i);
 		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		const String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
 		String mat_name;
 		if (mat.is_valid()) {
 			mat_name = mat->get_name();
+			if (mat_name.is_empty()) {
+				mat_name = surface_name;
+			}
 		} else {
+			mat_name = surface_name;
 			// Assign default material when no material is assigned.
 			mat.instantiate();
+			mat->set_name(mat_name);
 		}
 		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
@@ -3931,6 +3937,10 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
+	if (!p_image->get_name().is_empty()) {
+		image_dict["name"] = p_image->get_name();
+	}
+
 	if (p_state->filename.to_lower().ends_with("gltf")) {
 		String relative_texture_dir = "textures";
 		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
@@ -4490,6 +4500,16 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+static inline void _set_material_texture_name(const Ref<Texture2D> &p_texture, const String &p_path, const String &p_mat_name, const String &p_suffix) {
+	if (p_texture->get_name().is_empty()) {
+		if (p_path.is_empty()) {
+			p_texture->set_name(p_mat_name + p_suffix);
+		} else {
+			p_texture->set_name(p_path.get_file().get_basename());
+		}
+	}
+}
+
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 	Array materials;
 	for (int32_t i = 0; i < p_state->materials.size(); i++) {
@@ -4499,8 +4519,15 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			materials.push_back(mat_dict);
 			continue;
 		}
-		if (!material->get_name().is_empty()) {
-			mat_dict["name"] = _gen_unique_name(p_state, material->get_name());
+		String mat_name = material->get_name();
+		if (mat_name.is_empty()) {
+			const String &mat_path = material->get_path();
+			if (!mat_path.is_empty() && !mat_path.contains("::")) {
+				mat_name = mat_path.get_file().get_basename();
+			}
+		}
+		if (!mat_name.is_empty()) {
+			mat_dict["name"] = _gen_unique_name(p_state, mat_name);
 		}
 
 		Ref<BaseMaterial3D> base_material = material;
@@ -4521,7 +4548,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 
 			if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-				albedo_texture->set_name(material->get_name() + "_albedo");
+				_set_material_texture_name(albedo_texture, albedo_texture->get_path(), mat_name, "_albedo");
 				gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			if (gltf_texture_index != -1) {
@@ -4556,6 +4583,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				int32_t height = 0;
 				int32_t width = 0;
 				Ref<Image> ao_image;
+				HashSet<String> common_paths; // For setting name
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
@@ -4566,6 +4594,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (ao_image->is_compressed()) {
 						ao_image->decompress();
+					}
+					if (!ao_texture->get_path().is_empty()) {
+						common_paths.insert(ao_texture->get_path());
 					}
 				}
 				Ref<Image> roughness_image;
@@ -4580,6 +4611,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					if (roughness_image->is_compressed()) {
 						roughness_image->decompress();
 					}
+					if (!roughness_texture->get_path().is_empty()) {
+						common_paths.insert(roughness_texture->get_path());
+					}
 				}
 				Ref<Image> metallness_image;
 				if (has_metalness) {
@@ -4592,6 +4626,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (metallness_image->is_compressed()) {
 						metallness_image->decompress();
+					}
+					if (!metallic_texture->get_path().is_empty()) {
+						common_paths.insert(metallic_texture->get_path());
 					}
 				}
 				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
@@ -4652,7 +4689,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				orm_texture->set_image(orm_image);
 				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
-					orm_texture->set_name(material->get_name() + "_orm");
+					// If they all share the same path, use it for the name.
+					const String path = common_paths.size() == 1 ? *common_paths.begin() : String();
+					_set_material_texture_name(orm_texture, path, mat_name, "_orm");
 					orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
 				if (has_ao) {
@@ -4677,9 +4716,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
+			String path;
 			{
 				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
+					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
 					if (img.is_valid()) {
@@ -4706,7 +4747,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
-				tex->set_name(material->get_name() + "_normal");
+				_set_material_texture_name(tex, path, mat_name, "_normal");
 				gltf_texture_index = _set_texture(p_state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			nt["scale"] = base_material->get_normal_scale();
@@ -4727,7 +4768,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
-				emission_texture->set_name(material->get_name() + "_emission");
+				_set_material_texture_name(emission_texture, emission_texture->get_path(), mat_name, "_emission");
 				gltf_texture_index = _set_texture(p_state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
@@ -6089,12 +6130,14 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	gltf_mesh.instantiate();
 	gltf_mesh->set_mesh(mesh);
 	gltf_mesh->set_original_name(csg->get_name());
+	const String unique_name = _gen_unique_name(p_state, csg->get_name());
+	gltf_mesh->set_name(unique_name);
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
 	p_gltf_node->transform = csg->get_transform();
 	p_gltf_node->set_original_name(csg->get_name());
-	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
+	p_gltf_node->set_name(unique_name);
 #endif // MODULE_CSG_ENABLED
 }
 
@@ -6139,11 +6182,13 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		gltf_mesh.instantiate();
 		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
+		const String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
+		gltf_mesh->set_name(unique_name);
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
 		new_gltf_node->transform = cell_xform * p_grid_map->get_transform();
 		new_gltf_node->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
+		new_gltf_node->set_name(unique_name);
 	}
 #endif // MODULE_GRIDMAP_ENABLED
 }
