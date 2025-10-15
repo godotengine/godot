@@ -48,10 +48,25 @@ public:
 		SCROLL_MODE_RESERVE,
 	};
 
+	enum ContentHAlign {
+		H_ALIGN_LEFT = 0,
+		H_ALIGN_CENTER = 1,
+		H_ALIGN_RIGHT = 2,
+	};
+
+	enum ContentVAlign {
+		V_ALIGN_TOP = 0,
+		V_ALIGN_CENTER = 1,
+		V_ALIGN_BOTTOM = 2,
+	};
+
 private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 	PanelContainer *focus_panel = nullptr;
+
+	ContentHAlign horizontal_content_align = H_ALIGN_LEFT;
+	ContentVAlign vertical_content_align = V_ALIGN_TOP;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
@@ -112,6 +127,12 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+
+	void set_horizontal_content_align(int p_align);
+	int get_horizontal_content_align() const;
+
+	void set_vertical_content_align(int p_align);
+	int get_vertical_content_align() const;
 
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;
