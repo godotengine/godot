@@ -4,6 +4,7 @@ import glob
 import math
 import os
 import re
+import signal
 import subprocess
 import sys
 import textwrap
@@ -26,6 +27,46 @@ compiler_version_cache = None
 _scu_folders = set()
 
 
+def _cleanup_syntax_cpp_files():
+    """
+    Remove all .syntax.cpp files
+    Safe to call multiple times.
+    """
+    try:
+        leftovers = []
+        for p in Path(base_folder).rglob("*.syntax.cpp"):
+            try:
+                os.remove(str(p))
+            except OSError:
+                leftovers.append(str(p))
+    except Exception:
+        pass
+
+
+def _register_syntax_cleanup():
+    """
+    Ensure cleanup is registered on normal exit and common interrupts.
+    """
+    # Run on interpreter exit
+    atexit.register(_cleanup_syntax_cpp_files)
+
+    # Also attempt cleanup on SIGINT/SIGTERM where possible
+    def _signal_handler(signum, frame):
+        # Defer cleanup to atexit; raising KeyboardInterrupt allows SCons to
+        # unwind and release file handles before we attempt deletion.
+        raise KeyboardInterrupt()
+
+    # On Windows, SIGTERM exists, SIGINT works for Ctrl+C
+    with contextlib.suppress(Exception):
+        signal.signal(signal.SIGINT, _signal_handler)
+    with contextlib.suppress(Exception):
+        signal.signal(signal.SIGTERM, _signal_handler)
+    # Windows-only: handle Ctrl+Break event as well
+    if hasattr(signal, "SIGBREAK"):
+        with contextlib.suppress(Exception):
+            signal.signal(signal.SIGBREAK, _signal_handler)
+
+
 def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
@@ -41,13 +82,83 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         if skip_gen_cpp and not allow_gen:
             files = [f for f in files if not str(f).endswith(".gen.cpp")]
 
+    # In syntax_only mode, exclude thirdparty files
+    if self.get("syntax_only", False):
+        files = [f for f in files if "thirdparty" not in str(f).replace("\\", "/")]
+
+    # In syntax_only mode, also find corresponding headers for cpp files
+    # so that each header is checked standalone
+    if self.get("syntax_only", False):
+        # If we got cpp files from a glob pattern, also look for headers in same directories
+        header_files = []
+        if files:
+            # Get unique directories from the files
+            dirs = set()
+            for file in files:
+                file_str = str(file)
+                if file_str.endswith(".cpp"):
+                    dirs.add(os.path.dirname(file_str))
+
+            # Look for .h files in those directories
+            for dir_path in dirs:
+                if dir_path:
+                    header_pattern = os.path.join(dir_path, "*.h")
+                else:
+                    header_pattern = "*.h"
+                header_files.extend(self.Glob(header_pattern))
+
+        files = list(files) + header_files
+
+        header_extensions = [".h"]
+        processed_files = []
+
+        for file in files:
+            file_str = str(file)
+            if any(file_str.endswith(ext) for ext in header_extensions):
+                # Generate a .syntax.cpp file for this header
+                syntax_cpp_path = file_str + ".syntax.cpp"
+                syntax_cpp_node = self.File(syntax_cpp_path)
+
+                # Create the dummy cpp file that just includes the header
+                def make_syntax_generator(header_file):
+                    def generate_syntax_cpp(target, source, env):
+                        header_path = str(header_file)
+                        try:
+                            rel_path = os.path.relpath(header_path, base_folder)
+                            rel_path = rel_path.replace("\\", "/")
+                        except ValueError:
+                            rel_path = header_path.replace("\\", "/")
+
+                        with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
+                            f.write(f"// Auto-generated syntax check file for {rel_path}\n")
+                            f.write(f'#include "{rel_path}"\n')
+                        return None
+
+                    return generate_syntax_cpp
+
+                self.Command(syntax_cpp_node, file, self.Run(make_syntax_generator(file)))
+                self.Clean(".", syntax_cpp_node)
+                processed_files.append(syntax_cpp_node)
+            else:
+                # Keep non-header files as-is
+                processed_files.append(file)
+
+        files = processed_files
+
     # Add each path as compiled Object following environment (self) configuration
     for file in files:
         obj = self.Object(file)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            # Silently skip duplicates in syntax_only mode to avoid spam
+            if not self.get("syntax_only", False):
+                print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue
         sources.append(obj)
+        # In syntax_only mode, collect objects in a global list for building
+        if self.get("syntax_only", False):
+            if not hasattr(self, "_syntax_check_objects"):
+                self._syntax_check_objects = []
+            self._syntax_check_objects.append(obj)
 
 
 def add_source_files_scu(self, sources, files, allow_gen=False):
@@ -585,18 +696,24 @@ def precious_program(env, program, sources, **args):
 
 
 def add_shared_library(env, name, sources, **args):
+    if env.get("syntax_only", False):
+        return []
     library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
 
 
 def add_library(env, name, sources, **args):
+    if env.get("syntax_only", False):
+        return []
     library = env.Library(name, sources, **args)
     env.NoCache(library)
     return library
 
 
 def add_program(env, name, sources, **args):
+    if env.get("syntax_only", False):
+        return []
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
