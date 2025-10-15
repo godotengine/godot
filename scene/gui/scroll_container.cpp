@@ -382,6 +382,54 @@ void ScrollContainer::_reposition_children() {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
 		r.position = r.position.floor();
+
+		{
+			float content_w = r.size.width;
+			float viewport_w = size.width;
+
+			int align_h = static_cast<int>(horizontal_content_align);
+
+			if (is_layout_rtl()) {
+				if (align_h == H_ALIGN_LEFT) {
+					align_h = H_ALIGN_RIGHT;
+				} else if (align_h == H_ALIGN_RIGHT) {
+					align_h = H_ALIGN_LEFT;
+				}
+			}
+
+			if (content_w < viewport_w) {
+				float extra = viewport_w - content_w;
+				if (align_h == H_ALIGN_CENTER) {
+					r.position.x += floorf(extra * 0.5f);
+				} else if (align_h == H_ALIGN_RIGHT) {
+					r.position.x += floorf(extra);
+				}
+			}
+		}
+
+		{
+			float content_h = r.size.height;
+			float viewport_h = size.y;
+
+			int align_v = static_cast<int>(vertical_content_align);
+
+			if (content_h < viewport_h) {
+				float extra = viewport_h - content_h;
+				if (align_v == V_ALIGN_CENTER) {
+					r.position.y += floorf(extra * 0.5f);
+				} else if (align_v == V_ALIGN_BOTTOM) {
+					r.position.y += floorf(extra);
+				}
+			}
+		}
+
+		if (h_scroll) {
+			r.position.x -= h_scroll->get_value();
+		}
+		if (v_scroll) {
+			r.position.y -= v_scroll->get_value();
+		}
+
 		fit_child_in_rect(c, r);
 	}
 
@@ -752,11 +800,28 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_focus_border", "draw"), &ScrollContainer::set_draw_focus_border);
 	ClassDB::bind_method(D_METHOD("get_draw_focus_border"), &ScrollContainer::get_draw_focus_border);
 
+	ClassDB::bind_method(D_METHOD("set_horizontal_content_align", "alignment"), &ScrollContainer::set_horizontal_content_align);
+	ClassDB::bind_method(D_METHOD("get_horizontal_content_align"), &ScrollContainer::get_horizontal_content_align);
+
+	ClassDB::bind_method(D_METHOD("set_vertical_content_align", "alignment"), &ScrollContainer::set_vertical_content_align);
+	ClassDB::bind_method(D_METHOD("get_vertical_content_align"), &ScrollContainer::get_vertical_content_align);
+
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentHAlign", "H_ALIGN_LEFT", H_ALIGN_LEFT, false);
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentHAlign", "H_ALIGN_CENTER", H_ALIGN_CENTER, false);
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentHAlign", "H_ALIGN_RIGHT", H_ALIGN_RIGHT, false);
+
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentVAlign", "V_ALIGN_TOP", V_ALIGN_TOP, false);
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentVAlign", "V_ALIGN_CENTER", V_ALIGN_CENTER, false);
+	ClassDB::bind_integer_constant("ScrollContainer", "ContentVAlign", "V_ALIGN_BOTTOM", V_ALIGN_BOTTOM, false);
+
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_focus_border"), "set_draw_focus_border", "get_draw_focus_border");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_content_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_horizontal_content_align", "get_horizontal_content_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_content_align", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_content_align", "get_vertical_content_align");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
@@ -823,4 +888,30 @@ ScrollContainer::ScrollContainer() {
 	deadzone = GLOBAL_GET_CACHED(int, "gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
+}
+
+void ScrollContainer::set_horizontal_content_align(int p_align) {
+	int clamped = CLAMP(p_align, 0, 2);
+	ContentHAlign new_align = static_cast<ContentHAlign>(clamped);
+	if (horizontal_content_align != new_align) {
+		horizontal_content_align = new_align;
+		queue_sort();
+	}
+}
+
+int ScrollContainer::get_horizontal_content_align() const {
+	return static_cast<int>(horizontal_content_align);
+}
+
+void ScrollContainer::set_vertical_content_align(int p_align) {
+	int clamped = CLAMP(p_align, 0, 2);
+	ContentVAlign new_align = static_cast<ContentVAlign>(clamped);
+	if (vertical_content_align != new_align) {
+		vertical_content_align = new_align;
+		queue_sort();
+	}
+}
+
+int ScrollContainer::get_vertical_content_align() const {
+	return static_cast<int>(vertical_content_align);
 }
