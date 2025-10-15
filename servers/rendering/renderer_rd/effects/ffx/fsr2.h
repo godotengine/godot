@@ -38,16 +38,15 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr2/fsr2_rcas_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr2/fsr2_reconstruct_previous_depth_pass.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ffx/fsr2/fsr2_tcr_autogen_pass.glsl.gen.h"
-
-#include "ffx_common.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "ffx_common.h"
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
 
 namespace RendererRD {
 class FSR2Context {
 public:
-	FFXCommonContext *ffx_common_context;
+	FFXCommon::Scratch scratch;
 	FfxFsr2Context fsr_context;
 	FfxFsr2ContextDescription fsr_desc;
 
@@ -91,5 +90,7 @@ private:
 		Fsr2AutogenReactivePassShaderRD autogen_reactive;
 		Fsr2TcrAutogenPassShaderRD tcr_autogen;
 	} shaders;
+
+	FFXCommon::Device device;
 };
 } //namespace RendererRD

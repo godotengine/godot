@@ -49,8 +49,7 @@ void FSR1Effect::ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) {
 }
 
 FSR1Effect::FSR1Effect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
-	FfxDeviceCapabilities &capabilities = device.capabilities;
+	FfxDeviceCapabilities capabilities = FFXCommon::get_device_capabilities();
 
 	String general_defines =
 			"\n#define FFX_GPU\n"
@@ -75,7 +74,7 @@ FSR1Effect::FSR1Effect() {
 		easu_modes_with_fp16.push_back("\n#define FFX_HALF 1\n");
 		easu_modes_with_fp16.push_back("\n#define FFX_HALF 1\n#define FFX_FSR1_OPTION_APPLY_RCAS 1\n");
 
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[FFX_FSR1_PASS_EASU];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR1_PASS_EASU];
 		pass.shader = &shaders.easu;
 		pass.shader->initialize(easu_modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -95,13 +94,13 @@ FSR1Effect::FSR1Effect() {
 		};
 
 		// EASU RCAS pass is a clone of the EASU pass with the RCAS variant.
-		FFXCommonContext::Pass &easu_rcas_pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[FFX_FSR1_PASS_EASU_RCAS];
+		FFXCommon::Pass &easu_rcas_pass = device.passes[FFX_FSR1_PASS_EASU_RCAS];
 		easu_rcas_pass = pass;
 		easu_rcas_pass.shader_variant = pass.shader_variant + 1;
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[FFX_FSR1_PASS_RCAS];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR1_PASS_RCAS];
 		pass.shader = &shaders.rcas;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -119,26 +118,28 @@ FSR1Effect::FSR1Effect() {
 			FfxResourceBinding{ 3000, 0, 0, L"cbFSR1" }
 		};
 	}
+
+	device.linear_clamp_sampler = FFXCommon::create_clamp_sampler(RD::SAMPLER_FILTER_LINEAR);
 }
 
 FSR1Effect::~FSR1Effect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
+	RD::get_singleton()->free_rid(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR1_PASS_COUNT; i++) {
-		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR1].passes[i].shader_version);
+		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }
 
-FSR1Context *FSR1Effect::create_context(Size2i p_internal_size, Size2i p_target_size, RD::DataFormat p_output_format) const {
+FSR1Context *FSR1Effect::create_context(Size2i p_internal_size, Size2i p_target_size, RD::DataFormat p_output_format) {
 	FSR1Context *context = memnew(RendererRD::FSR1Context);
 	context->fsr_desc.flags = FFX_FSR1_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR1_ENABLE_RCAS;
 	context->fsr_desc.maxRenderSize.width = p_internal_size.x;
 	context->fsr_desc.maxRenderSize.height = p_internal_size.y;
 	context->fsr_desc.displaySize.width = p_target_size.x;
 	context->fsr_desc.displaySize.height = p_target_size.y;
-	context->fsr_desc.outputFormat = FFXCommonContext::rd_format_to_ffx_surface_format(p_output_format);
+	context->fsr_desc.outputFormat = FFXCommon::rd_format_to_ffx_surface_format(p_output_format);
 
-	FFXCommonContext::get_singleton()->create_ffx_interface(&context->fsr_desc.backendInterface);
+	FFXCommon::create_ffx_interface(&context->fsr_desc.backendInterface, &context->scratch, &device);
 	FfxErrorCode result = ffxFsr1ContextCreate(&context->fsr_context, &context->fsr_desc);
 	if (result == FFX_OK) {
 		return context;
@@ -157,8 +158,8 @@ void FSR1Effect::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_sourc
 
 	FfxFsr1DispatchDescription dispatch_desc = {};
 	dispatch_desc.commandList = nullptr;
-	dispatch_desc.color = FFXCommonContext::get_resource_rd(&p_source_rd_texture, L"color");
-	dispatch_desc.output = FFXCommonContext::get_resource_rd(&p_destination_texture, L"output");
+	dispatch_desc.color = FFXCommon::get_resource_rd(&p_source_rd_texture, L"color");
+	dispatch_desc.output = FFXCommon::get_resource_rd(&p_destination_texture, L"output");
 	dispatch_desc.renderSize.width = internal_size.width;
 	dispatch_desc.renderSize.height = internal_size.height;
 	dispatch_desc.enableSharpening = (fsr_upscale_sharpness > 1e-6f);

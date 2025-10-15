@@ -45,8 +45,7 @@ FSR2Context::~FSR2Context() {
 }
 
 FSR2Effect::FSR2Effect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
-	FfxDeviceCapabilities &capabilities = device.capabilities;
+	FfxDeviceCapabilities capabilities = FFXCommon::get_device_capabilities();
 
 	String general_defines =
 			"\n#define FFX_GPU\n"
@@ -73,7 +72,7 @@ FSR2Effect::FSR2Effect() {
 	// error if the bindings do not match.
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_DEPTH_CLIP];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_DEPTH_CLIP];
 		pass.shader = &shaders.depth_clip;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -106,7 +105,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_RECONSTRUCT_PREVIOUS_DEPTH];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_RECONSTRUCT_PREVIOUS_DEPTH];
 		pass.shader = &shaders.reconstruct_previous_depth;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -136,7 +135,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_LOCK];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_LOCK];
 		pass.shader = &shaders.lock;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -165,7 +164,7 @@ FSR2Effect::FSR2Effect() {
 
 		// Workaround: Disable FP16 path for the accumulate pass on NVIDIA due to reduced occupancy and high VRAM throughput.
 		const bool fp16_path_supported = RD::get_singleton()->get_device_vendor_name() != "NVIDIA";
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_ACCUMULATE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_ACCUMULATE];
 		pass.shader = &shaders.accumulate;
 		pass.shader->initialize(accumulate_modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -200,13 +199,13 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		// Sharpen pass is a clone of the accumulate pass with the sharpening variant.
-		FFXCommonContext::Pass &sharpen_pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_ACCUMULATE_SHARPEN];
+		FFXCommon::Pass &sharpen_pass = device.passes[FFX_FSR2_PASS_ACCUMULATE_SHARPEN];
 		sharpen_pass = pass;
 		sharpen_pass.shader_variant = pass.shader_variant + 1;
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_RCAS];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_RCAS];
 		pass.shader = &shaders.rcas;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -227,7 +226,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_COMPUTE_LUMINANCE_PYRAMID];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_COMPUTE_LUMINANCE_PYRAMID];
 		pass.shader = &shaders.compute_luminance_pyramid;
 		pass.shader->initialize(modes_single, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -250,7 +249,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_GENERATE_REACTIVE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_GENERATE_REACTIVE];
 		pass.shader = &shaders.autogen_reactive;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -273,7 +272,7 @@ FSR2Effect::FSR2Effect() {
 	}
 
 	{
-		FFXCommonContext::Pass &pass = device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[FFX_FSR2_PASS_TCR_AUTOGENERATE];
+		FFXCommon::Pass &pass = device.passes[FFX_FSR2_PASS_TCR_AUTOGENERATE];
 		pass.shader = &shaders.tcr_autogen;
 		pass.shader->initialize(modes_with_fp16, general_defines);
 		pass.shader_version = pass.shader->version_create();
@@ -301,13 +300,17 @@ FSR2Effect::FSR2Effect() {
 			FfxResourceBinding{ 3001, 0, 0, L"cbGenerateReactive" }
 		};
 	}
+
+	device.linear_clamp_sampler = FFXCommon::create_clamp_sampler(RD::SAMPLER_FILTER_LINEAR);
+	device.point_clamp_sampler = FFXCommon::create_clamp_sampler(RD::SAMPLER_FILTER_NEAREST);
 }
 
 FSR2Effect::~FSR2Effect() {
-	FFXCommonContext::Device &device = FFXCommonContext::get_singleton()->device;
+	RD::get_singleton()->free_rid(device.point_clamp_sampler);
+	RD::get_singleton()->free_rid(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
-		device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader->version_free(device.effect_contexts[FFX_EFFECT_CONTEXT_FSR2].passes[i].shader_version);
+		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }
 
@@ -319,7 +322,7 @@ FSR2Context *FSR2Effect::create_context(Size2i p_internal_size, Size2i p_target_
 	context->fsr_desc.displaySize.width = p_target_size.x;
 	context->fsr_desc.displaySize.height = p_target_size.y;
 
-	FFXCommonContext::get_singleton()->create_ffx_interface(&context->fsr_desc.backendInterface);
+	FFXCommon::create_ffx_interface(&context->fsr_desc.backendInterface, &context->scratch, &device);
 	FfxErrorCode result = ffxFsr2ContextCreate(&context->fsr_context, &context->fsr_desc);
 	if (result == FFX_OK) {
 		return context;
@@ -339,13 +342,13 @@ void FSR2Effect::upscale(const Parameters &p_params) {
 	RID exposure = p_params.exposure;
 	RID output = p_params.output;
 	dispatch_desc.commandList = nullptr;
-	dispatch_desc.color = FFXCommonContext::get_resource_rd(&color, L"color");
-	dispatch_desc.depth = FFXCommonContext::get_resource_rd(&depth, L"depth");
-	dispatch_desc.motionVectors = FFXCommonContext::get_resource_rd(&velocity, L"velocity");
-	dispatch_desc.reactive = FFXCommonContext::get_resource_rd(&reactive, L"reactive");
-	dispatch_desc.exposure = FFXCommonContext::get_resource_rd(&exposure, L"exposure");
+	dispatch_desc.color = FFXCommon::get_resource_rd(&color, L"color");
+	dispatch_desc.depth = FFXCommon::get_resource_rd(&depth, L"depth");
+	dispatch_desc.motionVectors = FFXCommon::get_resource_rd(&velocity, L"velocity");
+	dispatch_desc.reactive = FFXCommon::get_resource_rd(&reactive, L"reactive");
+	dispatch_desc.exposure = FFXCommon::get_resource_rd(&exposure, L"exposure");
 	dispatch_desc.transparencyAndComposition = {};
-	dispatch_desc.output = FFXCommonContext::get_resource_rd(&output, L"output");
+	dispatch_desc.output = FFXCommon::get_resource_rd(&output, L"output");
 	dispatch_desc.jitterOffset.x = p_params.jitter.x;
 	dispatch_desc.jitterOffset.y = p_params.jitter.y;
 	dispatch_desc.motionVectorScale.x = float(p_params.internal_size.width);
