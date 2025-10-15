@@ -92,6 +92,7 @@ void SeparationRayShape3D::_bind_methods() {
 SeparationRayShape3D::SeparationRayShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
 	/* Code copied from setters to prevent the use of uninitialized variables */
+	set_use_shared_copy(false);
 	_update_shape();
 	emit_changed();
 }

@@ -153,6 +153,14 @@
 		</method>
 	</methods>
 	<members>
+		<member name="resource_shared_copy" type="bool" setter="set_use_shared_copy" getter="get_use_shared_copy" default="true">
+			Controls how resource is copied to a newly duplicated Node.
+			This option only affects internal resources, external resources (Saved as .tres, .res files, or embedded in other .tscn scene) will still use shared copy.
+			If [code]true[/code], uses a shared copy of the resource.
+			If [code]false[/code], uses a full copy of the resource.
+			[b]Note:[/b] Changing this property afterwards does not affect any resource duplicates before.
+			[b]Note:[/b] To have full copy of resources in instanced scenes, use [code]Local to Scene[/code] instead.
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" default="false">
 			If [code]true[/code], the resource is duplicated for each instance of all scenes using it. At run-time, the resource can be modified in one scene without affecting other instances (see [method PackedScene.instantiate]).
 			[b]Note:[/b] Changing this property at run-time has no effect on already created duplicate resources.
