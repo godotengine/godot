@@ -49,9 +49,11 @@ using namespace godot;
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/string/translation_server.h"
 #include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -66,11 +68,17 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -2252,6 +2260,8 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, Dictionary());
 
+	Dictionary out;
+#ifdef MODULE_FREETYPE_ENABLED
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size(fd, 16);
 	FontForSizeAdvanced *ffsd = nullptr;
@@ -2354,11 +2364,10 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 		}
 	}
 
-	Dictionary out;
 	for (const KeyValue<String, Dictionary> &E : names_for_lang) {
 		out[E.key] = E.value;
 	}
-
+#endif
 	return out;
 }
 
@@ -5722,6 +5731,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 			}
 
 			bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
 			if (fb_use_msdf) {
 				FontAdvanced *fd = _get_font_data(sysf.rid);
 				if (fd) {
@@ -5735,6 +5745,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 					}
 				}
 			}
+#endif
 
 			_font_set_antialiasing(sysf.rid, key.antialiasing);
 			_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
@@ -6734,6 +6745,11 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 						p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
 					}
 				}
+				bool zero_w = (p_sd->preserve_control) ? (p_sd->text[i] == 0x200B || p_sd->text[i] == 0xFEFF) : ((p_sd->text[i] >= 0x200B && p_sd->text[i] <= 0x200D) || p_sd->text[i] == 0x2060 || p_sd->text[i] == 0xFEFF);
+				if (zero_w) {
+					gl.index = 0;
+					gl.advance = 0.0;
+				}
 
 				p_sd->width += gl.advance;
 
@@ -6877,7 +6893,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 #endif
 
 			gl.index = glyph_info[i].codepoint;
-			bool zero_w = (p_sd->preserve_control) ? (p_sd->text[glyph_info[i].cluster] == 0x200B || p_sd->text[glyph_info[i].cluster] == 0xFEF) : (p_sd->text[glyph_info[i].cluster] >= 0x200B && p_sd->text[glyph_info[i].cluster] <= 0x200D) || p_sd->text[glyph_info[i].cluster] == 0x2060 || p_sd->text[glyph_info[i].cluster] == 0xFEFF;
+			bool zero_w = (p_sd->preserve_control) ? (p_sd->text[glyph_info[i].cluster] == 0x200B || p_sd->text[glyph_info[i].cluster] == 0xFEFF) : ((p_sd->text[glyph_info[i].cluster] >= 0x200B && p_sd->text[glyph_info[i].cluster] <= 0x200D) || p_sd->text[glyph_info[i].cluster] == 0x2060 || p_sd->text[glyph_info[i].cluster] == 0xFEFF);
 			if (zero_w) {
 				gl.index = 0;
 				gl.advance = 0.0;

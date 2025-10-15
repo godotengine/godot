@@ -32,7 +32,8 @@
 
 #include "editor/export/editor_export_plugin.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
-#include "servers/rendering/rendering_shader_container.h"
+
+class RenderingShaderContainerFormat;
 
 class ShaderBakerExportPluginPlatform : public RefCounted {
 	GDCLASS(ShaderBakerExportPluginPlatform, RefCounted);

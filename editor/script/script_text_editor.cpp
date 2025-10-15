@@ -490,7 +490,11 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 				params.push_back(s_param.to_float());
 			}
 			if (valid_floats && params.size() == 3) {
-				params.push_back(1.0);
+				if (fn_name == ".from_rgba8") {
+					params.push_back(255);
+				} else {
+					params.push_back(1.0);
+				}
 			}
 			if (valid_floats && params.size() == 4) {
 				has_added_color = true;

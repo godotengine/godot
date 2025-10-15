@@ -127,6 +127,8 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 	using RDC = RenderingDeviceCommons;
 	RDC::ShaderReflection reflection;
 
+	shader_name = p_shader_name.utf8();
+
 	const uint32_t spirv_size = p_spirv.size() + 0;
 	r_refl.resize(spirv_size);
 

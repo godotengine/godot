@@ -55,6 +55,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Timer;
 class Translation;
 class Tree;
 class VBoxContainer;

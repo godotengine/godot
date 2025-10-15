@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED
@@ -46,6 +47,7 @@
 #endif
 
 #ifdef GLES3_ENABLED
+#include "core/io/file_access.h"
 #include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"

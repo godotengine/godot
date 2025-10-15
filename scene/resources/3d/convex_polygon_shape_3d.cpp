@@ -31,7 +31,7 @@
 #include "convex_polygon_shape_3d.h"
 #include "core/math/convex_hull.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> poly_points = get_points();

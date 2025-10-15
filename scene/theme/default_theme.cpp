@@ -41,7 +41,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/theme/default_theme_icons.gen.h"
 #include "scene/theme/theme_db.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef BROTLI_ENABLED
 #include "scene/theme/default_font.gen.h"
@@ -993,6 +993,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "TabContainer", Color(0, 0, 0));
 	theme->set_color("drop_mark_color", "TabContainer", Color(1, 1, 1));
 
+	theme->set_color("icon_selected_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_hovered_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_unselected_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "TabContainer", Color(1, 1, 1, 1));
+
 	theme->set_constant("side_margin", "TabContainer", Math::round(8 * scale));
 	theme->set_constant("icon_separation", "TabContainer", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabContainer", 0);
@@ -1024,6 +1029,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "TabBar", control_font_disabled_color);
 	theme->set_color("font_outline_color", "TabBar", Color(0, 0, 0));
 	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
+
+	theme->set_color("icon_selected_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_hovered_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_unselected_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "TabBar", Color(1, 1, 1, 1));
 
 	theme->set_constant("h_separation", "TabBar", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabBar", 0);

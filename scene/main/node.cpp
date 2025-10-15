@@ -31,6 +31,13 @@
 #include "node.h"
 #include "node.compat.inc"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Mesh);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, DisplayServer);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Shader);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, OS);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
+
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
@@ -1643,22 +1650,29 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	data.children.insert(p_name, p_child);
 
 	p_child->data.internal_mode = p_internal_mode;
+
+	bool can_push_back = false;
 	switch (p_internal_mode) {
 		case INTERNAL_MODE_FRONT: {
 			p_child->data.index = data.internal_children_front_count_cache++;
+			// Safe to push back when ordinary and back children are empty.
+			can_push_back = (data.external_children_count_cache + data.internal_children_back_count_cache) == 0;
 		} break;
 		case INTERNAL_MODE_BACK: {
 			p_child->data.index = data.internal_children_back_count_cache++;
+			// Safe to push back when cache is valid.
+			can_push_back = true;
 		} break;
 		case INTERNAL_MODE_DISABLED: {
 			p_child->data.index = data.external_children_count_cache++;
+			// Safe to push back when back children are empty.
+			can_push_back = data.internal_children_back_count_cache == 0;
 		} break;
 	}
 
 	p_child->data.parent = this;
 
-	if (!data.children_cache_dirty && p_internal_mode == INTERNAL_MODE_DISABLED && data.internal_children_back_count_cache == 0) {
-		// Special case, also add to the cached children array since its cheap.
+	if (!data.children_cache_dirty && can_push_back) {
 		data.children_cache.push_back(p_child);
 	} else {
 		data.children_cache_dirty = true;
@@ -2082,6 +2096,14 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+void Node::set_unique_scene_id(int32_t p_unique_id) {
+	data.unique_scene_id = p_unique_id;
+}
+
+int32_t Node::get_unique_scene_id() const {
+	return data.unique_scene_id;
+}
+
 Window *Node::get_window() const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Viewport *vp = get_viewport();
@@ -2416,13 +2438,13 @@ NodePath Node::get_path() const {
 	const Node *n = this;
 
 	Vector<StringName> path;
+	path.resize(data.depth);
 
+	StringName *ptrw = path.ptrw();
 	while (n) {
-		path.push_back(n->get_name());
+		ptrw[n->data.depth - 1] = n->get_name();
 		n = n->data.parent;
 	}
-
-	path.reverse();
 
 	data.path_cache = memnew(NodePath(path, true));
 
@@ -3371,7 +3393,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 #ifdef DEBUG_ENABLED
 static HashMap<ObjectID, List<String>> _print_orphan_nodes_map;
 
-static void _print_orphan_nodes_routine(Object *p_obj) {
+static void _print_orphan_nodes_routine(Object *p_obj, void *p_user_data) {
 	Node *n = Object::cast_to<Node>(p_obj);
 	if (!n) {
 		return;
@@ -3415,7 +3437,7 @@ void Node::print_orphan_nodes() {
 	_print_orphan_nodes_map.clear();
 
 	// Collect and print information about orphan nodes.
-	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+	ObjectDB::debug_objects(_print_orphan_nodes_routine, nullptr);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
 		print_line(itos(E.key) + " - Stray Node: " + E.value.get(0) + " (Type: " + E.value.get(1) + ") (Source:" + E.value.get(2) + ")");
@@ -3432,7 +3454,7 @@ TypedArray<int> Node::get_orphan_node_ids() {
 	_print_orphan_nodes_map.clear();
 
 	// Collect and return information about orphan nodes.
-	ObjectDB::debug_objects(_print_orphan_nodes_routine);
+	ObjectDB::debug_objects(_print_orphan_nodes_routine, nullptr);
 
 	for (const KeyValue<ObjectID, List<String>> &E : _print_orphan_nodes_map) {
 		ret.push_back(E.key);

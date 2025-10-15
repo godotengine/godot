@@ -34,6 +34,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input_event_codec.h"
+#include "core/os/main_loop.h"
 
 #ifdef DEBUG_ENABLED
 HashMap<String, EmbeddedDebugger::ParseMessageFunc> EmbeddedDebugger::parse_message_handlers;
@@ -81,7 +82,7 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 Error EmbeddedDebugger::_msg_window_size(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'window_size' message.");
 	Size2i size = p_args[0];
-	ds->window_set_size(size);
+	ds->_window_set_size(size);
 	return OK;
 }
 

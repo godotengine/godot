@@ -34,7 +34,7 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 Callable NavigationObstacle2D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle2D::_navmesh_source_geometry_parser;
@@ -71,7 +71,7 @@ void NavigationObstacle2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,500,0.01,suffix:px"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
-	ADD_GROUP("NavigationMesh", "");
+	ADD_GROUP("NavigationPolygon", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "affect_navigation_mesh"), "set_affect_navigation_mesh", "get_affect_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "carve_navigation_mesh"), "set_carve_navigation_mesh", "get_carve_navigation_mesh");
 	ADD_GROUP("Avoidance", "");

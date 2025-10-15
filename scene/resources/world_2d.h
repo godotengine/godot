@@ -33,7 +33,7 @@
 #include "core/io/resource.h"
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 class VisibleOnScreenNotifier2D;

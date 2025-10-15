@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {

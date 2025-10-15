@@ -947,8 +947,7 @@ void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const 
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	Transform2D xform(p_rot, p_offset);
-	xform.scale_basis(p_scale);
+	Transform2D xform(p_rot, p_scale, 0.0, p_offset);
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, xform);
 }
 
@@ -1495,6 +1494,9 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
+
+	// Supply property explicitly; workaround for GH-111431 docs issue.
+	ADD_PROPERTY_DEFAULT("physics_interpolation_mode", PhysicsInterpolationMode::PHYSICS_INTERPOLATION_MODE_INHERIT);
 
 	ADD_SIGNAL(MethodInfo("draw"));
 	ADD_SIGNAL(MethodInfo("visibility_changed"));

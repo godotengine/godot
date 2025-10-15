@@ -39,6 +39,8 @@
 #import "godot_application_delegate.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
@@ -1166,7 +1168,7 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior

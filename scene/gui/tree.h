@@ -40,6 +40,7 @@ class LineEdit;
 class Popup;
 class PopupMenu;
 class TextEdit;
+class Timer;
 class Tree;
 class VScrollBar;
 
@@ -511,6 +512,7 @@ private:
 		int expand_ratio = 1;
 		bool expand = true;
 		bool clip_content = false;
+		String title_tooltip;
 		String title;
 		String xl_title;
 		HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_CENTER;
@@ -838,6 +840,9 @@ public:
 
 	void set_column_title(int p_column, const String &p_title);
 	String get_column_title(int p_column) const;
+
+	void set_column_title_tooltip_text(int p_column, const String &p_tooltip);
+	String get_column_title_tooltip_text(int p_column) const;
 
 	void set_column_title_alignment(int p_column, HorizontalAlignment p_alignment);
 	HorizontalAlignment get_column_title_alignment(int p_column) const;

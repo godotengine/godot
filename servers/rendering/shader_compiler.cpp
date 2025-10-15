@@ -1323,18 +1323,22 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
-							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
+							} else if (correct_texture_uniform && RS::get_singleton()->is_low_end()) {
 								// Texture function on low end hardware (i.e. OpenGL).
-								// We just need to know if the texture supports multiview.
 
 								if (shader->uniforms.has(texture_uniform)) {
 									const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+									if (actions.check_multiview_samplers) {
+										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+											multiview_uv_needed = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+											multiview_uv_needed = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+											multiview_uv_needed = true;
+										}
+									}
 									if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
-										multiview_uv_needed = true;
-									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-										multiview_uv_needed = true;
-									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-										multiview_uv_needed = true;
+										is_screen_texture = true;
 									}
 								}
 
@@ -1353,7 +1357,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
-						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
+						if (RS::get_singleton()->is_low_end()) {
+							code = "(" + code + " / vec4(vec3(scene_data_block.data.luminance_multiplier), 1.0))";
+						} else {
+							code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
+						}
 					}
 					if (is_normal_roughness_texture && !texture_func_returns_data) {
 						code = "normal_roughness_compatibility(" + code + ")";

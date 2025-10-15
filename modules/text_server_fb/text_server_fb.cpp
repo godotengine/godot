@@ -51,8 +51,10 @@ using namespace godot;
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -61,11 +63,17 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -4468,6 +4476,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				}
 
 				bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
 				if (fb_use_msdf) {
 					FontFallback *fd = _get_font_data(sysf.rid);
 					if (fd) {
@@ -4481,6 +4490,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 						}
 					}
 				}
+#endif
 
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);

@@ -64,7 +64,7 @@
 			</description>
 		</method>
 		<method name="get_queue">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns a list of the animation keys that are currently queued to play.
 			</description>
@@ -91,6 +91,17 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an animation is currently playing with a section.
+			</description>
+		</method>
+		<method name="is_animation_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the an animation is currently active. An animation is active if it was played by calling [method play] and was not finished yet, or was stopped by calling [method stop].
+				This can be used to check whether an animation is currently paused or stopped.
+				[codeblock]
+				var is_paused = not is_playing() and is_animation_active()
+				var is_stopped = not is_playing() and not is_animation_active()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -280,13 +291,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
+		<member name="assigned_animation" type="StringName" setter="set_assigned_animation" getter="get_assigned_animation">
 			If playing, the current animation's key, otherwise, the animation last played. When set, this changes the animation, but will not play it unless already playing. See also [member current_animation].
 		</member>
-		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
+		<member name="autoplay" type="StringName" setter="set_autoplay" getter="get_autoplay" default="&amp;&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>
-		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
+		<member name="current_animation" type="StringName" setter="set_current_animation" getter="get_current_animation" default="&amp;&quot;&quot;">
 			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
 			[b]Note:[/b] While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
@@ -332,7 +343,7 @@
 			</description>
 		</signal>
 		<signal name="current_animation_changed">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 				Emitted when [member current_animation] changes.
 			</description>

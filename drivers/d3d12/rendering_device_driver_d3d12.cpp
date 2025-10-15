@@ -4571,8 +4571,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			p_rect.position.y,
 			p_rect.position.x + p_rect.size.x,
 			p_rect.position.y + p_rect.size.y);
-	cmd_buf_info->render_pass_state.region_is_all = !(
-			cmd_buf_info->render_pass_state.region_rect.left == 0 &&
+	cmd_buf_info->render_pass_state.region_is_all = (cmd_buf_info->render_pass_state.region_rect.left == 0 &&
 			cmd_buf_info->render_pass_state.region_rect.top == 0 &&
 			cmd_buf_info->render_pass_state.region_rect.right == fb_info->size.x &&
 			cmd_buf_info->render_pass_state.region_rect.bottom == fb_info->size.y);

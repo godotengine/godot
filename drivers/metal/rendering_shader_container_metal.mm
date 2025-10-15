@@ -32,6 +32,7 @@
 
 #import "metal_utils.h"
 
+#import "core/io/file_access.h"
 #import "core/io/marshalls.h"
 #import "servers/rendering/rendering_device.h"
 

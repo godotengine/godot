@@ -2941,7 +2941,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			return hash_one_uint64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_one_uint64(hash_make_uint64_t(_get_obj().obj));
+			return hash_one_uint64(reinterpret_cast<uint64_t>(_get_obj().obj));
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();

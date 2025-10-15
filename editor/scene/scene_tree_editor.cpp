@@ -1444,7 +1444,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		if (auto_expand_selected) {
 			// Make visible when it's collapsed.
 			TreeItem *node = item->get_parent();
-			while (node && node != tree->get_root()) {
+			while (node) {
 				node->set_collapsed(false);
 				node = node->get_parent();
 			}

@@ -34,7 +34,7 @@
 #include "core/string/print_string.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 static const char *VISIBILITY_MASK_SHADER_CODE =
 		"shader_type spatial;\n"

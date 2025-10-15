@@ -936,6 +936,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
+		if (use_msaa && p_render_data->environment.is_valid() && RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes)) {
+			// Need to resolve depth texture for DOF when using MSAA.
+			scene_state.used_depth_texture = true;
+		}
+
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
 			// can't use our last two subpasses because we're reading from screen texture or depth texture
 			merge_transparent_pass = false;
@@ -1311,7 +1316,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// If we need extra effects we do this in its own pass
 		RENDER_TIMESTAMP("Tonemap");
 
-		_render_buffers_post_process_and_tonemap(p_render_data);
+		_render_buffers_post_process_and_tonemap(p_render_data, use_msaa);
 
 		RD::get_singleton()->draw_command_end_label(); // Post process pass
 	}
@@ -1941,12 +1946,12 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 #ifdef REAL_T_IS_DOUBLE
 			// Split the origin into two components, the float approximation and the missing precision.
 			// In the shader we will combine these back together to restore the lost precision.
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[12], &instance_data.model_precision[0]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[13], &instance_data.model_precision[1]);
-			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[14], &instance_data.model_precision[2]);
-			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.x, &instance_data.prev_transform[12], &instance_data.prev_model_precision[0]);
-			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.y, &instance_data.prev_transform[13], &instance_data.prev_model_precision[1]);
-			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.z, &instance_data.prev_transform[14], &instance_data.prev_model_precision[2]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[3], &instance_data.model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[7], &instance_data.model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[11], &instance_data.model_precision[2]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.x, &instance_data.prev_transform[3], &instance_data.prev_model_precision[0]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.y, &instance_data.prev_transform[7], &instance_data.prev_model_precision[1]);
+			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.z, &instance_data.prev_transform[11], &instance_data.prev_model_precision[2]);
 #endif
 		} else {
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
@@ -1976,7 +1981,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		// Sets lod_index and uses_lightmap at once.
-		element_info.value = uint32_t(surface->sort.sort_key2 & 0x01FF00000000);
+		element_info.value = uint32_t((surface->sort.sort_key2 & 0x01FF00000000) >> 32u);
 	}
 
 	if (p_update_buffer) {
@@ -3324,6 +3329,7 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 			light_projectors_get_filter() == RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC;
 
 	specialization.use_lightmap_bicubic_filter = lightmap_filter_bicubic_get();
+	specialization.use_material_debanding = material_use_debanding_get();
 	specialization.luminance_multiplier = 2.0f;
 	scene_shader.set_default_specialization(specialization);
 

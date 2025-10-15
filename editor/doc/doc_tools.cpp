@@ -382,7 +382,18 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	if (ClassDB::can_instantiate(p_class_name) && !ClassDB::is_virtual(p_class_name)) { // Keep this condition in sync with ClassDB::class_get_default_property_value.
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
-		// Cannot get default value of classes that can't be instantiated
+		// Cannot get default value of classes that can't be instantiated.
+
+		// Let's see if the abstract class has an explicitly set default.
+		const HashMap<StringName, Variant> *default_properties = ClassDB::default_values.getptr(p_class_name);
+		if (default_properties) {
+			const Variant *property = default_properties->getptr(p_property_name);
+			if (property) {
+				r_default_value_valid = true;
+				return *property;
+			}
+		}
+
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
 		for (const StringName &class_name : inheriting_classes) {

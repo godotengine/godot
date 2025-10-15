@@ -52,10 +52,21 @@ public:
 		CLOSE_BUTTON_MAX
 	};
 
+	enum DrawMode {
+		DRAW_NORMAL,
+		DRAW_PRESSED,
+		DRAW_HOVER,
+		DRAW_DISABLED,
+		DRAW_MAX,
+	};
+
 private:
 	struct Tab {
 		mutable RID accessibility_item_element;
 		mutable bool accessibility_item_dirty = true;
+
+		// Corresponds to color overrides for the DrawMode enum
+		Color font_color_overrides[DrawMode::DRAW_MAX] = { Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0) };
 
 		String text;
 		String tooltip;
@@ -156,6 +167,11 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
@@ -172,7 +188,7 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus);
 
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
@@ -222,6 +238,10 @@ public:
 
 	void set_tab_icon_max_width(int p_tab, int p_width);
 	int get_tab_icon_max_width(int p_tab) const;
+
+	void set_font_color_override_all(int p_tab, const Color &p_color);
+	void set_font_color_override(int p_tab, DrawMode p_draw_mode, const Color &p_color);
+	Color get_font_color_override(int p_tab, DrawMode p_draw_mode) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;

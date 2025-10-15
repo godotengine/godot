@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
@@ -513,9 +514,6 @@ public:
 	}
 	String validate_path(const String &p_path) const override;
 	Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;

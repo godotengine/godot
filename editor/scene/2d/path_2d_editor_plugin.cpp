@@ -38,6 +38,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/mesh.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {

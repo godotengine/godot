@@ -29,8 +29,6 @@ CastConvexVsTriangles::CastConvexVsTriangles(const ShapeCast &inShapeCast, const
 
 void CastConvexVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle
 	Vec3 v0 = mScale * inV0;
 	Vec3 v1 = mScale * inV1;

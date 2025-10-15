@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "scene/main/timer.h"
+#include "scene/resources/mesh.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/themes/editor_scale.h"

@@ -36,7 +36,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tree.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_theme, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 	updating = true;

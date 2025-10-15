@@ -33,7 +33,7 @@
 #include "../../openxr_api.h"
 #include "core/config/project_settings.h"
 #include "openxr_spatial_entity_extension.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationQrCode

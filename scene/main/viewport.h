@@ -32,6 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "servers/display/display_server.h"
 
 #ifndef _3D_DISABLED
 class Camera3D;
@@ -260,11 +261,8 @@ private:
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-	Rect2 last_vp_rect;
-
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
-	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
@@ -534,13 +532,6 @@ public:
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
-#if DEBUG_ENABLED
-	void enable_camera_2d_override(bool p_enable);
-	bool is_camera_2d_override_enabled() const;
-	Camera2D *get_overridden_camera_2d() const;
-	Camera2D *get_override_camera_2d() const;
-#endif // DEBUG_ENABLED
-
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
 
@@ -766,11 +757,18 @@ private:
 
 	friend class Camera2D; // Needs _camera_2d_set
 	Camera2D *camera_2d = nullptr;
+	void _camera_2d_set(Camera2D *p_camera_2d);
 #if DEBUG_ENABLED
 	CameraOverride<Camera2D> camera_2d_override;
-#endif // DEBUG_ENABLED
-	void _camera_2d_set(Camera2D *p_camera_2d);
 
+public:
+	void enable_camera_2d_override(bool p_enable);
+	bool is_camera_2d_override_enabled() const;
+	Camera2D *get_overridden_camera_2d() const;
+	Camera2D *get_override_camera_2d() const;
+#endif // DEBUG_ENABLED
+
+private:
 #ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
@@ -791,7 +789,9 @@ public:
 #ifndef _3D_DISABLED
 private:
 	// 3D audio, camera, physics, and world.
+#ifndef XR_DISABLED
 	bool use_xr = false;
+#endif // XR_DISABLED
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
@@ -849,8 +849,10 @@ public:
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 
+#ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 	Viewport();

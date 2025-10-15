@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
+#include "servers/rendering/rendering_server.h"
 
 class BitMap;
 

@@ -51,8 +51,8 @@ class Array {
 
 public:
 	struct ConstIterator {
-		_FORCE_INLINE_ const Variant &operator*() const;
-		_FORCE_INLINE_ const Variant *operator->() const;
+		_FORCE_INLINE_ const Variant &operator*() const { return *element_ptr; }
+		_FORCE_INLINE_ const Variant *operator->() const { return element_ptr; }
 
 		_FORCE_INLINE_ ConstIterator &operator++();
 		_FORCE_INLINE_ ConstIterator &operator--();
@@ -60,20 +60,15 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
+		ConstIterator() = default;
+
 		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr) :
 				element_ptr(p_element_ptr) {}
-		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_other) :
-				element_ptr(p_other.element_ptr) {}
-
-		_FORCE_INLINE_ ConstIterator &operator=(const ConstIterator &p_other) {
-			element_ptr = p_other.element_ptr;
-			return *this;
-		}
 
 	private:
 		const Variant *element_ptr = nullptr;
 	};
+	static_assert(std::is_trivially_copyable_v<ConstIterator>, "ConstIterator must be trivially copyable");
 
 	struct Iterator {
 		_FORCE_INLINE_ Variant &operator*() const;
@@ -85,26 +80,18 @@ public:
 		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
+		_FORCE_INLINE_ operator ConstIterator() const { return ConstIterator(element_ptr); }
+
+		Iterator() = default;
+
 		_FORCE_INLINE_ Iterator(Variant *p_element_ptr, Variant *p_read_only = nullptr) :
 				element_ptr(p_element_ptr), read_only(p_read_only) {}
-		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_other) :
-				element_ptr(p_other.element_ptr), read_only(p_other.read_only) {}
-
-		_FORCE_INLINE_ Iterator &operator=(const Iterator &p_other) {
-			element_ptr = p_other.element_ptr;
-			read_only = p_other.read_only;
-			return *this;
-		}
-
-		operator ConstIterator() const {
-			return ConstIterator(element_ptr);
-		}
 
 	private:
 		Variant *element_ptr = nullptr;
 		Variant *read_only = nullptr;
 	};
+	static_assert(std::is_trivially_copyable_v<Iterator>, "Iterator must be trivially copyable");
 
 	Iterator begin();
 	Iterator end();

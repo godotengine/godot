@@ -33,6 +33,7 @@
 #define MINIMP3_NO_STDIO
 
 #include "audio_stream_mp3.h"
+#include "core/io/file_access.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {

@@ -884,12 +884,9 @@ Vector<Variant> varray(VarArgs... p_args) {
 	return Vector<Variant>{ p_args... };
 }
 
-struct VariantHasher {
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
-struct VariantComparator {
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
+template <>
+struct HashMapComparatorDefault<Variant> {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 struct StringLikeVariantComparator {
@@ -972,14 +969,6 @@ Array::Iterator &Array::Iterator::operator++() {
 Array::Iterator &Array::Iterator::operator--() {
 	element_ptr--;
 	return *this;
-}
-
-const Variant &Array::ConstIterator::operator*() const {
-	return *element_ptr;
-}
-
-const Variant *Array::ConstIterator::operator->() const {
-	return element_ptr;
 }
 
 Array::ConstIterator &Array::ConstIterator::operator++() {

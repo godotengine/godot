@@ -61,16 +61,17 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
@@ -184,11 +185,11 @@
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifdef ANDROID_ENABLED
@@ -526,6 +527,7 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	RS::get_singleton()->light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	RS::get_singleton()->lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
+	RS::get_singleton()->material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
 
 	SceneTree *tree = get_tree();
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
@@ -680,10 +682,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), _get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), _get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), _get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
-
-		if (EditorDebuggerNode::get_singleton()->is_visible()) {
-			bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-		}
 
 		_update_renderer_color();
 	}
@@ -980,6 +978,7 @@ void EditorNode::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog")) {
 				FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+				FileDialog::set_default_display_mode(EDITOR_GET("filesystem/file_dialog/display_mode"));
 				EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 			}
@@ -4065,6 +4064,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	Ref<Script> scr; // We need to save it for creating "ep" below.
 
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
+	EditorPlugin *ep = nullptr;
 	if (script_path.length() > 0) {
 		script_path = addon_path.get_base_dir().path_join(script_path);
 		// We should not use the cached version on startup to prevent a script reload
@@ -4099,10 +4099,15 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. Script is not in tool mode."), script_path));
 			return;
 		}
+
+		Object *obj = ClassDB::instantiate(scr->get_instance_base_type());
+		ep = Object::cast_to<EditorPlugin>(obj);
+		ERR_FAIL_NULL(ep);
+		ep->set_script(scr);
+	} else {
+		ep = memnew(EditorPlugin);
 	}
 
-	EditorPlugin *ep = memnew(EditorPlugin);
-	ep->set_script(scr);
 	ep->set_plugin_version(plugin_version);
 	addon_name_to_plugin[addon_path] = ep;
 	add_editor_plugin(ep, p_config_changed);
@@ -7703,6 +7708,8 @@ EditorNode::EditorNode() {
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
 	}
 
+	FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	FileDialog::set_default_display_mode(EDITOR_GET("filesystem/file_dialog/display_mode"));
 	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
@@ -8463,7 +8470,7 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Node,History");
 
 	int hsplits[] = { 0, 270, -270, 0 };
-	DEV_ASSERT((int)std::size(hsplits) == editor_dock_manager->get_hsplit_count());
+	DEV_ASSERT((int)std_size(hsplits) == editor_dock_manager->get_hsplit_count());
 	for (int i = 0; i < editor_dock_manager->get_hsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
 	}

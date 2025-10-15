@@ -38,7 +38,7 @@
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/server_wrap_mt_common.h"
 
 class RenderingServerDefault : public RenderingServer {
@@ -124,8 +124,6 @@ public:
 #ifdef DEBUG_ENABLED
 #define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
-
-#include "servers/server_wrap_mt_common.h"
 
 	/* TEXTURE API */
 
@@ -695,7 +693,10 @@ public:
 
 	FUNCRIDSPLIT(viewport)
 
+#ifndef XR_DISABLED
 	FUNC2(viewport_set_use_xr, RID, bool)
+#endif // XR_DISABLED
+
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
@@ -855,6 +856,7 @@ public:
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
+	FUNC1(material_set_use_debanding, bool);
 
 	/* CAMERA ATTRIBUTES */
 

@@ -36,7 +36,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "speechd-so_wrap.h"

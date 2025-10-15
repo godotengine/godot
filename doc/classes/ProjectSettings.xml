@@ -307,6 +307,9 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/disable_project_settings_override" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables loading of project settings overrides (file defined in [member application/config/project_settings_override] and [code]res://override.cfg[/code]) and related CLI arguments.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>
@@ -1283,6 +1286,21 @@
 		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the end position of a [Control] (e.g. last item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_END] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the selected file in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_find" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open file filter in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus path edit field in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to focus path edit field in [FileDialog].
 		</member>
 		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to refresh the contents of the current directory of a [FileDialog].
@@ -2767,9 +2785,9 @@
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member rendering/viewport/hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member rendering/viewport/hdr_2d] is [code]true[/code], debanding will affect all 2D and 3D rendering, including canvas items.
+			If [code]true[/code], uses a fast dithering filter just before transforming floating point color values to integer color values to make banding significantly less visible. Debanding is applied at different steps of the rendering process depending on the rendering method and [member rendering/viewport/hdr_2d] setting.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
-			[b]Note:[/b] This property is only read when the project starts. To set debanding at runtime, set [member Viewport.use_debanding] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_use_debanding].
+			[b]Note:[/b] This property is only read when the project starts and configures [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding] of the root [Viewport]. When [member rendering/viewport/hdr_2d] is disabled, you should additionally set the [member Viewport.use_debanding] of other viewports in your project. To set debanding at run-time, the property that should be set depends on the renderer: Forward+ only uses [member Viewport.use_debanding] and Mobile uses both [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables temporal antialiasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -3048,19 +3066,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.

@@ -32,8 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/remote_debugger.h"
-#include "debug_adapter_protocol.h"
-#include "debug_adapter_types.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 
 struct DAPeer;
 class DebugAdapterProtocol;

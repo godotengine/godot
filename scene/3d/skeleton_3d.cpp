@@ -317,11 +317,11 @@ void Skeleton3D::_notification(int p_what) {
 			Bone *bonesptr = bones.ptr();
 			int len = bones.size();
 
-			thread_local LocalVector<bool> bone_global_pose_dirty_backup;
+			LocalVector<bool> bone_global_pose_dirty_backup;
 
 			// Process modifiers.
 
-			thread_local LocalVector<BonePoseBackup> bones_backup;
+			LocalVector<BonePoseBackup> bones_backup;
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
 				bones_backup.resize(bones.size());

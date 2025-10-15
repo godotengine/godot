@@ -66,7 +66,7 @@ SSEffects::SSEffects() {
 		ss_effects.downsample_shader_version = ss_effects.downsample_shader.version_create();
 
 		for (int i = 0; i < SS_EFFECTS_MAX; i++) {
-			ss_effects.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ss_effects.downsample_shader.version_get_shader(ss_effects.downsample_shader_version, i));
+			ss_effects.pipelines[i].create_compute_pipeline(ss_effects.downsample_shader.version_get_shader(ss_effects.downsample_shader_version, i));
 		}
 
 		ss_effects.gather_constants_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SSEffectsGatherConstants));
@@ -112,7 +112,7 @@ SSEffects::SSEffects() {
 		ssil.gather_shader_version = ssil.gather_shader.version_create();
 
 		for (int i = SSIL_GATHER; i <= SSIL_GATHER_ADAPTIVE; i++) {
-			ssil.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssil.gather_shader.version_get_shader(ssil.gather_shader_version, i));
+			ssil.pipelines[i].create_compute_pipeline(ssil.gather_shader.version_get_shader(ssil.gather_shader_version, i));
 		}
 		ssil.projection_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SSILProjectionUniforms));
 	}
@@ -128,7 +128,7 @@ SSEffects::SSEffects() {
 		ssil.importance_map_shader_version = ssil.importance_map_shader.version_create();
 
 		for (int i = SSIL_GENERATE_IMPORTANCE_MAP; i <= SSIL_PROCESS_IMPORTANCE_MAPB; i++) {
-			ssil.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssil.importance_map_shader.version_get_shader(ssil.importance_map_shader_version, i - SSIL_GENERATE_IMPORTANCE_MAP));
+			ssil.pipelines[i].create_compute_pipeline(ssil.importance_map_shader.version_get_shader(ssil.importance_map_shader_version, i - SSIL_GENERATE_IMPORTANCE_MAP));
 		}
 		ssil.importance_map_load_counter = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t));
 		int zero[1] = { 0 };
@@ -157,7 +157,7 @@ SSEffects::SSEffects() {
 
 		ssil.blur_shader_version = ssil.blur_shader.version_create();
 		for (int i = SSIL_BLUR_PASS; i <= SSIL_BLUR_PASS_WIDE; i++) {
-			ssil.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssil.blur_shader.version_get_shader(ssil.blur_shader_version, i - SSIL_BLUR_PASS));
+			ssil.pipelines[i].create_compute_pipeline(ssil.blur_shader.version_get_shader(ssil.blur_shader_version, i - SSIL_BLUR_PASS));
 		}
 	}
 
@@ -171,7 +171,7 @@ SSEffects::SSEffects() {
 
 		ssil.interleave_shader_version = ssil.interleave_shader.version_create();
 		for (int i = SSIL_INTERLEAVE; i <= SSIL_INTERLEAVE_HALF; i++) {
-			ssil.pipelines[i] = RD::get_singleton()->compute_pipeline_create(ssil.interleave_shader.version_get_shader(ssil.interleave_shader_version, i - SSIL_INTERLEAVE));
+			ssil.pipelines[i].create_compute_pipeline(ssil.interleave_shader.version_get_shader(ssil.interleave_shader_version, i - SSIL_INTERLEAVE));
 		}
 	}
 
@@ -201,7 +201,7 @@ SSEffects::SSEffects() {
 			ssao.gather_shader_version = ssao.gather_shader.version_create();
 
 			for (int i = 0; i <= SSAO_GATHER_ADAPTIVE; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.gather_shader.version_get_shader(ssao.gather_shader_version, i));
+				ssao.pipelines[pipeline].create_compute_pipeline(ssao.gather_shader.version_get_shader(ssao.gather_shader_version, i));
 				pipeline++;
 			}
 		}
@@ -217,7 +217,7 @@ SSEffects::SSEffects() {
 			ssao.importance_map_shader_version = ssao.importance_map_shader.version_create();
 
 			for (int i = SSAO_GENERATE_IMPORTANCE_MAP; i <= SSAO_PROCESS_IMPORTANCE_MAPB; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, i - SSAO_GENERATE_IMPORTANCE_MAP));
+				ssao.pipelines[pipeline].create_compute_pipeline(ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, i - SSAO_GENERATE_IMPORTANCE_MAP));
 
 				pipeline++;
 			}
@@ -250,7 +250,7 @@ SSEffects::SSEffects() {
 			ssao.blur_shader_version = ssao.blur_shader.version_create();
 
 			for (int i = SSAO_BLUR_PASS; i <= SSAO_BLUR_PASS_WIDE; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.blur_shader.version_get_shader(ssao.blur_shader_version, i - SSAO_BLUR_PASS));
+				ssao.pipelines[pipeline].create_compute_pipeline(ssao.blur_shader.version_get_shader(ssao.blur_shader_version, i - SSAO_BLUR_PASS));
 
 				pipeline++;
 			}
@@ -266,8 +266,7 @@ SSEffects::SSEffects() {
 
 			ssao.interleave_shader_version = ssao.interleave_shader.version_create();
 			for (int i = SSAO_INTERLEAVE; i <= SSAO_INTERLEAVE_HALF; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, i - SSAO_INTERLEAVE));
-				RD::get_singleton()->set_resource_name(ssao.pipelines[pipeline], "Interleave Pipeline " + itos(i));
+				ssao.pipelines[pipeline].create_compute_pipeline(ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, i - SSAO_INTERLEAVE));
 				pipeline++;
 			}
 		}
@@ -300,7 +299,7 @@ SSEffects::SSEffects() {
 
 			for (int v = 0; v < SSR_VARIATIONS; v++) {
 				specialization_constants.ptrw()[0].bool_value = (v & SSR_MULTIVIEW) ? true : false;
-				ssr_scale.pipelines[v] = RD::get_singleton()->compute_pipeline_create(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), specialization_constants);
+				ssr_scale.pipelines[v].create_compute_pipeline(ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), specialization_constants);
 			}
 		}
 
@@ -315,7 +314,7 @@ SSEffects::SSEffects() {
 			for (int v = 0; v < SSR_VARIATIONS; v++) {
 				specialization_constants.ptrw()[0].bool_value = (v & SSR_MULTIVIEW) ? true : false;
 				for (int i = 0; i < SCREEN_SPACE_REFLECTION_MAX; i++) {
-					ssr.pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(ssr.shader.version_get_shader(ssr.shader_version, i), specialization_constants);
+					ssr.pipelines[v][i].create_compute_pipeline(ssr.shader.version_get_shader(ssr.shader_version, i), specialization_constants);
 				}
 			}
 		}
@@ -331,7 +330,7 @@ SSEffects::SSEffects() {
 			for (int v = 0; v < SSR_VARIATIONS; v++) {
 				specialization_constants.ptrw()[0].bool_value = (v & SSR_MULTIVIEW) ? true : false;
 				for (int i = 0; i < SCREEN_SPACE_REFLECTION_FILTER_MAX; i++) {
-					ssr_filter.pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(ssr_filter.shader.version_get_shader(ssr_filter.shader_version, i), specialization_constants);
+					ssr_filter.pipelines[v][i].create_compute_pipeline(ssr_filter.shader.version_get_shader(ssr_filter.shader_version, i), specialization_constants);
 				}
 			}
 		}
@@ -352,8 +351,8 @@ SSEffects::SSEffects() {
 
 		sss.shader_version = sss.shader.version_create();
 
-		for (int i = 0; i < sss_modes.size(); i++) {
-			sss.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sss.shader.version_get_shader(sss.shader_version, i));
+		for (int i = 0; i < SUBSURFACE_SCATTERING_MODE_MAX; i++) {
+			sss.pipelines[i].create_compute_pipeline(sss.shader.version_get_shader(sss.shader_version, i));
 		}
 	}
 }
@@ -361,6 +360,15 @@ SSEffects::SSEffects() {
 SSEffects::~SSEffects() {
 	{
 		// Cleanup SS Reflections
+		for (int v = 0; v < SSR_VARIATIONS; v++) {
+			for (int i = 0; i < SCREEN_SPACE_REFLECTION_FILTER_MAX; i++) {
+				ssr.pipelines[v][i].free();
+				ssr_filter.pipelines[v][i].free();
+			}
+
+			ssr_scale.pipelines[v].free();
+		}
+
 		ssr.shader.version_free(ssr.shader_version);
 		ssr_filter.shader.version_free(ssr_filter.shader_version);
 		ssr_scale.shader.version_free(ssr_scale.shader_version);
@@ -372,6 +380,10 @@ SSEffects::~SSEffects() {
 
 	{
 		// Cleanup SS downsampler
+		for (int i = 0; i < SS_EFFECTS_MAX; i++) {
+			ss_effects.pipelines[i].free();
+		}
+
 		ss_effects.downsample_shader.version_free(ss_effects.downsample_shader_version);
 
 		RD::get_singleton()->free_rid(ss_effects.mirror_sampler);
@@ -380,6 +392,10 @@ SSEffects::~SSEffects() {
 
 	{
 		// Cleanup SSIL
+		for (int i = 0; i < SSIL_MAX; i++) {
+			ssil.pipelines[i].free();
+		}
+
 		ssil.blur_shader.version_free(ssil.blur_shader_version);
 		ssil.gather_shader.version_free(ssil.gather_shader_version);
 		ssil.interleave_shader.version_free(ssil.interleave_shader_version);
@@ -391,6 +407,10 @@ SSEffects::~SSEffects() {
 
 	{
 		// Cleanup SSAO
+		for (int i = 0; i < SSAO_MAX; i++) {
+			ssao.pipelines[i].free();
+		}
+
 		ssao.blur_shader.version_free(ssao.blur_shader_version);
 		ssao.gather_shader.version_free(ssao.gather_shader_version);
 		ssao.interleave_shader.version_free(ssao.interleave_shader_version);
@@ -401,6 +421,10 @@ SSEffects::~SSEffects() {
 
 	{
 		// Cleanup Subsurface scattering
+		for (int i = 0; i < SUBSURFACE_SCATTERING_MODE_MAX; i++) {
+			sss.pipelines[i].free();
+		}
+
 		sss.shader.version_free(sss.shader_version);
 	}
 
@@ -512,7 +536,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	RD::Uniform u_depth_buffer(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, depth_texture }));
 	RD::Uniform u_depth_mipmap(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ depth_mipmap }));
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ss_effects.pipelines[downsample_mode]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ss_effects.pipelines[downsample_mode].get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_depth_buffer), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_depth_mipmap), 1);
 	if (use_mips) {
@@ -791,7 +815,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			ssil.importance_map_push_constant.intensity = p_settings.intensity * Math::PI;
 
 			//base pass
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER_BASE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER_BASE].get_rid());
 			gather_ssil(compute_list, deinterleaved_pong_slices, edges_slices, p_settings, true, gather_uniform_set, importance_map_uniform_set, projection_uniform_set);
 
 			//generate importance map
@@ -799,7 +823,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::Uniform u_ssil_pong_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, deinterleaved_pong }));
 			RD::Uniform u_importance_map(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ importance_map }));
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GENERATE_IMPORTANCE_MAP]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GENERATE_IMPORTANCE_MAP].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(gen_imp_shader, 0, u_ssil_pong_with_sampler), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(gen_imp_shader, 1, u_importance_map), 1);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.importance_map_push_constant, sizeof(SSILImportanceMapPushConstant));
@@ -811,7 +835,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::Uniform u_importance_map_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, importance_map }));
 			RD::Uniform u_importance_map_pong(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ importance_pong }));
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_PROCESS_IMPORTANCE_MAPA]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_PROCESS_IMPORTANCE_MAPA].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_a, 0, u_importance_map_with_sampler), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_a, 1, u_importance_map_pong), 1);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.importance_map_push_constant, sizeof(SSILImportanceMapPushConstant));
@@ -822,7 +846,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RID proc_imp_shader_b = ssil.importance_map_shader.version_get_shader(ssil.importance_map_shader_version, 2);
 			RD::Uniform u_importance_map_pong_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, importance_pong }));
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_PROCESS_IMPORTANCE_MAPB]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_PROCESS_IMPORTANCE_MAPB].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_b, 0, u_importance_map_pong_with_sampler), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_b, 1, u_importance_map), 1);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, ssil.counter_uniform_set, 2);
@@ -832,9 +856,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 			RD::get_singleton()->draw_command_end_label(); // Importance Map
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER_ADAPTIVE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER_ADAPTIVE].get_rid());
 		} else {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER].get_rid());
 		}
 
 		gather_ssil(compute_list, deinterleaved_slices, edges_slices, p_settings, false, gather_uniform_set, importance_map_uniform_set, projection_uniform_set);
@@ -867,7 +891,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 					continue;
 				}
 
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_pipeline]);
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_pipeline].get_rid());
 				if (pass % 2 == 0) {
 					if (ssil_quality == RS::ENV_SSIL_QUALITY_VERY_LOW) {
 						RD::Uniform u_ssil_slice(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, deinterleaved_slices[i] }));
@@ -926,7 +950,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 		shader = ssil.interleave_shader.version_get_shader(ssil.interleave_shader_version, 0);
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[interleave_pipeline]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[interleave_pipeline].get_rid());
 
 		RID final = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_FINAL, p_view, 0);
 		RD::Uniform u_destination(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ final }));
@@ -1175,12 +1199,12 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			ssao.importance_map_push_constant.power = p_settings.power;
 
 			//base pass
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_BASE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_BASE].get_rid());
 			gather_ssao(compute_list, ao_pong_slices, p_settings, true, gather_uniform_set, RID());
 
 			//generate importance map
 			RID gen_imp_shader = ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, 0);
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GENERATE_IMPORTANCE_MAP]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GENERATE_IMPORTANCE_MAP].get_rid());
 
 			RD::Uniform u_ao_pong_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, ao_pong }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(gen_imp_shader, 0, u_ao_pong_with_sampler), 0);
@@ -1194,7 +1218,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 
 			//process importance map A
 			RID proc_imp_shader_a = ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, 1);
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_PROCESS_IMPORTANCE_MAPA]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_PROCESS_IMPORTANCE_MAPA].get_rid());
 
 			RD::Uniform u_importance_map_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, importance_map }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_a, 0, u_importance_map_with_sampler), 0);
@@ -1208,7 +1232,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 
 			//process Importance Map B
 			RID proc_imp_shader_b = ssao.importance_map_shader.version_get_shader(ssao.importance_map_shader_version, 2);
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_PROCESS_IMPORTANCE_MAPB]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_PROCESS_IMPORTANCE_MAPB].get_rid());
 
 			RD::Uniform u_importance_map_pong_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, importance_pong }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(proc_imp_shader_b, 0, u_importance_map_pong_with_sampler), 0);
@@ -1219,10 +1243,10 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssao_buffers.half_buffer_width, p_ssao_buffers.half_buffer_height, 1);
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_ADAPTIVE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER_ADAPTIVE].get_rid());
 			RD::get_singleton()->draw_command_end_label(); // Importance Map
 		} else {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_GATHER].get_rid());
 		}
 
 		gather_ssao(compute_list, ao_deinterleaved_slices, p_settings, false, gather_uniform_set, importance_map_uniform_set);
@@ -1258,7 +1282,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 				}
 
 				RID blur_shader = ssao.blur_shader.version_get_shader(ssao.blur_shader_version, blur_pipeline - SSAO_BLUR_PASS);
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[blur_pipeline]);
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[blur_pipeline].get_rid());
 				if (pass % 2 == 0) {
 					if (ssao_quality == RS::ENV_SSAO_QUALITY_VERY_LOW) {
 						RD::Uniform u_ao_slices_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, ao_deinterleaved_slices[i] }));
@@ -1312,7 +1336,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		}
 
 		RID interleave_shader = ssao.interleave_shader.version_get_shader(ssao.interleave_shader_version, interleave_pipeline - SSAO_INTERLEAVE);
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[interleave_pipeline]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[interleave_pipeline].get_rid());
 
 		RD::Uniform u_upscale_buffer(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ ao_final }));
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(interleave_shader, 0, u_upscale_buffer), 0);
@@ -1439,7 +1463,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 			RID shader = ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_scale.pipelines[pipeline_specialization]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_scale.pipelines[pipeline_specialization].get_rid());
 
 			RD::Uniform u_diffuse(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, diffuse_slice }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_diffuse), 0);
@@ -1486,7 +1510,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			ScreenSpaceReflectionMode mode = (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL;
 			RID shader = ssr.shader.version_get_shader(ssr.shader_version, mode);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[pipeline_specialization][mode]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.pipelines[pipeline_specialization][mode].get_rid());
 
 			RD::Uniform u_scene_data(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, ssr.ubo);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 4, u_scene_data), 4);
@@ -1554,7 +1578,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 			RID shader = ssr_filter.shader.version_get_shader(ssr_filter.shader_version, mode);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[pipeline_specialization][mode]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[pipeline_specialization][mode].get_rid());
 
 			RD::Uniform u_output(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ output }));
 			RD::Uniform u_blur_radius(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ blur_radius[0] }));
@@ -1582,7 +1606,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			mode = SCREEN_SPACE_REFLECTION_FILTER_VERTICAL;
 			shader = ssr_filter.shader.version_get_shader(ssr_filter.shader_version, mode);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[pipeline_specialization][mode]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr_filter.pipelines[pipeline_specialization][mode].get_rid());
 
 			push_constant.vertical = 1;
 
@@ -1656,7 +1680,7 @@ void SSEffects::sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffer
 		sss.push_constant.depth_scale = sss_depth_scale;
 
 		RID shader = sss.shader.version_get_shader(sss.shader_version, sss_quality - 1);
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[sss_quality - 1]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sss.pipelines[sss_quality - 1].get_rid());
 
 		RD::Uniform u_diffuse_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_diffuse }));
 		RD::Uniform u_diffuse(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_diffuse }));

@@ -39,6 +39,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class Timer;
+
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 

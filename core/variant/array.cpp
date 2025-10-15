@@ -31,6 +31,7 @@
 #include "array.h"
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 
 #include "container_type_validate.h"

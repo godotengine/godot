@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "node_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/gradient.h"
 
 class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);
