@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/typedefs.h"
+
 template <typename I>
 class Iterable {
 	I _begin;
