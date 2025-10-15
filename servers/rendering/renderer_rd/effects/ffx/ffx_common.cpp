@@ -349,13 +349,13 @@ static FfxErrorCode create_pipeline_rd(FfxInterface *p_backend_interface, FfxEff
 
 	FFXCommonContext::Pass &effect_pass = device.effect_contexts[p_effect_context_id].passes[p_pass];
 
-	if (effect_pass.pipeline.pipeline_rid.is_null()) {
+	if (effect_pass.pipeline.get_rid().is_null()) {
 		// Create pipeline for the device if it hasn't been created yet.
 		effect_pass.root_signature.shader_rid = effect_pass.shader->version_get_shader(effect_pass.shader_version, effect_pass.shader_variant);
 		ERR_FAIL_COND_V(effect_pass.root_signature.shader_rid.is_null(), FFX_ERROR_BACKEND_API_ERROR);
 
-		effect_pass.pipeline.pipeline_rid = RD::get_singleton()->compute_pipeline_create(effect_pass.root_signature.shader_rid);
-		ERR_FAIL_COND_V(effect_pass.pipeline.pipeline_rid.is_null(), FFX_ERROR_BACKEND_API_ERROR);
+		effect_pass.pipeline.create_compute_pipeline(effect_pass.root_signature.shader_rid);
+		ERR_FAIL_COND_V(effect_pass.pipeline.get_rid().is_null(), FFX_ERROR_BACKEND_API_ERROR);
 	}
 
 #ifdef DEV_ENABLED
@@ -461,8 +461,8 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	FFXCommonContext::RootSignature &root_signature = *reinterpret_cast<FFXCommonContext::RootSignature *>(p_job.pipeline.rootSignature);
 	ERR_FAIL_COND_V(root_signature.shader_rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
-	FFXCommonContext::Pipeline &backend_pipeline = *reinterpret_cast<FFXCommonContext::Pipeline *>(p_job.pipeline.pipeline);
-	ERR_FAIL_COND_V(backend_pipeline.pipeline_rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
+	PipelineDeferredRD &backend_pipeline = *reinterpret_cast<PipelineDeferredRD *>(p_job.pipeline.pipeline);
+	ERR_FAIL_COND_V(backend_pipeline.get_rid().is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
 	thread_local LocalVector<RD::Uniform> compute_uniforms;
 	compute_uniforms.clear();
@@ -528,7 +528,7 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommonContext::Scratch &p_scra
 	}
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, backend_pipeline.pipeline_rid);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, backend_pipeline.get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache_vec(root_signature.shader_rid, 0, compute_uniforms), 0);
 	RD::get_singleton()->compute_list_dispatch(compute_list, p_job.dimensions[0], p_job.dimensions[1], p_job.dimensions[2]);
 	RD::get_singleton()->compute_list_end();
