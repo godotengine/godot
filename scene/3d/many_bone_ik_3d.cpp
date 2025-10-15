@@ -37,12 +37,14 @@ void ManyBoneIK3D::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				set_notify_local_transform(true); // Used for updating gizmo in editor.
 			}
+			_update_mutable_info();
+			_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 			_make_all_joints_dirty();
 		} break;
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			update_gizmos();
+			_make_gizmo_dirty();
 		} break;
 #endif // TOOLS_ENABLED
 	}
@@ -53,8 +55,13 @@ void ManyBoneIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting_count"), &ManyBoneIK3D::get_setting_count);
 	ClassDB::bind_method(D_METHOD("clear_settings"), &ManyBoneIK3D::clear_settings);
 
+	ClassDB::bind_method(D_METHOD("set_mutable_bone_axes", "enabled"), &ManyBoneIK3D::set_mutable_bone_axes);
+	ClassDB::bind_method(D_METHOD("are_bone_axes_mutable"), &ManyBoneIK3D::are_bone_axes_mutable);
+
 	// To process manually.
 	ClassDB::bind_method(D_METHOD("reset"), &ManyBoneIK3D::reset);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mutable_bone_axes"), "set_mutable_bone_axes", "are_bone_axes_mutable");
 }
 
 void ManyBoneIK3D::_set_active(bool p_active) {
@@ -106,6 +113,44 @@ void ManyBoneIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 	//
 }
 
+void ManyBoneIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
+	//
+}
+
+#ifdef TOOLS_ENABLED
+void ManyBoneIK3D::_make_gizmo_dirty() {
+	if (gizmo_dirty) {
+		return;
+	}
+	gizmo_dirty = true;
+
+	callable_mp(this, &ManyBoneIK3D::_redraw_gizmo).call_deferred();
+}
+
+void ManyBoneIK3D::_update_mutable_info() {
+	//
+}
+
+void ManyBoneIK3D::_redraw_gizmo() {
+	update_gizmos();
+	gizmo_dirty = false;
+}
+#endif // TOOLS_ENABLED
+
+void ManyBoneIK3D::set_mutable_bone_axes(bool p_enabled) {
+	mutable_bone_axes = p_enabled;
+	for (uint32_t i = 0; i < settings.size(); i++) {
+		_make_simulation_dirty(i);
+	}
+#ifdef TOOLS_ENABLED
+	_update_mutable_info();
+#endif // TOOLS_ENABLED
+}
+
+bool ManyBoneIK3D::are_bone_axes_mutable() const {
+	return mutable_bone_axes;
+}
+
 Quaternion ManyBoneIK3D::get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation) {
 	int parent = p_skeleton->get_bone_parent(p_bone);
 	if (parent < 0) {
@@ -122,7 +167,7 @@ Vector3 ManyBoneIK3D::get_bone_axis(int p_end_bone, BoneDirection p_direction) c
 	if (p_direction == BONE_DIRECTION_FROM_PARENT) {
 		Skeleton3D *sk = get_skeleton();
 		if (sk) {
-			axis = sk->get_bone_rest(p_end_bone).basis.xform_inv(sk->get_bone_rest(p_end_bone).origin);
+			axis = sk->get_bone_rest(p_end_bone).basis.xform_inv(mutable_bone_axes ? sk->get_bone_pose(p_end_bone).origin : sk->get_bone_rest(p_end_bone).origin);
 			axis.normalize();
 		}
 	} else {

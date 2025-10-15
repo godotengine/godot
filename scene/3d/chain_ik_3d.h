@@ -37,6 +37,15 @@ class ChainIK3D : public ManyBoneIK3D {
 
 public:
 	struct ChainIK3DSetting : public ManyBoneIK3DSetting {
+#ifdef TOOLS_ENABLED
+		// Note:
+		// To cache global rest on global pose in SkeletonModifier process.
+		// Since gizmo drawing might be processed after SkeletonModifier process,
+		// so the gizmo which depend on modified pose is not drawn correctly.
+		// Especially, limitation sphere is needed this since it bound mutable bone axis which retrieve by bone pose to the parent bone rest.
+		Transform3D root_global_rest;
+#endif // TOOLS_ENABLED
+
 		BoneJoint root_bone;
 		BoneJoint end_bone;
 
@@ -181,6 +190,10 @@ public:
 	};
 
 protected:
+#ifdef TOOLS_ENABLED
+	virtual void _update_mutable_info() override;
+#endif // TOOLS_ENABLED
+
 	LocalVector<ChainIK3DSetting *> chain_settings; // For caching.
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -237,6 +250,13 @@ public:
 
 	void set_joint_count(int p_index, int p_count);
 	int get_joint_count(int p_index) const;
+
+#ifdef TOOLS_ENABLED
+	// Helper.
+	static Transform3D get_bone_global_rest_mutable(Skeleton3D *p_skeleton, int p_bone);
+	Transform3D get_chain_root_global_rest(int p_index);
+	virtual Vector3 get_bone_vector(int p_index, int p_joint) const;
+#endif // TOOLS_ENABLED
 
 	~ChainIK3D();
 };

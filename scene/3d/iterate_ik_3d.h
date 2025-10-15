@@ -256,6 +256,7 @@ protected:
 	virtual void _validate_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const override;
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index) override;
 	virtual void _make_simulation_dirty(int p_index) override;
+	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index) override;
 
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta) override;
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, IterateIK3DSetting *p_setting, const Vector3 &p_target_destination);
@@ -309,6 +310,10 @@ public:
 
 	// Helper.
 	Quaternion get_joint_limitation_space(int p_index, int p_joint, const Vector3 &p_forward) const;
+
+#ifdef TOOLS_ENABLED
+	virtual Vector3 get_bone_vector(int p_index, int p_joint) const override;
+#endif // TOOLS_ENABLED
 
 	~IterateIK3D();
 };

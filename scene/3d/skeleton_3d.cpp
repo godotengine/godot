@@ -412,6 +412,8 @@ void Skeleton3D::_notification(int p_what) {
 				bone_global_pose_dirty = bone_global_pose_dirty_backup;
 			}
 
+			emit_signal(SceneStringName(skeleton_rendered));
+
 			updating = false;
 			update_flags = UPDATE_FLAG_NONE;
 		} break;
@@ -970,6 +972,7 @@ void Skeleton3D::localize_rests() {
 
 void Skeleton3D::_skin_changed() {
 	_make_dirty();
+	emit_signal(SceneStringName(skin_changed));
 }
 
 Ref<Skin> Skeleton3D::create_skin_from_rest_transforms() {
@@ -1035,9 +1038,13 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_ref->skin->connect_changed(callable_mp(skin_ref.operator->(), &SkinReference::_skin_changed));
 
-	_make_dirty(); // Skin needs to be updated, so update skeleton.
+	_skin_changed(); // Skin needs to be updated, so update skeleton.
 
 	return skin_ref;
+}
+
+HashSet<SkinReference *> Skeleton3D::get_skin_bindings() const {
+	return skin_bindings; // Bit unsafe, shouldn't expose GDScript.
 }
 
 void Skeleton3D::force_update_deferred() {
@@ -1299,9 +1306,11 @@ void Skeleton3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("rest_updated"));
 	ADD_SIGNAL(MethodInfo("pose_updated"));
 	ADD_SIGNAL(MethodInfo("skeleton_updated"));
+	ADD_SIGNAL(MethodInfo("skeleton_rendered"));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_list_changed"));
 	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));
+	ADD_SIGNAL(MethodInfo("skin_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS);

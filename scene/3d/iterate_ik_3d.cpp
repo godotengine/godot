@@ -217,7 +217,7 @@ void IterateIK3D::set_joint_rotation_axis(int p_index, int p_joint, RotationAxis
 	notify_property_list_changed();
 	iterate_settings[p_index]->simulation_dirty = true; // Snapping to planes is needed in the initialization, so need to restructure.
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -239,7 +239,7 @@ void IterateIK3D::set_joint_rotation_axis_vector(int p_index, int p_joint, Vecto
 	}
 	iterate_settings[p_index]->simulation_dirty = true; // Snapping to planes is needed in the initialization, so need to restructure.
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -396,6 +396,12 @@ void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	IterateIK3DSetting *setting = iterate_settings[p_index];
 	cached_space = p_skeleton->get_global_transform_interpolated();
 	if (!setting->simulation_dirty) {
+		if (mutable_bone_axes) {
+#ifdef TOOLS_ENABLED
+			_update_mutable_info();
+#endif // TOOLS_ENABLED
+			_update_bone_axis(p_skeleton, p_index);
+		}
 		return;
 	}
 	_unbind_joint_limitations(p_index);
@@ -432,6 +438,17 @@ void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	}
 	_bind_joint_limitations(p_index);
 
+	if (mutable_bone_axes) {
+#ifdef TOOLS_ENABLED
+		_update_mutable_info();
+#endif // TOOLS_ENABLED
+		_update_bone_axis(p_skeleton, p_index);
+#ifdef TOOLS_ENABLED
+	} else {
+		_make_gizmo_dirty();
+#endif // TOOLS_ENABLED
+	}
+
 	setting->init_current_joint_rotations(p_skeleton);
 
 	setting->simulation_dirty = false;
@@ -444,6 +461,58 @@ void IterateIK3D::_make_simulation_dirty(int p_index) {
 		return;
 	}
 	setting->simulation_dirty = true;
+}
+
+void IterateIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
+#ifdef TOOLS_ENABLED
+	bool changed = false;
+#endif // TOOLS_ENABLED
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	LocalVector<BoneJoint> joints = setting->joints;
+	LocalVector<ManyBoneIK3DSolverInfo *> solver_info_list = setting->solver_info_list;
+	int len = (int)solver_info_list.size() - 1;
+	for (int j = 0; j < len; j++) {
+		IterateIK3DJointSetting *joint_setting = setting->joint_settings[j];
+		if (!joint_setting || !solver_info_list[j]) {
+			continue;
+		}
+		Vector3 axis = p_skeleton->get_bone_pose(joints[j + 1].bone).origin;
+		if (axis.is_zero_approx()) {
+			continue;
+		}
+		// Less computing.
+#ifdef TOOLS_ENABLED
+		if (!changed) {
+			Vector3 old_v = solver_info_list[j]->forward_vector;
+			solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+			changed = changed || !old_v.is_equal_approx(solver_info_list[j]->forward_vector);
+			float old_l = solver_info_list[j]->length;
+			solver_info_list[j]->length = axis.length();
+			changed = changed || !Math::is_equal_approx(old_l, solver_info_list[j]->length);
+		} else {
+			solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+			solver_info_list[j]->length = axis.length();
+		}
+#else
+		solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+		solver_info_list[j]->length = axis.length();
+#endif // TOOLS_ENABLED
+	}
+	if (setting->extend_end_bone && len >= 0) {
+		IterateIK3DJointSetting *joint_setting = setting->joint_settings[len];
+		if (joint_setting && solver_info_list[len]) {
+			Vector3 axis = get_bone_axis(setting->end_bone.bone, setting->end_bone_direction);
+			if (!axis.is_zero_approx()) {
+				solver_info_list[len]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+				solver_info_list[len]->length = setting->end_bone_length;
+			}
+		}
+	}
+#ifdef TOOLS_ENABLED
+	if (changed) {
+		_make_gizmo_dirty();
+	}
+#endif // TOOLS_ENABLED
 }
 
 void IterateIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
@@ -543,6 +612,30 @@ void IterateIK3D::_unbind_joint_limitations(int p_index) {
 		}
 	}
 }
+
+#ifdef TOOLS_ENABLED
+Vector3 IterateIK3D::get_bone_vector(int p_index, int p_joint) const {
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return Vector3();
+	}
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3());
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	if (!setting) {
+		return Vector3();
+	}
+	LocalVector<BoneJoint> joints = setting->joints;
+	ERR_FAIL_INDEX_V(p_joint, (int)joints.size(), Vector3());
+	LocalVector<ManyBoneIK3DSolverInfo *> solver_info_list = setting->solver_info_list;
+	if (p_joint >= (int)solver_info_list.size() || !solver_info_list[p_joint]) {
+		if (p_joint == (int)joints.size() - 1) {
+			return get_bone_axis(setting->end_bone.bone, setting->end_bone_direction) * setting->end_bone_length;
+		}
+		return mutable_bone_axes ? skeleton->get_bone_pose(joints[p_joint + 1].bone).origin : skeleton->get_bone_rest(joints[p_joint + 1].bone).origin;
+	}
+	return solver_info_list[p_joint]->forward_vector * solver_info_list[p_joint]->length;
+}
+#endif // TOOLS_ENABLED
 
 IterateIK3D::~IterateIK3D() {
 	for (uint32_t i = 0; i < iterate_settings.size(); i++) {

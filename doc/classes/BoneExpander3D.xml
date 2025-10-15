@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoneExpander3D" inherits="SkeletonModifier3D" experimental="This SkeletonModifier3D interferes with the Skin in a slightly unsafe way. Performance and stability have not been sufficiently optimized." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Scales the visual appearance of the specified bone without causing shear in the children.
+	</brief_description>
+	<description>
+		Scales only the visual appearance without changing the bone pose scale. This is achieved by modifying the bone pose position and skin bindings instead of the bone pose scale.
+		In other words, the only thing other modifiers can obtain from this modifier via the bone is the bone pose position.
+		[b]Note:[/b] Changing the skin is not a role of the [SkeletonModifier3D] originally, so combining it with [RetargetModifier3D] or baking IK animation to FK animation may result in unintended behaviors.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_setting">
+			<return type="void" />
+			<description>
+				Clears all settings.
+			</description>
+		</method>
+		<method name="get_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scaled bone of the setting at [param index].
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scaled bone name of the setting at [param index].
+			</description>
+		</method>
+		<method name="get_bone_scale" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scale of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the scaled bone of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="StringName" />
+			<description>
+				Sets the scaled bone name of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone_scale">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="scale" type="Vector3" />
+			<description>
+				[b]Note:[/b] The [param scale] value is recommended to be non-zero.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="setting_size" type="int" setter="set_setting_size" getter="get_setting_size" default="0">
+			The number of settings in the modifier.
+		</member>
+	</members>
+</class>

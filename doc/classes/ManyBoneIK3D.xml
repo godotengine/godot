@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		Base class of [SkeletonModifier3D] that has some joint lists and applies inverse kinematics. This class has some struct, enum and helper methods which useful to solve the inverse kinematics.
-		[b]Note:[/b] The IK classes that extend this handle rotation only, with bone lengths cached. It means that a position movement between processed chains can cause unintended movement.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -36,4 +35,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="mutable_bone_axes" type="bool" setter="set_mutable_bone_axes" getter="are_bone_axes_mutable" default="false">
+			If [code]false[/code], the IK classes that extend this handle rotation only, with bone lengths cached.
+		</member>
+	</members>
 </class>

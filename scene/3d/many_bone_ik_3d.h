@@ -39,7 +39,7 @@ protected:
 #ifdef TOOLS_ENABLED
 	bool saving = false;
 #endif //TOOLS_ENABLED
-
+	bool mutable_bone_axes = false;
 	Transform3D cached_space;
 	bool joints_dirty = false;
 
@@ -79,6 +79,14 @@ protected:
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index);
 	virtual void _update_joints(int p_index);
 	virtual void _make_simulation_dirty(int p_index);
+	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index);
+
+#ifdef TOOLS_ENABLED
+	bool gizmo_dirty = false;
+	void _make_gizmo_dirty();
+	virtual void _update_mutable_info();
+	void _redraw_gizmo();
+#endif // TOOLS_ENABLED
 
 	virtual void _process_modification(double p_delta) override;
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta);
@@ -119,6 +127,9 @@ public:
 	virtual void clear_settings() {
 		_set_setting_count<ManyBoneIK3DSetting>(0);
 	}
+
+	void set_mutable_bone_axes(bool p_enabled);
+	bool are_bone_axes_mutable() const;
 
 	// Helper.
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);

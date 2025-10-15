@@ -37,6 +37,7 @@
 typedef int BoneId;
 
 class Skeleton3D;
+class SkeletonModifier3D;
 
 class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)
@@ -278,11 +279,14 @@ public:
 	void reset_bone_pose(int p_bone);
 	void reset_bone_poses();
 
+	void set_bone_pose_unsafe(int p_bone, const Transform3D &p_pose);
+
 	void localize_rests(); // Used for loaders and tools.
 
 	Ref<Skin> create_skin_from_rest_transforms();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
+	HashSet<SkinReference *> get_skin_bindings() const;
 
 	void force_update_all_dirty_bones();
 	void _force_update_all_dirty_bones() const;
