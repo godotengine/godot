@@ -36,6 +36,10 @@
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
+static inline Color _select_color(const Color &p_override_color, const Color &p_default_color) {
+	return p_override_color.a > 0 ? p_override_color : p_default_color;
+}
+
 Size2 TabBar::get_minimum_size() const {
 	Size2 ms;
 
@@ -174,7 +178,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT)) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
@@ -184,7 +188,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
+		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (is_layout_rtl() ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT)) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
@@ -522,28 +526,33 @@ void TabBar::_notification(int p_what) {
 
 				if (i != current) {
 					Ref<StyleBox> sb;
-					Color col;
+					Color fnt_col;
+					Color icn_col;
 
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
-						col = theme_cache.font_disabled_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_DISABLED], theme_cache.font_disabled_color);
+						icn_col = theme_cache.icon_disabled_color;
 					} else if (i == hover) {
 						sb = theme_cache.tab_hovered_style;
-						col = theme_cache.font_hovered_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_HOVER], theme_cache.font_hovered_color);
+						icn_col = theme_cache.icon_hovered_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
-						col = theme_cache.font_unselected_color;
+						fnt_col = _select_color(tabs[i].font_color_overrides[DrawMode::DRAW_NORMAL], theme_cache.font_unselected_color);
+						icn_col = theme_cache.icon_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
+					_draw_tab(sb, fnt_col, icn_col, i, rtl ? (size.width - tabs[i].ofs_cache - tabs[i].size_cache) : tabs[i].ofs_cache, false);
 				}
 			}
 
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
+				Color col = _select_color(tabs[current].font_color_overrides[DrawMode::DRAW_PRESSED], theme_cache.font_selected_color);
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus());
+				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
 
 			if (buttons_visible) {
@@ -625,7 +634,7 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 	theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
 }
 
-void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus) {
+void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus) {
 	RID ci = get_canvas_item();
 	bool rtl = is_layout_rtl();
 
@@ -651,7 +660,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 	if (icon.is_valid()) {
 		const Size2 icon_size = _get_tab_icon_size(p_index);
 		const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
-		icon->draw_rect(ci, Rect2(icon_pos, icon_size));
+		icon->draw_rect(ci, Rect2(icon_pos, icon_size), false, p_icon_color);
 
 		p_x = rtl ? p_x - icon_size.width - theme_cache.h_separation : p_x + icon_size.width + theme_cache.h_separation;
 	}
@@ -1003,6 +1012,37 @@ void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
 int TabBar::get_tab_icon_max_width(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), 0);
 	return tabs[p_tab].icon_max_width;
+}
+
+void TabBar::set_font_color_override_all(int p_tab, const Color &p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	Tab &tab = tabs.write[p_tab];
+	for (int i = 0; i < DrawMode::DRAW_MAX; i++) {
+		tab.font_color_overrides[i] = p_color;
+	}
+
+	queue_redraw();
+}
+
+void TabBar::set_font_color_override(int p_tab, DrawMode p_draw_mode, const Color &p_color) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	ERR_FAIL_INDEX(p_draw_mode, DrawMode::DRAW_MAX);
+
+	if (tabs[p_tab].font_color_overrides[p_draw_mode] == p_color) {
+		return;
+	}
+
+	tabs.write[p_tab].font_color_overrides[p_draw_mode] = p_color;
+
+	queue_redraw();
+}
+
+Color TabBar::get_font_color_override(int p_tab, DrawMode p_draw_mode) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Color());
+	ERR_FAIL_INDEX_V(p_draw_mode, DrawMode::DRAW_MAX, Color());
+
+	return tabs[p_tab].font_color_overrides[p_draw_mode];
 }
 
 void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
@@ -2080,6 +2120,11 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_unselected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, icon_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, icon_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, icon_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabBar, icon_disabled_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TabBar, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TabBar, font_size);

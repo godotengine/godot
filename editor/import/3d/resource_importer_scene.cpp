@@ -1699,6 +1699,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
+								NodePath skeleton_path = mi->get_skeleton_path();
+								Skeleton3D *skeleton = nullptr;
+								if (!skeleton_path.is_empty()) {
+									skeleton = Object::cast_to<Skeleton3D>(mi->get_node_or_null(skeleton_path));
+								}
 								RigidBody3D *rigid_body = memnew(RigidBody3D);
 								rigid_body->set_name(p_node->get_name());
 								_copy_meta(p_node, rigid_body);
@@ -1714,6 +1719,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 									rigid_body->set_physics_material_override(pmo);
 								}
 								base = rigid_body;
+								if (skeleton) {
+									skeleton_path = mi->get_path_to(skeleton);
+									mi->set_skeleton_path(skeleton_path);
+								}
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
@@ -2117,8 +2126,8 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule,Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex (Slow),Single Convex (Average),Trimesh (Slow),Box (Fast),Sphere (Fast),Cylinder (Average),Capsule (Fast),Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));

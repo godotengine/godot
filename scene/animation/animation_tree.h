@@ -352,6 +352,10 @@ public:
 
 	uint64_t get_last_process_pass() const;
 
+#ifdef TOOLS_ENABLED
+	String get_editor_error_message() const;
+#endif
+
 	AnimationTree();
 	~AnimationTree();
 };

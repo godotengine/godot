@@ -40,7 +40,7 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -815,7 +815,7 @@ int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_op
 	while (true) {
 		pid_t pid = waitpid(p_pid, r_status, p_options);
 		if (pid != -1) {
-			// Thread exited normally.
+			// When `p_options` has `WNOHANG`, 0 can be returned if the process is still running.
 			if (r_pid) {
 				*r_pid = pid;
 			}
@@ -845,24 +845,19 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 	pid_t pid = -1;
 	int status = 0;
 	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
-	if (result == 0) {
+	if (result == 0 && pid == 0) {
 		// Thread is still running.
-		if (pi && pid == p_pid) {
-			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		}
 		return true;
 	}
 
-	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
-	// Thread exited normally.
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
 
+	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	if (pi) {
 		pi->is_running = false;
-		if (pid == p_pid) {
-			pi->exit_code = status;
-		}
+		pi->exit_code = status;
 	}
 
 	if (r_status) {

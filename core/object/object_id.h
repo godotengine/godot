@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
 
 // Class to store an object ID (int64)
@@ -53,6 +54,8 @@ public:
 
 	_ALWAYS_INLINE_ void operator=(int64_t p_int64) { id = p_int64; }
 	_ALWAYS_INLINE_ void operator=(uint64_t p_uint64) { id = p_uint64; }
+
+	uint32_t hash() const { return HashMapHasherDefault::hash(id); }
 
 	_ALWAYS_INLINE_ ObjectID() {}
 	_ALWAYS_INLINE_ explicit ObjectID(const uint64_t p_id) { id = p_id; }

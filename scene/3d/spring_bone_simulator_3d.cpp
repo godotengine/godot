@@ -1312,7 +1312,7 @@ void SpringBoneSimulator3D::_bind_methods() {
 	// To process manually.
 	ClassDB::bind_method(D_METHOD("reset"), &SpringBoneSimulator3D::reset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "external_force", PROPERTY_HINT_RANGE, "-99999,99999,or_greater,or_less,hide_slider,suffix:m/s"), "set_external_force", "get_external_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "external_force", PROPERTY_HINT_RANGE, "-99999,99999,or_greater,or_less,hide_control,suffix:m/s"), "set_external_force", "get_external_force");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 
 	BIND_ENUM_CONSTANT(BONE_DIRECTION_PLUS_X);
@@ -1660,7 +1660,7 @@ void SpringBoneSimulator3D::reset() {
 
 void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *setting) {
 	if (setting->center_from == CENTER_FROM_WORLD_ORIGIN) {
-		setting->cached_center = p_skeleton->get_global_transform();
+		setting->cached_center = p_skeleton->get_global_transform_interpolated();
 	} else if (setting->center_from == CENTER_FROM_NODE) {
 		if (setting->center_node == NodePath()) {
 			setting->cached_center = Transform3D();
@@ -1669,7 +1669,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			if (!nd) {
 				setting->cached_center = Transform3D();
 			} else {
-				setting->cached_center = nd->get_global_transform().affine_inverse() * p_skeleton->get_global_transform();
+				setting->cached_center = nd->get_global_transform_interpolated().affine_inverse() * p_skeleton->get_global_transform_interpolated();
 			}
 		}
 	} else {

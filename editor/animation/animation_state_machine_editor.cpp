@@ -873,7 +873,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 2);
 	}
 
-	const int ICON_COUNT = std::size(theme_cache.transition_icons);
+	const int ICON_COUNT = std_size(theme_cache.transition_icons);
 	int icon_index = p_mode + (p_auto_advance ? ICON_COUNT / 2 : 0);
 	ERR_FAIL_COND(icon_index >= ICON_COUNT);
 	Ref<Texture2D> icon = theme_cache.transition_icons[icon_index];
@@ -952,7 +952,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		travel_path = playback->get_travel_path();
 	}
 
-	if (state_machine_draw->has_focus()) {
+	if (state_machine_draw->has_focus(true)) {
 		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), theme_cache.focus_color, false);
 	}
 	int sep = 3 * EDSCALE;
@@ -1393,11 +1393,11 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			if (error_time > 0) {
 				error = error_text;
 				error_time -= get_process_delta_time();
-			} else if (!tree->is_active()) {
-				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-			} else if (tree->is_state_invalid()) {
-				error = tree->get_invalid_state_reason();
-			} else if (playback.is_null()) {
+			} else {
+				error = tree->get_editor_error_message();
+			}
+
+			if (error.is_empty() && playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
 

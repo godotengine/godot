@@ -575,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -585,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 

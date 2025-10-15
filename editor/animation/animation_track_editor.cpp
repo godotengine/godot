@@ -31,6 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "editor/animation/animation_bezier_editor.h"
@@ -2051,7 +2052,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_step(SECOND_DECIMAL);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
-	length->set_hide_slider(true);
+	length->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	length->set_tooltip_text(TTR("Animation length (seconds)"));
 	length->set_accessibility_name(TTRC("Animation length (seconds)"));
 	length->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
@@ -4897,7 +4898,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 }
 
 void AnimationTrackEditor::show_select_node_warning(bool p_show) {
-	info_message->set_visible(p_show);
+	info_message_vbox->set_visible(p_show);
 }
 
 void AnimationTrackEditor::show_dummy_player_warning(bool p_show) {
@@ -5350,6 +5351,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			add_animation_player->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
 			bezier_edit_icon->set_button_icon(get_editor_theme_icon(SNAME("EditBezier")));
 			snap_timeline->set_button_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
@@ -5378,6 +5380,11 @@ void AnimationTrackEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			Node *scene_root = EditorNode::get_singleton()->get_scene_root();
+			scene_root->connect("child_entered_tree", callable_mp(this, &AnimationTrackEditor::_root_node_changed).bind(false));
+			scene_root->connect("child_exiting_tree", callable_mp(this, &AnimationTrackEditor::_root_node_changed).bind(true));
+
+			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationTrackEditor::_scene_changed));
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &AnimationTrackEditor::_selection_changed));
 		} break;
 
@@ -7592,6 +7599,14 @@ void AnimationTrackEditor::_auto_fit_bezier() {
 	}
 }
 
+void AnimationTrackEditor::_root_node_changed(Node *p_node, bool p_removed) {
+	add_animation_player->set_disabled(p_removed);
+}
+
+void AnimationTrackEditor::_scene_changed() {
+	add_animation_player->set_disabled(EditorNode::get_singleton()->get_edited_scene() == nullptr);
+}
+
 void AnimationTrackEditor::_selection_changed() {
 	if (selected_filter->is_pressed()) {
 		_update_tracks(); // Needs updating.
@@ -7648,6 +7663,36 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 
 float AnimationTrackEditor::get_snap_unit() {
 	return snap_unit;
+}
+
+void AnimationTrackEditor::_add_animation_player() {
+	EditorData &editor_data = EditorNode::get_editor_data();
+	Node *scene = editor_data.get_edited_scene_root();
+
+	ERR_FAIL_NULL_EDMSG(scene, "Cannot add AnimationPlayer without root node in scene");
+
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	editor_data.instantiate_object_properties(animation_player);
+
+	String new_name = scene->validate_child_name(animation_player);
+	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+		new_name = adjust_name_casing(new_name);
+	}
+	animation_player->set_name(new_name);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action_for_history(TTR("Create Node"), editor_data.get_current_edited_scene_history_id());
+
+	undo_redo->add_do_method(scene, "add_child", animation_player, true);
+	undo_redo->add_do_method(animation_player, "set_owner", scene);
+	undo_redo->add_do_reference(animation_player);
+	undo_redo->add_undo_method(scene, "remove_child", animation_player);
+
+	undo_redo->commit_action();
+
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	editor_selection->clear();
+	editor_selection->add_node(animation_player);
 }
 
 void AnimationTrackEditor::_show_imported_anim_warning() {
@@ -7766,7 +7811,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	timeline_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	info_message_vbox = memnew(VBoxContainer);
+	main_panel->add_child(info_message_vbox);
+	info_message_vbox->set_alignment(AlignmentMode::ALIGNMENT_CENTER);
+	info_message_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	info_message_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	info_message = memnew(Label);
+	info_message_vbox->add_child(info_message);
 	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -7774,7 +7826,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
-	main_panel->add_child(info_message);
+
+	add_animation_player = memnew(Button);
+	info_message_vbox->add_child(add_animation_player);
+	add_animation_player->set_text(TTR("Add AnimationPlayer"));
+	add_animation_player->set_tooltip_text(TTR("Add a new AnimationPlayer node to the scene."));
+	add_animation_player->set_h_size_flags(SIZE_SHRINK_CENTER);
+	add_animation_player->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_add_animation_player));
 
 	timeline = memnew(AnimationTimelineEdit);
 	timeline_vbox->add_child(timeline);
@@ -7794,6 +7852,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	box_selection_container->set_clip_contents(true);
 	timeline_vbox->add_child(box_selection_container);
 
+	bezier_edit = memnew(AnimationBezierTrackEdit);
+	timeline_vbox->add_child(bezier_edit);
+	bezier_edit->set_editor(this);
+	bezier_edit->set_timeline(timeline);
+	bezier_edit->hide();
+	bezier_edit->set_v_size_flags(SIZE_EXPAND_FILL);
+	bezier_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
+
 	marker_edit = memnew(AnimationMarkerEdit);
 	timeline->get_child(0)->add_child(marker_edit);
 	marker_edit->set_editor(this);
@@ -7802,6 +7868,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	marker_edit->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_groups));
 	marker_edit->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_redraw_tracks));
+	marker_edit->connect(SceneStringName(draw), callable_mp((CanvasItem *)bezier_edit, &CanvasItem::queue_redraw));
 
 	scroll = memnew(ScrollContainer);
 	box_selection_container->add_child(scroll);
@@ -7816,14 +7883,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
 	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
-
-	bezier_edit = memnew(AnimationBezierTrackEdit);
-	timeline_vbox->add_child(bezier_edit);
-	bezier_edit->set_editor(this);
-	bezier_edit->set_timeline(timeline);
-	bezier_edit->hide();
-	bezier_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	bezier_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
@@ -7970,7 +8029,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_min(0);
 	step->set_max(1000000);
 	step->set_step(SECOND_DECIMAL);
-	step->set_hide_slider(true);
+	step->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
 	step->set_accessibility_name(TTRC("Animation step value."));
@@ -8221,10 +8280,10 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	transition_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
 	ease_selection = memnew(OptionButton);
 	ease_selection->set_accessibility_name(TTRC("Ease Type:"));
-	ease_selection->add_item(TTR("In", "Ease Type"), Tween::EASE_IN);
-	ease_selection->add_item(TTR("Out", "Ease Type"), Tween::EASE_OUT);
-	ease_selection->add_item(TTR("InOut", "Ease Type"), Tween::EASE_IN_OUT);
-	ease_selection->add_item(TTR("OutIn", "Ease Type"), Tween::EASE_OUT_IN);
+	ease_selection->add_item(TTR("Ease In", "Ease Type"), Tween::EASE_IN);
+	ease_selection->add_item(TTR("Ease Out", "Ease Type"), Tween::EASE_OUT);
+	ease_selection->add_item(TTR("Ease In-Out", "Ease Type"), Tween::EASE_IN_OUT);
+	ease_selection->add_item(TTR("Ease Out-In", "Ease Type"), Tween::EASE_OUT_IN);
 	ease_selection->select(Tween::EASE_IN_OUT); // Default
 	ease_selection->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Translation context is needed.
 	ease_fps = memnew(SpinBox);

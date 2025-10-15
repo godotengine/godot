@@ -54,6 +54,8 @@ class Node3D : public Node {
 	friend class SceneTreeFTITests;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_3D;
+
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
 	// IT DOES _NOT_ AFFECT THE TRANSFORM LOGIC (see comment in TransformDirty).

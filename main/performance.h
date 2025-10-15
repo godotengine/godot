@@ -46,6 +46,7 @@ class Performance : public Object {
 	static void _bind_methods();
 
 	int _get_node_count() const;
+	int _get_orphan_node_count() const;
 
 	double _process_time;
 	double _physics_process_time;
@@ -90,6 +91,7 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		AUDIO_OUTPUT_LATENCY,
+		// Deprecated, use the 2D/3D specific ones instead.
 		NAVIGATION_ACTIVE_MAPS,
 		NAVIGATION_REGION_COUNT,
 		NAVIGATION_AGENT_COUNT,
@@ -115,6 +117,7 @@ public:
 		NAVIGATION_2D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_2D_EDGE_FREE_COUNT,
 		NAVIGATION_2D_OBSTACLE_COUNT,
+#ifndef _3D_DISABLED
 		NAVIGATION_3D_ACTIVE_MAPS,
 		NAVIGATION_3D_REGION_COUNT,
 		NAVIGATION_3D_AGENT_COUNT,
@@ -125,6 +128,7 @@ public:
 		NAVIGATION_3D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_3D_EDGE_FREE_COUNT,
 		NAVIGATION_3D_OBSTACLE_COUNT,
+#endif // _3D_DISABLED
 		MONITOR_MAX
 	};
 

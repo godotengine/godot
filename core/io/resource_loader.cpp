@@ -43,7 +43,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -1465,8 +1465,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

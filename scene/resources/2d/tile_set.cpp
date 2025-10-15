@@ -37,9 +37,10 @@
 #include "core/templates/rb_set.h"
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/mesh.h"
 
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
@@ -1301,12 +1302,10 @@ Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_a
 
 	// Source matches.
 	if (source_level_proxies.has(p_source_from)) {
-		Array output = { source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
-		return output;
+		return Array{ source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
 	}
 
-	Array output = { p_source_from, p_coords_from, p_alternative_from };
-	return output;
+	return Array{ p_source_from, p_coords_from, p_alternative_from };
 }
 
 void TileSet::cleanup_invalid_tile_proxies() {
@@ -6424,7 +6423,7 @@ void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index,
 Vector<Vector2> TileData::get_collision_polygon_points(int p_layer_id, int p_polygon_index) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector<Vector2>());
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector<Vector2>());
-	return physics[p_layer_id].polygons[p_polygon_index].polygon;
+	return Vector<Vector2>(physics[p_layer_id].polygons[p_polygon_index].polygon);
 }
 
 void TileData::set_collision_polygon_one_way(int p_layer_id, int p_polygon_index, bool p_one_way) {

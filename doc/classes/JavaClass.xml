@@ -29,5 +29,12 @@
 				Returns a [JavaClass] representing the Java parent class of this class.
 			</description>
 		</method>
+		<method name="has_java_method" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param method] name exists in the object's Java methods.
+			</description>
+		</method>
 	</methods>
 </class>

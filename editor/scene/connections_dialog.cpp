@@ -113,6 +113,33 @@ public:
 		}
 	}
 
+	void update_base_node_relative(Node *p_node) {
+		Node *old_base = nullptr;
+		if (has_meta("__base_node_relative")) {
+			old_base = Object::cast_to<Node>(get_meta("__base_node_relative"));
+		}
+
+		if (old_base == p_node) {
+			return;
+		}
+		// The cdbinds is a proxy object, so we want the node path to be relative to the target node.
+		set_meta("__base_node_relative", p_node);
+
+		if (!old_base) {
+			return;
+		}
+
+		// Update existing outdated node paths.
+		for (int i = 0; i < params.size(); i++) {
+			if (params[i].get_type() != Variant::NODE_PATH) {
+				continue;
+			}
+			StringName property_name = "bind/argument_" + itos(i + 1);
+			Node *n = old_base->get_node(get(property_name));
+			set(property_name, p_node ? p_node->get_path_to(n) : NodePath());
+		}
+	}
+
 	void notify_changed() {
 		notify_property_list_changed();
 	}
@@ -176,6 +203,9 @@ void ConnectDialog::_tree_node_selected() {
 	if (!edit_mode) {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
+
+	cdbinds->update_base_node_relative(current);
+
 	_update_method_tree();
 	_update_warning_label();
 	_update_ok_enabled();
@@ -485,7 +515,7 @@ void ConnectDialog::_update_warning_label() {
 }
 
 void ConnectDialog::_post_popup() {
-	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred(false);
 	callable_mp(dst_method, &LineEdit::select_all).call_deferred();
 }
 
@@ -761,6 +791,7 @@ ConnectDialog::ConnectDialog() {
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
+	tree->get_scene_tree()->set_theme_type_variation("TreeSecondary");
 
 	HBoxContainer *hbc_filter = memnew(HBoxContainer);
 

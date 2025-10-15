@@ -114,7 +114,7 @@ void OptionButton::_notification(int p_what) {
 						clr = theme_cache.font_disabled_color;
 						break;
 					default:
-						if (has_focus()) {
+						if (has_focus(true)) {
 							clr = theme_cache.font_focus_color;
 						} else {
 							clr = theme_cache.font_color;

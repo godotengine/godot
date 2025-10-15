@@ -1649,9 +1649,9 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 }
 
 bool EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
-	List<StringName> global_classes;
+	LocalVector<StringName> global_classes;
 	bool must_save = false;
-	ScriptServer::get_global_class_list(&global_classes);
+	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
 			ScriptServer::remove_global_class(class_name);

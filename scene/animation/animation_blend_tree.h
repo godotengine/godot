@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/animation/animation_tree.h"
+#include "scene/resources/curve.h"
 
 class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);

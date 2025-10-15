@@ -186,12 +186,12 @@ MeshStorage::MeshStorage() {
 MeshStorage::~MeshStorage() {
 	//def buffers
 	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
-		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
+		RD::get_singleton()->free_rid(mesh_default_rd_buffers[i]);
 	}
 
 	skeleton_shader.shader.version_free(skeleton_shader.version);
 
-	RD::get_singleton()->free(default_rd_storage_buffer);
+	RD::get_singleton()->free_rid(default_rd_storage_buffer);
 
 	singleton = nullptr;
 }
@@ -514,31 +514,31 @@ void MeshStorage::_mesh_surface_clear(Mesh *p_mesh, int p_surface) {
 	Mesh::Surface &s = *p_mesh->surfaces[p_surface];
 
 	if (s.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
+		RD::get_singleton()->free_rid(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
 	}
 	if (s.attribute_buffer.is_valid()) {
-		RD::get_singleton()->free(s.attribute_buffer);
+		RD::get_singleton()->free_rid(s.attribute_buffer);
 	}
 	if (s.skin_buffer.is_valid()) {
-		RD::get_singleton()->free(s.skin_buffer);
+		RD::get_singleton()->free_rid(s.skin_buffer);
 	}
 	if (s.versions) {
 		memfree(s.versions); // reallocs, so free with memfree.
 	}
 
 	if (s.index_buffer.is_valid()) {
-		RD::get_singleton()->free(s.index_buffer);
+		RD::get_singleton()->free_rid(s.index_buffer);
 	}
 
 	if (s.lod_count) {
 		for (uint32_t j = 0; j < s.lod_count; j++) {
-			RD::get_singleton()->free(s.lods[j].index_buffer);
+			RD::get_singleton()->free_rid(s.lods[j].index_buffer);
 		}
 		memdelete_arr(s.lods);
 	}
 
 	if (s.blend_shape_buffer.is_valid()) {
-		RD::get_singleton()->free(s.blend_shape_buffer);
+		RD::get_singleton()->free_rid(s.blend_shape_buffer);
 	}
 
 	memdelete(p_mesh->surfaces[p_surface]);
@@ -1086,13 +1086,13 @@ void MeshStorage::_mesh_instance_remove_surface(MeshInstance *mi, int p_surface)
 
 	if (surface.versions) {
 		for (uint32_t j = 0; j < surface.version_count; j++) {
-			RD::get_singleton()->free(surface.versions[j].vertex_array);
+			RD::get_singleton()->free_rid(surface.versions[j].vertex_array);
 		}
 		memfree(surface.versions);
 	}
 	for (uint32_t i = 0; i < 2; i++) {
 		if (surface.vertex_buffer[i].is_valid()) {
-			RD::get_singleton()->free(surface.vertex_buffer[i]);
+			RD::get_singleton()->free_rid(surface.vertex_buffer[i]);
 		}
 	}
 
@@ -1100,7 +1100,7 @@ void MeshStorage::_mesh_instance_remove_surface(MeshInstance *mi, int p_surface)
 
 	if (mi->surfaces.is_empty()) {
 		if (mi->blend_weights_buffer.is_valid()) {
-			RD::get_singleton()->free(mi->blend_weights_buffer);
+			RD::get_singleton()->free_rid(mi->blend_weights_buffer);
 			mi->blend_weights_buffer = RID();
 		}
 
@@ -1544,7 +1544,7 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	}
 
 	if (multimesh->buffer.is_valid()) {
-		RD::get_singleton()->free(multimesh->buffer);
+		RD::get_singleton()->free_rid(multimesh->buffer);
 		multimesh->buffer = RID();
 		multimesh->uniform_set_2d = RID(); //cleared by dependency
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
@@ -1622,7 +1622,7 @@ void MeshStorage::_multimesh_enable_motion_vectors(MultiMesh *multimesh) {
 	}
 
 	if (multimesh->buffer.is_valid()) {
-		RD::get_singleton()->free(multimesh->buffer);
+		RD::get_singleton()->free_rid(multimesh->buffer);
 	}
 
 	multimesh->buffer = new_buffer;
@@ -1667,7 +1667,7 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		ERR_FAIL_NULL(mesh);
 		if (mesh->surface_count > 0) {
 			if (multimesh->command_buffer.is_valid()) {
-				RD::get_singleton()->free(multimesh->command_buffer);
+				RD::get_singleton()->free_rid(multimesh->command_buffer);
 			}
 
 			Vector<uint8_t> newVector;
@@ -2341,7 +2341,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 	skeleton->uniform_set_3d = RID();
 
 	if (skeleton->buffer.is_valid()) {
-		RD::get_singleton()->free(skeleton->buffer);
+		RD::get_singleton()->free_rid(skeleton->buffer);
 		skeleton->buffer = RID();
 		skeleton->data.clear();
 		skeleton->uniform_set_mi = RID();

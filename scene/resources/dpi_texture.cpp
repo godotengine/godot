@@ -155,7 +155,7 @@ void DPITexture::_remove_scale(double p_scale) {
 	RID *rid = texture_cache.getptr(p_scale);
 	if (rid) {
 		if (rid->is_valid()) {
-			RenderingServer::get_singleton()->free(*rid);
+			RenderingServer::get_singleton()->free_rid(*rid);
 		}
 		texture_cache.erase(p_scale);
 	}
@@ -230,12 +230,12 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 void DPITexture::_clear() {
 	for (KeyValue<double, RID> &tx : texture_cache) {
 		if (tx.value.is_valid()) {
-			RenderingServer::get_singleton()->free(tx.value);
+			RenderingServer::get_singleton()->free_rid(tx.value);
 		}
 	}
 	texture_cache.clear();
 	if (base_texture.is_valid()) {
-		RenderingServer::get_singleton()->free(base_texture);
+		RenderingServer::get_singleton()->free_rid(base_texture);
 	}
 	base_texture = RID();
 	alpha_cache.unref();

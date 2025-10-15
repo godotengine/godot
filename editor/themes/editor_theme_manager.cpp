@@ -536,10 +536,10 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
 		const float prop_color_value = p_config.accent_color.get_v();
 
-		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_x", EditorStringName(Editor), Color::from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_y", EditorStringName(Editor), Color::from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_z", EditorStringName(Editor), Color::from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_w", EditorStringName(Editor), Color::from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
 		// Special colors for rendering methods.
 
@@ -714,7 +714,12 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			style_tooltip->set_shadow_size(0);
 			style_tooltip->set_content_margin_all(p_config.base_margin * EDSCALE * 0.5);
 			style_tooltip->set_bg_color(p_config.dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
-			style_tooltip->set_border_width_all(0);
+			if (p_config.draw_extra_borders) {
+				style_tooltip->set_border_width_all(Math::round(EDSCALE));
+				style_tooltip->set_border_color(p_config.extra_border_color_2);
+			} else {
+				style_tooltip->set_border_width_all(0);
+			}
 			p_theme->set_stylebox(SceneStringName(panel), "TooltipPanel", style_tooltip);
 		}
 
@@ -1142,7 +1147,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		Ref<StyleBoxFlat> style_tab_focus = p_config.button_style_focus->duplicate();
 
-		Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0, p_config.corner_radius * EDSCALE);
+		Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0, p_config.corner_radius);
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
@@ -1171,6 +1176,14 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_outline_color", "TabBar", p_config.font_outline_color);
 		p_theme->set_color("drop_mark_color", "TabContainer", tab_highlight);
 		p_theme->set_color("drop_mark_color", "TabBar", tab_highlight);
+
+		Color icon_color = Color(1, 1, 1);
+		p_theme->set_color("icon_selected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabContainer", icon_color);
+		p_theme->set_color("icon_selected_color", "TabBar", icon_color);
+		p_theme->set_color("icon_hovered_color", "TabBar", icon_color);
+		p_theme->set_color("icon_unselected_color", "TabBar", icon_color);
 
 		p_theme->set_icon("menu", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenu"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("menu_highlight", "TabContainer", p_theme->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
@@ -2498,6 +2511,13 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
 		style->set_bg_color(p_config.dark_theme ? style->get_bg_color().lightened(0.04) : style->get_bg_color().darkened(0.04));
 		style->set_border_color(p_config.dark_theme ? style->get_border_color().lightened(0.04) : style->get_border_color().darkened(0.04));
+		if (p_config.draw_extra_borders) {
+			// A tooltip border is already drawn for all tooltips when Draw Extra Borders is enabled.
+			// Hide borders that don't serve in drawing a line between the title and content to prevent the border from being doubled.
+			style->set_border_width(SIDE_TOP, 0);
+			style->set_border_width(SIDE_LEFT, 0);
+			style->set_border_width(SIDE_RIGHT, 0);
+		}
 		style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
@@ -2508,6 +2528,13 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	// EditorHelpBitContent.
 	{
 		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		if (p_config.draw_extra_borders) {
+			// A tooltip border is already drawn for all tooltips when Draw Extra Borders is enabled.
+			// Hide borders that don't serve in drawing a line between the title and content to prevent the border from being doubled.
+			style->set_border_width(SIDE_BOTTOM, 0);
+			style->set_border_width(SIDE_LEFT, 0);
+			style->set_border_width(SIDE_RIGHT, 0);
+		}
 		style->set_corner_radius(CORNER_TOP_LEFT, 0);
 		style->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
@@ -2526,18 +2553,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> debugger_panel_style = p_config.content_panel_style->duplicate();
 		debugger_panel_style->set_border_width(SIDE_BOTTOM, 0);
 		p_theme->set_stylebox("DebuggerPanel", EditorStringName(EditorStyles), debugger_panel_style);
-
-		// This pattern of get_font()->get_height(get_font_size()) is used quite a lot and is very verbose.
-		// FIXME: Introduce Theme::get_font_height() / Control::get_theme_font_height() / Window::get_theme_font_height().
-		const int offset_i1 = p_theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height(p_theme->get_font_size(SNAME("tab_selected"), SNAME("TabContainer")));
-		const int offset_i2 = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height;
-		const int offset_i3 = p_theme->get_stylebox(SceneStringName(panel), SNAME("TabContainer"))->get_content_margin(SIDE_TOP);
-		const int invisible_top_offset = offset_i1 + offset_i2 + offset_i3;
-
-		Ref<StyleBoxFlat> invisible_top_panel_style = p_config.content_panel_style->duplicate();
-		invisible_top_panel_style->set_expand_margin(SIDE_TOP, -invisible_top_offset);
-		invisible_top_panel_style->set_content_margin(SIDE_TOP, 0);
-		p_theme->set_stylebox("BottomPanelDebuggerOverride", EditorStringName(EditorStyles), invisible_top_panel_style);
 	}
 
 	// Resource and node editors.

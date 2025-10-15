@@ -255,8 +255,8 @@ void ResourceSaver::add_custom_savers() {
 
 	String custom_saver_base_class = ResourceFormatSaver::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

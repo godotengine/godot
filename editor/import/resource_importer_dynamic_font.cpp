@@ -34,7 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";

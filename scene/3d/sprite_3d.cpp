@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -772,8 +773,8 @@ SpriteBase3D::SpriteBase3D() {
 
 SpriteBase3D::~SpriteBase3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
-	RenderingServer::get_singleton()->free(material);
+	RenderingServer::get_singleton()->free_rid(mesh);
+	RenderingServer::get_singleton()->free_rid(material);
 }
 
 ///////////////////////////////////////////

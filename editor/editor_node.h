@@ -46,6 +46,7 @@ class ConfirmationDialog;
 class Control;
 class FileDialog;
 class HBoxContainer;
+class ImageTexture;
 class MenuBar;
 class MenuButton;
 class OptionButton;
@@ -54,6 +55,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Timer;
 class Translation;
 class Tree;
 class VBoxContainer;
@@ -512,6 +514,10 @@ private:
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);
+	static void _file_dialog_thumbnail_callback(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Ref<ImageTexture> p_texture);
+	Ref<ImageTexture> default_thumbnail;
+
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
@@ -768,6 +774,9 @@ public:
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
 	static bool is_cmdline_mode();
+
+	static HashMap<String, Variant> get_initial_settings();
+
 	static void cleanup();
 
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
@@ -786,6 +795,8 @@ public:
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+
+	void set_center_split_offset(int p_offset);
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
@@ -1014,6 +1025,8 @@ public:
 };
 
 class EditorPluginList : public Object {
+	GDSOFTCLASS(EditorPluginList, Object);
+
 private:
 	Vector<EditorPlugin *> plugins_list;
 

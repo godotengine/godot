@@ -98,6 +98,13 @@ protected:
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 	}
 
+	void _stop_remote_device_poller_thread() {
+		quit_request.set();
+		if (check_for_changes_thread.is_started()) {
+			check_for_changes_thread.wait_to_finish();
+		}
+	}
+
 	int _execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data);
 
 private:
@@ -142,7 +149,6 @@ protected:
 		String modules_buildphase;
 		String modules_buildgrp;
 		Vector<String> capabilities;
-		bool use_swift_runtime;
 	};
 
 	struct CodeSigningDetails {
@@ -229,6 +235,8 @@ protected:
 		r_features->push_back("apple_embedded");
 	}
 
+	void _initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg);
+
 public:
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
 	virtual Ref<Texture2D> get_run_icon() const override { return run_icon; }
@@ -279,7 +287,6 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
-	EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg);
 	~EditorExportPlatformAppleEmbedded();
 
 	/// List the gdip files in the directory specified by the p_path parameter.

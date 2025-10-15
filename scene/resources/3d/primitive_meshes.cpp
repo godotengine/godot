@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
+#include "core/os/main_loop.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "thirdparty/misc/polypartition.h"
 
 #define PADDING_REF_SIZE 1024.0
@@ -372,7 +373,7 @@ PrimitiveMesh::PrimitiveMesh() {
 
 PrimitiveMesh::~PrimitiveMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
@@ -3952,16 +3953,16 @@ TextServer::StructuredTextParser TextMesh::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
+void TextMesh::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
-		st_args = p_args;
+		st_args = Array(p_args);
 		dirty_text = true;
 		request_update();
 	}
 }
 
 Array TextMesh::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void TextMesh::set_uppercase(bool p_uppercase) {

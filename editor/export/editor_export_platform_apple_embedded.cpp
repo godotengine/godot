@@ -321,7 +321,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
-	for (uint64_t i = 0; i < std::size(api_info); ++i) {
+	for (uint64_t i = 0; i < std_size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
 		String hint;
 		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
@@ -338,13 +338,13 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -638,38 +638,9 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 			}
 		}
 		strnew += p_line.replace("$pbx_locale_build_reference", locale_files);
-	} else if (p_line.contains("$swift_runtime_migration")) {
-		String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
-		strnew += p_line.replace("$swift_runtime_migration", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_build_settings")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 CLANG_ENABLE_MODULES = YES;
-				 SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
-				 SWIFT_VERSION = 5.0;
-				 )";
-		value = value.replace("$binary", p_config.binary_name);
-		strnew += p_line.replace("$swift_runtime_build_settings", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_fileref")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
-				 90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
-				 )";
-		strnew += p_line.replace("$swift_runtime_fileref", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_binary_files")) {
-		String value = !p_config.use_swift_runtime ? "" : R"(
-				 90B4C2AA2680BC560039117A /* dummy.h */,
-				 90B4C2B52680C7E90039117A /* dummy.swift */,
-				 )";
-		strnew += p_line.replace("$swift_runtime_binary_files", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_buildfile")) {
-		String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
-		strnew += p_line.replace("$swift_runtime_buildfile", value) + "\n";
-	} else if (p_line.contains("$swift_runtime_build_phase")) {
-		String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
-		strnew += p_line.replace("$swift_runtime_build_phase", value) + "\n";
 	} else if (p_line.contains("$priv_collection")) {
 		bool section_opened = false;
-		for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+		for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 			bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 			bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 			bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -698,7 +669,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 				if (purposes != 0) {
 					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 					strnew += "\t\t\t\t<array>\n";
-					for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+					for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 						if (purposes & (1 << k)) {
 							strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 						}
@@ -730,7 +701,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		}
 	} else if (p_line.contains("$priv_api_types")) {
 		strnew += "\t<array>\n";
-		for (uint64_t j = 0; j < std::size(api_info); ++j) {
+		for (uint64_t j = 0; j < std_size(api_info); ++j) {
 			int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
 			if (api_access != 0) {
 				strnew += "\t\t<dict>\n";
@@ -1566,10 +1537,6 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 
 		plugin_initialization_cpp_code += "\t" + initialization_method;
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
-
-		if (plugin.use_swift_runtime) {
-			p_config_data.use_swift_runtime = true;
-		}
 	}
 
 	// Updating `Info.plist`
@@ -1819,7 +1786,6 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		"",
 		"",
 		Vector<String>(),
-		false
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
@@ -2815,30 +2781,22 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 #endif
 }
 
-EditorExportPlatformAppleEmbedded::EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
-	if (EditorNode::get_singleton()) {
-		Ref<Image> img = memnew(Image);
-		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
-		logo = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
-		run_icon = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
 
-		plugins_changed.set();
-		devices_changed.set();
+	plugins_changed.set();
+	devices_changed.set();
 #ifdef MACOS_ENABLED
-		_update_preset_status();
+	_update_preset_status();
 #endif
-	}
 }
 
 EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() {
-#ifdef MACOS_ENABLED
-	quit_request.set();
-	if (check_for_changes_thread.is_started()) {
-		check_for_changes_thread.wait_to_finish();
-	}
-#endif
 }

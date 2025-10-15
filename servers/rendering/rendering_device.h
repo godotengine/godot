@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_device_graph.h"
@@ -1603,7 +1603,12 @@ public:
 
 	void _set_max_fps(int p_max_fps);
 
-	void free(RID p_id);
+	void free_rid(RID p_rid);
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use `free_rid()` instead.")]] void free(RID p_rid) {
+		free_rid(p_rid);
+	}
+#endif // DISABLE_DEPRECATED
 
 	/****************/
 	/**** Timing ****/

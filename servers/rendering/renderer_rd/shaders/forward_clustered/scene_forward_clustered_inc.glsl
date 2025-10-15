@@ -313,16 +313,20 @@ implementation_data_block;
 #define implementation_data implementation_data_block.data
 
 struct InstanceData {
-	mat4 transform;
-	mat4 prev_transform;
+	mat3x4 transform;
+	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
+	mat3x4 prev_transform;
 	vec4 lightmap_uv_scale;
-	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
-	vec4 uv_scale;
+#ifdef USE_DOUBLE_PRECISION
+	vec4 model_precision;
+	vec4 prev_model_precision;
+#endif
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {

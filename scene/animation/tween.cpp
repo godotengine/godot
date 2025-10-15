@@ -81,7 +81,7 @@ void Tween::_start_tweeners() {
 		ERR_FAIL_MSG("Tween without commands, aborting.");
 	}
 
-	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+	for (Ref<Tweener> &tweener : tweeners[current_step]) {
 		tweener->start();
 	}
 }
@@ -164,6 +164,7 @@ Ref<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
 	if (tweener->subtween->parent_tree != nullptr) {
 		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
 	}
+	subtweens.push_back(p_subtween);
 	append(tweener);
 	return tweener;
 }
@@ -179,7 +180,7 @@ void Tween::append(Ref<Tweener> p_tweener) {
 	parallel_enabled = default_parallel;
 
 	tweeners.resize(current_step + 1);
-	tweeners.write[current_step].push_back(p_tweener);
+	tweeners[current_step].push_back(p_tweener);
 }
 
 void Tween::stop() {
@@ -200,6 +201,11 @@ void Tween::kill() {
 	running = false; // For the sake of is_running().
 	valid = false;
 	dead = true;
+
+	// Kill all subtweens of this tween.
+	for (Ref<Tween> &st : subtweens) {
+		st->kill();
+	}
 }
 
 bool Tween::is_running() {
@@ -365,7 +371,7 @@ bool Tween::step(double p_delta) {
 		double step_delta = rem_delta;
 		step_active = false;
 
-		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
+		for (Ref<Tweener> &tweener : tweeners[current_step]) {
 			// Modified inside Tweener.step().
 			double temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
@@ -379,7 +385,7 @@ bool Tween::step(double p_delta) {
 			emit_signal(SNAME("step_finished"), current_step);
 			current_step++;
 
-			if (current_step == tweeners.size()) {
+			if (current_step == (int)tweeners.size()) {
 				loops_done++;
 				if (loops_done == loops) {
 					running = false;

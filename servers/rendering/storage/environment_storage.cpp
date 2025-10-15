@@ -208,7 +208,13 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
-	env->white = p_white;
+	if (p_tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+		env->white = 1.0; // With HDR output, this should be the output max value instead.
+	} else if (p_tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+		env->white = 16.29;
+	} else {
+		env->white = MAX(1.0, p_white); // Glow with screen blend mode does not work when white < 1.0.
+	}
 }
 
 RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
@@ -471,7 +477,7 @@ Vector<float> RendererEnvironmentStorage::environment_get_glow_levels(RID p_env)
 
 float RendererEnvironmentStorage::environment_get_glow_intensity(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.8);
+	ERR_FAIL_NULL_V(env, 0.3);
 	return env->glow_intensity;
 }
 
@@ -495,7 +501,7 @@ float RendererEnvironmentStorage::environment_get_glow_mix(RID p_env) const {
 
 RS::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT);
+	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SCREEN);
 	return env->glow_blend_mode;
 }
 

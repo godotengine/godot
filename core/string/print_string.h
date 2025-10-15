@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
+#include "core/templates/span.h"
 
 class Variant;
+class String;
 
 extern void (*_print_func)(String);
 

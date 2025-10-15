@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/templates/hashfuncs.h"
 
 /**
@@ -241,12 +242,14 @@ public:
 		if (_keys == nullptr || _size == 0) {
 			return;
 		}
+
 		uint32_t capacity = hash_table_size_primes[_capacity_idx];
-		for (uint32_t i = 0; i < capacity; i++) {
-			_hashes[i] = EMPTY_HASH;
-		}
-		for (uint32_t i = 0; i < _size; i++) {
-			_keys[i].~TKey();
+		memset(_hashes, EMPTY_HASH, sizeof(EMPTY_HASH) * capacity);
+
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
+			for (uint32_t i = 0; i < _size; i++) {
+				_keys[i].~TKey();
+			}
 		}
 
 		_size = 0;
@@ -298,7 +301,6 @@ public:
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
-		ERR_FAIL_COND_MSG(p_new_capacity < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		uint32_t new_capacity_idx = _capacity_idx;
 
 		while (hash_table_size_primes[new_capacity_idx] < p_new_capacity) {
@@ -307,6 +309,9 @@ public:
 		}
 
 		if (new_capacity_idx == _capacity_idx) {
+			if (p_new_capacity < _size) {
+				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+			}
 			return;
 		}
 

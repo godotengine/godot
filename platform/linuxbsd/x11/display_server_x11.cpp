@@ -36,7 +36,9 @@
 #include "x11/key_mapping_x11.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
+#include "core/os/main_loop.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/version.h"
@@ -1798,59 +1800,57 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V_MSG(!xrandr_ext_ok || !xrr_get_monitors, SCREEN_REFRESH_RATE_FALLBACK, "XRandR extension is not available.");
+
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
-	//Use xrandr to get screen refresh rate.
-	if (xrandr_ext_ok) {
-		XRRScreenResources *screen_info = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
-		if (screen_info) {
-			RRMode current_mode = 0;
-			xrr_monitor_info *monitors = nullptr;
-
-			if (xrr_get_monitors) {
-				int count = 0;
-				monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
-				ERR_FAIL_INDEX_V(p_screen, count, SCREEN_REFRESH_RATE_FALLBACK);
-			} else {
-				ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-				return SCREEN_REFRESH_RATE_FALLBACK;
-			}
-
-			bool found_active_mode = false;
-			for (int crtc = 0; crtc < screen_info->ncrtc; crtc++) { // Loop through outputs to find which one is currently outputting.
-				XRRCrtcInfo *monitor_info = XRRGetCrtcInfo(x11_display, screen_info, screen_info->crtcs[crtc]);
-				if (monitor_info->x != monitors[p_screen].x || monitor_info->y != monitors[p_screen].y) { // If X and Y aren't the same as the monitor we're looking for, this isn't the right monitor. Continue.
-					continue;
-				}
-
-				if (monitor_info->mode != None) {
-					current_mode = monitor_info->mode;
-					found_active_mode = true;
-					break;
-				}
-			}
-
-			if (found_active_mode) {
-				for (int mode = 0; mode < screen_info->nmode; mode++) {
-					XRRModeInfo m_info = screen_info->modes[mode];
-					if (m_info.id == current_mode) {
-						// Snap to nearest 0.01 to stay consistent with other platforms.
-						return Math::snapped((float)m_info.dotClock / ((float)m_info.hTotal * (float)m_info.vTotal), 0.01);
-					}
-				}
-			}
-
-			ERR_PRINT("An error occurred while trying to get the screen refresh rate."); // We should have returned the refresh rate by now. An error must have occurred.
-			return SCREEN_REFRESH_RATE_FALLBACK;
-		} else {
-			ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-			return SCREEN_REFRESH_RATE_FALLBACK;
+	int target_x;
+	int target_y;
+	{
+		int count = 0;
+		xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+		ERR_FAIL_NULL_V(monitors, SCREEN_REFRESH_RATE_FALLBACK);
+		if (count <= p_screen) {
+			xrr_free_monitors(monitors);
+			ERR_FAIL_V_MSG(SCREEN_REFRESH_RATE_FALLBACK, vformat("Invalid screen index: %d (count: %d).", p_screen, count));
 		}
+		target_x = monitors[p_screen].x;
+		target_y = monitors[p_screen].y;
+		xrr_free_monitors(monitors);
 	}
-	ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
-	return SCREEN_REFRESH_RATE_FALLBACK;
+
+	XRRScreenResources *screen_res = XRRGetScreenResourcesCurrent(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+	ERR_FAIL_NULL_V(screen_res, SCREEN_REFRESH_RATE_FALLBACK);
+
+	XRRModeInfo *mode_info = nullptr;
+	for (int crtc = 0; crtc < screen_res->ncrtc; crtc++) { // Loop through outputs to find which one is currently outputting.
+		XRRCrtcInfo *monitor_info = XRRGetCrtcInfo(x11_display, screen_res, screen_res->crtcs[crtc]);
+		if (monitor_info->x != target_x || monitor_info->y != target_y || monitor_info->mode == None) {
+			XRRFreeCrtcInfo(monitor_info);
+			continue;
+		}
+		for (int mode = 0; mode < screen_res->nmode; mode++) {
+			if (screen_res->modes[mode].id == monitor_info->mode) {
+				mode_info = &screen_res->modes[mode];
+			}
+		}
+		XRRFreeCrtcInfo(monitor_info);
+		break;
+	}
+
+	float result;
+	if (mode_info) {
+		// Snap to nearest 0.01 to stay consistent with other platforms.
+		result = Math::snapped((float)mode_info->dotClock / ((float)mode_info->hTotal * (float)mode_info->vTotal), 0.01);
+	} else {
+		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
+		result = SCREEN_REFRESH_RATE_FALLBACK;
+	}
+
+	XRRFreeScreenResources(screen_res);
+	return result;
 }
 
 #ifdef DBUS_ENABLED
@@ -1915,9 +1915,22 @@ void DisplayServerX11::show_window(WindowID p_id) {
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
+	// Setup initial minimize/maximize state.
+	// `_NET_WM_STATE` can be set directly when the window is unmapped.
+	LocalVector<Atom> hints;
+	if (wd.maximized) {
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False));
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False));
+	}
+	if (wd.minimized) {
+		hints.push_back(XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False));
+	}
+	XChangeProperty(x11_display, wd.x11_window, XInternAtom(x11_display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)hints.ptr(), hints.size());
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
-	_validate_mode_on_map(p_id);
+
+	_validate_fullscreen_on_map(p_id);
 
 	if (p_id == MAIN_WINDOW_ID) {
 		// Get main window size for boot splash drawing.
@@ -2446,6 +2459,52 @@ void DisplayServerX11::_update_actions_hints(WindowID p_window) {
 	}
 }
 
+void DisplayServerX11::_update_wm_state_hints(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+
+	int result = XGetWindowProperty(
+			x11_display,
+			wd.x11_window,
+			XInternAtom(x11_display, "_NET_WM_STATE", False),
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+	if (result != Success) {
+		return;
+	}
+
+	LocalVector<Atom> hints;
+	if (data) {
+		hints.resize(len);
+		Atom *atoms = (Atom *)data;
+		for (unsigned long i = 0; i < len; i++) {
+			hints[i] = atoms[i];
+		}
+		XFree(data);
+	}
+
+	Atom fullscreen_atom = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+	Atom maximized_horz_atom = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+	Atom maximized_vert_atom = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+	Atom hidden_atom = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
+
+	wd.fullscreen = hints.has(fullscreen_atom);
+	wd.maximized = hints.has(maximized_horz_atom) && hints.has(maximized_vert_atom);
+	wd.minimized = hints.has(hidden_atom);
+}
+
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -2853,15 +2912,11 @@ bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
 	return retval;
 }
 
-void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
+void DisplayServerX11::_validate_fullscreen_on_map(WindowID p_window) {
 	// Check if we applied any window modes that didn't take effect while unmapped
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
 		_set_wm_fullscreen(p_window, true, wd.exclusive_fullscreen);
-	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
-		_set_wm_maximized(p_window, true);
-	} else if (wd.minimized && !_window_minimize_check(p_window)) {
-		_set_wm_minimized(p_window, true);
 	}
 
 	if (wd.on_top) {
@@ -3060,13 +3115,15 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-			_set_wm_maximized(p_window, false);
+			// Varies between target modes, so do nothing here.
 		} break;
 	}
 
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+			if (wd.maximized) {
+				_set_wm_maximized(p_window, false);
+			}
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
 			_set_wm_minimized(p_window, true);
@@ -3100,27 +3157,20 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen) { //if fullscreen, it's not in another mode
-		if (wd.exclusive_fullscreen) {
-			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
-		} else {
-			return WINDOW_MODE_FULLSCREEN;
-		}
+	if (_window_minimize_check(p_window)) {
+		return WINDOW_MODE_MINIMIZED;
 	}
 
-	// Test maximized.
-	// Using EWMH -- Extended Window Manager Hints
+	if (wd.fullscreen) {
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		}
+		return WINDOW_MODE_FULLSCREEN;
+	}
+
 	if (_window_maximize_check(p_window, "_NET_WM_STATE")) {
 		return WINDOW_MODE_MAXIMIZED;
 	}
-
-	{
-		if (_window_minimize_check(p_window)) {
-			return WINDOW_MODE_MINIMIZED;
-		}
-	}
-
-	// All other discarded, return windowed.
 
 	return WINDOW_MODE_WINDOWED;
 }
@@ -4199,7 +4249,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				32,
 				PropModeReplace,
 				(unsigned char *)&data,
-				std::size(data));
+				std_size(data));
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "SAVE_TARGETS", 0)) {
 		// Request to check if SAVE_TARGETS is supported, nothing special to do.
@@ -4399,11 +4449,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
 		return;
 	}
-
-	// Query display server about a possible new window state.
-	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
-	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
 
 	// Readjusting the window position if the window is being reparented by the window manager for decoration
 	Window root, parent, *children;
@@ -5035,7 +5080,7 @@ void DisplayServerX11::process_events() {
 				}
 
 				// Have we failed to set fullscreen while the window was unmapped?
-				_validate_mode_on_map(window_id);
+				_validate_fullscreen_on_map(window_id);
 
 				// On KDE Plasma, when the parent window of an embedded process is restored after being minimized,
 				// only the embedded window receives the Map notification, causing it to
@@ -5054,24 +5099,6 @@ void DisplayServerX11::process_events() {
 				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
 
 				Main::force_redraw();
-			} break;
-
-			case NoExpose: {
-				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu (%u) \n", frame, event.xnoexpose.drawable, window_id);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = true;
-			} break;
-
-			case VisibilityNotify: {
-				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
-				if (ime_window_event) {
-					break;
-				}
-
-				windows[window_id].minimized = _window_minimize_check(window_id);
 			} break;
 
 			case LeaveNotify: {
@@ -5215,6 +5242,12 @@ void DisplayServerX11::process_events() {
 				}
 
 				_window_changed(&event);
+			} break;
+
+			case PropertyNotify: {
+				if (event.xproperty.atom == XInternAtom(x11_display, "_NET_WM_STATE", False)) {
+					_update_wm_state_hints(window_id);
+				}
 			} break;
 
 			case ButtonPress:

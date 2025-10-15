@@ -36,7 +36,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "speechd-so_wrap.h"
@@ -45,6 +45,7 @@
 #endif
 
 class TTS_Linux : public Object {
+	GDSOFTCLASS(TTS_Linux, Object);
 	_THREAD_SAFE_CLASS_
 
 	List<DisplayServer::TTSUtterance> queue;

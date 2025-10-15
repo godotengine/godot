@@ -98,7 +98,9 @@ void EditorLayoutsDialog::_post_popup() {
 	Vector<String> layouts = config->get_sections();
 
 	for (const String &E : layouts) {
-		layout_names->add_item(E);
+		if (!E.contains_char('/')) {
+			layout_names->add_item(E);
+		}
 	}
 	if (name->is_visible()) {
 		name->grab_focus();

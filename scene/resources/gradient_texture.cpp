@@ -31,6 +31,7 @@
 #include "gradient_texture.h"
 
 #include "core/math/geometry_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 GradientTexture1D::GradientTexture1D() {
 	_queue_update();
@@ -39,7 +40,7 @@ GradientTexture1D::GradientTexture1D() {
 GradientTexture1D::~GradientTexture1D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 
@@ -194,7 +195,7 @@ GradientTexture2D::GradientTexture2D() {
 GradientTexture2D::~GradientTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
 }
 

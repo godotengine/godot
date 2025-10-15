@@ -31,7 +31,7 @@
 #include "xr_hand_modifier_3d.h"
 
 #include "core/config/project_settings.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void XRHandModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand_tracker", "tracker_name"), &XRHandModifier3D::set_hand_tracker);
@@ -50,6 +50,10 @@ void XRHandModifier3D::_bind_methods() {
 
 void XRHandModifier3D::set_hand_tracker(const StringName &p_tracker_name) {
 	tracker_name = p_tracker_name;
+
+	if (is_inside_tree()) {
+		_get_joint_data();
+	}
 }
 
 StringName XRHandModifier3D::get_hand_tracker() const {

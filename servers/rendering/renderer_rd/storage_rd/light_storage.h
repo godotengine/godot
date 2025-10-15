@@ -220,7 +220,6 @@ private:
 
 	struct ReflectionProbe {
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-		int resolution = 256;
 		float intensity = 1.0;
 		float blend_distance = 1.0;
 		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
@@ -864,7 +863,6 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
-	int reflection_probe_get_resolution(RID p_probe) const;
 	float reflection_probe_get_baked_exposure(RID p_probe) const;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 

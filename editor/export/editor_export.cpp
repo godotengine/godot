@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/timer.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -127,6 +128,7 @@ void EditorExport::_bind_methods() {
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	p_platform->initialize();
 	export_platforms.push_back(p_platform);
 
 	should_update_presets = true;

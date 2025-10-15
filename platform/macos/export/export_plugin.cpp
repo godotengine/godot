@@ -583,13 +583,13 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -693,7 +693,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 		{ "is32", "s8mk", false, 16 } //16×16 24-bit RLE + 8-bit uncompressed mask
 	};
 
-	for (uint64_t i = 0; i < std::size(icon_infos); ++i) {
+	for (uint64_t i = 0; i < std_size(icon_infos); ++i) {
 		Ref<Image> copy = p_icon->duplicate();
 		copy->convert(Image::FORMAT_RGBA8);
 		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
@@ -764,7 +764,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].find("$priv_collection") != -1) {
 			bool section_opened = false;
-			for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+			for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -793,7 +793,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 					if (purposes != 0) {
 						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 						strnew += "\t\t\t\t<array>\n";
-						for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+						for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 							if (purposes & (1 << k)) {
 								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 							}
@@ -1081,8 +1081,8 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 23) : str.substr(rq_offset + 23, next_nl - rq_offset - 23);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <api uuid> --api-key <api key> <request uuid>\"");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <API UUID> --api-key <API key> <request UUID>\"");
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign staple <app path>\"");
 			}
@@ -1165,9 +1165,10 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 4) : str.substr(rq_offset + 4, next_nl - rq_offset - 4);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --issuer <api uuid> --key-id <api key id> --key <api key path>\" or");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --apple-id <your email> --password <app-specific pwd>>\"");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("See instructions on finding your team ID: https://developer.apple.com/help/glossary/team-id"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --issuer <API UUID> --key-id <API key ID> --key <API key path>\" or");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --team-id <team ID> --apple-id <your email> --password <app-specific password>\"");
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 			}
@@ -2814,7 +2815,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
+void EditorExportPlatformMacOS::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

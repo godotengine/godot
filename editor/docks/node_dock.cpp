@@ -32,6 +32,7 @@
 
 #include "core/io/config_file.h"
 #include "editor/scene/connections_dialog.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 
 void NodeDock::show_groups() {
@@ -48,12 +49,12 @@ void NodeDock::show_connections() {
 	connections->show();
 }
 
-void NodeDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
-	p_layout->set_value(p_section, "dock_node_current_tab", int(groups_button->is_pressed()));
+void NodeDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "current_tab", int(groups_button->is_pressed()));
 }
 
-void NodeDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
-	const int current_tab = p_layout->get_value(p_section, "dock_node_current_tab", 0);
+void NodeDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) {
+	const int current_tab = p_layout->get_value(p_section, "current_tab", 0);
 	if (select_a_node->is_visible()) {
 		if (current_tab == 0) {
 			groups_button->set_pressed_no_signal(false);
@@ -76,11 +77,6 @@ void NodeDock::_notification(int p_what) {
 			groups_button->set_button_icon(get_editor_theme_icon(SNAME("Groups")));
 		} break;
 	}
-}
-
-void NodeDock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &NodeDock::_save_layout_to_config);
-	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &NodeDock::_load_layout_from_config);
 }
 
 void NodeDock::update_lists() {
@@ -110,10 +106,16 @@ void NodeDock::set_node(Node *p_node) {
 
 NodeDock::NodeDock() {
 	singleton = this;
+	set_name(TTRC("Node"));
+	set_icon_name("Object");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_node", TTRC("Open Node Dock")));
+	set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
-	set_name("Node");
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	mode_hb = memnew(HBoxContainer);
-	add_child(mode_hb);
+	main_vb->add_child(mode_hb);
 	mode_hb->hide();
 
 	connections_button = memnew(Button);
@@ -137,12 +139,12 @@ NodeDock::NodeDock() {
 	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
 	connections = memnew(ConnectionsDock);
-	add_child(connections);
+	main_vb->add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
-	add_child(groups);
+	main_vb->add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();
 
@@ -154,7 +156,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	add_child(select_a_node);
+	main_vb->add_child(select_a_node);
 }
 
 NodeDock::~NodeDock() {

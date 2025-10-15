@@ -45,9 +45,11 @@
 #import "os_macos.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
@@ -1860,7 +1862,6 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	if (p_id == MAIN_WINDOW_ID) {
-		[GodotApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 		[GodotApp activateApplication];
 	}
 
