@@ -360,6 +360,46 @@ void ScrollContainer::_reposition_children() {
 		size.x -= v_scroll->get_minimum_size().x;
 	}
 
+	float viewport_w = size.x;
+	float viewport_h = size.y;
+
+	float total_content_w = 0.0f;
+	float total_content_h = 0.0f;
+	for (int ci = 0; ci < get_child_count(); ci++) {
+		Control *cc = as_sortable_control(get_child(ci));
+		if (!cc || cc == h_scroll || cc == v_scroll || cc == focus_panel) {
+			continue;
+		}
+		Size2 ms = cc->get_combined_minimum_size();
+		float child_w = ms.x;
+		float child_h = ms.y;
+		if (cc->get_h_size_flags().has_flag(SIZE_EXPAND)) {
+			child_w = MAX(viewport_w, ms.x);
+		}
+		if (cc->get_v_size_flags().has_flag(SIZE_EXPAND)) {
+			child_h = MAX(viewport_h, ms.y);
+		}
+		total_content_w = MAX(total_content_w, child_w);
+		total_content_h += child_h;
+	}
+
+	float max_scroll_x = total_content_w > viewport_w ? (total_content_w - viewport_w) : 0.0f;
+	float max_scroll_y = total_content_h > viewport_h ? (total_content_h - viewport_h) : 0.0f;
+	float scroll_x = h_scroll ? CLAMP(h_scroll->get_value(), 0.0f, max_scroll_x) : 0.0f;
+	float scroll_y = v_scroll ? CLAMP(v_scroll->get_value(), 0.0f, max_scroll_y) : 0.0f;
+
+	float group_v_offset = 0.0f;
+	if (max_scroll_y <= 0.0f && total_content_h < viewport_h) {
+		int align_v = static_cast<int>(vertical_content_align);
+		float extra = viewport_h - total_content_h;
+		if (align_v == V_ALIGN_CENTER) {
+			group_v_offset = floorf(extra * 0.5f);
+		} else if (align_v == V_ALIGN_BOTTOM) {
+			group_v_offset = floorf(extra);
+		}
+	}
+	ofs.y += group_v_offset;
+
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -370,14 +410,13 @@ void ScrollContainer::_reposition_children() {
 		}
 		Size2 minsize = c->get_combined_minimum_size();
 
-		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
+		Rect2 r = Rect2(ofs, minsize);
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
 		}
 		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
 		}
-		r.position += ofs;
 		if (rtl && reserve_vscroll) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
@@ -385,8 +424,7 @@ void ScrollContainer::_reposition_children() {
 
 		{
 			float content_w = r.size.width;
-			float viewport_w = size.width;
-
+			float viewport_w_local = viewport_w;
 			int align_h = static_cast<int>(horizontal_content_align);
 
 			if (is_layout_rtl()) {
@@ -397,8 +435,8 @@ void ScrollContainer::_reposition_children() {
 				}
 			}
 
-			if (content_w < viewport_w) {
-				float extra = viewport_w - content_w;
+			if (max_scroll_x <= 0.0f && content_w < viewport_w_local) {
+				float extra = viewport_w_local - content_w;
 				if (align_h == H_ALIGN_CENTER) {
 					r.position.x += floorf(extra * 0.5f);
 				} else if (align_h == H_ALIGN_RIGHT) {
@@ -407,28 +445,10 @@ void ScrollContainer::_reposition_children() {
 			}
 		}
 
-		{
-			float content_h = r.size.height;
-			float viewport_h = size.y;
+		r.position.x -= scroll_x;
+		r.position.y -= scroll_y;
 
-			int align_v = static_cast<int>(vertical_content_align);
-
-			if (content_h < viewport_h) {
-				float extra = viewport_h - content_h;
-				if (align_v == V_ALIGN_CENTER) {
-					r.position.y += floorf(extra * 0.5f);
-				} else if (align_v == V_ALIGN_BOTTOM) {
-					r.position.y += floorf(extra);
-				}
-			}
-		}
-
-		if (h_scroll) {
-			r.position.x -= h_scroll->get_value();
-		}
-		if (v_scroll) {
-			r.position.y -= v_scroll->get_value();
-		}
+		r.position = r.position.floor();
 
 		fit_child_in_rect(c, r);
 	}
