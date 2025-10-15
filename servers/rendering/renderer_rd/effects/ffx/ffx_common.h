@@ -142,7 +142,7 @@ public:
 	};
 
 	static FfxDeviceCapabilities get_device_capabilities();
-	static void create_ffx_interface(FfxInterface *p_interface, Scratch *p_scratch, Device* p_device);
+	static void create_ffx_interface(FfxInterface *p_interface, Scratch *p_scratch, Device *p_device);
 	static RID create_clamp_sampler(RD::SamplerFilter filter);
 
 	static FfxResource get_resource_rd(RID *p_rid, const wchar_t *p_name);

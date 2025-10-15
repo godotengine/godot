@@ -30,8 +30,8 @@
 
 #include "ffx_common.h"
 
-#include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_device_commons.h"
 #include "thirdparty/amd-ffx/ffx_fsr1.h"
 #include "thirdparty/amd-ffx/ffx_fsr2.h"
 #include "thirdparty/amd-ffx/ffx_fsr3upscaler.h"
@@ -602,7 +602,7 @@ FfxDeviceCapabilities FFXCommon::get_device_capabilities() {
 	return capabilities;
 }
 
-void FFXCommon::create_ffx_interface(FfxInterface *p_interface, Scratch *p_scratch, Device* p_device) {
+void FFXCommon::create_ffx_interface(FfxInterface *p_interface, Scratch *p_scratch, Device *p_device) {
 	p_interface->fpGetSDKVersion = get_sdk_version_rd;
 	p_interface->fpCreateBackendContext = create_backend_context_rd;
 	p_interface->fpGetDeviceCapabilities = get_device_capabilities_rd;
