@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/input/input_event.h"
+#include "core/io/resource.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
@@ -196,7 +198,7 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		HashMap<StringName, Node *> children;
-		mutable bool children_cache_dirty = true;
+		mutable bool children_cache_dirty = false;
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;

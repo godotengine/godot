@@ -47,6 +47,9 @@ void EditorExportPlatformIOS::initialize() {
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifdef MACOS_ENABLED
+	_stop_remote_device_poller_thread();
+#endif
 }
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {

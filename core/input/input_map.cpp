@@ -403,9 +403,12 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_graph_delete",                               TTRC("Delete Nodes") },
 	{ "ui_graph_follow_left",                          TTRC("Follow Input Port Connection") },
 	{ "ui_graph_follow_right",                         TTRC("Follow Output Port Connection") },
+	{ "ui_filedialog_delete",                          TTRC("Delete") },
 	{ "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
 	{ "ui_filedialog_refresh",                         TTRC("Refresh") },
 	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
+	{ "ui_filedialog_find",                            TTRC("Find") },
+	{ "ui_filedialog_focus_path",                      TTRC("Focus Path") },
 	{ "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
@@ -805,6 +808,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
+	default_builtin_cache.insert("ui_filedialog_delete", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
 	default_builtin_cache.insert("ui_filedialog_up_one_level", inputs);
 
@@ -815,6 +822,22 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::H));
 	default_builtin_cache.insert("ui_filedialog_show_hidden", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::F | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_find", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	// Ctrl + L (matches most Windows/Linux file managers' "focus on path bar" shortcut,
+	// plus macOS Safari's "focus on address bar" shortcut).
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_focus_path", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	// Cmd + Shift + G (matches Finder's "Go To" shortcut).
+	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_focus_path.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD_OR_CTRL));

@@ -2814,6 +2814,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
+	float srgb_white = 1.0;
 	if (p_render_data->environment.is_valid()) {
 		glow_enabled = environment_get_glow_enabled(p_render_data->environment);
 		glow_intensity = environment_get_glow_intensity(p_render_data->environment);
@@ -2821,9 +2822,13 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		glow_hdr_bleed_threshold = environment_get_glow_hdr_bleed_threshold(p_render_data->environment);
 		glow_hdr_bleed_scale = environment_get_glow_hdr_bleed_scale(p_render_data->environment);
 		glow_hdr_luminance_cap = environment_get_glow_hdr_luminance_cap(p_render_data->environment);
+		srgb_white = environment_get_white(p_render_data->environment);
 	}
 
 	if (glow_enabled) {
+		// Only glow requires srgb_white to be calculated.
+		srgb_white = 1.055 * Math::pow(srgb_white, 1.0f / 2.4f) - 0.055;
+
 		rb->check_glow_buffers();
 	}
 
@@ -2890,7 +2895,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			}
 
 			// Copy color buffer
-			post_effects->post_copy(fbo_rt, target_size, color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, 0, false, bcs_spec_constants);
+			post_effects->post_copy(fbo_rt, target_size, color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, srgb_white, 0, false, bcs_spec_constants);
 
 			// Copy depth buffer
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_int);
@@ -2958,7 +2963,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 
 				glBindFramebuffer(GL_FRAMEBUFFER, fbos[2]);
 				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
-				post_effects->post_copy(fbos[2], target_size, source_color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, v, true, bcs_spec_constants);
+				post_effects->post_copy(fbos[2], target_size, source_color, internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, srgb_white, v, true, bcs_spec_constants);
 			}
 
 			// Copy depth

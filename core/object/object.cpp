@@ -2284,6 +2284,8 @@ void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
 	_can_translate = true;
 	_emitting = false;
+	_is_queued_for_deletion = false;
+	_predelete_ok = false;
 
 	// ObjectDB::add_instance relies on AncestralClass::REF_COUNTED
 	// being already set in the case of references.
