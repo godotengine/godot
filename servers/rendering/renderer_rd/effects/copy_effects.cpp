@@ -412,6 +412,8 @@ void CopyEffects::copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panoram
 	copy.push_constant.target[1] = 0;
 	copy.push_constant.camera_z_far = p_lod;
 
+	copy.push_constant.luminance_multiplier = prefer_raster_effects ? 2.0 : 1.0;
+
 	// setup our uniforms
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 

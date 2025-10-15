@@ -20,7 +20,7 @@ layout(push_constant, std430) uniform Params {
 	ivec4 section;
 	ivec2 target;
 	uint flags;
-	uint pad;
+	float luminance_multiplier;
 	// Glow.
 	float glow_strength;
 	float glow_bloom;
@@ -276,7 +276,7 @@ void main() {
 #else
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
-	imageStore(dest_buffer, pos + params.target, color);
+	imageStore(dest_buffer, pos + params.target, color * params.luminance_multiplier);
 #endif // defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
 
 #ifdef MODE_SET_COLOR
