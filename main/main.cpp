@@ -4727,6 +4727,7 @@ bool Main::iteration() {
 #ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		PhysicsServer2D::get_singleton()->flush_queries();
 #endif // PHYSICS_2D_DISABLED
 
 		message_queue->flush();
