@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 template <typename I>
 class Iterable {
 	I _begin;
