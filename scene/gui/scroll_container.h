@@ -49,7 +49,7 @@ public:
 	};
 
 	enum ContentHAlign {
-		H_ALIGN_LEFT = 0,
+		H_ALIGN_LEFT,
 		H_ALIGN_CENTER = 1,
 		H_ALIGN_RIGHT = 2,
 	};
