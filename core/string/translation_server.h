@@ -49,6 +49,11 @@ class TranslationServer : public Object {
 
 	static inline TranslationServer *singleton = nullptr;
 
+	Vector<String> _get_csv_line(const uint8_t *p_data, int64_t p_size, int64_t p_start, int64_t &r_end) const;
+	String _strip_diacritics(const String &p_string) const;
+	void _diacritics_map_add(const String &p_from, char32_t p_to);
+	bool _match_code(const String &p_key, const String &p_val, const String &p_str) const;
+
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
@@ -64,6 +69,7 @@ class TranslationServer : public Object {
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
 
+public:
 	struct Locale {
 		String language;
 		String script;
@@ -79,15 +85,23 @@ class TranslationServer : public Object {
 
 		explicit operator String() const;
 
-		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
+		Locale() {}
+		Locale(const String &p_locale, bool p_add_defaults);
 	};
 
+private:
 	static HashMap<String, String> language_map;
+	static HashMap<String, String> language_map_a3_to_a1;
 	static HashMap<String, String> script_map;
 	static HashMap<String, String> locale_rename_map;
 	static HashMap<String, String> country_name_map;
+	static HashMap<String, String> country_name_map_a3_to_a1;
 	static HashMap<String, String> country_rename_map;
 	static HashMap<String, String> variant_map;
+	static HashMap<char32_t, char32_t> diacritics_map;
+
+	HashMap<String, String> language_map_custom;
+	HashMap<String, String> country_name_map_custom;
 
 	void init_locale_info();
 
@@ -111,6 +125,17 @@ public:
 
 	Vector<String> get_all_countries() const;
 	String get_country_name(const String &p_country) const;
+
+	static bool is_language_code(const String &p_code);
+	static bool is_script_code(const String &p_code);
+	static bool is_country_code(const String &p_code);
+
+	bool is_language_code_free(const String &p_code) const;
+	bool is_country_code_free(const String &p_code) const;
+
+	Vector<String> find_language(const String &p_str) const;
+	Vector<String> find_script(const String &p_str) const;
+	Vector<String> find_country(const String &p_str) const;
 
 	String get_locale_name(const String &p_locale) const;
 
@@ -138,6 +163,12 @@ public:
 	StringName property_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+
+	void set_custom_language_codes(const Dictionary &p_dict);
+	Dictionary get_custom_language_codes() const;
+
+	void set_custom_country_codes(const Dictionary &p_dict);
+	Dictionary get_custom_country_codes() const;
 
 	bool has_domain(const StringName &p_domain) const;
 	Ref<TranslationDomain> get_or_add_domain(const StringName &p_domain);

@@ -1,5 +1,6 @@
 """Functions used to generate source files during build time"""
 
+import zlib
 from collections import OrderedDict
 from io import TextIOWrapper
 
@@ -69,6 +70,90 @@ uint8_t script_encryption_key[32] = {{
 	{methods.format_buffer(buffer, 1)}
 }};"""
         )
+
+
+def make_lang_header(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("static const int _lang_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _lang_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _lang_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+
+
+def make_cnt_header(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("static const int _country_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _country_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _country_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+
+
+def make_scr_header(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("static const int _script_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _script_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _script_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
 
 
 def make_certs_header(target, source, env):

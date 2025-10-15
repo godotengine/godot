@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/translation_server.h"
 #include "scene/gui/dialogs.h"
 
 class Button;
@@ -37,50 +38,96 @@ class HBoxContainer;
 class VBoxContainer;
 class LineEdit;
 class Tree;
+class TreeItem;
 class OptionButton;
+
+class EditorAddCustomLocaleDialog : public ConfirmationDialog {
+	GDCLASS(EditorAddCustomLocaleDialog, ConfirmationDialog);
+
+	String old_code;
+	String old_name;
+	LineEdit *code = nullptr;
+	LineEdit *name = nullptr;
+	Label *warn_lbl = nullptr;
+	bool is_lang = false;
+	bool edit = false;
+
+protected:
+	static void _bind_methods();
+	virtual void ok_pressed() override;
+
+	void _validate_code(const String &p_text);
+
+public:
+	void set_data(const String &p_code, const String &p_name, bool p_is_lang, bool p_edit);
+	EditorAddCustomLocaleDialog();
+};
 
 class EditorLocaleDialog : public ConfirmationDialog {
 	GDCLASS(EditorLocaleDialog, ConfirmationDialog);
 
-	enum LocaleFilter {
-		SHOW_ALL_LOCALES,
-		SHOW_ONLY_SELECTED_LOCALES,
+	enum TreeButtonIDs {
+		BUTTON_FAVORITE_LANG,
+		BUTTON_UNFAVORITE_LANG,
+		BUTTON_ADD_LANG,
+		BUTTON_EDIT_LANG,
+		BUTTON_REMOVE_LANG,
+		BUTTON_FAVORITE_COUNTRY,
+		BUTTON_UNFAVORITE_COUNTRY,
+		BUTTON_ADD_COUNTRY,
+		BUTTON_EDIT_COUNTRY,
+		BUTTON_REMOVE_COUNTRY,
+		BUTTON_FAVORITE_SCRIPT,
+		BUTTON_UNFAVORITE_SCRIPT,
 	};
 
-	HBoxContainer *hb_locale = nullptr;
-	VBoxContainer *vb_script_list = nullptr;
-	OptionButton *filter_mode = nullptr;
-	Button *edit_filters = nullptr;
-	Button *advanced = nullptr;
-	LineEdit *lang_code = nullptr;
-	LineEdit *script_code = nullptr;
-	LineEdit *country_code = nullptr;
-	LineEdit *variant_code = nullptr;
-	Tree *lang_list = nullptr;
-	Tree *script_list = nullptr;
-	Tree *cnt_list = nullptr;
-
-	Label *script_label1 = nullptr;
-	Label *script_label2 = nullptr;
-
-	bool locale_set = false;
 	bool updating_lists = false;
+	bool updating_settings = false;
+	TranslationServer::Locale locale;
+	bool locale_valid = false;
+
+	VBoxContainer *script_vb = nullptr;
+
+	LineEdit *lang_search = nullptr;
+	Tree *lang_list = nullptr;
+
+	LineEdit *script_search = nullptr;
+	Tree *script_list = nullptr;
+	Label *variant_lbl = nullptr;
+	LineEdit *variant_code = nullptr;
+
+	LineEdit *country_search = nullptr;
+	Tree *country_list = nullptr;
+
+	Label *locale_display = nullptr;
+	Button *advanced = nullptr;
+
+	EditorAddCustomLocaleDialog *add_dialog_lang = nullptr;
+	EditorAddCustomLocaleDialog *add_dialog_country = nullptr;
+
+	HashMap<String, String> translation_cache;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _post_popup() override;
 	virtual void ok_pressed() override;
+	void _notification(int p_what);
 
-	void _item_selected();
-	void _filter_lang_option_changed();
-	void _filter_script_option_changed();
-	void _filter_cnt_option_changed();
-	void _filter_mode_changed(int p_mode);
-	void _edit_filters(bool p_checked);
+	void _update_cache();
 	void _toggle_advanced(bool p_checked);
 
-	void _update_tree();
+	void _lang_search(const String &p_text);
+	void _script_search(const String &p_text);
+	void _country_search(const String &p_text);
+
+	void _item_selected();
+	void _varinat_selected(const String &p_text);
+	void _button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_mouse_button_index);
+
+	void _add_lang(const String &p_code, const String &p_name);
+	void _remove_lang(const String &p_code, bool p_edit = false);
+	void _add_country(const String &p_code, const String &p_name);
+	void _remove_country(const String &p_code, bool p_edit = false);
 
 public:
 	EditorLocaleDialog();
