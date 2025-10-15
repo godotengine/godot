@@ -564,7 +564,7 @@ Error OS_LinuxBSD::shell_open(const String &p_uri) {
 		return OK;
 	}
 	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	return err_code ? FAILED : ok;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {

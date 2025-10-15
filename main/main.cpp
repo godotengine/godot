@@ -2141,7 +2141,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// and even if file logging is disabled in the Project Settings.
 	// `--log-file` can be used with any path (including absolute paths outside the project folder),
 	// so check for filesystem access if it's used.
-	if (FileAccess::get_create_func(!log_file.is_empty() ? FileAccess::ACCESS_FILESYSTEM : FileAccess::ACCESS_USERDATA) &&
+	if (FileAccess::get_create_func(log_file.is_empty() ? FileAccess::ACCESS_USERDATA : FileAccess::ACCESS_FILESYSTEM) &&
 			(!log_file.is_empty() || (!project_manager && !editor && GLOBAL_GET("debug/file_logging/enable_file_logging")))) {
 		// Don't create logs for the project manager as they would be written to
 		// the current working directory, which is inconvenient.

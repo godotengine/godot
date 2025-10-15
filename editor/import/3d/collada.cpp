@@ -1929,10 +1929,10 @@ void Collada::_parse_library(XMLParser &p_parser) {
 				while (p_parser.read() == OK) {
 					if (p_parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 						if (p_parser.get_node_name() == "mesh") {
-							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
+							state.mesh_name_map[id] = name2.is_empty() ? id : name2;
 							_parse_mesh_geometry(p_parser, id, name2);
 						} else if (p_parser.get_node_name() == "spline") {
-							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
+							state.mesh_name_map[id] = name2.is_empty() ? id : name2;
 							_parse_curve_geometry(p_parser, id, name2);
 						} else if (!p_parser.is_empty()) {
 							p_parser.skip_section();

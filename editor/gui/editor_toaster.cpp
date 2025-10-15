@@ -162,7 +162,7 @@ void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const 
 	int show_all_setting = EDITOR_GET("interface/editor/show_internal_errors_in_toast_notifications");
 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
-		String err_str = !p_errorexp.is_empty() ? p_errorexp : p_error;
+		String err_str = p_errorexp.is_empty() ? p_error : p_errorexp;
 		String tooltip_str = p_file + ":" + itos(p_line);
 
 		if (!p_editor_notify) {

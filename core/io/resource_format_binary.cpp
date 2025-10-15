@@ -1238,7 +1238,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	}
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = p_original_path.is_empty() ? p_path : p_original_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
 	loader.open(f);

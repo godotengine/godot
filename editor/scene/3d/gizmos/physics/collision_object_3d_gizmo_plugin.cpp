@@ -67,7 +67,7 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Object *owner = co->shape_owner_get_owner(owner_id);
 		// Exclude CollisionShape3D and CollisionPolygon3D as they have their gizmo.
 		if (!Object::cast_to<CollisionShape3D>(owner) && !Object::cast_to<CollisionPolygon3D>(owner)) {
-			Ref<Material> material = get_material(!co->is_shape_owner_disabled(owner_id) ? "shape_material" : "shape_material_disabled", p_gizmo);
+			Ref<Material> material = get_material(co->is_shape_owner_disabled(owner_id) ? "shape_material_disabled" : "shape_material", p_gizmo);
 			for (int shape_id = 0; shape_id < co->shape_owner_get_shape_count(owner_id); shape_id++) {
 				Ref<Shape3D> s = co->shape_owner_get_shape(owner_id, shape_id);
 				if (s.is_null()) {

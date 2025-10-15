@@ -1409,7 +1409,7 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderText loader;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = p_original_path.is_empty() ? p_path : p_original_path;
 	switch (p_cache_mode) {
 		case CACHE_MODE_IGNORE:
 		case CACHE_MODE_REUSE:

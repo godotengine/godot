@@ -264,7 +264,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 		}
 
 		if (ci->commands != nullptr || ci->copy_back_buffer) {
-			ci->final_transform = !ci->use_identity_transform ? p_transform : _current_camera_transform;
+			ci->final_transform = ci->use_identity_transform ? _current_camera_transform : p_transform;
 			ci->final_modulate = p_modulate * ci->self_modulate;
 			ci->global_rect_cache = p_global_rect;
 			ci->global_rect_cache.position -= p_clip_rect.position;

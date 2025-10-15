@@ -308,9 +308,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	const Ref<StandardMaterial3D> material =
-			get_material(!cs->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
+			get_material(cs->is_disabled() ? "shape_material_disabled" : "shape_material", p_gizmo);
 	const Ref<StandardMaterial3D> material_arraymesh =
-			get_material(!cs->is_disabled() ? "shape_material_arraymesh" : "shape_material_arraymesh_disabled", p_gizmo);
+			get_material(cs->is_disabled() ? "shape_material_arraymesh_disabled" : "shape_material_arraymesh", p_gizmo);
 	const Ref<Material> handles_material = get_material("handles");
 
 	const Color collision_color = cs->is_disabled() ? Color(1.0, 1.0, 1.0, 0.75) : cs->get_debug_color();
