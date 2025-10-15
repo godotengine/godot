@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
 #include "servers/rendering/rendering_server.h"
 #include "thirdparty/amd-ffx/ffx_interface.h"
@@ -107,7 +108,7 @@ public:
 	};
 
 	struct Pipeline {
-		RID pipeline_rid;
+
 	};
 
 	struct Pass {
@@ -115,7 +116,7 @@ public:
 		RID shader_version;
 		RootSignature root_signature;
 		uint32_t shader_variant = 0;
-		Pipeline pipeline;
+		PipelineDeferredRD pipeline;
 		Vector<FfxResourceBinding> sampled_texture_bindings;
 		Vector<FfxResourceBinding> storage_texture_bindings;
 		Vector<FfxResourceBinding> uniform_bindings;
