@@ -355,12 +355,10 @@ private:
 		TextureInfo *main_texture = nullptr;
 
 		UINT mapped_subresource = UINT_MAX;
-		SelfList<TextureInfo> pending_clear{ this };
 #ifdef DEBUG_ENABLED
 		bool created_from_extension = false;
 #endif
 	};
-	SelfList<TextureInfo>::List textures_pending_clear;
 
 	HashMap<DXGI_FORMAT, uint32_t> format_sample_counts_mask_cache;
 	Mutex format_sample_counts_mask_cache_mutex;
