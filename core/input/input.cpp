@@ -151,6 +151,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
+	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
@@ -986,6 +988,28 @@ void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_joy_axis[c] = p_value;
 }
 
+void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad) {
+		return;
+	}
+	joypad->features = p_features;
+	_update_joypad_features(p_device);
+}
+
+bool Input::set_joy_light(int p_device, const Color &p_color) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->set_joy_light(p_color);
+}
+
+bool Input::has_joy_light(int p_device) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad && joypad->has_light;
+}
+
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
@@ -1475,6 +1499,16 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 		r_action_state.cache.pressed = true;
 		r_action_state.cache.strength = MAX(r_action_state.cache.strength, r_action_state.api_strength);
 		r_action_state.cache.raw_strength = MAX(r_action_state.cache.raw_strength, r_action_state.api_strength); // Use the strength as raw_strength for API-pressed states.
+	}
+}
+
+void Input::_update_joypad_features(int p_device) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return;
+	}
+	if (joypad->features->has_joy_light()) {
+		joypad->has_light = true;
 	}
 }
 
