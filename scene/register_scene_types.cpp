@@ -122,6 +122,7 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
+#include "scene/resources/fpslod_level.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
@@ -586,6 +587,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
+
+	GDREGISTER_CLASS(FPSLODLevel);
 
 	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader
 
