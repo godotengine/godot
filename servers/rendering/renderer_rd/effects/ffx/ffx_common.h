@@ -33,6 +33,13 @@
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
 #include "servers/rendering/rendering_server.h"
+
+// This flag doesn't actually control anything GCC specific in FSR2. It determines
+// if symbols should be exported, which is not required for Godot.
+#ifndef FFX_GCC
+#define FFX_GCC
+#endif
+
 #include "thirdparty/amd-ffx/ffx_interface.h"
 
 #define FFX_UBO_RING_BUFFER_SIZE (FFX_MAX_QUEUED_FRAMES * FFX_MAX_NUM_CONST_BUFFERS * FFX_MAX_PASS_COUNT)
@@ -40,6 +47,12 @@
 // So we redefine a size considering the maximum size of uniform buffers
 // that FSR effects supported by Godot actually uses.
 #define FFX_STAGING_CONSTANT_BUFFER_SIZE (FFX_MAX_QUEUED_FRAMES * 2048)
+
+#ifndef _MSC_VER
+#include <cwchar>
+#define wcscpy_s wcscpy
+#define _countof(a) (sizeof(a) / sizeof(*(a)))
+#endif
 
 namespace RendererRD {
 
