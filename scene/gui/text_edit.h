@@ -527,7 +527,6 @@ private:
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
 	int wrap_at_column = 0;
-	int wrap_right_offset = 10;
 
 	void _update_wrap_at_column(bool p_force = false);
 
@@ -641,6 +640,7 @@ private:
 		Color outline_color = Color(1, 1, 1);
 
 		int line_spacing = 1;
+		int wrap_offset = 10;
 
 		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
