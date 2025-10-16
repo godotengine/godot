@@ -304,6 +304,7 @@ private:
 
 	LocalVector<ObjectID> selected_ci_nodes;
 	real_t sel_2d_grab_dist = 0;
+	int sel_2d_scale = 1;
 
 	RID sbox_2d_ci;
 
