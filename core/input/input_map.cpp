@@ -166,10 +166,11 @@ bool InputMap::has_action(const StringName &p_action) const {
 }
 
 String InputMap::get_action_description(const StringName &p_action) const {
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), String(), suggest_actions(p_action));
+	const Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_V_MSG(action, String(), suggest_actions(p_action));
 
 	String ret;
-	const List<Ref<InputEvent>> &inputs = input_map[p_action].inputs;
+	const List<Ref<InputEvent>> &inputs = action->inputs;
 	for (Ref<InputEventKey> iek : inputs) {
 		if (iek.is_valid()) {
 			if (!ret.is_empty()) {
@@ -185,38 +186,43 @@ String InputMap::get_action_description(const StringName &p_action) const {
 }
 
 float InputMap::action_get_deadzone(const StringName &p_action) {
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, suggest_actions(p_action));
+	const Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_V_MSG(action, 0.0f, suggest_actions(p_action));
 
-	return input_map[p_action].deadzone;
+	return action->deadzone;
 }
 
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
+	Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_MSG(action, suggest_actions(p_action));
 
-	input_map[p_action].deadzone = p_deadzone;
+	action->deadzone = p_deadzone;
 }
 
 void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
-	if (_find_event(input_map[p_action], p_event, true)) {
+	Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_MSG(action, suggest_actions(p_action));
+	if (_find_event(*action, p_event, true)) {
 		return; // Already added.
 	}
 
-	input_map[p_action].inputs.push_back(p_event);
+	action->inputs.push_back(p_event);
 }
 
 bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, suggest_actions(p_action));
-	return (_find_event(input_map[p_action], p_event, true) != nullptr);
+	Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_V_MSG(action, false, suggest_actions(p_action));
+	return (_find_event(*action, p_event, true) != nullptr);
 }
 
 void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
+	Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_MSG(action, suggest_actions(p_action));
 
-	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
+	List<Ref<InputEvent>>::Element *E = _find_event(*action, p_event, true);
 	if (E) {
-		input_map[p_action].inputs.erase(E);
+		action->inputs.erase(E);
 
 		if (Input::get_singleton()->is_action_pressed(p_action)) {
 			Input::get_singleton()->action_release(p_action);
@@ -225,9 +231,10 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 }
 
 void InputMap::action_erase_events(const StringName &p_action) {
-	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
+	Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_MSG(action, suggest_actions(p_action));
 
-	input_map[p_action].inputs.clear();
+	action->inputs.clear();
 }
 
 TypedArray<InputEvent> InputMap::_action_get_events(const StringName &p_action) {
@@ -243,12 +250,12 @@ TypedArray<InputEvent> InputMap::_action_get_events(const StringName &p_action) 
 }
 
 const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_action) {
-	HashMap<StringName, Action>::Iterator E = input_map.find(p_action);
-	if (!E) {
+	Action *action = input_map.getptr(p_action);
+	if (!action) {
 		return nullptr;
 	}
 
-	return &E->value.inputs;
+	return &action->inputs;
 }
 
 bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
@@ -262,8 +269,8 @@ int InputMap::event_get_index(const Ref<InputEvent> &p_event, const StringName &
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
-	HashMap<StringName, Action>::Iterator E = input_map.find(p_action);
-	ERR_FAIL_COND_V_MSG(!E, false, suggest_actions(p_action));
+	const Action *action = input_map.getptr(p_action);
+	ERR_FAIL_NULL_V_MSG(action, false, suggest_actions(p_action));
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
@@ -282,13 +289,13 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 			if (input_event_action->get_event_index() >= 0) {
 				*r_event_index = input_event_action->get_event_index();
 			} else {
-				*r_event_index = E->value.inputs.size();
+				*r_event_index = action->inputs.size();
 			}
 		}
 		return input_event_action->get_action() == p_action;
 	}
 
-	List<Ref<InputEvent>>::Element *event = _find_event(E->value, p_event, p_exact_match, r_pressed, r_strength, r_raw_strength, r_event_index);
+	List<Ref<InputEvent>>::Element *event = _find_event(*const_cast<Action *>(action), p_event, p_exact_match, r_pressed, r_strength, r_raw_strength, r_event_index);
 	return event != nullptr;
 }
 

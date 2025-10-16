@@ -69,10 +69,11 @@ public:
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	_ALWAYS_INLINE_ bool is_breakpoint(int p_line, const StringName &p_source) const {
-		if (likely(!breakpoints.has(p_line))) {
+		const HashSet<StringName> *bkp = breakpoints.getptr(p_line);
+		if (likely(!bkp)) {
 			return false;
 		}
-		return breakpoints[p_line].has(p_source);
+		return bkp->has(p_source);
 	}
 	void clear_breakpoints();
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }

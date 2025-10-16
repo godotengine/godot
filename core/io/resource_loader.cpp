@@ -292,11 +292,11 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	if (load_paths_stack.size()) {
 		MutexLock thread_load_lock(thread_load_mutex);
 		const String &parent_task_path = load_paths_stack.get(load_paths_stack.size() - 1);
-		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
+		ThreadLoadTask *E = thread_load_tasks.getptr(parent_task_path);
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
 		if (E && !is_remapped_load) {
-			E->value.sub_tasks.insert(original_path);
+			E->sub_tasks.insert(original_path);
 		}
 	}
 	load_paths_stack.push_back(original_path);
@@ -519,10 +519,10 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 }
 
 ResourceLoader::LoadToken *ResourceLoader::_load_threaded_request_reuse_user_token(const String &p_path) {
-	HashMap<String, LoadToken *>::Iterator E = user_load_tokens.find(p_path);
+	LoadToken **E = user_load_tokens.getptr(p_path);
 	if (E) {
 		print_verbose("load_threaded_request(): Another threaded load for resource path '" + p_path + "' has been initiated. Not an error.");
-		LoadToken *token = E->value;
+		LoadToken *token = *E;
 		token->user_rc++;
 		return token;
 	} else {
@@ -664,22 +664,22 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 }
 
 float ResourceLoader::_dependency_get_progress(const String &p_path) {
-	if (thread_load_tasks.has(p_path)) {
-		ThreadLoadTask &load_task = thread_load_tasks[p_path];
+	ThreadLoadTask *load_task = thread_load_tasks.getptr(p_path);
+	if (load_task) {
 		float current_progress = 0.0;
-		int dep_count = load_task.sub_tasks.size();
+		int dep_count = load_task->sub_tasks.size();
 		if (dep_count > 0) {
-			for (const String &E : load_task.sub_tasks) {
+			for (const String &E : load_task->sub_tasks) {
 				current_progress += _dependency_get_progress(E);
 			}
 			current_progress /= float(dep_count);
 			current_progress *= 0.5;
-			current_progress += load_task.progress * 0.5;
+			current_progress += load_task->progress * 0.5;
 		} else {
-			current_progress = load_task.progress;
+			current_progress = load_task->progress;
 		}
-		load_task.max_reported_progress = MAX(load_task.max_reported_progress, current_progress);
-		return load_task.max_reported_progress;
+		load_task->max_reported_progress = MAX(load_task->max_reported_progress, current_progress);
+		return load_task->max_reported_progress;
 	} else {
 		return 1.0; //assume finished loading it so it no longer exists
 	}
@@ -697,10 +697,10 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		}
 
 		String local_path = _validate_local_path(p_path);
-		ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(local_path), THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
+		ThreadLoadTask *load_task_ptr = thread_load_tasks.getptr(local_path);
+		ERR_FAIL_NULL_V_MSG(load_task_ptr, THREAD_LOAD_INVALID_RESOURCE, "Bug in ResourceLoader logic, please report.");
 
-		ThreadLoadTask &load_task = thread_load_tasks[local_path];
-		status = load_task.status;
+		status = load_task_ptr->status;
 		if (r_progress) {
 			*r_progress = _dependency_get_progress(local_path);
 		}
@@ -708,10 +708,10 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		// Support userland polling in a loop on the main thread.
 		if (Thread::is_main_thread() && status == THREAD_LOAD_IN_PROGRESS) {
 			uint64_t frame = Engine::get_singleton()->get_process_frames();
-			if (frame == load_task.last_progress_check_main_thread_frame) {
+			if (frame == load_task_ptr->last_progress_check_main_thread_frame) {
 				ensure_progress = true;
 			} else {
-				load_task.last_progress_check_main_thread_frame = frame;
+				load_task_ptr->last_progress_check_main_thread_frame = frame;
 			}
 		}
 	}
@@ -732,7 +732,8 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
 
-		if (!user_load_tokens.has(p_path)) {
+		LoadToken **load_token_ptr = user_load_tokens.getptr(p_path);
+		if (!load_token_ptr) {
 			print_verbose("load_threaded_get(): No threaded load for resource path '" + p_path + "' has been initiated or its result has already been collected.");
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
@@ -740,7 +741,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			return Ref<Resource>();
 		}
 
-		LoadToken *load_token = user_load_tokens[p_path];
+		LoadToken *load_token = *load_token_ptr;
 		DEV_ASSERT(load_token->user_rc >= 1);
 
 		// Support userland requesting on the main thread before the load is reported to be complete.
@@ -978,9 +979,9 @@ Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const 
 	ERR_FAIL_COND_V(load_nesting == 0, Ref<Resource>()); // It makes no sense to use this from nesting level 0.
 	const String &local_path = _validate_local_path(p_path);
 	HashMap<String, Ref<Resource>> &overrides = res_ref_overrides[load_nesting - 1];
-	HashMap<String, Ref<Resource>>::Iterator E = overrides.find(local_path);
+	Ref<Resource> *E = overrides.getptr(local_path);
 	if (E) {
-		return E->value;
+		return *E;
 	} else {
 		Object *obj = ClassDB::instantiate(p_res_type);
 		ERR_FAIL_NULL_V(obj, Ref<Resource>());
@@ -996,16 +997,16 @@ Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const 
 
 Ref<Resource> ResourceLoader::get_resource_ref_override(const String &p_path) {
 	DEV_ASSERT(p_path == _validate_local_path(p_path));
-	HashMap<int, HashMap<String, Ref<Resource>>>::Iterator E = res_ref_overrides.find(load_nesting);
+	HashMap<String, Ref<Resource>> *E = res_ref_overrides.getptr(load_nesting);
 	if (!E) {
 		return nullptr;
 	}
-	HashMap<String, Ref<Resource>>::Iterator F = E->value.find(p_path);
+	Ref<Resource> *F = E->getptr(p_path);
 	if (!F) {
 		return nullptr;
 	}
 
-	return F->value;
+	return *F;
 }
 
 bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
@@ -1233,7 +1234,8 @@ bool ResourceLoader::should_create_uid_file(const String &p_path) {
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {
 	String new_path = p_path;
 
-	if (translation_remaps.has(p_path)) {
+	Vector<String> *res_remaps = translation_remaps.getptr(new_path);
+	if (res_remaps) {
 		// translation_remaps has the following format:
 		//   { "res://path.png": PackedStringArray( "res://path-ru.png:ru", "res://path-de.png:de" ) }
 
@@ -1245,18 +1247,16 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		String locale = TranslationServer::get_singleton()->get_locale();
 		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, vformat("Could not remap path '%s' for translation as configured locale '%s' is invalid.", p_path, locale));
 
-		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
-
 		int best_score = 0;
-		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind_char(':');
+		for (int i = 0; i < res_remaps->size(); i++) {
+			int split = (*res_remaps)[i].rfind_char(':');
 			if (split == -1) {
 				continue;
 			}
-			String l = res_remaps[i].substr(split + 1).strip_edges();
+			String l = (*res_remaps)[i].substr(split + 1).strip_edges();
 			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
 			if (score > 0 && score >= best_score) {
-				new_path = res_remaps[i].left(split);
+				new_path = (*res_remaps)[i].left(split);
 				best_score = score;
 				if (score == 10) {
 					break; // Exact match, skip the rest.

@@ -213,25 +213,25 @@ public:
 int64_t PackedData::get_size(const String &p_path) {
 	String simplified_path = p_path.simplify_path();
 	PathMD5 pmd5(simplified_path.md5_buffer());
-	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	PackedFile *E = files.getptr(pmd5);
 	if (!E) {
 		return -1; // File not found.
 	}
-	if (E->value.offset == 0) {
+	if (E->offset == 0) {
 		return -1; // File was erased.
 	}
-	return E->value.size;
+	return E->size;
 }
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
-	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	PackedFile *E = files.getptr(pmd5);
 	if (!E) {
 		return nullptr; // Not found.
 	}
 
-	return E->value.src->get_file(p_path, &E->value);
+	return E->src->get_file(p_path, E);
 }
 
 bool PackedData::has_path(const String &p_path) {

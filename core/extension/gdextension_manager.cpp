@@ -161,11 +161,12 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (!gdextension_map.has(p_path)) {
+	Ref<GDExtension> *extension_ptr = gdextension_map.getptr(p_path);
+	if (!extension_ptr) {
 		return LOAD_STATUS_NOT_LOADED;
 	}
 
-	Ref<GDExtension> extension = gdextension_map[p_path];
+	Ref<GDExtension> extension = *extension_ptr;
 	ERR_FAIL_COND_V_MSG(!extension->is_reloadable(), LOAD_STATUS_FAILED, vformat("This GDExtension is not marked as 'reloadable' or doesn't support reloading: %s.", p_path));
 
 	LoadStatus status;
@@ -211,13 +212,12 @@ GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (!gdextension_map.has(p_path)) {
+	Ref<GDExtension> *extension = gdextension_map.getptr(p_path);
+	if (!extension) {
 		return LOAD_STATUS_NOT_LOADED;
 	}
 
-	Ref<GDExtension> extension = gdextension_map[p_path];
-
-	LoadStatus status = _unload_extension_internal(extension);
+	LoadStatus status = _unload_extension_internal(*extension);
 	if (status != LOAD_STATUS_OK) {
 		return status;
 	}
@@ -237,10 +237,11 @@ Vector<String> GDExtensionManager::get_loaded_extensions() const {
 	}
 	return ret;
 }
+
 Ref<GDExtension> GDExtensionManager::get_extension(const String &p_path) {
-	HashMap<String, Ref<GDExtension>>::Iterator E = gdextension_map.find(p_path);
-	ERR_FAIL_COND_V(!E, Ref<GDExtension>());
-	return E->value;
+	Ref<GDExtension> *E = gdextension_map.getptr(p_path);
+	ERR_FAIL_NULL_V_MSG(E, Ref<GDExtension>(), vformat(R"(Error getting extension "%s".)", p_path));
+	return *E;
 }
 
 bool GDExtensionManager::class_has_icon_path(const String &p_class) const {
@@ -250,10 +251,8 @@ bool GDExtensionManager::class_has_icon_path(const String &p_class) const {
 
 String GDExtensionManager::class_get_icon_path(const String &p_class) const {
 	// TODO: Check that the icon belongs to a registered class somehow.
-	if (gdextension_class_icon_paths.has(p_class)) {
-		return gdextension_class_icon_paths[p_class];
-	}
-	return "";
+	const String *ret = gdextension_class_icon_paths.getptr(p_class);
+	return ret ? *ret : String();
 }
 
 void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel p_level) {

@@ -106,8 +106,9 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 		VariantInternal::initialize(_p->typed_fallback, _p->typed_value.type);
 		return *_p->typed_fallback;
 	} else if (unlikely(_p->read_only)) {
-		if (likely(_p->variant_map.has(key))) {
-			*_p->read_only = _p->variant_map[key];
+		const Variant *value = _p->variant_map.getptr(key);
+		if (likely(value)) {
+			*_p->read_only = *value;
 		} else {
 			VariantInternal::initialize(_p->read_only, _p->typed_value.type);
 		}
@@ -143,11 +144,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
-	if (!E) {
-		return nullptr;
-	}
-	return &E->value;
+	return _p->variant_map.getptr(key);
 }
 
 // WARNING: This method does not validate the value type.
@@ -156,27 +153,27 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(key));
+	Variant *E = _p->variant_map.getptr(key);
 	if (!E) {
 		return nullptr;
 	}
 	if (unlikely(_p->read_only != nullptr)) {
-		*_p->read_only = E->value;
+		*_p->read_only = *E;
 		return _p->read_only;
 	} else {
-		return &E->value;
+		return E;
 	}
 }
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	const Variant *E = _p->variant_map.getptr(key);
 
 	if (!E) {
 		return Variant();
 	}
-	return E->value;
+	return *E;
 }
 
 Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
@@ -280,8 +277,8 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	}
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
-		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
+		const Variant *other_E = p_dictionary._p->variant_map.getptr(this_E.key);
+		if (!other_E || !this_E.value.hash_compare(*other_E, recursion_count, false)) {
 			return false;
 		}
 	}

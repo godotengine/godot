@@ -848,8 +848,9 @@ bool CoreConstants::is_global_constant(const StringName &p_name) {
 }
 
 int CoreConstants::get_global_constant_index(const StringName &p_name) {
-	ERR_FAIL_COND_V_MSG(!_global_constants_map.has(p_name), -1, "Trying to get index of non-existing constant.");
-	return _global_constants_map[p_name];
+	const int *ret = _global_constants_map.getptr(p_name);
+	ERR_FAIL_NULL_V_MSG(ret, -1, "Trying to get index of non-existing constant.");
+	return *ret;
 }
 
 bool CoreConstants::is_global_enum(const StringName &p_enum) {
@@ -858,8 +859,9 @@ bool CoreConstants::is_global_enum(const StringName &p_enum) {
 
 void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName, int64_t> *p_values) {
 	ERR_FAIL_NULL_MSG(p_values, "Trying to get enum values with null map.");
-	ERR_FAIL_COND_MSG(!_global_enums.has(p_enum), "Trying to get values of non-existing enum.");
-	for (const _CoreConstant &constant : _global_enums[p_enum]) {
+	const Vector<_CoreConstant> *global_enum = _global_enums.getptr(p_enum);
+	ERR_FAIL_NULL_MSG(global_enum, "Trying to get values of non-existing enum.");
+	for (const _CoreConstant &constant : *global_enum) {
 		(*p_values)[constant.name] = constant.value;
 	}
 }

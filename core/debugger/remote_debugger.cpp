@@ -355,14 +355,15 @@ void RemoteDebugger::_poll_messages() {
 
 		Thread::ID thread = cmd[1];
 
-		if (!messages.has(thread)) {
+		List<Message> *message_ptr = messages.getptr(thread);
+		if (!message_ptr) {
 			continue; // This thread is not around to receive the messages
 		}
 
 		Message msg;
 		msg.message = cmd[0];
 		msg.data = cmd[2];
-		messages[thread].push_back(msg);
+		message_ptr->push_back(msg);
 	}
 }
 

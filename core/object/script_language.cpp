@@ -450,13 +450,13 @@ void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<Strin
 		inheriters_cache_dirty = false;
 	}
 
-	if (!inheriters_cache.has(p_base_type)) {
+	const Vector<StringName> *v = inheriters_cache.getptr(p_base_type);
+	if (!v) {
 		return;
 	}
 
-	const Vector<StringName> &v = inheriters_cache[p_base_type];
-	for (int i = 0; i < v.size(); i++) {
-		r_classes->push_back(v[i]);
+	for (const StringName &inheriter : *v) {
+		r_classes->push_back(inheriter);
 	}
 }
 
@@ -475,37 +475,44 @@ bool ScriptServer::is_global_class(const StringName &p_class) {
 }
 
 StringName ScriptServer::get_global_class_language(const StringName &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
-	return global_classes[p_class].language;
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, StringName(), vformat(R"(Requested global class "%s" does not exist.)", p_class));
+	return gc->language;
 }
 
 String ScriptServer::get_global_class_path(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
-	return global_classes[p_class].path;
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, String(), vformat(R"(Requested global class "%s" does not exist.)", p_class));
+	return gc->path;
 }
 
 StringName ScriptServer::get_global_class_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, String(), vformat(R"(Requested global class "%s" does not exist.)", p_class));
 	return global_classes[p_class].base;
 }
 
 StringName ScriptServer::get_global_class_native_base(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
-	String base = global_classes[p_class].base;
-	while (global_classes.has(base)) {
-		base = global_classes[base].base;
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, String(), vformat(R"(Requested global class "%s" does not exist.)", p_class));
+	String base = gc->base;
+	const GlobalScriptClass *gc_base = global_classes.getptr(base);
+	while (gc_base) {
+		base = gc_base->base;
 	}
 	return base;
 }
 
 bool ScriptServer::is_global_class_abstract(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), false);
-	return global_classes[p_class].is_abstract;
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, false, vformat(R"(Requested global class "%s" does not exist.)", p_class));
+	return gc->is_abstract;
 }
 
 bool ScriptServer::is_global_class_tool(const String &p_class) {
-	ERR_FAIL_COND_V(!global_classes.has(p_class), false);
-	return global_classes[p_class].is_tool;
+	const GlobalScriptClass *gc = global_classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(gc, false, vformat(R"(Requested global class "%s" does not exist.)", p_class));
+	return gc->is_tool;
 }
 
 // This function only sorts items added by this function.
@@ -697,13 +704,15 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 }
 
 bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
-	if (values.has(p_name)) {
-		r_ret = values[p_name];
+	const Variant *value_ptr = values.getptr(p_name);
+	if (value_ptr) {
+		r_ret = *value_ptr;
 		return true;
 	}
 
-	if (constants.has(p_name)) {
-		r_ret = constants[p_name];
+	const Variant *constant_ptr = constants.getptr(p_name);
+	if (constant_ptr) {
+		r_ret = *constant_ptr;
 		return true;
 	}
 
@@ -732,18 +741,20 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 }
 
 Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
-	if (values.has(p_name)) {
+	const Variant *value_ptr = values.getptr(p_name);
+	if (value_ptr) {
 		if (r_is_valid) {
 			*r_is_valid = true;
 		}
-		return values[p_name].get_type();
+		return value_ptr->get_type();
 	}
 
-	if (constants.has(p_name)) {
+	const Variant *constant_ptr = constants.getptr(p_name);
+	if (constant_ptr) {
 		if (r_is_valid) {
 			*r_is_valid = true;
 		}
-		return constants[p_name].get_type();
+		return constant_ptr->get_type();
 	}
 
 	if (r_is_valid) {
@@ -804,8 +815,9 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		new_values.insert(n);
 
 		if (!values.has(n) || (E.type != Variant::NIL && values[n].get_type() != E.type)) {
-			if (p_values.has(n)) {
-				values[n] = p_values[n];
+			const Variant *value_ptr = p_values.getptr(n);
+			if (value_ptr) {
+				values[n] = *value_ptr;
 			}
 		}
 	}
@@ -843,10 +855,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 	if (script->is_placeholder_fallback_enabled()) {
-		HashMap<StringName, Variant>::Iterator E = values.find(p_name);
+		Variant *E = values.getptr(p_name);
 
 		if (E) {
-			E->value = p_value;
+			*E = p_value;
 		} else {
 			values.insert(p_name, p_value);
 		}
@@ -875,21 +887,21 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 
 Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
 	if (script->is_placeholder_fallback_enabled()) {
-		HashMap<StringName, Variant>::ConstIterator E = values.find(p_name);
+		Variant *E = values.getptr(p_name);
 
 		if (E) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return E->value;
+			return *E;
 		}
 
-		E = constants.find(p_name);
+		E = constants.getptr(p_name);
 		if (E) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return E->value;
+			return *E;
 		}
 	}
 

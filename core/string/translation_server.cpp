@@ -179,13 +179,15 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 	}
 
 	// Handles known non-ISO language names used e.g. on Windows.
-	if (p_server.locale_rename_map.has(language)) {
-		language = p_server.locale_rename_map[language];
+	const String *locale_rename = p_server.locale_rename_map.getptr(language);
+	if (locale_rename) {
+		language = *locale_rename;
 	}
 
 	// Handle country renames.
-	if (p_server.country_rename_map.has(country)) {
-		country = p_server.country_rename_map[country];
+	const String *country_rename = p_server.country_rename_map.getptr(country);
+	if (country_rename) {
+		country = *country_rename;
 	}
 
 	// Remove unsupported script codes.
@@ -340,11 +342,8 @@ Vector<String> TranslationServer::get_all_languages() const {
 }
 
 String TranslationServer::get_language_name(const String &p_language) const {
-	if (language_map.has(p_language)) {
-		return language_map[p_language];
-	} else {
-		return p_language;
-	}
+	const String *ret = language_map.getptr(p_language);
+	return ret ? *ret : p_language;
 }
 
 Vector<String> TranslationServer::get_all_scripts() const {
@@ -358,11 +357,8 @@ Vector<String> TranslationServer::get_all_scripts() const {
 }
 
 String TranslationServer::get_script_name(const String &p_script) const {
-	if (script_map.has(p_script)) {
-		return script_map[p_script];
-	} else {
-		return p_script;
-	}
+	const String *ret = script_map.getptr(p_script);
+	return ret ? *ret : p_script;
 }
 
 Vector<String> TranslationServer::get_all_countries() const {
@@ -376,11 +372,8 @@ Vector<String> TranslationServer::get_all_countries() const {
 }
 
 String TranslationServer::get_country_name(const String &p_country) const {
-	if (country_name_map.has(p_country)) {
-		return country_name_map[p_country];
-	} else {
-		return p_country;
-	}
+	const String *ret = country_name_map.getptr(p_country);
+	return ret ? *ret : p_country;
 }
 
 void TranslationServer::set_locale(const String &p_locale) {

@@ -379,12 +379,12 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return false;
 	}
 
-	return E->value.cache.pressed && (p_exact ? E->value.exact : true);
+	return E->cache.pressed && (p_exact ? E->exact : true);
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
@@ -394,22 +394,22 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently pressed.
-	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.cache.pressed : true;
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return pressed_requirement && E->pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
+		return pressed_requirement && E->pressed_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -421,26 +421,26 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Re
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return false;
 	}
 
-	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+	if (E->pressed_event_id != p_event->get_instance_id()) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently pressed.
-	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.cache.pressed : true;
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return pressed_requirement && E->pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
+		return pressed_requirement && E->pressed_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -451,22 +451,22 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently released.
-	bool released_requirement = legacy_just_pressed_behavior ? !E->value.cache.pressed : true;
+	bool released_requirement = legacy_just_pressed_behavior ? !E->cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return released_requirement && E->released_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
+		return released_requirement && E->released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -478,26 +478,26 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, const R
 		return false;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return false;
 	}
 
-	if (E->value.released_event_id != p_event->get_instance_id()) {
+	if (E->released_event_id != p_event->get_instance_id()) {
 		return false;
 	}
 
 	// Backward compatibility for legacy behavior, only return true if currently released.
-	bool released_requirement = legacy_just_pressed_behavior ? !E->value.cache.pressed : true;
+	bool released_requirement = legacy_just_pressed_behavior ? !E->cache.pressed : true;
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
+		return released_requirement && E->released_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
+		return released_requirement && E->released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -508,16 +508,16 @@ float Input::get_action_strength(const StringName &p_action, bool p_exact) const
 		return 0.0f;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return 0.0f;
 	}
 
-	return E->value.cache.strength;
+	return E->cache.strength;
 }
 
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
@@ -527,16 +527,16 @@ float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) c
 		return 0.0f;
 	}
 
-	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	const ActionState *E = action_states.getptr(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->value.exact == false) {
+	if (p_exact && !E->exact) {
 		return 0.0f;
 	}
 
-	return E->value.cache.raw_strength;
+	return E->cache.raw_strength;
 }
 
 float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
@@ -590,27 +590,30 @@ String Input::get_joy_name(int p_idx) {
 }
 
 Vector2 Input::get_joy_vibration_strength(int p_device) {
-	if (joy_vibration.has(p_device)) {
-		return Vector2(joy_vibration[p_device].weak_magnitude, joy_vibration[p_device].strong_magnitude);
-	} else {
-		return Vector2(0, 0);
+	const VibrationInfo *vibration = joy_vibration.getptr(p_device);
+	if (!vibration) {
+		return Vector2();
 	}
+
+	return Vector2(vibration->weak_magnitude, vibration->strong_magnitude);
 }
 
 uint64_t Input::get_joy_vibration_timestamp(int p_device) {
-	if (joy_vibration.has(p_device)) {
-		return joy_vibration[p_device].timestamp;
-	} else {
+	const VibrationInfo *vibration = joy_vibration.getptr(p_device);
+	if (!vibration) {
 		return 0;
 	}
+
+	return vibration->timestamp;
 }
 
 float Input::get_joy_vibration_duration(int p_device) {
-	if (joy_vibration.has(p_device)) {
-		return joy_vibration[p_device].duration;
-	} else {
-		return 0.f;
+	const VibrationInfo *vibration = joy_vibration.getptr(p_device);
+	if (!vibration) {
+		return 0.0f;
 	}
+
+	return vibration->duration;
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -1859,8 +1862,9 @@ void Input::set_fallback_mapping(const String &p_guid) {
 
 //platforms that use the remapping system can override and call to these ones
 bool Input::is_joy_known(int p_device) {
-	if (joy_names.has(p_device)) {
-		int mapping = joy_names[p_device].mapping;
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad) {
+		int mapping = joypad->mapping;
 		if (mapping != -1 && mapping != fallback_mapping) {
 			return true;
 		}
@@ -1869,13 +1873,15 @@ bool Input::is_joy_known(int p_device) {
 }
 
 String Input::get_joy_guid(int p_device) const {
-	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
-	return joy_names[p_device].uid;
+	const Joypad *joypad = joy_names.getptr(p_device);
+	ERR_FAIL_NULL_V_MSG(joypad, String(), vformat("Invalid joypad %s.", p_device));
+	return joypad->uid;
 }
 
 Dictionary Input::get_joy_info(int p_device) const {
-	ERR_FAIL_COND_V(!joy_names.has(p_device), Dictionary());
-	return joy_names[p_device].info;
+	const Joypad *joypad = joy_names.getptr(p_device);
+	ERR_FAIL_NULL_V_MSG(joypad, Dictionary(), vformat("Invalid joypad %s.", p_device));
+	return joypad->info;
 }
 
 bool Input::should_ignore_device(int p_vendor_id, int p_product_id) const {

@@ -133,8 +133,9 @@ PackedStringArray IP::resolve_hostname_addresses(const String &p_hostname, Type 
 
 	{
 		MutexLock lock(resolver->mutex);
-		if (resolver->cache.has(key)) {
-			res = resolver->cache[key];
+		List<IPAddress> *cache = resolver->cache.getptr(key);
+		if (cache) {
+			res = *cache;
 		} else {
 			// This should be run unlocked so the resolver thread can keep resolving
 			// other requests.
@@ -168,8 +169,9 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	resolver->queue[id].hostname = p_hostname;
 	resolver->queue[id].type = p_type;
-	if (resolver->cache.has(key)) {
-		resolver->queue[id].response = resolver->cache[key];
+	List<IPAddress> *cache = resolver->cache.getptr(key);
+	if (cache) {
+		resolver->queue[id].response = *cache;
 		resolver->queue[id].status.set(IP::RESOLVER_STATUS_DONE);
 	} else {
 		resolver->queue[id].response = List<IPAddress>();

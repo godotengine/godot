@@ -1112,12 +1112,12 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 		return;
 	}
 
-	HashMap<StringName, Variant>::Iterator E = metadata.find(p_name);
-	if (E) {
-		E->value = p_value;
+	Variant *V = metadata.getptr(p_name);
+	if (V) {
+		*V = p_value;
 	} else {
 		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
-		Variant *V = &metadata.insert(p_name, p_value)->value;
+		V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
 		metadata_properties["metadata/" + sname] = V;
@@ -1128,14 +1128,15 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 }
 
 Variant Object::get_meta(const StringName &p_name, const Variant &p_default) const {
-	if (!metadata.has(p_name)) {
+	const Variant *meta = metadata.getptr(p_name);
+	if (!meta) {
 		if (p_default != Variant()) {
 			return p_default;
 		} else {
 			ERR_FAIL_V_MSG(Variant(), vformat("The object does not have any 'meta' values with the key '%s'.", p_name));
 		}
 	}
-	return metadata[p_name];
+	return *meta;
 }
 
 void Object::remove_meta(const StringName &p_name) {
@@ -1201,10 +1202,11 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 bool Object::_has_user_signal(const StringName &p_name) const {
 	OBJ_SIGNAL_LOCK
 
-	if (!signal_map.has(p_name)) {
+	const SignalData *signal = signal_map.getptr(p_name);
+	if (!signal) {
 		return false;
 	}
-	return signal_map[p_name].user.name.length() > 0;
+	return signal->user.name.length() > 0;
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
@@ -1405,8 +1407,9 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 
 	add_user_signal(mi);
 
-	if (signal_map.has(p_name)) {
-		signal_map.getptr(p_name)->removable = true;
+	SignalData *signal = signal_map.getptr(p_name);
+	if (signal) {
+		signal->removable = true;
 	}
 }
 

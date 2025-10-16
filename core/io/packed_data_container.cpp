@@ -213,8 +213,9 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 	switch (p_data.get_type()) {
 		case Variant::STRING: {
 			String s = p_data;
-			if (string_cache.has(s)) {
-				return string_cache[s];
+			uint32_t *string_id = string_cache.getptr(s);
+			if (string_id) {
+				return *string_id;
 			}
 
 			string_cache[s] = tmpdata.size();

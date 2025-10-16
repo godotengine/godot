@@ -129,12 +129,12 @@ void PackedData::add_pack_source(PackSource *p_source) {
 uint8_t *PackedData::get_file_hash(const String &p_path) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
-	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	PackedFile *E = files.getptr(pmd5);
 	if (!E) {
 		return nullptr;
 	}
 
-	return E->value.md5;
+	return E->md5;
 }
 
 HashSet<String> PackedData::get_file_paths() const {

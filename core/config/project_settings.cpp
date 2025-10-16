@@ -367,12 +367,12 @@ Variant ProjectSettings::get_setting_with_override_and_custom_features(const Str
 	_THREAD_SAFE_METHOD_
 
 	StringName name = p_name;
-	if (feature_overrides.has(name)) {
-		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
-		for (uint32_t i = 0; i < overrides.size(); i++) {
-			if (p_features.has(String(overrides[i].first).to_lower())) {
-				if (props.has(overrides[i].second)) {
-					name = overrides[i].second;
+	const LocalVector<Pair<StringName, StringName>> *overrides = feature_overrides.getptr(name);
+	if (overrides) {
+		for (const Pair<StringName, StringName> &override : *overrides) {
+			if (p_features.has(String(override.first).to_lower())) {
+				if (props.has(override.second)) {
+					name = override.second;
 					break;
 				}
 			}
@@ -504,8 +504,9 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
 		}
 
-		if (setting_overrides.has(base.name)) {
-			for (const _VCSort &over : setting_overrides.get(base.name)) {
+		LocalVector<_VCSort> *setting_override = setting_overrides.getptr(base.name);
+		if (setting_override) {
+			for (const _VCSort &over : *setting_override) {
 				if (custom_prop_info.has(over.name)) {
 					PropertyInfo pi = custom_prop_info[over.name];
 					pi.name = over.name;
@@ -1415,8 +1416,9 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 }
 
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
-	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
-	return autoloads[p_name];
+	const AutoloadInfo *autoload = autoloads.getptr(p_name);
+	ERR_FAIL_NULL_V_MSG(autoload, AutoloadInfo(), "Trying to get non-existent autoload.");
+	return *autoload;
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {

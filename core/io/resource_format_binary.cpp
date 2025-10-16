@@ -408,11 +408,12 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					}
 
 					//always use internal cache for loading internal resources
-					if (!internal_index_cache.has(path)) {
+					Ref<Resource> *internal_cache = internal_index_cache.getptr(path);
+					if (!internal_cache) {
 						WARN_PRINT(vformat("Couldn't load resource (no cache): %s.", path));
 						r_v = Variant();
 					} else {
-						r_v = internal_index_cache[path];
+						r_v = *internal_cache;
 					}
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE: {
@@ -686,8 +687,9 @@ Error ResourceLoaderBinary::load() {
 	for (int i = 0; i < external_resources.size(); i++) {
 		String path = external_resources[i].path;
 
-		if (remaps.has(path)) {
-			path = remaps[path];
+		const String *remap = remaps.getptr(path);
+		if (remap) {
+			path = *remap;
 		}
 
 		if (!path.contains("://") && path.is_relative_path()) {
@@ -1450,8 +1452,9 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 			relative = true;
 		}
 
-		if (p_map.has(path)) {
-			String np = p_map[path];
+		const String *map_ptr = p_map.getptr(path);
+		if (map_ptr) {
+			String np = *map_ptr;
 			path = np;
 		}
 
@@ -1841,15 +1844,17 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 			f->store_16(snc);
 			for (int i = 0; i < np.get_name_count(); i++) {
-				if (string_map.has(np.get_name(i))) {
-					f->store_32(uint32_t(string_map[np.get_name(i)]));
+				const int *string_id = string_map.getptr(np.get_name(i));
+				if (string_id) {
+					f->store_32(uint32_t(*string_id));
 				} else {
 					save_unicode_string(f, np.get_name(i), true);
 				}
 			}
 			for (int i = 0; i < np.get_subname_count(); i++) {
-				if (string_map.has(np.get_subname(i))) {
-					f->store_32(uint32_t(string_map[np.get_subname(i)]));
+				const int *string_id = string_map.getptr(np.get_subname(i));
+				if (string_id) {
+					f->store_32(uint32_t(*string_id));
 				} else {
 					save_unicode_string(f, np.get_subname(i), true);
 				}
@@ -1874,13 +1879,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
 				f->store_32(uint32_t(external_resources[res]));
 			} else {
-				if (!resource_map.has(res)) {
+				int *res_ptr = resource_map.getptr(res);
+				if (!res_ptr) {
 					f->store_32(OBJECT_EMPTY);
 					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(uint32_t(resource_map[res]));
+				f->store_32(uint32_t(*res_ptr));
 				//internal resource
 			}
 
@@ -2139,8 +2145,9 @@ void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> p_f,
 
 int ResourceFormatSaverBinaryInstance::get_string_index(const String &p_string) {
 	StringName s = p_string;
-	if (string_map.has(s)) {
-		return string_map[s];
+	const int *string_id = string_map.getptr(s);
+	if (string_id) {
+		return *string_id;
 	}
 
 	string_map[s] = strings.size();

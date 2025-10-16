@@ -330,8 +330,8 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 }
 
 Object *Engine::get_singleton_object(const StringName &p_name) const {
-	HashMap<StringName, Object *>::ConstIterator E = singleton_ptrs.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
+	Object *const *E = singleton_ptrs.getptr(p_name);
+	ERR_FAIL_NULL_V_MSG(E, nullptr, vformat("Failed to retrieve non-existent singleton '%s'.", p_name));
 
 #ifdef TOOLS_ENABLED
 	if (!is_editor_hint() && is_singleton_editor_only(p_name)) {
@@ -339,7 +339,7 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	}
 #endif
 
-	return E->value;
+	return *E;
 }
 
 bool Engine::is_singleton_user_created(const StringName &p_name) const {

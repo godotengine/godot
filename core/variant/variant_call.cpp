@@ -1639,14 +1639,14 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
+	int64_t *E = cd.value.getptr(p_value);
 	if (!E) {
-		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
+		Variant *F = cd.variant_value.getptr(p_value);
 		if (F) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return F->value;
+			return *F;
 		} else {
 			return -1;
 		}
@@ -1655,7 +1655,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 		*r_valid = true;
 	}
 
-	return E->value;
+	return *E;
 }
 
 void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums) {
@@ -1689,12 +1689,12 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 
 	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
 
-	HashMap<StringName, HashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
+	HashMap<StringName, int> *E = enum_data.value.getptr(p_enum_name);
 	if (!E) {
 		return -1;
 	}
 
-	HashMap<StringName, int>::Iterator V = E->value.find(p_enumeration);
+	int *V = E->getptr(p_enumeration);
 	if (!V) {
 		return -1;
 	}
@@ -1703,7 +1703,7 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 		*r_valid = true;
 	}
 
-	return V->value;
+	return *V;
 }
 
 bool Variant::has_enum(Variant::Type p_type, const StringName &p_enum_name) {

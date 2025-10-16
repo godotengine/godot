@@ -1211,8 +1211,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			StringName key_class_name;
 			Variant key_script;
 			bool got_comma_token = false;
-			if (builtin_types.has(token.value)) {
-				key_type = builtin_types.get(token.value);
+			const Variant::Type *builtin_type = builtin_types.getptr(token.value);
+			if (builtin_type) {
+				key_type = *builtin_type;
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
@@ -1257,8 +1258,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			StringName value_class_name;
 			Variant value_script;
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				value_type = builtin_types.get(token.value);
+			builtin_type = builtin_types.getptr(token.value);
+			if (builtin_type) {
+				value_type = *builtin_type;
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
@@ -1348,8 +1350,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			Array array = Array();
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
+			const Variant::Type *builtin_type = builtin_types.getptr(token.value);
+			if (builtin_type) {
+				array.set_typed(*builtin_type, StringName(), Variant());
 			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);

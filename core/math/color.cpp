@@ -423,9 +423,9 @@ int Color::find_named_color(const String &p_name) {
 		}
 	}
 
-	const HashMap<String, int>::ConstIterator E = named_colors_hashmap.find(name);
+	const int *E = named_colors_hashmap.getptr(name);
 	if (E) {
-		return E->value;
+		return *E;
 	}
 
 	return -1;

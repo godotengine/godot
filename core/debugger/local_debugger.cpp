@@ -179,13 +179,14 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				} else {
 					String key = key_value.left(value_pos);
 
-					if (!options.has(key)) {
+					String *option = options.getptr(key);
+					if (!option) {
 						print_line("Error: Unknown option " + key);
 					} else {
 						// Allow explicit tab character
 						String value = key_value.substr(value_pos + 1).replace("\\t", "\t");
 
-						options[key] = value;
+						*option = value;
 					}
 				}
 			}

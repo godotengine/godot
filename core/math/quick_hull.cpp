@@ -402,13 +402,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 							}
 							Edge e2(idx, idxn);
 
-							HashMap<Edge, RetFaceConnect, Edge>::Iterator F2 = ret_edges.find(e2);
+							RetFaceConnect *F2 = ret_edges.getptr(e2);
 							ERR_CONTINUE(!F2);
 							//change faceconnect, point to this face instead
-							if (F2->value.left == O) {
-								F2->value.left = E;
-							} else if (F2->value.right == O) {
-								F2->value.right = E;
+							if (F2->left == O) {
+								F2->left = E;
+							} else if (F2->right == O) {
+								F2->right = E;
 							}
 						}
 
