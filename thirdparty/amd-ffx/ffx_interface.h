@@ -27,6 +27,15 @@
 #include "ffx_error.h"
 #include "ffx_message.h"
 
+// GODOT BEGINS
+// Fix GCC build
+#ifndef _MSC_VER
+#include <cwchar>
+#define wcscpy_s wcscpy
+#define _countof(a) (sizeof(a) / sizeof(*(a)))
+#endif
+// GODOT ENDS
+
 #if defined(__cplusplus)
 #define FFX_CPU
 extern "C" {
