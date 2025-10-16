@@ -48,12 +48,6 @@
 // that FSR effects supported by Godot actually uses.
 #define FFX_STAGING_CONSTANT_BUFFER_SIZE (FFX_MAX_QUEUED_FRAMES * 2048)
 
-#ifndef _MSC_VER
-#include <cwchar>
-#define wcscpy_s wcscpy
-#define _countof(a) (sizeof(a) / sizeof(*(a)))
-#endif
-
 namespace RendererRD {
 
 // Helper class for Fidelity FX interop.
