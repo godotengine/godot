@@ -301,6 +301,14 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 	}
 }
 
+bool JoypadSDL::Joypad::has_joy_adaptive_triggers() const {
+	return SDL_GetGamepadTypeForID(sdl_instance_idx) == SDL_GAMEPAD_TYPE_PS5;
+}
+
+bool JoypadSDL::Joypad::send_joy_packet(const void *p_data, int p_size) {
+	return SDL_SendJoystickEffect(get_sdl_joystick(), p_data, p_size);
+}
+
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
 	return SDL_GetJoystickFromID(sdl_instance_idx);
 }

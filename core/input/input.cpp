@@ -143,6 +143,15 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("has_joy_adaptive_triggers", "device"), &Input::has_joy_adaptive_triggers);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_off", "device", "axis"), &Input::joy_adaptive_triggers_off);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_feedback", "device", "axis", "position", "strength"), &Input::joy_adaptive_triggers_feedback);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_weapon", "device", "axis", "start_position", "end_position", "strength"), &Input::joy_adaptive_triggers_weapon);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_vibration", "device", "axis", "position", "frequency", "amplitude"), &Input::joy_adaptive_triggers_vibration);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_multi_feedback", "device", "axis", "strengths"), &Input::joy_adaptive_triggers_multi_feedback);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_slope_feedback", "device", "axis", "start_position", "end_position", "start_strength", "end_strength"), &Input::joy_adaptive_triggers_slope_feedback);
+	ClassDB::bind_method(D_METHOD("joy_adaptive_triggers_multi_vibration", "device", "axis", "frequency", "amplitudes"), &Input::joy_adaptive_triggers_multi_vibration);
+	ClassDB::bind_method(D_METHOD("send_joy_packet", "device", "packet"), &Input::send_joy_packet);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -1020,6 +1029,309 @@ void Input::stop_joy_vibration(int p_device) {
 
 void Input::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms, p_amplitude);
+}
+
+/*
+	PS5 trigger effect documentation:
+	https://controllers.fandom.com/wiki/Sony_DualSense#FFB_Trigger_Modes
+*/
+typedef struct
+{
+	uint8_t ucEnableBits1; /* 0 */
+	uint8_t ucEnableBits2; /* 1 */
+	uint8_t ucRumbleRight; /* 2 */
+	uint8_t ucRumbleLeft; /* 3 */
+	uint8_t ucHeadphoneVolume; /* 4 */
+	uint8_t ucSpeakerVolume; /* 5 */
+	uint8_t ucMicrophoneVolume; /* 6 */
+	uint8_t ucAudioEnableBits; /* 7 */
+	uint8_t ucMicLightMode; /* 8 */
+	uint8_t ucAudioMuteBits; /* 9 */
+	uint8_t rgucRightTriggerEffect[11]; /* 10 */
+	uint8_t rgucLeftTriggerEffect[11]; /* 21 */
+	uint8_t rgucUnknown1[6]; /* 32 */
+	uint8_t ucLedFlags; /* 38 */
+	uint8_t rgucUnknown2[2]; /* 39 */
+	uint8_t ucLedAnim; /* 41 */
+	uint8_t ucLedBrightness; /* 42 */
+	uint8_t ucPadLights; /* 43 */
+	uint8_t ucLedRed; /* 44 */
+	uint8_t ucLedGreen; /* 45 */
+	uint8_t ucLedBlue; /* 46 */
+} DS5EffectsState_t;
+
+#define DUALSENSE_BOTH_TRIGGERS (JoyAxis)((int)JoyAxis::TRIGGER_LEFT + (int)JoyAxis::TRIGGER_RIGHT)
+#define DUALSENSE_CHECK_TRIGGER                                                                                                                     \
+	Joypad *joypad = joy_names.getptr(p_device);                                                                                                    \
+	ERR_FAIL_COND_V_MSG(joypad == nullptr, false, "Joypad not connected.");                                                                         \
+	ERR_FAIL_COND_V_MSG(joypad->features == nullptr, false, "Adaptive triggers are not supported on this platform.");                               \
+	ERR_FAIL_COND_V_MSG(p_axis != JoyAxis::TRIGGER_LEFT && p_axis != JoyAxis::TRIGGER_RIGHT && p_axis != DUALSENSE_BOTH_TRIGGERS, false,            \
+			"Invalid trigger axis, please specify JOY_AXIS_TRIGGER_LEFT, JOY_AXIS_TRIGGER_RIGHT or JOY_AXIS_TRIGGER_LEFT+JOY_AXIS_TRIGGER_RIGHT."); \
+	if (!joypad->features->has_joy_adaptive_triggers()) {                                                                                           \
+		return false;                                                                                                                               \
+	}
+
+#define DUALSENSE_SETUP_TRIGGER_EFFECT             \
+	DS5EffectsState_t state;                       \
+	uint8_t *values = state.rgucLeftTriggerEffect; \
+	memset(&state, 0, sizeof(state));              \
+	if (p_axis == JoyAxis::TRIGGER_LEFT) {         \
+		state.ucEnableBits1 = 0x08;                \
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT) { \
+		values = state.rgucRightTriggerEffect;     \
+		state.ucEnableBits1 = 0x04;                \
+	} else {                                       \
+		state.ucEnableBits1 = 0x08 | 0x04;         \
+	}
+
+#define DUALSENSE_SEND_EFFECT                                                                                   \
+	if (p_axis == DUALSENSE_BOTH_TRIGGERS) {                                                                    \
+		memcpy(state.rgucRightTriggerEffect, state.rgucLeftTriggerEffect, sizeof(state.rgucLeftTriggerEffect)); \
+	}                                                                                                           \
+	return joypad->features->send_joy_packet(&state, sizeof(state));
+
+// Credit for the values-generating code: Copyright (c) 2021-2022 John "Nielk1" Klein
+// https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db
+
+bool Input::has_joy_adaptive_triggers(int p_device) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->has_joy_adaptive_triggers();
+}
+
+bool Input::joy_adaptive_triggers_off(int p_device, JoyAxis p_axis) {
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+	values[0] = 0x05;
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::joy_adaptive_triggers_feedback(int p_device, JoyAxis p_axis, int p_position, int p_strength) {
+	if (p_strength == 0) {
+		return joy_adaptive_triggers_off(p_device, p_axis);
+	}
+
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+
+	ERR_FAIL_COND_V_MSG(p_position < 0 || p_position > 9, false, "The value of parameter \"position\" must be between 0 and 9.");
+	ERR_FAIL_COND_V_MSG(p_strength < 0 || p_strength > 8, false, "The value of parameter \"strength\" must be between 0 and 9.");
+
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+
+	uint8_t force_value = (uint8_t)((p_strength - 1) & 0x07);
+	uint32_t force_zones = 0;
+	uint16_t active_zones = 0;
+	for (int i = p_position; i < 10; i++) {
+		force_zones |= (uint32_t)(force_value << (3 * i));
+		active_zones |= (uint16_t)(1 << i);
+	}
+
+	values[0] = 0x21;
+	values[1] = (uint8_t)((active_zones >> 0) & 0xFF);
+	values[2] = (uint8_t)((active_zones >> 8) & 0xFF);
+	values[3] = (uint8_t)((force_zones >> 0) & 0xFF);
+	values[4] = (uint8_t)((force_zones >> 8) & 0xFF);
+	values[5] = (uint8_t)((force_zones >> 16) & 0xFF);
+	values[6] = (uint8_t)((force_zones >> 24) & 0xFF);
+
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::joy_adaptive_triggers_weapon(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_strength) {
+	if (p_strength == 0) {
+		return joy_adaptive_triggers_off(p_device, p_axis);
+	}
+
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+
+	ERR_FAIL_COND_V_MSG(p_start_position < 2 || p_start_position > 7, false,
+			"The value of parameter \"start_position\" must be between 2 and 7.");
+	ERR_FAIL_COND_V_MSG(p_end_position <= p_start_position || p_end_position > 8, false,
+			"The value of parameter \"end_position\" must be between p_start_position+1 and 8.");
+	ERR_FAIL_COND_V_MSG(p_strength < 0 || p_strength > 8, false,
+			"The value of parameter \"strength\" must be between 0 and 8.");
+
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+
+	uint16_t start_and_stop_zones = (uint16_t)((1 << p_start_position) | (1 << p_end_position));
+
+	values[0] = 0x25;
+	values[1] = (uint8_t)((start_and_stop_zones >> 0) & 0xFF);
+	values[2] = (uint8_t)((start_and_stop_zones >> 8) & 0xFF);
+	values[3] = (uint8_t)(p_strength - 1);
+
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::joy_adaptive_triggers_vibration(int p_device, JoyAxis p_axis, int p_position, int p_frequency, int p_amplitude) {
+	if (p_amplitude == 0 || p_frequency == 0) {
+		return joy_adaptive_triggers_off(p_device, p_axis);
+	}
+
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+
+	ERR_FAIL_COND_V_MSG(p_position < 0 || p_position > 9, false, "The value of parameter \"position\" must be between 0 and 9.");
+	ERR_FAIL_COND_V_MSG(p_amplitude < 0 || p_amplitude > 8, false, "The value of parameter \"amplitude\" must be between 0 and 8.");
+	ERR_FAIL_COND_V_MSG(p_frequency < 0 || p_frequency > 255, false, "The value of parameter \"frequency\" must be between 0 and 255.");
+
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+
+	uint8_t strength_value = (uint8_t)((p_amplitude - 1) & 0x7);
+	uint32_t amplitude_zones = 0;
+	uint16_t active_zones = 0;
+
+	for (int i = p_position; i < 10; i++) {
+		amplitude_zones |= (uint32_t)(strength_value << (3 * i));
+		active_zones |= (uint16_t)(1 << i);
+	}
+
+	values[0] = 0x26;
+	values[1] = (uint8_t)((active_zones >> 0) & 0xFF);
+	values[2] = (uint8_t)((active_zones >> 8) & 0xFF);
+	values[3] = (uint8_t)((amplitude_zones >> 0) & 0xFF);
+	values[4] = (uint8_t)((amplitude_zones >> 8) & 0xFF);
+	values[5] = (uint8_t)((amplitude_zones >> 16) & 0xFF);
+	values[6] = (uint8_t)((amplitude_zones >> 24) & 0xFF);
+	values[9] = (uint8_t)p_frequency;
+
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::joy_adaptive_triggers_multi_feedback(int p_device, JoyAxis p_axis, TypedArray<int> p_strengths) {
+	ERR_FAIL_COND_V_MSG(p_strengths.size() != 10, false, "The \"strengths\" parameter array must have 10 elements.");
+
+	bool have_positive_values = false;
+	for (int i = 0; i < 10; i++) {
+		if (p_strengths[i].operator int() > 0) {
+			have_positive_values = true;
+			break;
+		}
+	}
+	if (!have_positive_values) {
+		return joy_adaptive_triggers_off(p_device, p_axis);
+	}
+
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+
+	uint32_t force_zones = 0;
+	uint16_t active_zones = 0;
+
+	for (int i = 0; i < 10; i++) {
+		int strength = p_strengths[i];
+		ERR_FAIL_COND_V_MSG(strength < 0 || strength > 8, false,
+				vformat("The value of parameter strengths[%d] must be between 0 and 8.", i));
+
+		if (strength > 0) {
+			uint8_t force_value = (uint8_t)((strength - 1) & 0x07);
+			force_zones |= (uint32_t)(force_value << (3 * i));
+			active_zones |= (uint16_t)(1 << i);
+		}
+	}
+
+	values[0] = 0x21;
+	values[1] = (uint8_t)((active_zones >> 0) & 0xFF);
+	values[2] = (uint8_t)((active_zones >> 8) & 0xFF);
+	values[3] = (uint8_t)((force_zones >> 0) & 0xFF);
+	values[4] = (uint8_t)((force_zones >> 8) & 0xFF);
+	values[5] = (uint8_t)((force_zones >> 16) & 0xFF);
+	values[6] = (uint8_t)((force_zones >> 24) & 0xFF);
+
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::joy_adaptive_triggers_slope_feedback(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_start_strength, int p_end_strength) {
+	//_THREAD_SAFE_METHOD_ // joy_adaptive_triggers_multi_feedback already handles this
+	DUALSENSE_CHECK_TRIGGER;
+
+	ERR_FAIL_COND_V_MSG(p_start_position < 0 || p_start_position > p_end_position, false,
+			"The value of parameter \"start_position\" must be between 0 and the value of \"end_position\" parameter.");
+	ERR_FAIL_COND_V_MSG(p_end_position <= p_start_position || p_end_position > 9, false,
+			"The value of parameter \"end_position\" must be between the value of \"start_position\" parameter + 1 and 9.");
+	ERR_FAIL_COND_V_MSG(p_start_strength < 1 || p_start_position > 8, false,
+			"The value of parameter \"start_strength\" must be between 1 and 8.");
+	ERR_FAIL_COND_V_MSG(p_end_strength < 1 || p_end_strength > 8, false,
+			"The value of parameter \"end_strength\" must be between 1 and 8.");
+
+	TypedArray<int> strengths;
+	float slope = 1.0f * (p_end_strength - p_start_strength) / (p_end_position - p_start_position);
+	for (int i = 0; i < 10; i++) {
+		if (i < p_start_position) {
+			strengths.append(0);
+		} else if (i <= p_end_position) {
+			strengths.append((uint8_t)round(p_start_strength + slope * (i - p_start_position)));
+		} else {
+			strengths.append(p_end_strength);
+		}
+	}
+
+	return joy_adaptive_triggers_multi_feedback(p_device, p_axis, strengths);
+}
+
+bool Input::joy_adaptive_triggers_multi_vibration(int p_device, JoyAxis p_axis, int p_frequency, TypedArray<int> p_amplitudes) {
+	ERR_FAIL_COND_V_MSG(p_frequency < 0 || p_frequency > 255, false, "The value of parameter \"frequency\" must be between 0 and 255.");
+	ERR_FAIL_COND_V_MSG(p_amplitudes.size() != 10, false, "The \"amplitudes\" parameter array must have 10 elements.");
+
+	bool have_positive_values = false;
+	for (int i = 0; i < 10; i++) {
+		if (p_amplitudes[i].operator int() > 0) {
+			have_positive_values = true;
+			break;
+		}
+	}
+	if (!have_positive_values || p_frequency == 0) {
+		return joy_adaptive_triggers_off(p_device, p_axis);
+	}
+
+	_THREAD_SAFE_METHOD_
+	DUALSENSE_CHECK_TRIGGER;
+	DUALSENSE_SETUP_TRIGGER_EFFECT;
+
+	uint32_t strength_zones = 0;
+	uint16_t active_zones = 0;
+
+	for (int i = 0; i < 10; i++) {
+		int amplitude = p_amplitudes[i];
+		ERR_FAIL_COND_V_MSG(amplitude < 0 || amplitude > 8, false,
+				vformat("The value of parameter amplitude[%d] must be between 0 and 8.", i));
+		if (amplitude > 0) {
+			uint8_t strength_value = (uint8_t)((amplitude - 1) * 0x07);
+			strength_zones |= (uint32_t)(strength_value << (3 * i));
+			active_zones |= (uint16_t)(1 << i);
+		}
+	}
+
+	values[0] = 0x26;
+	values[1] = (uint8_t)((active_zones >> 0) & 0xFF);
+	values[2] = (uint8_t)((active_zones >> 8) & 0xFF);
+	values[3] = (uint8_t)((strength_zones >> 0) & 0xFF);
+	values[4] = (uint8_t)((strength_zones >> 8) & 0xFF);
+	values[5] = (uint8_t)((strength_zones >> 16) & 0xFF);
+	values[6] = (uint8_t)((strength_zones >> 24) & 0xFF);
+	values[9] = (uint8_t)p_frequency;
+
+	DUALSENSE_SEND_EFFECT;
+}
+
+bool Input::send_joy_packet(int p_device, PackedByteArray p_packet) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V_MSG(!joy_names.has(p_device), false, "Joypad not connected.");
+	ERR_FAIL_COND_V_MSG(joy_names[p_device].features == nullptr, false, "Sending custom joypad packets is not supported on this platform.");
+
+	if (p_packet.size() == 0) {
+		WARN_PRINT("Packet size is 0. Skipping sending the packet.");
+		return false;
+	}
+
+	return joy_names[p_device].features->send_joy_packet(p_packet.ptr(), p_packet.size());
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
