@@ -137,9 +137,6 @@ struct PtrToArgStringConvertByReference {
 
 } //namespace Internal
 
-template <typename T, typename = void>
-struct PtrToArg;
-
 template <typename T>
 struct PtrToArg<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : PtrToArg<GetSimpleTypeT<T>> {};
 

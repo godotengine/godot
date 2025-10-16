@@ -959,18 +959,38 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return ret;
 }
 
-void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
+bool Object::is_gdvirtual_overridden(const GDVirtualMethodInfoBase &p_method_info, void *&ptr) const {
+	if (!p_method_info.compat) {
+		ScriptInstance *_script_instance = get_script_instance();
+		if (_script_instance && _script_instance->has_method(p_method_info.fn_name)) {
+			return true;
+		}
+	}
+	if (_extension) {
+		if (unlikely(!ptr)) {
+			_gdvirtual_init_method_ptr(p_method_info, ptr);
+		}
+		if (ptr != reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Object::_gdvirtual_init_method_ptr(const GDVirtualMethodInfoBase &p_method_info, void *&r_fn_ptr) const {
 	r_fn_ptr = nullptr;
+	const uint32_t compat_hash = p_method_info.get_method_info().get_compatibility_hash();
+
 	if (_extension->get_virtual_call_data2 && _extension->call_virtual_with_data) {
-		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_method_info.fn_name, compat_hash);
 	} else if (_extension->get_virtual2) {
-		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_method_info.fn_name, compat_hash);
 #ifndef DISABLE_DEPRECATED
-	} else if (p_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_fn_name).size() == 0) {
+	} else if (p_method_info.compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_method_info.fn_name).size() == 0) {
 		if (_extension->get_virtual_call_data && _extension->call_virtual_with_data) {
-			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
+			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_method_info.fn_name);
 		} else if (_extension->get_virtual) {
-			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
+			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_method_info.fn_name);
 		}
 #endif
 	}

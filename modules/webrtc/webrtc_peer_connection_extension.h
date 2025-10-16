@@ -46,7 +46,35 @@ public:
 	EXBIND0RC(ConnectionState, get_connection_state);
 	EXBIND0RC(GatheringState, get_gathering_state);
 	EXBIND0RC(SignalingState, get_signaling_state);
-	EXBIND1R(Error, initialize, const Dictionary &);
+
+	class _GDVIRTUAL_initialize : public GDVirtualMethodInfo<false, Error, const Dictionary &> {
+	public:
+		MethodInfo get_method_info() const override {
+			MethodInfo method_info;
+			method_info.name = "_initialize";
+			method_info.flags = METHOD_FLAG_VIRTUAL | METHOD_FLAG_VIRTUAL_REQUIRED;
+			method_info.return_val = GetTypeInfo<Error>::get_class_info();
+			method_info.return_val_metadata = GetTypeInfo<Error>::METADATA;
+			_gdvirtual_set_method_info_args<const Dictionary &>(method_info);
+			return method_info;
+		}
+
+		using GDVirtualMethodInfo::GDVirtualMethodInfo;
+	};
+
+	static const _GDVIRTUAL_initialize &get_gdvirtual__initialize() {
+		static _GDVIRTUAL_initialize instance("_initialize", true, false);
+		return instance;
+	}
+
+	mutable void *_gdvirtual__initialize_ptr = nullptr;
+
+	virtual Error initialize(const Dictionary &arg1) override {
+		Error ret;
+		ZeroInitializer<Error>::initialize(ret);
+		gdvirtual_call(get_gdvirtual__initialize(), _gdvirtual__initialize_ptr, arg1, ret);
+		return ret;
+	}
 	EXBIND2R(Ref<WebRTCDataChannel>, create_data_channel, const String &, const Dictionary &);
 	EXBIND0R(Error, create_offer);
 	EXBIND2R(Error, set_remote_description, const String &, const String &);
