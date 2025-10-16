@@ -31,6 +31,7 @@
 #include "openxr_hand_interaction_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 #include "core/config/project_settings.h"
 
 #include <openxr/openxr.h>
@@ -49,7 +50,7 @@ OpenXRHandInteractionExtension::~OpenXRHandInteractionExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandInteractionExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandInteractionExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Only enable this extension when requested.
@@ -78,7 +79,7 @@ void OpenXRHandInteractionExtension::on_register_metadata() {
 		openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 		openxr_metadata->register_io_path(profile_path, "Pinch pose", user_path, user_path + "/input/pinch_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 		openxr_metadata->register_io_path(profile_path, "Poke pose", user_path, user_path + "/input/poke_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-		openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+		openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_KHR_MAINTENANCE1_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 		openxr_metadata->register_io_path(profile_path, "Pinch", user_path, user_path + "/input/pinch_ext/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 		openxr_metadata->register_io_path(profile_path, "Pinch ready", user_path, user_path + "/input/pinch_ext/ready_ext", "", OpenXRAction::OPENXR_ACTION_BOOL);
