@@ -71,6 +71,7 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_target_size"), &RenderSceneBuffersRD::get_target_size);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &RenderSceneBuffersRD::get_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &RenderSceneBuffersRD::get_fsr_sharpness);
+	ClassDB::bind_method(D_METHOD("get_fsr_auto_generate_reactive"), &RenderSceneBuffersRD::get_fsr_auto_generate_reactive);
 	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersRD::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("get_texture_samples"), &RenderSceneBuffersRD::get_texture_samples);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &RenderSceneBuffersRD::get_screen_space_aa);
@@ -168,6 +169,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	screen_space_aa = p_config->get_screen_space_aa();
 
 	fsr_sharpness = p_config->get_fsr_sharpness();
+	fsr_auto_generate_reactive = p_config->get_fsr_auto_generate_reactive();
 	texture_mipmap_bias = p_config->get_texture_mipmap_bias();
 	anisotropic_filtering_level = p_config->get_anisotropic_filtering_level();
 	use_taa = p_config->get_use_taa();
@@ -184,7 +186,12 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// Create our color buffer.
 	const bool resolve_target = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, get_base_data_format(), get_color_usage_bits(resolve_target, false, can_be_storage));
+	uint32_t color_texture_usage_bits = get_color_usage_bits(resolve_target, false, can_be_storage);
+	if (fsr_auto_generate_reactive) {
+		// We need to copy the color texture if we have to record opaque-only color
+		color_texture_usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	}
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, get_base_data_format(), color_texture_usage_bits);
 
 	// TODO: Detect when it is safe to use RD::TEXTURE_USAGE_TRANSIENT_BIT for RB_TEX_DEPTH, RB_TEX_COLOR_MSAA and/or RB_TEX_DEPTH_MSAA.
 	// (it means we cannot sample from it, we cannot copy from/to it) to save VRAM (and maybe performance too).
@@ -222,6 +229,7 @@ void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_s
 	render_target = RID();
 	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	fsr_sharpness = 0.0;
+	fsr_auto_generate_reactive = false;
 	msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	use_taa = false;
@@ -239,6 +247,10 @@ void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_s
 
 void RenderSceneBuffersRD::set_fsr_sharpness(float p_fsr_sharpness) {
 	fsr_sharpness = p_fsr_sharpness;
+}
+
+void RenderSceneBuffersRD::set_fsr_auto_generate_reactive(bool p_fsr_auto_generate_reactive) {
+	fsr_auto_generate_reactive = p_fsr_auto_generate_reactive;
 }
 
 void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
@@ -733,6 +745,13 @@ RID RenderSceneBuffersRD::get_velocity_depth_buffer() {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RID velocity_depth = texture_storage->render_target_get_override_velocity_depth(render_target);
 	return velocity_depth;
+}
+
+// Opaque-only color
+void RenderSceneBuffersRD::ensure_opaque_only_color_texture() {
+	if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY)) {
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY, base_data_format, get_color_usage_bits(true, false, can_be_storage));
+	}
 }
 
 uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {

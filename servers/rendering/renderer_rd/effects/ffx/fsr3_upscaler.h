@@ -57,6 +57,8 @@ public:
 	FfxResourceInternal reconstructed_prev_nearest_depth;
 	FfxResourceInternal dilated_depth;
 	FfxResourceInternal dilated_motion_vectors;
+	// Only if autogen reactive is used
+	RID generated_reactive_mask = RID();
 
 	~FSR3UpscalerContext();
 };
@@ -71,6 +73,7 @@ public:
 		RID depth;
 		RID velocity;
 		RID reactive;
+		RID opaque_only;
 		RID exposure;
 		RID output;
 		float z_near = 0.0f;
@@ -85,7 +88,7 @@ public:
 
 	FSR3UpscalerEffect();
 	~FSR3UpscalerEffect();
-	FSR3UpscalerContext *create_context(Size2i p_internal_size, Size2i p_target_size);
+	FSR3UpscalerContext *create_context(Size2i p_internal_size, Size2i p_target_size, bool p_autogen_reactive);
 	void upscale(const Parameters &p_params);
 
 private:

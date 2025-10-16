@@ -279,6 +279,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			rb_config.set_msaa_3d(msaa_3d);
 			rb_config.set_screen_space_aa(p_viewport->screen_space_aa);
 			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
+			rb_config.set_fsr_auto_generate_reactive(p_viewport->fsr_auto_generate_reactive);
 			rb_config.set_texture_mipmap_bias(texture_mipmap_bias);
 			rb_config.set_anisotropic_filtering_level(p_viewport->anisotropic_filtering_level);
 			rb_config.set_use_taa(use_taa);
@@ -1018,6 +1019,14 @@ void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpn
 	ERR_FAIL_NULL(viewport);
 
 	viewport->fsr_sharpness = p_sharpness;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_fsr_auto_generate_reactive(RID p_viewport, bool p_fsr_auto_generate_reactive) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	viewport->fsr_auto_generate_reactive = p_fsr_auto_generate_reactive;
 	_configure_3d_render_buffers(viewport);
 }
 

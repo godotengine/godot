@@ -4890,6 +4890,21 @@ float Viewport::get_fsr_sharpness() const {
 	return fsr_sharpness;
 }
 
+void Viewport::set_fsr_auto_generate_reactive(bool p_fsr_auto_generate_reactive) {
+	ERR_MAIN_THREAD_GUARD;
+	if (fsr_auto_generate_reactive == p_fsr_auto_generate_reactive) {
+		return;
+	}
+
+	fsr_auto_generate_reactive = p_fsr_auto_generate_reactive;
+	RS::get_singleton()->viewport_set_fsr_auto_generate_reactive(viewport, p_fsr_auto_generate_reactive);
+}
+
+bool Viewport::get_fsr_auto_generate_reactive() const {
+	ERR_READ_THREAD_GUARD_V(0);
+	return fsr_auto_generate_reactive;
+}
+
 void Viewport::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
 	ERR_MAIN_THREAD_GUARD;
 	if (texture_mipmap_bias == p_texture_mipmap_bias) {
@@ -5123,6 +5138,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fsr_sharpness", "fsr_sharpness"), &Viewport::set_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("get_fsr_sharpness"), &Viewport::get_fsr_sharpness);
 
+	ClassDB::bind_method(D_METHOD("set_fsr_auto_generate_reactive", "fsr_auto_generate_reactive"), &Viewport::set_fsr_auto_generate_reactive);
+	ClassDB::bind_method(D_METHOD("get_fsr_auto_generate_reactive"), &Viewport::get_fsr_auto_generate_reactive);
+
 	ClassDB::bind_method(D_METHOD("set_texture_mipmap_bias", "texture_mipmap_bias"), &Viewport::set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("get_texture_mipmap_bias"), &Viewport::get_texture_mipmap_bias);
 
@@ -5168,6 +5186,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16x (Slow)")), "set_anisotropic_filtering_level", "get_anisotropic_filtering_level");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fsr_auto_generate_reactive"), "set_fsr_auto_generate_reactive", "get_fsr_auto_generate_reactive");
 	ADD_GROUP("Variable Rate Shading", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,XR"), "set_vrs_mode", "get_vrs_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,Always"), "set_vrs_update_mode", "get_vrs_update_mode");
@@ -5370,6 +5389,7 @@ Viewport::Viewport() {
 	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));
 	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
 	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
+	set_fsr_auto_generate_reactive((bool)GLOBAL_GET("rendering/scaling_3d/fsr_auto_generate_reactive"));
 	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
 	set_anisotropic_filtering_level((Viewport::AnisotropicFiltering)(int)GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 #endif // _3D_DISABLED

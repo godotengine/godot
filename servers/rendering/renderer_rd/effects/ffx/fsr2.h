@@ -50,6 +50,9 @@ public:
 	FfxFsr2Context fsr_context;
 	FfxFsr2ContextDescription fsr_desc;
 
+	// Only if autogen reactive is used
+	RID generated_reactive_mask = RID();
+
 	~FSR2Context();
 };
 
@@ -62,6 +65,7 @@ public:
 		RID depth;
 		RID velocity;
 		RID reactive;
+		RID opaque_only;
 		RID exposure;
 		RID output;
 		float z_near = 0.0f;
@@ -76,7 +80,7 @@ public:
 
 	FSR2Effect();
 	~FSR2Effect();
-	FSR2Context *create_context(Size2i p_internal_size, Size2i p_target_size);
+	FSR2Context *create_context(Size2i p_internal_size, Size2i p_target_size, bool p_autogen_reactive);
 	void upscale(const Parameters &p_params);
 
 private:

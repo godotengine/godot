@@ -84,13 +84,13 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() 
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(RendererRD::FSR2Effect *p_effect) {
 	if (fsr2_context == nullptr) {
-		fsr2_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size());
+		fsr2_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size(), render_buffers->get_fsr_auto_generate_reactive());
 	}
 }
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr3_upscaler(RendererRD::FSR3UpscalerEffect *p_effect) {
 	if (fsr3_upscaler_context == nullptr) {
-		fsr3_upscaler_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size());
+		fsr3_upscaler_context = p_effect->create_context(render_buffers->get_internal_size(), render_buffers->get_target_size(), render_buffers->get_fsr_auto_generate_reactive());
 	}
 }
 
@@ -2374,6 +2374,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 	}
 
+	// Prepare opaque-only texture for reactive mask generation if needed.
+	if (rb->get_fsr_auto_generate_reactive()) {
+		rb->ensure_opaque_only_color_texture();
+		Size2i copy_size = rb->get_internal_size();
+		RD::get_singleton()->texture_copy(rb->get_internal_texture(), rb->get_opaque_only_color_texture(), Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(copy_size.width, copy_size.height, 1), 0, 0, 0, 0);
+	}
+
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Transparent Pass");
@@ -2448,7 +2455,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.color = rb->get_internal_texture(v);
 				params.depth = rb->get_depth_texture(v);
 				params.velocity = rb->get_velocity_buffer(false, v);
-				params.reactive = rb->get_internal_texture_reactive(v);
+
+				if (rb->get_fsr_auto_generate_reactive()) {
+					// Provide opaque only texture for reactive mask generation.
+					params.opaque_only = rb->get_opaque_only_color_texture(v);
+				} else {
+					params.reactive = rb->get_internal_texture_reactive(v);
+				}
+
 				params.exposure = exposure;
 				params.output = rb->get_upscaled_texture(v);
 				params.z_near = p_render_data->scene_data->z_near;
@@ -2494,7 +2508,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.color = rb->get_internal_texture(v);
 				params.depth = rb->get_depth_texture(v);
 				params.velocity = rb->get_velocity_buffer(false, v);
-				params.reactive = rb->get_internal_texture_reactive(v);
+
+				if (rb->get_fsr_auto_generate_reactive()) {
+					// Provide opaque only texture for reactive mask generation.
+					params.opaque_only = rb->get_opaque_only_color_texture(v);
+				} else {
+					params.reactive = rb->get_internal_texture_reactive(v);
+				}
+
 				params.exposure = exposure;
 				params.output = rb->get_upscaled_texture(v);
 				params.z_near = p_render_data->scene_data->z_near;

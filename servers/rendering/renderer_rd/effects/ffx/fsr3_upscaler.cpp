@@ -35,11 +35,6 @@
 
 using namespace RendererRD;
 
-#ifndef _MSC_VER
-#include <cwchar>
-#define wcscpy_s wcscpy
-#endif
-
 static void fsr3_recv_message(FfxMsgType type, const wchar_t *message) {
 #ifdef DEV_ENABLED
 	switch (type) {
@@ -54,6 +49,10 @@ static void fsr3_recv_message(FfxMsgType type, const wchar_t *message) {
 }
 
 FSR3UpscalerContext::~FSR3UpscalerContext() {
+	if (generated_reactive_mask.is_valid()) {
+		RD::get_singleton()->free_rid(generated_reactive_mask);
+	}
+
 	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, reconstructed_prev_nearest_depth, -1);
 	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_depth, -1);
 	fsr_desc.backendInterface.fpDestroyResource(&fsr_desc.backendInterface, dilated_motion_vectors, -1);
@@ -381,7 +380,7 @@ FSR3UpscalerEffect::~FSR3UpscalerEffect() {
 	}
 }
 
-FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, Size2i p_target_size) {
+FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, Size2i p_target_size, bool p_autogen_reactive) {
 	FSR3UpscalerContext *context = memnew(RendererRD::FSR3UpscalerContext);
 	context->fsr_desc.flags = FFX_FSR3UPSCALER_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR3UPSCALER_ENABLE_DEPTH_INVERTED;
 #ifdef DEV_ENABLED
@@ -421,6 +420,21 @@ FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, 
 			return nullptr;
 		}
 
+		if (p_autogen_reactive) {
+			RD::TextureFormat texture_format;
+			texture_format.texture_type = RD::TEXTURE_TYPE_2D;
+			texture_format.format = RD::DATA_FORMAT_R8_UNORM;
+			texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;;
+			texture_format.width = p_internal_size.width;
+			texture_format.height = p_internal_size.height;
+			texture_format.depth = 1;
+			texture_format.mipmaps = 1;
+
+			context->generated_reactive_mask = RD::get_singleton()->texture_create(texture_format, RD::TextureView());
+			ERR_FAIL_COND_V_MSG(context->generated_reactive_mask.is_null(), nullptr, "Failed to create FSR3 Upscaler generated reactive mask texture.");
+			RD::get_singleton()->set_resource_name(context->generated_reactive_mask, L"FSR3UPSCALER_GeneratedReactiveMask");
+		}
+
 		return context;
 	} else {
 		memdelete(context);
@@ -429,8 +443,6 @@ FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, 
 }
 
 void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
-	// TODO: Transparency & Composition mask is not implemented.
-	FfxFsr3UpscalerDispatchDescription dispatch_desc = {};
 	RID color = p_params.color;
 	RID depth = p_params.depth;
 	RID velocity = p_params.velocity;
@@ -440,6 +452,27 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 
 	FFXCommon::Scratch &scratch = p_params.context->scratch;
 
+	RID opaque_only = p_params.opaque_only;
+	RID out_reactive = p_params.context->generated_reactive_mask;
+	bool autogen_masks = opaque_only.is_valid() && p_params.context->generated_reactive_mask.is_valid();
+
+	// Optional pass of auto-generating reactive masks from opaque-only color.
+	// This may reduce flickering in scenarios where there are massive transparent objects.
+	if (autogen_masks) {
+		FfxFsr3UpscalerGenerateReactiveDescription generate_desc = {};
+		generate_desc.colorPreUpscale = FFXCommon::get_resource_rd(&color, L"color");
+		generate_desc.colorOpaqueOnly = FFXCommon::get_resource_rd(&opaque_only, L"opaque_only");
+		generate_desc.outReactive = FFXCommon::get_resource_rd(&out_reactive, L"generated_reactive_mask");
+		generate_desc.binaryValue = 0.9f;
+		generate_desc.renderSize.width = p_params.internal_size.width;
+		generate_desc.renderSize.height = p_params.internal_size.height;
+		generate_desc.cutoffThreshold = 0.2f;
+		generate_desc.scale = 1.f;
+
+		ffxFsr3UpscalerContextGenerateReactiveMask(&p_params.context->fsr_context, &generate_desc);
+	}
+
+	FfxFsr3UpscalerDispatchDescription dispatch_desc = {};
 	RID reconstructed_prev_nearest_depth = scratch.resources.rids[p_params.context->reconstructed_prev_nearest_depth.internalIndex];
 	RID dilated_depth = scratch.resources.rids[p_params.context->dilated_depth.internalIndex];
 	RID dilated_motion_vectors = scratch.resources.rids[p_params.context->dilated_motion_vectors.internalIndex];
@@ -451,7 +484,7 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	dispatch_desc.dilatedDepth = FFXCommon::get_resource_rd(&dilated_depth, L"dilated_depth");
 	dispatch_desc.dilatedMotionVectors = FFXCommon::get_resource_rd(&dilated_motion_vectors, L"dilated_motion_vectors");
 	dispatch_desc.motionVectors = FFXCommon::get_resource_rd(&velocity, L"velocity");
-	dispatch_desc.reactive = FFXCommon::get_resource_rd(&reactive, L"reactive");
+	dispatch_desc.reactive = FFXCommon::get_resource_rd(autogen_masks ? &out_reactive : &reactive, L"reactive");
 	dispatch_desc.exposure = FFXCommon::get_resource_rd(&exposure, L"exposure");
 	dispatch_desc.transparencyAndComposition = {};
 	dispatch_desc.output = FFXCommon::get_resource_rd(&output, L"output");
@@ -472,11 +505,6 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	dispatch_desc.cameraFar = p_params.z_far;
 	dispatch_desc.cameraFovAngleVertical = p_params.fovy;
 	dispatch_desc.viewSpaceToMetersFactor = 1.0f;
-
-	// FSR3 does provide automatic reactive mask generation, but that requires an opaque only color target,
-	// which isn't provided in the current Godot pipeline. So now we just disable it.
-	// When Godot adds a deferred renderer, we can re-enable this.
-	FfxFsr3UpscalerGenerateReactiveDescription reactive_desc = {};
 
 	MaterialStorage::store_camera(p_params.reprojection, dispatch_desc.reprojectionMatrix);
 
