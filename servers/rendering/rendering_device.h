@@ -1587,7 +1587,7 @@ public:
 	void _execute_frame(bool p_present);
 	void _stall_for_frame(uint32_t p_frame);
 	void _stall_for_previous_frames();
-	void _flush_and_stall_for_all_frames();
+	void _flush_and_stall_for_all_frames(bool p_begin_frame = true);
 
 	template <typename T>
 	void _free_rids(T &p_owner, const char *p_type);

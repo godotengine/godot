@@ -6584,11 +6584,14 @@ void RenderingDevice::_stall_for_previous_frames() {
 	}
 }
 
-void RenderingDevice::_flush_and_stall_for_all_frames() {
+void RenderingDevice::_flush_and_stall_for_all_frames(bool p_begin_frame) {
 	_stall_for_previous_frames();
 	_end_frame();
 	_execute_frame(false);
-	_begin_frame();
+
+	if (p_begin_frame) {
+		_begin_frame();
+	}
 }
 
 Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window) {
@@ -7086,7 +7089,7 @@ void RenderingDevice::finalize() {
 
 	if (!frames.is_empty()) {
 		// Wait for all frames to have finished rendering.
-		_flush_and_stall_for_all_frames();
+		_flush_and_stall_for_all_frames(false);
 	}
 
 	// Wait for transfer workers to finish.
