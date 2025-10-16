@@ -79,6 +79,15 @@ public:
 		CURSOR_MAX
 	};
 
+	class JoypadFeatures {
+	public:
+		virtual ~JoypadFeatures() {}
+
+		// TODO: replace with get_joy_model() later
+		virtual bool has_joy_adaptive_triggers() const { return false; }
+		virtual bool send_joy_packet(const void *p_data, int p_size) { return false; }
+	};
+
 	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
@@ -174,6 +183,7 @@ private:
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		Input::JoypadFeatures *features = nullptr;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -253,6 +263,7 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
+	void _update_joypad_features(int p_device);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -346,9 +357,22 @@ public:
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
+	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	bool has_joy_adaptive_triggers(int p_device) const;
+	bool joy_adaptive_triggers_off(int p_device, JoyAxis p_axis);
+	bool joy_adaptive_triggers_feedback(int p_device, JoyAxis p_axis, int p_position, int p_strength);
+	bool joy_adaptive_triggers_weapon(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_strength);
+	bool joy_adaptive_triggers_vibration(int p_device, JoyAxis p_axis, int p_position, int p_frequency, int p_amplitude);
+	bool joy_adaptive_triggers_multi_feedback(int p_device, JoyAxis p_axis, TypedArray<int> p_strengths);
+	bool joy_adaptive_triggers_slope_feedback(int p_device, JoyAxis p_axis, int p_start_position, int p_end_position, int p_start_strength, int p_end_strength);
+	bool joy_adaptive_triggers_multi_vibration(int p_device, JoyAxis p_axis, int p_frequency, TypedArray<int> p_amplitudes);
+
+	bool send_joy_packet(int p_device, PackedByteArray p_packet);
 
 	void set_mouse_position(const Point2 &p_posf);
 

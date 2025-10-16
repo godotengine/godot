@@ -208,6 +208,8 @@ void JoypadSDL::process_events() {
 						device_name,
 						joypads[joy_id].guid,
 						joypad_info);
+
+				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -297,6 +299,22 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+bool JoypadSDL::Joypad::has_joy_adaptive_triggers() const {
+	return SDL_GetGamepadTypeForID(sdl_instance_idx) == SDL_GAMEPAD_TYPE_PS5;
+}
+
+bool JoypadSDL::Joypad::send_joy_packet(const void *p_data, int p_size) {
+	return SDL_SendJoystickEffect(get_sdl_joystick(), p_data, p_size);
+}
+
+SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
+	return SDL_GetJoystickFromID(sdl_instance_idx);
+}
+
+SDL_Gamepad *JoypadSDL::Joypad::get_sdl_gamepad() const {
+	return SDL_GetGamepadFromID(sdl_instance_idx);
 }
 
 #endif // SDL_ENABLED
