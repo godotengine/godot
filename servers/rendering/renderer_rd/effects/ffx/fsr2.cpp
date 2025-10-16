@@ -35,11 +35,6 @@
 
 using namespace RendererRD;
 
-#ifndef _MSC_VER
-#include <cwchar>
-#define wcscpy_s wcscpy
-#endif
-
 FSR2Context::~FSR2Context() {
 	ffxFsr2ContextDestroy(&fsr_context);
 }
