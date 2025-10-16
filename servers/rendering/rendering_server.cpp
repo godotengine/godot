@@ -2034,7 +2034,7 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 			Dictionary ld;
 			ld["edge_length"] = sd.lods[i].edge_length;
 			ld["index_data"] = sd.lods[i].index_data;
-			lods.push_back(lods);
+			lods.push_back(ld);
 		}
 		d["lods"] = lods;
 	}
