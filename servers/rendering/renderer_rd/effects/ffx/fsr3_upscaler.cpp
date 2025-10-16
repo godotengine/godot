@@ -424,7 +424,7 @@ FSR3UpscalerContext *FSR3UpscalerEffect::create_context(Size2i p_internal_size, 
 			RD::TextureFormat texture_format;
 			texture_format.texture_type = RD::TEXTURE_TYPE_2D;
 			texture_format.format = RD::DATA_FORMAT_R8_UNORM;
-			texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;;
+			texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 			texture_format.width = p_internal_size.width;
 			texture_format.height = p_internal_size.height;
 			texture_format.depth = 1;
