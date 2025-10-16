@@ -4111,7 +4111,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="auto_generate_reactive" type="bool" />
 			<description>
-				Determines whether to auto-generate a reactive mask for FSR 2/3. Setting this to true will reduce flickering upon upscaling transparent objects, at a cost of one more rendering pass. 
+				Determines whether to auto-generate a reactive mask for FSR 2/3. Setting this to true will reduce flickering upon upscaling transparent objects, at a cost of one more rendering pass.
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
