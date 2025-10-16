@@ -406,7 +406,7 @@
 	} else {
 		ds->update_mouse_pos(wd, [event locationInWindow]);
 	}
-	ds->get_key_modifier_state([event modifierFlags], mb);
+	ds->get_key_modifier_state([event modifierFlags], Key::NONE, mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
 	mb->set_position(wd.mouse_pos);
@@ -540,7 +540,7 @@
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * ds->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
 	mm->set_relative_screen_position(relativeMotion);
-	ds->get_key_modifier_state([event modifierFlags], mm);
+	ds->get_key_modifier_state([event modifierFlags], Key::NONE, mm);
 
 	const NSRect contentRect = [wd.window_view frame];
 	if (NSPointInRect([event locationInWindow], contentRect)) {
@@ -640,7 +640,7 @@
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instantiate();
 	ev->set_window_id(window_id);
-	ds->get_key_modifier_state([event modifierFlags], ev);
+	ds->get_key_modifier_state([event modifierFlags], Key::NONE, ev);
 	ds->update_mouse_pos(wd, [event locationInWindow]);
 	ev->set_position(wd.mouse_pos);
 	ev->set_factor([event magnification] + 1.0);
@@ -831,7 +831,7 @@
 	sc.instantiate();
 
 	sc->set_window_id(window_id);
-	ds->get_key_modifier_state([event modifierFlags], sc);
+	ds->get_key_modifier_state([event modifierFlags], Key::NONE, sc);
 	sc->set_button_index(button);
 	sc->set_factor(factor);
 	sc->set_pressed(true);
@@ -868,7 +868,7 @@
 	pg.instantiate();
 
 	pg->set_window_id(window_id);
-	ds->get_key_modifier_state([event modifierFlags], pg);
+	ds->get_key_modifier_state([event modifierFlags], Key::NONE, pg);
 	pg->set_position(wd.mouse_pos);
 	pg->set_delta(Vector2(-dx, -dy));
 

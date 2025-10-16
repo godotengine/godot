@@ -2144,6 +2144,9 @@
 		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
 			かな key on Mac keyboard.
 		</constant>
+		<constant name="KEY_FN" value="4198400" enum="Key">
+			Fn on Mac keyboard. This key is never emitted on it's own and only exist as modifier.
+		</constant>
 		<constant name="KEY_UNKNOWN" value="8388607" enum="Key">
 			Unknown key.
 		</constant>
@@ -2381,11 +2384,14 @@
 		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask" is_bitfield="true">
 			Control key mask.
 		</constant>
-		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask" is_bitfield="true">
-			Keypad key mask.
+		<constant name="KEY_MASK_FN" value="536870912" enum="KeyModifierMask" is_bitfield="true">
+			Fn key mask on Mac keyboard.
 		</constant>
-		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
-			Group Switch key mask.
+		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask" is_bitfield="true" deprecated="This flag is not used by the engine.">
+			Unused.
+		</constant>
+		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true" deprecated="This flag is not used by the engine.">
+			Unused.
 		</constant>
 		<constant name="KEY_LOCATION_UNSPECIFIED" value="0" enum="KeyLocation">
 			Used for keys which only appear once, or when a comparison doesn't need to differentiate the [code]LEFT[/code] and [code]RIGHT[/code] versions.

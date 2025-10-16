@@ -76,20 +76,22 @@ private:
 		MOD_SHIFT,
 		MOD_CTRL,
 		MOD_META,
+		MOD_FN,
 		MOD_MAX
 	};
 #if defined(MACOS_ENABLED)
-	String mods[MOD_MAX] = { "Option", "Shift", "Ctrl", "Command" };
+	String mods[MOD_MAX] = { "Option", "Shift", "Ctrl", "Command", "Fn" };
 #elif defined(WINDOWS_ENABLED)
-	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Windows" };
+	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Windows", "Fn" };
 #else
-	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta" };
+	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta", "Fn" };
 #endif
 	String mods_tip[MOD_MAX] = {
 		TTRC("Alt or Option key"),
 		TTRC("Shift key"),
 		TTRC("Control key"),
 		TTRC("Meta/Windows or Command key"),
+		TTRC("Fn key (macOS only)"),
 	};
 
 	CheckBox *mod_checkboxes[MOD_MAX];

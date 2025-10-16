@@ -73,6 +73,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 			mod_checkboxes[MOD_SHIFT]->set_pressed(mod->is_shift_pressed());
 			mod_checkboxes[MOD_CTRL]->set_pressed(mod->is_ctrl_pressed());
 			mod_checkboxes[MOD_META]->set_pressed(mod->is_meta_pressed());
+			mod_checkboxes[MOD_FN]->set_pressed(mod->is_fn_pressed());
 
 			autoremap_command_or_control_checkbox->set_pressed(mod->is_command_or_control_autoremap());
 		}
@@ -391,6 +392,8 @@ void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {
 		if (!autoremap_command_or_control_checkbox->is_pressed()) {
 			ie->set_meta_pressed(p_checked);
 		}
+	} else if (p_index == 4) {
+		ie->set_fn_pressed(p_checked);
 	}
 
 	_set_event(ie, original_event);
@@ -486,6 +489,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 				k->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
 				k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			}
+			k->set_fn_pressed(mod_checkboxes[MOD_FN]->is_pressed());
 
 			Ref<InputEventKey> ko = k->duplicate();
 
@@ -519,6 +523,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 				mb->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
 				mb->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			}
+			mb->set_fn_pressed(mod_checkboxes[MOD_FN]->is_pressed());
 
 			// Maintain selected device
 			mb->set_device(_get_current_device());

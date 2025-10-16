@@ -803,6 +803,7 @@ void Viewport::_process_picking() {
 		mm->set_shift_pressed(Input::get_singleton()->is_key_pressed(Key::SHIFT));
 		mm->set_ctrl_pressed(Input::get_singleton()->is_key_pressed(Key::CTRL));
 		mm->set_meta_pressed(Input::get_singleton()->is_key_pressed(Key::META));
+		mm->set_fn_pressed(Input::get_singleton()->is_key_pressed(Key::FN));
 		mm->set_button_mask(Input::get_singleton()->get_mouse_button_mask());
 		physics_picking_events.push_back(mm);
 	}
