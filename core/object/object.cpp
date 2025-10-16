@@ -1044,7 +1044,7 @@ String Object::to_string() {
 			return ret;
 		}
 	}
-	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
+	return _to_string();
 }
 
 void Object::set_script(const Variant &p_script) {
@@ -1837,6 +1837,10 @@ void Object::clear_internal_resource_paths() {
 
 void Object::notify_property_list_changed() {
 	emit_signal(CoreStringName(property_list_changed));
+}
+
+String Object::_to_string() {
+	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
 void Object::_bind_methods() {
