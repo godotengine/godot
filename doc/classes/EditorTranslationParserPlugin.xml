@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		[EditorTranslationParserPlugin] is invoked when a file is being parsed to extract strings that require translation. To define the parsing and string extraction logic, override the [method _parse_file] method in script.
-		The return value should be an [Array] of [PackedStringArray]s, one for each extracted translatable string. Each entry should contain [code][msgid, msgctxt, msgid_plural, comment, source_line][/code], where all except [code]msgid[/code] are optional. Empty strings will be ignored.
 		The extracted strings will be written into a POT file selected by user under "POT Generation" in "Localization" tab in "Project Settings" menu.
 		Below shows an example of a custom parser that extracts strings from a CSV file to write into a POT.
 		[codeblocks]
@@ -114,6 +113,17 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Override this method to define a custom parsing logic to extract the translatable strings.
+				The return value should be an array of [PackedStringArray]s, one for each extracted translatable string. Each entry should contain [code][msgid, msgctxt, msgid_plural, comment, source_line][/code], where all except [code]msgid[/code] are optional. Empty strings will be ignored.
+			</description>
+		</method>
+		<method name="parse" qualifiers="static">
+			<return type="PackedStringArray[]" />
+			<param index="0" name="paths" type="PackedStringArray" />
+			<param index="1" name="add_builtin" type="bool" />
+			<description>
+				Returns strings parsed from files located in [param paths]. Built-in extractable strings are included if [param add_builtin] is [code]true[/code].
+				The returned value is an array of extracted string information. Each entry is an array of five strings: [code][msgid, msgctxt, msgid_plural, comment, source_line][/code].
+				[b]Note:[/b] This is a static method intended to be called externally. It must [b]not[/b] be called from [method _parse_file].
 			</description>
 		</method>
 	</methods>

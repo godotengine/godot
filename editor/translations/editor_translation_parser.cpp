@@ -33,8 +33,20 @@
 #include "core/error/error_macros.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_set.h"
+#include "editor/translations/editor_translation.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
+
+TypedArray<PackedStringArray> EditorTranslationParserPlugin::parse(const PackedStringArray &p_paths, bool p_add_builtin) {
+	const Vector<PackedStringArray> &entries = EditorTranslationParser::get_singleton()->parse(p_paths, p_add_builtin);
+
+	TypedArray<PackedStringArray> arr;
+	arr.reserve(entries.size());
+	for (const PackedStringArray &entry : entries) {
+		arr.push_back(entry);
+	}
+	return arr;
+}
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
 	TypedArray<PackedStringArray> ret;
@@ -91,6 +103,8 @@ void EditorTranslationParserPlugin::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND_COMPAT(_parse_file_bind_compat_99297, "path", "msgids", "msgids_context_plural");
 #endif
+
+	ClassDB::bind_static_method("EditorTranslationParserPlugin", D_METHOD("parse", "paths", "add_builtin"), &EditorTranslationParserPlugin::parse);
 }
 
 /////////////////////////
@@ -170,6 +184,39 @@ void EditorTranslationParser::remove_parser(const Ref<EditorTranslationParserPlu
 void EditorTranslationParser::clean_parsers() {
 	standard_parsers.clear();
 	custom_parsers.clear();
+}
+
+Vector<Vector<String>> EditorTranslationParser::parse(const Vector<String> &p_paths, bool p_add_builtin) const {
+	Vector<Vector<String>> result;
+
+	for (const String &path : p_paths) {
+		Vector<Vector<String>> translations;
+
+		const String &extension = path.get_extension();
+		ERR_CONTINUE_MSG(!can_parse(extension), vformat("Cannot parse file '%s': unrecognized file extension. Skipping.", path));
+
+		get_parser(extension)->parse_file(path, &translations);
+
+		for (const Vector<String> &translation : translations) {
+			ERR_CONTINUE(translation.is_empty());
+
+			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
+			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
+			const String &comment = (translation.size() > 3) ? translation[3] : String();
+			const int source_line = (translation.size() > 4) ? translation[4].to_int() : 0;
+			const String &location = source_line > 0 ? vformat("%s:%d", path, source_line) : path;
+
+			result.push_back({ translation[0], msgctxt, msgid_plural, comment, location });
+		}
+	}
+
+	if (p_add_builtin) {
+		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
+			result.push_back({ extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], String(), String() });
+		}
+	}
+
+	return result;
 }
 
 EditorTranslationParser *EditorTranslationParser::get_singleton() {

@@ -32,77 +32,68 @@
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
-#include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
+
+struct MsgidData {
+	String ctx;
+	String plural;
+	HashSet<String> locations;
+	HashSet<String> comments;
+};
 
 POTGenerator *POTGenerator::singleton = nullptr;
 
-#ifdef DEBUG_POT
-void POTGenerator::_print_all_translation_strings() {
-	for (HashMap<String, Vector<POTGenerator::MsgidData>>::Element E = all_translation_strings.front(); E; E = E.next()) {
-		Vector<MsgidData> v_md = all_translation_strings[E.key()];
-		for (int i = 0; i < v_md.size(); i++) {
-			print_line("++++++");
-			print_line("msgid: " + E.key());
-			print_line("context: " + v_md[i].ctx);
-			print_line("msgid_plural: " + v_md[i].plural);
-			for (const String &F : v_md[i].locations) {
-				print_line("location: " + F);
-			}
-		}
-	}
-}
-#endif
-
 void POTGenerator::generate_pot(const String &p_file) {
-	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	const Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	const bool add_builtin = GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot");
 
 	if (files.is_empty()) {
 		WARN_PRINT("No files selected for POT generation.");
 		return;
 	}
 
-	// Clear all_translation_strings of the previous round.
-	all_translation_strings.clear();
+	// Store msgid as key and the additional data around the msgid - if it's under a context, has plurals and its file locations.
+	HashMap<String, Vector<MsgidData>> all_translation_strings;
 
-	// Collect all translatable strings according to files order in "POT Generation" setting.
-	for (int i = 0; i < files.size(); i++) {
-		Vector<Vector<String>> translations;
+	for (const Vector<String> &entry : EditorTranslationParser::get_singleton()->parse(files, add_builtin)) {
+		const String &p_msgid = entry[0];
+		const String &p_context = entry[1];
+		const String &p_plural = entry[2];
+		const String &p_comment = entry[3];
+		const String &p_location = entry[4];
 
-		const String &file_path = files[i];
-		String file_extension = file_path.get_extension();
-
-		if (EditorTranslationParser::get_singleton()->can_parse(file_extension)) {
-			EditorTranslationParser::get_singleton()->get_parser(file_extension)->parse_file(file_path, &translations);
-		} else {
-			ERR_PRINT("Unrecognized file extension " + file_extension + " in generate_pot()");
-			return;
-		}
-
-		for (const Vector<String> &translation : translations) {
-			ERR_CONTINUE(translation.is_empty());
-			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
-			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
-			const String &comment = (translation.size() > 3) ? translation[3] : String();
-			const int source_line = (translation.size() > 4) ? translation[4].to_int() : 0;
-			String location = file_path;
-			if (source_line > 0) {
-				location += vformat(":%d", source_line);
+		// Insert new location if msgid under same context exists already.
+		if (all_translation_strings.has(p_msgid)) {
+			Vector<MsgidData> &v_mdata = all_translation_strings[p_msgid];
+			for (int i = 0; i < v_mdata.size(); i++) {
+				if (v_mdata[i].ctx != p_context) {
+					continue;
+				}
+				if (!v_mdata[i].plural.is_empty() && !p_plural.is_empty() && v_mdata[i].plural != p_plural) {
+					WARN_PRINT("Redefinition of plural message (msgid_plural), under the same message (msgid) and context (msgctxt)");
+				}
+				if (!p_location.is_empty()) {
+					v_mdata.write[i].locations.insert(p_location);
+				}
+				if (!p_comment.is_empty()) {
+					v_mdata.write[i].comments.insert(p_comment);
+				}
+				break;
 			}
-			_add_new_msgid(translation[0], msgctxt, msgid_plural, location, comment);
+		} else {
+			MsgidData mdata;
+			mdata.ctx = p_context;
+			mdata.plural = p_plural;
+			if (!p_location.is_empty()) {
+				mdata.locations.insert(p_location);
+			}
+			if (!p_comment.is_empty()) {
+				mdata.comments.insert(p_comment);
+			}
+			all_translation_strings[p_msgid].push_back(mdata);
 		}
 	}
 
-	if (GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot")) {
-		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
-			_add_new_msgid(extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], "", "");
-		}
-	}
-
-	_write_to_pot(p_file);
-}
-
-void POTGenerator::_write_to_pot(const String &p_file) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
@@ -111,7 +102,6 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 	}
 
 	String project_name = GLOBAL_GET("application/config/name").operator String().replace("\n", "\\n");
-	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	String extracted_files = "";
 	for (int i = 0; i < files.size(); i++) {
 		extracted_files += "# " + files[i].replace("\n", "\\n") + "\n";
@@ -212,39 +202,6 @@ void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool
 	if (!last_line.is_empty()) {
 		r_file->store_line(last_line.json_escape().quote());
 	}
-}
-
-void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context, const String &p_plural, const String &p_location, const String &p_comment) {
-	// Insert new location if msgid under same context exists already.
-	if (all_translation_strings.has(p_msgid)) {
-		Vector<MsgidData> &v_mdata = all_translation_strings[p_msgid];
-		for (int i = 0; i < v_mdata.size(); i++) {
-			if (v_mdata[i].ctx == p_context) {
-				if (!v_mdata[i].plural.is_empty() && !p_plural.is_empty() && v_mdata[i].plural != p_plural) {
-					WARN_PRINT("Redefinition of plural message (msgid_plural), under the same message (msgid) and context (msgctxt)");
-				}
-				if (!p_location.is_empty()) {
-					v_mdata.write[i].locations.insert(p_location);
-				}
-				if (!p_comment.is_empty()) {
-					v_mdata.write[i].comments.insert(p_comment);
-				}
-				return;
-			}
-		}
-	}
-
-	// Add a new entry.
-	MsgidData mdata;
-	mdata.ctx = p_context;
-	mdata.plural = p_plural;
-	if (!p_location.is_empty()) {
-		mdata.locations.insert(p_location);
-	}
-	if (!p_comment.is_empty()) {
-		mdata.comments.insert(p_comment);
-	}
-	all_translation_strings[p_msgid].push_back(mdata);
 }
 
 POTGenerator *POTGenerator::get_singleton() {

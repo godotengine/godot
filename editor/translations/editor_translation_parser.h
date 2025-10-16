@@ -37,6 +37,8 @@
 class EditorTranslationParserPlugin : public RefCounted {
 	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
+	static TypedArray<PackedStringArray> parse(const PackedStringArray &p_paths, bool p_add_builtin);
+
 protected:
 	static void _bind_methods();
 
@@ -65,6 +67,8 @@ public:
 
 	Vector<Ref<EditorTranslationParserPlugin>> standard_parsers;
 	Vector<Ref<EditorTranslationParserPlugin>> custom_parsers;
+
+	Vector<Vector<String>> parse(const Vector<String> &p_paths, bool p_add_builtin) const;
 
 	void get_recognized_extensions(List<String> *r_extensions) const;
 	bool can_parse(const String &p_extension) const;
