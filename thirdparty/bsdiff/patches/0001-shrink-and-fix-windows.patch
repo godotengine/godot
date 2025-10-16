@@ -1,0 +1,451 @@
+diff --git a/thirdparty/bsdiff/bsdiff/bsdiff.cc b/thirdparty/bsdiff/bsdiff/bsdiff.cc
+index a1112d503f..9ee4aa01c4 100644
+--- a/thirdparty/bsdiff/bsdiff/bsdiff.cc
++++ b/thirdparty/bsdiff/bsdiff/bsdiff.cc
+@@ -30,30 +30,16 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bsdiff/bsdiff.c,v 1.1 2005/08/06 01:59:05
+ 
+ #include "bsdiff/bsdiff.h"
+ 
+-#include <sys/types.h>
+-
+-#include <err.h>
++#include <stdint.h>
+ #include <string.h>
+ 
+ #include <algorithm>
+ 
+ #include "bsdiff/diff_encoder.h"
+-#include "bsdiff/patch_writer.h"
+ #include "bsdiff/suffix_array_index.h"
+ 
+ namespace bsdiff {
+ 
+-// TODO(deymo): Deprecate this version of the interface and move all callers
+-// to the underlying version using PatchWriterInterface instead. This allows
+-// more flexible options including different encodings.
+-int bsdiff(const uint8_t* old_buf, size_t oldsize, const uint8_t* new_buf,
+-           size_t newsize, const char* patch_filename,
+-           SuffixArrayIndexInterface** sai_cache) {
+-	BsdiffPatchWriter patch(patch_filename);
+-	return bsdiff(old_buf, oldsize, new_buf, newsize, 0, &patch,
+-	              sai_cache);
+-}
+-
+ int bsdiff(const uint8_t* old_buf, size_t oldsize, const uint8_t* new_buf,
+            size_t newsize, PatchWriterInterface* patch,
+            SuffixArrayIndexInterface** sai_cache) {
+@@ -69,9 +55,9 @@ int bsdiff(const uint8_t* old_buf, size_t oldsize, const uint8_t* new_buf,
+ 	size_t len;
+ 	size_t lastscan,lastpos,lastoffset;
+ 	uint64_t oldscore;
+-	ssize_t s,Sf,lenf,Sb,lenb;
+-	ssize_t overlap,Ss,lens;
+-	ssize_t i;
++	int64_t s,Sf,lenf,Sb,lenb;
++	int64_t overlap,Ss,lens;
++	int64_t i;
+ 
+ 	std::unique_ptr<SuffixArrayIndexInterface> local_sai;
+ 	SuffixArrayIndexInterface* sai;
+@@ -173,7 +159,7 @@ int bsdiff(const uint8_t* old_buf, size_t oldsize, const uint8_t* new_buf,
+ 			        ControlEntry(lenf,
+ 			                     (scan - lenb) - (lastscan + lenf),
+ 			                     (pos - lenb) - (lastpos + lenf))))
+-				errx(1, "Writing a control entry");
++				return 1;
+ 
+ 			lastscan=scan-lenb;
+ 			lastpos=pos-lenb;
+@@ -181,7 +167,7 @@ int bsdiff(const uint8_t* old_buf, size_t oldsize, const uint8_t* new_buf,
+ 		};
+ 	};
+ 	if (!diff_encoder.Close())
+-		errx(1, "Closing the patch file");
++		return 1;
+ 
+ 	return 0;
+ }
+diff --git a/thirdparty/bsdiff/bsdiff/bspatch.cc b/thirdparty/bsdiff/bsdiff/bspatch.cc
+index e95b9a2862..fabd3989c8 100644
+--- a/thirdparty/bsdiff/bsdiff/bspatch.cc
++++ b/thirdparty/bsdiff/bsdiff/bspatch.cc
+@@ -30,32 +30,14 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bspatch/bspatch.c,v 1.1 2005/08/06 01:59:
+ 
+ #include "bsdiff/bspatch.h"
+ 
+-#include <errno.h>
+-#include <fcntl.h>
+-#include <inttypes.h>
+-#include <stdint.h>
+-#include <stdio.h>
+ #include <stdlib.h>
+-#include <string.h>
+-#include <sys/stat.h>
+-#include <sys/types.h>
+-#include <unistd.h>
+ 
+ #include <algorithm>
++#include <functional>
+ #include <memory>
+-#include <vector>
+ 
+-#include "bsdiff/buffer_file.h"
+ #include "bsdiff/control_entry.h"
+-#include "bsdiff/extents.h"
+-#include "bsdiff/extents_file.h"
+-#include "bsdiff/file.h"
+-#include "bsdiff/file_interface.h"
+ #include "bsdiff/logging.h"
+-#include "bsdiff/memory_file.h"
+-#include "bsdiff/patch_reader.h"
+-#include "bsdiff/sink_file.h"
+-#include "bsdiff/utils.h"
+ 
+ namespace {
+ // Read the data in |stream| and write |size| decompressed data to |file|;
+@@ -111,141 +93,13 @@ bool WriteAll(const std::unique_ptr<FileInterface>& file,
+   return true;
+ }
+ 
+-bool IsOverlapping(const char* old_filename,
+-                   const char* new_filename,
+-                   const std::vector<ex_t>& old_extents,
+-                   const std::vector<ex_t>& new_extents) {
+-  struct stat old_stat, new_stat;
+-  if (stat(new_filename, &new_stat) == -1) {
+-    if (errno == ENOENT)
+-      return false;
+-    PLOG(ERROR) << "Error stat the new file: " << new_filename;
+-    return true;
+-  }
+-  if (stat(old_filename, &old_stat) == -1) {
+-    PLOG(ERROR) << "Error stat the old file: " << old_filename;
+-    return true;
+-  }
+-
+-  if (old_stat.st_dev != new_stat.st_dev || old_stat.st_ino != new_stat.st_ino)
+-    return false;
+-
+-  if (old_extents.empty() && new_extents.empty())
+-    return true;
+-
+-  for (ex_t old_ex : old_extents)
+-    for (ex_t new_ex : new_extents)
+-      if (static_cast<uint64_t>(old_ex.off) < new_ex.off + new_ex.len &&
+-          static_cast<uint64_t>(new_ex.off) < old_ex.off + old_ex.len)
+-        return true;
+-
+-  return false;
+-}
+-
+-// Patch |old_filename| with |patch_filename| and save it to |new_filename|.
+-// |old_extents| and |new_extents| are comma-separated lists of "offset:length"
+-// extents of |old_filename| and |new_filename|.
+-// Returns 0 on success, 1 on I/O error and 2 on data error.
+-int bspatch(const char* old_filename,
+-            const char* new_filename,
+-            const char* patch_filename,
+-            const char* old_extents,
+-            const char* new_extents) {
+-  std::unique_ptr<FileInterface> patch_file =
+-      File::FOpen(patch_filename, O_RDONLY);
+-  if (!patch_file) {
+-    PLOG(ERROR) << "Error opening the patch file: " << patch_filename;
+-    return 1;
+-  }
+-  uint64_t patch_size;
+-  patch_file->GetSize(&patch_size);
+-  std::vector<uint8_t> patch(patch_size);
+-  if (!ReadAll(patch_file, patch.data(), patch_size)) {
+-    PLOG(ERROR) << "Error reading the patch file: " << patch_filename;
+-    return 1;
+-  }
+-  patch_file.reset();
+-
+-  return bspatch(old_filename, new_filename, patch.data(), patch_size,
+-                 old_extents, new_extents);
+-}
+-
+-// Patch |old_filename| with |patch_data| and save it to |new_filename|.
+-// |old_extents| and |new_extents| are comma-separated lists of "offset:length"
+-// extents of |old_filename| and |new_filename|.
+-// Returns 0 on success, 1 on I/O error and 2 on data error.
+-int bspatch(const char* old_filename,
+-            const char* new_filename,
+-            const uint8_t* patch_data,
+-            size_t patch_size,
+-            const char* old_extents,
+-            const char* new_extents) {
+-  int using_extents = (old_extents != NULL || new_extents != NULL);
+-
+-  // Open input file for reading.
+-  std::unique_ptr<FileInterface> old_file = File::FOpen(old_filename, O_RDONLY);
+-  if (!old_file) {
+-    PLOG(ERROR) << "Error opening the old file: " << old_filename;
+-    return 1;
+-  }
+-
+-  std::vector<ex_t> parsed_old_extents;
+-  if (using_extents) {
+-    if (!ParseExtentStr(old_extents, &parsed_old_extents)) {
+-      LOG(ERROR) << "Error parsing the old extents.";
+-      return 2;
+-    }
+-    old_file.reset(new ExtentsFile(std::move(old_file), parsed_old_extents));
+-  }
+-
+-  // Open output file for writing.
+-  std::unique_ptr<FileInterface> new_file =
+-      File::FOpen(new_filename, O_CREAT | O_WRONLY);
+-  if (!new_file) {
+-    PLOG(ERROR) << "Error opening the new file: " << new_filename;
+-    return 1;
+-  }
+-
+-  std::vector<ex_t> parsed_new_extents;
+-  if (using_extents) {
+-    if (!ParseExtentStr(new_extents, &parsed_new_extents)) {
+-      LOG(ERROR) << "Error parsing the new extents.";
+-      return 2;
+-    }
+-    new_file.reset(new ExtentsFile(std::move(new_file), parsed_new_extents));
+-  }
+-
+-  if (IsOverlapping(old_filename, new_filename, parsed_old_extents,
+-                    parsed_new_extents)) {
+-    // New and old file is overlapping, we can not stream output to new file,
+-    // cache it in a buffer and write to the file at the end.
+-    uint64_t newsize = ParseInt64(patch_data + 24);
+-    new_file.reset(new BufferFile(std::move(new_file), newsize));
+-  }
+-
+-  return bspatch(old_file, new_file, patch_data, patch_size);
+-}
+-
+-// Patch |old_data| with |patch_data| and save it by calling sink function.
+-// Returns 0 on success, 1 on I/O error and 2 on data error.
+-int bspatch(const uint8_t* old_data,
+-            size_t old_size,
+-            const uint8_t* patch_data,
+-            size_t patch_size,
+-            const sink_func& sink) {
+-  std::unique_ptr<FileInterface> old_file(new MemoryFile(old_data, old_size));
+-  std::unique_ptr<FileInterface> new_file(new SinkFile(sink));
+-
+-  return bspatch(old_file, new_file, patch_data, patch_size);
+-}
+-
+ // Patch |old_file| with |patch_data| and save it to |new_file|.
+ // Returns 0 on success, 1 on I/O error and 2 on data error.
+ int bspatch(const std::unique_ptr<FileInterface>& old_file,
+             const std::unique_ptr<FileInterface>& new_file,
+             const uint8_t* patch_data,
+-            size_t patch_size) {
+-  BsdiffPatchReader patch_reader;
++            size_t patch_size,
++			PatchReaderInterface& patch_reader) {
+   if (!patch_reader.Init(patch_data, patch_size)) {
+     LOG(ERROR) << "Failed to initialize patch reader.";
+     return 2;
+@@ -285,7 +139,7 @@ int bspatch(const std::unique_ptr<FileInterface>& old_file,
+       // because we will skip part where |oldpos| < 0.
+       ret = ReadStreamAndWriteAll(
+           new_file, oldpos - old_file_size, new_buf.data(), new_buf.size(),
+-          std::bind(&BsdiffPatchReader::ReadDiffStream, &patch_reader,
++          std::bind(&PatchReaderInterface::ReadDiffStream, &patch_reader,
+                     std::placeholders::_1, std::placeholders::_2));
+       if (ret)
+         return ret;
+@@ -339,7 +193,7 @@ int bspatch(const std::unique_ptr<FileInterface>& old_file,
+       // because we skipped part where |oldpos| > old_file_size.
+       ret = ReadStreamAndWriteAll(
+           new_file, oldpos - old_file_size, new_buf.data(), new_buf.size(),
+-          std::bind(&BsdiffPatchReader::ReadDiffStream, &patch_reader,
++          std::bind(&PatchReaderInterface::ReadDiffStream, &patch_reader,
+                     std::placeholders::_1, std::placeholders::_2));
+       if (ret)
+         return ret;
+@@ -354,7 +208,7 @@ int bspatch(const std::unique_ptr<FileInterface>& old_file,
+     // Read extra block.
+     ret = ReadStreamAndWriteAll(
+         new_file, control_entry.extra_size, new_buf.data(), new_buf.size(),
+-        std::bind(&BsdiffPatchReader::ReadExtraStream, &patch_reader,
++        std::bind(&PatchReaderInterface::ReadExtraStream, &patch_reader,
+                   std::placeholders::_1, std::placeholders::_2));
+     if (ret)
+       return ret;
+diff --git a/thirdparty/bsdiff/bsdiff/diff_encoder.h b/thirdparty/bsdiff/bsdiff/diff_encoder.h
+index 3d992df8d2..6fa0854dba 100644
+--- a/thirdparty/bsdiff/bsdiff/diff_encoder.h
++++ b/thirdparty/bsdiff/bsdiff/diff_encoder.h
+@@ -7,7 +7,6 @@
+ 
+ #include <stdint.h>
+ 
+-#include "bsdiff/bz2_compressor.h"
+ #include "bsdiff/patch_writer_interface.h"
+ 
+ namespace bsdiff {
+diff --git a/thirdparty/bsdiff/bsdiff/include/bsdiff/bsdiff.h b/thirdparty/bsdiff/bsdiff/include/bsdiff/bsdiff.h
+index b6475f4b30..d418879270 100644
+--- a/thirdparty/bsdiff/bsdiff/include/bsdiff/bsdiff.h
++++ b/thirdparty/bsdiff/bsdiff/include/bsdiff/bsdiff.h
+@@ -14,18 +14,6 @@
+ 
+ namespace bsdiff {
+ 
+-// Generate bsdiff patch from |old_buf| to |new_buf|, save the patch file to
+-// |patch_filename|. Returns 0 on success.
+-// |sai_cache| can be used to cache the suffix array if the same |old_buf| is
+-//  used repeatedly, pass nullptr if not needed.
+-BSDIFF_EXPORT
+-int bsdiff(const uint8_t* old_buf,
+-           size_t oldsize,
+-           const uint8_t* new_buf,
+-           size_t newsize,
+-           const char* patch_filename,
+-           SuffixArrayIndexInterface** sai_cache);
+-
+ BSDIFF_EXPORT
+ int bsdiff(const uint8_t* old_buf,
+            size_t oldsize,
+diff --git a/thirdparty/bsdiff/bsdiff/include/bsdiff/bspatch.h b/thirdparty/bsdiff/bsdiff/include/bsdiff/bspatch.h
+index 0e67ede344..9a0733e777 100644
+--- a/thirdparty/bsdiff/bsdiff/include/bsdiff/bspatch.h
++++ b/thirdparty/bsdiff/bsdiff/include/bsdiff/bspatch.h
+@@ -8,51 +8,25 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
+-#include <functional>
+ #include <memory>
+-#include <vector>
+ 
+-#include "bsdiff/extents_file.h"
++#include "bsdiff/common.h"
++#include "bsdiff/file_interface.h"
++#include "bsdiff/patch_reader_interface.h"
+ 
+ namespace bsdiff {
+ 
+-BSDIFF_EXPORT
+-int bspatch(const char* old_filename,
+-            const char* new_filename,
+-            const char* patch_filename,
+-            const char* old_extents,
+-            const char* new_extents);
+-
+-BSDIFF_EXPORT
+-int bspatch(const char* old_filename,
+-            const char* new_filename,
+-            const uint8_t* patch_data,
+-            size_t patch_size,
+-            const char* old_extents,
+-            const char* new_extents);
+-
+-BSDIFF_EXPORT
+-int bspatch(const uint8_t* old_data,
+-            size_t old_size,
+-            const uint8_t* patch_data,
+-            size_t patch_size,
+-            const std::function<size_t(const uint8_t*, size_t)>& sink);
+-
+ BSDIFF_EXPORT
+ int bspatch(const std::unique_ptr<FileInterface>& old_file,
+             const std::unique_ptr<FileInterface>& new_file,
+             const uint8_t* patch_data,
+-            size_t patch_size);
++            size_t patch_size,
++			PatchReaderInterface& patch_reader);
+ 
+ bool WriteAll(const std::unique_ptr<FileInterface>& file,
+               const uint8_t* data,
+               size_t size);
+ 
+-bool IsOverlapping(const char* old_filename,
+-                   const char* new_filename,
+-                   const std::vector<ex_t>& old_extents,
+-                   const std::vector<ex_t>& new_extents);
+-
+ }  // namespace bsdiff
+ 
+ #endif  // _BSDIFF_BSPATCH_H_
+diff --git a/thirdparty/bsdiff/bsdiff/include/bsdiff/file_interface.h b/thirdparty/bsdiff/bsdiff/include/bsdiff/file_interface.h
+index fe10e9806e..e1c60d9675 100644
+--- a/thirdparty/bsdiff/bsdiff/include/bsdiff/file_interface.h
++++ b/thirdparty/bsdiff/bsdiff/include/bsdiff/file_interface.h
+@@ -5,16 +5,11 @@
+ #ifndef _BSDIFF_FILE_INTERFACE_H_
+ #define _BSDIFF_FILE_INTERFACE_H_
+ 
+-#include <sys/types.h>
+-
+ #include <stddef.h>
+ #include <stdint.h>
+ 
+ #include "bsdiff/common.h"
+ 
+-static_assert(sizeof(off_t) == sizeof(int64_t),
+-              "off_t must be a 64-bit number, use -D_FILE_OFFSET_BITS=64");
+-
+ namespace bsdiff {
+ 
+ class BSDIFF_EXPORT FileInterface {
+@@ -37,7 +32,7 @@ class BSDIFF_EXPORT FileInterface {
+ 
+   // Change the current file position to |pos| bytes from the beginning of the
+   // file. Return whether the seek succeeded.
+-  virtual bool Seek(off_t pos) = 0;
++  virtual bool Seek(int64_t pos) = 0;
+ 
+   // Closes the file and flushes any cached data. Returns whether the close
+   // succeeded.
+diff --git a/thirdparty/bsdiff/bsdiff/include/bsdiff/patch_reader_interface.h b/thirdparty/bsdiff/bsdiff/include/bsdiff/patch_reader_interface.h
+new file mode 100644
+index 0000000000..48416d6fd7
+--- /dev/null
++++ b/thirdparty/bsdiff/bsdiff/include/bsdiff/patch_reader_interface.h
+@@ -0,0 +1,43 @@
++#ifndef _BSDIFF_PATCH_READER_INTERFACE_H_
++#define _BSDIFF_PATCH_READER_INTERFACE_H_
++
++#include <stddef.h>
++
++#include "bsdiff/control_entry.h"
++
++namespace bsdiff {
++
++class PatchReaderInterface {
++ public:
++  virtual ~PatchReaderInterface() = default;
++
++  // Initialize the control stream, diff stream and extra stream from the
++  // corresponding offset of |patch_data|.
++  virtual bool Init(const uint8_t* patch_data, size_t patch_size) = 0;
++
++  // Read the control stream and parse the metadata of |diff_size_|,
++  // |extra_size_| and |offset_incremental_|.
++  virtual bool ParseControlEntry(ControlEntry* control_entry) = 0;
++
++  // Read the data in |diff_stream_| and write |size| decompressed data to
++  // |buf|.
++  virtual bool ReadDiffStream(uint8_t* buf, size_t size) = 0;
++
++  // Read the data in |extra_stream_| and write |size| decompressed data to
++  // |buf|.
++  virtual bool ReadExtraStream(uint8_t* buf, size_t size) = 0;
++
++  // Returns the new file size as read from the header.
++  virtual uint64_t new_file_size() const = 0;
++
++  // Close the control/diff/extra stream. Return false if errors occur when
++  // closing any of these streams.
++  virtual bool Finish() = 0;
++
++ protected:
++  PatchReaderInterface() = default;
++};
++
++}  // namespace bsdiff
++
++#endif  // _BSDIFF_PATCH_WRITER_INTERFACE_H_

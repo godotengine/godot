@@ -105,6 +105,35 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
+## bsdiff
+
+- Upstream: https://android.googlesource.com/platform/external/bsdiff
+- Version: git (22535836b12c5e7430dc9867261c2116d5a4947e, 2024)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `include/bsdiff/bsdiff.h`
+- `include/bsdiff/bspatch.h`
+- `include/bsdiff/common.h`
+- `include/bsdiff/control_entry.h`
+- `include/bsdiff/file_interface.h`
+- `include/bsdiff/patch_writer_interface.h`
+- `include/bsdiff/suffix_array_index_interface.h`
+- `bsdiff.cc`
+- `bspatch.cc`
+- `diff_encoder.cc`
+- `diff_encoder.h`
+- `logging.cc`
+- `logging.h`
+- `suffix_array_index.cc`
+- `suffix_array_index.h`
+
+Patches:
+
+- `0001-shrink-and-fix-windows` (GH-??????)
+
+
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
@@ -517,6 +546,22 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-big-files-support.patch` (GH-100281)
+
+
+## libdivsufsort
+
+- Upstream: https://android.googlesource.com/platform/external/libdivsufsort
+- Version: git (ed23a07e3ed69d815aa9b8480fd9c2672c4b0c51, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `include/*.h`
+- `lib/*.c`
+
+Patches:
+
+- `0001-build-fixes.patch` (GH-??????)
 
 
 ## libjpeg-turbo

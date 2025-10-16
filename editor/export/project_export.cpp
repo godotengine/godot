@@ -50,10 +50,13 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+
+#include <zstd.h>
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
 	export_dialog->hide();
@@ -300,6 +303,17 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	bool delta_encoding_enabled = current->is_delta_encoding_enabled();
+	delta_encoding->set_pressed(delta_encoding_enabled);
+	patch_delta_zstd_level->set_editable(delta_encoding_enabled);
+	patch_delta_zstd_level->set_value(current->get_patch_delta_zstd_level());
+	patch_delta_min_reduction->set_editable(delta_encoding_enabled);
+	patch_delta_min_reduction->set_value(current->get_patch_delta_min_reduction() * 100);
+	patch_delta_exclude_filter->set_editable(delta_encoding_enabled);
+	if (!updating_delta_encoding_filter) {
+		patch_delta_exclude_filter->set_text(current->get_patch_delta_exclude_filter());
+	}
 
 	patches->clear();
 	TreeItem *patch_root = patches->create_item();
@@ -721,6 +735,10 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
 	preset->set_patches(current->get_patches());
+	preset->set_patch_delta_encoding_enabled(current->is_delta_encoding_enabled());
+	preset->set_patch_delta_zstd_level(current->get_patch_delta_zstd_level());
+	preset->set_patch_delta_min_reduction(current->get_patch_delta_min_reduction());
+	preset->set_patch_delta_exclude_filter(current->get_patch_delta_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
 	preset->set_enc_in_filter(current->get_enc_in_filter());
 	preset->set_enc_ex_filter(current->get_enc_ex_filter());
@@ -1177,6 +1195,60 @@ void ProjectExportDialog::_set_file_export_mode(int p_id) {
 	_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
 }
 
+void ProjectExportDialog::_patch_delta_encoding_changed(bool p_pressed) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_encoding_enabled(p_pressed);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_delta_filter_changed(const String &p_filter) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_exclude_filter(patch_delta_exclude_filter->get_text());
+
+	updating_delta_encoding_filter = true;
+	_update_current_preset();
+	updating_delta_encoding_filter = false;
+}
+
+void ProjectExportDialog::_patch_delta_zstd_level_changed(double p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_zstd_level((int)p_value);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_delta_min_reduction_changed(double p_value) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_patch_delta_min_reduction(p_value / 100.0);
+
+	_update_current_preset();
+}
+
 void ProjectExportDialog::_patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
@@ -1629,11 +1701,43 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
-	// Patch packages.
+	// Patching.
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
 	sections->add_child(patch_vb);
-	patch_vb->set_name(TTR("Patches"));
+	patch_vb->set_name(TTRC("Patching"));
+
+	delta_encoding = memnew(CheckButton);
+	delta_encoding->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_patch_delta_encoding_changed));
+	delta_encoding->set_text(TTRC("Enable Delta Encoding"));
+	delta_encoding->set_tooltip_text(TTRC("If checked, any change to a file already present in the base packs will be exported as the difference between the old file and the new file."
+										  "\nEnabling this comes at the cost of longer export times as well as longer load times for patched resources."));
+	patch_vb->add_child(delta_encoding);
+
+	patch_delta_zstd_level = memnew(SpinBox);
+	patch_delta_zstd_level->set_min(1);
+	patch_delta_zstd_level->set_max(ZSTD_maxCLevel());
+	patch_delta_zstd_level->set_step(1);
+	patch_delta_zstd_level->set_tooltip_text(TTRC("The Zstandard compression level to use when generating delta-encoded patches."
+												  "\nHigher compression levels result in smaller files and longer export times, but do not increase decompression times when patches are applied."
+												  "\nCompression levels above 19 require more memory both when exporting and when applying patches, for very little benefit."));
+	patch_delta_zstd_level->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_zstd_level_changed));
+	patch_vb->add_margin_child(TTRC("Delta Encoding Compression Level"), patch_delta_zstd_level);
+
+	patch_delta_min_reduction = memnew(SpinBox);
+	patch_delta_min_reduction->set_min(0.0);
+	patch_delta_min_reduction->set_max(100.0);
+	patch_delta_min_reduction->set_step(1.0);
+	patch_delta_min_reduction->set_suffix("%");
+	patch_delta_min_reduction->set_tooltip_text(TTRC("How much smaller, when compared to the new file, a delta-encoded patch needs to be for it to be exported."
+													 "\nIf the patch is not at least this much smaller, the new file will be exported as-is instead."));
+	patch_delta_min_reduction->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_min_reduction_changed));
+	patch_vb->add_margin_child(TTRC("Delta Encoding Minimum Size Reduction"), patch_delta_min_reduction);
+
+	patch_delta_exclude_filter = memnew(LineEdit);
+	patch_delta_exclude_filter->set_accessibility_name(TTRC("Delta Encoding Exclude Filters"));
+	patch_delta_exclude_filter->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_filter_changed));
+	patch_vb->add_margin_child(TTRC("Filters to exclude files/folders from being delta-encoded\n(comma-separated, e.g: *.gdc, *.ctex, textures/*)"), patch_delta_exclude_filter);
 
 	patches = memnew(Tree);
 	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);

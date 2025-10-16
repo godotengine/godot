@@ -159,6 +159,41 @@ if env["builtin_zstd"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
+# libdivsufsort library, needed for bsdiff below
+thirdparty_divsufsort_dir = "#thirdparty/libdivsufsort/"
+thirdparty_divsufsort_sources = [
+    "lib/divsufsort.c",
+    "lib/sssort.c",
+    "lib/trsort.c",
+    "lib/utils.c",
+]
+thirdparty_divsufsort_sources = [thirdparty_divsufsort_dir + file for file in thirdparty_divsufsort_sources]
+env_thirdparty.Prepend(CPPPATH=[thirdparty_divsufsort_dir + "include"])
+env.Prepend(CPPPATH=[thirdparty_divsufsort_dir + "include"])
+env_divsufsort32 = env_thirdparty.Clone()
+env_divsufsort32["OBJSUFFIX"] = f"_32{env_divsufsort32['OBJSUFFIX']}"
+env_divsufsort32.Append(CPPDEFINES=["HAVE_CONFIG_H=1"])
+env_divsufsort32.add_source_files(thirdparty_obj, thirdparty_divsufsort_sources)
+env_divsufsort64 = env_thirdparty.Clone()
+env_divsufsort64["OBJSUFFIX"] = f"_64{env_divsufsort64['OBJSUFFIX']}"
+env_divsufsort64.Append(CPPDEFINES=["HAVE_CONFIG_H=1", "BUILD_DIVSUFSORT64"])
+env_divsufsort64.add_source_files(thirdparty_obj, thirdparty_divsufsort_sources)
+
+# bsdiff library
+thirdparty_bsdiff_dir = "#thirdparty/bsdiff/"
+thirdparty_bsdiff_sources = [
+    "bsdiff/bsdiff.cc",
+    "bsdiff/bspatch.cc",
+    "bsdiff/diff_encoder.cc",
+    "bsdiff/logging.cc",
+    "bsdiff/suffix_array_index.cc",
+]
+thirdparty_bsdiff_sources = [thirdparty_bsdiff_dir + file for file in thirdparty_bsdiff_sources]
+env_thirdparty.Prepend(CPPPATH=[thirdparty_bsdiff_dir, thirdparty_bsdiff_dir + "bsdiff/include"])
+env.Prepend(CPPPATH=[thirdparty_bsdiff_dir + "bsdiff/include"])
+env_thirdparty.Append(CPPDEFINES=["BSDIFF_EXPORT="])
+env.Append(CPPDEFINES=["BSDIFF_EXPORT="])
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_bsdiff_sources)
 
 env.core_sources += thirdparty_obj
 

@@ -53,6 +53,20 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
+Files: core/io/delta_patch_reader.cpp
+Comment: Android/ChromiumOS bsdiff fork
+Copyright: 2017, The Chromium OS Authors
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: BSD-3-clause
+
+Files: core/io/delta_patch_writer.cpp
+Comment: Android/ChromiumOS bsdiff fork
+Copyright: 2017, The Chromium OS Authors
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: BSD-3-clause
+
 Files: core/math/convex_hull.cpp
  core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
@@ -222,6 +236,12 @@ Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
 License: Expat
 
+Files: thirdparty/bsdiff/*
+Comment: bsdiff
+Copyright: 2003-2005, Colin Percival.
+ 2015, The Chromium OS Authors.
+License: BSD-3-clause
+
 Files: thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
@@ -352,6 +372,11 @@ Files: thirdparty/libbacktrace/*
 Comment: libbacktrace
 Copyright: 2012-2021, Free Software Foundation, Inc.
 License: BSD-3-clause
+
+Files: thirdparty/libdivsufsort/*
+Comment: libdivsufsort
+Copyright: 2003, Yuta Mori.
+License: Expat
 
 Files: thirdparty/libjpeg-turbo/*
 Comment: libjpeg-turbo

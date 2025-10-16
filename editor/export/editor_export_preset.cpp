@@ -31,6 +31,7 @@
 #include "editor_export.h"
 
 #include "core/config/project_settings.h"
+#include "editor_export_preset.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	values[p_name] = p_value;
@@ -445,6 +446,42 @@ void EditorExportPreset::set_patches(const Vector<String> &p_patches) {
 
 Vector<String> EditorExportPreset::get_patches() const {
 	return patches;
+}
+
+void EditorExportPreset::set_patch_delta_encoding_enabled(bool p_enable) {
+	patch_delta_encoding_enabled = p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::is_delta_encoding_enabled() const {
+	return patch_delta_encoding_enabled;
+}
+
+void EditorExportPreset::set_patch_delta_zstd_level(int p_level) {
+	patch_delta_zstd_level = p_level;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_patch_delta_zstd_level() const {
+	return patch_delta_zstd_level;
+}
+
+void EditorExportPreset::set_patch_delta_min_reduction(double p_ratio) {
+	patch_delta_min_reduction = p_ratio;
+	EditorExport::singleton->save_presets();
+}
+
+double EditorExportPreset::get_patch_delta_min_reduction() const {
+	return patch_delta_min_reduction;
+}
+
+void EditorExportPreset::set_patch_delta_exclude_filter(const String &p_exclude) {
+	patch_delta_exclude_filter = p_exclude;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch_delta_exclude_filter() const {
+	return patch_delta_exclude_filter;
 }
 
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
