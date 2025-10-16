@@ -2455,12 +2455,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.color = rb->get_internal_texture(v);
 				params.depth = rb->get_depth_texture(v);
 				params.velocity = rb->get_velocity_buffer(false, v);
-
+				params.reactive = rb->get_internal_texture_reactive(v);
 				if (rb->get_fsr_auto_generate_reactive()) {
 					// Provide opaque only texture for reactive mask generation.
 					params.opaque_only = rb->get_opaque_only_color_texture(v);
-				} else {
-					params.reactive = rb->get_internal_texture_reactive(v);
 				}
 
 				params.exposure = exposure;
@@ -2508,12 +2506,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.color = rb->get_internal_texture(v);
 				params.depth = rb->get_depth_texture(v);
 				params.velocity = rb->get_velocity_buffer(false, v);
-
+				params.reactive = rb->get_internal_texture_reactive(v);
 				if (rb->get_fsr_auto_generate_reactive()) {
 					// Provide opaque only texture for reactive mask generation.
 					params.opaque_only = rb->get_opaque_only_color_texture(v);
-				} else {
-					params.reactive = rb->get_internal_texture_reactive(v);
 				}
 
 				params.exposure = exposure;

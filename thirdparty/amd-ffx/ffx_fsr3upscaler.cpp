@@ -1360,9 +1360,13 @@ FfxErrorCode ffxFsr3UpscalerContextGenerateReactiveMask(FfxFsr3UpscalerContext* 
     FFX_RETURN_ON_ERROR(
         params,
         FFX_ERROR_INVALID_POINTER);
-    FFX_RETURN_ON_ERROR(
-        params->commandList,
-        FFX_ERROR_INVALID_POINTER);
+	// GODOT BEGINS
+	// Godot doesn't use FFX context to pass command list.
+	// So we don't need to ensure that the command list is not null.
+    // FFX_RETURN_ON_ERROR(
+    //     params->commandList,
+    //     FFX_ERROR_INVALID_POINTER);
+	// GODOT ENDS
 
     FfxFsr3UpscalerContext_Private* contextPrivate = (FfxFsr3UpscalerContext_Private*)(context);
 
