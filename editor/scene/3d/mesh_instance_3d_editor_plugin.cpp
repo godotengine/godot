@@ -63,6 +63,10 @@ void MeshInstance3DEditor::edit(MeshInstance3D *p_mesh) {
 	node = p_mesh;
 }
 
+void MeshInstance3DEditor::multi_edit(Object *p_meshes) {
+	selected_meshes = p_meshes;
+}
+
 Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose) {
 	Vector<Ref<Shape3D>> shapes;
 	switch (p_option) {
@@ -274,27 +278,38 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 }
 
 void MeshInstance3DEditor::_shape_dialog_about_to_popup() {
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
-	if (selection.is_empty()) {
-		selection.push_back(node);
-	}
-
 	bool disable_primitive = true;
-	for (Node *E : selection) {
-		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
-		if (!instance) {
-			continue;
-		}
-		Ref<Mesh> m = instance->get_mesh();
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(selected_meshes);
+	if (mi) {
+		Ref<Mesh> m = mi->get_mesh();
 		if (m.is_null()) {
-			continue;
+			return;
 		}
 		if (((Ref<BoxMesh>)m).is_valid() || ((Ref<CapsuleMesh>)m).is_valid() || ((Ref<CylinderMesh>)m).is_valid() || ((Ref<SphereMesh>)m).is_valid()) {
 			disable_primitive = false;
-			break;
+			return;
 		}
 	}
+
+	Ref<MultiNodeEdit> mne = Ref<MultiNodeEdit>(selected_meshes);
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (mne.is_valid() && edited_scene) {
+		for (int i = 0; i < mne->get_node_count(); i++) {
+			MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(edited_scene->get_node(mne->get_node(i)));
+			if (!instance) {
+				continue;
+			}
+			Ref<Mesh> m = instance->get_mesh();
+			if (m.is_null()) {
+				continue;
+			}
+			if (((Ref<BoxMesh>)m).is_valid() || ((Ref<CapsuleMesh>)m).is_valid() || ((Ref<CylinderMesh>)m).is_valid() || ((Ref<SphereMesh>)m).is_valid()) {
+				disable_primitive = false;
+				break;
+			}
+		}
+	}
+
 	if (disable_primitive && shape_type->get_selected() == SHAPE_TYPE_PRIMITIVE) {
 		shape_type->select(SHAPE_TYPE_TRIMESH);
 	}
@@ -316,11 +331,8 @@ void MeshInstance3DEditor::_shape_type_selected(int p_option) {
 void MeshInstance3DEditor::_create_collision_shape() {
 	int placement_option = shape_placement->get_selected();
 	int shape_type_option = shape_type->get_selected();
-
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-
 	String placement_action_name = placement_option == SHAPE_PLACEMENT_SIBLING ? TTR("Create %s Collision Shape Sibling") : TTR("Create %s Static Body Child");
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	switch (shape_type_option) {
 		case SHAPE_TYPE_TRIMESH: {
@@ -355,73 +367,82 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			break;
 	}
 
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(selected_meshes);
 
-	bool verbose = false;
-	if (selection.is_empty()) {
-		selection.push_back(node);
-		verbose = true;
+	if (mi) {
+		_create_mesh_collision_shape(mi, true);
+		ur->commit_action();
+		return;
 	}
 
-	for (Node *E : selection) {
-		if (placement_option == SHAPE_PLACEMENT_SIBLING && E == get_tree()->get_edited_scene_root()) {
-			if (verbose) {
-				err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
-				err_dialog->popup_centered();
-			}
-			continue;
-		}
-
-		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
-		if (!instance) {
-			continue;
-		}
-
-		Ref<Mesh> m = instance->get_mesh();
-		if (m.is_null()) {
-			continue;
-		}
-
-		shape_offset_transform = Transform3D();
-		Vector<Ref<Shape3D>> shapes = create_shape_from_mesh(m, shape_type_option, verbose);
-		if (shapes.is_empty()) {
-			continue;
-		}
-
-		Node *owner = get_tree()->get_edited_scene_root();
-		if (placement_option == SHAPE_PLACEMENT_STATIC_BODY_CHILD) {
-			StaticBody3D *body = memnew(StaticBody3D);
-			body->set_transform(shape_offset_transform);
-
-			ur->add_do_method(instance, "add_child", body, true);
-			ur->add_do_method(body, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), body);
-
-			for (Ref<Shape3D> shape : shapes) {
-				CollisionShape3D *cshape = memnew(CollisionShape3D);
-				cshape->set_shape(shape);
-				body->add_child(cshape, true);
-				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
-			}
-			ur->add_do_reference(body);
-			ur->add_undo_method(instance, "remove_child", body);
-		} else {
-			for (Ref<Shape3D> shape : shapes) {
-				CollisionShape3D *cshape = memnew(CollisionShape3D);
-				cshape->set_shape(shape);
-				cshape->set_name("CollisionShape3D");
-				cshape->set_transform(instance->get_transform() * shape_offset_transform);
-				ur->add_do_method(E, "add_sibling", cshape, true);
-				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
-				ur->add_do_reference(cshape);
-				ur->add_undo_method(instance->get_parent(), "remove_child", cshape);
+	Ref<MultiNodeEdit> mne = Ref<MultiNodeEdit>(selected_meshes);
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (mne.is_valid() && edited_scene) {
+		for (int i = 0; i < mne->get_node_count(); i++) {
+			MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(edited_scene->get_node(mne->get_node(i)));
+			if (instance) {
+				_create_mesh_collision_shape(instance, false);
 			}
 		}
 	}
-
 	ur->commit_action();
+}
+
+void MeshInstance3DEditor::_create_mesh_collision_shape(MeshInstance3D *p_instance, bool p_verbose) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	int placement_option = shape_placement->get_selected();
+	int shape_type_option = shape_type->get_selected();
+
+	if (placement_option == SHAPE_PLACEMENT_SIBLING && p_instance == get_tree()->get_edited_scene_root()) {
+		if (p_verbose) {
+			err_dialog->set_text(TTR("Can't create a collision shape as sibling for the scene root."));
+			err_dialog->popup_centered();
+		}
+		return;
+	}
+
+	Ref<Mesh> m = p_instance->get_mesh();
+	if (m.is_null()) {
+		return;
+	}
+
+	shape_offset_transform = Transform3D();
+	Vector<Ref<Shape3D>> shapes = create_shape_from_mesh(m, shape_type_option, p_verbose);
+	if (shapes.is_empty()) {
+		return;
+	}
+
+	Node *owner = get_tree()->get_edited_scene_root();
+	if (placement_option == SHAPE_PLACEMENT_STATIC_BODY_CHILD) {
+		StaticBody3D *body = memnew(StaticBody3D);
+		body->set_transform(shape_offset_transform);
+
+		ur->add_do_method(p_instance, "add_child", body, true);
+		ur->add_do_method(body, "set_owner", owner);
+		ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), body);
+
+		for (Ref<Shape3D> shape : shapes) {
+			CollisionShape3D *cshape = memnew(CollisionShape3D);
+			cshape->set_shape(shape);
+			body->add_child(cshape, true);
+			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
+		}
+		ur->add_do_reference(body);
+		ur->add_undo_method(p_instance, "remove_child", body);
+	} else {
+		for (Ref<Shape3D> shape : shapes) {
+			CollisionShape3D *cshape = memnew(CollisionShape3D);
+			cshape->set_shape(shape);
+			cshape->set_name("CollisionShape3D");
+			cshape->set_transform(p_instance->get_transform() * shape_offset_transform);
+			ur->add_do_method(p_instance, "add_sibling", cshape, true);
+			ur->add_do_method(cshape, "set_owner", owner);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
+			ur->add_do_reference(cshape);
+			ur->add_undo_method(p_instance->get_parent(), "remove_child", cshape);
+		}
+	}
 }
 
 void MeshInstance3DEditor::_menu_option(int p_option) {
@@ -936,6 +957,8 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 }
 
 void MeshInstance3DEditorPlugin::edit(Object *p_object) {
+	mesh_editor->multi_edit(p_object);
+
 	{
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_object);
 		if (mi) {
