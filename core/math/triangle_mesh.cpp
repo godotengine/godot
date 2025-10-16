@@ -290,7 +290,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	return inters;
 }
 
-bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index, bool p_ignore_backfaces) const {
+bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index, CullMode p_cull_mode) const {
 	if (!valid) {
 		return false;
 	}
@@ -339,9 +339,17 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 
 						if (f3.intersects_ray(p_begin, p_dir, &res)) {
 							Vector3 face_normal = f3.get_plane().get_normal();
-							if (p_ignore_backfaces && p_dir.dot(face_normal) >= 0) {
-								// Skip this triangle.
-							} else {
+							real_t dot = p_dir.dot(face_normal);
+							bool is_backface = dot >= 0;
+
+							bool skip_triangle = false;
+							if (p_cull_mode == CULL_BACK && is_backface) {
+								skip_triangle = true;
+							} else if (p_cull_mode == CULL_FRONT && !is_backface) {
+								skip_triangle = true;
+							}
+
+							if (!skip_triangle) {
 								real_t nd = n.dot(res);
 								if (nd < d) {
 									d = nd;
