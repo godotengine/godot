@@ -712,6 +712,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
 			Draws the probes used for signed distance field global illumination (SDFGI).
+			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
 			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
