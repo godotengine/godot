@@ -79,6 +79,13 @@ public:
 		CURSOR_MAX
 	};
 
+	class JoypadFeatures {
+	public:
+		virtual ~JoypadFeatures() {}
+
+		virtual int get_joy_num_touchpads() const { return 0; }
+	};
+
 	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
@@ -149,6 +156,19 @@ private:
 
 	HashMap<int, VibrationInfo> joy_vibration;
 
+	struct TouchpadFingerInfo {
+		Vector2 position = Vector2();
+		float pressure = 0.0f;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		// The first int index refers to touchpad ID, the second one refers to finger ID on that touchpad.
+		HashMap<int, HashMap<int, TouchpadFingerInfo>> touchpad_fingers;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -174,6 +194,7 @@ private:
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		Input::JoypadFeatures *features;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -253,6 +274,7 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
+	void _update_joypad_features(int p_device);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -330,6 +352,12 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const;
+	TypedArray<int> get_joy_touchpad_fingers(int p_device, int p_touchpad) const;
+
+	int get_joy_num_touchpads(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -345,6 +373,10 @@ public:
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
+
+	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
+	void set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, float p_pressure, Vector2 p_value);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
