@@ -58,7 +58,7 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 	glslang::EShTargetLanguageVersion TargetVersion = (glslang::EShTargetLanguageVersion)p_spirv_version;
 
 	glslang::TShader shader(stages[p_stage]);
-	CharString cs = p_source_code.ascii();
+	CharString cs = p_source_code.utf8();
 	const char *cs_strings = cs.get_data();
 	std::string preamble = "";
 
