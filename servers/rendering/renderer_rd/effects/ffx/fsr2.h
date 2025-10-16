@@ -50,9 +50,6 @@ public:
 	FfxFsr2Context fsr_context;
 	FfxFsr2ContextDescription fsr_desc;
 
-	// Only if autogen reactive is used
-	RID generated_reactive_mask = RID();
-
 	~FSR2Context();
 };
 
