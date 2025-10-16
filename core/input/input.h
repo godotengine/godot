@@ -83,9 +83,7 @@ public:
 	public:
 		virtual ~JoypadFeatures() {}
 
-		// None at the moment, but later we can add new features like:
-		// virtual bool has_joy_accelerometer() const { return false; }
-		// virtual bool set_joy_accelerometer_enabled(bool p_enable) { return false; }
+		virtual int get_joy_num_touchpads() const { return 0; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -157,6 +155,19 @@ private:
 	};
 
 	HashMap<int, VibrationInfo> joy_vibration;
+
+	struct TouchpadFingerInfo {
+		Vector2 position = Vector2();
+		float pressure = 0.0f;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		// The first int index refers to touchpad ID, the second one refers to finger ID on that touchpad.
+		HashMap<int, HashMap<int, TouchpadFingerInfo>> touchpad_fingers;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
 
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
@@ -341,6 +352,12 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const;
+	TypedArray<int> get_joy_touchpad_fingers(int p_device, int p_touchpad) const;
+
+	int get_joy_num_touchpads(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -358,6 +375,8 @@ public:
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
+	void set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, float p_pressure, Vector2 p_value);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
