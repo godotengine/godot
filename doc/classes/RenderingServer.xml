@@ -4106,6 +4106,14 @@
 				Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 			</description>
 		</method>
+		<method name="viewport_set_fsr_auto_generate_reactive">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="auto_generate_reactive" type="bool" />
+			<description>
+				Determines whether to auto-generate a reactive mask for FSR 2/3. Setting this to true will reduce flickering upon upscaling transparent objects, at a cost of one more rendering pass. 
+			</description>
+		</method>
 		<method name="viewport_set_global_canvas_transform">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />

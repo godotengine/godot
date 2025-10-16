@@ -347,6 +347,10 @@
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_sharpness] project setting.
 		</member>
+		<member name="fsr_auto_generate_reactive" type="bool" setter="set_fsr_auto_generate_reactive" getter="get_fsr_auto_generate_reactive" default="false">
+			Determines whether FSR 2/3 runs an additional pass to generate an reactive mask. Enabling this will increase GPU time, but provide better upscaling results for transparent objects. 
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_auto_generate_reactive] project setting.
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
