@@ -137,8 +137,8 @@ RID PopupMenu::bind_global_menu() {
 			nmenu->set_item_tooltip(global_menu, index, item.tooltip);
 			if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
 				Array events = item.shortcut->get_events();
-				for (int j = 0; j < events.size(); j++) {
-					Ref<InputEventKey> ie = events[j];
+				for (const Variant &v : events) {
+					Ref<InputEventKey> ie = v;
 					if (ie.is_valid() && _set_item_accelerator(index, ie)) {
 						break;
 					}
@@ -2984,7 +2984,26 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 
 void PopupMenu::_shortcut_changed() {
 	for (int i = 0; i < items.size(); i++) {
-		items.write[i].dirty = true;
+		Item &item = items.write[i];
+		item.dirty = true;
+		if (global_menu.is_valid() && !item.separator) {
+			NativeMenu *nmenu = NativeMenu::get_singleton();
+			nmenu->set_item_accelerator(global_menu, i, Key::NONE);
+			if (!item.shortcut_is_disabled && item.shortcut.is_valid() && item.shortcut->has_valid_event()) {
+				Array events = item.shortcut->get_events();
+				for (const Variant &v : events) {
+					Ref<InputEventKey> ie = v;
+					if (ie.is_valid() && _set_item_accelerator(i, ie)) {
+						break;
+					}
+				}
+				if (item.shortcut_is_global) {
+					nmenu->set_item_key_callback(global_menu, i, callable_mp(this, &PopupMenu::activate_item));
+				} else {
+					nmenu->set_item_key_callback(global_menu, i, Callable());
+				}
+			}
+		}
 	}
 	control->queue_redraw();
 }
