@@ -147,6 +147,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_position", "device", "touchpad", "finger"), &Input::get_joy_touchpad_finger_position);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_pressure", "device", "touchpad", "finger"), &Input::get_joy_touchpad_finger_pressure);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_fingers", "device", "touchpad"), &Input::get_joy_touchpad_fingers);
+	ClassDB::bind_method(D_METHOD("get_joy_num_touchpads", "device"), &Input::get_joy_num_touchpads);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
@@ -739,6 +743,62 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+Vector2 Input::get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return Vector2();
+	}
+
+	Vector2i index(p_touchpad, p_finger);
+	const TouchpadFingerInfo *finger = touch->finger_info.getptr(index);
+	if (finger == nullptr) {
+		return Vector2();
+	}
+
+	return finger->position;
+}
+
+float Input::get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return 0.0f;
+	}
+
+	Vector2i index(p_touchpad, p_finger);
+	const TouchpadFingerInfo *finger = touch->finger_info.getptr(index);
+	if (finger == nullptr) {
+		return 0.0f;
+	}
+
+	return finger->pressure;
+}
+
+PackedInt32Array Input::get_joy_touchpad_fingers(int p_device, int p_touchpad) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return PackedInt32Array();
+	}
+	PackedInt32Array result;
+	for (const KeyValue<Vector2i, TouchpadFingerInfo> &index : touch->finger_info) {
+		if (index.key.x == p_touchpad) {
+			result.append(index.key.y);
+		}
+	}
+	return result;
+}
+
+int Input::get_joy_num_touchpads(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const TouchpadInfo *touch = joy_touch.getptr(p_device);
+	if (touch == nullptr) {
+		return 0;
+	}
+	return touch->num_touchpads;
+}
+
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
@@ -1014,6 +1074,18 @@ bool Input::set_joy_light(int p_device, const Color &p_color) {
 bool Input::has_joy_light(int p_device) const {
 	const Joypad *joypad = joy_names.getptr(p_device);
 	return joypad && joypad->has_light;
+}
+
+void Input::set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, const Vector2 &p_value, float p_pressure) {
+	_THREAD_SAFE_METHOD_
+	TouchpadInfo &touch = joy_touch[p_device];
+	Vector2i index(p_touchpad, p_finger);
+	if (p_pressure > 0.0f) {
+		touch.finger_info[index] = TouchpadFingerInfo{ p_value, p_pressure };
+	} else {
+		touch.finger_info.erase(index);
+	}
+	// TODO: event
 }
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
@@ -1515,6 +1587,9 @@ void Input::_update_joypad_features(int p_device) {
 	}
 	if (joypad->features->has_joy_light()) {
 		joypad->has_light = true;
+	}
+	if (joypad->features->get_joy_num_touchpads() > 0) {
+		joy_touch[p_device].num_touchpads = joypad->features->get_joy_num_touchpads();
 	}
 }
 
