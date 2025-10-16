@@ -49,7 +49,7 @@ public:
 	};
 
 	enum ContentHAlign {
-		H_ALIGN_LEFT,
+		H_ALIGN_LEFT = 0,
 		H_ALIGN_CENTER = 1,
 		H_ALIGN_RIGHT = 2,
 	};
@@ -128,7 +128,7 @@ protected:
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
-	void set_horizontal_content_align(ContentHAlign p_align);
+	void set_horizontal_content_align(int p_align);
 	int get_horizontal_content_align() const;
 
 	void set_vertical_content_align(int p_align);
