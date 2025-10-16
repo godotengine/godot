@@ -45,11 +45,25 @@
 				Returns the [AnimationRootNode] referenced by the point at index [param point].
 			</description>
 		</method>
+		<method name="get_blend_point_ovl" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the velocity limit override of the point at index [param point].
+			</description>
+		</method>
 		<method name="get_blend_point_position" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="point" type="int" />
 			<description>
 				Returns the position of the point at index [param point].
+			</description>
+		</method>
+		<method name="get_blend_point_vl" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the velocity limit of the point at index [param point].
 			</description>
 		</method>
 		<method name="get_triangle_count" qualifiers="const">
@@ -88,12 +102,28 @@
 				Changes the [AnimationNode] referenced by the point at index [param point].
 			</description>
 		</method>
+		<method name="set_blend_point_ovl">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="override_velocity_limit" type="bool" />
+			<description>
+				Updates the velocity limit override of the point at index [param point] in the blend space.
+			</description>
+		</method>
 		<method name="set_blend_point_position">
 			<return type="void" />
 			<param index="0" name="point" type="int" />
 			<param index="1" name="pos" type="Vector2" />
 			<description>
 				Updates the position of the point at index [param point] in the blend space.
+			</description>
+		</method>
+		<method name="set_blend_point_vl">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="velocity_limit" type="float" />
+			<description>
+				Updates the velocity limit of the point at index [param point] in the blend space.
 			</description>
 		</method>
 	</methods>
@@ -116,6 +146,15 @@
 		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
 			If [code]false[/code], the blended animations' frame are stopped when the blend value is [code]0[/code].
 			If [code]true[/code], forcing the blended animations to advance frame.
+		</member>
+		<member name="use_velocity_limit" type="bool" setter="set_use_velocity_limit" getter="get_use_velocity_limit" default="false">
+			If [code]true[/code], while [member sync] is [code]true[/code] a blend point's weight is applied over time using [member velocity_limit] with [member velocity_limit_ease].
+		</member>
+		<member name="velocity_limit" type="float" setter="set_velocity_limit" getter="get_velocity_limit" default="0.0">
+			Controls the blend point velocity limit speed.
+		</member>
+		<member name="velocity_limit_ease" type="float" setter="set_velocity_limit_ease" getter="get_velocity_limit_ease" default="1.0">
+			Controls the easing of the velocity limit speed.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">
 			Name of the blend space's X axis.
