@@ -460,6 +460,8 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 	// This may reduce flickering in scenarios where there are massive transparent objects.
 	if (autogen_masks) {
 		FfxFsr3UpscalerGenerateReactiveDescription generate_desc = {};
+
+		generate_desc.commandList = nullptr;
 		generate_desc.colorPreUpscale = FFXCommon::get_resource_rd(&color, L"color");
 		generate_desc.colorOpaqueOnly = FFXCommon::get_resource_rd(&opaque_only, L"opaque_only");
 		generate_desc.outReactive = FFXCommon::get_resource_rd(&out_reactive, L"generated_reactive_mask");
@@ -469,7 +471,11 @@ void FSR3UpscalerEffect::upscale(const Parameters &p_params) {
 		generate_desc.cutoffThreshold = 0.2f;
 		generate_desc.scale = 1.f;
 
-		ffxFsr3UpscalerContextGenerateReactiveMask(&p_params.context->fsr_context, &generate_desc);
+		FfxErrorCode err = ffxFsr3UpscalerContextGenerateReactiveMask(&p_params.context->fsr_context, &generate_desc);
+		if (err != FFX_OK) {
+			WARN_PRINT_ONCE("FSR3: Generate reactive mask enabled, but corresponding pass failed.");
+			autogen_masks = false;
+		}
 	}
 
 	FfxFsr3UpscalerDispatchDescription dispatch_desc = {};

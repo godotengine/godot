@@ -812,14 +812,18 @@ FfxFloat32x3 LoadPrevPostAlpha(FFX_PARAMETER_IN FFX_MIN16_I2 iPxPos)
     defined(FSR3UPSCALER_BIND_UAV_AUTOCOMPOSITION)
 
 layout(set = 0, binding = FSR3UPSCALER_BIND_UAV_AUTOREACTIVE, r32f)    uniform image2D  rw_output_autoreactive;
-layout(set = 0, binding = FSR3UPSCALER_BIND_UAV_AUTOCOMPOSITION, r32f) uniform image2D  rw_output_autocomposition;
 
-void StoreAutoReactive(FFX_PARAMETER_IN FFX_MIN16_I2 iPxPos, FFX_PARAMETER_IN FFX_MIN16_F2 fReactive)
-{
-	imageStore(rw_output_autoreactive, iPxPos, FfxFloat32x4(FfxFloat32(fReactive.x), 0.0, 0.0, 0.0));
-
-	imageStore(rw_output_autocomposition, iPxPos, FfxFloat32x4(FfxFloat32(fReactive.y), 0.0, 0.0, 0.0));
-}
+// GODOT BEGINS
+// The binding is never used, so comment it out to avoid compilation errors.
+// layout(set = 0, binding = FSR3UPSCALER_BIND_UAV_AUTOCOMPOSITION, r32f) uniform image2D  rw_output_autocomposition;
+//
+// void StoreAutoReactive(FFX_PARAMETER_IN FFX_MIN16_I2 iPxPos, FFX_PARAMETER_IN FFX_MIN16_F2 fReactive)
+// {
+// 	imageStore(rw_output_autoreactive, iPxPos, FfxFloat32x4(FfxFloat32(fReactive.x), 0.0, 0.0, 0.0));
+//
+// 	imageStore(rw_output_autocomposition, iPxPos, FfxFloat32x4(FfxFloat32(fReactive.y), 0.0, 0.0, 0.0));
+// }
+// GODOT ENDS
 #endif
 
 #if defined(FSR3UPSCALER_BIND_UAV_PREV_PRE_ALPHA_COLOR)
