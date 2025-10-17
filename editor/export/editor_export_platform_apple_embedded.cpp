@@ -2414,7 +2414,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						const Dictionary &device_info = devices[i];
 						const Dictionary &conn_props = device_info["connectionProperties"];
 						const Dictionary &dev_props = device_info["deviceProperties"];
-						if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
 							Device nd;
 							nd.id = device_info["identifier"];
 							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
