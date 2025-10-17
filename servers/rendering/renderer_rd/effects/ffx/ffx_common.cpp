@@ -522,7 +522,7 @@ static FfxErrorCode execute_gpu_jobs_rd(FfxInterface *p_backend_interface, FfxCo
 	ERR_FAIL_NULL_V(p_backend_interface, FFX_ERROR_INVALID_ARGUMENT);
 
 	FFXCommon::Scratch &scratch = *reinterpret_cast<FFXCommon::Scratch *>(p_backend_interface->scratchBuffer);
-	FfxErrorCode error_code;
+	FfxErrorCode error_code = FFX_OK;
 	for (const FfxGpuJobDescription &job : scratch.gpu_jobs) {
 		switch (job.jobType) {
 			case FFX_GPU_JOB_CLEAR_FLOAT: {
