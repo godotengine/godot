@@ -31,6 +31,7 @@
 #include "animation_blend_space_2d_editor.h"
 
 #include "core/io/resource_loader.h"
+#include "core/math/delaunay_2d.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
