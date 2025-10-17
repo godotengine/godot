@@ -235,12 +235,6 @@ static FfxErrorCode create_resource_rd(FfxInterface *p_backend_interface, const 
 		res_desc.mipCount = uint32_t(1 + std::floor(std::log2(MAX(MAX(res_desc.width, res_desc.height), res_desc.depth))));
 	}
 
-#ifdef DEV_ENABLED
-	if (p_create_resource_description->initData.type == FFX_RESOURCE_INIT_DATA_TYPE_INVALID) {
-		ERR_PRINT("Invalid initial data type. ");
-	}
-#endif
-
 	Vector<PackedByteArray> initial_data;
 	if (p_create_resource_description->initData.type != FFX_RESOURCE_INIT_DATA_TYPE_UNINITIALIZED) {
 		PackedByteArray byte_array;
@@ -251,6 +245,9 @@ static FfxErrorCode create_resource_rd(FfxInterface *p_backend_interface, const 
 				break;
 			case FFX_RESOURCE_INIT_DATA_TYPE_VALUE:
 				memcpy(byte_array.ptrw(), &p_create_resource_description->initData.value, p_create_resource_description->initData.size);
+				break;
+			default:
+				ERR_PRINT("Invalid initial data type. ");
 				break;
 		}
 		initial_data.push_back(byte_array);
