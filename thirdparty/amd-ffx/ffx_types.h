@@ -162,6 +162,8 @@
 #else
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+#pragma GCC diagnostic ignored "-Wswitch"
 #endif
 
 // GODOT ENDS
