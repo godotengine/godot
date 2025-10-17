@@ -2662,29 +2662,34 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult result;
+	const int result_max = 32;
+	PhysicsDirectSpaceState3D::ShapeResult result_array[result_max];
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	if (ss->intersect_shape(shape_params, &result, 32)) {
-		SelectResult res;
-		res.item = Object::cast_to<Node>(result.collider);
-		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
+	int result_count = ss->intersect_shape(shape_params, result_array, result_max);
+	if (result_count > 0) {
+		for (int i = 0; i < result_count; i++) {
+			PhysicsDirectSpaceState3D::ShapeResult result = result_array[i];
+			SelectResult res;
+			res.item = Object::cast_to<Node>(result.collider);
+			res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
 
-		// Fetch collision shapes.
-		CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
-		if (collision) {
-			List<uint32_t> owners;
-			collision->get_shape_owners(&owners);
-			for (uint32_t &I : owners) {
-				SelectResult res_shape;
-				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-				res_shape.order = res.order;
-				r_items.push_back(res_shape);
+			// Fetch collision shapes.
+			CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
+			if (collision) {
+					List<uint32_t> owners;
+					collision->get_shape_owners(&owners);
+					for (uint32_t &I : owners) {
+							SelectResult res_shape;
+							res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
+							res_shape.order = res.order;
+							r_items.push_back(res_shape);
+					}
 			}
-		}
 
-		r_items.push_back(res);
+			r_items.push_back(res);
+		}
 	}
 #endif // PHYSICS_3D_DISABLED
 
