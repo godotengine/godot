@@ -181,6 +181,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	const NodeData *nd = &nodes[0];
 
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
+	ret_nodes[0] = nullptr; // Sidesteps "maybe uninitialized" false-positives on GCC.
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
