@@ -2065,6 +2065,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		} else {
 			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 		}
+	} else if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
+		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 	} else {
 		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	}
@@ -2326,43 +2328,17 @@ uint64_t RenderingDeviceDriverVulkan::texture_get_allocation_size(TextureID p_te
 void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
 
+	uint32_t w = MAX(1u, tex_info->vk_create_info.extent.width >> p_subresource.mipmap);
+	uint32_t h = MAX(1u, tex_info->vk_create_info.extent.height >> p_subresource.mipmap);
+	uint32_t d = MAX(1u, tex_info->vk_create_info.extent.depth >> p_subresource.mipmap);
+
+	uint32_t bw = 0, bh = 0;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, bw, bh);
+
+	uint32_t sbw = 0, sbh = 0;
 	*r_layout = {};
-
-	if (tex_info->vk_create_info.tiling == VK_IMAGE_TILING_LINEAR) {
-		VkImageSubresource vk_subres = {};
-		vk_subres.aspectMask = (VkImageAspectFlags)(1 << p_subresource.aspect);
-		vk_subres.arrayLayer = p_subresource.layer;
-		vk_subres.mipLevel = p_subresource.mipmap;
-
-		VkSubresourceLayout vk_layout = {};
-		vkGetImageSubresourceLayout(vk_device, tex_info->vk_view_create_info.image, &vk_subres, &vk_layout);
-
-		r_layout->offset = vk_layout.offset;
-		r_layout->size = vk_layout.size;
-		r_layout->row_pitch = vk_layout.rowPitch;
-		r_layout->depth_pitch = vk_layout.depthPitch;
-		r_layout->layer_pitch = vk_layout.arrayPitch;
-	} else {
-		// Tight.
-		uint32_t w = tex_info->vk_create_info.extent.width;
-		uint32_t h = tex_info->vk_create_info.extent.height;
-		uint32_t d = tex_info->vk_create_info.extent.depth;
-		if (p_subresource.mipmap > 0) {
-			r_layout->offset = get_image_format_required_size(tex_info->rd_format, w, h, d, p_subresource.mipmap);
-		}
-		for (uint32_t i = 0; i < p_subresource.mipmap; i++) {
-			w = MAX(1u, w >> 1);
-			h = MAX(1u, h >> 1);
-			d = MAX(1u, d >> 1);
-		}
-		uint32_t bw = 0, bh = 0;
-		get_compressed_image_format_block_dimensions(tex_info->rd_format, bw, bh);
-		uint32_t sbw = 0, sbh = 0;
-		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
-		r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
-		r_layout->depth_pitch = r_layout->size / d;
-		r_layout->layer_pitch = r_layout->size / tex_info->vk_create_info.arrayLayers;
-	}
+	r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
 Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_texture, uint32_t p_layer) {
@@ -2385,6 +2361,10 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_textur
 	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_format);
 	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
 
+	void *data_ptr = nullptr;
+	VkResult err = vmaMapMemory(allocator, tex->allocation.handle, &data_ptr);
+	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(err) + ".");
+
 	{
 		uint8_t *w = image_data.ptrw();
 
@@ -2395,25 +2375,23 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_textur
 			uint8_t *write_ptr_mipmap = w + mipmap_offset;
 			tight_mip_size = image_total - mipmap_offset;
 
-			RDD::TextureSubresource subres;
-			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
-			subres.layer = p_layer;
-			subres.mipmap = mm_i;
-			RDD::TextureCopyableLayout layout;
-			texture_get_copyable_layout(p_texture, subres, &layout);
+			VkImageSubresource vk_subres = {};
+			vk_subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			vk_subres.arrayLayer = p_layer;
+			vk_subres.mipLevel = mm_i;
 
-			uint8_t *img_mem = texture_map(p_texture, subres);
-			ERR_FAIL_NULL_V(img_mem, Vector<uint8_t>());
+			VkSubresourceLayout vk_layout = {};
+			vkGetImageSubresourceLayout(vk_device, tex->vk_view_create_info.image, &vk_subres, &vk_layout);
 
 			for (uint32_t z = 0; z < depth; z++) {
 				uint8_t *write_ptr = write_ptr_mipmap + z * tight_mip_size / depth;
-				const uint8_t *slice_read_ptr = img_mem + z * layout.depth_pitch;
+				const uint8_t *slice_read_ptr = (uint8_t *)data_ptr + vk_layout.offset + z * vk_layout.depthPitch;
 
 				if (block_size > 1) {
 					// Compressed.
 					uint32_t line_width = (block_size * (width / blockw));
 					for (uint32_t y = 0; y < height / blockh; y++) {
-						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						const uint8_t *rptr = slice_read_ptr + y * vk_layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * line_width;
 
 						memcpy(wptr, rptr, line_width);
@@ -2421,50 +2399,20 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_textur
 				} else {
 					// Uncompressed.
 					for (uint32_t y = 0; y < height; y++) {
-						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						const uint8_t *rptr = slice_read_ptr + y * vk_layout.rowPitch;
 						uint8_t *wptr = write_ptr + y * pixel_size * width;
 						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
 					}
 				}
 			}
 
-			texture_unmap(p_texture);
-
 			mipmap_offset = image_total;
 		}
 	}
 
+	vmaUnmapMemory(allocator, tex->allocation.handle);
+
 	return image_data;
-}
-
-uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-
-	VkImageSubresource vk_subres = {};
-	vk_subres.aspectMask = (VkImageAspectFlags)(1 << p_subresource.aspect);
-	vk_subres.arrayLayer = p_subresource.layer;
-	vk_subres.mipLevel = p_subresource.mipmap;
-
-	VkSubresourceLayout vk_layout = {};
-	vkGetImageSubresourceLayout(vk_device, tex_info->vk_view_create_info.image, &vk_subres, &vk_layout);
-
-	void *data_ptr = nullptr;
-	VkResult err = vkMapMemory(
-			vk_device,
-			tex_info->allocation.info.deviceMemory,
-			tex_info->allocation.info.offset + vk_layout.offset,
-			vk_layout.size,
-			0,
-			&data_ptr);
-
-	vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, nullptr, "vkMapMemory failed with error " + itos(err) + ".");
-	return (uint8_t *)data_ptr;
-}
-
-void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
-	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vmaUnmapMemory(allocator, tex_info->allocation.handle);
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
@@ -4528,10 +4476,14 @@ static void _texture_subresource_layers_to_vk(const RDD::TextureSubresourceLayer
 	r_vk_subreources->layerCount = p_subresources.layer_count;
 }
 
-static void _buffer_texture_copy_region_to_vk(const RDD::BufferTextureCopyRegion &p_copy_region, VkBufferImageCopy *r_vk_copy_region) {
+static void _buffer_texture_copy_region_to_vk(const RDD::BufferTextureCopyRegion &p_copy_region, uint32_t p_buffer_row_length, VkBufferImageCopy *r_vk_copy_region) {
 	*r_vk_copy_region = {};
 	r_vk_copy_region->bufferOffset = p_copy_region.buffer_offset;
-	_texture_subresource_layers_to_vk(p_copy_region.texture_subresources, &r_vk_copy_region->imageSubresource);
+	r_vk_copy_region->bufferRowLength = p_buffer_row_length;
+	r_vk_copy_region->imageSubresource.aspectMask = (VkImageAspectFlags)(1 << p_copy_region.texture_subresource.aspect);
+	r_vk_copy_region->imageSubresource.mipLevel = p_copy_region.texture_subresource.mipmap;
+	r_vk_copy_region->imageSubresource.baseArrayLayer = p_copy_region.texture_subresource.layer;
+	r_vk_copy_region->imageSubresource.layerCount = 1;
 	r_vk_copy_region->imageOffset.x = p_copy_region.texture_offset.x;
 	r_vk_copy_region->imageOffset.y = p_copy_region.texture_offset.y;
 	r_vk_copy_region->imageOffset.z = p_copy_region.texture_offset.z;
@@ -4638,14 +4590,20 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
+	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_info->rd_format);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_info->rd_format);
+	uint32_t block_w, block_h;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, block_w, block_h);
+
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
+		_buffer_texture_copy_region_to_vk(p_regions[i], p_regions[i].row_pitch * block_w / (pixel_size * block_size), &vk_copy_regions[i]);
 	}
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_src_buffer.id;
-	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
 #ifdef DEBUG_ENABLED
 	if (tex_info->transient) {
 		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_copy_buffer_to_texture.");
@@ -4655,13 +4613,19 @@ void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID
 }
 
 void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
+	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_info->rd_format);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_info->rd_format);
+	uint32_t block_w, block_h;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, block_w, block_h);
+
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
+		_buffer_texture_copy_region_to_vk(p_regions[i], p_regions[i].row_pitch * block_w / (pixel_size * block_size), &vk_copy_regions[i]);
 	}
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_dst_buffer.id;
 #ifdef DEBUG_ENABLED
 	if (tex_info->transient) {
