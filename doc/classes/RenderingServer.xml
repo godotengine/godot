@@ -4236,6 +4236,14 @@
 				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
 			</description>
 		</method>
+		<method name="viewport_set_tonemap_to_screen">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], the viewport will tonemap its content to the window's HDR output luminance range, if HDR output is enabled.
+			</description>
+		</method>
 		<method name="viewport_set_transparent_background">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -5477,10 +5485,12 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
 			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant ENV_TONE_MAPPER_REINHARD]. Slightly slower than [constant ENV_TONE_MAPPER_REINHARD].
+			[b]Note:[/b] This tonemapper does not support HDR output and clips output to the [code]0.0-1.0[/code] range. A different tonemapper should be used when rendering to an HDR display.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant ENV_TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+			[b]Note:[/b] This tonemapper does not support HDR output and clips output to the [code]0.0-1.0[/code] range. A different tonemapper should be used when rendering to an HDR display.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
 			Uses a film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
