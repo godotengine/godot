@@ -924,6 +924,10 @@
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
 		</member>
+		<member name="interface/editor/main_font_custom_opentype_features" type="String" setter="" getter="">
+			List of custom OpenType features to use, if supported by the currently configured main font. Check what OpenType features are supported by your font first.
+			The string should follow the OpenType specification, e.g. [code]ss01,tnum,calt=false[/code]. Microsoft's documentation contains a list of [url=https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist]all registered features[/url].
+		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
 		</member>
