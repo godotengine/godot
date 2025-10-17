@@ -489,7 +489,11 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				toolbar2_hbc->show();
+				if (horizontal) {
+					toolbar2_hbc->hide();
+				} else {
+					toolbar2_hbc->show();
+				}
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
@@ -4019,12 +4023,14 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
-	bool horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
+	horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
 	if (button_dock_placement->is_visible() == horizontal) {
 		return;
 	}
 
 	if (horizontal) {
+		path_hb->reparent(toolbar_hbc, false);
+		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
 
@@ -4035,6 +4041,8 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	} else {
+		path_hb->reparent(file_list_vb);
+		file_list_vb->move_child(path_hb, 0);
 		set_meta("_bottom_display_mode", get_display_mode());
 		set_meta("_bottom_file_display_mode", get_file_list_display_mode());
 
@@ -4180,7 +4188,7 @@ FileSystemDock::FileSystemDock() {
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	main_vb->add_child(top_vbc);
 
-	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
+	toolbar_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar_hbc);
 
 	HBoxContainer *nav_hbc = memnew(HBoxContainer);
@@ -4276,6 +4284,7 @@ FileSystemDock::FileSystemDock() {
 	split_box->add_child(file_list_vb);
 
 	path_hb = memnew(HBoxContainer);
+	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_vb->add_child(path_hb);
 
 	file_list_search_box = memnew(LineEdit);
