@@ -65,6 +65,7 @@
 #import <simd/simd.h>
 #import <zlib.h>
 #import <initializer_list>
+#import <memory>
 #import <optional>
 
 enum StageResourceUsage : uint32_t {

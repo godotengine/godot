@@ -272,6 +272,11 @@ opts.Add(
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
+opts.Add(
+    BoolVariable(
+        "limit_transitive_includes", "Attempt to limit the amount of transitive includes in system headers", True
+    )
+)
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
@@ -782,6 +787,13 @@ elif methods.using_clang(env) or methods.using_emcc(env):
     env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
+
+# Attempt to reduce transitive includes.
+if env["limit_transitive_includes"]:
+    if not env.msvc:
+        # FIXME: This define only affects `libcpp`, but lack of guaranteed, granular detection means
+        #  we're better off applying it universally.
+        env.AppendUnique(CPPDEFINES=["_LIBCPP_REMOVE_TRANSITIVE_INCLUDES"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
