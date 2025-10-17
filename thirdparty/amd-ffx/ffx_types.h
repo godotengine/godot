@@ -1,7 +1,7 @@
 // This file is part of the FidelityFX SDK.
 //
 // Copyright (C) 2024 Advanced Micro Devices, Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -77,7 +77,11 @@
 #define FFX_API __declspec(dllexport)
 #endif // #if defined (FFX_GCC)
 
-#define FFX_SDK_DEFAULT_CONTEXT_SIZE (1024 * 128)
+// GODOT BEGINS
+// On non-Windows platforms `wchar_t` is 32 bytes rather than 16 bytes,
+// So we increased the size of the context by 2x.
+#define FFX_SDK_DEFAULT_CONTEXT_SIZE (1024 * 256)
+// GODOT ENDS
 
 /// Maximum supported number of simultaneously bound SRVs.
 ///

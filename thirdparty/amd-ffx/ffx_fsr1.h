@@ -57,7 +57,12 @@
 /// The size of the context specified in 32bit values.
 ///
 /// @ingroup ffxFsr1
-#define FFX_FSR1_CONTEXT_SIZE       (27448)
+
+// GODOT BEGINS
+// On non-Windows platforms `wchar_t` is 32 bytes rather than 16 bytes,
+// So we have to increase the size of the context by 2x.
+#define FFX_FSR1_CONTEXT_SIZE       (52408)
+// GODOT ENDS
 
 #if defined(__cplusplus)
 extern "C" {

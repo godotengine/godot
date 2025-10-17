@@ -22,6 +22,11 @@
 
 #include "ffx_message.h"
 
+// GODOT BEGINS
+// On non-Windows Platforms this file uses the macro `FFX_UNUSED`, we have to include it here
+#include "ffx_util.h"
+// GODOT ENDS
+
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
