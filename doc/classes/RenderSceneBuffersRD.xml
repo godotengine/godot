@@ -99,7 +99,7 @@
 		<method name="get_fsr_auto_generate_reactive" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether FSR auto-generates reactive mask during upscaling.
+				Returns [code]true[/code] if FSR automatically generates reactive mask during upscaling, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_internal_size" qualifiers="const">
