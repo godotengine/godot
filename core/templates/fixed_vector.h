@@ -32,6 +32,8 @@
 
 #include "core/templates/span.h"
 
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
+
 /**
  * A high performance Vector of fixed capacity.
  * Especially useful if you need to create an array on the stack, to
@@ -201,3 +203,5 @@ public:
 	_FORCE_INLINE_ constexpr const T *begin() const { return ptr(); }
 	_FORCE_INLINE_ constexpr const T *end() const { return ptr() + _size; }
 };
+
+GODOT_GCC_WARNING_POP
