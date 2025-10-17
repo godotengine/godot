@@ -268,11 +268,8 @@ public:
 	};
 
 	struct TextureCopyableLayout {
-		uint64_t offset = 0;
 		uint64_t size = 0;
 		uint64_t row_pitch = 0;
-		uint64_t depth_pitch = 0;
-		uint64_t layer_pitch = 0;
 	};
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
@@ -282,11 +279,11 @@ public:
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
+	// Returns a texture layout for buffer <-> texture copies. If you are copying multiple texture subresources to/from the same buffer,
+	// you are responsible for correctly aligning the start offset for every buffer region. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
 	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
-	virtual void texture_unmap(TextureID p_texture) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
@@ -547,7 +544,8 @@ public:
 
 	struct BufferTextureCopyRegion {
 		uint64_t buffer_offset = 0;
-		TextureSubresourceLayers texture_subresources;
+		uint64_t row_pitch = 0;
+		TextureSubresource texture_subresource;
 		Vector3i texture_offset;
 		Vector3i texture_region_size;
 	};

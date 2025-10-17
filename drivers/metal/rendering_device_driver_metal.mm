@@ -563,33 +563,21 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	id<MTLTexture> __unsafe_unretained obj = rid::get(p_texture);
-	*r_layout = {};
 
 	PixelFormats &pf = *pixel_formats;
 	DataFormat format = pf.getDataFormat(obj.pixelFormat);
 
-	MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
-
-	if (p_subresource.mipmap > 0) {
-		r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
-	}
-
-	sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
+	uint32_t w = MAX(1u, obj.width >> p_subresource.mipmap);
+	uint32_t h = MAX(1u, obj.height >> p_subresource.mipmap);
+	uint32_t d = MAX(1u, obj.depth >> p_subresource.mipmap);
 
 	uint32_t bw = 0, bh = 0;
 	get_compressed_image_format_block_dimensions(format, bw, bh);
-	uint32_t sbw = 0, sbh = 0;
-	r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
-	r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
-	r_layout->depth_pitch = r_layout->size / sz.depth;
 
-	uint32_t array_length = obj.arrayLength;
-	if (obj.textureType == MTLTextureTypeCube) {
-		array_length = 6;
-	} else if (obj.textureType == MTLTextureTypeCubeArray) {
-		array_length *= 6;
-	}
-	r_layout->layer_pitch = r_layout->size / array_length;
+	uint32_t sbw = 0, sbh = 0;
+	*r_layout = {};
+	r_layout->size = get_image_format_required_size(format, w, h, d, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
 Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
@@ -652,20 +640,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	DEV_ASSERT(dest_ptr - image_data.ptr() == image_data.size());
 
 	return image_data;
-}
-
-uint8_t *RenderingDeviceDriverMetal::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	id<MTLTexture> obj = rid::get(p_texture);
-	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
-	ERR_FAIL_COND_V_MSG(obj.buffer, nullptr, "Texture mapping is not supported for non-linear textures in Metal.");
-	ERR_FAIL_COND_V_MSG(p_subresource.layer > 0, nullptr, "A linear texture should have a single layer.");
-	ERR_FAIL_COND_V_MSG(p_subresource.mipmap > 0, nullptr, "A linear texture should have a single mipmap.");
-
-	return (uint8_t *)obj.buffer.contents;
-}
-
-void RenderingDeviceDriverMetal::texture_unmap(TextureID p_texture) {
-	// Nothing to do.
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverMetal::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
