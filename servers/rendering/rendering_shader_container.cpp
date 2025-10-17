@@ -32,6 +32,7 @@
 
 #include "core/io/compression.h"
 
+#include "servers/rendering/renderer_rd/shader_rd.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 static inline uint32_t aligned_to(uint32_t p_size, uint32_t p_alignment) {
@@ -138,6 +139,8 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 		r_refl[i].shader_stage = p_spirv[i].shader_stage;
 		r_refl[i]._spirv_data = p_spirv[i].spirv;
 
+		const Vector<uint64_t> &dynamic_buffers = p_spirv[i].dynamic_buffers;
+
 		if (p_spirv[i].shader_stage == RDC::SHADER_STAGE_COMPUTE) {
 			reflection.is_compute = true;
 			ERR_FAIL_COND_V_MSG(spirv_size != 1, FAILED,
@@ -217,11 +220,23 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
-							uniform.type = RDC::UNIFORM_TYPE_UNIFORM_BUFFER;
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
+							if (dynamic_buffers.has(key)) {
+								uniform.type = RDC::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+								reflection.has_dynamic_buffers = true;
+							} else {
+								uniform.type = RDC::UNIFORM_TYPE_UNIFORM_BUFFER;
+							}
 							need_block_size = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
-							uniform.type = RDC::UNIFORM_TYPE_STORAGE_BUFFER;
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
+							if (dynamic_buffers.has(key)) {
+								uniform.type = RDC::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC;
+								reflection.has_dynamic_buffers = true;
+							} else {
+								uniform.type = RDC::UNIFORM_TYPE_STORAGE_BUFFER;
+							}
 							need_block_size = true;
 							may_be_writable = true;
 						} break;
@@ -486,6 +501,7 @@ void RenderingShaderContainer::set_from_shader_reflection(const RenderingDeviceC
 	reflection_data.specialization_constants_count = p_reflection.specialization_constants.size();
 	reflection_data.is_compute = p_reflection.is_compute;
 	reflection_data.has_multiview = p_reflection.has_multiview;
+	reflection_data.has_dynamic_buffers = p_reflection.has_dynamic_buffers;
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
 	reflection_data.compute_local_size[1] = p_reflection.compute_local_size[1];
 	reflection_data.compute_local_size[2] = p_reflection.compute_local_size[2];
@@ -542,6 +558,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.fragment_output_mask = reflection_data.fragment_output_mask;
 	shader_refl.is_compute = reflection_data.is_compute;
 	shader_refl.has_multiview = reflection_data.has_multiview;
+	shader_refl.has_dynamic_buffers = reflection_data.has_dynamic_buffers;
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
 	shader_refl.compute_local_size[1] = reflection_data.compute_local_size[1];
 	shader_refl.compute_local_size[2] = reflection_data.compute_local_size[2];

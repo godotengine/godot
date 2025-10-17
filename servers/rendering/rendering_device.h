@@ -189,6 +189,7 @@ private:
 	// swapchain semaphore to be signaled (which causes bubbles).
 	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
+	uint32_t direct_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
 	uint32_t prev_gpu_copy_count = 0;
 	uint32_t prev_copy_bytes_count = 0;
@@ -206,11 +207,55 @@ private:
 
 public:
 	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
-	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
+	/**
+	 * @brief Updates the given GPU buffer at offset and size with the given CPU data.
+	 * @remarks
+	 *	Buffer update is queued into the render graph. The render graph will reorder this operation so
+	 *	that it happens together with other buffer_update() in bulk and before rendering operations
+	 *	(or compute dispatches) that need it.
+	 *
+	 *	This means that the following will not work as intended:
+	 *	@code
+	 *		buffer_update(buffer_a, ..., data_source_x, ...);
+	 *		draw_list_draw(buffer_a);							// render data_render_x.
+	 *		buffer_update(buffer_a, ..., data_source_y, ...);
+	 *		draw_list_draw(buffer_a);							// render data_source_y.
+	 *	@endcode
+	 *
+	 *	Because it will be *reordered* to become the following:
+	 *	@code
+	 *		buffer_update(buffer_a, ..., data_source_x, ...);
+	 *		buffer_update(buffer_a, ..., data_source_y, ...);
+	 *		draw_list_draw(buffer_a); // render data_source_y. <-- Oops! should be data_source_x
+	 *		draw_list_draw(buffer_a); // render data_source_y.
+	 *	@endcode
+	 *
+	 *	When p_skip_check = true, we will perform checks to prevent this situation from happening
+	 *	(buffer_update must not be called while creating a draw or compute list).
+	 *	Do NOT set it to false for user-facing public API because users had trouble understanding
+	 *  this problem when manually creating draw lists.
+	 *
+	 *  Godot internally can set p_skip_check = true when it believes it will only update
+	 *  the buffer once and it needs to be done while a draw/compute list is being created.
+	 *
+	 *  Important: The Vulkan & Metal APIs do not allow issuing copies while inside a RenderPass.
+	 *  We can do it because Godot's render graph will reorder them.
+	 *
+	 * @param p_buffer		GPU buffer to update.
+	 * @param p_offset		Offset in bytes (relative to p_buffer).
+	 * @param p_size		Size in bytes of the data.
+	 * @param p_data		CPU data to transfer to GPU.
+	 *						Pointer can be deleted after buffer_update returns.
+	 * @param p_skip_check	Must always be false for user-facing public API. See remarks.
+	 * @return				Status result of the operation.
+	 */
+	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_skip_check = false);
 	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
 	uint64_t buffer_get_device_address(RID p_buffer);
+	uint8_t *buffer_persistent_map_advance(RID p_buffer);
+	void buffer_flush(RID p_buffer);
 
 private:
 	/******************/
@@ -788,6 +833,7 @@ public:
 	enum BufferCreationBits {
 		BUFFER_CREATION_DEVICE_ADDRESS_BIT = (1 << 0),
 		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
+		BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT = (1 << 2),
 	};
 
 	enum StorageBufferUsage {
@@ -1655,6 +1701,8 @@ public:
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
+
+	uint64_t get_frames_drawn() const { return frames_drawn; }
 
 	bool is_composite_alpha_supported() const;
 
