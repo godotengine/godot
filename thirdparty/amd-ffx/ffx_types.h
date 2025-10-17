@@ -153,8 +153,18 @@
 /// @ingroup Defines
 #define UPLOAD_JOB_COUNT               (16)
 
+// GODOT BEGINS
+
+// Disable warnings also for non-MSVC compilers
+#ifdef _MSC_VER
 // Off by default warnings
 #pragma warning(disable : 4365 4710 4820 5039)
+#else
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
+// GODOT ENDS
 
 #ifdef __cplusplus
 extern "C" {
