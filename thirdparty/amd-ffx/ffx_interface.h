@@ -33,7 +33,9 @@
 #include <cwchar>
 #include <cstring>
 #define wcscpy_s wcscpy
+#ifndef _countof
 #define _countof(a) (sizeof(a) / sizeof(*(a)))
+#endif
 #endif
 // GODOT ENDS
 

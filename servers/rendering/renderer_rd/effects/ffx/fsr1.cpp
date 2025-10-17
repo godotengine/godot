@@ -148,7 +148,6 @@ void FSR1Effect::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_sourc
 	FSR1Context *fsr1_context = p_render_buffers->get_fsr1_context();
 
 	Size2i internal_size = p_render_buffers->get_internal_size();
-	Size2i target_size = p_render_buffers->get_target_size();
 	float fsr_upscale_sharpness = p_render_buffers->get_fsr_sharpness();
 
 	FfxFsr1DispatchDescription dispatch_desc = {};
