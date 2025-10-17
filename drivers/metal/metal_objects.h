@@ -64,6 +64,7 @@
 #import <simd/simd.h>
 #import <zlib.h>
 #import <initializer_list>
+#import <memory>
 #import <optional>
 
 // These types can be used in Vector and other containers that use
