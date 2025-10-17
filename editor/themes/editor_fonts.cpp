@@ -327,6 +327,25 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	bold_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 	bold_fc_msdf->set_variation_opentype(bold_fc_opentype);
 
+	if (!String(EDITOR_GET("interface/editor/main_font_custom_opentype_features")).is_empty()) {
+		Vector<String> subtag = String(EDITOR_GET("interface/editor/main_font_custom_opentype_features")).split(",");
+		if (!subtag.is_empty()) {
+			Dictionary ftrs;
+			for (int i = 0; i < subtag.size(); i++) {
+				Vector<String> subtag_a = subtag[i].split("=");
+				if (subtag_a.size() == 2) {
+					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
+				} else if (subtag_a.size() == 1) {
+					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+				}
+			}
+			default_fc->set_opentype_features(ftrs);
+			default_fc_msdf->set_opentype_features(ftrs);
+			bold_fc->set_opentype_features(ftrs);
+			bold_fc_msdf->set_opentype_features(ftrs);
+		}
+	}
+
 	Ref<FontVariation> mono_fc;
 	mono_fc.instantiate();
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
