@@ -313,10 +313,6 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 
 		ERR_FAIL_NULL_V_MSG(shader, false, "Shader translation (step 1) at stage " + String(RenderingDeviceCommons::SHADER_STAGE_NAMES[stage]) + " failed.");
 
-#ifdef DEV_ENABLED
-		nir_validate_shader(shader, "Validate before feeding NIR to the DXIL compiler");
-#endif
-
 		if (stage == RenderingDeviceCommons::SHADER_STAGE_VERTEX) {
 			dxil_runtime_conf.yz_flip.y_mask = 0xffff;
 			dxil_runtime_conf.yz_flip.mode = DXIL_SPIRV_Y_FLIP_UNCONDITIONAL;
