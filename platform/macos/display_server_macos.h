@@ -143,7 +143,11 @@ public:
 		bool is_visible = true;
 		bool extend_to_title = false;
 		bool hide_from_capture = false;
+
+		// HDR
 		bool hdr_output_requested = false;
+		bool hdr_output_auto_adjust_max_luminance = false;
+		float hdr_output_max_luminance = 0.0f;
 
 		Rect2i parent_safe_rect;
 	};

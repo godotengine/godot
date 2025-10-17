@@ -205,8 +205,7 @@ float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color
 			// Windows expects multiples of 80 nits.
 			return p_reference_luminance / 80.0f;
 #else
-			// Default to 100 nits.
-			return p_reference_luminance / 100.0f;
+			return 1.0f;
 #endif
 		default:
 			return 1.0f;
