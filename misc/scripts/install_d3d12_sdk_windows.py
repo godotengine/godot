@@ -32,6 +32,7 @@ else:
 
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
+# Waiting for the godot-nir-static PR to be merged first to change the version number here.
 mesa_version = "23.1.9-1"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
