@@ -519,7 +519,7 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		RDD::BufferTextureCopyRegion region = p_regions[i];
 
-		uint32_t mip_level = region.texture_subresources.mipmap;
+		uint32_t mip_level = region.texture_subresource.mipmap;
 		MTLOrigin txt_origin = MTLOriginMake(region.texture_offset.x, region.texture_offset.y, region.texture_offset.z);
 		MTLSize src_extent = mipmapLevelSizeFromTexture(texture, mip_level);
 		MTLSize txt_size = clampMTLSize(MTLSizeMake(region.texture_region_size.x, region.texture_region_size.y, region.texture_region_size.z),
@@ -535,18 +535,15 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		MTLBlitOption blit_options = options;
 
 		if (pf.isDepthFormat(mtlPixFmt) && pf.isStencilFormat(mtlPixFmt)) {
-			bool want_depth = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_DEPTH_BIT);
-			bool want_stencil = flags::all(region.texture_subresources.aspect, RDD::TEXTURE_ASPECT_STENCIL_BIT);
-
-			// The stencil component is always 1 byte per pixel.
 			// Don't reduce depths of 32-bit depth/stencil formats.
-			if (want_depth && !want_stencil) {
+			if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_DEPTH) {
 				if (pf.getBytesPerTexel(mtlPixFmt) != 4) {
 					bytesPerRow -= buffImgWd;
 					bytesPerImg -= buffImgWd * buffImgHt;
 				}
 				blit_options |= MTLBlitOptionDepthFromDepthStencil;
-			} else if (want_stencil && !want_depth) {
+			} else if (region.texture_subresource.aspect == RDD::TEXTURE_ASPECT_STENCIL) {
+				// The stencil component is always 1 byte per pixel.
 				bytesPerRow = buffImgWd;
 				bytesPerImg = buffImgWd * buffImgHt;
 				blit_options |= MTLBlitOptionStencilFromDepthStencil;
@@ -558,31 +555,27 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		}
 
 		if (p_source == CopySource::Buffer) {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromBuffer:buffer->metal_buffer
-							   sourceOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  sourceBytesPerRow:bytesPerRow
-						sourceBytesPerImage:bytesPerImg
-								 sourceSize:txt_size
-								  toTexture:texture
-						   destinationSlice:region.texture_subresources.base_layer + lyrIdx
-						   destinationLevel:mip_level
-						  destinationOrigin:txt_origin
-									options:blit_options];
-			}
+			[enc copyFromBuffer:buffer->metal_buffer
+						   sourceOffset:region.buffer_offset
+					  sourceBytesPerRow:bytesPerRow
+					sourceBytesPerImage:bytesPerImg
+							 sourceSize:txt_size
+							  toTexture:texture
+					   destinationSlice:region.texture_subresource.layer
+					   destinationLevel:mip_level
+					  destinationOrigin:txt_origin
+								options:blit_options];
 		} else {
-			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromTexture:texture
-									 sourceSlice:region.texture_subresources.base_layer + lyrIdx
-									 sourceLevel:mip_level
-									sourceOrigin:txt_origin
-									  sourceSize:txt_size
-										toBuffer:buffer->metal_buffer
-							   destinationOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
-						  destinationBytesPerRow:bytesPerRow
-						destinationBytesPerImage:bytesPerImg
-										 options:blit_options];
-			}
+			[enc copyFromTexture:texture
+								 sourceSlice:region.texture_subresource.layer
+								 sourceLevel:mip_level
+								sourceOrigin:txt_origin
+								  sourceSize:txt_size
+									toBuffer:buffer->metal_buffer
+						   destinationOffset:region.buffer_offset
+					  destinationBytesPerRow:bytesPerRow
+					destinationBytesPerImage:bytesPerImg
+									 options:blit_options];
 		}
 	}
 }

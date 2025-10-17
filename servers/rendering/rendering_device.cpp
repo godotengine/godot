@@ -1564,10 +1564,10 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 
 					RDD::BufferTextureCopyRegion copy_region;
 					copy_region.buffer_offset = staging_buffer_offset;
-					copy_region.texture_subresources.aspect = texture->read_aspect_flags;
-					copy_region.texture_subresources.mipmap = mm_i;
-					copy_region.texture_subresources.base_layer = p_layer;
-					copy_region.texture_subresources.layer_count = 1;
+					copy_region.row_pitch = pitch;
+					copy_region.texture_subresource.aspect = texture->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+					copy_region.texture_subresource.mipmap = mm_i;
+					copy_region.texture_subresource.layer = p_layer;
 					copy_region.texture_offset = Vector3i(0, 0, z);
 					copy_region.texture_region_size = Vector3i(logic_width, logic_height, 1);
 					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, p_dst_layout, copy_region);
@@ -1713,10 +1713,10 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 
 					RDD::BufferTextureCopyRegion copy_region;
 					copy_region.buffer_offset = alloc_offset;
-					copy_region.texture_subresources.aspect = texture->read_aspect_flags;
-					copy_region.texture_subresources.mipmap = mm_i;
-					copy_region.texture_subresources.base_layer = p_layer;
-					copy_region.texture_subresources.layer_count = 1;
+					copy_region.row_pitch = region_pitch;
+					copy_region.texture_subresource.aspect = texture->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+					copy_region.texture_subresource.mipmap = mm_i;
+					copy_region.texture_subresource.layer = p_layer;
 					copy_region.texture_offset = Vector3i(x, y, z);
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 
@@ -1838,49 +1838,56 @@ void RenderingDevice::_texture_copy_shared(RID p_src_texture_rid, Texture *p_src
 			DEV_ASSERT(false && "This path should not be reachable.");
 		}
 
-		// FIXME: When using reinterpretation buffers, the only texture aspect supported is color. Depth or stencil contents won't get copied.
-		RDD::BufferTextureCopyRegion get_data_region;
-		RDG::RecordedBufferToTextureCopy update_copy;
-		RDD::TextureCopyableLayout first_copyable_layout;
-		RDD::TextureCopyableLayout copyable_layout;
-		RDD::TextureSubresource texture_subresource;
-		texture_subresource.aspect = RDD::TEXTURE_ASPECT_COLOR;
-		texture_subresource.layer = 0;
-		texture_subresource.mipmap = 0;
-		driver->texture_get_copyable_layout(p_dst_texture->shared_fallback->texture, texture_subresource, &first_copyable_layout);
-
 		// Copying each mipmap from main texture to a buffer and then to the slice texture.
 		thread_local LocalVector<RDD::BufferTextureCopyRegion> get_data_vector;
 		thread_local LocalVector<RDG::RecordedBufferToTextureCopy> update_vector;
 		get_data_vector.clear();
 		update_vector.clear();
-		for (uint32_t i = 0; i < p_dst_texture->mipmaps; i++) {
-			driver->texture_get_copyable_layout(p_dst_texture->shared_fallback->texture, texture_subresource, &copyable_layout);
 
-			uint32_t mipmap = p_dst_texture->base_mipmap + i;
-			get_data_region.buffer_offset = copyable_layout.offset - first_copyable_layout.offset;
-			get_data_region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-			get_data_region.texture_subresources.base_layer = p_dst_texture->base_layer;
-			get_data_region.texture_subresources.mipmap = mipmap;
-			get_data_region.texture_subresources.layer_count = p_dst_texture->layers;
-			get_data_region.texture_region_size.x = MAX(1U, p_src_texture->width >> mipmap);
-			get_data_region.texture_region_size.y = MAX(1U, p_src_texture->height >> mipmap);
-			get_data_region.texture_region_size.z = MAX(1U, p_src_texture->depth >> mipmap);
-			get_data_vector.push_back(get_data_region);
+		uint32_t buffer_size = 0;
+		uint32_t transfer_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 
-			update_copy.from_buffer = shared_buffer;
-			update_copy.region.buffer_offset = get_data_region.buffer_offset;
-			update_copy.region.texture_subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-			update_copy.region.texture_subresources.base_layer = texture_subresource.layer;
-			update_copy.region.texture_subresources.mipmap = texture_subresource.mipmap;
-			update_copy.region.texture_subresources.layer_count = get_data_region.texture_subresources.layer_count;
-			update_copy.region.texture_region_size.x = get_data_region.texture_region_size.x;
-			update_copy.region.texture_region_size.y = get_data_region.texture_region_size.y;
-			update_copy.region.texture_region_size.z = get_data_region.texture_region_size.z;
-			update_vector.push_back(update_copy);
+		for (uint32_t i = 0; i < p_dst_texture->layers; i++) {
+			for (uint32_t j = 0; j < p_dst_texture->mipmaps; j++) {
+				// FIXME: When using reinterpretation buffers, the only texture aspect supported is color. Depth or stencil contents won't get copied.
+				RDD::TextureSubresource texture_subresource;
+				texture_subresource.aspect = RDD::TEXTURE_ASPECT_COLOR;
+				texture_subresource.layer = i;
+				texture_subresource.mipmap = j;
 
-			texture_subresource.mipmap++;
+				RDD::TextureCopyableLayout copyable_layout;
+				driver->texture_get_copyable_layout(p_dst_texture->shared_fallback->texture, texture_subresource, &copyable_layout);
+
+				uint32_t mipmap = p_dst_texture->base_mipmap + j;
+
+				RDD::BufferTextureCopyRegion get_data_region;
+				get_data_region.buffer_offset = STEPIFY(buffer_size, transfer_alignment);
+				get_data_region.row_pitch = copyable_layout.row_pitch;
+				get_data_region.texture_subresource.aspect = RDD::TEXTURE_ASPECT_COLOR;
+				get_data_region.texture_subresource.layer = p_dst_texture->base_layer + i;
+				get_data_region.texture_subresource.mipmap = mipmap;
+				get_data_region.texture_region_size.x = MAX(1U, p_src_texture->width >> mipmap);
+				get_data_region.texture_region_size.y = MAX(1U, p_src_texture->height >> mipmap);
+				get_data_region.texture_region_size.z = MAX(1U, p_src_texture->depth >> mipmap);
+				get_data_vector.push_back(get_data_region);
+
+				RDG::RecordedBufferToTextureCopy update_copy;
+				update_copy.from_buffer = shared_buffer;
+				update_copy.region.buffer_offset = get_data_region.buffer_offset;
+				update_copy.region.row_pitch = get_data_region.row_pitch;
+				update_copy.region.texture_subresource.aspect = RDD::TEXTURE_ASPECT_COLOR;
+				update_copy.region.texture_subresource.layer = texture_subresource.layer;
+				update_copy.region.texture_subresource.mipmap = texture_subresource.mipmap;
+				update_copy.region.texture_region_size.x = get_data_region.texture_region_size.x;
+				update_copy.region.texture_region_size.y = get_data_region.texture_region_size.y;
+				update_copy.region.texture_region_size.z = get_data_region.texture_region_size.z;
+				update_vector.push_back(update_copy);
+
+				buffer_size = get_data_region.buffer_offset + copyable_layout.size;
+			}
 		}
+
+		DEV_ASSERT(buffer_size <= driver->buffer_get_allocation_size(shared_buffer));
 
 		draw_graph.add_texture_get_data(p_src_texture->driver_id, p_src_texture->draw_tracker, shared_buffer, get_data_vector, shared_buffer_tracker);
 		draw_graph.add_texture_update(p_dst_texture->shared_fallback->texture, p_dst_texture->shared_fallback->texture_tracker, update_vector, shared_buffer_tracker);
@@ -1998,55 +2005,47 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 	if (tex->usage_flags & TEXTURE_USAGE_CPU_READ_BIT) {
 		return driver->texture_get_data(tex->driver_id, p_layer);
 	} else {
-		LocalVector<RDD::TextureCopyableLayout> mip_layouts;
-		uint32_t work_mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
-		uint32_t work_buffer_size = 0;
+		RDD::TextureAspect aspect = tex->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+		uint32_t mip_alignment = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
+		uint32_t buffer_size = 0;
+
+		thread_local LocalVector<RDD::TextureCopyableLayout> mip_layouts;
+		thread_local LocalVector<RDD::BufferTextureCopyRegion> copy_regions;
 		mip_layouts.resize(tex->mipmaps);
+		copy_regions.resize(tex->mipmaps);
+
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
 			RDD::TextureSubresource subres;
-			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
+			subres.aspect = aspect;
 			subres.layer = p_layer;
 			subres.mipmap = i;
-			driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layouts[i]);
 
-			// Assuming layers are tightly packed. If this is not true on some driver, we must modify the copy algorithm.
-			DEV_ASSERT(mip_layouts[i].layer_pitch == mip_layouts[i].size / tex->layers);
+			RDD::TextureCopyableLayout &mip_layout = mip_layouts[i];
+			driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layout);
 
-			work_buffer_size = STEPIFY(work_buffer_size, work_mip_alignment) + mip_layouts[i].size;
+			uint32_t mip_offset = STEPIFY(buffer_size, mip_alignment);
+			buffer_size = mip_offset + mip_layout.size;
+
+			RDD::BufferTextureCopyRegion &copy_region = copy_regions[i];
+			copy_region.buffer_offset = mip_offset;
+			copy_region.row_pitch = mip_layout.row_pitch;
+			copy_region.texture_subresource.aspect = aspect;
+			copy_region.texture_subresource.mipmap = i;
+			copy_region.texture_subresource.layer = p_layer;
+			copy_region.texture_region_size.x = MAX(1u, tex->width >> i);
+			copy_region.texture_region_size.y = MAX(1u, tex->height >> i);
+			copy_region.texture_region_size.z = MAX(1u, tex->depth >> i);
 		}
 
-		RDD::BufferID tmp_buffer = driver->buffer_create(work_buffer_size, RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
+		RDD::BufferID tmp_buffer = driver->buffer_create(buffer_size, RDD::BUFFER_USAGE_TRANSFER_TO_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 		ERR_FAIL_COND_V(!tmp_buffer, Vector<uint8_t>());
-
-		thread_local LocalVector<RDD::BufferTextureCopyRegion> command_buffer_texture_copy_regions_vector;
-		command_buffer_texture_copy_regions_vector.clear();
-
-		uint32_t w = tex->width;
-		uint32_t h = tex->height;
-		uint32_t d = tex->depth;
-		for (uint32_t i = 0; i < tex->mipmaps; i++) {
-			RDD::BufferTextureCopyRegion copy_region;
-			copy_region.buffer_offset = mip_layouts[i].offset;
-			copy_region.texture_subresources.aspect = tex->read_aspect_flags;
-			copy_region.texture_subresources.mipmap = i;
-			copy_region.texture_subresources.base_layer = p_layer;
-			copy_region.texture_subresources.layer_count = 1;
-			copy_region.texture_region_size.x = w;
-			copy_region.texture_region_size.y = h;
-			copy_region.texture_region_size.z = d;
-			command_buffer_texture_copy_regions_vector.push_back(copy_region);
-
-			w = MAX(1u, w >> 1);
-			h = MAX(1u, h >> 1);
-			d = MAX(1u, d >> 1);
-		}
 
 		if (_texture_make_mutable(tex, p_texture)) {
 			// The texture must be mutable to be used as a copy source due to layout transitions.
 			draw_graph.add_synchronization();
 		}
 
-		draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, tmp_buffer, command_buffer_texture_copy_regions_vector);
+		draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, tmp_buffer, copy_regions);
 
 		// Flush everything so memory can be safely mapped.
 		_flush_and_stall_for_all_frames();
@@ -2064,28 +2063,37 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 
 		uint8_t *write_ptr = buffer_data.ptrw();
 
-		w = tex->width;
-		h = tex->height;
-		d = tex->depth;
 		for (uint32_t i = 0; i < tex->mipmaps; i++) {
 			uint32_t width = 0, height = 0, depth = 0;
-			uint32_t tight_mip_size = get_image_format_required_size(tex->format, w, h, d, 1, &width, &height, &depth);
-			uint32_t tight_row_pitch = tight_mip_size / ((height / block_h) * depth);
 
-			// Copy row-by-row to erase padding due to alignments.
-			const uint8_t *rp = read_ptr;
-			uint8_t *wp = write_ptr;
-			for (uint32_t row = h * d / block_h; row != 0; row--) {
-				memcpy(wp, rp, tight_row_pitch);
-				rp += mip_layouts[i].row_pitch;
-				wp += tight_row_pitch;
+			uint32_t tight_mip_size = get_image_format_required_size(
+					tex->format,
+					MAX(1u, tex->width >> i),
+					MAX(1u, tex->height >> i),
+					MAX(1u, tex->depth >> i),
+					1,
+					&width,
+					&height,
+					&depth);
+
+			uint32_t row_count = (height / block_h) * depth;
+			uint32_t tight_row_pitch = tight_mip_size / row_count;
+
+			const uint8_t *rp = read_ptr + copy_regions[i].buffer_offset;
+			uint32_t row_pitch = mip_layouts[i].row_pitch;
+
+			if (tight_row_pitch == row_pitch) {
+				// Same row pitch, we can copy directly.
+				memcpy(write_ptr, rp, tight_mip_size);
+				write_ptr += tight_mip_size;
+			} else {
+				// Copy row-by-row to erase padding.
+				for (uint32_t j = 0; j < row_count; j++) {
+					memcpy(write_ptr, rp, tight_row_pitch);
+					rp += row_pitch;
+					write_ptr += tight_row_pitch;
+				}
 			}
-
-			w = MAX(block_w, w >> 1);
-			h = MAX(block_h, h >> 1);
-			d = MAX(1u, d >> 1);
-			read_ptr += mip_layouts[i].size;
-			write_ptr += tight_mip_size;
 		}
 
 		driver->buffer_unmap(tmp_buffer);
@@ -2106,21 +2114,6 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	ERR_FAIL_COND_V(p_layer >= tex->layers, ERR_INVALID_PARAMETER);
 
 	_check_transfer_worker_texture(tex);
-
-	thread_local LocalVector<RDD::TextureCopyableLayout> mip_layouts;
-	mip_layouts.resize(tex->mipmaps);
-	for (uint32_t i = 0; i < tex->mipmaps; i++) {
-		RDD::TextureSubresource subres;
-		subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
-		subres.layer = p_layer;
-		subres.mipmap = i;
-		driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layouts[i]);
-
-		// Assuming layers are tightly packed. If this is not true on some driver, we must modify the copy algorithm.
-		DEV_ASSERT(mip_layouts[i].layer_pitch == mip_layouts[i].size / tex->layers);
-	}
-
-	ERR_FAIL_COND_V(mip_layouts.is_empty(), ERR_INVALID_PARAMETER);
 
 	if (_texture_make_mutable(tex, p_texture)) {
 		// The texture must be mutable to be used as a copy source due to layout transitions.
@@ -2189,10 +2182,10 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 
 					RDD::BufferTextureCopyRegion copy_region;
 					copy_region.buffer_offset = block_write_offset;
-					copy_region.texture_subresources.aspect = tex->read_aspect_flags;
-					copy_region.texture_subresources.mipmap = i;
-					copy_region.texture_subresources.base_layer = p_layer;
-					copy_region.texture_subresources.layer_count = 1;
+					copy_region.row_pitch = region_pitch;
+					copy_region.texture_subresource.aspect = tex->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+					copy_region.texture_subresource.mipmap = i;
+					copy_region.texture_subresource.layer = p_layer;
 					copy_region.texture_offset = Vector3i(x, y, z);
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 					frames[frame].download_texture_staging_buffers.push_back(download_staging_buffers.blocks[download_staging_buffers.current].driver_id);
@@ -6813,7 +6806,6 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 		// Flush any pending requests for asynchronous texture downloads.
 		if (!frames[p_frame].download_texture_get_data_requests.is_empty()) {
 			GodotProfileZoneGrouped(_profile_zone, "flush asynchronous texture downloads");
-			uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 			for (uint32_t i = 0; i < frames[p_frame].download_texture_get_data_requests.size(); i++) {
 				const TextureGetDataRequest &request = frames[p_frame].download_texture_get_data_requests[i];
 				uint32_t texture_size = get_image_format_required_size(request.format, request.width, request.height, request.depth, request.mipmaps);
@@ -6826,18 +6818,15 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 
 				uint32_t block_size = get_compressed_image_format_block_byte_size(request.format);
 				uint32_t pixel_size = get_image_format_pixel_size(request.format);
-				uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(request.format);
 				uint32_t region_size = texture_download_region_size_px;
 
 				for (uint32_t j = 0; j < request.frame_local_count; j++) {
 					uint32_t local_index = request.frame_local_index + j;
 					const RDD::BufferTextureCopyRegion &region = frames[p_frame].download_buffer_texture_copy_regions[local_index];
-					uint32_t w = STEPIFY(request.width >> region.texture_subresources.mipmap, block_w);
-					uint32_t h = STEPIFY(request.height >> region.texture_subresources.mipmap, block_h);
+					uint32_t w = STEPIFY(request.width >> region.texture_subresource.mipmap, block_w);
+					uint32_t h = STEPIFY(request.height >> region.texture_subresource.mipmap, block_h);
 					uint32_t region_w = MIN(region_size, w - region.texture_offset.x);
 					uint32_t region_h = MIN(region_size, h - region.texture_offset.y);
-					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
-					region_pitch = STEPIFY(region_pitch, pitch_step);
 
 					uint8_t *buffer_data = driver->buffer_map(frames[p_frame].download_texture_staging_buffers[local_index]);
 					const uint8_t *read_ptr = buffer_data + region.buffer_offset;
@@ -6851,7 +6840,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 					for (uint32_t y = region_h / block_h; y > 0; y--) {
 						memcpy(write_ptr, read_ptr, (region_w / block_w) * unit_size);
 						write_ptr += (w / block_w) * unit_size;
-						read_ptr += region_pitch;
+						read_ptr += region.row_pitch;
 					}
 
 					driver->buffer_unmap(frames[p_frame].download_texture_staging_buffers[local_index]);

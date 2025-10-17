@@ -1491,6 +1491,9 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	if ((p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT)) {
+		ERR_FAIL_V_MSG(TextureID(), "CPU readable textures are unsupported on D3D12.");
+	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT)) {
 		// For VRS images we can't use the typeless format.
 		resource_desc.Format = DXGI_FORMAT_R8_UINT;
@@ -1511,7 +1514,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	// Create.
 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
-	allocation_desc.HeapType = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_DEFAULT;
+	allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 	if ((resource_desc.Flags & (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))) {
 		allocation_desc.ExtraHeapFlags = D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES;
 	} else {
@@ -1912,7 +1915,8 @@ uint64_t RenderingDeviceDriverD3D12::texture_get_allocation_size(TextureID p_tex
 void RenderingDeviceDriverD3D12::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
 
-	UINT subresource = tex_info->desc.CalcSubresource(p_subresource.mipmap, p_subresource.layer, 0);
+	UINT plane = _compute_plane_slice(tex_info->format, p_subresource.aspect);
+	UINT subresource = tex_info->desc.CalcSubresource(p_subresource.mipmap, p_subresource.layer, plane);
 
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
 	UINT64 subresource_total_size = 0;
@@ -1927,111 +1931,20 @@ void RenderingDeviceDriverD3D12::texture_get_copyable_layout(TextureID p_texture
 			&subresource_total_size);
 
 	*r_layout = {};
-	r_layout->offset = footprint.Offset;
 	r_layout->size = subresource_total_size;
 	r_layout->row_pitch = footprint.Footprint.RowPitch;
-	r_layout->depth_pitch = subresource_total_size / tex_info->desc.Depth();
-	r_layout->layer_pitch = subresource_total_size / tex_info->desc.ArraySize();
 }
 
 Vector<uint8_t> RenderingDeviceDriverD3D12::texture_get_data(TextureID p_texture, uint32_t p_layer) {
-	const TextureInfo *tex = (const TextureInfo *)p_texture.id;
-
-	DataFormat tex_format = tex->format;
-	uint32_t tex_width = tex->desc.Width;
-	uint32_t tex_height = tex->desc.Height;
-	uint32_t tex_depth = tex->desc.DepthOrArraySize;
-	uint32_t tex_mipmaps = tex->mipmaps;
-
-	uint32_t width, height, depth;
-	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, tex_mipmaps, &width, &height, &depth);
-
-	Vector<uint8_t> image_data;
-	image_data.resize(tight_mip_size);
-
-	uint32_t blockw, blockh;
-	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
-	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_format);
-	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
-
-	{
-		uint8_t *w = image_data.ptrw();
-
-		uint32_t mipmap_offset = 0;
-		for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
-			uint32_t image_total = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, mm_i + 1, &width, &height, &depth);
-
-			uint8_t *write_ptr_mipmap = w + mipmap_offset;
-			tight_mip_size = image_total - mipmap_offset;
-
-			RDD::TextureSubresource subres;
-			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
-			subres.layer = p_layer;
-			subres.mipmap = mm_i;
-			RDD::TextureCopyableLayout layout;
-			texture_get_copyable_layout(p_texture, subres, &layout);
-
-			uint8_t *img_mem = texture_map(p_texture, subres);
-			ERR_FAIL_NULL_V(img_mem, Vector<uint8_t>());
-
-			for (uint32_t z = 0; z < depth; z++) {
-				uint8_t *write_ptr = write_ptr_mipmap + z * tight_mip_size / depth;
-				const uint8_t *slice_read_ptr = img_mem + z * layout.depth_pitch;
-
-				if (block_size > 1) {
-					// Compressed.
-					uint32_t line_width = (block_size * (width / blockw));
-					for (uint32_t y = 0; y < height / blockh; y++) {
-						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
-						uint8_t *wptr = write_ptr + y * line_width;
-
-						memcpy(wptr, rptr, line_width);
-					}
-				} else {
-					// Uncompressed.
-					for (uint32_t y = 0; y < height; y++) {
-						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
-						uint8_t *wptr = write_ptr + y * pixel_size * width;
-						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
-					}
-				}
-			}
-
-			texture_unmap(p_texture);
-
-			mipmap_offset = image_total;
-		}
-	}
-
-	return image_data;
-}
-
-uint8_t *RenderingDeviceDriverD3D12::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(tex_info->mapped_subresource != UINT_MAX, nullptr);
-#endif
-
-	UINT plane = _compute_plane_slice(tex_info->format, p_subresource.aspect);
-	UINT subresource = tex_info->desc.CalcSubresource(p_subresource.mipmap, p_subresource.layer, plane);
-
-	void *data_ptr = nullptr;
-	HRESULT res = tex_info->resource->Map(subresource, &VOID_RANGE, &data_ptr);
-	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), nullptr, "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
-	tex_info->mapped_subresource = subresource;
-	return (uint8_t *)data_ptr;
-}
-
-void RenderingDeviceDriverD3D12::texture_unmap(TextureID p_texture) {
-	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(tex_info->mapped_subresource == UINT_MAX);
-#endif
-	tex_info->resource->Unmap(tex_info->mapped_subresource, &VOID_RANGE);
-	tex_info->mapped_subresource = UINT_MAX;
+	ERR_FAIL_V_MSG(Vector<uint8_t>(), "Cannot get texture data. CPU readable textures are unsupported on D3D12.");
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverD3D12::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
+	if (p_cpu_readable) {
+		// CPU readable textures are unsupported on D3D12.
+		return 0;
+	}
+
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT srv_rtv_support = {};
 	srv_rtv_support.Format = RD_TO_D3D12_FORMAT[p_format].general_format;
 	if (srv_rtv_support.Format != DXGI_FORMAT_UNKNOWN) { // Some implementations (i.e., vkd3d-proton) error out instead of returning empty.
@@ -4549,17 +4462,17 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buf_info = (BufferInfo *)p_src_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_dst_texture.id;
+
 	if (!barrier_capabilities.enhanced_barriers_supported) {
 		_resource_transition_batch(cmd_buf_info, buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	}
 
-	uint32_t pixel_size = get_image_format_pixel_size(tex_info->format);
 	uint32_t block_w = 0, block_h = 0;
 	get_compressed_image_format_block_dimensions(tex_info->format, block_w, block_h);
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		uint32_t region_pitch = (p_regions[i].texture_region_size.x * pixel_size * block_w) >> get_compressed_image_format_pixel_rshift(tex_info->format);
-		region_pitch = STEPIFY(region_pitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+		DEV_ASSERT((p_regions[i].buffer_offset & (D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT - 1)) == 0 && "Buffer offset must be aligned to 512 bytes. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.");
+		DEV_ASSERT((p_regions[i].row_pitch & (D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1)) == 0 && "Row pitch must be aligned to 256 bytes. See API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP.");
 
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT src_footprint = {};
 		src_footprint.Offset = p_regions[i].buffer_offset;
@@ -4568,48 +4481,31 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 				STEPIFY(p_regions[i].texture_region_size.x, block_w),
 				STEPIFY(p_regions[i].texture_region_size.y, block_h),
 				p_regions[i].texture_region_size.z,
-				region_pitch);
+				p_regions[i].row_pitch);
+
 		CD3DX12_TEXTURE_COPY_LOCATION copy_src(buf_info->resource, src_footprint);
 
-		CD3DX12_BOX src_box(
-				0, 0, 0,
-				STEPIFY(p_regions[i].texture_region_size.x, block_w),
-				STEPIFY(p_regions[i].texture_region_size.y, block_h),
-				p_regions[i].texture_region_size.z);
+		UINT dst_subresource = D3D12CalcSubresource(
+				p_regions[i].texture_subresource.mipmap,
+				p_regions[i].texture_subresource.layer,
+				_compute_plane_slice(tex_info->format, p_regions[i].texture_subresource.aspect),
+				tex_info->desc.MipLevels,
+				tex_info->desc.ArraySize());
 
 		if (!barrier_capabilities.enhanced_barriers_supported) {
-			for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-				UINT dst_subresource = D3D12CalcSubresource(
-						p_regions[i].texture_subresources.mipmap,
-						p_regions[i].texture_subresources.base_layer + j,
-						_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-				CD3DX12_TEXTURE_COPY_LOCATION copy_dst(tex_info->resource, dst_subresource);
-
-				_resource_transition_batch(cmd_buf_info, tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST);
-			}
-
+			_resource_transition_batch(cmd_buf_info, tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST);
 			_resource_transitions_flush(cmd_buf_info);
 		}
 
-		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-			UINT dst_subresource = D3D12CalcSubresource(
-					p_regions[i].texture_subresources.mipmap,
-					p_regions[i].texture_subresources.base_layer + j,
-					_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-					tex_info->desc.MipLevels,
-					tex_info->desc.ArraySize());
-			CD3DX12_TEXTURE_COPY_LOCATION copy_dst(tex_info->resource, dst_subresource);
+		CD3DX12_TEXTURE_COPY_LOCATION copy_dst(tex_info->resource, dst_subresource);
 
-			cmd_buf_info->cmd_list->CopyTextureRegion(
-					&copy_dst,
-					p_regions[i].texture_offset.x,
-					p_regions[i].texture_offset.y,
-					p_regions[i].texture_offset.z,
-					&copy_src,
-					&src_box);
-		}
+		cmd_buf_info->cmd_list->CopyTextureRegion(
+				&copy_dst,
+				p_regions[i].texture_offset.x,
+				p_regions[i].texture_offset.y,
+				p_regions[i].texture_offset.z,
+				&copy_src,
+				nullptr);
 	}
 }
 
@@ -4626,53 +4522,56 @@ void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID 
 	get_compressed_image_format_block_dimensions(tex_info->format, block_w, block_h);
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
+		DEV_ASSERT((p_regions[i].buffer_offset & (D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT - 1)) == 0 && "Buffer offset must be aligned to 512 bytes. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.");
+		DEV_ASSERT((p_regions[i].row_pitch & (D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1)) == 0 && "Row pitch must be aligned to 256 bytes. See API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP.");
+
+		UINT src_subresource = D3D12CalcSubresource(
+				p_regions[i].texture_subresource.mipmap,
+				p_regions[i].texture_subresource.layer,
+				_compute_plane_slice(tex_info->format, p_regions[i].texture_subresource.aspect),
+				tex_info->desc.MipLevels,
+				tex_info->desc.ArraySize());
+
 		if (!barrier_capabilities.enhanced_barriers_supported) {
-			for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-				UINT src_subresource = D3D12CalcSubresource(
-						p_regions[i].texture_subresources.mipmap,
-						p_regions[i].texture_subresources.base_layer + j,
-						_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-
-				_resource_transition_batch(cmd_buf_info, tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
-			}
-
+			_resource_transition_batch(cmd_buf_info, tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			_resource_transitions_flush(cmd_buf_info);
 		}
 
-		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-			UINT src_subresource = D3D12CalcSubresource(
-					p_regions[i].texture_subresources.mipmap,
-					p_regions[i].texture_subresources.base_layer + j,
-					_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-					tex_info->desc.MipLevels,
-					tex_info->desc.ArraySize());
+		CD3DX12_TEXTURE_COPY_LOCATION copy_src(tex_info->resource, src_subresource);
 
-			CD3DX12_TEXTURE_COPY_LOCATION copy_src(tex_info->resource, src_subresource);
+		CD3DX12_BOX src_box(
+				p_regions[i].texture_offset.x,
+				p_regions[i].texture_offset.y,
+				p_regions[i].texture_offset.z,
+				p_regions[i].texture_offset.x + STEPIFY(p_regions[i].texture_region_size.x, block_w),
+				p_regions[i].texture_offset.y + STEPIFY(p_regions[i].texture_region_size.y, block_h),
+				p_regions[i].texture_offset.z + p_regions[i].texture_region_size.z);
 
-			uint32_t computed_d = MAX(1, tex_info->desc.DepthOrArraySize >> p_regions[i].texture_subresources.mipmap);
-			uint32_t image_size = get_image_format_required_size(
-					tex_info->format,
-					MAX(1u, tex_info->desc.Width >> p_regions[i].texture_subresources.mipmap),
-					MAX(1u, tex_info->desc.Height >> p_regions[i].texture_subresources.mipmap),
-					computed_d,
-					1);
-			uint32_t row_pitch = image_size / (p_regions[i].texture_region_size.y * computed_d) * block_h;
-			row_pitch = STEPIFY(row_pitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+		bool full_box =
+				src_box.left == 0 &&
+				src_box.top == 0 &&
+				src_box.front == 0 &&
+				src_box.right == tex_info->desc.Width &&
+				src_box.bottom == tex_info->desc.Height &&
+				src_box.back == tex_info->desc.Depth();
 
-			D3D12_PLACED_SUBRESOURCE_FOOTPRINT dst_footprint = {};
-			dst_footprint.Offset = p_regions[i].buffer_offset;
-			dst_footprint.Footprint.Width = STEPIFY(p_regions[i].texture_region_size.x, block_w);
-			dst_footprint.Footprint.Height = STEPIFY(p_regions[i].texture_region_size.y, block_h);
-			dst_footprint.Footprint.Depth = p_regions[i].texture_region_size.z;
-			dst_footprint.Footprint.RowPitch = row_pitch;
-			dst_footprint.Footprint.Format = RD_TO_D3D12_FORMAT[tex_info->format].family;
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT dst_footprint = {};
+		dst_footprint.Offset = p_regions[i].buffer_offset;
+		dst_footprint.Footprint.Format = RD_TO_D3D12_FORMAT[tex_info->format].family;
+		dst_footprint.Footprint.Width = STEPIFY(p_regions[i].texture_region_size.x, block_w);
+		dst_footprint.Footprint.Height = STEPIFY(p_regions[i].texture_region_size.y, block_h);
+		dst_footprint.Footprint.Depth = p_regions[i].texture_region_size.z;
+		dst_footprint.Footprint.RowPitch = p_regions[i].row_pitch;
 
-			CD3DX12_TEXTURE_COPY_LOCATION copy_dst(buf_info->resource, dst_footprint);
+		CD3DX12_TEXTURE_COPY_LOCATION copy_dst(buf_info->resource, dst_footprint);
 
-			cmd_buf_info->cmd_list->CopyTextureRegion(&copy_dst, 0, 0, 0, &copy_src, nullptr);
-		}
+		cmd_buf_info->cmd_list->CopyTextureRegion(
+				&copy_dst,
+				0,
+				0,
+				0,
+				&copy_src,
+				full_box ? nullptr : &src_box);
 	}
 }
 
