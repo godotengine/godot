@@ -30,7 +30,14 @@
 
 #include "geometry_2d.h"
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-zero"
+#endif
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 #include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
