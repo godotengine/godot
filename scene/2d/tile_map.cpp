@@ -1938,7 +1938,8 @@ void TileMapLayer::set_tile_data(TileMapLayer::DataFormat p_format, const Vector
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		for (int j = 0; j < ((p_format >= TileMapLayer::FORMAT_2) ? 12 : 8); j++) {
+		const int buffer_size = (p_format >= TileMapLayer::FORMAT_2) ? 12 : 8;
+		for (int j = 0; j < buffer_size; j++) {
 			local[j] = ptr[j];
 		}
 
