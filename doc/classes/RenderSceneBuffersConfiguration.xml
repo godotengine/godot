@@ -16,7 +16,7 @@
 			FSR Sharpness applicable if FSR upscaling is used.
 		</member>
 		<member name="fsr_auto_generate_reactive" type="bool" setter="set_fsr_auto_generate_reactive" getter="get_auto_generate_reactive" default="false">
-			Whether to auto-generate a reactive mask for FSR 2/3.
+			If [code]true[/code], automatically generate a reactive mask for FSR 2/3.
 		</member>
 		<member name="internal_size" type="Vector2i" setter="set_internal_size" getter="get_internal_size" default="Vector2i(0, 0)">
 			The size of the 3D render buffer used for rendering.
