@@ -919,8 +919,8 @@ void ScrollContainer::set_horizontal_content_align(ContentHAlign p_align) {
 	}
 }
 
-int ScrollContainer::get_horizontal_content_align() const {
-	return static_cast<ContentHAlign>(horizontal_content_align);
+ScrollContainer::ContentHAlign ScrollContainer::get_horizontal_content_align() const {
+	return horizontal_content_align;
 }
 
 void ScrollContainer::set_vertical_content_align(ContentVAlign p_align) {
@@ -932,6 +932,6 @@ void ScrollContainer::set_vertical_content_align(ContentVAlign p_align) {
 	}
 }
 
-int ScrollContainer::get_vertical_content_align() const {
-	return static_cast<ContentVAlign>(vertical_content_align);
+ScrollContainer::ContentVAlign ScrollContainer::get_vertical_content_align() const {
+	return vertical_content_align;
 }

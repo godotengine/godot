@@ -129,10 +129,10 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	void set_horizontal_content_align(ContentHAlign p_align);
-	int get_horizontal_content_align() const;
+	ContentHAlign get_horizontal_content_align() const;
 
 	void set_vertical_content_align(ContentVAlign p_align);
-	int get_vertical_content_align() const;
+	ContentVAlign get_vertical_content_align() const;
 
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;
