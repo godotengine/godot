@@ -347,7 +347,7 @@ void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Volumetric fog can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Volumetric fog is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->volumetric_fog_enabled = p_enable;
@@ -542,7 +542,7 @@ void RendererEnvironmentStorage::environment_set_ssr(RID p_env, bool p_enable, i
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) are only available when using the Forward+ renderer.");
 	}
 #endif
 	env->ssr_enabled = p_enable;
@@ -589,7 +589,7 @@ void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() == "mobile" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ or Compatibility renderers.");
+		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) is only available when using the Forward+ or Compatibility renderers.");
 	}
 #endif
 	env->ssao_enabled = p_enable;
@@ -664,7 +664,7 @@ void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->ssil_enabled = p_enable;
@@ -711,7 +711,7 @@ void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable,
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("SDFGI can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("SDFGI is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->sdfgi_enabled = p_enable;
