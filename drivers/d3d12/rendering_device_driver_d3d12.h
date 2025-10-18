@@ -114,6 +114,8 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	ComPtr<IDXGIAdapter> adapter;
 	DXGI_ADAPTER_DESC adapter_desc;
 	ComPtr<ID3D12Device> device;
+	ComPtr<ID3D12PipelineLibrary> pso_cache;
+	Vector<uint8_t> pso_cache_data;
 	DeviceLimits device_limits;
 	RDD::Capabilities device_capabilities;
 	uint32_t feature_level = 0; // Major * 10 + minor.
@@ -395,6 +397,33 @@ private:
 	struct VertexFormatInfo {
 		TightLocalVector<D3D12_INPUT_ELEMENT_DESC> input_elem_descs;
 		TightLocalVector<UINT> vertex_buffer_strides;
+
+		Vector<uint8_t> serialize() const {
+			#define serialize_field(x)    \
+				memcpy(p, &x, sizeof(x)); \
+				p += sizeof(x);
+
+			Vector<uint8_t> out;
+			size_t sz = vertex_buffer_strides.size() * sizeof(UINT) + input_elem_descs.size() * (sizeof(D3D12_INPUT_ELEMENT_DESC) - sizeof(LPCSTR));
+			for (auto ed : input_elem_descs) {
+				sz += strlen(ed.SemanticName);
+			}
+			out.resize(sz);
+			uint8_t *p = out.ptrw();
+			for (auto ed : input_elem_descs) {
+				memcpy(p, &ed.SemanticIndex, sizeof(D3D12_INPUT_ELEMENT_DESC) - sizeof(LPCSTR));
+				p += sizeof(D3D12_INPUT_ELEMENT_DESC) - sizeof(LPCSTR);
+				size_t name_len = strlen(ed.SemanticName);
+				memcpy(p, ed.SemanticName, name_len);
+				p += name_len;
+			}
+			for (auto vbs : vertex_buffer_strides) {
+				serialize_field(vbs);
+			}
+			return out;
+
+			#undef serialize_field
+		}
 	};
 
 public:
@@ -649,6 +678,7 @@ private:
 		ComPtr<ID3D12RootSignatureDeserializer> root_signature_deserializer;
 		const D3D12_ROOT_SIGNATURE_DESC *root_signature_desc = nullptr; // Owned by the deserializer.
 		uint32_t root_signature_crc = 0;
+		String hash;
 	};
 
 	bool _shader_apply_specialization_constants(
@@ -770,6 +800,9 @@ public:
 	virtual void pipeline_cache_free() override final;
 	virtual size_t pipeline_cache_query_size() override final;
 	virtual Vector<uint8_t> pipeline_cache_serialize() override final;
+
+private:
+	String hash_pipeline_state(CD3DX12_PIPELINE_STATE_STREAM1 *state, Vector<uint8_t> dyn_data);
 
 	/*******************/
 	/**** RENDERING ****/
