@@ -49,15 +49,15 @@ public:
 	};
 
 	enum ContentHAlign {
-		H_ALIGN_LEFT = 0,
-		H_ALIGN_CENTER = 1,
-		H_ALIGN_RIGHT = 2,
+		CONTENT_H_ALIGN_LEFT,
+		CONTENT_H_ALIGN_CENTER,
+		CONTENT_H_ALIGN_RIGHT,
 	};
 
 	enum ContentVAlign {
-		V_ALIGN_TOP = 0,
-		V_ALIGN_CENTER = 1,
-		V_ALIGN_BOTTOM = 2,
+		CONTENT_V_ALIGN_TOP,
+		CONTENT_V_ALIGN_CENTER,
+		CONTENT_V_ALIGN_BOTTOM,
 	};
 
 private:
@@ -65,8 +65,8 @@ private:
 	VScrollBar *v_scroll = nullptr;
 	PanelContainer *focus_panel = nullptr;
 
-	ContentHAlign horizontal_content_align = H_ALIGN_LEFT;
-	ContentVAlign vertical_content_align = V_ALIGN_TOP;
+	ContentHAlign horizontal_content_align = CONTENT_H_ALIGN_LEFT;
+	ContentVAlign vertical_content_align = CONTENT_V_ALIGN_TOP;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
@@ -128,10 +128,10 @@ protected:
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
-	void set_horizontal_content_align(int p_align);
+	void set_horizontal_content_align(ContentHAlign p_align);
 	int get_horizontal_content_align() const;
 
-	void set_vertical_content_align(int p_align);
+	void set_vertical_content_align(ContentVAlign p_align);
 	int get_vertical_content_align() const;
 
 	void set_h_scroll(int p_pos);
@@ -173,3 +173,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
+VARIANT_ENUM_CAST(ScrollContainer::ContentHAlign);
+VARIANT_ENUM_CAST(ScrollContainer::ContentVAlign);
