@@ -1,5 +1,10 @@
 name: 🔗 GHA
-on: [push, pull_request, merge_group]
+on:
+  push:
+  pull_request:
+  merge_group: # Unused.
+  schedule:
+    - cron: 0 0 * * *
 
 concurrency:
   group: ${{ github.workflow }}|${{ github.ref_name }}
@@ -9,7 +14,9 @@ jobs:
   # First stage: Only static checks, fast and prevent expensive builds from running.
 
   static-checks:
-    if: ${{ !vars.DISABLE_GODOT_CI || github.run_attempt > 1 }}
+    if: >-
+      (github.event_name != 'schedule' || github.ref_name == github.event.repository.default_branch)
+      && (!vars.DISABLE_GODOT_CI || github.run_attempt > 1)
     name: 📊 Static checks
     uses: ./.github/workflows/static_checks.yml
 
@@ -19,28 +26,40 @@ jobs:
     name: 🤖 Android
     needs: static-checks
     uses: ./.github/workflows/android_builds.yml
+    with:
+      event: ${{ github.event_name }}
 
   ios-build:
     name: 🍏 iOS
     needs: static-checks
     uses: ./.github/workflows/ios_builds.yml
+    with:
+      event: ${{ github.event_name }}
 
   linux-build:
     name: 🐧 Linux
     needs: static-checks
     uses: ./.github/workflows/linux_builds.yml
+    with:
+      event: ${{ github.event_name }}
 
   macos-build:
     name: 🍎 macOS
     needs: static-checks
     uses: ./.github/workflows/macos_builds.yml
+    with:
+      event: ${{ github.event_name }}
 
   windows-build:
     name: 🏁 Windows
     needs: static-checks
     uses: ./.github/workflows/windows_builds.yml
+    with:
+      event: ${{ github.event_name }}
 
   web-build:
     name: 🌐 Web
     needs: static-checks
     uses: ./.github/workflows/web_builds.yml
+    with:
+      event: ${{ github.event_name }}

@@ -1,6 +1,11 @@
 name: 🏁 Windows Builds
 on:
   workflow_call:
+    inputs:
+      event:
+        description: Name of the caller's `github.event_name`.
+        required: true
+        type: string
 
 # Global Settings
 env:
@@ -11,51 +16,56 @@ env:
     d3d12=yes
     "angle_libs=${{ github.workspace }}/"
     "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    windows_subsystem=console
+    vsproj=yes
+    vsproj_gen_only=no
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
 jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      - name: Generate matrix
+        id: generate-matrix
+        shell: python
+        run: |
+          import json
+          import os
+
+          matrix = {}
+
+          # Run only on schedule:
+          if "${{ inputs.event }}" == "schedule":
+            matrix["target"] = ["editor", "debug", "release"]
+            matrix["arch"] = ["x86_64", "x86_32", "arm64"]
+            matrix["compiler"] = ["cl", "clang-cl", "gcc", "clang"]
+
+          # Always run:
+          matrix["include"] = [
+            { "target": "editor", "arch": "x86_64", "compiler": "cl", "always_run": True },
+            { "target": "editor", "arch": "x86_64", "compiler": "clang-cl", "always_run": True },
+            { "target": "release", "arch": "x86_64", "compiler": "cl", "always_run": True },
+            { "target": "release", "arch": "x86_64", "compiler": "gcc", "always_run": True },
+          ]
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as env:
+            env.write(f"matrix={json.dumps(matrix)}\n")
+
   build-windows:
     # Windows 10 with latest image
     runs-on: windows-latest
-    name: ${{ matrix.name }}
+    name: ${{ matrix.target }} | ${{ matrix.arch }} | ${{ matrix.compiler }}
+    needs: generate-matrix
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: Editor (target=editor)
-            cache-name: windows-editor
-            target: editor
-            scons-flags: >-
-              windows_subsystem=console
-              vsproj=yes
-              vsproj_gen_only=no
-            bin: ./bin/godot.windows.editor.x86_64.exe
-            compiler: msvc
-
-          - name: Editor w/ clang-cl (target=editor, use_llvm=yes)
-            cache-name: windows-editor-clang
-            target: editor
-            scons-flags: >-
-              windows_subsystem=console
-              use_llvm=yes
-            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
-            compiler: clang
-
-          - name: Template (target=template_release)
-            cache-name: windows-template
-            target: template_release
-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
-            compiler: msvc
-
-          - name: Template w/ GCC (target=template_release, use_mingw=yes)
-            cache-name: windows-template-gcc
-            # MinGW takes MUCH longer to compile; save time by only targeting Template.
-            target: template_release
-            scons-flags: use_mingw=yes
-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
-            compiler: gcc
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      BUILD_ID: windows.${{ matrix.target }}.${{ matrix.arch }}.${{ matrix.compiler }}
+      BIN_PATH: ./bin/godot.windows.${{ matrix.target == 'release' && 'template_release' || matrix.target == 'debug' && 'template_debug' || 'editor' }}.${{ matrix.arch }}${{ (matrix.compiler == 'clang-cl' || matrix.compiler == 'clang') && '.llvm' || '' }}.exe
 
     steps:
       - name: Checkout
@@ -65,8 +75,9 @@ jobs:
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
+        if: matrix.always_run
         with:
-          cache-name: ${{ matrix.cache-name }}
+          cache-name: ${{ env.BUILD_ID }}
         continue-on-error: true
 
       - name: Setup Python and SCons
@@ -80,7 +91,7 @@ jobs:
         with:
           repo: godotengine/godot-angle-static
           version: tags/chromium/6601.2
-          file: godot-angle-static-x86_64-${{ matrix.compiler == 'gcc' && 'gcc' || 'msvc' }}-release.zip
+          file: godot-angle-static-${{ matrix.arch }}-${{ matrix.compiler == 'gcc' && 'gcc' || matrix.compiler == 'clang' && 'llvm' || 'msvc' }}-release.zip
           target: angle/angle.zip
 
       - name: Extract pre-built ANGLE static libraries
@@ -100,29 +111,35 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          scons-flags: >-
+            arch=${{ matrix.arch }}
+            use_mingw=${{ (matrix.compiler == 'gcc' || matrix.compiler == 'clang') && 'yes' || 'no' }}
+            use_llvm=${{ (matrix.compiler == 'clang-cl' || matrix.compiler == 'clang') && 'yes' || 'no' }}
+            ${{ env.SCONS_FLAGS }}
+            ${{ matrix.scons-flags }}
           platform: windows
-          target: ${{ matrix.target }}
+          target: ${{ matrix.target == 'release' && 'template_release' || matrix.target == 'debug' && 'template_debug' || 'editor' }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
+        if: matrix.always_run
         with:
-          cache-name: ${{ matrix.cache-name }}
+          cache-name: ${{ env.BUILD_ID }}
         continue-on-error: true
 
       - name: Prepare artifact
-        if: matrix.compiler == 'msvc'
+        if: matrix.always_run
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
-        if: matrix.compiler == 'msvc'
+        if: matrix.always_run
         uses: ./.github/actions/upload-artifact
         with:
-          name: ${{ matrix.cache-name }}
+          name: ${{ env.BUILD_ID }}
 
       - name: Unit tests
         run: |
-          ${{ matrix.bin }} --version
-          ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test --force-colors
+          ${{ env.BIN_PATH }} --version
+          ${{ env.BIN_PATH }} --help
+          ${{ env.BIN_PATH }} --test --force-colors
