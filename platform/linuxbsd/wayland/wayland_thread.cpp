@@ -3038,6 +3038,7 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
+	Thread::set_name("Wayland events");
 	ThreadData *data = (ThreadData *)p_data;
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
