@@ -62,9 +62,7 @@ void EditorSettingsDialog::ok_pressed() {
 }
 
 void EditorSettingsDialog::_settings_changed() {
-	if (is_visible()) {
-		timer->start();
-	}
+	timer->start();
 }
 
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
