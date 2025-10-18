@@ -39,6 +39,7 @@
 #include <unistd.h>
 
 void CameraLinux::camera_thread_func(void *p_camera_linux) {
+	Thread::set_name("Linux camera");
 	if (p_camera_linux) {
 		CameraLinux *camera_linux = (CameraLinux *)p_camera_linux;
 		camera_linux->_update_devices();

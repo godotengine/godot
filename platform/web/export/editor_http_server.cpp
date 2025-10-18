@@ -31,6 +31,7 @@
 #include "editor_http_server.h"
 
 void EditorHTTPServer::_server_thread_poll(void *data) {
+	Thread::set_name("Editor HTTP server");
 	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);
 	while (!web_server->server_quit.is_set()) {
 		OS::get_singleton()->delay_usec(6900);

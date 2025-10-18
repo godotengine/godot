@@ -59,6 +59,7 @@ void MIDIDriverALSAMidi::InputConnection::read() {
 }
 
 void MIDIDriverALSAMidi::thread_func(void *p_udata) {
+	Thread::set_name("MIDI ALSA");
 	MIDIDriverALSAMidi *md = static_cast<MIDIDriverALSAMidi *>(p_udata);
 
 	while (!md->exit_thread.is_set()) {
