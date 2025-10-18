@@ -547,7 +547,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--version", "Display the version string.\n");
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
 	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
-	print_help_option("--no-header", "Do not print engine version and rendering method header on startup.\n");
+	print_help_option("--no-header", "Do not print engine version and rendering driver/method header on startup.\n");
 
 	print_help_title("Run options");
 	print_help_option("--, ++", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
