@@ -37,6 +37,11 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 
+#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
+// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
+
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
@@ -50,6 +55,11 @@ GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
 GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
+#include <thirdparty/directx_headers/include/directx/d3dx12.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+
 #if defined(AS)
 #undef AS
 #endif
@@ -58,21 +68,13 @@ GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 #include <dcomp.h>
 #endif
 
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-
 #include <wrl/client.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-
-using Microsoft::WRL::ComPtr;
 
 #define ARRAY_SIZE(a) std_size(a)
 
 class RenderingContextDriverD3D12 : public RenderingContextDriver {
-	ComPtr<ID3D12DeviceFactory> device_factory;
-	ComPtr<IDXGIFactory2> dxgi_factory;
+	Microsoft::WRL::ComPtr<ID3D12DeviceFactory> device_factory;
+	Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
 	TightLocalVector<Device> driver_devices;
 	bool tearing_supported = false;
 
@@ -111,9 +113,9 @@ public:
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
 #ifdef DCOMP_ENABLED
-		ComPtr<IDCompositionDevice> composition_device;
-		ComPtr<IDCompositionTarget> composition_target;
-		ComPtr<IDCompositionVisual> composition_visual;
+		Microsoft::WRL::ComPtr<IDCompositionDevice> composition_device;
+		Microsoft::WRL::ComPtr<IDCompositionTarget> composition_target;
+		Microsoft::WRL::ComPtr<IDCompositionVisual> composition_visual;
 #endif
 	};
 
