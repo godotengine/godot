@@ -23,18 +23,18 @@
 				Implement this in GDExtension to change the anisotropic filtering level.
 			</description>
 		</method>
+		<method name="_set_fsr_auto_generate_reactive" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="fsr_auto_generate_reactive" type="bool" />
+			<description>
+				Implement this in GDExtension to record a new FSR auto generate reactive value.
+			</description>
+		</method>
 		<method name="_set_fsr_sharpness" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="fsr_sharpness" type="float" />
 			<description>
 				Implement this in GDExtension to record a new FSR sharpness value.
-			</description>
-		</method>
-		<method name="_set_fsr_auto_generate_reactive" qualifiers="virtual">
-			<return type="void" />
-			<param index="0" name="auto_generate_reactive" type="bool" />
-			<description>
-				Implement this in GDExtension to record a new FSR auto generate reactive value.
 			</description>
 		</method>
 		<method name="_set_texture_mipmap_bias" qualifiers="virtual">

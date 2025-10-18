@@ -993,6 +993,7 @@ void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::Viewport
 	if (rendering_method != "forward_plus") {
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR1, "FSR1 is only available when using the Forward+ renderer.");
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR3, "FSR3 is only available when using the Forward+ renderer.");
 		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
 	}
 	if (rendering_method == "gl_compatibility") {
