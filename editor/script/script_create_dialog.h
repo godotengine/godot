@@ -75,7 +75,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool supports_built_in = false;
 	bool can_inherit_from_file = false;
 	bool is_parent_name_valid = false;
-	bool is_class_name_valid = false;
 	bool is_built_in = false;
 	bool is_using_templates = true;
 	bool built_in_enabled = true;
