@@ -3746,8 +3746,11 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 	Key key = KeyMappingX11::get_keycode(xkeysym);
 #ifdef XKB_ENABLED
 	if (xkb_loaded_v08p) {
-		String keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym)));
-		key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+		char32_t chr = xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym));
+		if (chr != 0) {
+			String keysym = String::chr(chr);
+			key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+		}
 	}
 #endif
 
