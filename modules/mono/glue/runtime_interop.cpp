@@ -80,6 +80,10 @@ godotsharp_class_creation_func godotsharp_get_class_constructor(const StringName
 	return nullptr;
 }
 
+Object *godotsharp_instantiate_class(const StringName *p_classname) {
+	return ClassDB::instantiate(*p_classname);
+}
+
 Object *godotsharp_engine_get_singleton(const String *p_name) {
 	return Engine::get_singleton()->get_singleton_object(*p_name);
 }
@@ -1623,6 +1627,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_method_bind_get_method_with_compatibility,
 	(void *)godotsharp_get_class_constructor,
+	(void *)godotsharp_instantiate_class,
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
 	(void *)godotsharp_stack_info_vector_destroy,
