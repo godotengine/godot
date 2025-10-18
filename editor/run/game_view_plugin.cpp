@@ -503,8 +503,10 @@ void GameView::_embedded_process_focused() {
 void GameView::_editor_or_project_settings_changed() {
 	PopupMenu *menu = resolution_options_menu->get_popup();
 	menu->clear();
+
+	menu->add_radio_check_item("Default (" + itos(EditorRun::get_window_placement().size.x) + "x" + itos(EditorRun::get_window_placement().size.y) + ")", 0);
 	Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
-	int i = 0;
+	int i = 1;
 	for (const KeyValue<Variant, Variant> &kv : resolution_presets) {
 		String name = kv.key;
 		Vector2i size = kv.value;
@@ -787,16 +789,21 @@ void GameView::_update_embed_window_size() {
 			const DisplayServer::ScreenOrientation screen_orientation = DisplayServer::ScreenOrientation(int(ProjectSettings::get_singleton()->get("display/window/handheld/orientation")));
 			Size2i window_size;
 
-			switch (screen_orientation) {
-				case DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE:
-					window_size = Size2i(custom_resolution.y, custom_resolution.x);
-					break;
-				case DisplayServer::ScreenOrientation::SCREEN_PORTRAIT:
-					window_size = custom_resolution;
-					break;
-				default:
-					window_size = custom_resolution;
-					break;
+			if (resolution_preset_index == 0) {
+				window_size = custom_resolution;
+			}
+			else {
+				switch (screen_orientation) {
+					case DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE:
+						window_size = Size2i(custom_resolution.y, custom_resolution.x);
+						break;
+					case DisplayServer::ScreenOrientation::SCREEN_PORTRAIT:
+						window_size = custom_resolution;
+						break;
+					default:
+						window_size = custom_resolution;
+						break;
+				}
 			}
 
 			embedded_process->set_window_size(window_size);
@@ -890,7 +897,7 @@ void GameView::_notification(int p_what) {
 			fixed_size_button->set_button_icon(get_editor_theme_icon(SNAME("FixedSize")));
 			keep_aspect_button->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 			stretch_button->set_button_icon(get_editor_theme_icon(SNAME("Stretch")));
-			resolution_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			resolution_options_menu->set_button_icon(get_editor_theme_icon(SNAME("Window")));
 			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
@@ -927,6 +934,17 @@ void GameView::_notification(int p_what) {
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
 				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
 				_update_embed_menu_options();
+
+				PopupMenu *menu = resolution_options_menu->get_popup();
+				resolution_preset_index = (int)EditorSettings::get_singleton()->get_project_metadata("game_view", "resolution_preset", 0);
+				Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
+				if (resolution_preset_index >= 0 && resolution_preset_index < menu->get_item_count()) {
+					custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index)];
+					menu->set_item_checked(resolution_preset_index, true);
+				} else {
+					custom_resolution = EditorRun::get_window_placement().size;
+					resolution_preset_index = 0;
+				}
 
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
 				EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &GameView::_stop_pressed));
@@ -1161,9 +1179,13 @@ void GameView::_switch_resolution_presets(int p_preset) {
 		menu->set_item_checked(i, i == resolution_preset_index);
 	}
 
-	Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
-	custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index)];
-	print_line(custom_resolution);
+	if (resolution_preset_index == 0) {
+		custom_resolution = EditorRun::get_window_placement().size;
+	} else {
+		Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
+		custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index - 1)];
+	}
+	print_line("Custom resolution set to: " + itos(custom_resolution.x) + "x" + itos(custom_resolution.y));
 	_update_embed_window_size();
 }
 
@@ -1348,21 +1370,13 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_switch_resolution_presets));
 	Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
-	int i = 0;
+	menu->add_radio_check_item("Default (" + itos(EditorRun::get_window_placement().size.x) + "x" + itos(EditorRun::get_window_placement().size.y) + ")", 0);
+	int i = 1;
 	for (const KeyValue<Variant, Variant> &kv : resolution_presets) {
 		String name = kv.key;
 		Vector2i size = kv.value;
 		menu->add_radio_check_item(name + " (" + itos(size.x) + "x" + itos(size.y) + ")", i);
 		i++;
-	}
-
-	resolution_preset_index = (int)EditorSettings::get_singleton()->get_project_metadata("game_view", "resolution_preset", -1);
-	if (resolution_preset_index >= 0 && resolution_preset_index < menu->get_item_count()) {
-		custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index)];
-		menu->set_item_checked(resolution_preset_index, true);
-	} else {
-		custom_resolution = Vector2i();
-		resolution_preset_index = -1;
 	}
 
 	embed_options_menu = memnew(MenuButton);
