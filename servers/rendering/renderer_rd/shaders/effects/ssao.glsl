@@ -422,9 +422,6 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 
 	vec3 view_dir = normalize(-pix_center_pos);
 
-	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
-	pix_center_pos.z *= 0.99;
-
 	// Calculate rotation angle for slices
 	float delta_angle = PI / float(number_of_slices);
 	// Precalculate rotational components for slices
@@ -432,11 +429,26 @@ void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	float cos_delta_angle = cos(delta_angle);
 
 	float viewspace_radius = params.radius * GTAO_RADIUS_MULTIPLIER;
+
+	// when too close, on-screen sampling disk will grow beyond screen size; limit this to avoid closeup temporal artifacts
+	const float too_close_limit = clamp(length(pix_center_pos) * params.inv_radius_near_limit, 0.0, 1.0) * 0.8 + 0.2;
+
+	viewspace_radius *= too_close_limit;
+
 	// Multiply the radius by projection[0][0] to make it FOV-independent, same as HBAO
 	float screenspace_radius = clamp(viewspace_radius * params.fov_scale / pix_center_pos.z, float(number_of_taps), GTAO_MAX_SCREEN_RADIUS);
+
+	// Adjust radius near screen borders to reduce artifacts
+	float near_screen_border = min(min(normalized_screen_pos.x, 1.0 - normalized_screen_pos.x), min(normalized_screen_pos.y, 1.0 - normalized_screen_pos.y));
+	near_screen_border = clamp(10.0 * near_screen_border + 0.6, 0.0, 1.0);
+	screenspace_radius *= near_screen_border;
+
 	float step_radius = screenspace_radius / float(number_of_taps);
 	float falloff_range = GTAO_FALLOFF_RANGE * viewspace_radius;
 	float falloff_mul = 1.0 / (falloff_range * falloff_range);
+
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos.z *= 0.99;
 
 	vec2 noise = get_angle_offset_noise(upos);
 	// Apply a random offset on to reduce artifacts
