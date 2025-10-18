@@ -3230,14 +3230,19 @@ void PopupMenu::_pre_popup() {
 	}
 	real_t popup_scale = MIN(scale.x, scale.y);
 	set_content_scale_factor(popup_scale);
-	Size2 minsize = get_contents_minimum_size() * popup_scale;
-	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-	real_t max_h = get_max_size().height;
-	if (max_h > 0) {
-		minsize.height = MIN(minsize.height, max_h);
+	if (is_wrapping_controls()) {
+		Size2 minsize = get_contents_minimum_size() * popup_scale;
+		Size2 maxsize = get_max_size();
+		if (maxsize.height > 0) {
+			minsize.height = MIN(minsize.height, maxsize.height);
+		}
+		if (maxsize.width > 0) {
+			minsize.width = MIN(minsize.width, maxsize.width);
+		}
+		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+		reset_size(); // Shrinkwraps to min size.
 	}
-	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-	reset_size(); // Shrinkwraps to min size.
 }
 
 void PopupMenu::set_visible(bool p_visible) {
