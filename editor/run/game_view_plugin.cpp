@@ -791,8 +791,7 @@ void GameView::_update_embed_window_size() {
 
 			if (resolution_preset_index == 0) {
 				window_size = custom_resolution;
-			}
-			else {
+			} else {
 				switch (screen_orientation) {
 					case DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE:
 						window_size = Size2i(custom_resolution.y, custom_resolution.x);
