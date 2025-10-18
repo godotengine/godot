@@ -11,6 +11,7 @@ env:
 
 jobs:
   build-macos:
+    # From https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#choosing-github-hosted-runners
     runs-on: macos-latest
     name: ${{ matrix.name }}
     timeout-minutes: 120
@@ -35,8 +36,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      # From https://github.com/actions/runner-images/blob/main/images/macos
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
