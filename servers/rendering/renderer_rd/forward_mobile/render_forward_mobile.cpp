@@ -1981,7 +1981,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		// Sets lod_index and uses_lightmap at once.
-		element_info.value = uint32_t((surface->sort.sort_key2 & 0x01FF00000000) >> 32u);
+		element_info.value = uint32_t(surface->sort.sort_key1 & 0x1FF);
 	}
 
 	if (p_update_buffer) {
@@ -2764,7 +2764,8 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.sort_key2 = 0;
 
 	sdcache->sort.surface_index = p_surface;
-	sdcache->sort.material_id = p_material_id;
+	sdcache->sort.material_id_hi = (p_material_id & 0xFF000000) >> 24;
+	sdcache->sort.material_id_lo = (p_material_id & 0x00FFFFFF);
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;

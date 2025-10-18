@@ -488,7 +488,8 @@ void FoldableContainer::_shape() {
 	}
 	text_buf->set_horizontal_alignment(_get_actual_alignment());
 	text_buf->set_text_overrun_behavior(overrun_behavior);
-	text_buf->add_string(atr(title), font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	text_buf->add_string(atr(title), font, font_size, lang);
 }
 
 HorizontalAlignment FoldableContainer::_get_actual_alignment() const {

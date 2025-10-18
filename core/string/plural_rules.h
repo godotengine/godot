@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_composition_layer_equirect.h                                   */
+/*  plural_rules.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,45 +30,43 @@
 
 #pragma once
 
-#include <openxr/openxr.h>
+#include "core/object/ref_counted.h"
+#include "core/templates/lru.h"
 
-#include "openxr_composition_layer.h"
+class Expression;
 
-class OpenXRCompositionLayerEquirect : public OpenXRCompositionLayer {
-	GDCLASS(OpenXRCompositionLayerEquirect, OpenXRCompositionLayer);
+class PluralRules : public Object {
+	GDSOFTCLASS(PluralRules, Object);
 
-	float radius = 1.0;
-	float central_horizontal_angle = Math::PI / 2.0;
-	float upper_vertical_angle = Math::PI / 4.0;
-	float lower_vertical_angle = Math::PI / 4.0;
-	uint32_t fallback_segments = 10;
+	mutable LRUCache<int, int> cache;
 
-protected:
-	static void _bind_methods();
+	// These two fields are initialized in the constructor.
+	const int nplurals;
+	const String plural;
 
-	virtual Ref<Mesh> _create_fallback_mesh() override;
-	virtual XrStructureType _get_openxr_type() const override {
-		return XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR;
-	}
+	// Cache temporary variables related to `evaluate()` to make it faster.
+	class EQNode : public RefCounted {
+		GDSOFTCLASS(EQNode, RefCounted);
+
+	public:
+		String regex;
+		Ref<EQNode> left;
+		Ref<EQNode> right;
+	};
+	Ref<EQNode> equi_tests;
+	Ref<Expression> expr;
+
+	int _find_unquoted(const String &p_src, char32_t p_chr) const;
+	int _eq_test(const Array &p_input_val, const Ref<EQNode> &p_node, const Variant &p_result) const;
+	void _cache_plural_tests(const String &p_plural_rule, Ref<EQNode> &p_node);
+
+	PluralRules(int p_nplurals, const String &p_plural);
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
+	int evaluate(int p_n) const;
 
-	void set_central_horizontal_angle(float p_angle);
-	float get_central_horizontal_angle() const;
+	int get_nplurals() const { return nplurals; }
+	String get_plural() const { return plural; }
 
-	void set_upper_vertical_angle(float p_angle);
-	float get_upper_vertical_angle() const;
-
-	void set_lower_vertical_angle(float p_angle);
-	float get_lower_vertical_angle() const;
-
-	void set_fallback_segments(uint32_t p_fallback_segments);
-	uint32_t get_fallback_segments() const;
-
-	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const override;
-
-	OpenXRCompositionLayerEquirect();
-	~OpenXRCompositionLayerEquirect();
+	static PluralRules *parse(const String &p_rules);
 };

@@ -738,6 +738,7 @@ protected:
 	void _notification_backward(int p_notification);
 	virtual void _notification_forwardv(int p_notification) {}
 	virtual void _notification_backwardv(int p_notification) {}
+	virtual String _to_string();
 
 	static void _bind_methods();
 	static void _bind_compatibility_methods() {}
@@ -800,6 +801,9 @@ protected:
 	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
+
+	// Internal helper to get the current locale, taking into account the translation domain.
+	String _get_locale() const;
 
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
@@ -916,7 +920,7 @@ public:
 		}
 	}
 
-	virtual String to_string();
+	String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;

@@ -163,6 +163,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
 		selected_node = StringName();
+		connected_nodes.clear();
 
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
 			if (node_rects[i].play.has_point(mb->get_position())) { //edit name
