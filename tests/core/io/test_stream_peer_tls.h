@@ -39,15 +39,12 @@ TEST_CASE("[StreamPeerTLS] Availability and creation") {
 	// Factory should report available
 	CHECK(StreamPeerTLS::is_available() == true);
 
-	// Create a backend instance
-	StreamPeerTLS *tls = StreamPeerTLS::create();
+	// Create a backend instance using Ref
+	Ref<StreamPeerTLS> tls = StreamPeerTLS::create();
 
 	// Check that we got a valid object
-	CHECK(tls != nullptr);
-	CHECK_MESSAGE(tls != nullptr, "TLS backend should be registered and create() should return a valid object.");
-
-	// Clean up the object to prevent ObjectDB leak
-	memdelete(tls);
+	CHECK(tls.is_valid());
+	CHECK_MESSAGE(tls.is_valid(), "TLS backend should be registered and create() should return a valid object.");
 }
 
 TEST_CASE("[StreamPeerTLS] Enum values") {
