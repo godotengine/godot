@@ -103,6 +103,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 add_point_pos;
 	Vector<Vector2> points;
 
+	bool dragging_blend_position;
 	bool dragging_selected_attempt;
 	bool dragging_selected;
 	Vector2 drag_from;
