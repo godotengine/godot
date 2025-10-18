@@ -3303,7 +3303,7 @@
 			Double-buffering may give you the lowest lag/latency but if V-Sync is on and the system can't render at 60 fps, the framerate will go down in multiples of it (e.g. 30 fps, 15, 7.5, etc.). Triple buffering gives you higher framerate (specially if the system can't reach a constant 60 fps) at the cost of up to 1 frame of latency, with [constant DisplayServer.VSYNC_ENABLED] (FIFO).
 			Use double-buffering with [constant DisplayServer.VSYNC_ENABLED]. Triple-buffering is a must if you plan on using [constant DisplayServer.VSYNC_MAILBOX] mode.
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
-			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+			[b]Note:[/b] Changes to this setting will only be applied on startup or when the swapchain is recreated (e.g. when setting the V-Sync mode).
 			[b]Note:[/b] Some platforms may restrict the actual value.
 		</member>
 		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
