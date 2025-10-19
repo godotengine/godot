@@ -31,6 +31,7 @@
 #pragma once
 
 #include "atlas_merging_dialog.h"
+#include "editor/import/editor_atlas_packer.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/resources/2d/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
@@ -68,6 +69,8 @@ private:
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void _load_texture_files(const Vector<String> &p_paths);
+	void _pack_texture_files_into_atlas(const Vector<String> &p_paths);
+	void _create_atlas_source_from_packed_scene(const String &p_path);
 
 	void _update_sources_list(int force_selected_id = -1);
 
@@ -85,8 +88,15 @@ private:
 	void _set_source_sort(int p_sort);
 
 	EditorFileDialog *texture_file_dialog = nullptr;
+	EditorFileDialog *atlas_packing_file_dialog = nullptr;
+	EditorFileDialog *atlas_packing_save_dialog = nullptr;
 	AtlasMergingDialog *atlas_merging_dialog = nullptr;
 	TileProxiesManagerDialog *tile_proxies_manager_dialog = nullptr;
+
+	// Temporary storage for atlas packing data.
+	Ref<Image> pending_atlas_image;
+	Vector<EditorAtlasPacker::Chart> pending_atlas_charts;
+	Vector2i pending_atlas_tile_size;
 
 	bool first_edit = true;
 
