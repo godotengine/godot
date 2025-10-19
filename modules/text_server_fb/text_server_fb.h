@@ -306,7 +306,7 @@ class TextServerFallback : public TextServerExtension {
 		HashMap<String, bool> script_support_overrides;
 
 		PackedByteArray data;
-		const uint8_t *data_ptr;
+		const uint8_t *data_ptr = nullptr;
 		size_t data_size;
 		int face_index = 0;
 
