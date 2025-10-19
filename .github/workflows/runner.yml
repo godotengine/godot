@@ -19,6 +19,8 @@ jobs:
     name: 🤖 Android
     needs: static-checks
     uses: ./.github/workflows/android_builds.yml
+    secrets:
+      SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
   ios-build:
     name: 🍏 iOS
