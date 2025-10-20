@@ -629,14 +629,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="_cone_twist_joint_get_applied_force" qualifiers="const">
+		<method name="_cone_twist_joint_get_applied_force" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
-		<method name="_cone_twist_joint_get_applied_torque" qualifiers="const">
+		<method name="_cone_twist_joint_get_applied_torque" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
@@ -694,14 +694,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="_generic_6dof_joint_get_applied_force" qualifiers="const">
+		<method name="_generic_6dof_joint_get_applied_force" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
-		<method name="_generic_6dof_joint_get_applied_torque" qualifiers="const">
+		<method name="_generic_6dof_joint_get_applied_torque" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
@@ -753,14 +753,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="_hinge_joint_get_applied_force" qualifiers="const">
+		<method name="_hinge_joint_get_applied_force" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
-		<method name="_hinge_joint_get_applied_torque" qualifiers="const">
+		<method name="_hinge_joint_get_applied_torque" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
@@ -912,7 +912,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_pin_joint_get_applied_force" qualifiers="const">
+		<method name="_pin_joint_get_applied_force" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
@@ -1016,14 +1016,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="_slider_joint_get_applied_force" qualifiers="const">
+		<method name="_slider_joint_get_applied_force" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
-		<method name="_slider_joint_get_applied_torque" qualifiers="const">
+		<method name="_slider_joint_get_applied_torque" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>

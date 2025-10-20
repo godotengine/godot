@@ -1102,20 +1102,6 @@
 				[b]Note:[/b] This is not used in Godot Physics.
 			</description>
 		</method>
-		<method name="slider_joint_get_applied_force" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="joint" type="RID" />
-			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
-			</description>
-		</method>
-		<method name="slider_joint_get_applied_torque" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="joint" type="RID" />
-			<description>
-				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
-			</description>
-		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -1131,6 +1117,18 @@
 			<param index="2" name="value" type="float" />
 			<description>
 				Gets a slider joint parameter.
+			</description>
+		</method>
+		<method name="slider_twist_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="slider_twist_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="soft_body_add_collision_exception">
