@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  parallax_2d.h                                                         */
+/*  parallax_2d_editor_plugin.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,69 +30,41 @@
 
 #pragma once
 
-#include "scene/2d/node_2d.h"
+#include "editor/plugins/editor_plugin.h"
 
-class Parallax2D : public Node2D {
-	GDCLASS(Parallax2D, Node2D);
+class HBoxContainer;
+class OptionButton;
+class Parallax2D;
 
-	static constexpr real_t DEFAULT_LIMIT = 10000000;
+class Parallax2DEditorPlugin : public EditorPlugin {
+	GDCLASS(Parallax2DEditorPlugin, EditorPlugin);
 
-	String group_name;
-	Size2 scroll_scale = Size2(1, 1);
-	Point2 scroll_offset;
-	Point2 screen_offset;
-	Vector2 repeat_size;
-	int repeat_times = 1;
-	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
-	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
-	Point2 autoscroll;
-	bool follow_viewport = true;
-	bool ignore_camera_scroll = false;
+	enum {
+		OPTION_DISABLED,
+		OPTION_CENTERED,
+		OPTION_TOPLEFT
+	};
 
-	void _update_process();
-	void _update_repeat();
-	void _update_scroll();
-	void _process_autoscroll();
+	Parallax2D *parallax_2d = nullptr;
+	HBoxContainer *toolbar = nullptr;
+	OptionButton *options = nullptr;
+
+	void _node_added(Node *p_node);
+	void _node_removed(Node *p_node);
+	void _options_callback(int p_idx);
+	void _update_preview();
+	void _update_preview_mode();
 
 protected:
-#ifdef TOOLS_ENABLED
-	void _edit_set_position(const Point2 &p_position) override;
-#endif // TOOLS_ENABLED
-	void _validate_property(PropertyInfo &p_property) const;
-	void _camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset);
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
-	void set_scroll_scale(const Size2 &p_scale);
-	Size2 get_scroll_scale() const;
+	virtual String get_plugin_name() const override { return "Parallax2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
-	void set_repeat_size(const Size2 &p_repeat_size);
-	Size2 get_repeat_size() const;
-
-	void set_repeat_times(int p_repeat_times);
-	int get_repeat_times() const;
-
-	void set_autoscroll(const Point2 &p_autoscroll);
-	Point2 get_autoscroll() const;
-
-	void set_scroll_offset(const Point2 &p_offset);
-	Point2 get_scroll_offset() const;
-
-	void set_screen_offset(const Point2 &p_offset);
-	Point2 get_screen_offset() const;
-
-	void set_limit_begin(const Point2 &p_offset);
-	Point2 get_limit_begin() const;
-
-	void set_limit_end(const Point2 &p_offset);
-	Point2 get_limit_end() const;
-
-	void set_follow_viewport(bool p_follow);
-	bool get_follow_viewport();
-
-	void set_ignore_camera_scroll(bool p_ignore);
-	bool is_ignore_camera_scroll();
-
-	Parallax2D();
+	Parallax2DEditorPlugin();
 };
