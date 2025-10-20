@@ -51,15 +51,45 @@ typedef struct mbedtls_threading_mutex_t {
  *                  mbedtls_threading_free_alt() must be called once in the main
  *                  thread after all other Mbed TLS functions.
  *
- * \note            mutex_init() and mutex_free() don't return a status code.
- *                  If mutex_init() fails, it should leave its argument (the
- *                  mutex) in a state such that mutex_lock() will fail when
- *                  called with this argument.
+ * \warning         \p mutex_init and \p mutex_free don't return a status code.
+ *                  If \p mutex_init fails, it should leave the mutex in
+ *                  a state such that \p mutex_lock will reliably return
+ *                  #MBEDTLS_ERR_THREADING_MUTEX_ERROR called on this mutex,
+ *                  and \p mutex_free will do nothing.
  *
- * \param mutex_init    the init function implementation
- * \param mutex_free    the free function implementation
- * \param mutex_lock    the lock function implementation
- * \param mutex_unlock  the unlock function implementation
+ * \param mutex_init    The init function implementation. <br>
+ *                      The behavior is undefined if the mutex is already
+ *                      initialized and has not been destroyed.
+ *                      On platforms where mutex initialization can fail,
+ *                      since this function does not return a status code,
+ *                      it must leave the mutex object in a safe state where
+ *                      subsequent function calls will not cause undefined
+ *                      behavior: after a call to \p mutex_init, the
+ *                      function \p mutex_lock must either succeed or
+ *                      fail with a nonzero status code, and the function
+ *                      \p mutex_free must free any resources associated
+ *                      with the mutex..
+ * \param mutex_free    The destroy function implementation. <br>
+ *                      This function must free any resources associated
+ *                      with the mutex object. <br>
+ *                      This function must work reliably if \p mutex_init
+ *                      has been called on the mutex and \p mutex_free
+ *                      has not yet been called. <br>
+ *                      The behavior is undefined if the mutex was not
+ *                      initialized, if it has already been destroyed,
+ *                      if it is currently locked, or if this function
+ *                      is called concurrently from multiple threads.
+ * \param mutex_lock    The lock function implementation. <br>
+ *                      This function must work reliably on any mutex
+ *                      which is not currently locked and on which
+ *                      \p mutex_init has already been called but
+ *                      \p mutex_free has not been called yet. <br>
+ *                      The behavior is undefined if the mutex was not
+ *                      initialized, if it has already been destroyed, or if
+ *                      it is currently locked by the calling thread.
+ * \param mutex_unlock  The unlock function implementation. <br>
+ *                      The behavior is undefined if the mutex is not
+ *                      currently locked by the calling thread.
  */
 void mbedtls_threading_set_alt(void (*mutex_init)(mbedtls_threading_mutex_t *),
                                void (*mutex_free)(mbedtls_threading_mutex_t *),

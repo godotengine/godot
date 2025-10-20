@@ -1,3 +1,16 @@
+diff --git a/thirdparty/README.md b/thirdparty/README.md
+index 49c24897ca..48aab56b70 100644
+--- a/thirdparty/README.md
++++ b/thirdparty/README.md
+@@ -654,7 +654,7 @@ File extracted from upstream source:
+ ## mbedtls
+ 
+ - Upstream: https://github.com/Mbed-TLS/mbedtls
+-- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
++- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
+ - License: Apache 2.0
+ 
+ File extracted from upstream release tarball:
 diff --git a/thirdparty/mbedtls/include/psa/crypto.h b/thirdparty/mbedtls/include/psa/crypto.h
 index 2fe9f35ec3..ed7da26276 100644
 --- a/thirdparty/mbedtls/include/psa/crypto.h
@@ -73,10 +86,10 @@ index 2fe9f35ec3..ed7da26276 100644
  /** Set up a key derivation operation.
   *
 diff --git a/thirdparty/mbedtls/include/psa/crypto_extra.h b/thirdparty/mbedtls/include/psa/crypto_extra.h
-index 70740901e1..e503c9e3ca 100644
+index a710397a77..7a9811bb65 100644
 --- a/thirdparty/mbedtls/include/psa/crypto_extra.h
 +++ b/thirdparty/mbedtls/include/psa/crypto_extra.h
-@@ -1164,7 +1164,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
+@@ -1191,7 +1191,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
  
  /** Return an initial value for a PAKE cipher suite object.
   */
@@ -86,7 +99,7 @@ index 70740901e1..e503c9e3ca 100644
  
  /** Retrieve the PAKE algorithm from a PAKE cipher suite.
   *
-@@ -1297,7 +1299,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
+@@ -1330,7 +1332,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
  
  /** Return an initial value for a PAKE operation object.
   */

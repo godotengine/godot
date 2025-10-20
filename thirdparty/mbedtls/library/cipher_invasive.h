@@ -20,7 +20,8 @@
 
 MBEDTLS_STATIC_TESTABLE int mbedtls_get_pkcs_padding(unsigned char *input,
                                                      size_t input_len,
-                                                     size_t *data_len);
+                                                     size_t *data_len,
+                                                     size_t *invalid_padding);
 
 #endif
 
