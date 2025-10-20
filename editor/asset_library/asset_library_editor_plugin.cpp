@@ -857,7 +857,7 @@ void EditorAssetLibrary::_image_update(bool p_use_cache, bool p_final, const Pac
 		if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
 			parsed_image = Image::_png_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
-			parsed_image = Image::_jpg_mem_loader_func(r, len);
+			parsed_image = Image::_jpg_mem_loader_func(r, len, true);
 		} else if ((memcmp(&r[0], &webp_signature[0], 4) == 0) && Image::_webp_mem_loader_func) {
 			parsed_image = Image::_webp_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {

@@ -63,6 +63,9 @@
 			If [code]true[/code], scales the imported image to match [member EditorSettings.interface/editor/custom_display_scale]. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
 			[b]Note:[/b] Only available for SVG images.
 		</member>
+		<member name="jpeg/fix_orientation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], orients the imported image according to its Exif data.
+		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:
 			- Textures will not become grainy in the distance (in 3D), or if scaled down due to [Camera2D] zoom or [CanvasItem] scale (in 2D).
