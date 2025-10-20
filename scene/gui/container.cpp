@@ -30,9 +30,18 @@
 
 #include "container.h"
 
-void Container::_child_minsize_changed() {
+void Container::_update_and_resort() {
 	update_minimum_size();
 	queue_sort();
+}
+
+void Container::_child_minsize_changed() {
+	if (!is_inside_tree() || update_min_size_requested) {
+		return;
+	}
+
+	update_min_size_requested = true;
+	callable_mp(this, &Container::_update_and_resort).call_deferred();
 }
 
 void Container::add_child_notify(Node *p_child) {
@@ -45,10 +54,9 @@ void Container::add_child_notify(Node *p_child) {
 
 	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
-	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_update_and_resort));
 
-	update_minimum_size();
-	queue_sort();
+	_update_and_resort();
 }
 
 void Container::move_child_notify(Node *p_child) {
@@ -58,8 +66,7 @@ void Container::move_child_notify(Node *p_child) {
 		return;
 	}
 
-	update_minimum_size();
-	queue_sort();
+	_update_and_resort();
 }
 
 void Container::remove_child_notify(Node *p_child) {
@@ -72,13 +79,13 @@ void Container::remove_child_notify(Node *p_child) {
 
 	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
 	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
-	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_update_and_resort));
 
-	update_minimum_size();
-	queue_sort();
+	_update_and_resort();
 }
 
 void Container::_sort_children() {
+	update_min_size_requested = false;
 	if (!is_inside_tree()) {
 		pending_sort = false;
 		return;
