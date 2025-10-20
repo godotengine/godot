@@ -983,6 +983,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/zoom_speed_factor", 1.1, "1.01,2,0.01")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/ruler_width", 16.0, "12.0,30.0,1.0")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/auto_resample_delay", 0.3, "0.1,2,0.1")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/2d/parallax_preview_mode", 0, "Disabled,Centered,Top Left");
+	set_restart_if_changed("editors/2d/parallax_preview_mode", true);
 
 	// Bone mapper (BoneMapEditorPlugin)
 	_initial_set("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
