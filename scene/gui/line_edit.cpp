@@ -819,6 +819,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if ((!k->is_pressed() && alt_start && k->get_keycode() == Key::ALT) || (alt_start_no_hold && (k->is_action("ui_text_submit", true) || k->is_action("ui_accept", true)))) {
 		alt_start = false;
 		alt_start_no_hold = false;
+		int prev_len = text.length();
 		if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff)) {
 			ime_text = String();
 			ime_selection = Vector2i();
@@ -845,6 +846,13 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			alt_mode = ALT_INPUT_NONE;
+			// Mirror paste behavior: defer _text_changed once per frame while emitting text_changed signal.
+			if (!text_changed_dirty) {
+				if (is_inside_tree() && text.length() != prev_len) {
+					callable_mp(this, &LineEdit::_text_changed).call_deferred();
+				}
+				text_changed_dirty = true;
+			}
 		} else {
 			ime_text = String();
 			ime_selection = Vector2i();
@@ -2586,6 +2594,8 @@ bool LineEdit::is_text_field() const {
 }
 
 void LineEdit::menu_option(int p_option) {
+	int prev_len = text.length();
+	bool inserted_control_char = false;
 	switch (p_option) {
 		case MENU_CUT: {
 			if (editable) {
@@ -2636,86 +2646,110 @@ void LineEdit::menu_option(int p_option) {
 		case MENU_INSERT_LRM: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x200E));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_RLM: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x200F));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_LRE: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x202A));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_RLE: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x202B));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_LRO: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x202D));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_RLO: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x202E));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_PDF: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x202C));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_ALM: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x061C));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_LRI: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x2066));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_RLI: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x2067));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_FSI: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x2068));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_PDI: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x2069));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_ZWJ: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x200D));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_ZWNJ: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x200C));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_WJ: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x2060));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_INSERT_SHY: {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x00AD));
+				inserted_control_char = true;
 			}
 		} break;
 		case MENU_EMOJI_AND_SYMBOL: {
 			show_emoji_and_symbol_picker();
 		} break;
+	}
+
+	// Mirror paste/drag behavior, emit text_changed signal if a control character was inserted.
+	if (inserted_control_char && !text_changed_dirty) {
+		if (is_inside_tree() && text.length() != prev_len) {
+			callable_mp(this, &LineEdit::_text_changed).call_deferred();
+		}
+		text_changed_dirty = true;
 	}
 }
 
