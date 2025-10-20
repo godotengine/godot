@@ -180,6 +180,8 @@ void EngineDebugger::deinitialize() {
 		// Flush any remaining message
 		singleton->poll_events(false);
 
+		singleton->ready_to_poll = false;
+
 		memdelete(singleton);
 		singleton = nullptr;
 	}
@@ -188,6 +190,10 @@ void EngineDebugger::deinitialize() {
 	profilers.clear();
 	captures.clear();
 	protocols.clear();
+}
+
+void EngineDebugger::mark_ready_to_poll() {
+	ready_to_poll = true;
 }
 
 EngineDebugger::~EngineDebugger() {
