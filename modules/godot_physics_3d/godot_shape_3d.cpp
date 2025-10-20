@@ -172,8 +172,12 @@ real_t GodotSeparationRayShape3D::get_length() const {
 	return length;
 }
 
-bool GodotSeparationRayShape3D::get_slide_on_slope() const {
-	return slide_on_slope;
+bool GodotSeparationRayShape3D::get_stops_motion() const {
+	return stops_motion;
+}
+
+bool GodotSeparationRayShape3D::get_separate_along_ray() const {
+	return separate_along_ray;
 }
 
 void GodotSeparationRayShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
@@ -223,21 +227,23 @@ Vector3 GodotSeparationRayShape3D::get_moment_of_inertia(real_t p_mass) const {
 	return Vector3();
 }
 
-void GodotSeparationRayShape3D::_setup(real_t p_length, bool p_slide_on_slope) {
+void GodotSeparationRayShape3D::_setup(real_t p_length, bool p_stops_motion, bool p_separate_along_ray) {
 	length = p_length;
-	slide_on_slope = p_slide_on_slope;
+	stops_motion = p_stops_motion;
+	separate_along_ray = p_separate_along_ray;
 	configure(AABB(Vector3(0, 0, 0), Vector3(0.1, 0.1, length)));
 }
 
 void GodotSeparationRayShape3D::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
-	_setup(d["length"], d["slide_on_slope"]);
+	_setup(d["length"], d["stops_motion"], d["separate_along_ray"]);
 }
 
 Variant GodotSeparationRayShape3D::get_data() const {
 	Dictionary d;
 	d["length"] = length;
-	d["slide_on_slope"] = slide_on_slope;
+	d["stops_motion"] = stops_motion;
+	d["separate_along_ray"] = separate_along_ray;
 	return d;
 }
 

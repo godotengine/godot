@@ -254,11 +254,11 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_bod
 	return recovered;
 }
 
-bool JoltPhysicsDirectSpaceState3D::_body_motion_cast(const JoltBody3D &p_body, const Transform3D &p_transform, const Vector3 &p_scale, const Vector3 &p_motion, bool p_collide_separation_ray, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, real_t &r_safe_fraction, real_t &r_unsafe_fraction) const {
+bool JoltPhysicsDirectSpaceState3D::_body_motion_cast(const JoltBody3D &p_body, const Transform3D &p_transform, const Vector3 &p_scale, const Vector3 &p_motion, bool p_separation_rays_stop_motion, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, real_t &r_safe_fraction, real_t &r_unsafe_fraction) const {
 	const Transform3D body_transform = p_transform.scaled_local(p_scale);
 
 	const JPH::CollideShapeSettings settings;
-	const JoltMotionFilter3D motion_filter(p_body, p_excluded_bodies, p_excluded_objects, p_collide_separation_ray);
+	const JoltMotionFilter3D motion_filter(p_body, p_excluded_bodies, p_excluded_objects, p_separation_rays_stop_motion);
 
 	bool collided = false;
 
@@ -884,7 +884,7 @@ bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, c
 	real_t safe_fraction = 1.0;
 	real_t unsafe_fraction = 1.0;
 
-	const bool hit = _body_motion_cast(p_body, transform, scale, p_parameters.motion, p_parameters.collide_separation_ray, p_parameters.exclude_bodies, p_parameters.exclude_objects, safe_fraction, unsafe_fraction);
+	const bool hit = _body_motion_cast(p_body, transform, scale, p_parameters.motion, p_parameters.separation_rays_stop_motion, p_parameters.exclude_bodies, p_parameters.exclude_objects, safe_fraction, unsafe_fraction);
 
 	bool collided = false;
 

@@ -993,7 +993,7 @@
 		<method name="separation_ray_shape_create">
 			<return type="RID" />
 			<description>
-				Creates a 3D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [code]length[/code] and [code]slide_on_slope[/code] properties.
+				Creates a 3D separation ray shape in the physics server, and returns the [RID] that identifies it. Use [method shape_set_data] to set the shape's [member SeparationRayShape3D.length], [member SeparationRayShape3D.stops_motion], and [member SeparationRayShape3D.separate_along_ray] properties.
 			</description>
 		</method>
 		<method name="set_active">
@@ -1032,7 +1032,7 @@
 			<description>
 				Sets the shape data that configures the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):
 				- [constant SHAPE_WORLD_BOUNDARY]: a [Plane],
-				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]"length"[/code] with a [float] value and the key [code]"slide_on_slope"[/code] with a [bool] value,
+				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]"length"[/code] with a [float] value, a key [code]"stops_motion"[/code] with a [bool] value, and the key [code]"separate_along_ray"[/code] with a [bool] value,
 				- [constant SHAPE_SPHERE]: a [float] that is the radius of the sphere,
 				- [constant SHAPE_BOX]: a [Vector3] containing the half-extents of the box,
 				- [constant SHAPE_CAPSULE]: a dictionary containing the keys [code]"height"[/code] and [code]"radius"[/code] with [float] values,

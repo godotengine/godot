@@ -36,7 +36,8 @@
 void SeparationRayShape2D::_update_shape() {
 	Dictionary d;
 	d["length"] = length;
-	d["slide_on_slope"] = slide_on_slope;
+	d["stops_motion"] = stops_motion;
+	d["separate_along_ray"] = separate_along_ray;
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), d);
 	emit_changed();
 }
@@ -86,11 +87,15 @@ void SeparationRayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SeparationRayShape2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &SeparationRayShape2D::get_length);
 
-	ClassDB::bind_method(D_METHOD("set_slide_on_slope", "active"), &SeparationRayShape2D::set_slide_on_slope);
-	ClassDB::bind_method(D_METHOD("get_slide_on_slope"), &SeparationRayShape2D::get_slide_on_slope);
+	ClassDB::bind_method(D_METHOD("set_stops_motion", "active"), &SeparationRayShape2D::set_stops_motion);
+	ClassDB::bind_method(D_METHOD("get_stops_motion"), &SeparationRayShape2D::get_stops_motion);
+
+	ClassDB::bind_method(D_METHOD("set_separate_along_ray", "active"), &SeparationRayShape2D::set_separate_along_ray);
+	ClassDB::bind_method(D_METHOD("get_separate_along_ray"), &SeparationRayShape2D::get_separate_along_ray);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_slope"), "set_slide_on_slope", "get_slide_on_slope");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stops_motion"), "set_stops_motion", "get_stops_motion");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "separate_along_ray"), "set_separate_along_ray", "get_separate_along_ray");
 }
 
 void SeparationRayShape2D::set_length(real_t p_length) {
@@ -105,16 +110,28 @@ real_t SeparationRayShape2D::get_length() const {
 	return length;
 }
 
-void SeparationRayShape2D::set_slide_on_slope(bool p_active) {
-	if (slide_on_slope == p_active) {
+void SeparationRayShape2D::set_stops_motion(bool p_active) {
+	if (stops_motion == p_active) {
 		return;
 	}
-	slide_on_slope = p_active;
+	stops_motion = p_active;
 	_update_shape();
 }
 
-bool SeparationRayShape2D::get_slide_on_slope() const {
-	return slide_on_slope;
+bool SeparationRayShape2D::get_stops_motion() const {
+	return stops_motion;
+}
+
+void SeparationRayShape2D::set_separate_along_ray(bool p_active) {
+	if (separate_along_ray == p_active) {
+		return;
+	}
+	separate_along_ray = p_active;
+	_update_shape();
+}
+
+bool SeparationRayShape2D::get_separate_along_ray() const {
+	return separate_along_ray;
 }
 
 SeparationRayShape2D::SeparationRayShape2D() :

@@ -815,11 +815,9 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 			GodotShape3D *body_shape = p_body->get_shape(j);
 
-			// Colliding separation rays allows to properly snap to the ground,
-			// otherwise it's not needed in regular motion.
-			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
-				// When slide on slope is on, separation ray shape acts like a regular shape.
-				if (!static_cast<GodotSeparationRayShape3D *>(body_shape)->get_slide_on_slope()) {
+			// Forcing separation ray to stop motion allows to properly snap to the ground
+			if (!p_parameters.separation_rays_stop_motion && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
+				if (!static_cast<GodotSeparationRayShape3D *>(body_shape)->get_stops_motion()) {
 					continue;
 				}
 			}

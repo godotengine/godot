@@ -305,7 +305,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_body_set_ray_pickable, "body", "enable");
 
-	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "max_collisions", "collide_separation_ray", "recovery_as_collision", "result");
+	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "max_collisions", "separation_rays_stop_motion", "recovery_as_collision", "result");
 
 	GDVIRTUAL_BIND(_body_get_direct_state, "body");
 
