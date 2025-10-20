@@ -30,25 +30,45 @@
 
 #pragma once
 
-#include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
-#include "scene/gui/texture_rect.h"
+
+class TextureRect;
+class LineEdit;
 
 class EditorSpinSlider : public Range {
 	GDCLASS(EditorSpinSlider, Range);
 
+	enum ControlState {
+		CONTROL_STATE_USING_SLIDER,
+		CONTROL_STATE_USING_ARROWS,
+		CONTROL_STATE_HIDDEN,
+	};
+	ControlState state = CONTROL_STATE_USING_SLIDER;
+
 	String label;
 	String suffix;
-	int updown_offset = -1;
-	bool hover_updown = false;
-	bool mouse_hover = false;
+	String prev_value;
+
+	RID text_rid;
+	bool text_dirty = true;
+	int suffix_start = 0;
+
+	Point2 buttons_offset = Point2(-1, -1);
+	MouseButton held_button_index = MouseButton::NONE;
+	bool up_button_held = false;
+	bool down_button_held = false;
+	bool up_button_hovered = false;
+	bool down_button_hovered = false;
 
 	TextureRect *grabber = nullptr;
 	int grabber_range = 1;
 
 	bool mouse_over_spin = false;
 	bool mouse_over_grabber = false;
-	bool mousewheel_over_grabber = false;
+
+	bool warping_mouse = false;
+	bool warping_mouse_queue_disable = false;
+	Size2 warping_mouse_offset = Size2();
 
 	bool grabbing_grabber = false;
 	int grabbing_from = 0;
@@ -63,22 +83,16 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value = 0.0;
 
-	Control *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
 	uint64_t value_input_closed_frame = 0;
 	bool value_input_dirty = false;
 
-public:
-	enum ControlState {
-		CONTROL_STATE_DEFAULT,
-		CONTROL_STATE_PREFER_SLIDER,
-		CONTROL_STATE_HIDE,
-	};
-
 private:
-	ControlState control_state = CONTROL_STATE_DEFAULT;
 	bool flat = false;
 	bool editing_integer = false;
+	bool hide_control = false;
+	bool float_prefer_arrows = false;
+	bool integer_prefer_slider = false;
 
 	void _grab_start();
 	void _grab_end();
@@ -91,13 +105,39 @@ private:
 
 	void _evaluate_input_text();
 
+	void _update_grabbing_speed();
 	void _update_value_input_stylebox();
-	void _ensure_input_popup();
+	void _ensure_value_input();
 	void _draw_spin_slider();
+	void _shape();
+
+	bool _update_buttons(const Point2 &p_pos, MouseButton p_button = MouseButton::NONE, bool p_pressed = false);
+
+	void _update_control_state();
+	ControlState _get_control_state() const;
 
 	struct ThemeCache {
-		Ref<Texture2D> updown_icon;
-		Ref<Texture2D> updown_disabled_icon;
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_highlight_icon;
+		Ref<Texture2D> up_icon;
+		Ref<Texture2D> down_icon;
+
+		Ref<Font> font;
+		int font_size = 0;
+
+		int updown_v_separation = 0;
+
+		Color font_color;
+		Color font_uneditable_color;
+		Color label_color;
+		Color read_only_label_color;
+
+		Ref<StyleBox> normal_style;
+		Ref<StyleBox> read_only_style;
+		Ref<StyleBox> focus_style;
+		Ref<StyleBox> label_bg_style;
+		Ref<StyleBox> updown_hovered_style;
+		Ref<StyleBox> updown_pressed_style;
 	} theme_cache;
 
 protected:
@@ -118,16 +158,22 @@ public:
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
-	void set_control_state(ControlState p_type);
-	ControlState get_control_state() const;
-
 #ifndef DISABLE_DEPRECATED
 	void set_hide_slider(bool p_hide);
 	bool is_hiding_slider() const;
 #endif
 
+	void set_hide_control(bool p_visible);
+	bool is_hiding_control() const;
+
 	void set_editing_integer(bool p_editing_integer);
 	bool is_editing_integer() const;
+
+	void set_integer_prefer_slider(bool p_enable);
+	bool is_integer_preferring_slider() const;
+
+	void set_float_prefer_arrows(bool p_enable);
+	bool is_float_preferring_arrows() const;
 
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
@@ -142,6 +188,5 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
+	~EditorSpinSlider();
 };
-
-VARIANT_ENUM_CAST(EditorSpinSlider::ControlState)

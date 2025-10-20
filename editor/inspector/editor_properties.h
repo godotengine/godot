@@ -55,6 +55,7 @@ struct EditorPropertyRangeHint {
 	String suffix;
 	bool exp_range = false;
 	bool prefer_slider = false;
+	bool prefer_arrows = false;
 	bool hide_control = true;
 	bool radians_as_degrees = false;
 };

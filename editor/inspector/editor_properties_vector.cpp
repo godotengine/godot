@@ -160,9 +160,7 @@ void EditorPropertyVectorN::setup(const EditorPropertyRangeHint &p_range_hint, b
 		spin->set_min(p_range_hint.min);
 		spin->set_max(p_range_hint.max);
 		spin->set_step(p_range_hint.step);
-		if (p_range_hint.hide_control) {
-			spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
-		}
+		spin->set_hide_control(p_range_hint.hide_control);
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
 		spin->set_suffix(p_range_hint.suffix);
