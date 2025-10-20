@@ -187,8 +187,9 @@ void Sprite2DEditor::_update_mesh_data() {
 	}
 
 	float epsilon = simplification->get_value();
+	bool advanced_rdp = enable_advanced_rdp->is_pressed();
 
-	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon);
+	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon, advanced_rdp);
 
 	uv_lines.clear();
 
@@ -704,6 +705,10 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_value(2);
 	grow_pixels->set_accessibility_name(TTRC("Grow (Pixels):"));
 	hb->add_child(grow_pixels);
+	hb->add_spacer();
+	hb->add_child(memnew(Label(TTRC("Enable Advanced RDP:"))));
+	enable_advanced_rdp = memnew(CheckBox);
+	hb->add_child(enable_advanced_rdp);
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
