@@ -830,24 +830,24 @@ struct ChainIntersection {
 
 void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_start, List<Vector2>::Element *ch1_end,
 		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_start, List<Vector2>::Element *ch2_end,
-		Vector<ChainIntersection> &possible_intersections) {
+		Vector<ChainIntersection> &intersections) {
 	// Step 5: Recursively finds the smallest segment pair causing a collision.
-	Vector<Vector2> pl1 = retrieve_list_from_id_range(ch1_start, ch1_end);
-	Vector<Vector2> pl2 = retrieve_list_from_id_range(ch2_start, ch2_end);
+	Vector<Vector2> ch1 = retrieve_list_from_id_range(ch1_start, ch1_end);
+	Vector<Vector2> ch2 = retrieve_list_from_id_range(ch2_start, ch2_end);
 
-	int len1 = pl1.size();
-	int len2 = pl2.size();
+	int len1 = ch1.size();
+	int len2 = ch2.size();
 
 	// Collision possible
-	if (len1 <= 2 && len2 <= 2) {
-		if (len1 == 2 && len2 == 2 && non_endpoint_segment_intersection(pl1, pl2)) {
-			possible_intersections.append({ ch1_list, ch1_end, ch2_list, ch2_end }); // Collision found
+	if (len1 == 2 && len2 == 2) {
+		if (non_endpoint_segment_intersection(ch1, ch2)) {
+			intersections.append({ ch1_list, ch1_end, ch2_list, ch2_end }); // Collision found
 		}
 		return;
 	}
 
 	// No collision
-	if (!does_polyline_bboxes_collide(pl1, pl2)) {
+	if (!does_polyline_bboxes_collide(ch1, ch2)) {
 		return;
 	}
 
@@ -862,10 +862,10 @@ void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_
 		// Recursively check both halves of Chain 1 against Chain 2
 		recursive_obb_collision_check(ch1_list, ch1_start, mid_node,
 				ch2_list, ch2_start, ch2_end,
-				possible_intersections);
+				intersections);
 		recursive_obb_collision_check(ch1_list, mid_node, ch1_end,
 				ch2_list, ch2_start, ch2_end,
-				possible_intersections);
+				intersections);
 
 	} else if (len2 > 2) {
 		// Split Chain 2
@@ -878,10 +878,10 @@ void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_
 		// Recursively check Chain 1 against both halves of Chain 2
 		recursive_obb_collision_check(ch1_list, ch1_start, ch1_end,
 				ch2_list, ch2_start, mid_node,
-				possible_intersections);
+				intersections);
 		recursive_obb_collision_check(ch1_list, ch1_start, ch1_end,
 				ch2_list, mid_node, ch2_end,
-				possible_intersections);
+				intersections);
 	}
 }
 
@@ -965,10 +965,7 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 	// Step 8: Iterative refinement loop
 	while (!intersections.is_empty()) {
 		Vector<ChainIntersection> next_intersections; // List of new possible intersections after the current pass
-		while (!intersections.is_empty()) {
-			ChainIntersection intersection = intersections[0];
-			intersections.remove_at(0);
-
+		for (ChainIntersection &intersection : intersections) {
 			List<List<Vector2>::Element *>::Element *ch1_list = intersection.ch1_mono_chain;
 			List<Vector2>::Element *ch1_end_node = intersection.ch1_end_node;
 
