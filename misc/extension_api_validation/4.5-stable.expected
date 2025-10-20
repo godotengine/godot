@@ -54,3 +54,23 @@ Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_curre
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/signals/current_animation_changed/arguments/0': type changed value in new API, from "String" to "StringName".
 
 Return types and parameters changed to StringName to improve performance. Compatibility methods registered; No compatibility system for signal arguments.
+
+
+GH-111404
+---------
+Validate extension JSON: Error: Field 'classes/Input/methods/action_press/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/action_release/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/Input/methods/get_action_raw_strength/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/get_action_strength/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/get_axis/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/get_vector/arguments': size changed value in new API, from 5 to 6.
+Validate extension JSON: Error: Field 'classes/Input/methods/is_action_just_pressed/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/is_action_just_pressed_by_event/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/Input/methods/is_action_just_released/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Input/methods/is_action_just_released_by_event/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/Input/methods/is_action_pressed/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/InputEvent/methods/get_action_strength/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/InputEvent/methods/is_action_pressed/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/InputEvent/methods/is_action_released/arguments': size changed value in new API, from 2 to 3.
+
+Optional argument added. Compatibility method registered.

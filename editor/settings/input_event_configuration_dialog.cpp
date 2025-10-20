@@ -260,6 +260,7 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 
 	// Maintain device selection.
 	received_event->set_device(_get_current_device());
+	received_event->set_player_from_device();
 
 	_set_event(received_event, received_original_event);
 }
@@ -522,6 +523,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			// Maintain selected device
 			mb->set_device(_get_current_device());
+			mb->set_player_from_device();
 
 			_set_event(mb, mb, false);
 		} break;
@@ -529,6 +531,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
 			// Maintain selected device
 			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx, _get_current_device());
+			jb->set_player_from_device();
 
 			_set_event(jb, jb, false);
 		} break;
@@ -543,6 +546,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			// Maintain selected device
 			jm->set_device(_get_current_device());
+			jm->set_player_from_device();
 
 			_set_event(jm, jm, false);
 		} break;
@@ -553,6 +557,7 @@ void InputEventConfigurationDialog::_device_selection_changed(int p_option_butto
 	// Subtract 1 as option index 0 corresponds to "All Devices" (value of -1)
 	// and option index 1 corresponds to device 0, etc...
 	event->set_device(p_option_button_index - 1);
+	event->set_player_from_device();
 	event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 }
 
