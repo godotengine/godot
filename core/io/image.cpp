@@ -4575,9 +4575,9 @@ void Image::renormalize_uint8(uint8_t *p_rgb) {
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
 	n *= 255;
-	p_rgb[0] = CLAMP(int(n.x), 0, 255);
-	p_rgb[1] = CLAMP(int(n.y), 0, 255);
-	p_rgb[2] = CLAMP(int(n.z), 0, 255);
+	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 255);
+	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 255);
+	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 255);
 }
 
 void Image::renormalize_float(float *p_rgb) {
@@ -4604,9 +4604,9 @@ void Image::renormalize_uint16(uint16_t *p_rgb) {
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
 	n *= 65535;
-	p_rgb[0] = CLAMP(int(n.x), 0, 65535);
-	p_rgb[1] = CLAMP(int(n.y), 0, 65535);
-	p_rgb[2] = CLAMP(int(n.z), 0, 65535);
+	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 65535);
+	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 65535);
+	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 65535);
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
