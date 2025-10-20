@@ -388,30 +388,30 @@ void Label::_update_visible() const {
 	}
 }
 
-inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
+inline void draw_glyph(const Glyph &p_gl, int p_layer, RID p_list, const Color &p_font_color, const Vector2 &p_ofs) {
 	if (p_gl.font_rid != RID()) {
-		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+		TS->font_add_glyph_to_draw_list(p_gl.font_rid, p_layer, p_list, Transform2D(), p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	} else if (((p_gl.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((p_gl.flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-		TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+		TS->draw_list_add_hexbox(p_list, -1, Transform2D(), p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_gl.font_size, p_font_color);
 	}
 }
 
-inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_shadow(const Glyph &p_gl, int p_layer, RID p_list, const Color &p_font_shadow_color, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
-		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
+		TS->font_add_glyph_to_draw_list(p_gl.font_rid, p_layer, p_list, Transform2D(), p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
 	}
 }
 
-inline void draw_glyph_shadow_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const Vector2 &p_ofs, int p_shadow_outline_size, const Vector2 &shadow_ofs) {
+inline void draw_glyph_shadow_outline(const Glyph &p_gl, int p_layer, RID p_list, const Color &p_font_shadow_color, const Vector2 &p_ofs, int p_shadow_outline_size, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
-		TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
+		TS->font_add_glyph_outline_to_draw_list(p_gl.font_rid, p_layer, p_list, Transform2D(), p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
 	}
 }
 
-inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_outline_color, const Vector2 &p_ofs, int p_outline_size) {
+inline void draw_glyph_outline(const Glyph &p_gl, int p_layer, RID p_list, const Color &p_font_outline_color, const Vector2 &p_ofs, int p_outline_size) {
 	if (p_gl.font_rid != RID()) {
 		if (p_font_outline_color.a != 0.0 && p_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
+			TS->font_add_glyph_outline_to_draw_list(p_gl.font_rid, p_layer, p_list, Transform2D(), p_gl.font_size, p_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_outline_color);
 		}
 	}
 }
@@ -787,6 +787,38 @@ void Label::_notification(int p_what) {
 			int visible_glyphs = total_glyphs * visible_ratio;
 
 			int line_index = 0;
+			int dc_call_count = 1;
+			if (font_shadow_color.a != 0 && shadow_outline_size > 0) {
+				dc_call_count++;
+			}
+			if (font_shadow_color.a > 0) {
+				dc_call_count++;
+			}
+			if (stacked_outline_datas.size() != 0) {
+				int draw_iterations = stacked_shadow_datas.size();
+				for (int draw_iteration_index = draw_iterations - 1; draw_iteration_index >= 0; --draw_iteration_index) {
+					LabelSettings::StackedShadowData stacked_shadow_data = stacked_shadow_datas[draw_iteration_index];
+					if (stacked_shadow_data.outline_size > 0) {
+						dc_call_count++;
+					}
+					dc_call_count++;
+				}
+			}
+			if (stacked_outline_datas.size() != 0) {
+				int draw_iterations = stacked_outline_datas.size();
+				for (int draw_iteration_index = draw_iterations - 1; draw_iteration_index >= 0; --draw_iteration_index) {
+					LabelSettings::StackedOutlineData stacked_outline_data = stacked_outline_datas[draw_iteration_index];
+					if (stacked_outline_data.size <= 0) {
+						continue;
+					}
+					dc_call_count++;
+				}
+			}
+			if (outline_size > 0 && font_outline_color.a != 0) {
+				dc_call_count++;
+			}
+
+			RID draw_list = TS->create_draw_list();
 			for (int p = 0; p < paragraphs.size(); p++) {
 				const Paragraph &para = paragraphs[p];
 				if (line_index + para.lines_rid.size() <= lines_skipped) {
@@ -799,6 +831,8 @@ void Label::_notification(int p_what) {
 					}
 					bool rtl = (TS->shaped_text_get_inferred_direction(para.text_rid) == TextServer::DIRECTION_RTL);
 					for (int i = start; i < end; i++) {
+						TS->draw_list_reserve(draw_list, +dc_call_count * (end - start));
+						int priority = 0;
 						RID line_rid = para.lines_rid[i];
 						Vector2 line_offset = _get_line_rect(p, i).position;
 						ofs.x = line_offset.x;
@@ -827,12 +861,12 @@ void Label::_notification(int p_what) {
 
 						// Draw shadow outline.
 						if (font_shadow_color.a != 0 && shadow_outline_size > 0) {
-							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow_outline, shadow_outline_size, shadow_ofs);
+							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow_outline, shadow_outline_size, shadow_ofs);
 						}
 
 						// Draw shadow.
 						if (font_shadow_color.a > 0) {
-							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow, shadow_ofs);
+							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow, shadow_ofs);
 						}
 
 						// Draw stacked shadow.
@@ -842,10 +876,10 @@ void Label::_notification(int p_what) {
 							for (int draw_iteration_index = draw_iterations - 1; draw_iteration_index >= 0; --draw_iteration_index) {
 								LabelSettings::StackedShadowData stacked_shadow_data = stacked_shadow_datas[draw_iteration_index];
 								if (stacked_shadow_data.outline_size > 0) {
-									draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow_outline, stacked_shadow_data.outline_size, stacked_shadow_data.offset);
+									draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow_outline, stacked_shadow_data.outline_size, stacked_shadow_data.offset);
 								}
 
-								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow, stacked_shadow_data.offset);
+								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, stacked_shadow_data.color, draw_glyph_shadow, stacked_shadow_data.offset);
 							}
 						}
 
@@ -868,19 +902,19 @@ void Label::_notification(int p_what) {
 								if (stacked_outline_data.size <= 0) {
 									continue;
 								}
-								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, stacked_outline_data.color, draw_glyph_outline, stacked_outline_draw_size);
+								draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, stacked_outline_data.color, draw_glyph_outline, stacked_outline_draw_size);
 								stacked_outline_draw_size -= stacked_outline_data.size;
 							}
 						}
 
 						// Draw outline.
 						if (outline_size > 0 && font_outline_color.a != 0) {
-							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_outline_color, draw_glyph_outline, outline_size);
+							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, font_outline_color, draw_glyph_outline, outline_size);
 						}
 
 						// Draw text.
 						{
-							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph);
+							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, priority++, draw_list, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph);
 						}
 
 						processed_glyphs = processed_glyphs_step;
@@ -890,6 +924,8 @@ void Label::_notification(int p_what) {
 					line_index += para.lines_rid.size();
 				}
 			}
+			TS->draw_list_sort(draw_list);
+			TS->draw_list_draw(draw_list, ci, true);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

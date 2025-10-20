@@ -146,8 +146,9 @@ void register_server_types() {
 	GDREGISTER_CLASS(TextServerExtension);
 	GDREGISTER_CLASS(TextServerDummy);
 
-	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0");
-	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
+	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0;int span_index = -1");
+	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction = TextServer::DIRECTION_AUTO;TextServer::Direction trailing_direction = TextServer::DIRECTION_AUTO");
+	GDREGISTER_NATIVE_STRUCT(GlyphDrawCall, "TextServer::DrawCallType draw_type = TextServer::DRAW_CALL_NULL;int16_t layer = 0;Transform2D transform;RID texture;Rect2 dst_rect;Rect2 src_rect;Color modulate;Variant data;");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 
