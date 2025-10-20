@@ -51,6 +51,8 @@ public:
 	void set_param(Param p_param, real_t p_value);
 	real_t get_param(Param p_param) const;
 
+	real_t get_applied_force() const;
+
 	PinJoint3D();
 };
 

@@ -88,6 +88,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_applied_force" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
+		<method name="get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x" default="1.0">
