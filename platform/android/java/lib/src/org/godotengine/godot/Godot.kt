@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.benchmarkFile
 import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
 import org.godotengine.godot.utils.useBenchmark
+import org.godotengine.godot.variant.Callable as GodotCallable
 import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
@@ -1279,4 +1280,30 @@ class Godot private constructor(val context: Context) {
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
+
+	@Keep
+	private fun nativeGradleBuildEnvConnect(callback: GodotCallable): Boolean {
+		return primaryHost?.gradleBuildEnvConnect(callback) ?: false
+	}
+
+	@Keep
+	private fun nativeGradleBuildEnvDisconnect() {
+		primaryHost?.gradleBuildEnvDisconnect()
+	}
+
+	@Keep
+	private fun nativeGradleBuildEnvExecute(arguments: Array<String>, projectPath: String, gradleBuildDir: String, outputCallback: GodotCallable, resultCallback: GodotCallable): Int {
+		return primaryHost?.gradleBuildEnvExecute(arguments, projectPath, gradleBuildDir, outputCallback, resultCallback) ?: -1
+	}
+
+	@Keep
+	private fun nativeGradleBuildEnvCancel(jobId: Int) {
+		primaryHost?.gradleBuildEnvCancel(jobId)
+	}
+
+	@Keep
+	private fun nativeGradleBuildEnvCleanProject(projectPath: String, gradleBuildDir: String, callback: GodotCallable) {
+		primaryHost?.gradleBuildEnvCleanProject(projectPath, gradleBuildDir, callback)
+	}
+
 }

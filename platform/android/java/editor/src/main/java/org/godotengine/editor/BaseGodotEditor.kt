@@ -69,6 +69,7 @@ import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.godot.utils.isNativeXRDevice
+import org.godotengine.godot.variant.Callable
 import org.godotengine.godot.xr.HybridMode
 import org.godotengine.godot.xr.getHybridAppLaunchMode
 import org.godotengine.godot.xr.HYBRID_APP_PANEL_CATEGORY
@@ -158,6 +159,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
 	}
 
+	internal val gradleBuildEnvironmentClient = GradleBuildEnvironmentClient(this)
 	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
 
@@ -241,6 +243,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
+	}
+
+	override fun onDestroy() {
+		gradleBuildEnvironmentClient.disconnect()
+		super.onDestroy()
 	}
 
 	override fun onNewIntent(newIntent: Intent) {
@@ -918,4 +925,51 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun isGameEmbeddingSupported() = !isNativeXRDevice(applicationContext)
+
+	override fun gradleBuildEnvConnect(callback: Callable): Boolean {
+		val cb: () -> Unit = {
+			godot?.runOnRenderThread {
+				callback.call()
+			}
+		}
+		return gradleBuildEnvironmentClient.connect(cb)
+	}
+
+	override fun gradleBuildEnvDisconnect() {
+		gradleBuildEnvironmentClient.disconnect()
+	}
+
+	override fun gradleBuildEnvExecute(
+		arguments: Array<String>,
+		projectPath: String,
+		gradleBuildDir: String,
+		outputCallback: Callable,
+		resultCallback: Callable
+	): Int {
+		val outputCb: (Int, String) -> Unit = { outputType, line ->
+			godot?.runOnRenderThread {
+				outputCallback.call(outputType, line)
+			}
+		}
+		val resultCb: (Int) -> Unit = { exitCode ->
+			godot?.runOnRenderThread {
+				resultCallback.call(exitCode)
+			}
+		}
+		return gradleBuildEnvironmentClient.execute(arguments, projectPath, gradleBuildDir, outputCb, resultCb)
+	}
+
+	override fun gradleBuildEnvCancel(jobId: Int) {
+		gradleBuildEnvironmentClient.cancel(jobId)
+	}
+
+	override fun gradleBuildEnvCleanProject(projectPath: String, gradleBuildDir: String, callback: Callable) {
+		val cb: (Int) -> Unit = { exitCode ->
+			godot?.runOnRenderThread {
+				callback.call()
+			}
+		}
+		gradleBuildEnvironmentClient.cleanProject(projectPath, gradleBuildDir, cb)
+	}
+
 }

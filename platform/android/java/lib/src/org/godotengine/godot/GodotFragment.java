@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
+import org.godotengine.godot.variant.Callable;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -494,6 +495,43 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	public void onEditorWorkspaceSelected(String workspace) {
 		if (parentHost != null) {
 			parentHost.onEditorWorkspaceSelected(workspace);
+		}
+	}
+
+	@Override
+	public boolean gradleBuildEnvConnect(@NonNull Callable callback) {
+		if (parentHost != null) {
+			return parentHost.gradleBuildEnvConnect(callback);
+		}
+		return false;
+	}
+
+	@Override
+	public void gradleBuildEnvDisconnect() {
+		if (parentHost != null) {
+			parentHost.gradleBuildEnvDisconnect();
+		}
+	}
+
+	@Override
+	public int gradleBuildEnvExecute(@NonNull String[] arguments, @NonNull String projectPath, @NonNull String gradleBuildDir, @NonNull Callable outputCallback, @NonNull Callable resultCallback) {
+		if (parentHost != null) {
+			return parentHost.gradleBuildEnvExecute(arguments, projectPath, gradleBuildDir, outputCallback, resultCallback);
+		}
+		return -1;
+	}
+
+	@Override
+	public void gradleBuildEnvCancel(int jobId) {
+		if (parentHost != null) {
+			parentHost.gradleBuildEnvCancel(jobId);
+		}
+	}
+
+	@Override
+	public void gradleBuildEnvCleanProject(@NonNull String projectPath, @NonNull String gradleBuildDir, @NonNull Callable callback) {
+		if (parentHost != null) {
+			parentHost.gradleBuildEnvCleanProject(projectPath, gradleBuildDir, callback);
 		}
 	}
 }
