@@ -285,6 +285,11 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 		}
 
+		// If no state or transition was selected, select host StateMachine node.
+		if (selected_node.is_empty() && selected_transition_index == -1) {
+			EditorNode::get_singleton()->push_item(state_machine.ptr(), "", true);
+		}
+
 		state_machine_draw->queue_redraw();
 		_update_mode();
 	}
@@ -1649,6 +1654,10 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 
 		connected_nodes.clear();
 		selected_nodes.clear();
+		selected_node = StringName();
+
+		// Return selection to host StateMachine node.
+		EditorNode::get_singleton()->push_item(state_machine.ptr(), "", true);
 	}
 
 	if (selected_transition_to != StringName() && selected_transition_from != StringName() && state_machine->has_transition(selected_transition_from, selected_transition_to)) {
@@ -1669,8 +1678,12 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
+
+		// Return selection to host StateMachine node.
+		EditorNode::get_singleton()->push_item(state_machine.ptr(), "", true);
 	}
 
+	_update_mode();
 	state_machine_draw->queue_redraw();
 }
 
