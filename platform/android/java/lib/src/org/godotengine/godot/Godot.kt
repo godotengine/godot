@@ -170,6 +170,7 @@ class Godot private constructor(val context: Context) {
 	 */
 	private var renderViewInitialized = false
 	private var primaryHost: GodotHost? = null
+	private var currentConfig = context.resources.configuration
 
 	/**
 	 * Tracks whether we're in the RESUMED lifecycle state.
@@ -757,6 +758,13 @@ class Godot private constructor(val context: Context) {
 			darkMode = newDarkMode
 			GodotLib.onNightModeChanged()
 		}
+
+		if (currentConfig.orientation != newConfig.orientation) {
+			runOnRenderThread {
+				GodotLib.onScreenRotationChange()
+			}
+		}
+		currentConfig = newConfig
 	}
 
 	/**
