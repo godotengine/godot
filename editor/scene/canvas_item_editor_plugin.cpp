@@ -824,8 +824,8 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 
 List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool p_retrieve_locked, bool p_remove_canvas_item_if_parent_in_selection, bool *r_has_locked_items) const {
 	List<CanvasItem *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (ci) {
 			if (ci->is_visible_in_tree() && (p_retrieve_locked || !_is_node_locked(ci))) {
 				Viewport *vp = ci->get_viewport();
@@ -4667,7 +4667,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	ERR_FAIL_COND_MSG(te->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
@@ -4678,8 +4678,8 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 		return;
 	}
 	te->make_insert_queue();
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (!ci || !ci->is_visible_in_tree()) {
 			continue;
 		}
@@ -4981,10 +4981,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_COPY_POSE: {
 			pose_clipboard.clear();
 
-			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 				if (!ci || !ci->is_visible_in_tree()) {
 					continue;
 				}
@@ -5023,10 +5023,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case ANIM_CLEAR_POSE: {
-			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 				if (!ci || !ci->is_visible_in_tree()) {
 					continue;
 				}
@@ -5089,7 +5089,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
-			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = get_tree()->get_edited_scene_root();
 
 			if (!editor_root || selection.is_empty()) {
@@ -5097,8 +5097,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				Node2D *n2d = Object::cast_to<Node2D>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.key);
 				if (!n2d) {
 					continue;
 				}
@@ -5144,9 +5144,9 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	Rect2 rect;
 	int count = 0;
 
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (!ci) {
 			continue;
 		}

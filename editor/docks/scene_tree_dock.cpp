@@ -1073,8 +1073,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			Ref<MultiNodeEdit> mne = memnew(MultiNodeEdit);
-			for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-				mne->add_node(root->get_path_to(E.key));
+			for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+				Node *node = ObjectDB::get_instance<Node>(E.key);
+				if (node) {
+					mne->add_node(root->get_path_to(node));
+				}
 			}
 
 			_push_item(mne.ptr());
@@ -2930,7 +2933,10 @@ void SceneTreeDock::_selection_changed() {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		_handle_select(editor_selection->get_selection().begin()->key);
+		Node *node = ObjectDB::get_instance<Node>(editor_selection->get_selection().begin()->key);
+		if (node) {
+			_handle_select(node);
+		}
 	} else if (selection_size == 0) {
 		_push_item(nullptr);
 	}
@@ -2940,10 +2946,12 @@ void SceneTreeDock::_selection_changed() {
 
 	// Track script changes in newly selected nodes.
 	node_previous_selection.reserve(editor_selection->get_selection().size());
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Node *node = E.key;
-		node_previous_selection.push_back(node->get_instance_id());
-		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			node_previous_selection.push_back(E.key);
+			node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+		}
 	}
 	_queue_update_script_button();
 }
@@ -3369,12 +3377,12 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
-static bool _is_same_selection(const Vector<Node *> &p_first, const HashMap<Node *, Object *> &p_second) {
+static bool _is_same_selection(const Vector<Node *> &p_first, const HashMap<ObjectID, Object *> &p_second) {
 	if (p_first.size() != p_second.size()) {
 		return false;
 	}
 	for (Node *node : p_first) {
-		if (!p_second.has(node)) {
+		if (!p_second.has(node->get_instance_id())) {
 			return false;
 		}
 	}
