@@ -1704,6 +1704,7 @@ ProjectSettings::ProjectSettings() {
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
 #endif
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/common/minimum_drag_distance", PROPERTY_HINT_RANGE, "0.1,200,0.1,or_greater"), 10.0);
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF("gui/common/always_show_focus_state", false);

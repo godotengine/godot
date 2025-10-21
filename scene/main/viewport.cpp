@@ -2002,7 +2002,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
-			if (len > 10) {
+			if (len > minimum_drag_distance) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {
@@ -3863,6 +3863,16 @@ void Viewport::gui_cancel_drag() {
 	}
 }
 
+void Viewport::set_minimum_drag_distance(float p_distance) {
+	ERR_MAIN_THREAD_GUARD;
+	minimum_drag_distance = MAX(CMP_EPSILON, p_distance);
+}
+
+float Viewport::get_minimum_drag_distance() const {
+	ERR_READ_THREAD_GUARD_V(0);
+	return minimum_drag_distance;
+}
+
 void Viewport::set_input_as_handled() {
 	ERR_MAIN_THREAD_GUARD;
 	if (!handle_input_locally) {
@@ -4979,6 +4989,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 	ClassDB::bind_method(D_METHOD("gui_is_drag_successful"), &Viewport::gui_is_drag_successful);
 
+	ClassDB::bind_method(D_METHOD("set_minimum_drag_distance", "distance"), &Viewport::set_minimum_drag_distance);
+	ClassDB::bind_method(D_METHOD("get_minimum_drag_distance"), &Viewport::get_minimum_drag_distance);
+
 	ClassDB::bind_method(D_METHOD("gui_release_focus"), &Viewport::gui_release_focus);
 	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
 	ClassDB::bind_method(D_METHOD("gui_get_hovered_control"), &Viewport::gui_get_hovered_control);
@@ -5144,6 +5157,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gui_minimum_drag_distance", PROPERTY_HINT_RANGE, "0.1,200,0.1,or_greater"), "set_minimum_drag_distance", "get_minimum_drag_distance");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
@@ -5316,6 +5330,8 @@ Viewport::Viewport() {
 
 	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_GET("gui/timers/tooltip_delay_sec");
+
+	set_minimum_drag_distance(GLOBAL_GET("gui/common/minimum_drag_distance"));
 
 #ifndef _3D_DISABLED
 	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));

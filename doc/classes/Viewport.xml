@@ -356,6 +356,9 @@
 		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
 			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
 		</member>
+		<member name="gui_minimum_drag_distance" type="float" setter="set_minimum_drag_distance" getter="get_minimum_drag_distance" default="10.0">
+			The distance that the user must move the cursor until a drag event is started.
+		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.
 		</member>
