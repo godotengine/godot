@@ -1638,6 +1638,9 @@ void LineEdit::_notification(int p_what) {
 				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
 					break;
 				}
+				if (!window_has_focus && !new_ime_text.is_empty()) {
+					break;
+				}
 
 				ime_text = new_ime_text;
 				ime_selection = new_ime_selection;
