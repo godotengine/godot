@@ -33,10 +33,14 @@
 #include "core/io/config_file.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/gui/control.h"
 
+#ifndef _3D_DISABLED
+#include "scene/3d/camera_3d.h"
+
 class Node3D;
+#endif // _3D_DISABLED
+
 class Button;
 class PopupMenu;
 class EditorDebuggerPlugin;
@@ -119,9 +123,11 @@ protected:
 	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
 	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
 	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
+#ifndef _3D_DISABLED
 	GDVIRTUAL2R(int, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
 	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
 	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
+#endif // _3D_DISABLED
 	GDVIRTUAL0RC(String, _get_plugin_name)
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
 	GDVIRTUAL0RC(bool, _has_main_screen)
@@ -185,9 +191,11 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
+#ifndef _3D_DISABLED
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	virtual void forward_3d_draw_over_viewport(Control *p_overlay);
 	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay);
+#endif // _3D_DISABLED
 
 	virtual String get_plugin_name() const;
 	virtual const Ref<Texture2D> get_plugin_icon() const;
@@ -238,17 +246,21 @@ public:
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
 	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
 
+#ifndef _3D_DISABLED
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+#endif // _3D_DISABLED
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
+#ifndef _3D_DISABLED
 	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
 	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+#endif // _3D_DISABLED
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

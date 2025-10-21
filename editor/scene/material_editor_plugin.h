@@ -33,14 +33,18 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/material.h"
 
+#ifndef _3D_DISABLED
+#include "scene/resources/3d/primitive_meshes.h"
+
 class Camera3D;
-class ColorRect;
 class DirectionalLight3D;
-class HBoxContainer;
 class MeshInstance3D;
+#endif // _3D_DISABLED
+
+class ColorRect;
+class HBoxContainer;
 class SubViewport;
 class SubViewportContainer;
 class Button;
@@ -58,11 +62,13 @@ class MaterialEditor : public Control {
 	bool is_unsupported_shader_mode = false;
 
 	struct ThemeCache {
+#ifndef _3D_DISABLED
 		Ref<Texture2D> light_1_icon;
 		Ref<Texture2D> light_2_icon;
 		Ref<Texture2D> sphere_icon;
 		Ref<Texture2D> box_icon;
 		Ref<Texture2D> quad_icon;
+#endif // _3D_DISABLED
 		Ref<Texture2D> checkerboard;
 	} theme_cache;
 
@@ -72,6 +78,7 @@ class MaterialEditor : public Control {
 	HBoxContainer *layout_2d = nullptr;
 	ColorRect *rect_instance = nullptr;
 
+#ifndef _3D_DISABLED
 	// 3D spatial materials.
 	Vector2 rot;
 	Node3D *rotation = nullptr;
@@ -102,21 +109,30 @@ class MaterialEditor : public Control {
 	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
 	void _store_rotation_metadata();
 	void _update_rotation();
+#endif // _3D_DISABLED
 
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
+#ifndef _3D_DISABLED
 	void gui_input(const Ref<InputEvent> &p_event) override;
+#endif // _3D_DISABLED
 
 public:
 	static Ref<ShaderMaterial> make_shader_material(const Ref<Material> &p_from, bool p_copy_params = true);
+#ifndef _3D_DISABLED
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
+#else
+	void edit(Ref<Material> p_material);
+#endif // _3D_DISABLED
 	MaterialEditor();
 };
 
 class EditorInspectorPluginMaterial : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginMaterial, EditorInspectorPlugin);
+#ifndef _3D_DISABLED
 	Ref<Environment> env;
+#endif // _3D_DISABLED
 
 public:
 	virtual bool can_handle(Object *p_object) override;

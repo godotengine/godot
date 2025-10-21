@@ -209,7 +209,9 @@ class VisualShaderEditor : public ShaderEditor {
 	MaterialEditor *material_editor = nullptr;
 	Ref<VisualShader> visual_shader;
 	Ref<ShaderMaterial> preview_material;
+#ifndef _3D_DISABLED
 	Ref<Environment> env;
+#endif // _3D_DISABLED
 	String param_filter_name;
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;

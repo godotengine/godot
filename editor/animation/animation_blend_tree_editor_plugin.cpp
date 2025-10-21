@@ -40,7 +40,9 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/skeleton_3d.h"
+#endif // _3D_DISABLED
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
@@ -877,6 +879,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		if (path.get_subname_count()) {
 			String concat = path.get_concatenated_subnames();
 
+#ifndef _3D_DISABLED
 			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 			if (skeleton && skeleton->find_bone(concat) != -1) {
 				//path in skeleton
@@ -917,6 +920,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 			} else {
 				//just a property
+#endif // _3D_DISABLED
 				ti = filters->create_item(ti);
 				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_text(0, concat);
@@ -924,7 +928,9 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				ti->set_selectable(0, true);
 				ti->set_checked(0, anode->is_path_filtered(path));
 				ti->set_metadata(0, path);
+#ifndef _3D_DISABLED
 			}
+#endif // _3D_DISABLED
 		} else {
 			if (ti) {
 				//just a node, not a property track

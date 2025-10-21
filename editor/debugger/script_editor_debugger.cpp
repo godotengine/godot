@@ -48,12 +48,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -67,6 +65,11 @@
 #include "scene/gui/tree.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display/display_server.h"
+
+#ifndef _3D_DISABLED
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
+#endif // _3D_DISABLED
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
@@ -1120,6 +1123,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						_put_msg("scene:transform_camera_2d", msg);
 					}
 
+#ifndef _3D_DISABLED
 					// Node3D Editor
 					{
 						Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_last_used_viewport();
@@ -1137,6 +1141,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						msg.push_back(cam->get_far());
 						_put_msg("scene:transform_camera_3d", msg);
 					}
+#endif // _3D_DISABLED
 				}
 
 				if (is_breaked() && can_request_idle_draw) {

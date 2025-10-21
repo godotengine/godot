@@ -160,7 +160,9 @@ public:
 		SCENE_CLOSE_ALL,
 		SCENE_QUIT,
 
+#ifndef _3D_DISABLED
 		FILE_EXPORT_MESH_LIBRARY,
+#endif // _3D_DISABLED
 
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
@@ -966,7 +968,9 @@ public:
 	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
+#ifndef _3D_DISABLED
 	void save_default_environment();
+#endif // _3D_DISABLED
 
 	void open_export_template_manager();
 
@@ -1045,9 +1049,11 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
+#ifndef _3D_DISABLED
 	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
 	void forward_3d_draw_over_viewport(Control *p_overlay);
 	void forward_3d_force_draw_over_viewport(Control *p_overlay);
+#endif // _3D_DISABLED
 	void add_plugin(EditorPlugin *p_plugin);
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();

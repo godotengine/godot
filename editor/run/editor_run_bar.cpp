@@ -399,7 +399,9 @@ void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_pla
 
 	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
 
+#ifndef _3D_DISABLED
 	EditorNode::get_singleton()->save_default_environment();
+#endif // _3D_DISABLED
 	stop_playing();
 
 	current_mode = RunMode::RUN_CURRENT;
