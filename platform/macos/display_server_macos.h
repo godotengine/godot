@@ -144,6 +144,11 @@ public:
 		bool extend_to_title = false;
 		bool hide_from_capture = false;
 
+		// HDR
+		bool hdr_output_requested = false;
+		bool hdr_output_auto_adjust_max_luminance = false;
+		float hdr_output_max_luminance = 0.0f;
+
 		Rect2i parent_safe_rect;
 	};
 
@@ -341,6 +346,14 @@ public:
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 
+	// Display capabilities for HDR.
+	void update_screen_parameters();
+	virtual bool screen_is_hdr_supported(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_min_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_max_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_max_full_frame_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_reference_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+
 	virtual Vector<int> get_window_list() const override;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
@@ -412,6 +425,28 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+private:
+	void _update_hdr_output_for_window(WindowID p_window, const WindowData &p_window_data);
+
+public:
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_preferring_high_precision(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_value(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;

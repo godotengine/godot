@@ -961,17 +961,27 @@ void RenderingDeviceDriverMetal::command_buffer_execute_secondary(CommandBufferI
 
 void RenderingDeviceDriverMetal::_swap_chain_release(SwapChain *p_swap_chain) {
 	_swap_chain_release_buffers(p_swap_chain);
+
+	if (p_swap_chain->render_pass.id != 0) {
+		render_pass_free(p_swap_chain->render_pass);
+		p_swap_chain->render_pass = RDD::RenderPassID();
+	}
 }
 
 void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_chain) {
 }
 
 RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
-	RenderingContextDriverMetal::Surface const *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
+	// Create the empty swap chain until it is resized.
+	SwapChain *swap_chain = memnew(SwapChain);
+	swap_chain->surface = p_surface;
+	return SwapChainID(swap_chain);
+}
 
+RDD::RenderPassID RenderingDeviceDriverMetal::_swap_chain_create_render_pass(RenderingDeviceCommons::DataFormat p_format) {
 	// Create the render pass that will be used to draw to the swap chain's framebuffers.
 	RDD::Attachment attachment;
-	attachment.format = pixel_formats->getDataFormat(surface->get_pixel_format());
+	attachment.format = p_format;
 	attachment.samples = RDD::TEXTURE_SAMPLES_1;
 	attachment.load_op = RDD::ATTACHMENT_LOAD_OP_CLEAR;
 	attachment.store_op = RDD::ATTACHMENT_STORE_OP_STORE;
@@ -982,15 +992,7 @@ RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
-	ERR_FAIL_COND_V(!render_pass, SwapChainID());
-
-	// Create the empty swap chain until it is resized.
-	SwapChain *swap_chain = memnew(SwapChain);
-	swap_chain->surface = p_surface;
-	swap_chain->data_format = attachment.format;
-	swap_chain->render_pass = render_pass;
-	return SwapChainID(swap_chain);
+	return render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
 }
 
 Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) {
@@ -999,7 +1001,24 @@ Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
-	surface->resize(p_desired_framebuffer_count);
+
+	DataFormat new_data_format = DATA_FORMAT_MAX;
+	ColorSpace new_color_space = COLOR_SPACE_MAX;
+	Error err = surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space);
+	if (err != OK) {
+		return err;
+	}
+
+	if (new_data_format != swap_chain->data_format) {
+		_swap_chain_release(swap_chain);
+		swap_chain->render_pass = _swap_chain_create_render_pass(new_data_format);
+		if (!swap_chain->render_pass) {
+			return ERR_INVALID_DATA;
+		}
+	}
+
+	swap_chain->data_format = new_data_format;
+	swap_chain->color_space = new_color_space;
 
 	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
 	context_driver->surface_set_needs_resize(swap_chain->surface, false);
@@ -1037,10 +1056,14 @@ void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain
 	metal_surface->set_max_fps(p_max_fps);
 }
 
+RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
+	return swap_chain->color_space;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);
-	render_pass_free(swap_chain->render_pass);
 	memdelete(swap_chain);
 }
 
@@ -2738,6 +2761,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return true;
+		case SUPPORTS_HDR_OUTPUT:
 			return true;
 		default:
 			return false;

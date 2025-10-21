@@ -77,6 +77,15 @@ public:
 	void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) final override;
 	void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) final override;
 	DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) final override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_prefer_high_precision(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_output_prefer_high_precision(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) final override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const final override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) final override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const final override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const final override;
 	uint32_t surface_get_width(SurfaceID p_surface) const final override;
 	uint32_t surface_get_height(SurfaceID p_surface) const final override;
 	void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) final override;
@@ -110,6 +119,9 @@ public:
 		bool needs_resize = false;
 		double present_minimum_duration = 0.0;
 
+		float hdr_reference_luminance = 0.0f;
+		float hdr_max_luminance = 0.0f;
+
 		Surface(
 #ifdef __OBJC__
 				id<MTLDevice> p_device
@@ -121,8 +133,11 @@ public:
 		}
 		virtual ~Surface() = default;
 
-		MTLPixelFormat get_pixel_format() const { return MTLPixelFormatBGRA8Unorm; }
-		virtual Error resize(uint32_t p_desired_framebuffer_count) = 0;
+		virtual void set_hdr_output_enabled(bool p_enabled) = 0;
+		virtual bool is_hdr_output_enabled() const = 0;
+		virtual void set_hdr_output_prefer_high_precision(bool p_enabled) = 0;
+		virtual bool get_hdr_output_prefer_high_precision() const = 0;
+		virtual Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) = 0;
 		virtual RDD::FramebufferID acquire_next_frame_buffer() = 0;
 		virtual void present(MDCommandBuffer *p_cmd_buffer) = 0;
 		void set_max_fps(int p_max_fps) { present_minimum_duration = p_max_fps ? 1.0 / p_max_fps : 0.0; }

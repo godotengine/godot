@@ -208,13 +208,13 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
-	if (p_tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
-		env->white = 1.0; // With HDR output, this should be the output max value instead.
-	} else if (p_tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
-		env->white = 16.29;
-	} else {
-		env->white = MAX(1.0, p_white); // Glow with screen blend mode does not work when white < 1.0.
-	}
+	env->white = p_white;
+}
+
+void RendererEnvironmentStorage::environment_set_max_value(RID p_env, float p_max_value) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->max_value = p_max_value;
 }
 
 RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
@@ -232,7 +232,29 @@ float RendererEnvironmentStorage::environment_get_exposure(RID p_env) const {
 float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
-	return env->white;
+
+	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
+		return env->max_value;
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
+		// The Reinhard tonemapper is not designed to have a white parameter
+		// that is less than the output max value. This is especially important
+		// in the variable Extended Dynamic Range (EDR) paradigm where the
+		// output max value may change to be greater or less than the white
+		// parameter, depending on the available dynamic range.
+		return MAX(env->max_value, env->white);
+	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_AGX) {
+		return 16.29;
+	} else {
+		// Filmic and ACES do not support HDR output; their white is stable
+		// regardless of env->max_value.
+		return MAX(1.0, env->white); // Glow with screen blend mode does not work when white < 1.0.
+	}
+}
+
+float RendererEnvironmentStorage::environment_get_max_value(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->max_value;
 }
 
 // Fog
