@@ -176,8 +176,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
 
-	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data);
-
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome);
