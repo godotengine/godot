@@ -1178,12 +1178,25 @@ class Godot private constructor(val context: Context) {
 	fun isProjectManagerHint() = isEditorBuild() && GodotLib.isProjectManagerHint()
 
 	/**
-	 * Return true if the given feature is supported.
+	 * Returns true if the feature for the given feature tag is supported in the currently running instance, depending
+	 * on the platform, build, etc.
+	 *
+	 * For reference, see https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-method-has-feature
+	 */
+	fun hasFeature(feature: String): Boolean {
+		return GodotLib.hasFeature(feature)
+	}
+
+	/**
+	 * Internal method used to query whether the host or the registered plugins supports a given feature.
+	 *
+	 * This is invoked by the native code, and should not be confused with [hasFeature] which is the Android version of
+	 * https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-method-has-feature
 	 */
 	@Keep
-	private fun hasFeature(feature: String): Boolean {
+	private fun checkInternalFeatureSupport(feature: String): Boolean {
 		if (primaryHost?.supportsFeature(feature) == true) {
-			return true;
+			return true
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
