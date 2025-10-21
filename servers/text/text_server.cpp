@@ -969,7 +969,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 							last_safe_break = i;
 							word_count++;
 						}
-					} else {
+					} else if (i >= indent_end) {
 						last_safe_break = i;
 						word_count++;
 					}
@@ -1153,7 +1153,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 							last_safe_break = i;
 							word_count++;
 						}
-					} else {
+					} else if (i >= indent_end) {
 						last_safe_break = i;
 						word_count++;
 					}
