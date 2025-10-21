@@ -497,11 +497,11 @@ static FfxErrorCode execute_gpu_job_compute_rd(FFXCommon::Scratch &p_scratch, co
 	FFXCommon::Device &device = *reinterpret_cast<FFXCommon::Device *>(p_scratch.device);
 
 	if (p_scratch.effect_type == FFX_EFFECT_FSR1) {
-		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.linear_clamp_sampler);
+		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 100, device.linear_clamp_sampler);
 		compute_uniforms.push_back(u_linear_clamp_sampler);
 	} else if (p_scratch.effect_type == FFX_EFFECT_FSR2 || p_scratch.effect_type == FFX_EFFECT_FSR3UPSCALER) {
-		RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1000, device.point_clamp_sampler);
-		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 1001, device.linear_clamp_sampler);
+		RD::Uniform u_point_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 100, device.point_clamp_sampler);
+		RD::Uniform u_linear_clamp_sampler(RD::UniformType::UNIFORM_TYPE_SAMPLER, 101, device.linear_clamp_sampler);
 		compute_uniforms.push_back(u_point_clamp_sampler);
 		compute_uniforms.push_back(u_linear_clamp_sampler);
 	}

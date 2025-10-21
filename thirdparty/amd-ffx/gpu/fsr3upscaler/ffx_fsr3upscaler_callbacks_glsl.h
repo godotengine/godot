@@ -280,8 +280,11 @@ FfxUInt32x2 SPD_RenderSize()
 }
 #endif // #if defined(FSR3UPSCALER_BIND_CB_SPD)
 
-layout (set = 0, binding = 1000) uniform sampler s_PointClamp;
-layout (set = 0, binding = 1001) uniform sampler s_LinearClamp;
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+layout (set = 0, binding = 100 /*1000*/) uniform sampler s_PointClamp;
+layout (set = 0, binding = 101 /*1001*/) uniform sampler s_LinearClamp;
+// GODOT ENDS
 
 #if defined(FSR3UPSCALER_BIND_SRV_SPD_MIPS)
 layout (set = 0, binding = FSR3UPSCALER_BIND_SRV_SPD_MIPS) uniform texture2D  r_spd_mips;

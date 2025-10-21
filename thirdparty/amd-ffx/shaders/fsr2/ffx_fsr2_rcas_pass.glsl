@@ -30,10 +30,13 @@
 #define FSR2_BIND_SRV_INPUT_EXPOSURE        0
 #define FSR2_BIND_SRV_RCAS_INPUT            1
 
-#define FSR2_BIND_UAV_UPSCALED_OUTPUT    2002
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR2_BIND_UAV_UPSCALED_OUTPUT       2 //2002
 
-#define FSR2_BIND_CB_FSR2                3000
-#define FSR2_BIND_CB_RCAS                3001
+#define FSR2_BIND_CB_FSR2                   3 //3000
+#define FSR2_BIND_CB_RCAS                   4 //3001
+// GODOT ENDS
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"
