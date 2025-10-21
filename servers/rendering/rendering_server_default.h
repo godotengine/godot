@@ -817,6 +817,7 @@ public:
 	FUNC2(environment_set_camera_feed_id, RID, int)
 
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
+	FUNC1(environment_set_ssr_half_size, bool)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
