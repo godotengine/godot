@@ -3187,6 +3187,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
+			_update_navigation_controls_visibility();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3238,7 +3239,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 			}
 
-			_update_navigation_controls_visibility();
 			_update_freelook(delta);
 
 			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
@@ -3573,6 +3573,12 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_remove_preview_material();
 			} else {
 				_remove_preview_node();
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+				_update_navigation_controls_visibility();
 			}
 		} break;
 	}
@@ -4695,6 +4701,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			surface->queue_redraw();
 			previewing_camera = true;
+			_update_navigation_controls_visibility();
 			preview_camera->set_pressed(true);
 			preview_camera->show();
 		}
