@@ -748,6 +748,7 @@ Error Main::test_setup() {
 
 	// From `Main::setup2()`.
 	register_early_core_singletons();
+	register_early_scene_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
 
@@ -770,6 +771,7 @@ Error Main::test_setup() {
 
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
+	register_scene_singletons();
 	initialize_theme_db();
 
 #ifndef NAVIGATION_3D_DISABLED
@@ -782,13 +784,12 @@ Error Main::test_setup() {
 	register_scene_types();
 	register_driver_types();
 
-	register_scene_singletons();
-
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	register_early_editor_types();
 	register_editor_types();
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
@@ -2101,6 +2102,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	register_early_core_singletons();
+	register_early_scene_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
@@ -2852,6 +2854,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	register_early_editor_types();
+	ClassDB::set_current_api(ClassDB::API_CORE);
+#endif
+
+#ifdef TOOLS_ENABLED
 	int accessibility_mode_editor = 0;
 	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
@@ -3520,6 +3528,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
+	register_scene_singletons();
 	initialize_theme_db();
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -3535,8 +3544,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	register_scene_types();
 	register_driver_types();
-
-	register_scene_singletons();
 
 	{
 		OS::get_singleton()->benchmark_begin_measure("Scene", "Modules and Extensions");

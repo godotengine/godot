@@ -30,5 +30,6 @@
 
 #pragma once
 
+void register_early_editor_types();
 void register_editor_types();
 void unregister_editor_types();

@@ -362,10 +362,18 @@ static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 static Ref<ResourceFormatSaverShaderInclude> resource_saver_shader_include;
 static Ref<ResourceFormatLoaderShaderInclude> resource_loader_shader_include;
 
-void register_scene_types() {
-	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Types");
+void register_early_scene_types() {
+	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Early Types");
 
 	SceneStringNames::create();
+
+	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
+
+	OS::get_singleton()->benchmark_end_measure("Scene", "Register Early Types");
+}
+
+void register_scene_types() {
+	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Types");
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -428,7 +436,6 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(CompositorEffect);
 
-	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MultiplayerAPIExtension);
@@ -1450,6 +1457,7 @@ void register_scene_singletons() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Singletons");
 
 	GDREGISTER_CLASS(ThemeDB);
+	GDREGISTER_INTERNAL_CLASS(ThemeContext);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ThemeDB", ThemeDB::get_singleton()));
 

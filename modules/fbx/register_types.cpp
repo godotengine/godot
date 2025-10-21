@@ -60,7 +60,7 @@ static void _editor_init() {
 	FBXDocument::register_gltf_document_extension(extension_##m_doc_ext_class);
 
 void initialize_fbx_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_CLASS(FBXDocument);
 		GDREGISTER_CLASS(FBXState);
 		bool is_editor = Engine::get_singleton()->is_editor_hint();
