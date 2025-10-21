@@ -30,6 +30,8 @@
 
 #include "image_loader_libjpeg_turbo.h"
 
+#include "core/io/file_access_memory.h"
+
 #include <turbojpeg.h>
 
 Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
@@ -77,6 +79,110 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	return OK;
 }
 
+static int _get_exif_orientation(Ref<FileAccess> p_file) {
+	const uint64_t file_size = p_file->get_length();
+
+	// JPEG APP1 segment.
+	bool app1_found = false;
+	bool prev_ff = false;
+	while (!p_file->eof_reached()) {
+		uint8_t cur = p_file->get_8();
+		if (prev_ff && cur == 0xE1) {
+			app1_found = true;
+			break;
+		}
+		prev_ff = (cur == 0xFF);
+	}
+	if (!app1_found) {
+		return -1;
+	}
+
+	// 2 bytes - Segment length.
+	// 6 bytes - "Exif\0\0".
+	// 2 bytes - TIFF Header: Endianness.
+	// 2 bytes - TIFF Header: Magic 42.
+	// 4 bytes - TIFF Header: Offset to IFD0.
+	if (file_size - p_file->get_position() < 16) {
+		return -1;
+	}
+	p_file->seek(p_file->get_position() + 2); // Skip length.
+	if (memcmp(p_file->get_buffer(6).ptr(), "Exif\0\0", 6) != 0) {
+		return -1;
+	}
+	const uint64_t tiff_header_start = p_file->get_position();
+	switch (p_file->get_16()) {
+		case 0x4949: { // "II" - Little endian.
+			p_file->set_big_endian(false);
+		} break;
+		case 0x4D4D: { // "MM" - Big endian.
+			p_file->set_big_endian(true);
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(-1, "Invalid Exif endianness.");
+		} break;
+	}
+	ERR_FAIL_COND_V_MSG(p_file->get_16() != 0x002A, -1, "Invalid Exif TIFF magic.");
+
+	const uint32_t offset = tiff_header_start + p_file->get_32();
+	if (file_size - offset < 2) {
+		return -1;
+	}
+	p_file->seek(offset);
+	const uint16_t entry_count = p_file->get_16();
+
+	for (unsigned int i = 0; i < entry_count; i++) {
+		// 2 bytes - Tag ID
+		// 2 bytes - Data type
+		// 4 bytes - Number of items
+		// 4 bytes - Value or value offset
+		if (file_size - p_file->get_position() < 12) {
+			return -1;
+		}
+		const uint16_t tag = p_file->get_16();
+		const uint16_t type = p_file->get_16();
+		const uint32_t count = p_file->get_32();
+
+		// Orientation tag & SHORT type.
+		if (tag != 0x0112 || type != 3 || count != 1) {
+			p_file->seek(p_file->get_position() + 4); // Skip value/offset.
+			continue;
+		}
+		int orientation = p_file->get_16(); // SHORT is left-justified within the 4 bytes.
+		ERR_FAIL_COND_V_MSG(orientation <= 0 || orientation > 8, -1, "Invalid Exif orientation value.");
+		return orientation;
+	}
+
+	return -1;
+}
+
+static void _fix_orientation(Ref<Image> p_image, Ref<FileAccess> p_file) {
+	switch (_get_exif_orientation(p_file)) {
+		case 2: {
+			p_image->flip_x();
+		} break;
+		case 3: {
+			p_image->rotate_180();
+		} break;
+		case 4: {
+			p_image->flip_y();
+		} break;
+		case 5: {
+			p_image->rotate_90(CLOCKWISE);
+			p_image->flip_x();
+		} break;
+		case 6: {
+			p_image->rotate_90(CLOCKWISE);
+		} break;
+		case 7: {
+			p_image->rotate_90(COUNTERCLOCKWISE);
+			p_image->flip_x();
+		} break;
+		case 8: {
+			p_image->rotate_90(COUNTERCLOCKWISE);
+		} break;
+	}
+}
+
 Error ImageLoaderLibJPEGTurbo::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	Vector<uint8_t> src_image;
 	uint64_t src_image_len = f->get_length();
@@ -88,6 +194,10 @@ Error ImageLoaderLibJPEGTurbo::load_image(Ref<Image> p_image, Ref<FileAccess> f,
 	f->get_buffer(&w[0], src_image_len);
 
 	Error err = jpeg_turbo_load_image_from_buffer(p_image.ptr(), w, src_image_len);
+	if (err == OK && p_flags.has_flag(FLAG_FIX_ORIENTATION)) {
+		f->seek(0);
+		_fix_orientation(p_image, f);
+	}
 
 	return err;
 }
@@ -97,11 +207,20 @@ void ImageLoaderLibJPEGTurbo::get_recognized_extensions(List<String> *p_extensio
 	p_extensions->push_back("jpeg");
 }
 
-static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_data, int p_size) {
+static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_data, int p_size, bool p_fix_orientation) {
 	Ref<Image> img;
 	img.instantiate();
 	Error err = jpeg_turbo_load_image_from_buffer(img.ptr(), p_data, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
+
+	if (p_fix_orientation) {
+		Ref<FileAccessMemory> file;
+		file.instantiate();
+		if (file->open_custom(p_data, p_size) == OK) {
+			_fix_orientation(img, file);
+		}
+	}
+
 	return img;
 }
 

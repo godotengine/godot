@@ -269,6 +269,9 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/scale_with_editor_scale"), false));
 		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/convert_colors_with_editor_theme"), false));
 	}
+	if (p_path.is_empty() || p_path.get_extension() == "jpg" || p_path.get_extension() == "jpeg") {
+		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "jpeg/fix_orientation"), false));
+	}
 }
 
 void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params) {
@@ -762,12 +765,18 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	// SVG-specific options.
 	float scale = p_options.has("svg/scale") ? float(p_options["svg/scale"]) : 1.0f;
 
+	// JPEG-specific options.
+	bool fix_orientation = p_options.has("jpeg/fix_orientation") ? bool(p_options["jpeg/fix_orientation"]) : false;
+
 	// Editor-specific options.
 	bool use_editor_scale = p_options.has("editor/scale_with_editor_scale") && p_options["editor/scale_with_editor_scale"];
 	bool convert_editor_colors = p_options.has("editor/convert_colors_with_editor_theme") && p_options["editor/convert_colors_with_editor_theme"];
 
 	if (hdr_as_srgb) {
 		loader_flags |= ImageFormatLoader::FLAG_FORCE_LINEAR;
+	}
+	if (fix_orientation) {
+		loader_flags |= ImageFormatLoader::FLAG_FIX_ORIENTATION;
 	}
 
 	// Start importing images.

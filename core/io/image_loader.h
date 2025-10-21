@@ -52,6 +52,7 @@ public:
 		FLAG_NONE = 0,
 		FLAG_FORCE_LINEAR = 1,
 		FLAG_CONVERT_COLORS = 2,
+		FLAG_FIX_ORIENTATION = 4,
 	};
 
 protected:

@@ -225,6 +225,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ir"] = "IR";
 	capitalize_string_remaps["itunes"] = "iTunes";
 	capitalize_string_remaps["jit"] = "JIT";
+	capitalize_string_remaps["jpeg"] = "JPEG";
 	capitalize_string_remaps["k1"] = "K1";
 	capitalize_string_remaps["k2"] = "K2";
 	capitalize_string_remaps["kb"] = "(KB)"; // Unit.

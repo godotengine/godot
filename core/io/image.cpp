@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "image.h"
+#include "image.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
@@ -3921,7 +3922,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("adjust_bcs", "brightness", "contrast", "saturation"), &Image::adjust_bcs);
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
-	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer", "fix_orientation"), &Image::load_jpg_from_buffer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
@@ -4422,8 +4423,22 @@ Error Image::load_png_from_buffer(const Vector<uint8_t> &p_array) {
 	return _load_from_buffer(p_array, _png_mem_loader_func);
 }
 
-Error Image::load_jpg_from_buffer(const Vector<uint8_t> &p_array) {
-	return _load_from_buffer(p_array, _jpg_mem_loader_func);
+Error Image::load_jpg_from_buffer(const Vector<uint8_t> &p_array, bool p_fix_orientation) {
+	ERR_FAIL_NULL_V_MSG(
+			_jpg_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The JPG module isn't enabled. Recompile the Godot editor or export template binary with the `module_jpg_enabled=yes` SCons option.");
+
+	int buffer_size = p_array.size();
+
+	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
+
+	Ref<Image> image = _jpg_mem_loader_func(p_array.ptr(), buffer_size, p_fix_orientation);
+	ERR_FAIL_COND_V(image.is_null(), ERR_PARSE_ERROR);
+
+	copy_internals_from(image);
+
+	return OK;
 }
 
 Error Image::load_webp_from_buffer(const Vector<uint8_t> &p_array) {
@@ -4620,7 +4635,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	}
 
 	if (is_empty() && _jpg_mem_loader_func) {
-		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
+		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len, false));
 	}
 
 	if (is_empty() && _webp_mem_loader_func) {

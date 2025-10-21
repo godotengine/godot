@@ -366,8 +366,10 @@
 		<method name="load_jpg_from_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="1" name="fix_orientation" type="bool" default="false" />
 			<description>
 				Loads an image from the binary contents of a JPEG file.
+				If [param fix_orientation] is [code]true[/code], orients the loaded image according to its Exif data.
 			</description>
 		</method>
 		<method name="load_ktx_from_buffer">

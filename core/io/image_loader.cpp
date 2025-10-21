@@ -34,6 +34,7 @@ void ImageFormatLoader::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_NONE);
 	BIND_BITFIELD_FLAG(FLAG_FORCE_LINEAR);
 	BIND_BITFIELD_FLAG(FLAG_CONVERT_COLORS);
+	BIND_BITFIELD_FLAG(FLAG_FIX_ORIENTATION);
 }
 
 bool ImageFormatLoader::recognize(const String &p_extension) const {
