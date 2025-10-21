@@ -77,4 +77,5 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInp
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getProjectResourceDir(JNIEnv *env, jclass clazz);
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isEditorHint(JNIEnv *env, jclass clazz);
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isProjectManagerHint(JNIEnv *env, jclass clazz);
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv *env, jclass clazz, jstring p_feature);
 }

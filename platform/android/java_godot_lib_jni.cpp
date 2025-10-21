@@ -674,4 +674,13 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isProjectManagerH
 	}
 	return false;
 }
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv *env, jclass clazz, jstring p_feature) {
+	OS *os = OS::get_singleton();
+	if (os) {
+		String feature = jstring_to_string(p_feature, env);
+		return os->has_feature(feature);
+	}
+	return false;
+}
 }

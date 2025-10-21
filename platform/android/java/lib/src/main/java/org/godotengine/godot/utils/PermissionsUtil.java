@@ -30,6 +30,8 @@
 
 package org.godotengine.godot.utils;
 
+import org.godotengine.godot.Godot;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -50,7 +52,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -159,7 +160,7 @@ public final class PermissionsUtil {
 
 			case "CAMERA":
 				permissions.add(Manifest.permission.CAMERA);
-				if (DeviceUtils.isHorizonOSDevice(activity)) {
+				if (Godot.getInstance(activity).hasFeature("horizonos")) {
 					// On HorizonOS, these permissions are required to get access to all the device's cameras.
 					permissions.add("horizonos.permission.AVATAR_CAMERA");
 					permissions.add("horizonos.permission.HEADSET_CAMERA");
