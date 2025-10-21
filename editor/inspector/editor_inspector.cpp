@@ -2138,6 +2138,12 @@ void EditorInspectorSection::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
+			}
+		} break;
 	}
 }
 
@@ -2466,7 +2472,7 @@ EditorInspectorSection::EditorInspectorSection() {
 	vbox = memnew(VBoxContainer);
 
 	dropping_unfold_timer = memnew(Timer);
-	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
 	dropping_unfold_timer->set_one_shot(true);
 	add_child(dropping_unfold_timer);
 	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
