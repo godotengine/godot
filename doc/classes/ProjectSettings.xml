@@ -1186,6 +1186,14 @@
 		<member name="gui/common/always_show_focus_state" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [Control]s will always show if they're focused, even if said focus was gained via mouse/touch input.
 		</member>
+		<member name="gui/common/custom_tooltip_scene" type="String" setter="" getter="" default="&quot;&quot;">
+			Path to the scene that should be used for tooltips. Custom tooltips for specific [Control] nodes can still be set with [method Control._make_custom_tooltip] or for a whole [Viewport] with [method Viewport.set_custom_tooltip].
+			[b]Note:[/b] The root class of the scene provided must be a [Control] or Control-derived node.
+			Tooltip text will be passed to the custom scene by setting the root node's [member Control.tooltip_text] property directly.
+		</member>
+		<member name="gui/common/custom_tooltip_scene.editor_hint" type="String" setter="" getter="" default="&quot;&quot;">
+			Path to the scene that should be used for tooltips in the editor.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
