@@ -740,6 +740,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		translation_list = memnew(Tree);
 		translation_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_list->add_theme_constant_override("draw_color_guides", 1);
 		tmc->add_child(translation_list);
 		trees.push_back(translation_list);
 		tree_data_types[translation_list] = "localization_editor_translation_item";
@@ -779,6 +780,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_remap->connect("cell_selected", callable_mp(this, &LocalizationEditor::_translation_res_select));
 		translation_remap->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_delete));
+		translation_remap->add_theme_constant_override("draw_color_guides", 1);
 		tmc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
@@ -816,6 +818,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
 		translation_remap_options->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		translation_remap_options->connect("custom_popup_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_popup));
+		translation_remap_options->add_theme_constant_override("draw_color_guides", 1);
 		tmc->add_child(translation_remap_options);
 
 		translation_res_option_file_open_dialog = memnew(EditorFileDialog);
@@ -846,6 +849,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		translation_pot_list = memnew(Tree);
 		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_pot_list->add_theme_constant_override("draw_color_guides", 1);
 		tvb->add_child(translation_pot_list);
 		trees.push_back(translation_pot_list);
 		tree_data_types[translation_pot_list] = "localization_editor_pot_item";

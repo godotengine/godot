@@ -539,6 +539,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	tree->connect("item_edited", callable_mp(this, &GroupSettingsEditor::_item_edited));
 	tree->connect("item_activated", callable_mp(this, &GroupSettingsEditor::_show_rename_dialog));
 	tree->connect("button_clicked", callable_mp(this, &GroupSettingsEditor::_item_button_pressed));
+	tree->add_theme_constant_override("draw_color_guides", 1);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(tree, true);

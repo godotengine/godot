@@ -561,6 +561,9 @@
 		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
+		<theme_item name="draw_color_guides" data_type="constant" type="int" default="0">
+			Draws the guide rects if not zero, this acts as a boolean. The guide rect is a rectangle drawn behind an item once every two rows.
+		</theme_item>
 		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
 		</theme_item>

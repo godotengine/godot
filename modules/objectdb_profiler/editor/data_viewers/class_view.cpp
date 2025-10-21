@@ -181,6 +181,7 @@ Tree *SnapshotClassView::_make_object_list_tree(const String &p_column_name) {
 	list->set_column_title(0, p_column_name);
 	list->set_column_expand(0, true);
 	list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_object_selected).bind(list));
+	list->add_theme_constant_override("draw_color_guides", 1);
 	list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	return list;
