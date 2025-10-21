@@ -244,14 +244,14 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	margin_container->add_theme_constant_override("margin_bottom", outline_width);
 	add_child(margin_container);
 
-	centering_container = memnew(AspectRatioContainer);
-	margin_container->add_child(centering_container);
-
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
 	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
-	centering_container->add_child(checkerboard);
+	margin_container->add_child(checkerboard);
+
+	centering_container = memnew(AspectRatioContainer);
+	margin_container->add_child(centering_container);
 
 	texture_display = memnew(TextureRect);
 	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
@@ -263,7 +263,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 
 	// Creating a separate control so it is not affected by the filtering shader.
 	outline_overlay = memnew(Control);
-	centering_container->add_child(outline_overlay);
+	margin_container->add_child(outline_overlay);
 
 	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_draw_outline));
 
