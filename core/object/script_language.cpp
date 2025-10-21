@@ -106,6 +106,7 @@ Dictionary Script::_get_script_constant_map() {
 	Dictionary ret;
 	HashMap<StringName, Variant> map;
 	get_constants(&map);
+	ret.reserve(map.size());
 	for (const KeyValue<StringName, Variant> &E : map) {
 		ret[E.key] = E.value;
 	}

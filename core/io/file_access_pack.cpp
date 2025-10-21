@@ -144,6 +144,7 @@ HashSet<String> PackedData::get_file_paths() const {
 }
 
 void PackedData::_get_file_paths(PackedDir *p_dir, const String &p_parent_dir, HashSet<String> &r_paths) const {
+	r_paths.reserve(r_paths.size() + p_dir->files.size());
 	for (const String &E : p_dir->files) {
 		r_paths.insert(p_parent_dir.path_join(E));
 	}
