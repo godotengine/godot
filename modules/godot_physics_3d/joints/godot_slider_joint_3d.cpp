@@ -477,12 +477,12 @@ real_t GodotSliderJoint3D::get_param(PhysicsServer3D::SliderJointParam p_param) 
 	return 0;
 }
 
-real_t GodotSliderJoint3D::get_applied_force() const {
+float GodotSliderJoint3D::get_applied_force() const {
 	WARN_PRINT_ONCE("SliderJoint3D->get_applied_force only works with Jolt Physics.");
 	return 0;
 }
 
-real_t GodotSliderJoint3D::get_applied_torque() const {
+float GodotSliderJoint3D::get_applied_torque() const {
 	WARN_PRINT_ONCE("SliderJoint3D->get_applied_torque only works with Jolt Physics.");
 	return 0;
 }

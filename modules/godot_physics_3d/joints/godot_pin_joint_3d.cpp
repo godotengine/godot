@@ -166,12 +166,12 @@ real_t GodotPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const 
 	return 0;
 }
 
-real_t GodotPinJoint3D::get_applied_force() const {
+float GodotPinJoint3D::get_applied_force() const {
 	WARN_PRINT_ONCE("PinJoint3D->get_applied_force only works with Jolt Physics.");
 	return 0;
 }
 
-real_t GodotPinJoint3D::get_applied_torque() const {
+float GodotPinJoint3D::get_applied_torque() const {
 	WARN_PRINT_ONCE("PinJoint3D does not have a value for get_applied_torque()");
 	return 0;
 }

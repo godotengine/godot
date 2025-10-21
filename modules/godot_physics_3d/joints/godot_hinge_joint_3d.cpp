@@ -440,12 +440,12 @@ bool GodotHingeJoint3D::get_flag(PhysicsServer3D::HingeJointFlag p_flag) const {
 	return false;
 }
 
-real_t GodotHingeJoint3D::get_applied_force() const {
+float GodotHingeJoint3D::get_applied_force() const {
 	WARN_PRINT_ONCE("HingeJoint3D->get_applied_force only works with Jolt Physics.");
 	return 0;
 }
 
-real_t GodotHingeJoint3D::get_applied_torque() const {
+float GodotHingeJoint3D::get_applied_torque() const {
 	WARN_PRINT_ONCE("HingeJoint3D->get_applied_torque only works with Jolt Physics.");
 	return 0;
 }

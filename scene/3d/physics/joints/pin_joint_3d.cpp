@@ -58,7 +58,7 @@ real_t PinJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-real_t PinJoint3D::get_applied_force() const {
+float PinJoint3D::get_applied_force() const {
 	return PhysicsServer3D::get_singleton()->pin_joint_get_applied_force(get_rid());
 }
 

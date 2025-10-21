@@ -98,11 +98,11 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 	return flags[p_flag];
 }
 
-real_t HingeJoint3D::get_applied_force() const {
+float HingeJoint3D::get_applied_force() const {
 	return PhysicsServer3D::get_singleton()->hinge_joint_get_applied_force(get_rid());
 }
 
-real_t HingeJoint3D::get_applied_torque() const {
+float HingeJoint3D::get_applied_torque() const {
 	return PhysicsServer3D::get_singleton()->hinge_joint_get_applied_torque(get_rid());
 }
 

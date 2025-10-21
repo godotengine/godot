@@ -102,11 +102,11 @@ real_t SliderJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-real_t SliderJoint3D::get_applied_force() const {
+float SliderJoint3D::get_applied_force() const {
 	return PhysicsServer3D::get_singleton()->slider_joint_get_applied_force(get_rid());
 }
 
-real_t SliderJoint3D::get_applied_torque() const {
+float SliderJoint3D::get_applied_torque() const {
 	return PhysicsServer3D::get_singleton()->slider_joint_get_applied_torque(get_rid());
 }
 

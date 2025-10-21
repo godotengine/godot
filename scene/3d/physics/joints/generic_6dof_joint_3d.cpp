@@ -242,11 +242,11 @@ real_t Generic6DOFJoint3D::get_param_z(Param p_param) const {
 	return params_z[p_param];
 }
 
-real_t Generic6DOFJoint3D::get_applied_force() const {
+float Generic6DOFJoint3D::get_applied_force() const {
 	return PhysicsServer3D::get_singleton()->generic_6dof_joint_get_applied_force(get_rid());
 }
 
-real_t Generic6DOFJoint3D::get_applied_torque() const {
+float Generic6DOFJoint3D::get_applied_torque() const {
 	return PhysicsServer3D::get_singleton()->generic_6dof_joint_get_applied_torque(get_rid());
 }
 

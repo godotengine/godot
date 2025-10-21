@@ -67,11 +67,11 @@ real_t ConeTwistJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-real_t ConeTwistJoint3D::get_applied_force() const {
+float ConeTwistJoint3D::get_applied_force() const {
 	return PhysicsServer3D::get_singleton()->cone_twist_joint_get_applied_force(get_rid());
 }
 
-real_t ConeTwistJoint3D::get_applied_torque() const {
+float ConeTwistJoint3D::get_applied_torque() const {
 	return PhysicsServer3D::get_singleton()->cone_twist_joint_get_applied_torque(get_rid());
 }
 
