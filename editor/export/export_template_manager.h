@@ -39,6 +39,7 @@ class HTTPRequest;
 class MenuButton;
 class OptionButton;
 class ProgressBar;
+class RichTextLabel;
 class Tree;
 
 class ExportTemplateManager : public AcceptDialog {
@@ -87,6 +88,16 @@ class ExportTemplateManager : public AcceptDialog {
 	String uninstall_version;
 	FileDialog *install_file_dialog = nullptr;
 	AcceptDialog *hide_dialog_accept = nullptr;
+	AcceptDialog *verification_dialog_accept = nullptr;
+	Label *verification_accept_message_title = nullptr;
+
+	AcceptDialog *verification_dialog_fail = nullptr;
+	RichTextLabel *verification_fail_message_label = nullptr;
+	Label *verification_fail_message_title = nullptr;
+
+	String ver_file;
+	bool ver_skip_progress = false;
+	bool ver_remove_file = false;
 
 	void _update_template_status();
 
@@ -103,7 +114,11 @@ class ExportTemplateManager : public AcceptDialog {
 	void _set_current_progress_value(float p_value, const String &p_status);
 
 	void _install_file();
-	bool _install_file_selected(const String &p_file, bool p_skip_progress = false);
+	void _verify_and_install_file_selected(const String &p_file, bool p_skip_progress = false, bool p_remove_file = false);
+	void _install_continue();
+	void _install_cancel();
+	void _install_file_selected(const String &p_file, bool p_skip_progress = false);
+	void _clenup(const String &p_file, bool p_remove_file = false);
 
 	void _uninstall_template(const String &p_version);
 	void _uninstall_template_confirmed();
