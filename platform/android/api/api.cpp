@@ -40,15 +40,15 @@ static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
 
 void register_android_api() {
+	GDREGISTER_CLASS(JNISingleton);
+	GDREGISTER_CLASS(JavaClass);
+	GDREGISTER_CLASS(JavaObject);
+	GDREGISTER_CLASS(JavaClassWrapper);
 #if !defined(ANDROID_ENABLED)
 	// On Android platforms, the `java_class_wrapper` instantiation occurs in
 	// `platform/android/java_godot_lib_jni.cpp#Java_org_godotengine_godot_GodotLib_setup`
 	java_class_wrapper = memnew(JavaClassWrapper);
 #endif
-	GDREGISTER_CLASS(JNISingleton);
-	GDREGISTER_CLASS(JavaClass);
-	GDREGISTER_CLASS(JavaObject);
-	GDREGISTER_CLASS(JavaClassWrapper);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
 }
 
