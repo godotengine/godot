@@ -58,6 +58,7 @@ void Timer::_notification(int p_what) {
 
 			if (time_left < 0) {
 				if (!one_shot) {
+					loop_count++;
 					time_left += wait_time;
 				} else {
 					stop();
@@ -79,6 +80,7 @@ void Timer::_notification(int p_what) {
 
 			if (time_left < 0) {
 				if (!one_shot) {
+					loop_count++;
 					time_left += wait_time;
 				} else {
 					stop();
@@ -121,6 +123,7 @@ void Timer::start(double p_time) {
 	if (p_time > 0) {
 		set_wait_time(p_time);
 	}
+	loop_count = 0;
 	time_left = wait_time;
 	_set_process(true);
 }
@@ -152,12 +155,20 @@ bool Timer::is_ignoring_time_scale() {
 	return ignore_time_scale;
 }
 
+int Timer::get_loop_count() const {
+	return loop_count;
+}
+
 bool Timer::is_stopped() const {
 	return get_time_left() <= 0;
 }
 
 double Timer::get_time_left() const {
 	return time_left > 0 ? time_left : 0;
+}
+
+double Timer::get_elapsed_time() const {
+	return (wait_time * loop_count) + (wait_time - get_time_left());
 }
 
 void Timer::set_timer_process_callback(TimerProcessCallback p_callback) {
@@ -227,9 +238,13 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_time_scale", "ignore"), &Timer::set_ignore_time_scale);
 	ClassDB::bind_method(D_METHOD("is_ignoring_time_scale"), &Timer::is_ignoring_time_scale);
 
+	ClassDB::bind_method(D_METHOD("get_loop_count"), &Timer::get_loop_count);
+
 	ClassDB::bind_method(D_METHOD("is_stopped"), &Timer::is_stopped);
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
+
+	ClassDB::bind_method(D_METHOD("get_elapsed_time"), &Timer::get_elapsed_time);
 
 	ClassDB::bind_method(D_METHOD("set_timer_process_callback", "callback"), &Timer::set_timer_process_callback);
 	ClassDB::bind_method(D_METHOD("get_timer_process_callback"), &Timer::get_timer_process_callback);
@@ -243,6 +258,7 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_time_scale"), "set_ignore_time_scale", "is_ignoring_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_NONE), "", "get_time_left");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_NONE), "", "get_elapsed_time");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
