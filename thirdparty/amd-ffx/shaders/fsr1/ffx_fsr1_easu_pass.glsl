@@ -32,10 +32,13 @@
 #extension GL_EXT_samplerless_texture_functions : require
 
 #define FSR1_BIND_SRV_INPUT_COLOR                  0
-#define FSR1_BIND_UAV_INTERNAL_UPSCALED_COLOR   2000
-#define FSR1_BIND_UAV_UPSCALED_OUTPUT           2001
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR1_BIND_UAV_INTERNAL_UPSCALED_COLOR      1 //2000
+#define FSR1_BIND_UAV_UPSCALED_OUTPUT              2 //2001
 
-#define FSR1_BIND_CB_FSR1                       3000
+#define FSR1_BIND_CB_FSR1                          3 //3000
+// GODOT ENDS
 
 #include "../../gpu/fsr1/ffx_fsr1_callbacks_glsl.h"
 #include "../../gpu/fsr1/ffx_fsr1_easu.h"

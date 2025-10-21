@@ -80,12 +80,12 @@ FSR1Effect::FSR1Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2000, 0, 0, L"rw_internal_upscaled_color" },
-			FfxResourceBinding{ 2001, 0, 0, L"rw_upscaled_output" }
+			FfxResourceBinding{ 1, 0, 0, L"rw_internal_upscaled_color" },
+			FfxResourceBinding{ 2, 0, 0, L"rw_upscaled_output" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR1" }
+			FfxResourceBinding{ 3, 0, 0, L"cbFSR1" }
 		};
 
 		// EASU RCAS pass is a clone of the EASU pass with the RCAS variant.
@@ -106,11 +106,11 @@ FSR1Effect::FSR1Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2000, 0, 0, L"rw_upscaled_output" },
+			FfxResourceBinding{ 1, 0, 0, L"rw_upscaled_output" },
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR1" }
+			FfxResourceBinding{ 2, 0, 0, L"cbFSR1" }
 		};
 	}
 
