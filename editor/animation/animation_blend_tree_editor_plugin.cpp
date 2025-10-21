@@ -39,6 +39,9 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
+//NEW CHANGES
+#include "editor/themes/editor_theme_manager.h"
+
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/check_box.h"
@@ -155,6 +158,9 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 		node->set_title(agnode->get_caption());
 		node->set_name(E);
+
+		//NEW CHANGES
+		node->set_theme(ab_msdf_fonts_theme);
 
 		int base = 0;
 		if (E != SceneStringName(output)) {
@@ -313,6 +319,7 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only animation nodes are allowed."));
 	}
+
 }
 
 void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
@@ -1179,6 +1186,17 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	graph->set_show_arrange_button(!read_only);
 }
 
+//NEW CHANGES
+//Refreshes the whole theme of a given node, including the text.
+void AnimationNodeBlendTreeEditor::refresh_theme() {
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
+	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
+}
+
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
@@ -1283,7 +1301,14 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	animation_node_inspector_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(animation_node_inspector_plugin);
+
+	//NEW CHANGES
+	ab_msdf_fonts_theme.instantiate();
+
+	refresh_theme();
 }
+
+
 
 // EditorPluginAnimationNodeAnimation
 
