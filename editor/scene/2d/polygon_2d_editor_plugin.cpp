@@ -794,7 +794,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case ACTION_EDIT_POINT: {
 					Vector<Vector2> uv_new = editing_points;
-					uv_new.set(point_drag_index, uv_new[point_drag_index] + drag);
+					uv_new.set(point_drag_index, mtx.affine_inverse().xform(snap_point(mm->get_position())));
 
 					if (current_mode == MODE_UV) {
 						node->set_uv(uv_new);
