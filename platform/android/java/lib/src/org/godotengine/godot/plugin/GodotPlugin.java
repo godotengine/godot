@@ -361,7 +361,7 @@ public abstract class GodotPlugin {
 	/**
 	 * Emit a registered Godot signal.
 	 * @param signalName Name of the signal to emit. It will be validated against the set of registered signals.
-	 * @param signalArgs Arguments used to populate the emitted signal. The arguments will be validated against the {@link SignalInfo} matching the registered signalName parameter.
+	 * @param signalArgs Arguments used to populate the emitted signal. The arguments will be validated against the registered {@link SignalInfo} matching the signalName parameter.
 	 */
 	protected void emitSignal(final String signalName, final Object... signalArgs) {
 		try {
@@ -378,6 +378,15 @@ public abstract class GodotPlugin {
 				throw exception;
 			}
 		}
+	}
+
+	/**
+	 * Emit a registered Godot signal.
+	 * @param signal Signal to emit. It will be validated against the set of registered signals.
+	 * @param signalArgs Arguments used to populate the emitted signal. The arguments will be validated against the registered {@link SignalInfo} matching the signal parameter.
+	 */
+	protected void emitSignal(SignalInfo signal, final Object... signalArgs) {
+		emitSignal(signal.getName(), signalArgs);
 	}
 
 	/**
@@ -402,7 +411,8 @@ public abstract class GodotPlugin {
 
 			// Validate the argument's types.
 			for (int i = 0; i < signalParamTypes.length; i++) {
-				if (!signalParamTypes[i].isInstance(signalArgs[i])) {
+				Object signalArg = signalArgs[i];
+				if (signalArg != null && !signalParamTypes[i].isInstance(signalArg)) {
 					throw new IllegalArgumentException(
 							"Invalid type for argument #" + i + ". Should be of type " + signalParamTypes[i].getName());
 				}
