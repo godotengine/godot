@@ -49,13 +49,16 @@
 #define FSR2_BIND_SRV_INPUT_DEPTH                            5
 #endif
 
-#define FSR2_BIND_UAV_INTERNAL_UPSCALED                      2013
-#define FSR2_BIND_UAV_LOCK_STATUS                            2014
-#define FSR2_BIND_UAV_UPSCALED_OUTPUT                        2015
-#define FSR2_BIND_UAV_NEW_LOCKS                              2016
-#define FSR2_BIND_UAV_LUMA_HISTORY                           2017
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR2_BIND_UAV_INTERNAL_UPSCALED                      13 //2013
+#define FSR2_BIND_UAV_LOCK_STATUS                            14 //2014
+#define FSR2_BIND_UAV_UPSCALED_OUTPUT                        15 //2015
+#define FSR2_BIND_UAV_NEW_LOCKS                              16 //2016
+#define FSR2_BIND_UAV_LUMA_HISTORY                           17 //2017
 
-#define FSR2_BIND_CB_FSR2                                    3000
+#define FSR2_BIND_CB_FSR2                                    18 //3000
+// GODOT ENDS
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"

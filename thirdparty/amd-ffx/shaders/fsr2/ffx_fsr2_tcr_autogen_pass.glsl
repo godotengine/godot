@@ -39,13 +39,15 @@
 #endif
 // GODOT ENDS
 
-#define FSR2_BIND_UAV_AUTOREACTIVE                       2007
-#define FSR2_BIND_UAV_AUTOCOMPOSITION                    2008
-#define FSR2_BIND_UAV_PREV_PRE_ALPHA_COLOR               2009
-#define FSR2_BIND_UAV_PREV_POST_ALPHA_COLOR              2010
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR2_BIND_UAV_AUTOREACTIVE                          7 //2007
+#define FSR2_BIND_UAV_AUTOCOMPOSITION                       8 //2008
+#define FSR2_BIND_UAV_PREV_PRE_ALPHA_COLOR                  9 //2009
+#define FSR2_BIND_UAV_PREV_POST_ALPHA_COLOR                 10 //2010
 
-#define FSR2_BIND_CB_FSR2								 3000
-#define FSR2_BIND_CB_AUTOREACTIVE                        3001
+#define FSR2_BIND_CB_FSR2								    11 //3000
+#define FSR2_BIND_CB_AUTOREACTIVE                           12 //3001
 
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"

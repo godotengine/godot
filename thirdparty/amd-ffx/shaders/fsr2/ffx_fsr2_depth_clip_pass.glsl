@@ -40,11 +40,14 @@
 #define FSR2_BIND_SRV_INPUT_DEPTH                           9
 #define FSR2_BIND_SRV_INPUT_EXPOSURE                        10
 
-#define FSR2_BIND_UAV_DEPTH_CLIP                          2011
-#define FSR2_BIND_UAV_DILATED_REACTIVE_MASKS              2012
-#define FSR2_BIND_UAV_PREPARED_INPUT_COLOR                2013
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR2_BIND_UAV_DEPTH_CLIP                            11 //2011
+#define FSR2_BIND_UAV_DILATED_REACTIVE_MASKS                12 //2012
+#define FSR2_BIND_UAV_PREPARED_INPUT_COLOR                  13 //2013
 
-#define FSR2_BIND_CB_FSR2                                 3000
+#define FSR2_BIND_CB_FSR2                                   14 //3000
+// GODOT ENDS
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"

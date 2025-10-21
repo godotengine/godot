@@ -27,13 +27,16 @@
 
 #define FSR2_BIND_SRV_INPUT_COLOR                     0
 
-#define FSR2_BIND_UAV_SPD_GLOBAL_ATOMIC            2001
-#define FSR2_BIND_UAV_EXPOSURE_MIP_LUMA_CHANGE     2002
-#define FSR2_BIND_UAV_EXPOSURE_MIP_5               2003
-#define FSR2_BIND_UAV_AUTO_EXPOSURE                2004
+// GODOT BEGINS
+// Godot DX12 backend doesn't support binding numbers larger than 1000, so we have to remap them.
+#define FSR2_BIND_UAV_SPD_GLOBAL_ATOMIC               1 //2001
+#define FSR2_BIND_UAV_EXPOSURE_MIP_LUMA_CHANGE        2 //2002
+#define FSR2_BIND_UAV_EXPOSURE_MIP_5                  3 //2003
+#define FSR2_BIND_UAV_AUTO_EXPOSURE                   4 //2004
 
-#define FSR2_BIND_CB_FSR2                          3000
-#define FSR2_BIND_CB_SPD                           3001
+#define FSR2_BIND_CB_FSR2                             5 //3000
+#define FSR2_BIND_CB_SPD                              6 //3001
+// GODOT ENDS
 
 #include "../../gpu/fsr2/ffx_fsr2_callbacks_glsl.h"
 #include "../../gpu/fsr2/ffx_fsr2_common.h"

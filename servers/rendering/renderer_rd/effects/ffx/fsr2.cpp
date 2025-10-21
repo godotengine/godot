@@ -90,12 +90,12 @@ FSR2Effect::FSR2Effect() {
 
 		pass.storage_texture_bindings = {
 			// FSR2_BIND_UAV_DEPTH_CLIP (11) does not point to anything.
-			FfxResourceBinding{ 2012, 0, 0, L"rw_dilated_reactive_masks" },
-			FfxResourceBinding{ 2013, 0, 0, L"rw_prepared_input_color" }
+			FfxResourceBinding{ 12, 0, 0, L"rw_dilated_reactive_masks" },
+			FfxResourceBinding{ 13, 0, 0, L"rw_prepared_input_color" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" }
+			FfxResourceBinding{ 14, 0, 0, L"cbFSR2" }
 		};
 	}
 
@@ -115,17 +115,17 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2005, 0, 0, L"rw_reconstructed_previous_nearest_depth" },
-			FfxResourceBinding{ 2006, 0, 0, L"rw_dilated_motion_vectors" },
-			FfxResourceBinding{ 2007, 0, 0, L"rw_dilatedDepth" },
-			FfxResourceBinding{ 2008, 0, 0, L"rw_prepared_input_color" },
-			FfxResourceBinding{ 2009, 0, 0, L"rw_luma_history" },
+			FfxResourceBinding{ 5, 0, 0, L"rw_reconstructed_previous_nearest_depth" },
+			FfxResourceBinding{ 6, 0, 0, L"rw_dilated_motion_vectors" },
+			FfxResourceBinding{ 7, 0, 0, L"rw_dilatedDepth" },
+			FfxResourceBinding{ 8, 0, 0, L"rw_prepared_input_color" },
+			FfxResourceBinding{ 9, 0, 0, L"rw_luma_history" },
 			// FSR2_BIND_UAV_LUMA_INSTABILITY (10) does not point to anything.
-			FfxResourceBinding{ 2011, 0, 0, L"rw_lock_input_luma" }
+			FfxResourceBinding{ 11, 0, 0, L"rw_lock_input_luma" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" }
+			FfxResourceBinding{ 12, 0, 0, L"cbFSR2" }
 		};
 	}
 
@@ -141,12 +141,12 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2001, 0, 0, L"rw_new_locks" },
-			FfxResourceBinding{ 2002, 0, 0, L"rw_reconstructed_previous_nearest_depth" }
+			FfxResourceBinding{ 1, 0, 0, L"rw_new_locks" },
+			FfxResourceBinding{ 2, 0, 0, L"rw_reconstructed_previous_nearest_depth" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" }
+			FfxResourceBinding{ 3, 0, 0, L"cbFSR2" }
 		};
 	}
 
@@ -182,15 +182,15 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2013, 0, 0, L"rw_internal_upscaled_color" },
-			FfxResourceBinding{ 2014, 0, 0, L"rw_lock_status" },
-			FfxResourceBinding{ 2015, 0, 0, L"rw_upscaled_output" },
-			FfxResourceBinding{ 2016, 0, 0, L"rw_new_locks" },
-			FfxResourceBinding{ 2017, 0, 0, L"rw_luma_history" }
+			FfxResourceBinding{ 13, 0, 0, L"rw_internal_upscaled_color" },
+			FfxResourceBinding{ 14, 0, 0, L"rw_lock_status" },
+			FfxResourceBinding{ 15, 0, 0, L"rw_upscaled_output" },
+			FfxResourceBinding{ 16, 0, 0, L"rw_new_locks" },
+			FfxResourceBinding{ 17, 0, 0, L"rw_luma_history" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" }
+			FfxResourceBinding{ 18, 0, 0, L"cbFSR2" }
 		};
 
 		// Sharpen pass is a clone of the accumulate pass with the sharpening variant.
@@ -211,12 +211,12 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2002, 0, 0, L"rw_upscaled_output" }
+			FfxResourceBinding{ 2, 0, 0, L"rw_upscaled_output" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" },
-			FfxResourceBinding{ 3001, 0, 0, L"cbRCAS" }
+			FfxResourceBinding{ 3, 0, 0, L"cbFSR2" },
+			FfxResourceBinding{ 4, 0, 0, L"cbRCAS" }
 		};
 	}
 
@@ -231,15 +231,15 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2001, 0, 0, L"rw_spd_global_atomic" },
-			FfxResourceBinding{ 2002, 0, 0, L"rw_img_mip_shading_change" },
-			FfxResourceBinding{ 2003, 0, 0, L"rw_img_mip_5" },
-			FfxResourceBinding{ 2004, 0, 0, L"rw_auto_exposure" }
+			FfxResourceBinding{ 1, 0, 0, L"rw_spd_global_atomic" },
+			FfxResourceBinding{ 2, 0, 0, L"rw_img_mip_shading_change" },
+			FfxResourceBinding{ 3, 0, 0, L"rw_img_mip_5" },
+			FfxResourceBinding{ 4, 0, 0, L"rw_auto_exposure" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" },
-			FfxResourceBinding{ 3001, 0, 0, L"cbSPD" }
+			FfxResourceBinding{ 5, 0, 0, L"cbFSR2" },
+			FfxResourceBinding{ 6, 0, 0, L"cbSPD" }
 		};
 	}
 
@@ -256,12 +256,12 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2002, 0, 0, L"rw_output_autoreactive" }
+			FfxResourceBinding{ 2, 0, 0, L"rw_output_autoreactive" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbGenerateReactive" },
-			FfxResourceBinding{ 3001, 0, 0, L"cbFSR2" }
+			FfxResourceBinding{ 3, 0, 0, L"cbGenerateReactive" },
+			FfxResourceBinding{ 4, 0, 0, L"cbFSR2" }
 		};
 	}
 
@@ -284,15 +284,15 @@ FSR2Effect::FSR2Effect() {
 		};
 
 		pass.storage_texture_bindings = {
-			FfxResourceBinding{ 2007, 0, 0, L"rw_output_autoreactive" },
-			FfxResourceBinding{ 2008, 0, 0, L"rw_output_autocomposition" },
-			FfxResourceBinding{ 2009, 0, 0, L"rw_output_prev_color_pre_alpha" },
-			FfxResourceBinding{ 2010, 0, 0, L"rw_output_prev_color_post_alpha" }
+			FfxResourceBinding{ 7, 0, 0, L"rw_output_autoreactive" },
+			FfxResourceBinding{ 8, 0, 0, L"rw_output_autocomposition" },
+			FfxResourceBinding{ 9, 0, 0, L"rw_output_prev_color_pre_alpha" },
+			FfxResourceBinding{ 10, 0, 0, L"rw_output_prev_color_post_alpha" }
 		};
 
 		pass.uniform_bindings = {
-			FfxResourceBinding{ 3000, 0, 0, L"cbFSR2" },
-			FfxResourceBinding{ 3001, 0, 0, L"cbGenerateReactive" }
+			FfxResourceBinding{ 11, 0, 0, L"cbFSR2" },
+			FfxResourceBinding{ 12, 0, 0, L"cbGenerateReactive" }
 		};
 	}
 
