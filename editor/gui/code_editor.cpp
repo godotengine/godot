@@ -1466,23 +1466,23 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	if (state.has("folded_lines")) {
-		Vector<int> folded_lines = state["folded_lines"];
-		for (int i = 0; i < folded_lines.size(); i++) {
-			text_editor->fold_line(folded_lines[i]);
+		const PackedInt32Array folded_lines = state["folded_lines"];
+		for (const int &line : folded_lines) {
+			text_editor->fold_line(line);
 		}
 	}
 
 	if (state.has("breakpoints")) {
-		Array breakpoints = state["breakpoints"];
-		for (int i = 0; i < breakpoints.size(); i++) {
-			text_editor->set_line_as_breakpoint(breakpoints[i], true);
+		const PackedInt32Array breakpoints = state["breakpoints"];
+		for (const int &line : breakpoints) {
+			text_editor->set_line_as_breakpoint(line, true);
 		}
 	}
 
 	if (state.has("bookmarks")) {
-		Array bookmarks = state["bookmarks"];
-		for (int i = 0; i < bookmarks.size(); i++) {
-			text_editor->set_line_as_bookmarked(bookmarks[i], true);
+		const PackedInt32Array bookmarks = state["bookmarks"];
+		for (const int &line : bookmarks) {
+			text_editor->set_line_as_bookmarked(line, true);
 		}
 	}
 
