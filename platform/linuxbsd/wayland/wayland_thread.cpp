@@ -3536,7 +3536,7 @@ Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	return Ref<Message>();
 }
 
-void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void WaylandThread::window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id) {
 	ERR_FAIL_COND(windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
@@ -3545,8 +3545,7 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size.width = p_width;
-	ws.rect.size.height = p_height;
+	ws.rect.size = p_size;
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3599,6 +3598,13 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		if (registry.xdg_toplevel_icon_manager) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
 		}
+	}
+
+	if (p_parent_id != DisplayServer::INVALID_WINDOW_ID) {
+		// NOTE: It's important to set the parent ASAP to avoid misunderstandings with
+		// the compositor. For example, niri immediately resizes the window to full
+		// size as soon as it's configured if it's not parented to another toplevel.
+		window_set_parent(p_window_id, p_parent_id);
 	}
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);

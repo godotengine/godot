@@ -774,15 +774,11 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 			wd.rect.position = Point2i();
 
 			DEBUG_LOG_WAYLAND(vformat("Creating regular window of size %s", wd.rect.size));
-			wayland_thread.window_create(p_window_id, wd.rect.size.width, wd.rect.size.height);
+			wayland_thread.window_create(p_window_id, wd.rect.size, wd.parent_id);
 			wayland_thread.window_set_min_size(p_window_id, wd.min_size);
 			wayland_thread.window_set_max_size(p_window_id, wd.max_size);
 			wayland_thread.window_set_app_id(p_window_id, _get_app_id_from_context(context));
 			wayland_thread.window_set_borderless(p_window_id, window_get_flag(WINDOW_FLAG_BORDERLESS, p_window_id));
-
-			if (wd.parent_id != INVALID_WINDOW_ID) {
-				wayland_thread.window_set_parent(wd.id, wd.parent_id);
-			}
 
 			// Since it can't have a position. Let's tell the window node the news by
 			// the actual rect to it.
