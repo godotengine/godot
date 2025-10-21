@@ -3956,10 +3956,12 @@ void Control::_notification(int p_notification) {
 
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
-			queue_redraw();
 
-			update_minimum_size();
-			_size_changed();
+			if (is_visible_in_tree()) {
+				queue_redraw();
+				update_minimum_size();
+				_size_changed();
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
