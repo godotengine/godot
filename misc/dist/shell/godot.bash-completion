@@ -40,7 +40,6 @@ _complete_godot_options() {
 --quit
 --language
 --path
---upwards
 --main-pack
 --render-thread
 --remote-fs
