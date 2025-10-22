@@ -1040,6 +1040,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "TabBar", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
+	theme->set_constant("hover_switch_wait_msec", "TabBar", 500);
 
 	// Separators
 

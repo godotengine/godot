@@ -1017,6 +1017,7 @@ void EditorNode::_notification(int p_what) {
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
 				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
+				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
