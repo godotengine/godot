@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
+## [3.6.2] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-2) for details.
+
+### Changed
+
+#### Network
+
+- mbedTLS: Update to mbedTLS 3.6.4 ([GH-108382](https://github.com/godotengine/godot/pull/108382)).
+- mbedTLS: Update to mbedTLS 3.6.5 ([GH-111845](https://github.com/godotengine/godot/pull/111845)).
+
+#### Porting
+
+- Android: Update to target API 35, NDK r28, 16kb page size ([GH-108433](https://github.com/godotengine/godot/pull/108433)).
+- Android: Address API 35 UI changes ([GH-110255](https://github.com/godotengine/godot/pull/110255)).
+- Android: Set minsdk to 21, workaround `fseeko` error in Opus ([GH-111061](https://github.com/godotengine/godot/pull/111061)).
+- iOS: Switch window creation to UIScene ([GH-111103](https://github.com/godotengine/godot/pull/111103)).
+
+#### Thirdparty
+
+- Enable builds with miniupnpc API 18 ([GH-100389](https://github.com/godotengine/godot/pull/100389)).
+
+### Fixed
+
+#### Buildsystem
+
+- Fix build on macOS 26 by removing AGL framework link ([GH-110898](https://github.com/godotengine/godot/pull/110898)).
+
+#### Editor
+
+- Fix inability to assign script after clearing ([GH-108171](https://github.com/godotengine/godot/pull/108171)).
+- Fix Open Editor Data/Settings Folder menu in self-contained mode ([GH-110414](https://github.com/godotengine/godot/pull/110414)).
+
+#### Export
+
+- Fix order of operations for macOS template check ([GH-108930](https://github.com/godotengine/godot/pull/108930)).
+
+#### GUI
+
+- Fix Line breaking may not work correctly when using color tags with specific font ([GH-109695](https://github.com/godotengine/godot/pull/109695)).
+
+#### Rendering
+
+- Batching: Fix `MultiRect` casting to wrong type ([GH-109111](https://github.com/godotengine/godot/pull/109111)).
+
+
 ## [3.6.1] - 2025-06-25
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-1) for details.
@@ -3064,6 +3110,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.6.2]: https://github.com/godotengine/godot/releases/tag/3.6.2-stable
 [3.6.1]: https://github.com/godotengine/godot/releases/tag/3.6.1-stable
 [3.6]: https://github.com/godotengine/godot/releases/tag/3.6-stable
 [3.5]: https://github.com/godotengine/godot/releases/tag/3.5-stable
