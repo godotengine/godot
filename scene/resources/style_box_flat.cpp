@@ -389,14 +389,41 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	Vector2 *verts_ptr = verts.ptrw();
 
 	for (int corner_idx = 0; corner_idx < 4; corner_idx++) {
-		// Corner smoothing formula is adapted from CSS documentation: https://developer.mozilla.org/en-US/docs/Web/CSS/superellipse.
-		// Corner smoothing strength of 0.0 produces straight line corners.
-		// Corner smoothing strength of 1.0 produces ordinary corner rounding.
-		// Corner smoothing strength of 2.0 produces a squircle.
-		// Corner smoothing strength values > 10.0 produce shapes similar to a square.
-
 		const bool use_smoothing = (!Math::is_equal_approx(corner_smoothing[corner_idx], (real_t)1.0f) && corner_radius[corner_idx] > (real_t)0.0f);
-		real_t smoothing_exponent = use_smoothing ? (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx]) : (real_t)1.0f;
+		real_t smoothing_exponent_inner, smoothing_exponent_outer;
+		real_t xy_ring_offset;
+
+		if (use_smoothing) {
+			smoothing_exponent_inner = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx]);
+			if (draw_border) {
+				// Adjusts outer border curvature.
+				real_t exponent_adjustment = 1.0f;
+				if (corner_smoothing[corner_idx] < 1.0f) {
+					// The values below are fitted to a Gaussian bump.
+					real_t curve_height = 0.1889992f;
+					real_t steepness = 0.9610043f;
+					real_t curve_h_offset = -0.75f;
+					real_t curve_v_offset = 0.9651982f;
+
+					exponent_adjustment = curve_height * Math::exp(-Math::pow(corner_smoothing[corner_idx] - curve_h_offset, 2.0f) / (2.0f * Math::pow(steepness, 2.0f))) + curve_v_offset;
+				}
+
+				// Modified smoothing exponent to draw outer border points.
+				smoothing_exponent_outer = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx] * exponent_adjustment);
+
+				// Moves points towards the nearest corner and makes corner border appear thicker or thinner.
+				xy_ring_offset = 0.0f;
+				if (corner_smoothing[corner_idx] < 1.0f) {
+					// The values below are fitted to a Sigmoid.
+					real_t curve_height = -3.0821111f;
+					real_t steepness = -3.3522981f;
+					real_t curve_h_offset = -0.3645290f;
+					real_t curve_v_offset = 0.0374931f;
+
+					xy_ring_offset = curve_height / (1.0f + Math::exp(-steepness * (corner_smoothing[corner_idx] - curve_h_offset))) + curve_v_offset;
+				}
+			}
+		}
 
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
 			int idx_ofs = (adapted_corner_detail + 1) * corner_idx + detail;
@@ -410,8 +437,13 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 			real_t x, y;
 			if (use_smoothing) {
-				x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * inner_corner_radius[corner_idx] * SIGN(angle_cosine) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
-				y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * inner_corner_radius[corner_idx] * SIGN(angle_sine) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
+				// Corner smoothing formula is adapted from CSS documentation: https://developer.mozilla.org/en-US/docs/Web/CSS/superellipse.
+				// Corner smoothing strength of 0.0 produces straight line corners.
+				// Corner smoothing strength of 1.0 produces ordinary corner rounding.
+				// Corner smoothing strength of 2.0 produces a squircle.
+				// Corner smoothing strength values > 10.0 produce shapes similar to a square.
+				x = Math::pow(Math::abs(angle_cosine), smoothing_exponent_inner) * inner_corner_radius[corner_idx] * SIGN(angle_cosine) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
+				y = Math::pow(Math::abs(angle_sine), smoothing_exponent_inner) * inner_corner_radius[corner_idx] * SIGN(angle_sine) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
 				// Prevents overflow artifacts.
 				x = CLAMP(x, inner_rect.position.x, inner_rect.position.x + inner_rect.size.x);
 				y = CLAMP(y, inner_rect.position.y, inner_rect.position.y + inner_rect.size.y);
@@ -427,36 +459,9 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 			if (draw_border) {
 				if (use_smoothing) {
-					// Adjusts outer border curvature.
-					real_t exponent_adjustment = 1.0f;
-					if (corner_smoothing[corner_idx] < 1.0f) {
-						// The values below are fitted to a Gaussian bump.
-						real_t curve_height = 0.1889992f;
-						real_t steepness = 0.9610043f;
-						real_t curve_h_offset = -0.75f;
-						real_t curve_v_offset = 0.9651982f;
-
-						exponent_adjustment = curve_height * Math::exp(-Math::pow(corner_smoothing[corner_idx] - curve_h_offset, 2.0f) / (2.0f * Math::pow(steepness, 2.0f))) + curve_v_offset;
-					}
-
-					// Modified smoothing exponent to draw outer border points.
-					smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx] * exponent_adjustment);
-
-					// Moves points towards the nearest corner and makes corner border appear thicker or thinner.
-					real_t xy_offset = 0.0f;
-					if (corner_smoothing[corner_idx] < 1.0f) {
-						// The values below are fitted to a Sigmoid.
-						real_t curve_height = -3.0821111f;
-						real_t steepness = -3.3522981f;
-						real_t curve_h_offset = -0.3645290f;
-						real_t curve_v_offset = 0.0374931f;
-
-						xy_offset = curve_height / (1.0f + Math::exp(-steepness * (corner_smoothing[corner_idx] - curve_h_offset))) + curve_v_offset;
-					}
-
 					// Modified superellipse formula to produce borders of consistent thickness.
-					x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_cosine) * ring_scale[corner_idx].x + outer_points[corner_idx].x - xy_offset * SIGN(angle_cosine);
-					y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_sine) * ring_scale[corner_idx].y + outer_points[corner_idx].y - xy_offset * SIGN(angle_sine);
+					x = Math::pow(Math::abs(angle_cosine), smoothing_exponent_outer) * ring_corner_radius[corner_idx] * SIGN(angle_cosine) * ring_scale[corner_idx].x + outer_points[corner_idx].x - xy_ring_offset * SIGN(angle_cosine);
+					y = Math::pow(Math::abs(angle_sine), smoothing_exponent_outer) * ring_corner_radius[corner_idx] * SIGN(angle_sine) * ring_scale[corner_idx].y + outer_points[corner_idx].y - xy_ring_offset * SIGN(angle_sine);
 					// Prevents overflow artifacts.
 					x = CLAMP(x, ring_rect.position.x, ring_rect.position.x + ring_rect.size.x);
 					y = CLAMP(y, ring_rect.position.y, ring_rect.position.y + ring_rect.size.y);
