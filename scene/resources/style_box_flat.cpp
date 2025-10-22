@@ -440,7 +440,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 					}
 
 					// Modified smoothing exponent to draw outer border points.
-					real_t smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx] * exponent_adjustment);
+					smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx] * exponent_adjustment);
 
 					// Moves points towards the nearest corner and makes corner border appear thicker or thinner.
 					real_t xy_offset = 0.0f;
@@ -548,7 +548,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
-	const bool use_smoothing = rounded_corners && (!Math::is_equal_approx(corner_smoothing[0], (real_t)1.0f) || !Math::is_equal_approx(corner_smoothing[1], (real_t)1.0f) || !Math::is_equal_approx(corner_smoothing[2], (real_t)1.0f) || !Math::is_equal_approx(corner_smoothing[3], (real_t)1.0f));
 	// Only enable antialiasing if it is actually needed. This improves performance
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
 	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
