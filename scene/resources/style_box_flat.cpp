@@ -406,7 +406,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 					real_t curve_h_offset = -0.75f;
 					real_t curve_v_offset = 0.9651982f;
 
-					exponent_adjustment = curve_height * Math::exp(-Math::pow(corner_smoothing[corner_idx] - curve_h_offset, 2.0f) / (2.0f * Math::pow(steepness, 2.0f))) + curve_v_offset;
+					exponent_adjustment = curve_height * Math::exp(-Math::pow(corner_smoothing[corner_idx] - curve_h_offset, (real_t)2.0f) / ((real_t)2.0f * Math::pow(steepness, (real_t)2.0f))) + curve_v_offset;
 				}
 
 				// Modified smoothing exponent to draw outer border points.
@@ -421,7 +421,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 					real_t curve_h_offset = -0.3645290f;
 					real_t curve_v_offset = 0.0374931f;
 
-					xy_ring_offset = curve_height / (1.0f + Math::exp(-steepness * (corner_smoothing[corner_idx] - curve_h_offset))) + curve_v_offset;
+					xy_ring_offset = curve_height / ((real_t)1.0f + Math::exp(-steepness * (corner_smoothing[corner_idx] - curve_h_offset))) + curve_v_offset;
 				}
 			}
 		}
