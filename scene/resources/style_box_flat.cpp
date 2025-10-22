@@ -310,20 +310,36 @@ inline void set_corner_scale(const Rect2 &style_rect, const Rect2 &inner_rect, c
 	}
 }
 
-void StyleBoxFlat::set_corner_radius_smoothing(real_t p_corner_radius_smoothing) {
-	// Below corner_radius_smoothing 0.0 antialiasing and border_width break.
-	ERR_FAIL_COND_MSG(p_corner_radius_smoothing < 0.0 || p_corner_radius_smoothing > 10.0, "Corner smoothing strength must be between 0.0 and 10.0");
-	corner_radius_smoothing = CLAMP(p_corner_radius_smoothing, 0.0, 10.0);
+void StyleBoxFlat::set_corner_radius_smoothing_all(real_t smoothing) {
+	for (int i = 0; i < 4; i++) {
+		corner_radius_smoothing[i] = smoothing;
+	}
+
 	emit_changed();
 }
 
-real_t StyleBoxFlat::get_corner_radius_smoothing() const {
-	return corner_radius_smoothing;
+void StyleBoxFlat::set_corner_radius_smoothing_individual(const real_t smoothing_top_left, const real_t smoothing_top_right, const real_t smoothing_bottom_right, const real_t smoothing_bottom_left) {
+	corner_radius_smoothing[0] = smoothing_top_left;
+	corner_radius_smoothing[1] = smoothing_top_right;
+	corner_radius_smoothing[2] = smoothing_bottom_right;
+	corner_radius_smoothing[3] = smoothing_bottom_left;
+
+	emit_changed();
+}
+
+void StyleBoxFlat::set_corner_radius_smoothing(const Corner p_corner, real_t p_corner_radius_smoothing) {
+	corner_radius_smoothing[p_corner] = p_corner_radius_smoothing;
+	emit_changed();
+}
+
+real_t StyleBoxFlat::get_corner_radius_smoothing(const Corner p_corner) const {
+	ERR_FAIL_INDEX_V((int)p_corner, 4, 0);
+	return corner_radius_smoothing[p_corner];
 }
 
 inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4],
 		const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, const int corner_detail, const Vector2 &skew,
-		bool is_filled = false, const real_t corner_radius_smoothing = 0.0) {
+		bool is_filled = false, const real_t corner_radius_smoothing[4] = {}) {
 	int vert_offset = verts.size();
 	int adapted_corner_detail = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0) ? corner_detail : 1;
 
@@ -373,6 +389,15 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	Vector2 *verts_ptr = verts.ptrw();
 
 	for (int corner_idx = 0; corner_idx < 4; corner_idx++) {
+		// Corner smoothing formula is adapted from CSS documentation: https://developer.mozilla.org/en-US/docs/Web/CSS/superellipse.
+		// Corner smoothing strength of 0.0 produces straight line corners.
+		// Corner smoothing strength of 1.0 produces ordinary corner rounding.
+		// Corner smoothing strength of 2.0 produces a squircle.
+		// Corner smoothing strength values > 10.0 produce shapes similar to a square.
+
+		const bool use_smoothing = (!Math::is_equal_approx(corner_radius_smoothing[corner_idx], (real_t)1.0f) && corner_radius[corner_idx] > (real_t)0.0f);
+		real_t smoothing_exponent = use_smoothing ? (real_t)2.0f / Math::pow((real_t)2.0f, corner_radius_smoothing[corner_idx]) : (real_t)1.0f;
+
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
 			int idx_ofs = (adapted_corner_detail + 1) * corner_idx + detail;
 			if (draw_border) {
@@ -384,19 +409,12 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			const real_t angle_sine = Math::sin(pt_angle);
 
 			real_t x, y;
-			// Corner smoothing formula is adapted from CSS documentation: https://developer.mozilla.org/en-US/docs/Web/CSS/superellipse.
-			// Corner smoothing strength of 0.0 produces straight line corners.
-			// Corner smoothing strength of 1.0 produces ordinary corner rounding.
-			// Corner smoothing strength of 2.0 produces a squircle.
-			// Corner smoothing strength values > 10.0 produce shapes indistinguishable from a square.
-			real_t smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_radius_smoothing);
-			if (!Math::is_equal_approx(corner_radius_smoothing, (real_t)1.0f)) {
-				real_t cos_abs = Math::abs(angle_cosine);
-				real_t sin_abs = Math::abs(angle_sine);
-				real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
-				real_t sin_sign = angle_sine >= 0 ? 1.0f : -1.0f;
-				x = inner_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, smoothing_exponent) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
-				y = inner_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, smoothing_exponent) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
+			if (use_smoothing) {
+				x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * inner_corner_radius[corner_idx] * SIGN(angle_cosine) * inner_scale[corner_idx].x + inner_points[corner_idx].x;
+				y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * inner_corner_radius[corner_idx] * SIGN(angle_sine) * inner_scale[corner_idx].y + inner_points[corner_idx].y;
+				// Prevents overflow artifacts.
+				x = CLAMP(x, inner_rect.position.x, inner_rect.position.x + inner_rect.size.x);
+				y = CLAMP(y, inner_rect.position.y, inner_rect.position.y + inner_rect.size.y);
 			} else {
 				x = inner_corner_radius[corner_idx] * angle_cosine * inner_scale[corner_idx].x + inner_points[corner_idx].x;
 				y = inner_corner_radius[corner_idx] * angle_sine * inner_scale[corner_idx].y + inner_points[corner_idx].y;
@@ -408,13 +426,41 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 			colors_ptr[colors_size + idx_ofs] = inner_color;
 
 			if (draw_border) {
-				if (!Math::is_equal_approx(corner_radius_smoothing, (real_t)1.0f)) {
-					real_t cos_abs = Math::abs(angle_cosine);
-					real_t sin_abs = Math::abs(angle_sine);
-					real_t cos_sign = angle_cosine >= 0 ? 1.0f : -1.0f;
-					real_t sin_sign = angle_sine >= 0 ? 1.0f : -1.0f;
-					x = ring_corner_radius[corner_idx] * cos_sign * Math::pow(cos_abs, smoothing_exponent) * ring_scale[corner_idx].x + outer_points[corner_idx].x;
-					y = ring_corner_radius[corner_idx] * sin_sign * Math::pow(sin_abs, smoothing_exponent) * ring_scale[corner_idx].y + outer_points[corner_idx].y;
+				if (use_smoothing) {
+					// Adjusts outer border curvature.
+					real_t exponent_adjustment = 1.0f;
+					if (corner_radius_smoothing[corner_idx] < 1.0f) {
+						// The values below are fitted to a Gaussian bump.
+						real_t curve_height = 0.1889992f;
+						real_t steepness = 0.9610043f;
+						real_t curve_h_offset = -0.75f;
+						real_t curve_v_offset = 0.9651982f;
+
+						exponent_adjustment = curve_height * Math::exp(-Math::pow(corner_radius_smoothing[corner_idx] - curve_h_offset, 2.0f) / (2.0f * Math::pow(steepness, 2.0f))) + curve_v_offset;
+					}
+
+					// Modified smoothing exponent to draw outer border points.
+					real_t smoothing_exponent = (real_t)2.0f / Math::pow((real_t)2.0f, corner_radius_smoothing[corner_idx] * exponent_adjustment);
+
+					// Moves points towards the nearest corner and makes corner border appear thicker or thinner.
+					real_t xy_offset = 0.0f;
+					if (corner_radius_smoothing[corner_idx] < 1.0f) {
+						// The values below are fitted to a Sigmoid.
+						real_t curve_height = -3.0821111f;
+						real_t steepness = -3.3522981f;
+						real_t curve_h_offset = -0.3645290f;
+						real_t curve_v_offset = 0.0374931f;
+
+						xy_offset = curve_height / (1.0f + Math::exp(-steepness * (corner_radius_smoothing[corner_idx] - curve_h_offset))) + curve_v_offset;
+					}
+
+					// Modified superellipse formula to produce borders of consistent thickness.
+					x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_cosine) * ring_scale[corner_idx].x + outer_points[corner_idx].x - (xy_offset + offset_0) * SIGN(angle_cosine);
+					y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_sine) * ring_scale[corner_idx].y + outer_points[corner_idx].y - (xy_offset + offset_0) * SIGN(angle_sine);
+					// Prevents overflow artifacts.
+					x = CLAMP(x, ring_rect.position.x, ring_rect.position.x + ring_rect.size.x);
+					y = CLAMP(y, ring_rect.position.y, ring_rect.position.y + ring_rect.size.y);
+
 				} else {
 					x = ring_corner_radius[corner_idx] * angle_cosine * ring_scale[corner_idx].x + outer_points[corner_idx].x;
 					y = ring_corner_radius[corner_idx] * angle_sine * ring_scale[corner_idx].y + outer_points[corner_idx].y;
@@ -502,6 +548,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
+	const bool use_smoothing = rounded_corners && (!Math::is_equal_approx(corner_radius_smoothing[0], (real_t)1.0f) || !Math::is_equal_approx(corner_radius_smoothing[1], (real_t)1.0f) || !Math::is_equal_approx(corner_radius_smoothing[2], (real_t)1.0f) || !Math::is_equal_approx(corner_radius_smoothing[3], (real_t)1.0f));
 	// Only enable antialiasing if it is actually needed. This improves performance
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
 	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
@@ -574,21 +621,21 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 				shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew, false, corner_radius_smoothing);
 
 		if (draw_center) {
-			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
-					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true, corner_radius_smoothing);
+			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner, shadow_inner_rect,
+					shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true, corner_radius_smoothing);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
-		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew, false, corner_radius_smoothing);
+		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, border_style_rect, infill_rect,
+				border_color_inner, border_color, corner_detail, skew, false, corner_radius_smoothing);
 	}
 
 	// Create infill (no AA).
 	if (draw_center && (!aa_on || blend_on)) {
-		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true, corner_radius_smoothing);
+		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, border_style_rect, infill_rect,
+				bg_color, bg_color, corner_detail, skew, true, corner_radius_smoothing);
 	}
 
 	if (aa_on) {
@@ -629,14 +676,14 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 					-aa_fill_width[SIDE_RIGHT], -aa_fill_width[SIDE_BOTTOM]);
 			if (!blend_on) {
 				// Create center fill, not antialiased yet
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true, corner_radius_smoothing);
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, infill_rect_aa_colored, infill_rect_aa_colored,
+						bg_color, bg_color, corner_detail, skew, true, corner_radius_smoothing);
 			}
 			if (!blend_on || !draw_border) {
 				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
 				// Add antialiasing on the center fill
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew, false, corner_radius_smoothing);
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, infill_rect_aa_transparent, infill_rect_aa_colored,
+						bg_color, alpha_bg, corner_detail, skew, false, corner_radius_smoothing);
 			}
 		}
 
@@ -655,16 +702,16 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
 
 			// Create border ring, not antialiased yet
-			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew, false, corner_radius_smoothing);
+			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, outer_rect_aa_colored, blend_on ? infill_rect : inner_rect_aa_colored,
+					border_color_inner, border_color, corner_detail, skew, false, corner_radius_smoothing);
 			if (!blend_on) {
 				// Add antialiasing on the ring inner border
-				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew, false, corner_radius_smoothing);
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, inner_rect_aa_colored, inner_rect_aa_transparent,
+						border_color_blend, border_color, corner_detail, skew, false, corner_radius_smoothing);
 			}
 			// Add antialiasing on the ring outer border
-			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew, false, corner_radius_smoothing);
+			draw_rounded_rectangle(verts, indices, colors, border_style_rect.grow(corner_radius_center_offset), adapted_corner, outer_rect_aa_transparent, outer_rect_aa_colored,
+					border_color, border_color_alpha, corner_detail, skew, false, corner_radius_smoothing);
 		}
 	}
 
@@ -700,8 +747,9 @@ void StyleBoxFlat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_corner_radius_all", "radius"), &StyleBoxFlat::set_corner_radius_all);
 
-	ClassDB::bind_method(D_METHOD("set_corner_radius_smoothing", "corner_radius_smoothing"), &StyleBoxFlat::set_corner_radius_smoothing);
-	ClassDB::bind_method(D_METHOD("get_corner_radius_smoothing"), &StyleBoxFlat::get_corner_radius_smoothing);
+	ClassDB::bind_method(D_METHOD("set_corner_radius_smoothing_all", "smoothing"), &StyleBoxFlat::set_corner_radius_smoothing_all);
+	ClassDB::bind_method(D_METHOD("set_corner_radius_smoothing", "corner", "smoothing"), &StyleBoxFlat::set_corner_radius_smoothing);
+	ClassDB::bind_method(D_METHOD("get_corner_radius_smoothing", "corner"), &StyleBoxFlat::get_corner_radius_smoothing);
 
 	ClassDB::bind_method(D_METHOD("set_corner_radius", "corner", "radius"), &StyleBoxFlat::set_corner_radius);
 	ClassDB::bind_method(D_METHOD("get_corner_radius", "corner"), &StyleBoxFlat::get_corner_radius);
@@ -750,12 +798,18 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 
-	ADD_GROUP("Corner Radius", "corner_radius_");
+	ADD_GROUP("Corners", "corner_");
+	ADD_SUBGROUP("Radius", "corner_radius_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_left", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_right", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_right", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_left", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_LEFT);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "corner_radius_smoothing", PROPERTY_HINT_RANGE, "0.0,10,0.1"), "set_corner_radius_smoothing", "get_corner_radius_smoothing");
+
+	ADD_SUBGROUP("Smoothing", "corner_radius_smoothing");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "corner_radius_smoothing_top_left", PROPERTY_HINT_RANGE, "-4.0,10,0.1,or_less,or_greater"), "set_corner_radius_smoothing", "get_corner_radius_smoothing", CORNER_TOP_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "corner_radius_smoothing_top_right", PROPERTY_HINT_RANGE, "-4.0,10,0.1,or_less,or_greater"), "set_corner_radius_smoothing", "get_corner_radius_smoothing", CORNER_TOP_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "corner_radius_smoothing_bottom_right", PROPERTY_HINT_RANGE, "-4.0,10,0.1,or_less,or_greater"), "set_corner_radius_smoothing", "get_corner_radius_smoothing", CORNER_BOTTOM_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "corner_radius_smoothing_bottom_left", PROPERTY_HINT_RANGE, "-4.0,10,0.1,or_less,or_greater"), "set_corner_radius_smoothing", "get_corner_radius_smoothing", CORNER_BOTTOM_LEFT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "corner_detail", PROPERTY_HINT_RANGE, "1,20,1"), "set_corner_detail", "get_corner_detail");
 
