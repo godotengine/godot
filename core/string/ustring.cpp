@@ -4346,6 +4346,9 @@ String String::simplify_path() const {
 			p = s.find(":/");
 			if (p == -1) {
 				p = s.find(":\\");
+				if (p != -1) {
+					s[p + 1] = '/';
+				}
 			}
 			if (p != -1 && p < s.find_char('/')) {
 				drive = s.substr(0, p + 2);

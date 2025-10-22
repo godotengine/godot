@@ -1797,6 +1797,7 @@ TEST_CASE("[String] Path functions") {
 	}
 
 	CHECK(String("/texture.png") == String("/../../texture.png").simplify_path());
+	CHECK(String("C:/texture.png") == String("C:\\..\\..\\texture.png").simplify_path());
 	CHECK(String("res://texture.png") == String("res://folder/../folder/../texture.png").simplify_path());
 	CHECK(String("res://texture.png") == String("res://folder/sub/../../texture.png").simplify_path());
 	CHECK(String("res://../../texture.png") == String("res://../../texture.png").simplify_path());
