@@ -37,9 +37,9 @@
 #include "thirdparty/misc/smolv.h"
 
 #if defined(ANDROID_ENABLED)
-#include "platform/android/java_godot_wrapper.h"
-#include "platform/android/os_android.h"
-#include "platform/android/thread_jandroid.h"
+#include "platform/android/java_godot_wrapper.h" // validator: ignore // FIXME: Legacy include.
+#include "platform/android/os_android.h" // validator: ignore // FIXME: Legacy include.
+#include "platform/android/thread_jandroid.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)

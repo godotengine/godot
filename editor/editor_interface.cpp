@@ -53,7 +53,7 @@
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"

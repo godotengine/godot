@@ -42,7 +42,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // For mono. // validator: ignore // FIXME: Legacy include.
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.

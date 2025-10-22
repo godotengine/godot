@@ -42,7 +42,7 @@
 #include "core/templates/safe_refcount.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/settings/editor_settings.h"
-#include "main/splash.gen.h"
+#include "main/splash.gen.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>

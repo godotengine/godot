@@ -42,7 +42,7 @@
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #import "drivers/apple/os_log_logger.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>

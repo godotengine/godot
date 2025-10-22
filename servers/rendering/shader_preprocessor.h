@@ -37,7 +37,7 @@
 #include "core/templates/rb_set.h"
 
 #include "core/object/script_language.h"
-#include "scene/resources/shader_include.h"
+#include "scene/resources/shader_include.h" // validator: ignore // FIXME: Legacy include.
 
 class ShaderPreprocessor {
 public:

@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
-#include "main/performance.h"
+#include "main/performance.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"

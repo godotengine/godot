@@ -37,11 +37,11 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/rendering/rendering_shader_container.h"
 
 #ifdef MODULE_GLSLANG_ENABLED
-#include "modules/glslang/shader_compile.h"
+#include "modules/glslang/shader_compile.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 #define FORCE_SEPARATE_PRESENT_QUEUE 0

@@ -36,8 +36,8 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
-#include "scene/property_utils.h"
-#include "scene/resources/packed_scene.h"
+#include "scene/property_utils.h" // validator: ignore // FIXME: Legacy include.
+#include "scene/resources/packed_scene.h" // validator: ignore // FIXME: Legacy include.
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)

@@ -44,7 +44,7 @@
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 void LineEdit::edit(bool p_hide_focus) {

@@ -32,7 +32,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
-#include "scene/main/window.h"
+#include "scene/main/window.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"

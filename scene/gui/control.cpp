@@ -45,7 +45,7 @@
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/scene/gui/control_editor_plugin.h"
+#include "editor/scene/gui/control_editor_plugin.h" // validator: ignore // FIXME: Legacy include.
 #endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.

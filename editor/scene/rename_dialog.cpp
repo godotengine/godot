@@ -44,7 +44,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 
 RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	scene_tree_editor = p_scene_tree_editor;

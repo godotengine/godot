@@ -90,7 +90,7 @@
 #endif
 
 #include "core/config/project_settings.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"

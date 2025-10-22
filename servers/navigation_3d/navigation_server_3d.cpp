@@ -32,7 +32,7 @@
 #include "navigation_server_3d.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "scene/main/node.h"
+#include "scene/main/node.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/navigation_3d/navigation_server_3d_dummy.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;

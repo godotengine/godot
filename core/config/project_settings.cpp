@@ -43,10 +43,10 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server.h" // validator: ignore // FIXME: Legacy include.
 
 #ifdef TOOLS_ENABLED
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // For mono. // validator: ignore // FIXME: Legacy include.
 #endif // TOOLS_ENABLED
 
 ProjectSettings *ProjectSettings::get_singleton() {
