@@ -718,6 +718,15 @@ void GDExtension::_register_main_loop_callbacks(GDExtensionClassLibraryPtr p_lib
 	self->frame_callback = p_callbacks->frame_func;
 }
 
+void GDExtension::_register_source_code_info(GDExtensionClassLibraryPtr p_library, const GDExtensionEditorSourceCodeInfo *p_info) {
+#ifdef TOOLS_ENABLED
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	self->extension_binding_name = *reinterpret_cast<const String *>(p_info->binding_name);
+	self->source_code_base_path = *reinterpret_cast<const String *>(p_info->source_base_path);
+	self->get_class_source_path_callback = p_info->get_class_source_path_func;
+#endif
+}
+
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), vformat("Attempt to register interface function '%s', which appears to be already registered.", p_function_name));
 	gdextension_interface_functions.insert(p_function_name, p_function_pointer);
@@ -766,6 +775,33 @@ bool GDExtension::is_library_open() const {
 	return loader.is_valid() && loader->is_library_open();
 }
 
+String GDExtension::get_extension_binding_name() const {
+#ifdef TOOLS_ENABLED
+	return extension_binding_name;
+#else
+	return String();
+#endif
+}
+
+String GDExtension::get_source_base_path() const {
+#ifdef TOOLS_ENABLED
+	return source_code_base_path;
+#else
+	return String();
+#endif
+}
+
+String GDExtension::get_class_source_path(const StringName &p_class_name) const {
+#ifdef TOOLS_ENABLED
+	if (get_class_source_path_callback) {
+		String source_path;
+		get_class_source_path_callback(reinterpret_cast<GDExtensionConstStringNamePtr>(&p_class_name), reinterpret_cast<GDExtensionStringPtr *>(&source_path));
+		return source_path;
+	}
+#endif
+	return String();
+}
+
 GDExtension::InitializationLevel GDExtension::get_minimum_library_initialization_level() const {
 	ERR_FAIL_COND_V(!is_library_open(), INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
@@ -795,6 +831,10 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 void GDExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
 	ClassDB::bind_method(D_METHOD("get_minimum_library_initialization_level"), &GDExtension::get_minimum_library_initialization_level);
+
+	ClassDB::bind_method(D_METHOD("get_extension_binding_name"), &GDExtension::get_extension_binding_name);
+	ClassDB::bind_method(D_METHOD("get_source_base_path"), &GDExtension::get_source_base_path);
+	ClassDB::bind_method(D_METHOD("get_class_source_path", "class_name"), &GDExtension::get_class_source_path);
 
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_CORE);
 	BIND_ENUM_CONSTANT(INITIALIZATION_LEVEL_SERVERS);
@@ -839,6 +879,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
 	register_interface_function("register_main_loop_callbacks", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_main_loop_callbacks);
+	register_interface_function("editor_register_source_code_info", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_source_code_info);
 }
 
 void GDExtension::finalize_gdextensions() {

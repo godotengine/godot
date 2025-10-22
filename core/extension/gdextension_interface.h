@@ -832,6 +832,14 @@ typedef struct {
 	GDExtensionMainLoopFrameCallback frame_func;
 } GDExtensionMainLoopCallbacks;
 
+typedef void (*GDExtensionEditorGetClassSourcePathCallback)(GDExtensionConstStringNamePtr p_class_name, GDExtensionStringPtr *r_source_path);
+
+typedef struct {
+	GDExtensionConstStringPtr binding_name;
+	GDExtensionConstStringPtr source_base_path;
+	GDExtensionEditorGetClassSourcePathCallback get_class_source_path_func;
+} GDExtensionEditorSourceCodeInfo;
+
 /**
  * @name get_godot_version
  * @since 4.1
@@ -3233,6 +3241,17 @@ typedef void (*GDExtensionInterfaceEditorRegisterGetClassesUsedCallback)(GDExten
  * @param p_callbacks A pointer to the structure that contains the callbacks.
  */
 typedef void (*GDExtensionInterfaceRegisterMainLoopCallbacks)(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
+
+/**
+ * @name editor_register_source_code_info
+ * @since 4.6
+ *
+ * Registers information about the extensions source code for use in the editor.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_info A pointer to the structure that contains the info.
+ */
+typedef void (*GDExtensionInterfaceEditorRegisterSourceCodeInfo)(GDExtensionClassLibraryPtr p_library, const GDExtensionEditorSourceCodeInfo *p_info);
 
 #ifdef __cplusplus
 }
