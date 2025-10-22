@@ -1683,10 +1683,10 @@ public:
 			nodes.push_back(p_node);
 			node_map[nullptr].push_back(p_node);
 
-			LocalVector<GDScriptParser::Node *> nodes;
-			p_node->get_nodes(nodes, false);
-			for (GDScriptParser::Node *node : nodes) {
-				_insert_entry(node, p_node);
+			LocalVector<GDScriptParser::Node *> _nodes;
+			p_node->get_nodes(_nodes, false);
+			for (GDScriptParser::Node *_node : _nodes) {
+				_insert_entry(_node, p_node);
 			}
 		}
 
