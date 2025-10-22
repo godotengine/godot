@@ -39,6 +39,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/settings/editor_command_palette.h"
@@ -50,7 +51,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
@@ -2630,10 +2630,11 @@ void ThemeTypeEditor::_update_type_items() {
 		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
+			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
+			item_editor->set_editing_integer(true);
 			item_editor->set_step(1);
 			item_editor->set_allow_lesser(true);
 			item_editor->set_allow_greater(true);
@@ -2644,7 +2645,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
-				item_editor->set_editable(false);
+				item_editor->set_read_only(true);
 			}
 
 			_add_focusable(item_editor);
@@ -2702,10 +2703,11 @@ void ThemeTypeEditor::_update_type_items() {
 		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT_SIZE, show_default);
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
+			EditorSpinSlider *item_editor = memnew(EditorSpinSlider);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
 			item_editor->set_max(100000);
+			item_editor->set_editing_integer(true);
 			item_editor->set_step(1);
 			item_editor->set_allow_lesser(true);
 			item_editor->set_allow_greater(true);
@@ -2716,7 +2718,7 @@ void ThemeTypeEditor::_update_type_items() {
 				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_font_size(E.key, edited_type));
-				item_editor->set_editable(false);
+				item_editor->set_read_only(true);
 			}
 
 			_add_focusable(item_editor);
