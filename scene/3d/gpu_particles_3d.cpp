@@ -31,9 +31,12 @@
 #include "gpu_particles_3d.h"
 #include "gpu_particles_3d.compat.inc"
 
+#include "core/io/resource_loader.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
 
@@ -434,6 +437,220 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+void GPUParticles3D::set_node_selected(const NodePath &p_path) {
+	Node *sel = get_node(p_path);
+	if (!sel) {
+		return;
+	}
+
+	if (!sel->is_class("Node3D")) {
+		return;
+	}
+
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(sel);
+	if (!mi || mi->get_mesh().is_null()) {
+		return;
+	}
+
+	geometry = mi->get_mesh()->get_faces();
+
+	if (geometry.size() == 0) {
+		return;
+	}
+
+	Transform3D geom_xform = get_global_transform().affine_inverse() * mi->get_global_transform();
+
+	int gc = geometry.size();
+	Face3 *w = geometry.ptrw();
+
+	for (int i = 0; i < gc; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
+		}
+	}
+
+	update_configuration_warnings();
+}
+
+bool GPUParticles3D::_generate(Vector<Vector3> &points, Vector<Vector3> &normals, int &emission_amount, int &emission_fill) {
+	bool use_normals = emission_fill == 1;
+
+	if (emission_fill < 2) {
+		float area_accum = 0;
+		RBMap<float, int> triangle_area_map;
+
+		for (int i = 0; i < geometry.size(); i++) {
+			float area = geometry[i].get_area();
+			if (area < CMP_EPSILON) {
+				continue;
+			}
+			triangle_area_map[area_accum] = i;
+			area_accum += area;
+		}
+
+		if (!triangle_area_map.size() || area_accum == 0) {
+			return false;
+		}
+
+		int emissor_count = emission_amount;
+
+		for (int i = 0; i < emissor_count; i++) {
+			float areapos = Math::random(0.0f, area_accum);
+
+			RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
+			ERR_FAIL_COND_V(!E, false);
+			int index = E->value;
+			ERR_FAIL_INDEX_V(index, geometry.size(), false);
+
+			// ok FINALLY get face
+			Face3 face = geometry[index];
+			//now compute some position inside the face...
+
+			Vector3 pos = face.get_random_point_inside();
+
+			points.push_back(pos);
+
+			if (use_normals) {
+				Vector3 normal = face.get_plane().normal;
+				normals.push_back(normal);
+			}
+		}
+	} else {
+		int gcount = geometry.size();
+
+		if (gcount == 0) {
+			return false;
+		}
+
+		const Face3 *r = geometry.ptr();
+
+		AABB aabb;
+
+		for (int i = 0; i < gcount; i++) {
+			for (int j = 0; j < 3; j++) {
+				if (i == 0 && j == 0) {
+					aabb.position = r[i].vertex[j];
+				} else {
+					aabb.expand_to(r[i].vertex[j]);
+				}
+			}
+		}
+
+		int emissor_count = emission_amount;
+
+		for (int i = 0; i < emissor_count; i++) {
+			int attempts = 5;
+
+			for (int j = 0; j < attempts; j++) {
+				Vector3 dir;
+				dir[Math::rand() % 3] = 1.0;
+				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
+
+				Vector3 ofsv = ofs + aabb.size * dir;
+
+				//space it a little
+				ofs -= dir;
+				ofsv += dir;
+
+				float max = -1e7, min = 1e7;
+
+				for (int k = 0; k < gcount; k++) {
+					const Face3 &f3 = r[k];
+
+					Vector3 res;
+					if (f3.intersects_segment(ofs, ofsv, &res)) {
+						res -= ofs;
+						float d = dir.dot(res);
+
+						if (d < min) {
+							min = d;
+						}
+						if (d > max) {
+							max = d;
+						}
+					}
+				}
+
+				if (max < min) {
+					continue; //lost attempt
+				}
+
+				float val = min + (max - min) * Math::randf();
+
+				Vector3 point = ofs + dir * val;
+
+				points.push_back(point);
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
+void GPUParticles3D::generate_emission_points(const NodePath &p_path, int p_emission_amount, int p_emission_source) {
+	set_node_selected(p_path);
+
+	Vector<Vector3> points;
+	Vector<Vector3> normals;
+
+	if (!_generate(points, normals, p_emission_amount, p_emission_source)) {
+		return;
+	}
+	int point_count = points.size();
+
+	int w = 2048;
+	int h = (point_count / 2048) + 1;
+
+	Vector<uint8_t> point_img;
+	point_img.resize(w * h * 3 * sizeof(float));
+
+	{
+		uint8_t *iw = point_img.ptrw();
+		memset(iw, 0, w * h * 3 * sizeof(float));
+		const Vector3 *r = points.ptr();
+		float *wf = reinterpret_cast<float *>(iw);
+		for (int i = 0; i < point_count; i++) {
+			wf[i * 3 + 0] = r[i].x;
+			wf[i * 3 + 1] = r[i].y;
+			wf[i * 3 + 2] = r[i].z;
+		}
+	}
+	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
+	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
+
+	Ref<ParticleProcessMaterial> mat = process_material;
+	ERR_FAIL_COND(mat.is_null());
+
+	if (normals.size() > 0) {
+		mat->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+		mat->set_emission_point_count(point_count);
+		mat->set_emission_point_texture(tex);
+
+		Vector<uint8_t> point_img2;
+		point_img2.resize(w * h * 3 * sizeof(float));
+
+		{
+			uint8_t *iw = point_img2.ptrw();
+			memset(iw, 0, w * h * 3 * sizeof(float));
+			const Vector3 *r = normals.ptr();
+			float *wf = reinterpret_cast<float *>(iw);
+			for (int i = 0; i < point_count; i++) {
+				wf[i * 3 + 0] = r[i].x;
+				wf[i * 3 + 1] = r[i].y;
+				wf[i * 3 + 2] = r[i].z;
+			}
+		}
+
+		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
+		mat->set_emission_normal_texture(ImageTexture::create_from_image(image2));
+	} else {
+		mat->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
+		mat->set_emission_point_count(point_count);
+		mat->set_emission_point_texture(tex);
+	}
+}
+
 void GPUParticles3D::restart(bool p_keep_seed) {
 	if (!p_keep_seed && !use_fixed_seed) {
 		set_seed(Math::rand());
@@ -793,6 +1010,8 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles3D::restart, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &GPUParticles3D::capture_aabb);
 
+	ClassDB::bind_method(D_METHOD("generate_emission_points", "path", "emission_amount", "emission_source"), &GPUParticles3D::generate_emission_points);
+
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles3D::set_sub_emitter);
 	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles3D::get_sub_emitter);
 
@@ -871,6 +1090,10 @@ void GPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
+
+	BIND_ENUM_CONSTANT(SURFACE_POINTS);
+	BIND_ENUM_CONSTANT(SURFACE_POINTS_AND_NORMAL);
+	BIND_ENUM_CONSTANT(VOLUME);
 
 	ADD_PROPERTY_DEFAULT("seed", 0);
 }
