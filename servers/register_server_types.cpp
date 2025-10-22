@@ -134,7 +134,7 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
-static MovieWriterPNGWAV *writer_pngwav = nullptr;
+[[maybe_unused]] static MovieWriterPNGWAV *writer_pngwav = nullptr;
 
 void register_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Extensions");
