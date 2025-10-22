@@ -81,7 +81,7 @@ static Error process_code(const String &p_code, const Point2i &p_pos, ProcessCod
 	FAIL_COND_V_MSG(code_shaped_text == RID(), FAILED, "Creating text buffer failed.");
 	RID font = text_server->create_font();
 	FAIL_COND_V_MSG(font == RID(), FAILED, "Creating font failed.");
-	text_server->font_set_data_ptr(font, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+	text_server->font_set_data_ptr(font, _font_Inter_Regular, _font_Inter_Regular_size);
 	text_server->font_set_allow_system_fallback(font, true);
 	Array fonts = { font };
 	text_server->shaped_text_add_string(code_shaped_text, p_code, fonts, 12);
