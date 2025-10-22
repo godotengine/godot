@@ -334,6 +334,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_accept",                                     TTRC("Accept") },
 	{ "ui_select",                                     TTRC("Select") },
 	{ "ui_cancel",                                     TTRC("Cancel") },
+	{ "ui_close_dialog",                               TTRC("Close Dialog") },
 	{ "ui_focus_next",                                 TTRC("Focus Next") },
 	{ "ui_focus_prev",                                 TTRC("Focus Prev") },
 	{ "ui_left",                                       TTRC("Left") },
@@ -435,6 +436,15 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
 	default_builtin_cache.insert("ui_cancel", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
+	default_builtin_cache.insert("ui_close_dialog", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::W | KeyModifierMask::META));
+	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
+	default_builtin_cache.insert("ui_close_dialog.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::TAB));
