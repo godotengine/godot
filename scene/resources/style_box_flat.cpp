@@ -455,8 +455,8 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 					}
 
 					// Modified superellipse formula to produce borders of consistent thickness.
-					x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_cosine) * ring_scale[corner_idx].x + outer_points[corner_idx].x - (xy_offset + offset_0) * SIGN(angle_cosine);
-					y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_sine) * ring_scale[corner_idx].y + outer_points[corner_idx].y - (xy_offset + offset_0) * SIGN(angle_sine);
+					x = Math::pow(Math::abs(angle_cosine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_cosine) * ring_scale[corner_idx].x + outer_points[corner_idx].x - xy_offset * SIGN(angle_cosine);
+					y = Math::pow(Math::abs(angle_sine), smoothing_exponent) * ring_corner_radius[corner_idx] * SIGN(angle_sine) * ring_scale[corner_idx].y + outer_points[corner_idx].y - xy_offset * SIGN(angle_sine);
 					// Prevents overflow artifacts.
 					x = CLAMP(x, ring_rect.position.x, ring_rect.position.x + ring_rect.size.x);
 					y = CLAMP(y, ring_rect.position.y, ring_rect.position.y + ring_rect.size.y);
@@ -710,7 +710,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 						border_color_blend, border_color, corner_detail, skew, false, corner_smoothing);
 			}
 			// Add antialiasing on the ring outer border
-			draw_rounded_rectangle(verts, indices, colors, border_style_rect.grow(corner_radius_center_offset), adapted_corner, outer_rect_aa_transparent, outer_rect_aa_colored,
+			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner, outer_rect_aa_transparent, outer_rect_aa_colored,
 					border_color, border_color_alpha, corner_detail, skew, false, corner_smoothing);
 		}
 	}
