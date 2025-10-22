@@ -390,8 +390,9 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 	for (int corner_idx = 0; corner_idx < 4; corner_idx++) {
 		const bool use_smoothing = (!Math::is_equal_approx(corner_smoothing[corner_idx], (real_t)1.0f) && corner_radius[corner_idx] > (real_t)0.0f);
-		real_t smoothing_exponent_inner, smoothing_exponent_outer;
-		real_t xy_ring_offset;
+		real_t smoothing_exponent_inner = 1.0f;
+		real_t smoothing_exponent_outer = 1.0f;
+		real_t xy_ring_offset = 0.0f;
 
 		if (use_smoothing) {
 			smoothing_exponent_inner = (real_t)2.0f / Math::pow((real_t)2.0f, corner_smoothing[corner_idx]);
