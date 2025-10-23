@@ -207,7 +207,7 @@ vec3 tonemap_reinhard(vec3 color) {
 	float white_squared = params.tonemapper_params.x;
 
 	// Updated version of the Reinhard tonemapper supporting HDR rendering.
-	return color * (1.0f + color / (white_squared / params.output_max_value)) / (1.0f + color / params.output_max_value);
+	return color * (1.0f + color / white_squared) / (1.0f + color / params.output_max_value);
 }
 
 vec3 tonemap_filmic(vec3 color) {

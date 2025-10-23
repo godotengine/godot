@@ -279,7 +279,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
 		// Linear has no tonemapping parameters
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
-		tonemap_parameters.white_squared = white * white;
+		tonemap_parameters.white_squared = (white * white) / p_output_max_value;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
 		// These constants must match those in the shader code.
 		// exposure_bias: Input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
