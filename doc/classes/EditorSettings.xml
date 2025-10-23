@@ -1078,6 +1078,9 @@
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
 		</member>
+		<member name="interface/scene_tabs/auto_select_current_scene_file" type="bool" setter="" getter="">
+			If [code]true[/code], the FileSystem dock will automatically navigate to the currently selected scene tab.
+		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
 		</member>
