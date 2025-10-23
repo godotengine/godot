@@ -183,6 +183,7 @@ void init_language() {
 }
 
 void finish_language() {
+	GDScriptCache::clear();
 	GDScriptLanguage::get_singleton()->finish();
 	ScriptServer::global_classes_clear();
 }

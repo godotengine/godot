@@ -159,7 +159,7 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 
 	MutexLock lock(singleton->mutex);
 
-	if (singleton->cleared) {
+	if (singleton->clearing) {
 		return;
 	}
 
@@ -183,7 +183,7 @@ void GDScriptCache::remove_script(const String &p_path) {
 
 	MutexLock lock(singleton->mutex);
 
-	if (singleton->cleared) {
+	if (singleton->clearing) {
 		return;
 	}
 
@@ -451,10 +451,10 @@ void GDScriptCache::clear() {
 
 	MutexLock lock(singleton->mutex);
 
-	if (singleton->cleared) {
+	if (singleton->clearing) {
 		return;
 	}
-	singleton->cleared = true;
+	singleton->clearing = true;
 
 	singleton->parser_inverse_dependencies.clear();
 
@@ -486,6 +486,8 @@ void GDScriptCache::clear() {
 	singleton->shallow_gdscript_cache.clear();
 	singleton->full_gdscript_cache.clear();
 	singleton->static_gdscript_cache.clear();
+
+	singleton->clearing = false;
 }
 
 GDScriptCache::GDScriptCache() {
@@ -493,7 +495,7 @@ GDScriptCache::GDScriptCache() {
 }
 
 GDScriptCache::~GDScriptCache() {
-	if (!cleared) {
+	if (!clearing) {
 		clear();
 	}
 	singleton = nullptr;
