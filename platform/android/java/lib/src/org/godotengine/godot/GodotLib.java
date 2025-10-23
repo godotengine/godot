@@ -296,6 +296,11 @@ public class GodotLib {
 	public static native void onRendererPaused();
 
 	/**
+	 * Invoked when the screen orientation changes.
+	 */
+	static native void onScreenRotationChange();
+
+	/**
 	 * @return true if input must be dispatched from the render thread. If false, input is
 	 * dispatched from the UI thread.
 	 */
