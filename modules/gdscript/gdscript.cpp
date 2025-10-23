@@ -224,15 +224,16 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instantiate();
+
+		RefCounted *r = Object::cast_to<RefCounted>(owner);
+		if (r) {
+			ref = Ref<RefCounted>(r);
+		}
 	} else {
-		owner = memnew(RefCounted); //by default, no base means use reference
+		ref = memnew(RefCounted); // By default, no base means use reference.
+		owner = ref.ptr();
 	}
 	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
-
-	RefCounted *r = Object::cast_to<RefCounted>(owner);
-	if (r) {
-		ref = Ref<RefCounted>(r);
-	}
 
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r_error);
 	if (!instance) {

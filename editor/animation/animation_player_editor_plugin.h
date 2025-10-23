@@ -334,7 +334,7 @@ public:
 class AnimationTrackKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTrackKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationTrackKeyEdit *atk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationTrackKeyEdit> atk_plugin = nullptr;
 
 public:
 	bool has_main_screen() const override { return false; }
@@ -360,7 +360,7 @@ public:
 class AnimationMarkerKeyEditEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationMarkerKeyEditEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginAnimationMarkerKeyEdit *amk_plugin = nullptr;
+	Ref<EditorInspectorPluginAnimationMarkerKeyEdit> amk_plugin = nullptr;
 
 public:
 	bool has_main_screen() const override { return false; }
