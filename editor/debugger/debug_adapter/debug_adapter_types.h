@@ -37,6 +37,7 @@ namespace DAP {
 enum ErrorType {
 	UNKNOWN,
 	WRONG_PATH,
+	WRONG_SCENE,
 	NOT_RUNNING,
 	TIMEOUT,
 	UNKNOWN_PLATFORM,
