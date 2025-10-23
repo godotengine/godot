@@ -86,16 +86,6 @@ vec3 apply_color_correction(vec3 color) {
 #endif // USE_1D_LUT
 #endif // USE_COLOR_CORRECTION
 
-#ifdef USE_BCS
-vec3 apply_bcs(vec3 color) {
-	color = mix(vec3(0.0), color, brightness);
-	color = mix(vec3(0.5), color, contrast);
-	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, saturation);
-
-	return color;
-}
-#endif
-
 in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
@@ -140,12 +130,33 @@ void main() {
 #endif // USE_GLOW
 
 	color.rgb = srgb_to_linear(color.rgb);
+
 	color.rgb = apply_tonemapping(color.rgb, white);
-	color.rgb = linear_to_srgb(color.rgb);
 
 #ifdef USE_BCS
-	color.rgb = apply_bcs(color.rgb);
-#endif
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear-encoded values.
+	color.rgb = color.rgb * brightness;
+
+	color.rgb = linear_to_srgb(color.rgb);
+
+	// Apply contrast:
+	// By applying contrast to RGB values that are perceptually uniform (nonlinear),
+	// the darkest values are not hard-clipped as badly, which produces a
+	// higher quality contrast adjustment and maintains compatibility with
+	// existing projects.
+	color.rgb = mix(vec3(0.5), color.rgb, contrast);
+
+	// Apply saturation:
+	// By applying saturation adjustment to nonlinear sRGB-encoded values with
+	// even weights the preceived brightness of blues are affected, but this
+	// maintains compatibility with existing projects.
+	color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, saturation);
+#else
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // USE_BCS
 
 #ifdef USE_COLOR_CORRECTION
 	color.rgb = apply_color_correction(color.rgb);
