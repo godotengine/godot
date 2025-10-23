@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  java_godot_view_wrapper.h                                             */
+/*  OvrWindowSurfaceFactory.java                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+package org.godotengine.godot.render;
 
-#include "jni_utils.h"
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
+import android.view.SurfaceHolder;
 
-#include "core/math/vector2.h"
+/**
+ * EGL window surface factory for the Oculus mobile VR SDK.
+ */
+class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
+	private final static int[] SURFACE_ATTRIBS = {
+		EGL14.EGL_WIDTH, 16,
+		EGL14.EGL_HEIGHT, 16,
+		EGL14.EGL_NONE
+	};
 
-#include <android/log.h>
-#include <jni.h>
-
-// Class that makes functions in java/src/org/godotengine/godot/GodotRenderView.java callable from C++
-class GodotJavaViewWrapper {
-private:
-	jclass _cls;
-
-	jobject _godot_view;
-
-	jmethodID _can_capture_pointer = 0;
-	jmethodID _request_pointer_capture = 0;
-	jmethodID _release_pointer_capture = 0;
-
-	jmethodID _configure_pointer_icon = 0;
-	jmethodID _set_pointer_icon = 0;
-
-public:
-	GodotJavaViewWrapper(jobject godot_view);
-
-	bool can_update_pointer_icon() const;
-	bool can_capture_pointer() const;
-
-	void request_pointer_capture();
-	void release_pointer_capture();
-
-	void configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot);
-	void set_pointer_icon(int pointer_type);
-
-	~GodotJavaViewWrapper();
-};
+	@Override
+	public EGLSurface createWindowSurface(EGLDisplay display, EGLConfig config, SurfaceHolder surfaceHolder) {
+		return EGL14.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS, 0);
+	}
+}

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  OvrContextFactory.java                                                */
+/*  RenderThread.kt                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+@file:JvmName("RenderThread")
+package org.godotengine.godot.render
 
-import org.godotengine.godot.gl.GLSurfaceView;
-
-import android.opengl.EGL14;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
+import android.view.SurfaceHolder
+import java.lang.ref.WeakReference
 
 /**
- * EGL Context factory for the Oculus mobile VR SDK.
+ * Base class for the OpenGL / Vulkan render thread implementations.
  */
-public class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
-	private static final int[] CONTEXT_ATTRIBS = {
-		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE
-	};
+internal abstract class RenderThread(tag: String) : Thread(tag) {
 
-	@Override
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		return egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, CONTEXT_ATTRIBS);
-	}
+	/**
+	 * Queues an event on the render thread
+	 */
+	abstract fun queueEvent(event: Runnable)
 
-	@Override
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-		egl.eglDestroyContext(display, context);
-	}
+	/**
+	 * Request the thread to exit and block until it's done.
+	 */
+	abstract fun requestExitAndWait()
+
+	/**
+	 * Invoked when the app resumes.
+	 */
+	abstract fun onResume()
+
+	/**
+	 * Invoked when the app pauses.
+	 */
+	abstract fun onPause()
+
+	abstract fun setRenderMode(renderMode: Renderer.RenderMode)
+
+	abstract fun getRenderMode(): Renderer.RenderMode
+
+	abstract fun requestRender()
+
+	/**
+	 * Invoked when the [android.view.Surface] has been created.
+	 */
+	open fun surfaceCreated(holder: SurfaceHolder, surfaceViewWeakRef: WeakReference<GLSurfaceView>? = null) { }
+
+	/**
+	 * Invoked following structural updates to [android.view.Surface].
+	 */
+	open fun surfaceChanged(holder: SurfaceHolder, width: Int, height: Int) { }
+
+	/**
+	 * Invoked when the [android.view.Surface] is no longer available.
+	 */
+	open fun surfaceDestroyed(holder: SurfaceHolder) { }
+
+	open fun makeEglCurrent(windowId: Int): Boolean = false
+
+	open fun eglSwapBuffers(windowId: Int) {}
+
+	open fun releaseCurrentGLWindow(windowId: Int) {}
 }

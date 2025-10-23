@@ -318,7 +318,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
-			godotFragment?.godot?.renderView?.inputHandler?.apply {
+			godotFragment?.godot?.godotInputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)

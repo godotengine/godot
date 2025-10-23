@@ -30,11 +30,10 @@
 
 package org.godotengine.godot.utils;
 
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLDisplay;
 import android.util.Log;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
 
 /**
  * Contains GL utilities methods.
@@ -81,74 +80,115 @@ public class GLUtils {
 	};
 
 	private static final int[] ATTRIBUTES = new int[] {
-		EGL10.EGL_BUFFER_SIZE,
-		EGL10.EGL_ALPHA_SIZE,
-		EGL10.EGL_BLUE_SIZE,
-		EGL10.EGL_GREEN_SIZE,
-		EGL10.EGL_RED_SIZE,
-		EGL10.EGL_DEPTH_SIZE,
-		EGL10.EGL_STENCIL_SIZE,
-		EGL10.EGL_CONFIG_CAVEAT,
-		EGL10.EGL_CONFIG_ID,
-		EGL10.EGL_LEVEL,
-		EGL10.EGL_MAX_PBUFFER_HEIGHT,
-		EGL10.EGL_MAX_PBUFFER_PIXELS,
-		EGL10.EGL_MAX_PBUFFER_WIDTH,
-		EGL10.EGL_NATIVE_RENDERABLE,
-		EGL10.EGL_NATIVE_VISUAL_ID,
-		EGL10.EGL_NATIVE_VISUAL_TYPE,
-		0x3030, // EGL10.EGL_PRESERVED_RESOURCES,
-		EGL10.EGL_SAMPLES,
-		EGL10.EGL_SAMPLE_BUFFERS,
-		EGL10.EGL_SURFACE_TYPE,
-		EGL10.EGL_TRANSPARENT_TYPE,
-		EGL10.EGL_TRANSPARENT_RED_VALUE,
-		EGL10.EGL_TRANSPARENT_GREEN_VALUE,
-		EGL10.EGL_TRANSPARENT_BLUE_VALUE,
-		0x3039, // EGL10.EGL_BIND_TO_TEXTURE_RGB,
-		0x303A, // EGL10.EGL_BIND_TO_TEXTURE_RGBA,
-		0x303B, // EGL10.EGL_MIN_SWAP_INTERVAL,
-		0x303C, // EGL10.EGL_MAX_SWAP_INTERVAL,
-		EGL10.EGL_LUMINANCE_SIZE,
-		EGL10.EGL_ALPHA_MASK_SIZE,
-		EGL10.EGL_COLOR_BUFFER_TYPE,
-		EGL10.EGL_RENDERABLE_TYPE,
-		0x3042 // EGL10.EGL_CONFORMANT
+		EGL14.EGL_BUFFER_SIZE,
+		EGL14.EGL_ALPHA_SIZE,
+		EGL14.EGL_BLUE_SIZE,
+		EGL14.EGL_GREEN_SIZE,
+		EGL14.EGL_RED_SIZE,
+		EGL14.EGL_DEPTH_SIZE,
+		EGL14.EGL_STENCIL_SIZE,
+		EGL14.EGL_CONFIG_CAVEAT,
+		EGL14.EGL_CONFIG_ID,
+		EGL14.EGL_LEVEL,
+		EGL14.EGL_MAX_PBUFFER_HEIGHT,
+		EGL14.EGL_MAX_PBUFFER_PIXELS,
+		EGL14.EGL_MAX_PBUFFER_WIDTH,
+		EGL14.EGL_NATIVE_RENDERABLE,
+		EGL14.EGL_NATIVE_VISUAL_ID,
+		EGL14.EGL_NATIVE_VISUAL_TYPE,
+		0x3030, // EGL14.EGL_PRESERVED_RESOURCES,
+		EGL14.EGL_SAMPLES,
+		EGL14.EGL_SAMPLE_BUFFERS,
+		EGL14.EGL_SURFACE_TYPE,
+		EGL14.EGL_TRANSPARENT_TYPE,
+		EGL14.EGL_TRANSPARENT_RED_VALUE,
+		EGL14.EGL_TRANSPARENT_GREEN_VALUE,
+		EGL14.EGL_TRANSPARENT_BLUE_VALUE,
+		EGL14.EGL_BIND_TO_TEXTURE_RGB,
+		EGL14.EGL_BIND_TO_TEXTURE_RGBA,
+		EGL14.EGL_MIN_SWAP_INTERVAL,
+		EGL14.EGL_MAX_SWAP_INTERVAL,
+		EGL14.EGL_LUMINANCE_SIZE,
+		EGL14.EGL_ALPHA_MASK_SIZE,
+		EGL14.EGL_COLOR_BUFFER_TYPE,
+		EGL14.EGL_RENDERABLE_TYPE,
+		EGL14.EGL_CONFORMANT
 	};
 
 	private GLUtils() {}
 
-	public static void checkEglError(String tag, String prompt, EGL10 egl) {
+	public static void checkEglError(String tag, String prompt) {
 		int error;
-		while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
+		while ((error = EGL14.eglGetError()) != EGL14.EGL_SUCCESS) {
 			Log.e(tag, String.format("%s: EGL error: 0x%x", prompt, error));
 		}
 	}
 
-	public static void printConfigs(EGL10 egl, EGLDisplay display,
+	public static void printConfigs(EGLDisplay display,
 			EGLConfig[] configs) {
 		int numConfigs = configs.length;
 		Log.v(TAG, String.format("%d configurations", numConfigs));
 		for (int i = 0; i < numConfigs; i++) {
 			Log.v(TAG, String.format("Configuration %d:\n", i));
-			printConfig(egl, display, configs[i]);
+			printConfig(display, configs[i]);
 		}
 	}
 
-	private static void printConfig(EGL10 egl, EGLDisplay display,
+	private static void printConfig(EGLDisplay display,
 			EGLConfig config) {
 		int[] value = new int[1];
 		for (int i = 0; i < ATTRIBUTES.length; i++) {
 			int attribute = ATTRIBUTES[i];
 			String name = ATTRIBUTES_NAMES[i];
-			if (egl.eglGetConfigAttrib(display, config, attribute, value)) {
+			if (EGL14.eglGetConfigAttrib(display, config, attribute, value, 0)) {
 				Log.i(TAG, String.format("  %s: %d\n", name, value[0]));
 			} else {
 				// Log.w(TAG, String.format("  %s: failed\n", name));
-				while (egl.eglGetError() != EGL10.EGL_SUCCESS) {
+				while (EGL14.eglGetError() != EGL14.EGL_SUCCESS) {
 					// Continue.
 				}
 			}
 		}
+	}
+
+	public static String getErrorString(int error) {
+		switch (error) {
+			case EGL14.EGL_SUCCESS:
+				return "EGL_SUCCESS";
+			case EGL14.EGL_NOT_INITIALIZED:
+				return "EGL_NOT_INITIALIZED";
+			case EGL14.EGL_BAD_ACCESS:
+				return "EGL_BAD_ACCESS";
+			case EGL14.EGL_BAD_ALLOC:
+				return "EGL_BAD_ALLOC";
+			case EGL14.EGL_BAD_ATTRIBUTE:
+				return "EGL_BAD_ATTRIBUTE";
+			case EGL14.EGL_BAD_CONFIG:
+				return "EGL_BAD_CONFIG";
+			case EGL14.EGL_BAD_CONTEXT:
+				return "EGL_BAD_CONTEXT";
+			case EGL14.EGL_BAD_CURRENT_SURFACE:
+				return "EGL_BAD_CURRENT_SURFACE";
+			case EGL14.EGL_BAD_DISPLAY:
+				return "EGL_BAD_DISPLAY";
+			case EGL14.EGL_BAD_MATCH:
+				return "EGL_BAD_MATCH";
+			case EGL14.EGL_BAD_NATIVE_PIXMAP:
+				return "EGL_BAD_NATIVE_PIXMAP";
+			case EGL14.EGL_BAD_NATIVE_WINDOW:
+				return "EGL_BAD_NATIVE_WINDOW";
+			case EGL14.EGL_BAD_PARAMETER:
+				return "EGL_BAD_PARAMETER";
+			case EGL14.EGL_BAD_SURFACE:
+				return "EGL_BAD_SURFACE";
+			case EGL14.EGL_CONTEXT_LOST:
+				return "EGL_CONTEXT_LOST";
+			default:
+				return getHex(error);
+		}
+	}
+
+	private static String getHex(int value) {
+		return "0x" + Integer.toHexString(value);
 	}
 }

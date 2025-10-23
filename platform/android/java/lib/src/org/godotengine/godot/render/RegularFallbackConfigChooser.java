@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  OvrWindowSurfaceFactory.java                                          */
+/*  RegularFallbackConfigChooser.java                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.gl.GLSurfaceView;
+import android.opengl.EGLConfig;
+import android.opengl.EGLDisplay;
+import android.util.Log;
 
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
-import javax.microedition.khronos.egl.EGLSurface;
+/* Fallback if the requested configuration is not supported */
+class RegularFallbackConfigChooser extends RegularConfigChooser {
+	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
-/**
- * EGL window surface factory for the Oculus mobile VR SDK.
- */
-public class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
-	private final static int[] SURFACE_ATTRIBS = {
-		EGL10.EGL_WIDTH, 16,
-		EGL10.EGL_HEIGHT, 16,
-		EGL10.EGL_NONE
-	};
+	private final RegularConfigChooser fallback;
 
-	@Override
-	public EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config,
-			Object nativeWindow) {
-		return egl.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS);
+	public RegularFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, RegularConfigChooser fallback) {
+		super(r, g, b, a, depth, stencil);
+		this.fallback = fallback;
 	}
 
 	@Override
-	public void destroySurface(EGL10 egl, EGLDisplay display, EGLSurface surface) {
-		egl.eglDestroySurface(display, surface);
+	public EGLConfig chooseConfig(EGLDisplay display, EGLConfig[] configs) {
+		EGLConfig ec = super.chooseConfig(display, configs);
+		if (ec == null) {
+			Log.w(TAG, "Trying ConfigChooser fallback");
+			ec = fallback.chooseConfig(display, configs);
+		}
+		return ec;
 	}
 }
