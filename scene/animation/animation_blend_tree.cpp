@@ -272,7 +272,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 			pi.time = cur_playback_time;
 			pi.delta = cur_delta;
 		} else {
-			pi.time = anim_size - cur_playback_time;
+			pi.time = cur_playback_time;
 			pi.delta = -cur_delta;
 		}
 		pi.weight = 1.0;
