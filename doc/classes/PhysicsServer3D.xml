@@ -720,14 +720,14 @@
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_applied_torque" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
@@ -777,14 +777,14 @@
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_applied_torque" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_flag" qualifiers="const">
@@ -842,14 +842,14 @@
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="hinge_joint_get_applied_torque" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -989,7 +989,7 @@
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="pin_joint_get_local_a" qualifiers="const">

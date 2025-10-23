@@ -13,13 +13,13 @@
 		<method name="get_applied_force" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the applied_force to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied force to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="get_applied_torque" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the applied_torqu to the joint. Notice: This only returns a correct value in Jolt Physics
+				Returns the applied torque to the joint. Notice: This only returns a correct value in Jolt Physics
 			</description>
 		</method>
 		<method name="get_flag_x" qualifiers="const">
