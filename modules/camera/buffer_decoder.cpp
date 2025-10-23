@@ -32,7 +32,7 @@
 
 #include "servers/camera/camera_feed.h"
 
-#if defined(LINUXBSD_ENABLED)
+#ifdef LINUXBSD_ENABLED
 #include <linux/videodev2.h>
 #endif
 
@@ -45,7 +45,7 @@ BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 
 AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
-#if defined(LINUXBSD_ENABLED)
+#ifdef LINUXBSD_ENABLED
 	switch (camera_feed->get_format().pixel_format) {
 		case V4L2_PIX_FMT_YYUV:
 			component_indexes = new int[4]{ 0, 1, 2, 3 };

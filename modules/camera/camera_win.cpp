@@ -46,7 +46,7 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	// Get camera ID.
 	wchar_t *camera_id = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
-	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera id");
+	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera id.");
 	feed->device_id = camera_id;
 	CoTaskMemFree(camera_id);
 
@@ -110,7 +110,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 	// Get supported media types.
 	DWORD media_type_count = 0;
 	hr = imf_media_type_handler->GetMediaTypeCount(&media_type_count);
-	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to get media type count");
+	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to get media type count.");
 
 	// Track unique format combinations after RGB24 conversion.
 	Vector<FormatKey> seen_formats;
@@ -418,7 +418,7 @@ bool CameraFeedWindows::activate_feed() {
 			}
 		}
 	} else {
-		ERR_PRINT(vformat("IMFActivate::ActivateObject failed: 0x%08x", (uint32_t)hr));
+		ERR_PRINT(vformat("IMFActivate::ActivateObject failed: 0x%08x.", (uint32_t)hr));
 		// If another application is using the device, provide a human-readable hint.
 		if (hr == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)) {
 			ERR_PRINT("Check that no other applications are currently using the camera.");
@@ -492,26 +492,26 @@ void CameraFeedWindows::read() {
 	);
 
 	if (FAILED(hr)) {
-		ERR_PRINT(vformat("ReadSample failed: 0x%08x", (uint32_t)hr));
+		ERR_PRINT(vformat("ReadSample failed: 0x%08x.", (uint32_t)hr));
 		return;
 	}
 
 	// End of stream.
 	if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
-		print_verbose("\tEnd of stream");
+		print_verbose("\tEnd of stream.");
 		active = false;
 	}
 	if (flags & MF_SOURCE_READERF_NEWSTREAM) {
-		print_verbose("\tNew stream");
+		print_verbose("\tNew stream.");
 	}
 	if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED) {
-		print_verbose("\tNative type changed");
+		print_verbose("\tNative type changed.");
 	}
 	if (flags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED) {
-		print_verbose("\tCurrent type changed");
+		print_verbose("\tCurrent type changed.");
 	}
 	if (flags & MF_SOURCE_READERF_STREAMTICK) {
-		print_verbose("\tStream tick");
+		print_verbose("\tStream tick.");
 	}
 
 	// Process sample.
@@ -568,13 +568,13 @@ void CameraFeedWindows::read() {
 
 					buffer->Unlock();
 				} else {
-					ERR_PRINT(vformat("IMFMediaBuffer::Lock failed: 0x%08x", (uint32_t)hr));
+					ERR_PRINT(vformat("IMFMediaBuffer::Lock failed: 0x%08x.", (uint32_t)hr));
 				}
 			}
 
 			buffer->Release();
 		} else {
-			ERR_PRINT(vformat("ConvertToContiguousBuffer failed: 0x%08x", (uint32_t)hr));
+			ERR_PRINT(vformat("ConvertToContiguousBuffer failed: 0x%08x.", (uint32_t)hr));
 		}
 		pSample->Release();
 	}
