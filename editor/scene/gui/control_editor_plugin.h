@@ -128,6 +128,7 @@ class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginControl, EditorInspectorPlugin);
 
 	bool inside_control_category = false;
+	void _on_convert_theme_overrides_to_variation(Control *p_control);
 
 public:
 	virtual bool can_handle(Object *p_object) override;

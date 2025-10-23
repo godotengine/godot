@@ -43,6 +43,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 // Inspector controls.
 
@@ -456,13 +457,88 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 	}
 
 	Control *control = Object::cast_to<Control>(p_object);
-	if (!control || p_group != "Layout") {
+	if (!control) {
 		return;
 	}
 
-	ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
-	pos_warning->set_control(control);
-	add_custom_control(pos_warning);
+	if (p_group == "Layout") {
+		ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
+		pos_warning->set_control(control);
+		add_custom_control(pos_warning);
+	}
+
+	else if (p_group == "Theme") {
+		String hint_text = "Convert Overrides to Theme Type Variation";
+		String hint_icon = "Theme";
+		EditorInspectorActionButton *convert_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
+		convert_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation).bind(control));
+		add_custom_control(convert_button);
+	}
+}
+
+void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
+	Node *theme_owner_node = p_control->get_theme_owner_node();
+	ERR_FAIL_NULL_MSG(theme_owner_node, "No ancestor of this Control has a Theme.");
+
+	Control *theme_owner_control = Object::cast_to<Control>(theme_owner_node);
+	ERR_FAIL_NULL_MSG(theme_owner_control, "The theme owner is not a Control.");
+
+	Ref<Theme> theme = theme_owner_control->get_theme();
+	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
+
+	// TODO: Provide a pop-up window for setting the name of this variation.
+	StringName variation_name = "VariationType";
+	theme->set_type_variation(variation_name, p_control->get_class_name());
+
+	List<ThemeDB::ThemeItemBind> theme_items;
+	ThemeDB::get_singleton()->get_class_items(p_control->get_class_name(), &theme_items, true);
+
+	// TODO: Make this undo/redo compatible.
+	for (const ThemeDB::ThemeItemBind &item : theme_items) {
+		switch (item.data_type) {
+			case Theme::DATA_TYPE_COLOR:
+				if (p_control->has_theme_color_override(item.item_name)) {
+					theme->set_color(item.item_name, variation_name, p_control->get_theme_color(item.item_name));
+					p_control->remove_theme_color_override(item.item_name);
+				}
+				break;
+			case Theme::DATA_TYPE_CONSTANT:
+				if (p_control->has_theme_constant_override(item.item_name)) {
+					theme->set_constant(item.item_name, variation_name, p_control->get_theme_constant(item.item_name));
+					p_control->remove_theme_constant_override(item.item_name);
+				}
+				break;
+			case Theme::DATA_TYPE_FONT: {
+				if (p_control->has_theme_font_override(item.item_name)) {
+					theme->set_font(item.item_name, variation_name, p_control->get_theme_font(item.item_name));
+					p_control->remove_theme_font_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_FONT_SIZE: {
+				if (p_control->has_theme_font_size_override(item.item_name)) {
+					theme->set_font_size(item.item_name, variation_name, p_control->get_theme_font_size(item.item_name));
+					p_control->remove_theme_font_size_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_ICON: {
+				if (p_control->has_theme_icon_override(item.item_name)) {
+					theme->set_icon(item.item_name, variation_name, p_control->get_theme_icon(item.item_name));
+					p_control->remove_theme_icon_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_STYLEBOX: {
+				if (p_control->has_theme_stylebox_override(item.item_name)) {
+					theme->set_stylebox(item.item_name, variation_name, p_control->get_theme_stylebox(item.item_name));
+					p_control->remove_theme_style_override(item.item_name);
+				}
+			} break;
+
+			default: {
+			} break;
+		}
+	}
+
+	p_control->set_theme_type_variation(variation_name);
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
