@@ -55,6 +55,53 @@ TEST_CASE("[PackedScene] Pack Scene and Retrieve State") {
 	memdelete(scene);
 }
 
+TEST_CASE("[PackedScene] Signals Preserved when Packing Scene with connections on reparented nodes") {
+	Node *main_scene_root = memnew(Node);
+	main_scene_root->set_name("some_name"); // setting name prevents an error when "find_node" is called in pack
+	Node *sub_node = memnew(Node);
+	Node *sub_node_2 = memnew(Node);
+
+	main_scene_root->add_child(sub_node);
+	main_scene_root->add_child(sub_node_2);
+	sub_node->set_owner(main_scene_root);
+	sub_node_2->set_owner(main_scene_root);
+
+	Callable call = Callable(sub_node_2, "is_ready");
+	sub_node->connect("ready", call, Object::CONNECT_PERSIST);
+
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	const Error err = packed_scene->pack(main_scene_root);
+	CHECK(err == OK);
+
+	Ref<SceneState> state = packed_scene->get_state();
+	CHECK_EQ(state->get_connection_count(), 1);
+
+	// Take child nodes from the main scene and reparent to a node not in the tree
+	Node *new_root = packed_scene->instantiate();
+	Node *dangling_root = memnew(Node);
+
+	Node *node = new_root->get_child(0);
+	Node *node_2 = new_root->get_child(1);
+	node->set_owner(nullptr);
+	node_2->set_owner(nullptr);
+	node->reparent(dangling_root);
+	node_2->reparent(dangling_root);
+	node->set_owner(dangling_root);
+	node_2->set_owner(dangling_root);
+
+	const Error err2 = packed_scene->pack(dangling_root);
+	CHECK(err2 == OK);
+
+	// Ensure connection is still packed in the new "dangling" scene
+	Ref<SceneState> new_state = packed_scene->get_state();
+	CHECK_EQ(new_state->get_connection_count(), 1);
+
+	memdelete(new_root);
+	memdelete(main_scene_root);
+	memdelete(dangling_root);
+}
+
 TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 	// Create main scene
 	// root
@@ -75,6 +122,7 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 	main_scene_root->add_child(sub_scene_root);
 	sub_scene_root->set_owner(main_scene_root);
 
+	// FIXME: Does not test that connections of editable children from scene instance connected within the main scene are saved
 	SUBCASE("Signals that should be saved") {
 		int main_flags = Object::CONNECT_PERSIST;
 		// sub node to a node in main scene
@@ -95,16 +143,16 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		CHECK_EQ(state->get_connection_count(), 3);
 	}
 
-	/*
-	// FIXME: This subcase requires GH-48064 to be fixed.
 	SUBCASE("Signals that should not be saved") {
-		int subscene_flags = Object::CONNECT_PERSIST | Object::CONNECT_INHERITED;
+		int subscene_flags = Object::CONNECT_PERSIST;
 		// subscene node to itself
 		sub_scene_node->connect("ready", callable_mp(sub_scene_node, &Node::is_ready), subscene_flags);
 		// subscene node to subscene root
 		sub_scene_node->connect("ready", callable_mp(sub_scene_root, &Node::is_ready), subscene_flags);
 		//subscene root to subscene root (connected within sub scene)
-		sub_scene_root->connect("ready", callable_mp(sub_scene_root, &Node::is_ready), subscene_flags);
+		Callable call = Callable(sub_scene_root, "is_ready");
+		sub_scene_root->connect("ready", call, subscene_flags);
+		sub_scene_root->add_connection_owner(sub_scene_root, sub_scene_root, "ready", call, false);
 
 		// Pack the scene.
 		Ref<PackedScene> packed_scene;
@@ -116,7 +164,6 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		Ref<SceneState> state = packed_scene->get_state();
 		CHECK_EQ(state->get_connection_count(), 0);
 	}
-	*/
 
 	memdelete(main_scene_root);
 }
