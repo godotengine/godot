@@ -4307,8 +4307,21 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 
+	if (!select_current_scene_file_requested && EDITOR_GET("interface/scene_tabs/auto_select_current_scene_file")) {
+		select_current_scene_file_requested = true;
+		callable_mp(this, &EditorNode::_nav_to_selected_scene).call_deferred();
+	}
+
 	_update_undo_redo_allowed();
 	_update_unsaved_cache();
+}
+
+void EditorNode::_nav_to_selected_scene() {
+	select_current_scene_file_requested = false;
+	const String scene_path = editor_data.get_scene_path(scene_tabs->get_current_tab());
+	if (!scene_path.is_empty()) {
+		FileSystemDock::get_singleton()->navigate_to_path(scene_path);
+	}
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
