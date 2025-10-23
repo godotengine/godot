@@ -389,6 +389,7 @@ private:
 	};
 
 	struct RenderElementInfo {
+		enum { MAX_REPEATS = (1 << 20) - 1 };
 		union {
 			struct {
 				uint32_t lod_index : 8;
@@ -397,6 +398,7 @@ private:
 			};
 			uint32_t value;
 		};
+		uint32_t repeat;
 	};
 
 	static_assert(std::is_trivially_destructible_v<RenderElementInfo>);

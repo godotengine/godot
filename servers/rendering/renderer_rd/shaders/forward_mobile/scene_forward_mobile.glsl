@@ -139,6 +139,8 @@ layout(location = 9) out float dp_clip;
 
 #endif
 
+layout(location = 10) out flat uint instance_index_interp;
+
 #if defined(MODE_RENDER_MOTION_VECTORS)
 layout(location = 12) out highp vec4 screen_position;
 layout(location = 13) out highp vec4 prev_screen_position;
@@ -668,6 +670,13 @@ void vertex_shader(in vec3 vertex,
 }
 
 void main() {
+	uint instance_index = draw_call.instance_index;
+	if (!sc_multimesh()) {
+		instance_index += gl_InstanceIndex;
+	}
+
+	instance_index_interp = instance_index;
+
 #if defined(MODE_RENDER_MOTION_VECTORS)
 	vec3 prev_vertex;
 #ifdef NORMAL_USED
@@ -680,8 +689,8 @@ void main() {
 
 	_unpack_vertex_attributes(
 			previous_vertex_attrib,
-			instances.data[draw_call.instance_index].compressed_aabb_position_pad.xyz,
-			instances.data[draw_call.instance_index].compressed_aabb_size_pad.xyz,
+			instances.data[instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[instance_index].compressed_aabb_size_pad.xyz,
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			previous_normal_attrib,
 #ifdef NORMAL_USED
@@ -700,9 +709,9 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			draw_call.instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[draw_call.instance_index].prev_transform,
+			instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[instance_index].prev_transform,
 #ifdef USE_DOUBLE_PRECISION
-			instances.data[draw_call.instance_index].prev_model_precision.xyz,
+			instances.data[instance_index].prev_model_precision.xyz,
 			scene_data_block.prev_data.inv_view_precision,
 #endif
 
@@ -742,8 +751,8 @@ void main() {
 
 	_unpack_vertex_attributes(
 			vertex_angle_attrib,
-			instances.data[draw_call.instance_index].compressed_aabb_position_pad.xyz,
-			instances.data[draw_call.instance_index].compressed_aabb_size_pad.xyz,
+			instances.data[instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[instance_index].compressed_aabb_size_pad.xyz,
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			axis_tangent_attrib,
 #ifdef NORMAL_USED
@@ -762,9 +771,9 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			draw_call.instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[draw_call.instance_index].transform,
+			instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[instance_index].transform,
 #ifdef USE_DOUBLE_PRECISION
-			instances.data[draw_call.instance_index].model_precision.xyz,
+			instances.data[instance_index].model_precision.xyz,
 			scene_data_block.data.inv_view_precision,
 #endif
 #ifdef MODE_DUAL_PARABOLOID
@@ -848,6 +857,8 @@ layout(location = 8) in vec4 specular_light_interp;
 layout(location = 9) in float dp_clip;
 
 #endif
+
+layout(location = 10) in flat uint instance_index_interp;
 
 #if defined(MODE_RENDER_MOTION_VECTORS)
 layout(location = 12) in highp vec4 screen_position;
@@ -1070,6 +1081,8 @@ hvec4 fog_process(vec3 vertex) {
 #endif //!MODE_RENDER DEPTH
 
 void main() {
+	uint instance_index = instance_index_interp;
+
 #ifdef UBERSHADER
 	bool front_facing = gl_FrontFacing;
 	if (uc_cull_mode() == POLYGON_CULL_BACK && !front_facing) {
@@ -1189,9 +1202,9 @@ void main() {
 			scene_data.inv_view_matrix[1],
 			scene_data.inv_view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
-	mat4 read_model_matrix = transpose(mat4(instances.data[draw_call.instance_index].transform[0],
-			instances.data[draw_call.instance_index].transform[1],
-			instances.data[draw_call.instance_index].transform[2],
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
@@ -1199,7 +1212,7 @@ void main() {
 #endif //LIGHT_VERTEX_USED
 
 	mat3 model_normal_matrix;
-	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
 		model_normal_matrix = transpose(inverse(mat3(read_model_matrix)));
 	} else {
 		model_normal_matrix = mat3(read_model_matrix);
@@ -1425,7 +1438,7 @@ void main() {
 	vec3 vertex_ddy = dFdy(vertex);
 
 	uint decal_count = sc_decals(8);
-	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
+	uvec2 decal_indices = instances.data[instance_index].decals;
 	for (uint i = 0; i < decal_count; i++) {
 		uint decal_index = (i > 3) ? ((decal_indices.y >> ((i - 4) * 8)) & 0xFF) : ((decal_indices.x >> (i * 8)) & 0xFF);
 		if (decal_index == 0xFF) {
@@ -1635,8 +1648,8 @@ void main() {
 #ifdef USE_LIGHTMAP
 
 	//lightmap
-	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
-		uint index = instances.data[draw_call.instance_index].gi_offset;
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+		uint index = instances.data[instance_index].gi_offset;
 
 		// The world normal.
 		hvec3 wnormal = hmat3(inv_view_matrix) * indirect_normal;
@@ -1661,12 +1674,12 @@ void main() {
 		ambient_light += c[2] * hvec3(lightmap_captures.data[index].sh[7].rgb) * wnormal.x * wnormal.z * norm;
 		ambient_light += c[4] * hvec3(lightmap_captures.data[index].sh[8].rgb) * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) * norm;
 
-	} else if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
-		bool uses_sh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
-		uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
-		uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
+	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
+		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint slice = instances.data[instance_index].gi_offset >> 16;
 		vec3 uvw;
-		uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
 		uvw.z = float(slice);
 
 		if (uses_sh) {
@@ -1728,7 +1741,7 @@ void main() {
 		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
 
-		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
+		uvec2 reflection_indices = instances.data[instance_index].reflection_probes;
 		for (uint i = 0; i < reflection_probe_count; i++) {
 			uint reflection_index = (i > 3) ? ((reflection_indices.y >> ((i - 4) * 8)) & 0xFF) : ((reflection_indices.x >> (i * 8)) & 0xFF);
 			if (reflection_index == 0xFF) {
@@ -1834,13 +1847,13 @@ void main() {
 #ifdef USE_LIGHTMAP
 		uint shadowmask_mode = LIGHTMAP_SHADOWMASK_MODE_NONE;
 
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
-			const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			const uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
 			shadowmask_mode = lightmaps.data[ofs].flags;
 
 			if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
-				const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
-				const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+				const uint slice = instances.data[instance_index].gi_offset >> 16;
+				const vec2 scaled_uv = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
 				const vec3 uvw = vec3(scaled_uv, float(slice));
 
 				if (sc_use_lightmap_bicubic_filter()) {
@@ -1860,11 +1873,11 @@ void main() {
 #else
 		for (uint i = 0; i < directional_lights_count; i++) {
 #endif
-				if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+				if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
 
-				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 					continue; // Statically baked light and object uses lightmap, skip.
 				}
 
@@ -1998,11 +2011,11 @@ void main() {
 #ifndef USE_VERTEX_LIGHTING
 		uint directional_lights_count = sc_directional_lights(scene_data.directional_light_count);
 		for (uint i = 0; i < directional_lights_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; //not masked
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 
@@ -2063,7 +2076,7 @@ void main() {
 
 #ifndef USE_VERTEX_LIGHTING
 	uint omni_light_count = sc_omni_lights(8);
-	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
+	uvec2 omni_indices = instances.data[instance_index].omni_lights;
 	for (uint i = 0; i < omni_light_count; i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {
@@ -2095,7 +2108,7 @@ void main() {
 	}
 
 	uint spot_light_count = sc_spot_lights(8);
-	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
+	uvec2 spot_indices = instances.data[instance_index].spot_lights;
 	for (uint i = 0; i < spot_light_count; i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {
