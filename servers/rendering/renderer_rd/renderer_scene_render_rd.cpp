@@ -684,7 +684,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// we need to use SDR range with a max value of 1.0.
 			tonemap.max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
 			tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, tonemap.max_value);
-			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white);
+			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, tonemap.max_value);
 			tonemap.tonemapper_params[0] = params.tonemapper_params[0];
 			tonemap.tonemapper_params[1] = params.tonemapper_params[1];
 			tonemap.tonemapper_params[2] = params.tonemapper_params[2];
@@ -922,7 +922,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		// we need to use SDR range with a max value of 1.0.
 		tonemap.max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
 		tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, tonemap.max_value);
-		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, tonemap.max_value);
 		tonemap.tonemapper_params[0] = params.tonemapper_params[0];
 		tonemap.tonemapper_params[1] = params.tonemapper_params[1];
 		tonemap.tonemapper_params[2] = params.tonemapper_params[2];

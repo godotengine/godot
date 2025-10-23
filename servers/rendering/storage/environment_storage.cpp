@@ -223,7 +223,7 @@ float RendererEnvironmentStorage::environment_get_exposure(RID p_env) const {
 	return env->exposure;
 }
 
-float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_agx_white, float p_p_output_max_value) const {
+float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
 
@@ -273,7 +273,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, TonemapParameters());
 
-	float white = environment_get_white(p_env, p_limit_agx_white);
+	float white = environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
 	TonemapParameters tonemap_parameters = TonemapParameters();
 
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
