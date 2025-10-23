@@ -1068,7 +1068,7 @@ void FindInFilesPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_
 		if (_file_items_results_count.has(item_parent)) {
 			_file_items_results_count[item_parent]--;
 		}
-		if (item_parent->get_child_count() < 2) {
+		if (item_parent->get_child_count() < 2 && item_parent != _results_display->get_root()) {
 			_file_items.erase(item_parent->get_metadata(0));
 			get_tree()->queue_delete(item_parent);
 		}
