@@ -432,4 +432,23 @@ internal class GodotNativeBridge(private val godot: Godot) {
 			}
 		}
 	}
+
+	@Keep
+	private fun getHdrCapabilities(): FloatArray {
+		val result = FloatArray(5)
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = godot.getActivity()?.display ?: godot.context.display
+			val capabilities = display.hdrCapabilities
+
+			// The size and order of this array is critical, make sure it matches with java_godot_wrapper!
+			result[0] = if (display.isHdr && display.isHdrSdrRatioAvailable) 1.0f else 0.0f
+			result[1] = capabilities.desiredMinLuminance
+			result[2] = capabilities.desiredMaxLuminance
+			result[3] = capabilities.desiredMaxAverageLuminance
+			result[4] = if (display.isHdrSdrRatioAvailable) display.hdrSdrRatio else -1.0f
+		}
+
+		return result
+	}
 }
