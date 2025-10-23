@@ -825,19 +825,19 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			p_node = sb;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
-				BoxShape3D *boxShape = memnew(BoxShape3D);
+				Ref<BoxShape3D> boxShape = memnew(BoxShape3D);
 				boxShape->set_size(Vector3(2, 2, 2));
 				colshape->set_shape(boxShape);
 			} else if (empty_draw_type == "SINGLE_ARROW") {
-				SeparationRayShape3D *rayShape = memnew(SeparationRayShape3D);
+				Ref<SeparationRayShape3D> rayShape = memnew(SeparationRayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				Object::cast_to<Node3D>(sb)->rotate_x(Math::PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				WorldBoundaryShape3D *world_boundary_shape = memnew(WorldBoundaryShape3D);
+				Ref<WorldBoundaryShape3D> world_boundary_shape = memnew(WorldBoundaryShape3D);
 				colshape->set_shape(world_boundary_shape);
 			} else {
-				SphereShape3D *sphereShape = memnew(SphereShape3D);
+				Ref<SphereShape3D> sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
 			}

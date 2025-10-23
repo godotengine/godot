@@ -350,7 +350,7 @@ public:
 		}                                                                                                                                           \
                                                                                                                                                     \
 	public:                                                                                                                                         \
-		static m_class_name *register_and_instantiate() {                                                                                           \
+		static Ref<m_class_name> register_and_instantiate() {                                                                                       \
 			static bool registered = false;                                                                                                         \
 			if (!registered) {                                                                                                                      \
 				GDREGISTER_CLASS(m_class_name);                                                                                                     \
