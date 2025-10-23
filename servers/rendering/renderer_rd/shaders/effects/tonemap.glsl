@@ -329,11 +329,13 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
-	// but many cases that call this function need the result clamped.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	const vec3 a = vec3(0.055f);
+	return mix(pow((color.rgb + a) * (1.0f / (vec3(1.0f) + a)), vec3(2.4f)), color.rgb * (1.0f / 12.92f), lessThan(color.rgb, vec3(0.04045f)));
 }
 
 #define TONEMAPPER_LINEAR 0
@@ -446,13 +448,6 @@ vec3 apply_glow(vec3 color, vec3 glow, float white) {
 	}
 }
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0f), color, bcs.x);
-	color = mix(vec3(0.5f), color, bcs.y);
-	color = mix(vec3(dot(vec3(1.0f), color) * 0.33333f), color, bcs.z);
-
-	return color;
-}
 #ifdef USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
@@ -928,23 +923,39 @@ void main() {
 	}
 #endif
 
-	bool convert_to_srgb = bool(params.flags & FLAG_CONVERT_TO_SRGB);
-	if (convert_to_srgb) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-	}
-
 	if (bool(params.flags & FLAG_USE_BCS)) {
-		color.rgb = apply_bcs(color.rgb, params.bcs);
-	}
+		// Apply brightness:
+		// Apply to relative luminance. This ensures that the hue and saturation of
+		// colors is not affected by the adjustment, but requires the multiplication
+		// to be performed on linear-encoded values.
+		color.rgb = color.rgb * params.bcs.x;
 
-	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
-		// apply_color_correction requires nonlinear sRGB encoding
-		if (!convert_to_srgb) {
-			color.rgb = linear_to_srgb(color.rgb);
+		color.rgb = linear_to_srgb(color.rgb);
+
+		// Apply contrast:
+		// By applying contrast to RGB values that are perceptually uniform (nonlinear),
+		// the darkest values are not hard-clipped as badly, which produces a
+		// higher quality contrast adjustment and maintains compatibility with
+		// existing projects.
+		color.rgb = mix(vec3(0.5), color.rgb, params.bcs.y);
+
+		// Apply saturation:
+		// By applying saturation adjustment to nonlinear sRGB-encoded values with
+		// even weights the preceived brightness of blues are affected, but this
+		// maintains compatibility with existing projects.
+		color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, params.bcs.z);
+
+		if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
+			color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+			color.rgb = apply_color_correction(color.rgb);
+			// When using color correction and  FLAG_CONVERT_TO_SRGB is false, there
+			// is no need to convert back to linear because the color correction
+			// texture sampling does this for us.
+		} else if (!bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+			color.rgb = srgb_to_linear(color.rgb);
 		}
-		color.rgb = apply_color_correction(color.rgb);
-		// When convert_to_srgb is false, there is no need to convert back to
-		// linear because the color correction texture sampling does this for us.
+	} else if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		color.rgb = linear_to_srgb(color.rgb);
 	}
 
 	// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
