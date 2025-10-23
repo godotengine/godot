@@ -200,6 +200,9 @@ RendererCompositorRD::BlitPipelines RendererCompositorRD::_get_blit_pipelines_fo
 
 float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance, const float p_linear_luminance_scale) {
 	switch (p_color_space) {
+		case RD::COLOR_SPACE_REC2020_NONLINEAR_ST2084:
+			// Max brightness of ST2084 is 10000 nits, we output from 0 to 1.
+			return p_reference_luminance / 10000.0f;
 		case RD::COLOR_SPACE_REC709_LINEAR:
 			return p_reference_luminance / p_linear_luminance_scale;
 		default:

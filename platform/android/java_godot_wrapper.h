@@ -38,6 +38,14 @@
 #include <android/log.h>
 #include <jni.h>
 
+struct AndroidHdrCapabilities {
+	bool hdr_supported = false;
+	float min_luminance = 0.0f;
+	float max_luminance = 0.0f;
+	float max_average_luminance = 0.0f;
+	float hdr_sdr_ratio = 1.0f;
+};
+
 // Class that makes functions in java/src/org/godotengine/godot/Godot.kt callable from C++
 class GodotJavaWrapper {
 private:
@@ -89,6 +97,7 @@ private:
 	jmethodID _build_env_execute = nullptr;
 	jmethodID _build_env_cancel = nullptr;
 	jmethodID _build_env_clean_project = nullptr;
+	jmethodID _get_hdr_capabilities = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -152,4 +161,6 @@ public:
 	int build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
 	void build_env_cancel(int p_job_id);
 	void build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
+
+	AndroidHdrCapabilities getHdrCapabilities();
 };

@@ -86,6 +86,7 @@ layout(binding = 0) uniform sampler2D src_rt;
 // Keep in sync with RenderingDeviceCommons::ColorSpace
 #define COLOR_SPACE_REC709_LINEAR 0
 #define COLOR_SPACE_REC709_NONLINEAR_SRGB 1
+#define COLOR_SPACE_REC2020_NONLINEAR_ST2084 2
 
 vec3 srgb_to_linear(vec3 color) {
 	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
@@ -94,6 +95,27 @@ vec3 srgb_to_linear(vec3 color) {
 vec3 linear_to_srgb(vec3 color) {
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
+vec3 rec709_to_rec2020(vec3 color) {
+	const mat3 conversion = mat3(
+			0.627403895934699, 0.069097289358232, 0.016391438875150,
+			0.329283038377884, 0.919540395075458, 0.088013307877226,
+			0.043313065687417, 0.011362315566309, 0.895595253247624);
+	return conversion * color;
+}
+
+// Linear color must be non-negative. 1.0 represents 10,000 nits.
+vec3 linear_to_st2084(vec3 color) {
+	// Apply ST2084 curve
+	const float c1 = 0.8359375;
+	const float c2 = 18.8515625;
+	const float c3 = 18.6875;
+	const float m1 = 0.1593017578125;
+	const float m2 = 78.84375;
+	vec3 cp = pow(color, vec3(m1));
+
+	return pow((c1 + c2 * cp) / (1 + c3 * cp), vec3(m2));
 }
 
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
@@ -185,5 +207,23 @@ void main() {
 				color.rgb += screen_space_dither(gl_FragCoord.xy);
 			}
 		}
+	} else if (data.target_color_space == COLOR_SPACE_REC2020_NONLINEAR_ST2084) {
+		// Negative values may be interpreted as colors outside of sRGB,
+		// so clip them to the intended sRGB colors.
+		color.rgb = max(vec3(0.0), color.rgb);
+
+		if (data.source_is_srgb == true) {
+			// sRGB -> linear conversion
+			color.rgb = srgb_to_linear(color.rgb);
+		}
+
+		// Convert to Rec.2020 primaries
+		color.rgb = rec709_to_rec2020(color.rgb);
+
+		// Adjust brightness of SDR content to reference luminance
+		color.rgb *= data.reference_multiplier;
+
+		// Apply the ST2084 curve
+		color.rgb = linear_to_st2084(color.rgb);
 	}
 }
