@@ -71,7 +71,7 @@ class DisplayServerAndroid : public DisplayServer {
 	void _mouse_update_mode();
 
 	bool keep_screen_on;
-	bool swap_buffers_flag;
+	WindowID egl_current_window_id = MAIN_WINDOW_ID;
 
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
@@ -79,6 +79,14 @@ class DisplayServerAndroid : public DisplayServer {
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
+
+#ifdef GLES3_ENABLED
+	void *egl_display = nullptr;
+	void *egl_surface = nullptr;
+	void *egl_context = nullptr;
+	void *egl_config = nullptr;
+#endif
+
 	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
@@ -247,18 +255,20 @@ public:
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void update_egl_resources(void *p_display, void *p_surface, void *p_context, void *p_config);
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
-	void reset_swap_buffers_flag();
-	bool should_swap_buffers() const;
+	virtual void release_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	virtual bool is_window_transparency_available() const override;
+
+	virtual void gl_window_make_current(WindowID p_window_id) override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();

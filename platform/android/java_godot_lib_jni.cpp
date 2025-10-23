@@ -253,6 +253,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *en
 	}
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateEglResources(JNIEnv *env, jlong p_display, jlong p_surface, jlong p_context, jlong p_config) {
+	if (DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton()) {
+		dsa->update_egl_resources(reinterpret_cast<void *>(p_display), reinterpret_cast<void *>(p_surface), reinterpret_cast<void *>(p_context), reinterpret_cast<void *>(p_config));
+	}
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jclass clazz) {
 	if (step.get() <= STEP_SETUP) {
 		return;
@@ -267,9 +273,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *e
 	TTS_Android::_java_utterance_callback(event, id, pos);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
 	if (step.get() == STEP_TERMINATED) {
-		return true;
+		return;
 	}
 
 	if (step.get() == STEP_SETUP) {
@@ -278,7 +284,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		Main::setup2(false); // The logo is shown in the next frame otherwise we run into rendering issues
 		input_handler = new AndroidInputHandler();
 		step.increment();
-		return true;
+		return;
 	}
 
 	if (step.get() == STEP_SHOW_LOGO) {
@@ -297,12 +303,12 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		}
 
 		step.increment();
-		return true;
+		return;
 	}
 
 	if (step.get() == STEP_STARTED) {
 		if (Main::start() != EXIT_SUCCESS) {
-			return true; // should exit instead and print the error
+			return; // should exit instead and print the error
 		}
 
 		godot_java->on_godot_setup_completed(env);
@@ -316,12 +322,9 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	DisplayServerAndroid::get_singleton()->process_magnetometer(magnetometer);
 	DisplayServerAndroid::get_singleton()->process_gyroscope(gyroscope);
 
-	bool should_swap_buffers = false;
-	if (os_android->main_loop_iterate(&should_swap_buffers)) {
+	if (os_android->main_loop_iterate()) {
 		_terminate(env, false);
 	}
-
-	return should_swap_buffers;
 }
 
 // Called on the UI thread

@@ -36,6 +36,7 @@
 #include "tts_android.h"
 
 #include "core/config/project_settings.h"
+#include "main/main.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -484,24 +485,16 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 		}
 #ifdef GLES3_ENABLED
 		case DISPLAY_HANDLE: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case OPENGL_CONTEXT: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentContext());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_context);
 		}
 		case EGL_DISPLAY: {
-			// @todo Find a way to get this from the Java side.
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case EGL_CONFIG: {
-			// @todo Find a way to get this from the Java side.
-			return 0;
+			return reinterpret_cast<int64_t>(egl_config);
 		}
 #endif
 		default: {
@@ -709,12 +702,24 @@ void DisplayServerAndroid::reset_window() {
 		}
 	}
 #endif
+
+	// We force redraw to ensure we render at least once when the window is reset.
+	Main::force_redraw();
 }
 
 void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	if (rect_changed_callback.is_valid()) {
 		rect_changed_callback.call(Rect2i(0, 0, p_width, p_height));
 	}
+}
+
+void DisplayServerAndroid::update_egl_resources(void *p_display, void *p_surface, void *p_context, void *p_config) {
+#ifdef GLES3_ENABLED
+	egl_display = p_display;
+	egl_surface = p_surface;
+	egl_context = p_context;
+	egl_config = p_config;
+#endif
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
@@ -798,6 +803,11 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(false);
+
+		if (OS::get_singleton()->is_separate_thread_rendering_enabled()) {
+			GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+			godot_java->set_separate_render_thread_enabled(true);
+		}
 	}
 #endif
 
@@ -843,7 +853,7 @@ void DisplayServerAndroid::_mouse_update_mode() {
 			? mouse_mode_override
 			: mouse_mode_base;
 
-	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon() || !OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_capture_pointer()) {
+	if (!OS_Android::get_singleton()->get_godot_java()->can_capture_pointer()) {
 		return;
 	}
 	if (mouse_mode == wanted_mouse_mode) {
@@ -851,15 +861,15 @@ void DisplayServerAndroid::_mouse_update_mode() {
 	}
 
 	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_HIDDEN) {
-		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
+		OS_Android::get_singleton()->get_godot_java()->set_pointer_icon(CURSOR_TYPE_NULL);
 	} else {
 		cursor_set_shape(cursor_shape);
 	}
 
 	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_CAPTURED) {
-		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
+		OS_Android::get_singleton()->get_godot_java()->request_pointer_capture();
 	} else {
-		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->release_pointer_capture();
+		OS_Android::get_singleton()->get_godot_java()->release_pointer_capture();
 	}
 
 	mouse_mode = wanted_mouse_mode;
@@ -909,9 +919,6 @@ BitField<MouseButtonMask> DisplayServerAndroid::mouse_get_button_state() const {
 }
 
 void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool force) {
-	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon()) {
-		return;
-	}
 	if (cursor_shape == p_shape && !force) {
 		return;
 	}
@@ -919,7 +926,7 @@ void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool fo
 	cursor_shape = p_shape;
 
 	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
-		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
+		OS_Android::get_singleton()->get_godot_java()->set_pointer_icon(android_cursors[cursor_shape]);
 	}
 }
 
@@ -938,7 +945,7 @@ void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	if (!cursor_path.is_empty()) {
 		cursor_path = ProjectSettings::get_singleton()->globalize_path(cursor_path);
 	}
-	OS_Android::get_singleton()->get_godot_java()->get_godot_view()->configure_pointer_icon(android_cursors[cursor_shape], cursor_path, p_hotspot);
+	OS_Android::get_singleton()->get_godot_java()->configure_pointer_icon(android_cursors[cursor_shape], cursor_path, p_hotspot);
 	_cursor_set_shape_helper(p_shape, true);
 }
 
@@ -959,16 +966,25 @@ DisplayServer::VSyncMode DisplayServerAndroid::window_get_vsync_mode(WindowID p_
 	return DisplayServer::VSYNC_ENABLED;
 }
 
-void DisplayServerAndroid::reset_swap_buffers_flag() {
-	swap_buffers_flag = false;
-}
+void DisplayServerAndroid::release_rendering_thread() {
+	if (egl_current_window_id == INVALID_WINDOW_ID) {
+		return;
+	}
 
-bool DisplayServerAndroid::should_swap_buffers() const {
-	return swap_buffers_flag;
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->release_current_gl_window(egl_current_window_id);
+	egl_current_window_id = INVALID_WINDOW_ID;
 }
 
 void DisplayServerAndroid::swap_buffers() {
-	swap_buffers_flag = true;
+	if (egl_current_window_id == INVALID_WINDOW_ID) {
+		return;
+	}
+
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->egl_swap_buffers(egl_current_window_id);
 }
 
 void DisplayServerAndroid::set_native_icon(const String &p_filename) {
@@ -981,4 +997,19 @@ void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 
 bool DisplayServerAndroid::is_window_transparency_available() const {
 	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
+}
+
+void DisplayServerAndroid::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == INVALID_WINDOW_ID) {
+		return;
+	}
+
+	if (egl_current_window_id == p_window_id) {
+		return;
+	}
+
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->make_gl_window_current(p_window_id);
+	egl_current_window_id = p_window_id;
 }
