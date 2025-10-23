@@ -2586,6 +2586,27 @@ void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked--;
 }
 
+void Node::add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited) {
+	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+	if (is_inherited) {
+		// This connection exists from instantiation but is inherited, so return some pointer that
+		// isn't the actual owner and isn't nullptr.
+		data.connection_owners[hash] = reinterpret_cast<Node *>(1);
+	} else {
+		data.connection_owners[hash] = p_owner;
+	}
+}
+
+Node *Node::get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
+	for (const KeyValue<uint32_t, Node *> &E : data.connection_owners) {
+		uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+		if (E.key == hash) {
+			return E.value;
+		}
+	}
+	return nullptr; // The connection was just added (not instantiated) so it doesn't have an owner.
+}
+
 void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
 	ERR_FAIL_COND(!is_inside_tree());
 
