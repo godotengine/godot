@@ -169,7 +169,7 @@ void RayCast2D::_notification(int p_what) {
 			}
 			_draw_debug_shape();
 		} break;
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
@@ -261,9 +261,9 @@ void RayCast2D::_draw_debug_shape() {
 
 	Vector<Color> cols = { draw_col, draw_col, draw_col };
 
-	rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID{});
+	rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID());
 }
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 void RayCast2D::force_raycast_update() {
 	_update_raycast_state();

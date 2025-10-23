@@ -51,7 +51,7 @@ void PinJoint2D::_notification(int p_what) {
 		} break;
 	}
 }
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 void PinJoint2D::_configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
 	PhysicsServer2D::get_singleton()->joint_make_pin(p_joint, get_global_position(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());

@@ -119,7 +119,7 @@ void VisibleOnScreenNotifier2D::_notification(int p_what) {
 				RS::get_singleton()->canvas_item_add_rect(_get_debug_canvas_item(), rect, Color(1, 0.5, 1, 0.2));
 			}
 		} break;
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 		case NOTIFICATION_EXIT_TREE: {
 			on_screen = false;

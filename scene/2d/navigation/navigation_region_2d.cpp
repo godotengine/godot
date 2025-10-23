@@ -178,7 +178,7 @@ void NavigationRegion2D::_notification(int p_what) {
 				return;
 			}
 
-			if (!navigation_polygon.is_valid()) {
+			if (navigation_polygon.is_null()) {
 				_prepare_debug_canvas_item();
 				return;
 			}

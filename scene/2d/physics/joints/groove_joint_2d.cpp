@@ -54,7 +54,7 @@ void GrooveJoint2D::_notification(int p_what) {
 		} break;
 	}
 }
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 void GrooveJoint2D::_configure_joint(RID p_joint, PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
 	Transform2D gt = get_global_transform();

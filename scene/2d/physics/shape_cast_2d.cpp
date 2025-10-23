@@ -270,10 +270,10 @@ void ShapeCast2D::_notification(int p_what) {
 
 				Vector<Color> cols = { draw_col, draw_col, draw_col };
 
-				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID{});
+				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID());
 			}
 		} break;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {

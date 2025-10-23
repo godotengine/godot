@@ -81,7 +81,7 @@ private:
 #ifdef DEBUG_ENABLED
 	RID debug_canvas_item;
 	bool should_update_canvas_item_parent = false;
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 	StringName canvas_group;
 
 	CanvasLayer *canvas_layer = nullptr;
@@ -348,7 +348,7 @@ public:
 	void get_arc_points(Vector<Point2> &r_points, const Vector2 &p_center, real_t p_major, real_t p_minor, real_t p_start_angle, real_t p_end_angle, int p_point_count);
 #ifdef DEBUG_ENABLED
 	void _draw_arc_debug(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false);
-#endif //DEBUG_ENABLED
+#endif // DEBUG_ENABLED
 
 	/* RECT / TRANSFORM */
 

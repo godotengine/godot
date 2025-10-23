@@ -486,6 +486,6 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 
 	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, edge_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 
-	rs->canvas_item_add_mesh(_get_debug_canvas_item(), debug_mesh_rid, Transform2D{});
+	rs->canvas_item_add_mesh(_get_debug_canvas_item(), debug_mesh_rid, Transform2D());
 }
 #endif // DEBUG_ENABLED
