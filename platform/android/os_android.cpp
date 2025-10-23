@@ -867,7 +867,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 

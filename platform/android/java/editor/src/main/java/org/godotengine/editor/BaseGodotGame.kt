@@ -38,8 +38,7 @@ import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.xr.HYBRID_APP_FEATURE
-import org.godotengine.godot.xr.isHybridAppEnabled
+import org.godotengine.openxr.vendors.utils.*
 
 /**
  * Base class for the Godot play windows.

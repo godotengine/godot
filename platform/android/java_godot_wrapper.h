@@ -76,7 +76,7 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
-	jmethodID _has_feature = nullptr;
+	jmethodID _check_internal_feature_support = nullptr;
 	jmethodID _sign_apk = nullptr;
 	jmethodID _verify_apk = nullptr;
 	jmethodID _enable_immersive_mode = nullptr;
@@ -129,7 +129,7 @@ public:
 	Vector<String> get_gdextension_list_config_file() const;
 
 	// Return true if the given feature is supported.
-	bool has_feature(const String &p_feature) const;
+	bool check_internal_feature_support(const String &p_feature) const;
 
 	// Sign and verify apks
 	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
