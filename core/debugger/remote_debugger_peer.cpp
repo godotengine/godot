@@ -211,7 +211,7 @@ void RemoteDebuggerPeerTCP::_poll() {
 	}
 }
 
-RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
+Ref<RemoteDebuggerPeer> RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
 	ERR_FAIL_COND_V(!p_uri.begins_with("tcp://"), nullptr);
 
 	String debug_host = p_uri.replace("tcp://", "");
@@ -237,7 +237,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
 	return memnew(RemoteDebuggerPeerTCP(stream));
 }
 
-RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_unix(const String &p_uri) {
+Ref<RemoteDebuggerPeer> RemoteDebuggerPeerTCP::create_unix(const String &p_uri) {
 	ERR_FAIL_COND_V(!p_uri.begins_with("unix://"), nullptr);
 
 	String debug_path = p_uri.replace("unix://", "");

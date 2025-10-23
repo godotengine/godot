@@ -149,7 +149,6 @@ void UDPServer::set_max_pending_connections(int p_max) {
 		if (!E) {
 			break;
 		}
-		memdelete(E->get().peer);
 		pending.erase(E);
 	}
 }
@@ -192,7 +191,6 @@ void UDPServer::stop() {
 	E = pending.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();
-		memdelete(E->get().peer);
 		E = E->next();
 	}
 	peers.clear();

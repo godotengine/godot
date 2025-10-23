@@ -96,7 +96,7 @@ void NetSocketWinSock::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *
 	}
 }
 
-NetSocket *NetSocketWinSock::_create_func() {
+Ref<NetSocket> NetSocketWinSock::_create_func() {
 	return memnew(NetSocketWinSock);
 }
 
@@ -607,7 +607,7 @@ Ref<NetSocket> NetSocketWinSock::accept(Address &r_addr) {
 	_set_ip_port(&their_addr, &ip, &port);
 	r_addr = Address(ip, port);
 
-	NetSocketWinSock *ns = memnew(NetSocketWinSock);
+	Ref<NetSocketWinSock> ns = memnew(NetSocketWinSock);
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);

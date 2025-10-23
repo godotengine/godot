@@ -1082,7 +1082,7 @@ void AnimationNodeBlendSpace2DEditor::_start_inline_edit(int p_point) {
 	inline_editor->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	inline_editor->add_theme_color_override("font_selected_color", Color::named("white"));
 	inline_editor->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
-	StyleBoxEmpty *empty_style = memnew(StyleBoxEmpty);
+	Ref<StyleBoxEmpty> empty_style = memnew(StyleBoxEmpty);
 	empty_style->set_content_margin_all(0);
 	inline_editor->add_theme_style_override(CoreStringName(normal), empty_style);
 	inline_editor->add_theme_style_override("focus", memnew(StyleBoxEmpty));
