@@ -1174,7 +1174,7 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 }
 
 String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path) {
-	Ref<RegEx> regex = RegEx::create_from_string(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
+	Ref<RegEx> regex = RegEx::create_from_string(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|zed(it(or)?)?|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
 	Ref<RegExMatch> editor_match = regex->search(p_path.to_lower().get_file().get_basename());
 
 	if (editor_match.is_null()) {
@@ -1186,7 +1186,7 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 
 	if (editor.begins_with("rider")) {
 		new_exec_flags = "{project} --line {line} {file}";
-	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
+	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text" || editor == "zed" || editor == "zedit" || editor == "zeditor") {
 		new_exec_flags = "{project} {file}:{line}:{col}";
 	} else if (editor == "vim" || editor == "gvim") {
 		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
