@@ -383,6 +383,13 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 					na_n->process_state = process_state;
 					na_c->process_state = process_state;
 
+					if (na_n->node_state.get_base_path() == String()) {
+						// Create the base path before setting parameters during the first switch
+						StringName subpath = blend_points[new_closest].name;
+						String new_path = String(node_state.get_base_path()) + String(subpath) + "/";
+						na_n->set_node_state_base_path(new_path);
+					}
+
 					na_n->set_backward(na_c->is_backward());
 
 					na_n = nullptr;
