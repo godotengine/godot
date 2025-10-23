@@ -769,7 +769,7 @@ int64_t VariantUtilityFunctions::clampi(int64_t x, int64_t min, int64_t max) {
 }
 
 int64_t VariantUtilityFunctions::nearest_po2(int64_t x) {
-	return nearest_power_of_2_templated(uint64_t(x));
+	return Math::nearest_power_of_2_templated(uint64_t(x));
 }
 
 // Random
