@@ -35,7 +35,7 @@
 #include "gltf_physics_shape.h"
 
 class GLTFDocumentExtensionPhysics : public GLTFDocumentExtension {
-	GDCLASS(GLTFDocumentExtensionPhysics, GLTFDocumentExtension);
+	GDSOFTCLASS(GLTFDocumentExtensionPhysics, GLTFDocumentExtension);
 
 public:
 	// Import process.
