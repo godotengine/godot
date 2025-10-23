@@ -1928,8 +1928,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 		}
 
 		AABB cascade_aabb;
-		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascade.position)) * cascade.cell_size;
-		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size;
+		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascade.position)) * cascade.cell_size * Vector3(1, 1.0 / y_mult, 1);
+		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size * Vector3(1, 1.0 / y_mult, 1);
 
 		for (uint32_t j = 0; j < p_render_data->sdfgi_update_data->positional_light_count; j++) {
 			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
