@@ -6859,8 +6859,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 		unsigned int last_non_zero_w = glyph_count - 1;
 		if (last_run) {
-			for (unsigned int i = glyph_count - 1; i > 0; i--) {
-				last_non_zero_w = i;
+			for (int64_t i = glyph_count - 1; i >= 0; i--) {
+				last_non_zero_w = (unsigned int)i;
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (glyph_pos[i].x_advance != 0) {
 						break;

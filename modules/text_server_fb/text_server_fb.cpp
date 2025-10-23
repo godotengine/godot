@@ -4822,7 +4822,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			// Text span.
 			int last_non_zero_w = sd->end - 1;
 			if (i == sd->spans.size() - 1) {
-				for (int j = span.end - 1; j > span.start; j--) {
+				for (int j = span.end - 1; j >= span.start; j--) {
 					last_non_zero_w = j;
 					uint32_t idx = (int32_t)sd->text[j - sd->start];
 					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
