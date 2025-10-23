@@ -6591,6 +6591,8 @@ void RenderingDevice::_flush_and_stall_for_all_frames(bool p_begin_frame) {
 
 	if (p_begin_frame) {
 		_begin_frame();
+	} else {
+		_stall_for_frame(frame);
 	}
 }
 
