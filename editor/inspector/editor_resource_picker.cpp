@@ -49,6 +49,35 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
+static bool _has_sub_resources(const Ref<Resource> &p_res) {
+	List<PropertyInfo> property_list;
+	p_res->get_property_list(&property_list);
+	for (const PropertyInfo &p : property_list) {
+		Variant value = p_res->get(p.name);
+		if (p.type == Variant::OBJECT && p.hint == PROPERTY_HINT_RESOURCE_TYPE && !(p.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && p_res->get(p.name).get_validated_object()) {
+			return true;
+		} else if (p.type == Variant::ARRAY) {
+			Array arr = value;
+			for (Variant &var : arr) {
+				Ref<Resource> res = var;
+				if (res.is_valid()) {
+					return true;
+				}
+			}
+		} else if (p.type == Variant::DICTIONARY) {
+			Dictionary dict = value;
+			for (const KeyValue<Variant, Variant> &kv : dict) {
+				Ref<Resource> resk = kv.key;
+				Ref<Resource> resv = kv.value;
+				if (resk.is_valid() || resv.is_valid()) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
@@ -82,7 +111,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + class_name);
 
 			// Preview will override the above, so called at the end.
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, callable_mp(this, &EditorResourcePicker::_update_resource_preview).bind(edited_resource->get_instance_id()));
 		}
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
@@ -237,17 +266,7 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
-			// Check whether the resource has subresources.
-			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
-			bool has_subresources = false;
-			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
-					has_subresources = true;
-					break;
-				}
-			}
-			if (has_subresources) {
+			if (_has_sub_resources(edited_resource)) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 			}
 
@@ -360,7 +379,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				base_types.push_back(type);
 			}
 
-			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+			EditorQuickOpenDialog *quick_open = EditorNode::get_singleton()->get_quick_open_dialog();
+			if (resource_owner) {
+				quick_open->popup_dialog_for_property(base_types, resource_owner, property_path, callable_mp(this, &EditorResourcePicker::_file_selected));
+			} else {
+				quick_open->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
 		} break;
 
 		case OBJ_MENU_INSPECT: {
@@ -464,9 +489,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_PASTE_AS_UNIQUE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			// Use the recursive version when using Paste as Unique.
-			// This will show up a dialog to select which resources to make unique.
-			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+			if (_has_sub_resources(edited_resource)) {
+				// Use the recursive version when the Resource has sub-resources.
+				// This will show up a dialog to select which resources to make unique.
+				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+			} else {
+				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+			}
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
@@ -484,8 +513,11 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
-				edited_resource = conversions[to_type]->convert(edited_resource);
-				_resource_changed();
+				Ref<Resource> converted_resource = conversions[to_type]->convert(edited_resource);
+				if (converted_resource.is_valid()) {
+					edited_resource = converted_resource;
+					_resource_changed();
+				}
 				break;
 			}
 
@@ -645,6 +677,18 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
+static bool _should_hide_type(const StringName &p_type) {
+	if (ClassDB::is_virtual(p_type)) {
+		return true;
+	}
+
+	if (p_type == SNAME("MissingResource")) {
+		return true;
+	}
+
+	return false;
+}
+
 static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
 	if (p_vector->find(p_type)) {
 		// Already added.
@@ -652,9 +696,9 @@ static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vect
 	}
 
 	if (ClassDB::class_exists(p_type)) {
-		// Engine class,
+		// Engine class.
 
-		if (!ClassDB::is_virtual(p_type)) {
+		if (!_should_hide_type(p_type)) {
 			p_vector->push_back(p_type);
 		}
 
@@ -778,10 +822,19 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 }
 
 bool EditorResourcePicker::_is_custom_type_script() const {
-	Ref<Script> resource_as_script = edited_resource;
+	EditorProperty *editor_property = Object::cast_to<EditorProperty>(get_parent());
+	if (!editor_property) {
+		return false;
+	}
 
-	if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
-		return true;
+	// Check if the property being edited is 'script'.
+	if (editor_property->get_edited_property() == CoreStringName(script)) {
+		// If there's currently a valid script assigned and the owning Node/Resource also has a custom type script assigned, then
+		// the currently assigned script is either the custom type script itself or an extension of it.
+		Ref<Script> resource_as_script = edited_resource;
+		if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
+			return true;
+		}
 	}
 
 	return false;
@@ -874,8 +927,6 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 void EditorResourcePicker::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_resource_preview"), &EditorResourcePicker::_update_resource_preview);
-
 	ClassDB::bind_method(D_METHOD("set_base_type", "base_type"), &EditorResourcePicker::set_base_type);
 	ClassDB::bind_method(D_METHOD("get_base_type"), &EditorResourcePicker::get_base_type);
 	ClassDB::bind_method(D_METHOD("get_allowed_types"), &EditorResourcePicker::get_allowed_types);
@@ -1082,9 +1133,9 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	}
 
 	if (res_name.is_empty()) {
-		p_item->set_text(0, p_resource->get_class());
+		p_item->set_text(0, _get_resource_type(p_resource));
 	} else {
-		p_item->set_text(0, vformat("%s (%s)", p_resource->get_class(), res_name));
+		p_item->set_text(0, vformat("%s (%s)", _get_resource_type(p_resource), res_name));
 	}
 
 	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
@@ -1107,7 +1158,47 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	p_resource->get_property_list(&plist);
 
 	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || (E.type != Variant::OBJECT && E.type != Variant::ARRAY && E.type != Variant::DICTIONARY)) {
+			continue;
+		}
+
+		Variant value = p_resource->get(E.name);
+		TreeItem *child = nullptr;
+
+		if (E.type == Variant::ARRAY) {
+			Array arr = value;
+			for (int i = 0; i < arr.size(); i++) {
+				Ref<Resource> res = arr[i];
+				if (res.is_valid()) {
+					child = p_item->create_child();
+					_gather_resources_to_duplicate(res, child, E.name);
+					meta = child->get_metadata(0);
+					meta.push_back(E.name);
+					meta.push_back(i); // Remember index.
+				}
+			}
+			continue;
+		} else if (E.type == Variant::DICTIONARY) {
+			Dictionary dict = value;
+			for (const KeyValue<Variant, Variant> &kv : dict) {
+				Ref<Resource> key_res = kv.key;
+				Ref<Resource> value_res = kv.value;
+				if (key_res.is_valid()) {
+					child = p_item->create_child();
+					_gather_resources_to_duplicate(key_res, child, E.name);
+					meta = child->get_metadata(0);
+					meta.push_back(E.name);
+					meta.push_back(key_res);
+				}
+				if (value_res.is_valid()) {
+					child = p_item->create_child();
+					_gather_resources_to_duplicate(value_res, child, E.name);
+					meta = child->get_metadata(0);
+					meta.push_back(E.name);
+					meta.push_back(value_res);
+					meta.push_back(kv.key);
+				}
+			}
 			continue;
 		}
 
@@ -1115,13 +1206,11 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 		if (res.is_null()) {
 			continue;
 		}
-
-		TreeItem *child = p_item->create_child();
+		child = p_item->create_child();
 		_gather_resources_to_duplicate(res, child, E.name);
-
 		meta = child->get_metadata(0);
 		// Remember property name.
-		meta.append(E.name);
+		meta.push_back(E.name);
 
 		if ((E.usage & PROPERTY_USAGE_NEVER_DUPLICATE)) {
 			// The resource can't be duplicated, but make it appear on the list anyway.
@@ -1146,10 +1235,47 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 		if (meta.size() == 1) { // Root.
 			edited_resource = unique_resource;
 			_resource_changed();
-		} else {
-			Array parent_meta = item->get_parent()->get_metadata(0);
-			Ref<Resource> parent = parent_meta[0];
+			continue;
+		}
+		Array parent_meta = item->get_parent()->get_metadata(0);
+		Ref<Resource> parent = parent_meta[0];
+		Variant::Type property_type = parent->get(meta[1]).get_type();
+
+		if (property_type == Variant::OBJECT) {
 			parent->set(meta[1], unique_resource);
+			continue;
+		}
+
+		Variant property = parent->get(meta[1]);
+
+		if (!parent_meta.has(property)) {
+			property = property.duplicate();
+			parent->set(meta[1], property);
+			parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
+		}
+
+		if (property_type == Variant::ARRAY) {
+			Array arr = property;
+			arr[meta[2]] = unique_resource;
+			continue;
+		}
+
+		Dictionary dict = property;
+		LocalVector<Variant> keys = dict.get_key_list();
+
+		if (meta[2].get_type() == Variant::OBJECT) {
+			if (keys.has(meta[2])) {
+				//It's a key.
+				dict[unique_resource] = dict[meta[2]];
+				dict.erase(meta[2]);
+				parent_meta.push_back(unique_resource);
+			} else {
+				// If key has been erased, use last appended Resource key instead.
+				Variant key = keys.has(meta[3]) ? meta[3] : parent_meta.back();
+				dict[key] = unique_resource;
+			}
+		} else {
+			dict[meta[2]] = unique_resource;
 		}
 	}
 }

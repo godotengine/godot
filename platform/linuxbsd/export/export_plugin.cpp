@@ -192,7 +192,7 @@ void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_opti
 						"\"{temp_dir}/{exe_name}\" {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
@@ -612,7 +612,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
+void EditorExportPlatformLinuxBSD::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/mesh.h"
 
 class NavigationPolygon;
 class NavigationMeshSourceGeometryData2D;

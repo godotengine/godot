@@ -39,7 +39,6 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/version.h"
-#include "drivers/png/png_driver_common.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/export/export_template_manager.h"
@@ -240,39 +239,39 @@ static const char *LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION = PNAME("launcher_ic
 static const char *LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION = PNAME("launcher_icons/adaptive_monochrome_432x432");
 
 static const LauncherIcon LAUNCHER_ICONS[ICON_DENSITIES_COUNT] = {
-	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
-	{ "res/mipmap-xxhdpi-v4/icon.png", 144 },
-	{ "res/mipmap-xhdpi-v4/icon.png", 96 },
-	{ "res/mipmap-hdpi-v4/icon.png", 72 },
-	{ "res/mipmap-mdpi-v4/icon.png", 48 },
-	{ "res/mipmap/icon.png", 192 }
+	{ "res/mipmap-xxxhdpi-v4/icon.webp", 192 },
+	{ "res/mipmap-xxhdpi-v4/icon.webp", 144 },
+	{ "res/mipmap-xhdpi-v4/icon.webp", 96 },
+	{ "res/mipmap-hdpi-v4/icon.webp", 72 },
+	{ "res/mipmap-mdpi-v4/icon.webp", 48 },
+	{ "res/mipmap/icon.webp", 192 }
 };
 
 static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[ICON_DENSITIES_COUNT] = {
-	{ "res/mipmap-xxxhdpi-v4/icon_foreground.png", 432 },
-	{ "res/mipmap-xxhdpi-v4/icon_foreground.png", 324 },
-	{ "res/mipmap-xhdpi-v4/icon_foreground.png", 216 },
-	{ "res/mipmap-hdpi-v4/icon_foreground.png", 162 },
-	{ "res/mipmap-mdpi-v4/icon_foreground.png", 108 },
-	{ "res/mipmap/icon_foreground.png", 432 }
+	{ "res/mipmap-xxxhdpi-v4/icon_foreground.webp", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_foreground.webp", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_foreground.webp", 216 },
+	{ "res/mipmap-hdpi-v4/icon_foreground.webp", 162 },
+	{ "res/mipmap-mdpi-v4/icon_foreground.webp", 108 },
+	{ "res/mipmap/icon_foreground.webp", 432 }
 };
 
 static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[ICON_DENSITIES_COUNT] = {
-	{ "res/mipmap-xxxhdpi-v4/icon_background.png", 432 },
-	{ "res/mipmap-xxhdpi-v4/icon_background.png", 324 },
-	{ "res/mipmap-xhdpi-v4/icon_background.png", 216 },
-	{ "res/mipmap-hdpi-v4/icon_background.png", 162 },
-	{ "res/mipmap-mdpi-v4/icon_background.png", 108 },
-	{ "res/mipmap/icon_background.png", 432 }
+	{ "res/mipmap-xxxhdpi-v4/icon_background.webp", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_background.webp", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_background.webp", 216 },
+	{ "res/mipmap-hdpi-v4/icon_background.webp", 162 },
+	{ "res/mipmap-mdpi-v4/icon_background.webp", 108 },
+	{ "res/mipmap/icon_background.webp", 432 }
 };
 
 static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[ICON_DENSITIES_COUNT] = {
-	{ "res/mipmap-xxxhdpi-v4/icon_monochrome.png", 432 },
-	{ "res/mipmap-xxhdpi-v4/icon_monochrome.png", 324 },
-	{ "res/mipmap-xhdpi-v4/icon_monochrome.png", 216 },
-	{ "res/mipmap-hdpi-v4/icon_monochrome.png", 162 },
-	{ "res/mipmap-mdpi-v4/icon_monochrome.png", 108 },
-	{ "res/mipmap/icon_monochrome.png", 432 }
+	{ "res/mipmap-xxxhdpi-v4/icon_monochrome.webp", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_monochrome.webp", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_monochrome.webp", 216 },
+	{ "res/mipmap-hdpi-v4/icon_monochrome.webp", 162 },
+	{ "res/mipmap-mdpi-v4/icon_monochrome.webp", 108 },
+	{ "res/mipmap/icon_monochrome.webp", 432 }
 };
 
 static const int EXPORT_FORMAT_APK = 0;
@@ -1852,18 +1851,6 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 	//printf("end\n");
 }
 
-void EditorExportPlatformAndroid::_load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data) {
-	Vector<uint8_t> png_buffer;
-	Error err = PNGDriverCommon::image_to_png(p_splash_image, png_buffer);
-	if (err == OK) {
-		p_data.resize(png_buffer.size());
-		memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
-	} else {
-		String err_str = String("Failed to convert splash image to png.");
-		WARN_PRINT(err_str.utf8().get_data());
-	}
-}
-
 void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data) {
 	Ref<Image> working_image = p_source_image;
 
@@ -1872,15 +1859,9 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 		working_image->resize(dimension, dimension, Image::Interpolation::INTERPOLATE_LANCZOS);
 	}
 
-	Vector<uint8_t> png_buffer;
-	Error err = PNGDriverCommon::image_to_png(working_image, png_buffer);
-	if (err == OK) {
-		p_data.resize(png_buffer.size());
-		memcpy(p_data.ptrw(), png_buffer.ptr(), p_data.size());
-	} else {
-		String err_str = String("Failed to convert resized icon (") + p_file_name + ") to png.";
-		WARN_PRINT(err_str.utf8().get_data());
-	}
+	Vector<uint8_t> buffer = working_image->save_webp_to_buffer();
+	p_data.resize(buffer.size());
+	memcpy(p_data.ptrw(), buffer.ptr(), p_data.size());
 }
 
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
@@ -2168,16 +2149,18 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_app_library"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_as_launcher_app"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ICON_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ICON_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
 
+#ifndef XR_DISABLED
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
+#endif // XR_DISABLED
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gesture/swipe_to_dismiss"), false));
 
@@ -2739,6 +2722,7 @@ bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
 		List<String> args;
 		args.push_back("build");
 		args.push_back(project_path);
+		args.push_back("/p:GodotTargetPlatform=android");
 		args.push_back("--getProperty:TargetFramework");
 
 		int exitcode;
@@ -2778,9 +2762,9 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
 
 	if (!gradle_build_enabled) {
-		// For template exports we only support .NET 8 because the template
-		// includes .jar dependencies that may only be compatible with .NET 8.
-		if (!_validate_dotnet_tfm("net8.0", err)) {
+		// For template exports we only support .NET 9 because the template
+		// includes .jar dependencies that may only be compatible with .NET 9.
+		if (!_validate_dotnet_tfm("net9.0", err)) {
 			r_error = err;
 			return false;
 		}
@@ -2852,36 +2836,38 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 
 	// Validate the rest of the export configuration.
 
-	String dk = _get_keystore_path(p_preset, true);
-	String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
-	String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
+	if (p_debug) {
+		String dk = _get_keystore_path(p_preset, true);
+		String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
+		String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
 
-	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
-		valid = false;
-		err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
-	}
-
-	// Use OR to make the export UI able to show this error.
-	if ((p_debug || !dk.is_empty()) && !FileAccess::exists(dk)) {
-		dk = EDITOR_GET("export/android/debug_keystore");
-		if (!FileAccess::exists(dk)) {
+		if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
 			valid = false;
-			err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
+			err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
 		}
-	}
 
-	String rk = _get_keystore_path(p_preset, false);
-	String rk_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
-	String rk_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
+		// Use OR to make the export UI able to show this error.
+		if (!dk.is_empty() && !FileAccess::exists(dk)) {
+			dk = EDITOR_GET("export/android/debug_keystore");
+			if (!FileAccess::exists(dk)) {
+				valid = false;
+				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
+			}
+		}
+	} else {
+		String rk = _get_keystore_path(p_preset, false);
+		String rk_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
+		String rk_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
 
-	if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (!rk.is_empty() || !rk_user.is_empty() || !rk_password.is_empty())) {
-		valid = false;
-		err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
-	}
+		if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (!rk.is_empty() || !rk_user.is_empty() || !rk_password.is_empty())) {
+			valid = false;
+			err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
+		}
 
-	if (!p_debug && !rk.is_empty() && !FileAccess::exists(rk)) {
-		valid = false;
-		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+		if (!rk.is_empty() && !FileAccess::exists(rk)) {
+			valid = false;
+			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+		}
 	}
 
 #ifndef ANDROID_ENABLED
@@ -3084,6 +3070,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back(apk_expansion_public_key.strip_edges());
 	}
 
+#ifndef XR_DISABLED
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
 	if (xr_mode_index == XR_MODE_OPENXR) {
 		command_line_strings.push_back("--xr_mode_openxr");
@@ -3097,6 +3084,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--xr-mode");
 		command_line_strings.push_back("off");
 	}
+#endif // XR_DISABLED
 
 	bool immersive = p_preset->get("screen/immersive_mode");
 	if (immersive) {
@@ -3751,7 +3739,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String edition = has_dotnet_project ? "Mono" : "Standard";
 		String build_type = p_debug ? "Debug" : "Release";
 		if (export_format == EXPORT_FORMAT_AAB) {
-			String bundle_build_command = vformat("bundle%s", build_type);
+			String bundle_build_command = vformat("bundle%s%s", edition, build_type);
 			cmdline.push_back(bundle_build_command);
 		} else if (export_format == EXPORT_FORMAT_APK) {
 			String apk_build_command = vformat("assemble%s%s", edition, build_type);
@@ -3985,7 +3973,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 
-		if (file.ends_with(".png") && file.contains("mipmap")) {
+		if ((file.ends_with(".webp") || file.ends_with(".png")) && file.contains("mipmap")) {
 			for (int i = 0; i < ICON_DENSITIES_COUNT; ++i) {
 				if (main_image.is_valid() && !main_image->is_empty()) {
 					if (file == LAUNCHER_ICONS[i].export_path) {
@@ -4247,7 +4235,7 @@ void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
-EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
+void EditorExportPlatformAndroid::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

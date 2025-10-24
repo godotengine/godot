@@ -31,7 +31,7 @@
 #include "navigation_agent_3d.h"
 
 #include "scene/3d/navigation/navigation_link_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent3D::get_rid);
@@ -168,7 +168,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_search_max_distance"), "set_path_search_max_distance", "get_path_search_max_distance");
 
 	ADD_GROUP("Avoidance", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.01,100,0.01,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,100,0.01,or_greater,suffix:m"), "set_radius", "get_radius");
@@ -200,7 +200,7 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_debug_path_custom_point_size"), &NavigationAgent3D::get_debug_path_custom_point_size);
 
 	ADD_GROUP("Debug", "debug_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_debug_enabled", "get_debug_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "0,50,0.01,or_greater,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
@@ -383,7 +383,7 @@ NavigationAgent3D::NavigationAgent3D() {
 
 NavigationAgent3D::~NavigationAgent3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(agent);
+	NavigationServer3D::get_singleton()->free_rid(agent);
 	agent = RID(); // Pointless
 
 #ifdef DEBUG_ENABLED
@@ -391,10 +391,10 @@ NavigationAgent3D::~NavigationAgent3D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
+		RenderingServer::get_singleton()->free_rid(debug_path_instance);
 	}
 	if (debug_path_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_path_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }

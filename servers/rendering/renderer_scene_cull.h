@@ -1311,6 +1311,7 @@ public:
 	PASS1RC(float, environment_get_ssr_fade_out, RID)
 	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
 
+	PASS1(environment_set_ssr_half_size, bool)
 	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
 
 	// SSAO
@@ -1390,6 +1391,7 @@ public:
 	PASS1(decals_set_filter, RS::DecalFilter)
 	PASS1(light_projectors_set_filter, RS::LightProjectorFilter)
 	PASS1(lightmaps_set_bicubic_filter, bool)
+	PASS1(material_set_use_debanding, bool)
 
 	virtual void update();
 

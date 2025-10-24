@@ -124,6 +124,13 @@
 				Returns column title language code.
 			</description>
 		</method>
+		<method name="get_column_title_tooltip_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column title's tooltip text.
+			</description>
+		</method>
 		<method name="get_column_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
@@ -322,6 +329,14 @@
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
+		<method name="set_column_title_tooltip_text">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="tooltip_text" type="String" />
+			<description>
+				Sets the column title's tooltip text.
+			</description>
+		</method>
 		<method name="set_selected">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
@@ -354,6 +369,9 @@
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
 			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control._can_drop_data] is recommended.
 			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
+		</member>
+		<member name="enable_drag_unfolding" type="bool" setter="set_enable_drag_unfolding" getter="is_drag_unfolding_enabled" default="true">
+			If [code]true[/code], tree items will unfold when hovered over during a drag-and-drop. The delay for when this happens is dictated by [theme_item dragging_unfold_wait_msec].
 		</member>
 		<member name="enable_recursive_folding" type="bool" setter="set_enable_recursive_folding" getter="is_recursive_folding_enabled" default="true">
 			If [code]true[/code], recursive folding is enabled for this [Tree]. Holding down [kbd]Shift[/kbd] while clicking the fold arrow or using [code]ui_right[/code]/[code]ui_left[/code] shortcuts collapses or uncollapses the [TreeItem] and all its descendants.
@@ -545,6 +563,9 @@
 		</theme_item>
 		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
+		</theme_item>
+		<theme_item name="dragging_unfold_wait_msec" data_type="constant" type="int" default="500">
+			During a drag-and-drop, this is how many milliseconds to wait over a section before the section unfolds.
 		</theme_item>
 		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.

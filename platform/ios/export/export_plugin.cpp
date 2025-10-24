@@ -33,16 +33,23 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "editor/editor_node.h"
+
 Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
 
-EditorExportPlatformIOS::EditorExportPlatformIOS() :
-		EditorExportPlatformAppleEmbedded(_ios_logo_svg, _ios_run_icon_svg) {
+void EditorExportPlatformIOS::initialize() {
+	if (EditorNode::get_singleton()) {
+		EditorExportPlatformAppleEmbedded::_initialize(_ios_logo_svg, _ios_run_icon_svg);
 #ifdef MACOS_ENABLED
-	_start_remote_device_poller_thread();
+		_start_remote_device_poller_thread();
 #endif
+	}
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifdef MACOS_ENABLED
+	_stop_remote_device_poller_thread();
+#endif
 }
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {
@@ -91,9 +98,32 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 	switch (image_scale_mode) {
 		case 0: {
 			String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
-			bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
+			RenderingServer::SplashStretchMode stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
 			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-			value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+			if (logo_path.is_empty()) {
+				value = "center";
+			} else {
+				switch (stretch_mode) {
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
+						value = "center";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
+						value = "scaleAspectFill";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
+						value = "scaleToFill";
+					} break;
+				}
+			}
 		} break;
 		default: {
 			value = storyboard_image_scale_mode[image_scale_mode - 1];
@@ -354,4 +384,106 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	sizes_file->store_buffer((const uint8_t *)sizes_utf8.get_data(), sizes_utf8.length());
 
 	return OK;
+}
+
+String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
+	// Do iOS specific processing first, and call super implementation if there are no matches
+
+	String strnew;
+
+	// Supported Destinations
+	if (p_line.contains("$targeted_device_family")) {
+		String xcode_value;
+		switch ((int)p_preset->get("application/targeted_device_family")) {
+			case 0: // iPhone
+				xcode_value = "1";
+				break;
+			case 1: // iPad
+				xcode_value = "2";
+				break;
+			case 2: // iPhone & iPad
+				xcode_value = "1,2";
+				break;
+		}
+		strnew += p_line.replace("$targeted_device_family", xcode_value) + "\n";
+
+		// MoltenVK Framework
+	} else if (p_line.contains("$moltenvk_buildfile")) {
+		String value = "9039D3BE24C093AC0020482C /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9039D3BD24C093AC0020482C /* MoltenVK.xcframework */; };";
+		strnew += p_line.replace("$moltenvk_buildfile", value) + "\n";
+	} else if (p_line.contains("$moltenvk_fileref")) {
+		String value = "9039D3BD24C093AC0020482C /* MoltenVK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = MoltenVK; path = MoltenVK.xcframework; sourceTree = \"<group>\"; };";
+		strnew += p_line.replace("$moltenvk_fileref", value) + "\n";
+	} else if (p_line.contains("$moltenvk_buildphase")) {
+		String value = "9039D3BE24C093AC0020482C /* MoltenVK.xcframework in Frameworks */,";
+		strnew += p_line.replace("$moltenvk_buildphase", value) + "\n";
+	} else if (p_line.contains("$moltenvk_buildgrp")) {
+		String value = "9039D3BD24C093AC0020482C /* MoltenVK.xcframework */,";
+		strnew += p_line.replace("$moltenvk_buildgrp", value) + "\n";
+
+		// Launch Storyboard
+	} else if (p_line.contains("$plist_launch_screen_name")) {
+		String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
+		strnew += p_line.replace("$plist_launch_screen_name", value) + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_file_reference")) {
+		String value = "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };";
+		strnew += p_line.replace("$pbx_launch_screen_file_reference", value) + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_copy_files")) {
+		String value = "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */,";
+		strnew += p_line.replace("$pbx_launch_screen_copy_files", value) + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_build_phase")) {
+		String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */,";
+		strnew += p_line.replace("$pbx_launch_screen_build_phase", value) + "\n";
+	} else if (p_line.contains("$pbx_launch_screen_build_reference")) {
+		String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
+		strnew += p_line.replace("$pbx_launch_screen_build_reference", value) + "\n";
+
+		// Launch Storyboard customization
+	} else if (p_line.contains("$launch_screen_image_mode")) {
+		int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
+		String value;
+
+		switch (image_scale_mode) {
+			case 0: {
+				String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
+				bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
+				// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+				value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+			} break;
+			default: {
+				value = storyboard_image_scale_mode[image_scale_mode - 1];
+			}
+		}
+
+		strnew += p_line.replace("$launch_screen_image_mode", value) + "\n";
+	} else if (p_line.contains("$launch_screen_background_color")) {
+		bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
+		Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
+		const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
+
+		Dictionary value_dictionary;
+		value_dictionary["red"] = color.r;
+		value_dictionary["green"] = color.g;
+		value_dictionary["blue"] = color.b;
+		value_dictionary["alpha"] = color.a;
+		String value = value_format.format(value_dictionary, "$_");
+
+		strnew += p_line.replace("$launch_screen_background_color", value) + "\n";
+
+		// OS Deployment Target
+	} else if (p_line.contains("$os_deployment_target")) {
+		String min_version = p_preset->get("application/min_" + get_platform_name() + "_version");
+		String value = "IPHONEOS_DEPLOYMENT_TARGET = " + min_version + ";";
+		strnew += p_line.replace("$os_deployment_target", value) + "\n";
+
+		// Valid Archs
+	} else if (p_line.contains("$valid_archs")) {
+		strnew += p_line.replace("$valid_archs", "arm64 x86_64") + "\n";
+
+		// Apple Embedded common
+	} else {
+		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);
+	}
+
+	return strnew;
 }

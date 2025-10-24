@@ -599,10 +599,10 @@ void FindReplaceBar::_show_search(bool p_with_replace, bool p_show_only) {
 
 	if (focus_replace) {
 		search_text->deselect();
-		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred(false);
 	} else {
 		replace_text->deselect();
-		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred(false);
 	}
 
 	if (on_one_line) {
@@ -753,9 +753,9 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 	toggle_replace_button = memnew(Button);
+	toggle_replace_button->set_theme_type_variation(SceneStringName(FlatButton));
 	add_child(toggle_replace_button);
 	toggle_replace_button->set_accessibility_name(TTRC("Replace Mode"));
-	toggle_replace_button->set_flat(true);
 	toggle_replace_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	toggle_replace_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_toggle_replace_pressed));
 
@@ -799,7 +799,7 @@ FindReplaceBar::FindReplaceBar() {
 	matches_label->hide();
 
 	find_prev = memnew(Button);
-	find_prev->set_flat(true);
+	find_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
@@ -807,7 +807,7 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
 
 	find_next = memnew(Button);
-	find_next->set_flat(true);
+	find_next->set_theme_type_variation(SceneStringName(FlatButton));
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);
@@ -852,7 +852,7 @@ FindReplaceBar::FindReplaceBar() {
 	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(Button);
-	hide_button->set_flat(true);
+	hide_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hide_button->set_tooltip_text(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar));
@@ -1466,23 +1466,23 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	if (state.has("folded_lines")) {
-		Vector<int> folded_lines = state["folded_lines"];
-		for (int i = 0; i < folded_lines.size(); i++) {
-			text_editor->fold_line(folded_lines[i]);
+		const PackedInt32Array folded_lines = state["folded_lines"];
+		for (const int &line : folded_lines) {
+			text_editor->fold_line(line);
 		}
 	}
 
 	if (state.has("breakpoints")) {
-		Array breakpoints = state["breakpoints"];
-		for (int i = 0; i < breakpoints.size(); i++) {
-			text_editor->set_line_as_breakpoint(breakpoints[i], true);
+		const PackedInt32Array breakpoints = state["breakpoints"];
+		for (const int &line : breakpoints) {
+			text_editor->set_line_as_breakpoint(line, true);
 		}
 	}
 
 	if (state.has("bookmarks")) {
-		Array bookmarks = state["bookmarks"];
-		for (int i = 0; i < bookmarks.size(); i++) {
-			text_editor->set_line_as_bookmarked(bookmarks[i], true);
+		const PackedInt32Array bookmarks = state["bookmarks"];
+		for (const int &line : bookmarks) {
+			text_editor->set_line_as_bookmarked(line, true);
 		}
 	}
 
@@ -1918,7 +1918,7 @@ CodeTextEditor::CodeTextEditor() {
 	error_column = 0;
 
 	toggle_files_button = memnew(Button);
-	toggle_files_button->set_flat(true);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	toggle_files_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_files_pressed));
@@ -1961,13 +1961,14 @@ CodeTextEditor::CodeTextEditor() {
 	// Zoom
 	zoom_button = memnew(MenuButton);
 	status_bar->add_child(zoom_button);
-	zoom_button->set_flat(true);
+	zoom_button->set_flat(false);
+	zoom_button->set_theme_type_variation("FlatMenuButton");
 	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	zoom_button->set_text("100 %");
 	zoom_button->set_accessibility_name(TTRC("Zoom Factor"));
 
 	PopupMenu *zoom_menu = zoom_button->get_popup();
-	constexpr int preset_count = std::size(ZOOM_FACTOR_PRESETS);
+	constexpr int preset_count = std_size(ZOOM_FACTOR_PRESETS);
 
 	for (int i = 0; i < preset_count; i++) {
 		float z = ZOOM_FACTOR_PRESETS[i];

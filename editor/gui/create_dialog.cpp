@@ -81,9 +81,9 @@ void CreateDialog::for_inherit() {
 }
 
 void CreateDialog::_fill_type_list() {
-	List<StringName> complete_type_list;
-	ClassDB::get_class_list(&complete_type_list);
-	ScriptServer::get_global_class_list(&complete_type_list);
+	LocalVector<StringName> complete_type_list;
+	ClassDB::get_class_list(complete_type_list);
+	ScriptServer::get_global_class_list(complete_type_list);
 
 	EditorData &ed = EditorNode::get_editor_data();
 	HashMap<String, DocData::ClassDoc> &class_docs_list = EditorHelp::get_doc_data()->class_list;
@@ -563,7 +563,7 @@ void CreateDialog::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
+				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(false); // Still not visible.
 				search_box->select_all();
 			} else {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
@@ -856,12 +856,17 @@ CreateDialog::CreateDialog() {
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here.
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
+	type_blacklist.insert("MissingNode");
+	type_blacklist.insert("MissingResource");
 
 	HSplitContainer *hsc = memnew(HSplitContainer);
 	add_child(hsc);
 
 	VSplitContainer *vsc = memnew(VSplitContainer);
 	hsc->add_child(vsc);
+
+	VSplitContainer *vsc_right = memnew(VSplitContainer);
+	hsc->add_child(vsc_right);
 
 	VBoxContainer *fav_vb = memnew(VBoxContainer);
 	fav_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
@@ -899,7 +904,8 @@ CreateDialog::CreateDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hsc->add_child(vbc);
+	vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vsc_right->add_child(vbc);
 
 	search_box = memnew(LineEdit);
 	search_box->set_accessibility_name(TTRC("Search"));
@@ -928,9 +934,15 @@ CreateDialog::CreateDialog() {
 
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_accessibility_name(TTRC("Description:"));
+	help_bit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
-	vbc->add_margin_child(TTR("Description:"), help_bit);
+
+	VBoxContainer *vbc_desc = memnew(VBoxContainer);
+	vbc_desc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
+	vbc_desc->add_margin_child(TTR("Description:"), help_bit, true);
+
+	vsc_right->add_child(vbc_desc);
 
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

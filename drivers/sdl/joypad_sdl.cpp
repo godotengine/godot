@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/variant/dictionary.h"
 
-#include <iterator>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -57,6 +55,19 @@ JoypadSDL *JoypadSDL::singleton = nullptr;
 JoypadSDL::JoypadSDL() {
 	singleton = this;
 }
+
+#ifdef WINDOWS_ENABLED
+extern "C" {
+HWND SDL_HelperWindow;
+}
+
+// Required for DInput joypads to work
+// TODO: remove this workaround when we update to newer version of SDL
+JoypadSDL::JoypadSDL(HWND p_helper_window) :
+		JoypadSDL() {
+	SDL_HelperWindow = p_helper_window;
+}
+#endif
 
 JoypadSDL::~JoypadSDL() {
 	// Process any remaining input events
@@ -88,6 +99,9 @@ Error JoypadSDL::initialize() {
 		SDL_AddGamepadMappingsFromIO(rw, 1);
 	}
 
+	// Make sure that we handle already connected joypads when the driver is initialized.
+	process_events();
+
 	print_verbose("SDL: Init OK!");
 	return OK;
 }
@@ -106,13 +120,19 @@ void JoypadSDL::process_events() {
 				SDL_Joystick *sdl_joy = SDL_GetJoystickFromID(joypads[i].sdl_instance_idx);
 				Vector2 strength = Input::get_singleton()->get_joy_vibration_strength(i);
 
-				// If the vibration was requested to start, SDL_RumbleJoystick will start it.
-				// If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+				/*
+					If the vibration was requested to start, SDL_RumbleJoystick will start it.
+					If the vibration was requested to stop, strength and duration will be 0, so SDL will stop the rumble.
+
+					Here strength.y goes first and then strength.x, because Input.get_joy_vibration_strength().x
+					is vibration's weak magnitude (high frequency rumble), and .y is strong magnitude (low frequency rumble),
+					SDL_RumbleJoystick takes low frequency rumble first and then high frequency rumble.
+				*/
 				SDL_RumbleJoystick(
 						sdl_joy,
 						// Rumble strength goes from 0 to 0xFFFF
-						strength.x * UINT16_MAX,
 						strength.y * UINT16_MAX,
+						strength.x * UINT16_MAX,
 						Input::get_singleton()->get_joy_vibration_duration(i) * 1000);
 			}
 		}
@@ -128,11 +148,12 @@ void JoypadSDL::process_events() {
 				print_error("A new joypad was attached but couldn't allocate a new id for it because joypad limit was reached.");
 			} else {
 				SDL_Joystick *joy = nullptr;
+				SDL_Gamepad *gamepad = nullptr;
 				String device_name;
 
 				// Gamepads must be opened with SDL_OpenGamepad to get their special remapped events
 				if (SDL_IsGamepad(sdl_event.jdevice.which)) {
-					SDL_Gamepad *gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
+					gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
 
 					ERR_CONTINUE_MSG(!gamepad,
 							vformat("Error opening gamepad at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
@@ -164,9 +185,22 @@ void JoypadSDL::process_events() {
 
 				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
 
-				// Skip Godot's mapping system because SDL already handles the joypad's mapping
 				Dictionary joypad_info;
-				joypad_info["mapping_handled"] = true;
+				joypad_info["mapping_handled"] = true; // Skip Godot's mapping system because SDL already handles the joypad's mapping.
+				joypad_info["raw_name"] = String(SDL_GetJoystickName(joy));
+				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
+				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
+
+				const uint64_t steam_handle = SDL_GetGamepadSteamHandle(gamepad);
+				if (steam_handle != 0) {
+					joypad_info["steam_input_index"] = itos(steam_handle);
+				}
+
+				const int player_index = SDL_GetJoystickPlayerIndex(joy);
+				if (player_index >= 0) {
+					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
+					joypad_info["xinput_index"] = itos(player_index);
+				}
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,
@@ -197,6 +231,12 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_BUTTON_UP:
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 					SKIP_EVENT_FOR_GAMEPAD;
+
+					// Some devices report pressing buttons with indices like 232+, 241+, etc. that are not valid,
+					// so we ignore them here.
+					if (sdl_event.jbutton.button >= (int)JoyButton::MAX) {
+						continue;
+					}
 
 					Input::get_singleton()->joy_button(
 							joy_id,
@@ -243,17 +283,6 @@ void JoypadSDL::process_events() {
 		}
 	}
 }
-
-#ifdef WINDOWS_ENABLED
-extern "C" {
-HWND SDL_HelperWindow;
-}
-
-// Required for DInput joypads to work
-void JoypadSDL::setup_sdl_helper_window(HWND p_hwnd) {
-	SDL_HelperWindow = p_hwnd;
-}
-#endif
 
 void JoypadSDL::close_joypad(int p_pad_idx) {
 	int sdl_instance_idx = joypads[p_pad_idx].sdl_instance_idx;

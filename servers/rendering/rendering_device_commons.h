@@ -33,8 +33,6 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#include <algorithm>
-
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
@@ -67,6 +65,8 @@ public:
 };
 
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
@@ -987,7 +987,6 @@ protected:
 
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
 
-	static uint32_t get_image_format_pixel_size(DataFormat p_format);
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
@@ -1009,6 +1008,12 @@ protected:
 	static uint32_t get_format_vertex_size(DataFormat p_format);
 
 public:
+	/*****************/
+	/**** TEXTURE ****/
+	/*****************/
+
+	static uint32_t get_image_format_pixel_size(DataFormat p_format);
+
 	/****************/
 	/**** SHADER ****/
 	/****************/
@@ -1066,6 +1071,4 @@ public:
 		BitField<ShaderStage> stages_bits = {};
 		BitField<ShaderStage> push_constant_stages = {};
 	};
-
-	static Error reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 };

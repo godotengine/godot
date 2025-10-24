@@ -182,6 +182,7 @@ Light3D *GLTFLight::to_node() const {
 		return nullptr;
 	}
 	light->set_color(color.linear_to_srgb());
+	light->set_param(Light3D::PARAM_ATTENUATION, 2.0);
 	return light;
 }
 

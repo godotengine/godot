@@ -143,10 +143,14 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
 private:
 	void init_features(id<MTLDevice> p_device);
 	void init_limits(id<MTLDevice> p_device);
+	void init_os_props();
 
 public:
 	MetalFeatures features;
 	MetalLimits limits;
+
+	// maj * 10000 + min * 100 + patch
+	uint32_t os_version;
 
 	SampleCount find_nearest_supported_sample_count(RenderingDevice::TextureSamples p_samples) const;
 

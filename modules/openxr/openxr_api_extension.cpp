@@ -120,9 +120,9 @@ Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionConstPtr<const vo
 	return OpenXRAPI::get_singleton()->transform_from_pose(*(XrPosef *)p_pose.data);
 }
 
-bool OpenXRAPIExtension::xr_result(uint64_t result, String format, Array args) {
+bool OpenXRAPIExtension::xr_result(uint64_t p_result, const String &p_format, const Array &p_args) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
-	return OpenXRAPI::get_singleton()->xr_result((XrResult)result, format.utf8().get_data(), args);
+	return OpenXRAPI::get_singleton()->xr_result((XrResult)p_result, p_format.utf8().get_data(), p_args);
 }
 
 bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
@@ -130,7 +130,7 @@ bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
 	return OpenXRAPI::openxr_is_enabled(p_check_run_in_editor);
 }
 
-uint64_t OpenXRAPIExtension::get_instance_proc_addr(String p_name) {
+uint64_t OpenXRAPIExtension::get_instance_proc_addr(const String &p_name) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	CharString str = p_name.utf8();
 	PFN_xrVoidFunction addr = nullptr;

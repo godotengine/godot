@@ -488,7 +488,7 @@ void ScreenSelect::pressed() {
 
 ScreenSelect::ScreenSelect() {
 	set_button_mask(MouseButtonMask::RIGHT);
-	set_flat(true);
+	set_theme_type_variation(SceneStringName(FlatButton));
 	set_toggle_mode(true);
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);

@@ -121,12 +121,12 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 
 void Luminance::LuminanceBuffers::free_data() {
 	for (int i = 0; i < reduce.size(); i++) {
-		RD::get_singleton()->free(reduce[i]);
+		RD::get_singleton()->free_rid(reduce[i]);
 	}
 	reduce.clear();
 
 	if (current.is_valid()) {
-		RD::get_singleton()->free(current);
+		RD::get_singleton()->free_rid(current);
 		current = RID();
 	}
 }

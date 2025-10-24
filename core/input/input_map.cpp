@@ -334,6 +334,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_accept",                                     TTRC("Accept") },
 	{ "ui_select",                                     TTRC("Select") },
 	{ "ui_cancel",                                     TTRC("Cancel") },
+	{ "ui_close_dialog",                               TTRC("Close Dialog") },
 	{ "ui_focus_next",                                 TTRC("Focus Next") },
 	{ "ui_focus_prev",                                 TTRC("Focus Prev") },
 	{ "ui_left",                                       TTRC("Left") },
@@ -358,40 +359,26 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_text_dedent",                                TTRC("Dedent") },
 	{ "ui_text_backspace",                             TTRC("Backspace") },
 	{ "ui_text_backspace_word",                        TTRC("Backspace Word") },
-	{ "ui_text_backspace_word.macos",                  TTRC("Backspace Word") },
 	{ "ui_text_backspace_all_to_left",                 TTRC("Backspace all to Left") },
-	{ "ui_text_backspace_all_to_left.macos",           TTRC("Backspace all to Left") },
 	{ "ui_text_delete",                                TTRC("Delete") },
 	{ "ui_text_delete_word",                           TTRC("Delete Word") },
-	{ "ui_text_delete_word.macos",                     TTRC("Delete Word") },
 	{ "ui_text_delete_all_to_right",                   TTRC("Delete all to Right") },
-	{ "ui_text_delete_all_to_right.macos",             TTRC("Delete all to Right") },
 	{ "ui_text_caret_left",                            TTRC("Caret Left") },
 	{ "ui_text_caret_word_left",                       TTRC("Caret Word Left") },
-	{ "ui_text_caret_word_left.macos",                 TTRC("Caret Word Left") },
 	{ "ui_text_caret_right",                           TTRC("Caret Right") },
 	{ "ui_text_caret_word_right",                      TTRC("Caret Word Right") },
-	{ "ui_text_caret_word_right.macos",                TTRC("Caret Word Right") },
 	{ "ui_text_caret_up",                              TTRC("Caret Up") },
 	{ "ui_text_caret_down",                            TTRC("Caret Down") },
 	{ "ui_text_caret_line_start",                      TTRC("Caret Line Start") },
-	{ "ui_text_caret_line_start.macos",                TTRC("Caret Line Start") },
 	{ "ui_text_caret_line_end",                        TTRC("Caret Line End") },
-	{ "ui_text_caret_line_end.macos",                  TTRC("Caret Line End") },
 	{ "ui_text_caret_page_up",                         TTRC("Caret Page Up") },
 	{ "ui_text_caret_page_down",                       TTRC("Caret Page Down") },
 	{ "ui_text_caret_document_start",                  TTRC("Caret Document Start") },
-	{ "ui_text_caret_document_start.macos",            TTRC("Caret Document Start") },
 	{ "ui_text_caret_document_end",                    TTRC("Caret Document End") },
-	{ "ui_text_caret_document_end.macos",              TTRC("Caret Document End") },
 	{ "ui_text_caret_add_below",                       TTRC("Caret Add Below") },
-	{ "ui_text_caret_add_below.macos",                 TTRC("Caret Add Below") },
 	{ "ui_text_caret_add_above",                       TTRC("Caret Add Above") },
-	{ "ui_text_caret_add_above.macos",                 TTRC("Caret Add Above") },
 	{ "ui_text_scroll_up",                             TTRC("Scroll Up") },
-	{ "ui_text_scroll_up.macos",                       TTRC("Scroll Up") },
 	{ "ui_text_scroll_down",                           TTRC("Scroll Down") },
-	{ "ui_text_scroll_down.macos",                     TTRC("Scroll Down") },
 	{ "ui_text_select_all",                            TTRC("Select All") },
 	{ "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
 	{ "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
@@ -403,10 +390,13 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_graph_delete",                               TTRC("Delete Nodes") },
 	{ "ui_graph_follow_left",                          TTRC("Follow Input Port Connection") },
 	{ "ui_graph_follow_right",                         TTRC("Follow Output Port Connection") },
+	{ "ui_filedialog_delete",                          TTRC("Delete") },
 	{ "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },
 	{ "ui_filedialog_refresh",                         TTRC("Refresh") },
 	{ "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
-	{ "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+	{ "ui_filedialog_find",                            TTRC("Find") },
+	{ "ui_filedialog_focus_path",                      TTRC("Focus Path") },
+	{ "ui_swap_input_direction",                       TTRC("Swap Input Direction") },
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
@@ -415,10 +405,10 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 };
 
 String InputMap::get_builtin_display_name(const String &p_name) const {
-	constexpr int len = std::size(_builtin_action_display_names);
-
+	const String name = p_name.get_slicec('.', 0);
+	constexpr int len = std_size(_builtin_action_display_names);
 	for (int i = 0; i < len; i++) {
-		if (_builtin_action_display_names[i].name == p_name) {
+		if (_builtin_action_display_names[i].name == name) {
 			return _builtin_action_display_names[i].display_name;
 		}
 	}
@@ -446,6 +436,15 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
 	default_builtin_cache.insert("ui_cancel", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
+	default_builtin_cache.insert("ui_close_dialog", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::W | KeyModifierMask::META));
+	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
+	default_builtin_cache.insert("ui_close_dialog.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::TAB));
@@ -805,6 +804,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
+	default_builtin_cache.insert("ui_filedialog_delete", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
 	default_builtin_cache.insert("ui_filedialog_up_one_level", inputs);
 
@@ -815,6 +818,22 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::H));
 	default_builtin_cache.insert("ui_filedialog_show_hidden", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::F | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_find", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	// Ctrl + L (matches most Windows/Linux file managers' "focus on path bar" shortcut,
+	// plus macOS Safari's "focus on address bar" shortcut).
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_focus_path", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	// Cmd + Shift + G (matches Finder's "Go To" shortcut).
+	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL));
+	default_builtin_cache.insert("ui_filedialog_focus_path.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD_OR_CTRL));
@@ -843,9 +862,8 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String fullname = E.key;
 
-		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
-		String override_for = split.size() > 1 ? split[1] : String();
+		const String &name = fullname.get_slicec('.', 0);
+		String override_for = fullname.get_slice_count(".") > 1 ? fullname.get_slicec('.', 1) : String();
 
 		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
 			builtins_with_overrides[name].push_back(override_for);
@@ -855,9 +873,8 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String fullname = E.key;
 
-		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
-		String override_for = split.size() > 1 ? split[1] : String();
+		const String &name = fullname.get_slicec('.', 0);
+		String override_for = fullname.get_slice_count(".") > 1 ? fullname.get_slicec('.', 1) : String();
 
 		if (builtins_with_overrides.has(name) && override_for.is_empty()) {
 			// Builtin has an override but this particular one is not an override, so skip.
@@ -896,7 +913,7 @@ void InputMap::load_default() {
 }
 
 InputMap::InputMap() {
-	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
+	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exists.");
 	singleton = this;
 }
 

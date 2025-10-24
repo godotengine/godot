@@ -65,9 +65,11 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-	add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
+	Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+	add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
+	add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
+	add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
+	add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
 
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
@@ -243,8 +245,7 @@ ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 }
 
 String EditorDebuggerNode::get_server_uri() const {
-	ERR_FAIL_COND_V(server.is_null(), "");
-	return server->get_uri();
+	return server.is_valid() ? server->get_uri() : "";
 }
 
 void EditorDebuggerNode::set_keep_open(bool p_keep_open) {
@@ -332,9 +333,11 @@ void EditorDebuggerNode::_notification(int p_what) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
 
-			add_theme_constant_override("margin_left", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_LEFT));
-			add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_RIGHT));
-			add_theme_constant_override("margin_bottom", -EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles))->get_margin(SIDE_BOTTOM));
+			Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+			add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
+			add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
+			add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
+			add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
 
 			remote_scene_tree->update_icon_max_width();
 		} break;
@@ -404,7 +407,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 				EditorRunBar::get_singleton()->get_pause_button()->set_disabled(false);
 				// Switch to remote tree view if so desired.
-				auto_switch_remote_scene_tree = (bool)EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
+				remote_scene_tree->set_new_session();
+				auto_switch_remote_scene_tree = EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 				if (auto_switch_remote_scene_tree) {
 					SceneTreeDock::get_singleton()->show_remote_tree();
 				}

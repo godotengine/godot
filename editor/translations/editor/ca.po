@@ -4397,9 +4397,6 @@ msgstr "Reprodueix l'escena editada."
 msgid "Network Profiler"
 msgstr "Perfilador de Xarxa"
 
-msgid "Select Mode"
-msgstr "Mode de selecció"
-
 msgid "Clear All"
 msgstr "Neteja-ho tot"
 
@@ -5003,6 +5000,9 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt + RMB: Mostra la llista de tots els nodes a la posició en què es fa clic, "
 "inclòs el bloquejat."
+
+msgid "Select Mode"
+msgstr "Mode de selecció"
 
 msgid "Move Mode"
 msgstr "Mode de moviment"

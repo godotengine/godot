@@ -60,7 +60,7 @@
 # Ravager <al.porkhunov@gmail.com>, 2019.
 # Александр <akonn7@mail.ru>, 2019, 2023.
 # Rei <clxgamer12@gmail.com>, 2019.
-# Vitaly <arkology11@gmail.com>, 2019.
+# Vitaly <arkology11@gmail.com>, 2019, 2025.
 # Andy <8ofproject@gmail.com>, 2020.
 # Андрей Беляков <andbelandantrus@gmail.com>, 2020.
 # Artur Tretiak <stikyt@protonmail.com>, 2020.
@@ -231,8 +231,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-22 11:08+0000\n"
-"Last-Translator: Deniil <bug@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2025-09-20 16:45+0000\n"
+"Last-Translator: arkology <arkology11@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -241,7 +241,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -612,6 +612,9 @@ msgstr "Сменить направление ввода"
 
 msgid "Start Unicode Character Input"
 msgstr "Запустить ввод символов Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "ColorPicker: Удалить предустановку"
 
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Доступность: Перетаскивание с клавиатуры"
@@ -1093,6 +1096,40 @@ msgstr "Сохранить библиотеку анимации в файл: %s
 msgid "Save Animation to File: %s"
 msgstr "Сохранить анимацию в файл: %s"
 
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... -> Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Выбранный вами файл представляет собой импортированную сцену из 3D-модели, "
+"например glTF или FBX..\n"
+"\n"
+"В Godot 3D-модели можно импортировать как сцены или библиотеки анимации, "
+"поэтому они здесь и отображаются.\n"
+"\n"
+"Если вы хотите использовать анимацию из этой 3D-модели, откройте диалоговое "
+"окно Advanced Import Settings \n"
+"и сохраните анимацию с помощью Actions... -> Set Animation Save Paths,\n"
+"или импортировать всю сцену как единую библиотеку анимаций во вкладке Import."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Выбранный вами файл не является допустимым для AnimationLibrary.\n"
+"\n"
+"Если нужные вам анимации находятся внутри этого файла, сначала сохраните их в "
+"отдельном файле."
+
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "Некоторые из выбранных библиотек уже добавлены в микшер."
 
@@ -1413,6 +1450,9 @@ msgstr ""
 "ПКМ: добавить узел в позиции щелчка.\n"
 "Shift+ЛКМ+перетаскивание: соединить выбранный узел с другим узлом или создать "
 "новый узел, если выбрана область без узлов."
+
+msgid "Select and move nodes."
+msgstr "Выберите и переместите узлы."
 
 msgid "Create new nodes."
 msgstr "Создать новый узел."
@@ -3223,6 +3263,9 @@ msgstr ""
 "Для вызова данного метода не требуется экземпляр.\n"
 "Его можно вызвать напрямую, используя имя класса."
 
+msgid "This method must be implemented to complete the abstract class."
+msgstr "Этот метод должен быть реализован для завершения абстрактного класса."
+
 msgid "Code snippet copied to clipboard."
 msgstr "Фрагмент кода скопирован в буфер обмена."
 
@@ -3574,9 +3617,9 @@ msgstr "Нет совпадений"
 
 msgid "%d match"
 msgid_plural "%d matches"
-msgstr[0] "%d совпадает"
-msgstr[1] "%d совпадают"
-msgstr[2] "%d совпадают"
+msgstr[0] "%d совпадение"
+msgstr[1] "%d совпадения"
+msgstr[2] "%d совпадений"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
@@ -3817,6 +3860,9 @@ msgstr "Вы хотите преобразовать эти файлы в %s? (�
 
 msgid "Could not create folder: %s"
 msgstr "Не удалось создать папку: %s"
+
+msgid "Open Scene"
+msgstr "Открытая сцена"
 
 msgid "New Inherited Scene"
 msgstr "Новая унаследованная сцена"
@@ -4869,6 +4915,9 @@ msgstr "Сохранение сцены"
 msgid "Analyzing"
 msgstr "Анализ"
 
+msgid "Creating Thumbnail"
+msgstr "Создание Миниатюры"
+
 msgid "This operation can't be done without a tree root."
 msgstr "Эта операция не может быть выполнена без корня дерева."
 
@@ -5346,6 +5395,9 @@ msgstr "Мобильные устройства"
 
 msgid "Compatibility"
 msgstr "Совместимость"
+
+msgid "%s (Overridden)"
+msgstr "%s (Переопределено)"
 
 msgid "Main Menu"
 msgstr "Основное меню"
@@ -6744,6 +6796,9 @@ msgstr "Выполнение операций после реимпорта…"
 msgid "Copying files..."
 msgstr "Копирование файлов…"
 
+msgid "Remapping dependencies..."
+msgstr "Перераспределение зависимостей..."
+
 msgid "Go to Line"
 msgstr "Перейти к строке"
 
@@ -7147,6 +7202,9 @@ msgstr "Предпросмотр:"
 msgid "Filter:"
 msgstr "Фильтр:"
 
+msgid "Filename Filter:"
+msgstr "Фильтр имени файла:"
+
 msgid "File:"
 msgstr "Файл:"
 
@@ -7182,6 +7240,9 @@ msgstr "Выбрать сцену"
 msgid "Fuzzy Search"
 msgstr "Нечеткий Поиск"
 
+msgid "Include approximate matches."
+msgstr "Включите приблизительные совпадения."
+
 msgid "Addons"
 msgstr "Дополнения"
 
@@ -7215,6 +7276,9 @@ msgstr "Нет уведомлений."
 
 msgid "Show notifications."
 msgstr "Показать уведомления."
+
+msgid "Notifications:"
+msgstr "Уведомления:"
 
 msgid "Silence the notifications."
 msgstr "Заглушить уведомления."
@@ -7754,6 +7818,13 @@ msgstr ""
 msgid "Property: %s"
 msgstr "Свойство: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"Для свойств ресурса функция переключения флажка отключена. Измените свойство, "
+"используя средство выбора ресурсов."
+
 msgid "Unfavorite Property"
 msgstr "Удалить свойство из избранных"
 
@@ -7850,6 +7921,12 @@ msgstr "Новый размер:"
 msgid "First Page"
 msgstr "Первая страница"
 
+msgid "Previous Page"
+msgstr "Предыдущая страница"
+
+msgid "Page Number"
+msgstr "Номер страницы"
+
 msgid "Next Page"
 msgstr "Следующая страница"
 
@@ -7906,6 +7983,16 @@ msgstr "Отменить редактирование пользовательс
 
 msgid "Locale"
 msgstr "Локаль"
+
+msgid "Toggle Display UID"
+msgstr "Переключить дисплей UID"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"Переключает отображение пути и UID.\n"
+"UID — это фактическое значение этого свойства."
 
 msgid "Renaming layer %d:"
 msgstr "Переименовать слой %d:"
@@ -8098,6 +8185,9 @@ msgstr "Новый шейдер…"
 msgid "Size: %s"
 msgstr "Размер: %s"
 
+msgid "Invalid file or broken link."
+msgstr "Неверный файл или неработающая ссылка."
+
 msgid "Type: %s"
 msgstr "Тип: %s"
 
@@ -8115,6 +8205,9 @@ msgstr "Длина: %0.3fs"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "При поиске всегда отображаются расширенные настройки."
+
+msgid "Event Configured"
+msgstr "Событие Настроено"
 
 msgid "Configure"
 msgstr "Конфигурация"
@@ -8804,6 +8897,12 @@ msgstr "Имя метки не может быть пустым."
 msgid "Tag name can't contain spaces."
 msgstr "Имя метки не может содержать пробелы."
 
+msgid "Tag name can't begin or end with underscore."
+msgstr "Имя тега не может начинаться или заканчиваться символом подчеркивания."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "Имя тега не может содержать последовательные символы подчеркивания."
+
 msgid "These characters are not allowed in tags: %s."
 msgstr "Эти символы нельзя использовать в метках: %s."
 
@@ -8907,6 +9006,9 @@ msgstr "Сначала сделать резервную копию проект
 
 msgid "Convert Full Project"
 msgstr "Конвертировать весь проект"
+
+msgid "See Migration Guide"
+msgstr "См. Руководство по миграции"
 
 msgid ""
 "This option will perform full project conversion, updating scenes, resources "
@@ -9226,9 +9328,6 @@ msgstr "Приостановить/возобновить встроенный �
 msgid "Next Frame"
 msgstr "Следующий Кадр"
 
-msgid "Select Mode"
-msgstr "Режим выделения"
-
 msgid "Connection impossible to the game process."
 msgstr "Невозможно подключиться к процессу игры."
 
@@ -9349,6 +9448,9 @@ msgstr ""
 "Режим «Сохранить соотношение сторон» используется, когда игровое рабочее "
 "пространство меньше желаемого размера."
 
+msgid "Embedded game size is based on project settings."
+msgstr "Размер встроенной игры зависит от настроек проекта."
+
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "Сохраните соотношение сторон встроенной игры."
 
@@ -9408,6 +9510,9 @@ msgstr "Переопределить основные метки"
 msgid "Feature Tags"
 msgstr "Метки возможностей"
 
+msgid "Move Origin to Geometric Center"
+msgstr "Переместить начало координат в Геометрический Центр (Geometric Center)"
+
 msgid "Create Polygon"
 msgstr "Создать полигон"
 
@@ -9419,6 +9524,12 @@ msgstr ""
 "Редактировать точки.\n"
 "ЛКМ: переместить точку.\n"
 "ПКМ: удалить точку"
+
+msgid "Move center of gravity to geometric center."
+msgstr "Переместить центр тяжести в геометрический центр."
+
+msgid "Move Geometric Center"
+msgstr "Переместить Геометрический Центр"
 
 msgid "Edit Polygon"
 msgstr "Редактировать полигон"
@@ -9440,6 +9551,12 @@ msgstr "Редактировать точки полигона"
 
 msgid "Delete Polygon Points"
 msgstr "Удалить точки полигона"
+
+msgid "Edit Camera2D Limits"
+msgstr "Изменить Лимиты Camera2D"
+
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "Привязка Лимитов Camera2D к Viewport (области просмотра)"
 
 msgid "Camera2D"
 msgstr "Camera2D"
@@ -10204,6 +10321,9 @@ msgstr "Выделить выбранный слой карты тайлов"
 msgid "Toggle grid visibility."
 msgstr "Переключить видимость сетки."
 
+msgid "Advanced settings."
+msgstr "Расширенные настройки."
+
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Автоматически заменять тайлы на прокси"
 
@@ -10806,6 +10926,12 @@ msgstr "Изменить высоту цилиндра"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "Изменить длину луча разделения"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "Удалить закрепленную точку SoftBody3D %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "Добавить закрепленную точку SoftBody3D %d"
 
 msgid "Change Probe Size"
 msgstr "Изменить размер зонда"
@@ -11913,6 +12039,9 @@ msgstr "Задать предпросмотр карты тональности 
 msgid "Set Preview Environment Global Illumination"
 msgstr "Задать предпросмотр глобального освещения окружения"
 
+msgid "Select Mode"
+msgstr "Режим выделения"
+
 msgid "Move Mode"
 msgstr "Режим перемещения"
 
@@ -11977,6 +12106,9 @@ msgstr ""
 "Если в сцену добавлен узел DirectionalLight3D, предварительный просмотр "
 "солнечного света отключён."
 
+msgid "Toggle preview sunlight."
+msgstr "Предварительный просмотр солнечного света."
+
 msgid ""
 "Toggle preview environment.\n"
 "If a WorldEnvironment node is added to the scene, preview environment is "
@@ -11985,6 +12117,9 @@ msgstr ""
 "Включить/отключить предварительный просмотр окружения.\n"
 "Если в сцену добавлен узел WorldEnvironment, предварительный просмотр "
 "окружения отключён."
+
+msgid "Toggle preview environment."
+msgstr "Включить предпросмотр окружения."
 
 msgid "Edit Sun and Environment settings."
 msgstr "Изменить параметры «Солнца» и «Окружения»."
@@ -12267,6 +12402,9 @@ msgstr "Грани данной геометрии не содержат ник�
 
 msgid "The geometry doesn't contain any faces."
 msgstr "Данная геометрия не содержит граней."
+
+msgid "Generation Time (sec)"
+msgstr "Генерация Времени (сек)"
 
 msgid "Create Emitter"
 msgstr "Создать излучатель"
@@ -13729,6 +13867,9 @@ msgstr ""
 "свойств те же свойства будут обновлены во всех других объектах стиля этого "
 "типа."
 
+msgid "Pin this StyleBox as a main style."
+msgstr "Закрепить этот StyleBox как основной стиль."
+
 msgid "Add Item Type"
 msgstr "Добавить тип элемента"
 
@@ -13912,6 +14053,9 @@ msgstr "Недопустимый ресурс PackedScene. Он должен и�
 msgid "Invalid file, not a PackedScene resource."
 msgstr "Неверный файл — не ресурс PackedScene."
 
+msgid "Invalid PackedScene resource, could not instantiate it."
+msgstr "Недопустимый ресурс PackedScene, не удалось создать его экземпляр."
+
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Перезагрузить сцену, чтобы отразить её наиболее актуальное состояние."
 
@@ -14005,6 +14149,9 @@ msgstr ""
 "Минимальное количество цифр для счётчика.\n"
 "Недостающие цифры заполняются нулями."
 
+msgid "Minimum number of digits for the counter."
+msgstr "Минимальное количество цифр для счетчика."
+
 msgid "Post-Process"
 msgstr "Постобработка"
 
@@ -14064,6 +14211,9 @@ msgstr "Вставить ресурс"
 
 msgid "Load Resource"
 msgstr "Загрузить ресурс"
+
+msgid "ResourcePreloader"
+msgstr "ResourcePreloader (Предварительный загрузчик ресурсов)"
 
 msgid "Toggle ResourcePreloader Bottom Panel"
 msgstr "Включить или отключить нижнюю панель «Предзагрузка ресурсов»"
@@ -14459,6 +14609,9 @@ msgstr "Кадры спрайта"
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "Включить или отключить нижнюю панель «Кадры спрайта»"
 
+msgid "Toggle color channel preview selection."
+msgstr "Переключить выбор предварительного просмотра цветового канала."
+
 msgid "Move GradientTexture2D Fill Point"
 msgstr "Переместить точку заливки GradientTexture2D"
 
@@ -14728,6 +14881,29 @@ msgstr "Не удалось открыть «%s». Файл мог быть пе
 msgid "Close and save changes?"
 msgstr "Закрыть и сохранить изменения?"
 
+msgid "Importing theme failed. File is not a text editor theme file (.tet)."
+msgstr ""
+"Не удалось импортировать тему. Файл не является файлом темы текстового "
+"редактора (.tet)."
+
+msgid ""
+"Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Не удалось импортировать тему. Имя файла не может быть 'Default', 'Custom' "
+"или 'Godot 2'."
+
+msgid "Importing theme failed. Failed to copy theme file."
+msgstr "Импорт темы не удался. Не удалось скопировать файл темы."
+
+msgid ""
+"Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."
+msgstr ""
+"Не удалось сохранить тему. Имя файла не может быть 'Default', 'Custom', или "
+"'Godot 2'."
+
+msgid "Saving theme failed."
+msgstr "Сохранение темы не удалось."
+
 msgid "Error writing TextFile:"
 msgstr "Ошибка при записи текстового файла:"
 
@@ -14908,6 +15084,9 @@ msgstr "Источник"
 msgid "Target"
 msgstr "Цель"
 
+msgid "Error at ([hint=Line %d, column %d]%d, %d[/hint]):"
+msgstr "Ошибка в ([hint=Строка %d, столбец %d]%d, %d[/hint]):"
+
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
@@ -15062,6 +15241,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "Действие с именем «%s» уже существует."
+
+msgid "Built-in actions are always shown when searching."
+msgstr "Встроенные действия всегда отображаются при поиске."
 
 msgid "Action %s"
 msgstr "Действия: %s"
@@ -15601,6 +15783,9 @@ msgstr "Выберите существующий макет:"
 msgid "Or enter new layout name"
 msgstr "Или введите имя нового макета"
 
+msgid "New layout name"
+msgstr "Новое название макета"
+
 msgid "Edit Built-in Action: %s"
 msgstr "Изменить встроенное действие: %s"
 
@@ -15745,6 +15930,18 @@ msgstr "Кнопки джойстика"
 msgid "Joypad Axes"
 msgstr "Оси джойстика"
 
+msgctxt "Key Location"
+msgid "Unspecified"
+msgstr "Unspecified (Не указано)"
+
+msgctxt "Key Location"
+msgid "Left"
+msgstr "Влево"
+
+msgctxt "Key Location"
+msgid "Right"
+msgstr "Вправо"
+
 msgid "Event Configuration for \"%s\""
 msgstr "Конфигурация события для «%s»"
 
@@ -15781,6 +15978,18 @@ msgstr "Подпись клавиши (Юникод, без учёта реги�
 
 msgid "Physical location"
 msgstr "Физическое расположение"
+
+msgid "Alt or Option key"
+msgstr "Клавиша Alt или Option"
+
+msgid "Shift key"
+msgstr "Клавиша Shift"
+
+msgid "Control key"
+msgstr "Клавиша Control"
+
+msgid "Meta/Windows or Command key"
+msgstr "Клавиша Meta/Windows или Command"
 
 msgid "Add Project Setting"
 msgstr "Добавить настройку проекта"
@@ -15961,6 +16170,12 @@ msgstr "Имя «%s» — зарезервированное ключевое с
 
 msgid "Add Shader Global Parameter"
 msgstr "Добавить глобальный параметр шейдера"
+
+msgid "Error at line %d:"
+msgstr "Ошибка в строке %d:"
+
+msgid "Error at line %d in include %s:%d:"
+msgstr "Ошибка в строке %d в заключении %s:%d:"
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Для предотвращения ошибок необходимо устранить причины предупреждений."
@@ -16202,8 +16417,8 @@ msgstr "Задать константу: %s"
 msgid "Invalid name for varying."
 msgstr "Недопустимое имя вариации."
 
-msgid "Varying with that name is already exist."
-msgstr "Вариация с таким именем уже существует."
+msgid "Varying with that name already exists."
+msgstr "Вариант с таким названием уже существует."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Логический тип не может быть использован с режимом вариации `%s`."
@@ -17582,6 +17797,9 @@ msgstr "Получить"
 msgid "Push"
 msgstr "Отправить"
 
+msgid "Extra options"
+msgstr "Дополнительные опции"
+
 msgid "Force Push"
 msgstr "Принудительно отправить"
 
@@ -17680,6 +17898,15 @@ msgstr "Изменить внешний радиус тора"
 
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Недопустимый аргумент типа для convert(), используйте константы TYPE_*."
+
+msgid "Expected an integer between 0 and 2^32 - 1."
+msgstr "Ожидалось целое число от 0 до 2^32 - 1."
+
+msgid "Expected a string of length 1 (a character)."
+msgstr "Ожидается строка длиной 1 (символ)."
+
+msgid "Range too big."
+msgstr "Слишком большой диапазон."
 
 msgid "Cannot resize array."
 msgstr "Не удалось изменить размер массива."
@@ -17856,6 +18083,9 @@ msgstr "Поворот курсора по Y"
 
 msgid "Cursor Rotate Z"
 msgstr "Поворот курсора по Z"
+
+msgid "Change Grid Floor:"
+msgstr "Изменить Grid Floor (сетку пола):"
 
 msgid ""
 "Change Grid Floor:\n"
@@ -18326,6 +18556,9 @@ msgstr ""
 "Не удалось создать сетку навигации, так как ресурс был импортирован из "
 "другого типа."
 
+msgid "Bake"
+msgstr "Запекание"
+
 msgid "Bake NavigationMesh"
 msgstr "Запечь сетку навигации"
 
@@ -18342,6 +18575,9 @@ msgstr "Очистить сетку навигации"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Очищает внутренние вершины и полигоны сетки навигации."
+
+msgid "Baking NavigationMesh ..."
+msgstr "Запечь NavigationMesh (Сетку Навигации)..."
 
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr ""
@@ -18603,6 +18839,13 @@ msgstr ""
 "Для использования модулей необходимо включить опцию «Использовать сборку "
 "Gradle» (Use Gradle Build)."
 
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"\"Сжатие собственных библиотек\" допустимо только при включенном параметре "
+"\"Use Gradle Build\"."
+
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
 "Параметр «Экспорт AAB» (Export AAB) действителен, только если включён "
@@ -18770,6 +19013,10 @@ msgstr "Каталог «build-tools» отсутствует!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Не удалось найти команду apksigner в Android SDK build-tools."
 
+msgid "\"Use Gradle Build\" is required for transparent background on Android"
+msgstr ""
+"Для прозрачного фона на Android требуется \"Использовать Сборку Gradle\""
+
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
@@ -18849,6 +19096,9 @@ msgstr "Не удалось проверить подписанный apk."
 msgid "'apksigner' verification of APK failed."
 msgstr "Проверка APK-файла «apksigner» не удалась."
 
+msgid "Could not create temporary file!"
+msgstr "Не удалось создать временный файл!"
+
 msgid "Exporting for Android"
 msgstr "Экспорт для Android"
 
@@ -18887,6 +19137,12 @@ msgstr ""
 
 msgid "Unable to overwrite res/*.xml files with project name."
 msgstr "Невозможно перезаписать файлы res/*.xml с именем проекта."
+
+msgid "Could not generate sparse pck metadata!"
+msgstr "Не удалось сгенерировать разреженные метаданные pck!"
+
+msgid "Could not write PCK directory!"
+msgstr "Не удалось записать каталог PCK!"
 
 msgid "Could not export project files to gradle project."
 msgstr "Не удалось экспортировать файлы проекта в проект gradle."
@@ -20772,6 +21028,13 @@ msgid "Modulo by zero error."
 msgstr "Ошибка деления по модулю на ноль."
 
 msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d argument(s)."
+msgstr ""
+"Недопустимое количество аргументов при вызове функции этапа '%s', которая "
+"ожидает %d аргументов."
+
+msgid ""
 "Invalid argument type when calling stage function '%s', type expected is '%s'."
 msgstr ""
 "Неверный тип аргумента при вызове функции сцены «%s», ожидаемый тип — «%s»."
@@ -20809,11 +21072,14 @@ msgstr "Рекурсия запрещена."
 msgid "Function '%s' can't be called from source code."
 msgstr "Функцию «%s» нельзя вызвать из исходного кода."
 
+msgid "No matching function for \"%s\" call:"
+msgstr "Нет соответствующей функции для вызова \"%s\":"
+
 msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
+"candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
 msgstr ""
-"Недопустимый аргумент для функции «%s(%s)»: аргумент %d должен иметь значение "
-"%s, но его значение — %s."
+"функция-кандидат \"%s(%s)\" нежизнеспособна, аргумент %d должен быть %s, но "
+"это %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
@@ -21120,6 +21386,15 @@ msgstr "Неверный тип шейдера. Допустимые типы: %
 msgid "Unexpected token: '%s'."
 msgstr "Неожиданный токен: «%s»."
 
+msgid "Duplicated stencil mode reference value: '%s'."
+msgstr "Дублированное контрольное значение режима трафарета: '%s'."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr "Значение ссылки режима трафарета не может быть отрицательным: '%s'."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr "Значение ссылки режима трафарета не может быть больше 255: '%s'."
+
 msgid "Expected a struct identifier."
 msgstr "Ожидался идентификатор структуры."
 
@@ -21366,17 +21641,32 @@ msgstr ""
 msgid "uniform buffer"
 msgstr "буфер параметров шейдера"
 
+msgid "Expected an identifier for stencil mode."
+msgstr "Ожидается идентификатор для режима stencil (трафарета)."
+
 msgid "Expected an identifier for render mode."
 msgstr "Ожидался идентификатор для режима рендеринга."
 
+msgid "Duplicated stencil mode: '%s'."
+msgstr "Дублированный режим трафарета: '%s'."
+
 msgid "Duplicated render mode: '%s'."
 msgstr "Дублируется режим рендеринга: «%s»."
+
+msgid ""
+"Redefinition of stencil mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr ""
+"Переопределение режима трафарета: '%s'. Режим '%s' уже установлен на '%s'."
 
 msgid ""
 "Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."
 msgstr ""
 "Переопределение режима рендеринга: «%s». Режим «%s» уже установлен в значение "
 "«%s»."
+
+msgid "Invalid stencil mode: '%s'."
+msgstr "Недопустимый режим трафарета: '%s'."
 
 msgid "Invalid render mode: '%s'."
 msgstr "Недопустимый режим рендеринга: «%s»."

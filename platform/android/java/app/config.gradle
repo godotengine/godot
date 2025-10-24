@@ -388,7 +388,13 @@ ext.shouldUseLegacyPackaging = { ->
         return Boolean.parseBoolean(legacyPackagingFlag)
     }
 
-    // Default behavior for minSdk >= 24
+    if (getExportMinSdkVersion() <= 29) {
+        // Use legacy packaging for compatibility with device running api <= 29.
+        // See https://github.com/godotengine/godot/issues/108842 for reference.
+        return true
+    }
+
+    // Default behavior for minSdk > 29.
     return false
 }
 

@@ -36,7 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class ShaderRD {
 public:
@@ -142,6 +142,7 @@ private:
 	static bool shader_cache_save_compressed_zstd;
 	static bool shader_cache_save_debug;
 	bool shader_cache_user_dir_valid = false;
+	bool shader_cache_res_dir_valid = false;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,

@@ -32,7 +32,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "servers/camera_server.h"
+#include "servers/camera/camera_server.h"
 
 class CameraLinux : public CameraServer {
 private:

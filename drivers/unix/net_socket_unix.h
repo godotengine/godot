@@ -35,12 +35,19 @@
 #include "core/io/net_socket.h"
 
 #include <sys/socket.h>
+#include <sys/un.h>
 
 class NetSocketUnix : public NetSocket {
+	GDSOFTCLASS(NetSocketUnix, NetSocket);
+
 private:
 	int _sock = -1;
+	Family _family = Family::NONE;
 	IP::Type _ip_type = IP::TYPE_NONE;
 	bool _is_stream = false;
+	CharString _unix_path;
+	// If this is Family::UNIX,
+	bool _unlink_on_close = false;
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,
@@ -61,6 +68,19 @@ protected:
 	static NetSocket *_create_func();
 
 	bool _can_use_ip(const IPAddress &p_ip, const bool p_for_bind) const;
+	bool _can_use_path(const CharString &p_path) const;
+
+	Error _inet_open(Type p_sock_type, IP::Type &r_ip_type);
+	Error _inet_bind(IPAddress p_addr, uint16_t p_port);
+	Error _inet_connect_to_host(IPAddress p_addr, uint16_t p_port);
+	Error _inet_get_socket_address(IPAddress *r_ip, uint16_t *r_port) const;
+	Ref<NetSocket> _inet_accept(IPAddress &r_ip, uint16_t &r_port);
+
+	static socklen_t _unix_set_sockaddr(struct sockaddr_un *p_addr, const CharString &p_path);
+	Error _unix_open();
+	Error _unix_bind(const CharString &p_path);
+	Error _unix_connect_to_host(const CharString &p_path);
+	Ref<NetSocket> _unix_accept();
 
 public:
 	static void make_default();
@@ -68,21 +88,21 @@ public:
 	static void _set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_ip, uint16_t *r_port);
 	static size_t _set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type);
 
-	virtual Error open(Type p_sock_type, IP::Type &ip_type) override;
+	virtual Error open(Family p_family, Type p_sock_type, IP::Type &r_ip_type) override;
 	virtual void close() override;
-	virtual Error bind(IPAddress p_addr, uint16_t p_port) override;
+	virtual Error bind(Address p_addr) override;
 	virtual Error listen(int p_max_pending) override;
-	virtual Error connect_to_host(IPAddress p_host, uint16_t p_port) override;
+	virtual Error connect_to_host(Address p_addr) override;
 	virtual Error poll(PollType p_type, int timeout) const override;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) override;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false) override;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) override;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) override;
-	virtual Ref<NetSocket> accept(IPAddress &r_ip, uint16_t &r_port) override;
+	virtual Ref<NetSocket> accept(Address &r_addr) override;
 
 	virtual bool is_open() const override;
 	virtual int get_available_bytes() const override;
-	virtual Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) const override;
+	virtual Error get_socket_address(Address *r_addr) const override;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled) override;
 	virtual void set_blocking_enabled(bool p_enabled) override;

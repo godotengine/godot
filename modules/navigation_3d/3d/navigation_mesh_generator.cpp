@@ -31,7 +31,7 @@
 #include "navigation_mesh_generator.h"
 
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 NavigationMeshGenerator *NavigationMeshGenerator::singleton = nullptr;
 

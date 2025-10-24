@@ -51,8 +51,10 @@ using namespace godot;
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -61,11 +63,17 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -4467,10 +4475,27 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 					}
 				}
 
+				bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
+				if (fb_use_msdf) {
+					FontFallback *fd = _get_font_data(sysf.rid);
+					if (fd) {
+						MutexLock lock(fd->mutex);
+						Vector2i size = _get_size(fd, 16);
+						FontForSizeFallback *ffsd = nullptr;
+						if (_ensure_cache_for_size(fd, size, ffsd)) {
+							if (ffsd && (FT_HAS_COLOR(ffsd->face) || !FT_IS_SCALABLE(ffsd->face))) {
+								fb_use_msdf = false;
+							}
+						}
+					}
+				}
+#endif
+
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
 				_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
-				_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
+				_font_set_multichannel_signed_distance_field(sysf.rid, fb_use_msdf);
 				_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
 				_font_set_msdf_size(sysf.rid, key.msdf_source_size);
 				_font_set_fixed_size(sysf.rid, key.fixed_size);
@@ -4795,6 +4820,17 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			sd->glyphs.push_back(gl);
 		} else {
 			// Text span.
+			int last_non_zero_w = sd->end - 1;
+			if (i == sd->spans.size() - 1) {
+				for (int j = span.end - 1; j >= span.start; j--) {
+					last_non_zero_w = j;
+					uint32_t idx = (int32_t)sd->text[j - sd->start];
+					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
+						break;
+					}
+				}
+			}
+
 			RID prev_font;
 			for (int j = span.start; j < span.end; j++) {
 				Glyph gl;
@@ -4804,7 +4840,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				gl.count = 1;
 				gl.font_size = span.font_size;
 				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
-				if (gl.index == 0x0009 || gl.index == 0x000b) {
+				bool zw = (gl.index >= 0x200b && gl.index <= 0x200d);
+				if (gl.index == 0x0009 || gl.index == 0x000b || zw) {
 					gl.index = 0x0020;
 				}
 				if (!sd->preserve_control && is_control(gl.index)) {
@@ -4850,8 +4887,11 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 						}
 					}
-					if (j < sd->end - 1) {
-						// Do not add extra spacing to the last glyph of the string.
+					if (zw) {
+						gl.advance = 0.0;
+					}
+					if ((j < last_non_zero_w) && !Math::is_zero_approx(gl.advance)) {
+						// Do not add extra spacing to the last glyph of the string and zero width glyphs.
 						if (is_whitespace(sd->text[j - sd->start])) {
 							gl.advance += sd->extra_spacing[SPACING_SPACE] + _font_get_spacing(gl.font_rid, SPACING_SPACE);
 						} else {

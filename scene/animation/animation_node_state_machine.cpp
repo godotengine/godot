@@ -1534,9 +1534,7 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name) {
 	}
 
 	String node_name = p_name;
-	Vector<String> path = node_name.split("/");
-
-	if (path.size() < 2) {
+	if (node_name.get_slice_count("/") < 2) {
 		return false;
 	}
 

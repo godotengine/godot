@@ -1028,17 +1028,17 @@ uint32_t OpenXRInterface::get_view_count() {
 	return 2;
 }
 
-void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {
-	p_transform = Transform3D();
+void OpenXRInterface::_set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye) {
+	r_transform = Transform3D();
 
 	// if we're not tracking, don't put our head on the floor...
-	p_transform.origin.y = 1.5 * p_world_scale;
+	r_transform.origin.y = 1.5 * p_world_scale;
 
 	// overkill but..
 	if (p_eye == 1) {
-		p_transform.origin.x = 0.03 * p_world_scale;
+		r_transform.origin.x = 0.03 * p_world_scale;
 	} else if (p_eye == 2) {
-		p_transform.origin.x = -0.03 * p_world_scale;
+		r_transform.origin.x = -0.03 * p_world_scale;
 	}
 }
 
@@ -1307,11 +1307,10 @@ void OpenXRInterface::stop_passthrough() {
 }
 
 Array OpenXRInterface::get_supported_environment_blend_modes() {
-	Array modes;
-
 	if (!openxr_api) {
-		return modes;
+		return Array();
 	}
+	Array modes;
 
 	const Vector<XrEnvironmentBlendMode> env_blend_modes = openxr_api->get_supported_environment_blend_modes();
 

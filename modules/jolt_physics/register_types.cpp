@@ -34,7 +34,7 @@
 #include "jolt_physics_server_3d.h"
 #include "jolt_project_settings.h"
 
-#include "servers/physics_server_3d_wrap_mt.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 PhysicsServer3D *create_jolt_physics_server() {
 #ifdef THREADS_ENABLED

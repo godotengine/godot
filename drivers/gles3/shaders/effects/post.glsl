@@ -45,6 +45,7 @@ uniform float luminance_multiplier;
 uniform sampler2D glow_color; // texunit:1
 uniform vec2 pixel_size;
 uniform float glow_intensity;
+uniform float srgb_white;
 
 vec4 get_glow_color(vec2 uv) {
 	vec2 half_pixel = pixel_size * 0.5;
@@ -57,6 +58,10 @@ vec4 get_glow_color(vec2 uv) {
 	color += textureLod(glow_color, uv + vec2(half_pixel.x, -half_pixel.y), 0.0) * 2.0;
 	color += textureLod(glow_color, uv + vec2(0.0, -half_pixel.y * 2.0), 0.0);
 	color += textureLod(glow_color, uv + vec2(-half_pixel.x, -half_pixel.y), 0.0) * 2.0;
+
+#ifdef USE_LUMINANCE_MULTIPLIER
+	color = color / luminance_multiplier;
+#endif
 
 	return color / 12.0;
 }
@@ -81,16 +86,6 @@ vec3 apply_color_correction(vec3 color) {
 #endif // USE_1D_LUT
 #endif // USE_COLOR_CORRECTION
 
-#ifdef USE_BCS
-vec3 apply_bcs(vec3 color) {
-	color = mix(vec3(0.0), color, brightness);
-	color = mix(vec3(0.5), color, contrast);
-	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, saturation);
-
-	return color;
-}
-#endif
-
 in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
@@ -102,25 +97,66 @@ void main() {
 	vec4 color = texture(source_color, uv_interp);
 #endif
 
-#ifdef USE_GLOW
-	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
-
-	// Just use softlight...
-	glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-	color.rgb = max((color.rgb + glow.rgb) - (color.rgb * glow.rgb), vec3(0.0));
-#endif // USE_GLOW
-
 #ifdef USE_LUMINANCE_MULTIPLIER
 	color = color / luminance_multiplier;
 #endif
 
+#ifdef USE_GLOW
+	// Glow blending is performed before srgb_to_linear because
+	// the glow texture was created from a nonlinear sRGB-encoded
+	// scene, so it only makes sense to add this glow to an equally
+	// nonlinear sRGB-encoded scene.
+
+	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
+
+	// Glow always uses the screen blend mode in the Compatibility renderer:
+
+	// Glow cannot be above 1.0 after normalizing and should be non-negative
+	// to produce expected results. It is possible that glow can be negative
+	// if negative lights were used in the scene.
+	// We clamp to srgb_white because glow will be normalized to this range.
+	// Note: srgb_white cannot be smaller than the maximum output value (1.0).
+	glow.rgb = clamp(glow.rgb, 0.0, srgb_white);
+
+	// Normalize to srgb_white range.
+	//glow.rgb /= srgb_white;
+	//color.rgb /= srgb_white;
+	//color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
+	// Expand back to original range.
+	//color.rgb *= srgb_white;
+
+	// The following is a mathematically simplified version of the above.
+	color.rgb = color.rgb + glow.rgb - (color.rgb * glow.rgb / srgb_white);
+#endif // USE_GLOW
+
 	color.rgb = srgb_to_linear(color.rgb);
+
 	color.rgb = apply_tonemapping(color.rgb, white);
-	color.rgb = linear_to_srgb(color.rgb);
 
 #ifdef USE_BCS
-	color.rgb = apply_bcs(color.rgb);
-#endif
+	// Apply brightness:
+	// Apply to relative luminance. This ensures that the hue and saturation of
+	// colors is not affected by the adjustment, but requires the multiplication
+	// to be performed on linear-encoded values.
+	color.rgb = color.rgb * brightness;
+
+	color.rgb = linear_to_srgb(color.rgb);
+
+	// Apply contrast:
+	// By applying contrast to RGB values that are perceptually uniform (nonlinear),
+	// the darkest values are not hard-clipped as badly, which produces a
+	// higher quality contrast adjustment and maintains compatibility with
+	// existing projects.
+	color.rgb = mix(vec3(0.5), color.rgb, contrast);
+
+	// Apply saturation:
+	// By applying saturation adjustment to nonlinear sRGB-encoded values with
+	// even weights the preceived brightness of blues are affected, but this
+	// maintains compatibility with existing projects.
+	color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, saturation);
+#else
+	color.rgb = linear_to_srgb(color.rgb);
+#endif // USE_BCS
 
 #ifdef USE_COLOR_CORRECTION
 	color.rgb = apply_color_correction(color.rgb);

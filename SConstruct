@@ -210,7 +210,7 @@ opts.Add(
     )
 )
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
-opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
+opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster incremental builds", False))
 opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", False))
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
 opts.Add("ninja_file", "Path to the generated ninja file", "build.ninja")
@@ -239,6 +239,7 @@ opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server
 opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
 opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
+opts.Add(BoolVariable("disable_overrides", "Disable project settings overrides and related CLI arguments", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
@@ -262,6 +263,14 @@ opts.Add(
         "redirect_build_objects",
         "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
         True,
+    )
+)
+opts.Add(
+    EnumVariable(
+        "library_type",
+        "Build library type",
+        "executable",
+        ("executable", "static_library", "shared_library"),
     )
 )
 
@@ -469,16 +478,6 @@ for tool in custom_tools:
 # Add default include paths.
 env.Prepend(CPPPATH=["#"])
 
-# Allow marking includes as external/system to avoid raising warnings.
-env["_CCCOMCOM"] += " $_CPPEXTINCFLAGS"
-env["CPPEXTPATH"] = []
-if env.scons_version < (4, 2):
-    env["_CPPEXTINCFLAGS"] = "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}"
-else:
-    env["_CPPEXTINCFLAGS"] = (
-        "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE, affect_signature=False)}"
-    )
-
 # configure ENV for platform
 env.platform_exporters = platform_exporters
 env.platform_apis = platform_apis
@@ -530,10 +529,10 @@ env.Decider("MD5-timestamp")
 
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
-# Unsafe as they reduce the certainty of rebuilding all changed files, so it's
-# enabled by default for `debug` builds, and can be overridden from command line.
+# Unsafe as they reduce the certainty of rebuilding all changed files.
+# If you use it and run into corrupted incremental builds, try to turn it off.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
-if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
+if env["fast_unsafe"]:
     env.SetOption("implicit_cache", 1)
     env.SetOption("max_drift", 60)
 
@@ -555,6 +554,13 @@ if not env["deprecated"]:
 
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+
+# Library Support
+if env["library_type"] != "executable":
+    if "library" not in env.get("supported", []):
+        print_error(f"Library builds unsupported for {env['platform']}")
+        Exit(255)
+    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
 
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden
@@ -634,6 +640,7 @@ if env["strict_checks"]:
 
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
+    env.Append(CPPDEFINES=["SCU_BUILD_ENABLED"])
     max_includes_per_scu = 8
     if env.dev_build:
         max_includes_per_scu = 1024
@@ -965,19 +972,6 @@ else:  # GCC, Clang
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
 
-# Configure external includes.
-if env.msvc:
-    if not methods.using_clang(env):
-        if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
-            env.AppendUnique(CCFLAGS=["/experimental:external"])
-        env.AppendUnique(CCFLAGS=["/external:anglebrackets"])
-    env.AppendUnique(CCFLAGS=["/external:W0"])
-    env["EXTINCPREFIX"] = "/external:I"
-    env["EXTINCSUFFIX"] = ""
-else:
-    env["EXTINCPREFIX"] = "-isystem "
-    env["EXTINCSUFFIX"] = ""
-
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
 else:
@@ -1041,6 +1035,9 @@ if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["disable_overrides"]:
+    env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)

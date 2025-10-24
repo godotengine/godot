@@ -6,6 +6,7 @@
 	<description>
 		Object that holds the project-independent editor settings. These settings are generally visible in the [b]Editor &gt; Editor Settings[/b] menu.
 		Property names use slash delimiters to distinguish sections. Setting values can be of any [Variant] type. It's recommended to use [code]snake_case[/code] for editor settings to be consistent with the Godot editor itself.
+		Editor settings are saved automatically when changed.
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
@@ -407,6 +408,9 @@
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
 		</member>
+		<member name="editors/3d/navigation_feel/angle_snap_threshold" type="float" setter="" getter="">
+			The angle threshold for snapping camera rotation to 45-degree angles while orbiting with [kbd]Alt[/kbd] held.
+		</member>
 		<member name="editors/3d/navigation_feel/orbit_inertia" type="float" setter="" getter="">
 			The inertia to use when orbiting in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
@@ -547,6 +551,10 @@
 		<member name="editors/animation/default_fps_mode" type="int" setter="" getter="">
 			Default step mode for [AnimationPlayer] (seconds or FPS). The option is remembered locally for a scene and this option only determines the default value when scene doesn't have local state yet.
 		</member>
+		<member name="editors/animation/insert_at_current_time" type="bool" setter="" getter="">
+			If [code]true[/code], animation keys and markers are inserted at the current time in the animation.
+			If [code]false[/code], they are inserted at the mouse cursor's position.
+		</member>
 		<member name="editors/animation/onion_layers_future_color" type="Color" setter="" getter="">
 			The modulate color to use for "future" frames displayed in the animation editor's onion skinning feature.
 		</member>
@@ -560,9 +568,6 @@
 		<member name="editors/bone_mapper/handle_colors/set" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
-		</member>
-		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
-			Minimum width of GridMap's mesh palette side panel.
 		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
@@ -794,6 +799,9 @@
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
+		<member name="filesystem/quick_open_dialog/instant_preview" type="bool" setter="" getter="">
+			If [code]true[/code], highlighting a resource will preview it quickly without confirming the selection or closing the dialog.
+		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
 			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
 		</member>
@@ -868,9 +876,12 @@
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks.
 		</member>
+		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
+		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
-			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
 			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
@@ -919,6 +930,11 @@
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
+		</member>
+		<member name="interface/editor/main_font_custom_opentype_features" type="String" setter="" getter="">
+			List of custom OpenType features to use, if supported by the currently configured main font. Check what OpenType features are supported by your font first.
+			The string should follow the OpenType specification, e.g. [code]ss01,tnum,calt=false[/code]. Microsoft's documentation contains a list of [url=https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist]all registered features[/url].
+			[b]Note:[/b] The default editor main font ([url=https://rsms.me/inter]Inter[/url]) has custom OpenType features in its font file, with [code]ss04[/code] and [code]tnum[/code] enabled and [code]calt[/code] disabled by default. Supported features can be found at its website.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
@@ -1025,6 +1041,9 @@
 		</member>
 		<member name="interface/inspector/horizontal_vector_types_editing" type="bool" setter="" getter="">
 			If [code]true[/code], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are shown on a single line in the inspector instead of multiple lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
+		</member>
+		<member name="interface/inspector/integer_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing integer values by dragging them in the inspector.
 		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
@@ -1458,7 +1477,7 @@
 			How many script names can be highlighted at most, if [member text_editor/script_list/script_temperature_enabled] is [code]true[/code]. Scripts older than this value use the default font color.
 		</member>
 		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
-			If [code]true[/code], displays an overview of the current script's member variables and functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
+			If [code]true[/code], displays an overview of the current script's member functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
 		</member>
 		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], sorts the members outline (located at the left of the script editor) using alphabetical order. If [code]false[/code], sorts the members outline depending on the order in which members are found in the script.
@@ -1578,7 +1597,7 @@
 			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
 		</member>
 		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
-			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&amp;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).

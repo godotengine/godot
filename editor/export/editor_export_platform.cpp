@@ -677,7 +677,7 @@ bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalV
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -724,7 +724,7 @@ bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<E
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -771,7 +771,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 					}
 
 					// If it was not replaced, go through and see if there is something to replace.
-					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins)) {
 						changed = true;
 					}
 				}
@@ -780,16 +780,20 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
-					// May have been generated, so set back just in case
-					p_object->set(E.name, d);
+					if (p_object->get(E.name) != d) {
+						p_object->set(E.name, d);
+					}
+
 					changed = true;
 				}
 			} break;
 			case Variant::ARRAY: {
 				Array a = p_object->get(E.name);
 				if (_export_customize_array(a, customize_resources_plugins)) {
-					// May have been generated, so set back just in case
-					p_object->set(E.name, a);
+					if (p_object->get(E.name) != a) {
+						p_object->set(E.name, a);
+					}
+
 					changed = true;
 				}
 			} break;
@@ -1345,6 +1349,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		bool do_export = true;
+		bool skip_all = false;
+		int skipped_i = export_plugins.size() - 1;
 		for (int i = 0; i < export_plugins.size(); i++) {
 			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
 				export_plugins.write[i]->_export_file_script(path, type, features_psa);
@@ -1360,26 +1366,30 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			}
 
-			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-				err = save_proxy.save_file(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
-				if (err != OK) {
-					return err;
-				}
-				if (export_plugins[i]->extra_files[j].remap) {
-					do_export = false; // If remap, do not.
-					path_remaps.push_back(path);
-					path_remaps.push_back(export_plugins[i]->extra_files[j].path);
-				}
-			}
-
 			if (export_plugins[i]->skipped) {
 				do_export = false;
-			}
-			export_plugins.write[i]->_clear();
-
-			if (!do_export) {
+				skip_all = true;
+				skipped_i = i;
 				break;
 			}
+		}
+
+		for (int i = 0; i <= skipped_i; i++) {
+			if (!skip_all) {
+				for (const EditorExportPlugin::ExtraFile &extra_file : export_plugins[i]->extra_files) {
+					err = save_proxy.save_file(p_udata, extra_file.path, extra_file.data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
+					if (err != OK) {
+						return err;
+					}
+					if (extra_file.remap) {
+						do_export = false; // If remap, do not.
+						path_remaps.push_back(path);
+						path_remaps.push_back(extra_file.path);
+					}
+				}
+			}
+
+			export_plugins.write[i]->_clear();
 		}
 		if (!do_export) {
 			continue;
@@ -2530,7 +2540,7 @@ void EditorExportPlatform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_internal_export_files", "preset", "debug"), &EditorExportPlatform::get_internal_export_files);
 
-	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files", "preset"), &EditorExportPlatform::get_forced_export_files);
+	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files", "preset"), &EditorExportPlatform::get_forced_export_files, DEFVAL(Ref<EditorExportPreset>()));
 
 	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_NONE);
 	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_INFO);

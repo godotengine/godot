@@ -278,9 +278,6 @@
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>
-		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scale the boot splash image to the full window size (preserving the aspect ratio) when the engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
-		</member>
 		<member name="application/boot_splash/image" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
 			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
@@ -292,6 +289,9 @@
 		</member>
 		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
+		</member>
+		<member name="application/boot_splash/stretch_mode" type="int" setter="" getter="" default="1">
+			Specifies how the splash image will be stretched. For the original size without stretching, set to disabled. See [enum RenderingServer.SplashStretchMode] constants for more information.
 		</member>
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
@@ -306,6 +306,9 @@
 		</member>
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
+		</member>
+		<member name="application/config/disable_project_settings_override" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables loading of project settings overrides (file defined in [member application/config/project_settings_override] and [code]res://override.cfg[/code]) and related CLI arguments.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
@@ -553,7 +556,7 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
 		<member name="debug/gdscript/warnings/inferred_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
 			[b]Note:[/b] This warning is recommended [i]in addition[/i] to [member debug/gdscript/warnings/untyped_declaration] if you want to always specify the type explicitly. Having [code]INFERRED_DECLARATION[/code] warning level higher than [code]UNTYPED_DECLARATION[/code] warning level makes little sense and is not recommended.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
@@ -564,6 +567,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
+		</member>
+		<member name="debug/gdscript/warnings/missing_await" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a coroutine without [code]await[/code].
 		</member>
 		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
@@ -1052,7 +1058,7 @@
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], subwindows are embedded in the main window (this is also called single-window mode). Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
 			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
-			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor, except the setting's value is inverted.
+			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
@@ -1180,6 +1186,12 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
+		<member name="gui/common/show_focus_state_on_pointer_event" type="int" setter="" getter="" default="1">
+			Determines whether a [Control] should visually indicate focus when said focus is gained using a mouse or touch input.
+			- [b]Never[/b] ([code]0[/code]) show the focused state for mouse/touch input.
+			- [b]Control Supports Keyboard Input[/b] ([code]1[/code]) shows the focused state even when gained via mouse/touch input (similar to how browsers handle focus).
+			- [b]Always[/b] ([code]2[/code]) show the focused state, even if said focus was gained via mouse/touch input.
+		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
@@ -1194,7 +1206,7 @@
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [SVGTexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
+			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
@@ -1258,6 +1270,13 @@
 			Default [InputEventAction] to discard a modal or pending input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_close_dialog" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to close a dialog window.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_close_dialog.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to close a dialog window.
+		</member>
 		<member name="input/ui_colorpicker_delete_preset" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete a color preset in a [ColorPicker].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1277,6 +1296,21 @@
 		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the end position of a [Control] (e.g. last item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_END] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the selected file in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_find" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open file filter in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus path edit field in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to focus path edit field in [FileDialog].
 		</member>
 		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to refresh the contents of the current directory of a [FileDialog].
@@ -2311,6 +2345,12 @@
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
+		<member name="navigation/2d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/2d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
+		</member>
 		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
 			Default cell height for 3D navigation maps. See [method NavigationServer3D.map_set_cell_height].
 		</member>
@@ -2331,6 +2371,12 @@
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
+		</member>
+		<member name="navigation/3d/warnings/navmesh_cell_size_mismatch" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings when a navigation mesh with a small cell size (or in 3D height) is used on a navigation map with a larger size as this commonly causes rasterization errors.
+		</member>
+		<member name="navigation/3d/warnings/navmesh_edge_merge_errors" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the navigation system will print warnings about navigation mesh edge merge errors occurring in navigation regions or maps.
 		</member>
 		<member name="navigation/avoidance/thread_model/avoidance_use_high_priority_threads" type="bool" setter="" getter="" default="true">
 			If enabled and avoidance calculations use multiple threads the threads run with high priority.
@@ -2373,6 +2419,9 @@
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 			Timeout (in seconds) for connection attempts using TCP.
+		</member>
+		<member name="network/limits/unix/connect_timeout_seconds" type="int" setter="" getter="" default="30">
+			Timeout (in seconds) for connection attempts using UNIX domain socket.
 		</member>
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
@@ -2512,7 +2561,7 @@
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
-			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. As it was recently implemented, it is currently considered experimental and its behavior may change in future releases.
+			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. Jolt Physics is the default for projects created starting in Godot 4.6.
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
@@ -2746,9 +2795,9 @@
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member rendering/viewport/hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member rendering/viewport/hdr_2d] is [code]true[/code], debanding will affect all 2D and 3D rendering, including canvas items.
+			If [code]true[/code], uses a fast dithering filter just before transforming floating point color values to integer color values to make banding significantly less visible. Debanding is applied at different steps of the rendering process depending on the rendering method and [member rendering/viewport/hdr_2d] setting.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
-			[b]Note:[/b] This property is only read when the project starts. To set debanding at runtime, set [member Viewport.use_debanding] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_use_debanding].
+			[b]Note:[/b] This property is only read when the project starts and configures [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding] of the root [Viewport]. When [member rendering/viewport/hdr_2d] is disabled, you should additionally set the [member Viewport.use_debanding] of other viewports in your project. To set debanding at run-time, the property that should be set depends on the renderer: Forward+ only uses [member Viewport.use_debanding] and Mobile uses both [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables temporal antialiasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -2799,8 +2848,8 @@
 		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/environment/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
-			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
+		<member name="rendering/environment/screen_space_reflection/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space reflections will be rendered at half size and then upscaled before being added to the scene. This is faster but may look pixelated or cause flickering. If [code]false[/code], screen-space reflections will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
 			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
@@ -3027,19 +3076,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
@@ -3145,7 +3194,7 @@
 			Sets the renderer that will be used by the project. Options are:
 			[b]forward_plus[/b] (Forward+): High-end renderer designed for desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
 			[b]mobile[/b] (Mobile): Modern renderer designed for mobile devices. Has a lower base overhead than Forward+, but does not scale as well to large scenes with many elements.
-			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs.
+			[b]gl_compatibility[/b] (Compatibility): Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3 / OpenGL ES 3.0 / WebGL 2 APIs. Lighting calculations are performed on nonlinear sRGB-encoded color data, which produces inaccurate results that may look acceptable for some games.
 			This can be overridden using the [code]--rendering-method &lt;method&gt;[/code] command line argument.
 			[b]Note:[/b] The actual rendering method may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering method that is used at runtime, use [method RenderingServer.get_current_rendering_method] instead of reading this project setting's value.
 		</member>
@@ -3264,7 +3313,7 @@
 			Double-buffering may give you the lowest lag/latency but if V-Sync is on and the system can't render at 60 fps, the framerate will go down in multiples of it (e.g. 30 fps, 15, 7.5, etc.). Triple buffering gives you higher framerate (specially if the system can't reach a constant 60 fps) at the cost of up to 1 frame of latency, with [constant DisplayServer.VSYNC_ENABLED] (FIFO).
 			Use double-buffering with [constant DisplayServer.VSYNC_ENABLED]. Triple-buffering is a must if you plan on using [constant DisplayServer.VSYNC_MAILBOX] mode.
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
-			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+			[b]Note:[/b] Changes to this setting will only be applied on startup or when the swapchain is recreated (e.g. when setting the V-Sync mode).
 			[b]Note:[/b] Some platforms may restrict the actual value.
 		</member>
 		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
@@ -3375,8 +3424,9 @@
 			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen. Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
-			[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
+			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
+			Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
 		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
@@ -3449,6 +3499,44 @@
 		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] we enable the render model extension if available.
 			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/april_tag_dict" type="int" setter="" getter="" default="&quot;3&quot;">
+			The April Tag marker types the built-in marker tracking is set to recognize (if April Tag marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/aruco_dict" type="int" setter="" getter="" default="&quot;15&quot;">
+			The ArUco marker types the built-in marker tracking is set to recognize (if ArUco marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling anchors. Godot will query (persistent) anchors and manage [OpenXRAnchorTracker] instances for you. If disabled you'll need to create your own spatial and persistence context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that spatial anchors are supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling marker tracking. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling plane detection. Godot will query detected planes (walls, floors, ceilings, etc.) and manage [OpenXRPlaneTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that plane tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the marker tracking extension is requested. If supported, you will be able to query information about markers detected by the XR runtime, e.g. QR codes, aruca markers and april tags.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and marker tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_persistent_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the persistent anchors extension is requested. If supported, you will be able to store spatial anchors and they will be restored on application startup.
+			[b]Note:[/b] This requires that the OpenXR spatial entities, spatial anchors, and spatial persistence extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] and [member xr/openxr/extensions/spatial_entity/enable_spatial_anchors] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_plane_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the plane tracking extension is requested. If supported, you will be able to query information about planes detected by the XR runtime, e.g. walls, floors, etc.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and plane tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_spatial_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial anchors extension is requested. If supported, you will be able to register anchor locations in the real world that the XR runtime will adjust as needed and/or potentially share with other headsets.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and spatial anchors extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
+			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

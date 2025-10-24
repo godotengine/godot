@@ -56,13 +56,14 @@
 # Filip Jaruška <filip.jaruska@gmail.com>, 2025.
 # NoNormal <no123normal@gmail.com>, 2025.
 # kubfaf <kubfaf@gmail.com>, 2025.
+# GrenewerearE <grenewereare@seznam.cz>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-09 10:03+0000\n"
-"Last-Translator: kubfaf <kubfaf@gmail.com>\n"
+"PO-Revision-Date: 2025-09-05 11:02+0000\n"
+"Last-Translator: GrenewerearE <grenewereare@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13.1-rc\n"
 
 msgid "Unset"
 msgstr "Nenastaveno"
@@ -301,6 +302,9 @@ msgstr "Kopírovat"
 msgid "Paste"
 msgstr "Vložit"
 
+msgid "Toggle Tab Focus Mode"
+msgstr "Přepnout režim Zaměření Záložek"
+
 msgid "Undo"
 msgstr "Zpět"
 
@@ -435,6 +439,9 @@ msgstr "Obrátit směr vstupu"
 
 msgid "Start Unicode Character Input"
 msgstr "Zahájit vstup Unicode znaků"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Přístupnost: Přetáhnout a pustit pomocí klávesnice"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Neplatný vstup %d (nepředán) ve výrazu"
@@ -640,6 +647,9 @@ msgstr "Bod"
 msgid "Open Editor"
 msgstr "Otevřít editor"
 
+msgid "Max"
+msgstr "Max"
+
 msgid "Value"
 msgstr "Hodnota"
 
@@ -678,6 +688,15 @@ msgstr "Odstranit body a trojúhelníky."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Vygenerovat prolínací trojúhelníky automaticky (namísto manuálně)"
+
+msgid "Max Y"
+msgstr "Max Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parametr změněn: %s"
@@ -872,6 +891,17 @@ msgstr "Uložit knihovnu animací do souboru: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Uložit animaci do souboru: %s"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Soubor, který jste vybrali, není platná AnimationLibrary.\n"
+"\n"
+"Pokud chcete používat animace z tohoto souboru, uložte je nejprve jako "
+"samostatný soubor."
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr "Některé z vybraných knihoven již byly do směšovače přidány."
@@ -1686,6 +1716,15 @@ msgstr "Přepnout mezi editorem Bézierovy křivky a editorem stopy."
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Zobrazit pouze stopy uzlů vybraných ve stromu."
 
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"Řadit stopy/skupiny podle abecedy.\n"
+"Pokud je zakázáno, jsou stopy zobrazovány v tom pořadí, v jakém byly přidány, "
+"a mohou být přeuspořádány přetáhnutím."
+
 msgid "Group tracks by node or display them as plain list."
 msgstr "Seskupit stopy podle uzlu nebo je zobrazit jako jednoduchý seznam."
 
@@ -2004,6 +2043,9 @@ msgstr "Strom animace"
 
 msgid "Toggle AnimationTree Bottom Panel"
 msgstr "Přepnout spodní panel Strom animace"
+
+msgid "Title"
+msgstr "Název"
 
 msgid "Author"
 msgstr "Autor"
@@ -2584,6 +2626,15 @@ msgstr "Relace %d"
 
 msgid "Debug"
 msgstr "Ladění"
+
+msgid ""
+"Some remote nodes were not selected, as the configured maximum selection is "
+"%d. This can be changed at \"debugger/max_node_selection\" in the Editor "
+"Settings."
+msgstr ""
+"Některé vzdálené uzly nebyly vybrány, protože maximální nakonfigurovaný počet "
+"vybraných prvků je %d. To může být změněno v \"debugger/max_node_selection\" "
+"v Nastavení editoru."
 
 msgid "Save Branch as Scene..."
 msgstr "Uložit větev jako scénu..."
@@ -3622,6 +3673,9 @@ msgstr "Přejít do další vybrané složky/souboru."
 msgid "Change Split Mode"
 msgstr "Změnit režim rozdělení"
 
+msgid "Dock Placement"
+msgstr "Umístění doku"
+
 msgid "Filter Files"
 msgstr "Filtrovat soubory"
 
@@ -4637,6 +4691,12 @@ msgstr "Nelze znovu načíst scénu, která nebyla nikdy uložena."
 msgid "Save & Reload"
 msgstr "Uložit a znovu načíst"
 
+msgid "Stop running project before reloading the current project?"
+msgstr "Zastavit běh projektu předtím, než se projekt znovu načte z disku?"
+
+msgid "Stop running project before exiting the editor?"
+msgstr "Zastavit běh projektu před ukončením editoru?"
+
 msgid "Save modified resources before reloading?"
 msgstr "Uložit změněné zdroje před opětovným načtením?"
 
@@ -4797,6 +4857,9 @@ msgid ""
 msgstr ""
 "Vybraná scéna '%s' není soubor scény. Vybrat platnou?\n"
 "Můžete ji později změnit v \"Nastavení projektu\", v kategorii 'Aplikace'."
+
+msgid "User data dir '%s' is not valid. Change to a valid one?"
+msgstr "Adresář uživatelských dat '%s' je neplatný. Změnit na platný adresář?"
 
 msgid "Cannot run the script because it contains errors, check the output log."
 msgstr ""
@@ -5186,6 +5249,9 @@ msgstr "Znovu načíst z disku"
 msgid "Ignore external changes"
 msgstr "Ignorovat externí změny"
 
+msgid "Project data folder (.godot) is missing. Please restart editor."
+msgstr "Chybí složka s daty projektu (.godot). Restartujte prosím editor."
+
 msgid "Restart"
 msgstr "Restartovat"
 
@@ -5394,6 +5460,15 @@ msgid "At least one system boot time access reason should be selected."
 msgstr ""
 "Měl by být vybrán alespoň jeden důvod pro přístup k času spuštění systému."
 
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Editor používá jiný renderer než ten, který bude používat cílová platforma. "
+"\"Shader Baker\" nebude obsahovat základní shadery. Přepněte dočasně na "
+"\"%s\" renderer, abyste problém opravili."
+
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "Cílová složka neexistuje, nebo k ní nelze přistoupit: \"%s\""
 
@@ -5503,6 +5578,15 @@ msgstr "Instalace selhala, více informací naleznete v logu editoru."
 
 msgid "Running failed, see editor log for details."
 msgstr "Běh selhal, více informací naleznete v logu editoru."
+
+msgid ""
+"The editor is currently using a different renderer than what the target "
+"platform will use. \"Shader Baker\" won't be able to include core shaders. "
+"Switch to the \"%s\" renderer temporarily to fix this."
+msgstr ""
+"Editor používá jiný renderer než ten, který bude používat cílová platforma. "
+"\"Shader Baker\" nebude obsahovat základní shadery. Přepněte dočasně na "
+"\"%s\" renderer, abyste problém opravili."
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -6579,6 +6663,9 @@ msgstr "Vybrat scénu"
 msgid "Fuzzy Search"
 msgstr "Přibližné vyhledávání"
 
+msgid "Include approximate matches."
+msgstr "Zahrnout přibližné shody."
+
 msgid "Addons"
 msgstr "Doplňky"
 
@@ -6649,6 +6736,9 @@ msgstr "Spuštění vlastního skriptu..."
 
 msgid "Couldn't load post-import script:"
 msgstr "Nepodařilo se načíst skript pro post-import:"
+
+msgid "Script is not a subtype of EditorScenePostImport:"
+msgstr "Skript není podtyp EditorScenePostImport:"
 
 msgid "Invalid/broken script for post-import (check console):"
 msgstr "Neplatný/nefunkční skript pro post-import (viz konzole):"
@@ -7314,6 +7404,9 @@ msgstr "Nový klíč:"
 
 msgid "New Value:"
 msgstr "Nová hodnota:"
+
+msgid "Reorder"
+msgstr "Změnit pořadí"
 
 msgid "(Nil) %s"
 msgstr "(Nic) %s"
@@ -8225,6 +8318,9 @@ msgstr "Měřítko zobrazení"
 msgid "Network Mode"
 msgstr "Režim sítě"
 
+msgid "Check for Updates"
+msgstr "Zkontrolovat aktualizace"
+
 msgid "Directory Naming Convention"
 msgstr "Konvence pojmenování složek"
 
@@ -8403,9 +8499,6 @@ msgstr "Běh projektu"
 
 msgid "Next Frame"
 msgstr "Další snímek"
-
-msgid "Select Mode"
-msgstr "Režim výběru"
 
 msgid "Connection impossible to the game process."
 msgstr "Připojení k hernímu procesu není možné."
@@ -10837,6 +10930,9 @@ msgstr ""
 "Scéna obsahuje\n"
 "WorldEnvironment.\n"
 "Náhled deaktivován."
+
+msgid "Select Mode"
+msgstr "Režim výběru"
 
 msgid "Move Mode"
 msgstr "Režim přesouvání"
@@ -14815,9 +14911,6 @@ msgstr "Nastavit konstantu: %s"
 
 msgid "Invalid name for varying."
 msgstr "Neplatný název pro interpolovanou proměnnou."
-
-msgid "Varying with that name is already exist."
-msgstr "Interpolovaná proměnná s tímto názvem již existuje."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Booleovský typ nelze použít s režimem interpolované proměnné `%s`."
@@ -19115,11 +19208,6 @@ msgstr "Rekurze není povolená."
 
 msgid "Function '%s' can't be called from source code."
 msgstr "Funkci '%s' nelze volat ze zdrojového kódu."
-
-msgid ""
-"Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."
-msgstr ""
-"Neplatný argument pro funkci \"%s(%s)\": argument %d by měl být %s, ale je %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."

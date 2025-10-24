@@ -37,6 +37,7 @@ class AcceptDialog;
 class HBoxContainer;
 class NavigationPolygon;
 class NavigationRegion2D;
+class Timer;
 
 class NavigationRegion2DEditor : public AbstractPolygon2DEditor {
 	friend class NavigationRegion2DEditorPlugin;

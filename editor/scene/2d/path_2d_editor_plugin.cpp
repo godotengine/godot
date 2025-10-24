@@ -38,6 +38,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/mesh.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -975,11 +976,11 @@ Path2DEditor::Path2DEditor() {
 
 Path2DEditor::~Path2DEditor() {
 	ERR_FAIL_NULL(RS::get_singleton());
-	RS::get_singleton()->free(debug_mesh_rid);
-	RS::get_singleton()->free(debug_handle_curve_multimesh_rid);
-	RS::get_singleton()->free(debug_handle_sharp_multimesh_rid);
-	RS::get_singleton()->free(debug_handle_smooth_multimesh_rid);
-	RS::get_singleton()->free(debug_handle_mesh_rid);
+	RS::get_singleton()->free_rid(debug_mesh_rid);
+	RS::get_singleton()->free_rid(debug_handle_curve_multimesh_rid);
+	RS::get_singleton()->free_rid(debug_handle_sharp_multimesh_rid);
+	RS::get_singleton()->free_rid(debug_handle_smooth_multimesh_rid);
+	RS::get_singleton()->free_rid(debug_handle_mesh_rid);
 }
 
 void Path2DEditorPlugin::edit(Object *p_object) {

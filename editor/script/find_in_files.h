@@ -201,6 +201,11 @@ private:
 	void _on_replace_text_changed(const String &text);
 	void _on_replace_all_clicked();
 
+	enum {
+		FIND_BUTTON_REPLACE,
+		FIND_BUTTON_REMOVE,
+	};
+
 	struct Result {
 		int line_number = 0;
 		int begin = 0;
@@ -226,6 +231,7 @@ private:
 	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
+	HashMap<TreeItem *, int> _file_items_results_count;
 	HashMap<TreeItem *, Result> _result_items;
 	bool _with_replace = false;
 

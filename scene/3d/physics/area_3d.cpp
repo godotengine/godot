@@ -30,7 +30,7 @@
 
 #include "area_3d.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
@@ -800,7 +800,7 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled"), "set_use_reverb_bus", "is_using_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_use_reverb_bus", "is_using_reverb_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus_name", "get_reverb_bus_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");

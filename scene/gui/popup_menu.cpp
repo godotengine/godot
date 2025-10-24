@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -924,9 +925,9 @@ void PopupMenu::_draw_items() {
 		// Submenu arrow on right hand side.
 		if (items[i].submenu) {
 			if (rtl) {
-				submenu->draw(ci, Point2(theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
-				submenu->draw(ci, Point2(display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - submenu->get_width() - theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(display_width - submenu->get_width() - theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			}
 		}
 
@@ -961,11 +962,11 @@ void PopupMenu::_draw_items() {
 		// Accelerator / Shortcut
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			if (rtl) {
-				item_ofs.x = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding;
+				item_ofs.x = theme_cache.item_end_padding;
 			} else {
-				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
+				item_ofs.x = display_width - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
-			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].accel_text_buf->get_size().y) / 2.0));
 			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
@@ -1017,11 +1018,12 @@ void PopupMenu::_shape_item(int p_idx) const {
 		} else {
 			items.write[p_idx].text_buf->set_direction((TextServer::Direction)items[p_idx].text_direction);
 		}
-		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, items[p_idx].language);
+		const String &lang = items[p_idx].language.is_empty() ? _get_locale() : items[p_idx].language;
+		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, lang);
 
 		items.write[p_idx].accel_text_buf->clear();
 		items.write[p_idx].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size);
+		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size, lang);
 		items.write[p_idx].dirty = false;
 	}
 }
@@ -3209,13 +3211,8 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		_native_popup(p_bounds != Rect2i() ? p_bounds : Rect2i(get_position(), Size2i()));
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		moved = Vector2();
@@ -3235,6 +3232,10 @@ void PopupMenu::_pre_popup() {
 	set_content_scale_factor(popup_scale);
 	Size2 minsize = get_contents_minimum_size() * popup_scale;
 	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	real_t max_h = get_max_size().height;
+	if (max_h > 0) {
+		minsize.height = MIN(minsize.height, max_h);
+	}
 	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
 	reset_size(); // Shrinkwraps to min size.
 }
@@ -3252,14 +3253,9 @@ void PopupMenu::set_visible(bool p_visible) {
 			_native_popup(Rect2i(get_position(), get_size()));
 		}
 	} else {
-		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+		if (p_visible && is_inside_tree()) {
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		Popup::set_visible(p_visible);

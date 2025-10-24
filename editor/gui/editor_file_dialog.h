@@ -122,7 +122,6 @@ private:
 	ConfirmationDialog *confirm_save = nullptr;
 	DependencyRemoveDialog *dep_remove_dialog = nullptr;
 	ConfirmationDialog *global_remove_dialog = nullptr;
-	VBoxContainer *side_vbox = nullptr;
 	VBoxContainer *vbc = nullptr;
 	HBoxContainer *pathhb = nullptr;
 
@@ -185,6 +184,7 @@ private:
 		Ref<Texture2D> filter_box;
 		Ref<Texture2D> file_sort_button;
 
+		Ref<Texture2D> file;
 		Ref<Texture2D> folder;
 		Color folder_icon_color;
 
@@ -271,15 +271,13 @@ private:
 	void _save_to_recent();
 	// Callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load.
 
-	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
-	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview);
+	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview);
 	void _request_single_thumbnail(const String &p_path);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
-
-	void _update_side_menu_visibility(bool p_native_dlg);
 
 	void _native_popup();
 	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
@@ -366,7 +364,9 @@ public:
 	void set_previews_enabled(bool p_enabled);
 	bool are_previews_enabled();
 
-	void add_side_menu(Control *p_menu, const String &p_title = "");
+#ifndef DISABLE_DEPRECATED
+	void add_side_menu(Control *p_menu, const String &p_title = "") { ERR_FAIL_MSG("add_side_menu() is kept for compatibility and does nothing. For similar functionality, you can show another dialog after file dialog."); }
+#endif
 
 	EditorFileDialog();
 	~EditorFileDialog();

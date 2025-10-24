@@ -63,7 +63,7 @@ bool GDExtensionSpecialCompatHashes::get_legacy_hashes(const StringName &p_class
 			if (p_check_valid) {
 				MethodBind *mb = ClassDB::get_method_with_compatibility(p_class, p_method, mapping.current_hash);
 				if (!mb) {
-					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d. Please update gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
+					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d in gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
 					continue;
 				}
 			}

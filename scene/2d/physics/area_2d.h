@@ -37,6 +37,8 @@ class Area2D : public CollisionObject2D {
 	GDCLASS(Area2D, CollisionObject2D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::AREA_2D;
+
 	enum SpaceOverride {
 		SPACE_OVERRIDE_DISABLED,
 		SPACE_OVERRIDE_COMBINE,
