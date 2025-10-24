@@ -281,7 +281,7 @@ void main() {
 
 	if (sky_scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * sky_scene_data.volumetric_fog_sky_affect);
+		frag_color.rgb = frag_color.rgb * (1.0 - fog.a * sky_scene_data.volumetric_fog_sky_affect) + fog.rgb * sky_scene_data.volumetric_fog_sky_affect;
 	}
 
 	if (custom_fog.a > 0.0) {
