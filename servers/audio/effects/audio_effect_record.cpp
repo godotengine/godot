@@ -222,6 +222,7 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 			encode_uint16(v, &w[i * 2]);
 		}
 	} else if (dst_format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
+#ifndef DISABLE_DEPRECATED
 		//byte interleave
 		Vector<float> left;
 		Vector<float> right;
@@ -252,6 +253,9 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 			w[i * 2 + 0] = rl[i];
 			w[i * 2 + 1] = rr[i];
 		}
+#else
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "This build was compiled without deprecated features. IMA ADPCM is not available.");
+#endif
 	} else if (dst_format == AudioStreamWAV::FORMAT_QOA) {
 		qoa_desc desc = {};
 		desc.samples = current_instance->recording_data.size() / 2;
