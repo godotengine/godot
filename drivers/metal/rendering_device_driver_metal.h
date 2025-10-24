@@ -30,13 +30,15 @@
 
 #pragma once
 
+#import "metal_device_profile.h"
 #import "metal_objects.h"
-#import "rendering_shader_container_metal.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
 #import <Metal/Metal.h>
 #import <variant>
+
+class RenderingShaderContainerFormatMetal;
 
 #ifdef DEBUG_ENABLED
 #ifndef _DEBUG
@@ -59,11 +61,11 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	RenderingContextDriver::Device context_device;
 	id<MTLDevice> device = nil;
 
-	uint32_t frame_count = 1;
+	uint32_t _frame_count = 1;
 	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
 	/// cycling through values from 0 to frame_count - 1
-	uint32_t frame_index = 0;
-	uint32_t frames_drawn = 0;
+	uint32_t _frame_index = 0;
+	uint32_t _frames_drawn = 0;
 
 	MetalDeviceProperties *device_properties = nullptr;
 	MetalDeviceProfile device_profile;
@@ -179,9 +181,64 @@ public:
 
 private:
 	struct Fence {
+		virtual void signal(id<MTLCommandBuffer> p_cmd_buffer) = 0;
+		virtual Error wait(uint32_t p_timeout_ms) = 0;
+		virtual ~Fence() = default;
+	};
+
+	struct FenceEvent : public Fence {
+		id<MTLSharedEvent> event;
+		uint64_t value;
+		FenceEvent(id<MTLSharedEvent> p_event) :
+				event(p_event),
+				value(0) {}
+
+		virtual void signal(id<MTLCommandBuffer> p_cb) override {
+			if (p_cb) {
+				value++;
+				[p_cb encodeSignalEvent:event value:value];
+			}
+		}
+
+		virtual Error wait(uint32_t p_timeout_ms) override {
+			GODOT_CLANG_WARNING_PUSH
+			GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+			BOOL signaled = [event waitUntilSignaledValue:value timeoutMS:p_timeout_ms];
+			GODOT_CLANG_WARNING_POP
+			if (!signaled) {
+#ifdef DEBUG_ENABLED
+				ERR_PRINT("timeout waiting for fence");
+#endif
+				return ERR_TIMEOUT;
+			}
+
+			return OK;
+		}
+	};
+
+	struct FenceSemaphore : public Fence {
 		dispatch_semaphore_t semaphore;
-		Fence() :
+		FenceSemaphore() :
 				semaphore(dispatch_semaphore_create(0)) {}
+
+		virtual void signal(id<MTLCommandBuffer> p_cb) override {
+			if (p_cb) {
+				[p_cb addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+					dispatch_semaphore_signal(semaphore);
+				}];
+			} else {
+				dispatch_semaphore_signal(semaphore);
+			}
+		}
+
+		virtual Error wait(uint32_t p_timeout_ms) override {
+			dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(p_timeout_ms) * 1000000);
+			long result = dispatch_semaphore_wait(semaphore, timeout);
+			if (result != 0) {
+				return ERR_TIMEOUT;
+			}
+			return OK;
+		}
 	};
 
 public:
@@ -282,17 +339,6 @@ public:
 	virtual void command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
 
 #pragma mark Transfer
-
-private:
-	enum class CopySource {
-		Buffer,
-		Texture,
-	};
-	void _copy_texture_buffer(CommandBufferID p_cmd_buffer,
-			CopySource p_source,
-			TextureID p_texture,
-			BufferID p_buffer,
-			VectorView<BufferTextureCopyRegion> p_regions);
 
 public:
 	virtual void command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) override final;
@@ -454,6 +500,10 @@ public:
 
 	size_t get_texel_buffer_alignment_for_format(RDD::DataFormat p_format) const;
 	size_t get_texel_buffer_alignment_for_format(MTLPixelFormat p_format) const;
+
+	_FORCE_INLINE_ uint32_t frame_count() const { return _frame_count; }
+	_FORCE_INLINE_ uint32_t frame_index() const { return _frame_index; }
+	_FORCE_INLINE_ uint32_t frames_drawn() const { return _frames_drawn; }
 
 	/******************/
 	RenderingDeviceDriverMetal(RenderingContextDriverMetal *p_context_driver);

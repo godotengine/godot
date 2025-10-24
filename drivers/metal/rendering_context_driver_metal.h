@@ -53,17 +53,24 @@ class MDCommandBuffer;
 #endif
 
 class PixelFormats;
-class MDResourceCache;
+
+#ifdef __OBJC__
+#define METAL_DEVICE id<MTLDevice>
+#define METAL_DRAWABLE id<MTLDrawable>
+#define METAL_LAYER CAMetalLayer *__unsafe_unretained
+#define METAL_RESIDENCY_SET id<MTLResidencySet>
+#else
+#define METAL_DEVICE void *
+#define METAL_DRAWABLE void *
+#define METAL_LAYER void *
+#define METAL_RESIDENCY_SET void *
+#endif
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
 	bool capture_available = false;
 
 protected:
-#ifdef __OBJC__
-	id<MTLDevice> metal_device = nullptr;
-#else
-	void *metal_device = nullptr;
-#endif
+	METAL_DEVICE metal_device = nullptr;
 	Device device; // There is only one device on Apple Silicon.
 
 public:
@@ -88,20 +95,12 @@ public:
 
 	// Platform-specific data for the Windows embedded in this driver.
 	struct WindowPlatformData {
-#ifdef __OBJC__
-		CAMetalLayer *__unsafe_unretained layer;
-#else
-		void *layer;
-#endif
+		METAL_LAYER layer;
 	};
 
 	class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) Surface {
 	protected:
-#ifdef __OBJC__
-		id<MTLDevice> device;
-#else
-		void *device;
-#endif
+		METAL_DEVICE device;
 
 	public:
 		uint32_t width = 0;
@@ -110,15 +109,8 @@ public:
 		bool needs_resize = false;
 		double present_minimum_duration = 0.0;
 
-		Surface(
-#ifdef __OBJC__
-				id<MTLDevice> p_device
-#else
-				void *p_device
-#endif
-				) :
-				device(p_device) {
-		}
+		Surface(METAL_DEVICE p_device) :
+				device(p_device) {}
 		virtual ~Surface() = default;
 
 		MTLPixelFormat get_pixel_format() const { return MTLPixelFormatBGRA8Unorm; }
@@ -128,12 +120,7 @@ public:
 		void set_max_fps(int p_max_fps) { present_minimum_duration = p_max_fps ? 1.0 / p_max_fps : 0.0; }
 	};
 
-#ifdef __OBJC__
-	id<MTLDevice>
-#else
-	void *
-#endif
-	get_metal_device() const {
+	METAL_DEVICE get_metal_device() const {
 		return metal_device;
 	}
 
