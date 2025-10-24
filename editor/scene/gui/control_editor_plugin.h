@@ -34,6 +34,8 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 
 class CheckBox;
@@ -127,14 +129,22 @@ public:
 class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginControl, EditorInspectorPlugin);
 
+	LineEdit *create_new_variation_line_edit = nullptr;
+	ConfirmationDialog *create_new_variation_dialog = nullptr;
 	bool inside_control_category = false;
+
+	Ref<Theme> theme;
+	Control *control = nullptr;
+	void _on_create_variation_confirmed();
 	void _on_convert_theme_overrides_to_variation(Control *p_control);
+	void _move_overrides_to_variation(const String &p_variation_name);
 
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_category(Object *p_object, const String &p_category) override;
 	virtual void parse_group(Object *p_object, const String &p_group) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+	EditorInspectorPluginControl();
 };
 
 // Toolbar controls.
