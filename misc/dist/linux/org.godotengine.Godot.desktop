@@ -18,6 +18,7 @@ Comment[pl]=Wieloplatformowy silnik gier 2D i 3D z wielofunkcyjnym edytorem
 Comment[ru]=Кроссплатформенный движок с многофункциональным редактором для 2D- и 3D-игр
 Comment[uk]=Багатофункціональний кросплатформний рушій для створення 2D та 3D ігор
 Comment[zh_CN]=多平台 2D 和 3D 游戏引擎，带有功能丰富的编辑器
+Keywords=game development;development;IDE;game engine;
 Exec=godot %f
 Icon=godot
 Terminal=false
