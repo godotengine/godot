@@ -2485,8 +2485,8 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 
 	// The command list must support the required interface.
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
-	ID3D12GraphicsCommandList7 *cmd_list_7 = nullptr;
-	HRESULT res = cmd_buf_info->cmd_list->QueryInterface(IID_PPV_ARGS(&cmd_list_7));
+	ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
+	HRESULT res = cmd_buf_info->cmd_list->QueryInterface(cmd_list_7.GetAddressOf());
 	ERR_FAIL_COND(FAILED(res));
 
 	// Convert the RDD barriers to D3D12 enhanced barriers.
@@ -4795,8 +4795,17 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			cmd_buf_info->render_pass_state.region_rect.right == fb_info->size.x &&
 			cmd_buf_info->render_pass_state.region_rect.bottom == fb_info->size.y);
 
+	cmd_buf_info->render_pass_state.attachment_layouts.resize(pass_info->attachments.size());
+
 	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
-		if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_DONT_CARE) {
+		const Attachment &attachment = pass_info->attachments[i];
+
+		for (RenderPassState::AttachmentLayout::AspectLayout &aspect_layout : cmd_buf_info->render_pass_state.attachment_layouts[i].aspect_layouts) {
+			aspect_layout.cur_layout = attachment.initial_layout;
+			aspect_layout.expected_layout = attachment.initial_layout;
+		}
+
+		if (attachment.load_op == ATTACHMENT_LOAD_OP_DONT_CARE) {
 			const TextureInfo *tex_info = (const TextureInfo *)fb_info->attachments[i].id;
 			_discard_texture_subresources(tex_info, cmd_buf_info);
 		}
@@ -4857,6 +4866,91 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 	}
 }
 
+// Subpass dependencies cannot be specified by the end user, and by default they are very aggressive.
+// We can be more lenient by just looking at the texture layout and specifying appropriate access and stage bits.
+
+// We specify full barrier for layouts we don't expect to see as fallback.
+static const BitField<RDD::BarrierAccessBits> RD_RENDER_PASS_LAYOUT_TO_ACCESS_BITS[RDD::TEXTURE_LAYOUT_MAX] = {
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_UNDEFINED
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_GENERAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_STORAGE_OPTIMAL
+	RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+	RDD::BARRIER_ACCESS_SHADER_READ_BIT, // TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_COPY_SRC_OPTIMAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
+	RDD::BARRIER_ACCESS_RESOLVE_READ_BIT, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
+	RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, // TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL
+	RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT // TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL
+};
+
+// We specify all commands for layouts we don't expect to see as fallback.
+static const BitField<RDD::PipelineStageBits> RD_RENDER_PASS_LAYOUT_TO_STAGE_BITS[RDD::TEXTURE_LAYOUT_MAX] = {
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_UNDEFINED
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_GENERAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_STORAGE_OPTIMAL
+	RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, // TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+	RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_COPY_SRC_OPTIMAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
+	RDD::PIPELINE_STAGE_RESOLVE_BIT, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
+	RDD::PIPELINE_STAGE_RESOLVE_BIT, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, // TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL
+	RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT // TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL
+};
+
+void RenderingDeviceDriverD3D12::_render_pass_enhanced_barriers_flush(CommandBufferID p_cmd_buffer) {
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		return;
+	}
+
+	BitField<PipelineStageBits> src_stages = {};
+	BitField<PipelineStageBits> dst_stages = {};
+
+	thread_local LocalVector<TextureBarrier> texture_barriers;
+	texture_barriers.clear();
+
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+
+	for (uint32_t i = 0; i < cmd_buf_info->render_pass_state.attachment_layouts.size(); i++) {
+		RenderPassState::AttachmentLayout &attachment_layout = cmd_buf_info->render_pass_state.attachment_layouts[i];
+		TextureID tex = cmd_buf_info->render_pass_state.fb_info->attachments[i];
+		TextureInfo *tex_info = (TextureInfo *)tex.id;
+
+		for (uint32_t j = 0; j < TEXTURE_ASPECT_MAX; j++) {
+			RenderPassState::AttachmentLayout::AspectLayout &aspect_layout = attachment_layout.aspect_layouts[j];
+
+			if (aspect_layout.cur_layout != aspect_layout.expected_layout) {
+				src_stages = src_stages | RD_RENDER_PASS_LAYOUT_TO_STAGE_BITS[aspect_layout.cur_layout];
+				dst_stages = dst_stages | RD_RENDER_PASS_LAYOUT_TO_STAGE_BITS[aspect_layout.expected_layout];
+
+				TextureBarrier texture_barrier;
+				texture_barrier.texture = tex;
+				texture_barrier.src_access = RD_RENDER_PASS_LAYOUT_TO_ACCESS_BITS[aspect_layout.cur_layout];
+				texture_barrier.dst_access = RD_RENDER_PASS_LAYOUT_TO_ACCESS_BITS[aspect_layout.expected_layout];
+				texture_barrier.prev_layout = aspect_layout.cur_layout;
+				texture_barrier.next_layout = aspect_layout.expected_layout;
+				texture_barrier.subresources.aspect = (TextureAspectBits)(1 << j);
+				texture_barrier.subresources.base_mipmap = tex_info->base_mip;
+				texture_barrier.subresources.mipmap_count = tex_info->mipmaps;
+				texture_barrier.subresources.base_layer = tex_info->base_layer;
+				texture_barrier.subresources.layer_count = tex_info->layers;
+				texture_barriers.push_back(texture_barrier);
+
+				aspect_layout.cur_layout = aspect_layout.expected_layout;
+			}
+		}
+	}
+
+	if (!texture_barriers.is_empty()) {
+		command_pipeline_barrier(p_cmd_buffer, src_stages, dst_stages, VectorView<MemoryAccessBarrier>(), VectorView<BufferBarrier>(), texture_barriers);
+	}
+}
+
 void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
@@ -4895,11 +4989,22 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 
 		TextureInfo *src_tex_info = (TextureInfo *)fb_info->attachments[color_index].id;
 		uint32_t src_subresource = D3D12CalcSubresource(src_tex_info->base_mip, src_tex_info->base_layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
-		_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+
+		if (barrier_capabilities.enhanced_barriers_supported) {
+			cmd_buf_info->render_pass_state.attachment_layouts[color_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout = TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL;
+		} else {
+			_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+		}
 
 		TextureInfo *dst_tex_info = (TextureInfo *)fb_info->attachments[resolve_index].id;
 		uint32_t dst_subresource = D3D12CalcSubresource(dst_tex_info->base_mip, dst_tex_info->base_layer, 0, dst_tex_info->desc.MipLevels, dst_tex_info->desc.ArraySize());
-		_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+
+		if (barrier_capabilities.enhanced_barriers_supported) {
+			// This should have already been done when beginning the subpass.
+			DEV_ASSERT(cmd_buf_info->render_pass_state.attachment_layouts[resolve_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout == TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL);
+		} else {
+			_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+		}
 
 		resolves[num_resolves].src_res = src_tex_info->resource;
 		resolves[num_resolves].src_subres = src_subresource;
@@ -4910,6 +5015,11 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 	}
 
 	_resource_transitions_flush(cmd_buf_info);
+
+	// There can be enhanced barriers to flush only when we need to resolve textures.
+	if (num_resolves != 0) {
+		_render_pass_enhanced_barriers_flush(p_cmd_buffer);
+	}
 
 	for (uint32_t i = 0; i < num_resolves; i++) {
 		cmd_buf_info->cmd_list->ResolveSubresource(resolves[i].dst_res, resolves[i].dst_subres, resolves[i].src_res, resolves[i].src_subres, resolves[i].format);
@@ -4932,6 +5042,16 @@ void RenderingDeviceDriverD3D12::command_end_render_pass(CommandBufferID p_cmd_b
 			cmd_list_5->RSSetShadingRateImage(nullptr);
 		}
 	}
+
+	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
+		const Attachment &attachment = pass_info->attachments[i];
+
+		for (RenderPassState::AttachmentLayout::AspectLayout &aspect_layout : cmd_buf_info->render_pass_state.attachment_layouts[i].aspect_layouts) {
+			aspect_layout.expected_layout = attachment.final_layout;
+		}
+	}
+
+	_render_pass_enhanced_barriers_flush(p_cmd_buffer);
 
 	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
 		if (pass_info->attachments[i].store_op == ATTACHMENT_STORE_OP_DONT_CARE) {
@@ -4957,10 +5077,27 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 	const RenderPassInfo *pass_info = cmd_buf_info->render_pass_state.pass_info;
 	const Subpass &subpass = pass_info->subpasses[cmd_buf_info->render_pass_state.current_subpass];
 
+	for (uint32_t i = 0; i < subpass.input_references.size(); i++) {
+		const AttachmentReference &input_reference = subpass.input_references[i];
+		uint32_t attachment = input_reference.attachment;
+
+		if (attachment != AttachmentReference::UNUSED) {
+			RenderPassState::AttachmentLayout &attachment_layout = cmd_buf_info->render_pass_state.attachment_layouts[attachment];
+
+			// Vulkan cares about aspect bits only for input attachments.
+			for (uint32_t j = 0; j < TEXTURE_ASPECT_MAX; j++) {
+				if (input_reference.aspect & (1 << j)) {
+					attachment_layout.aspect_layouts[j].expected_layout = input_reference.layout;
+				}
+			}
+		}
+	}
+
 	D3D12_CPU_DESCRIPTOR_HANDLE *rtv_handles = ALLOCA_ARRAY(D3D12_CPU_DESCRIPTOR_HANDLE, subpass.color_references.size());
 	CPUDescriptorsHeapWalker rtv_heap_walker = fb_info->rtv_heap.make_walker();
 	for (uint32_t i = 0; i < subpass.color_references.size(); i++) {
-		uint32_t attachment = subpass.color_references[i].attachment;
+		const AttachmentReference &color_reference = subpass.color_references[i];
+		uint32_t attachment = color_reference.attachment;
 		if (attachment == AttachmentReference::UNUSED) {
 			if (!frames[frame_idx].null_rtv_handle.ptr) {
 				// No null descriptor-handle created for this frame yet.
@@ -4988,6 +5125,8 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 			rtv_heap_walker.rewind();
 			rtv_heap_walker.advance(rt_index);
 			rtv_handles[i] = rtv_heap_walker.get_curr_cpu_handle();
+
+			cmd_buf_info->render_pass_state.attachment_layouts[attachment].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout = color_reference.layout;
 		}
 	}
 
@@ -4999,8 +5138,25 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 			dsv_heap_walker.rewind();
 			dsv_heap_walker.advance(ds_index);
 			dsv_handle = dsv_heap_walker.get_curr_cpu_handle();
+
+			RenderPassState::AttachmentLayout &attachment_layout = cmd_buf_info->render_pass_state.attachment_layouts[subpass.depth_stencil_reference.attachment];
+			attachment_layout.aspect_layouts[TEXTURE_ASPECT_DEPTH].expected_layout = subpass.depth_stencil_reference.layout;
+			attachment_layout.aspect_layouts[TEXTURE_ASPECT_STENCIL].expected_layout = subpass.depth_stencil_reference.layout;
 		}
 	}
+
+	for (uint32_t i = 0; i < subpass.resolve_references.size(); i++) {
+		const AttachmentReference &resolve_reference = subpass.resolve_references[i];
+		uint32_t attachment = resolve_reference.attachment;
+
+		if (attachment != AttachmentReference::UNUSED) {
+			// Vulkan expects the layout to be in color attachment layout, but D3D12 wants resolve destination.
+			DEV_ASSERT(resolve_reference.layout == TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			cmd_buf_info->render_pass_state.attachment_layouts[attachment].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout = TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL;
+		}
+	}
+
+	_render_pass_enhanced_barriers_flush(p_cmd_buffer);
 
 	cmd_buf_info->cmd_list->OMSetRenderTargets(subpass.color_references.size(), rtv_handles, false, dsv_handle.ptr ? &dsv_handle : nullptr);
 }
