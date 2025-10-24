@@ -221,7 +221,7 @@ static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch
 
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
-// This template string must be in sync with the content of 'platform/android/java/lib/res/mipmap-anydpi-v26/icon.xml'.
+// This template string must be in sync with the content of 'platform/android/java/lib/src/main/java/res/mipmap-anydpi-v26/icon.xml'.
 static const String ICON_XML_TEMPLATE =
 		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 		"<adaptive-icon xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
@@ -278,7 +278,7 @@ static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[ICON_DENSITIES_COUN
 static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
-static const char *APK_ASSETS_DIRECTORY = "assets";
+static const char *APK_ASSETS_DIRECTORY = "src/main/assets";
 static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 24; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
