@@ -75,7 +75,6 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
 	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
 	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
-	ClassDB::bind_method(D_METHOD("get_viewport_for_view", "view"), &XRInterface::get_viewport_for_view);
 
 	/** environment blend mode. */
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);

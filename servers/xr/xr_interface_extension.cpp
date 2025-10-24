@@ -50,7 +50,6 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_camera_transform);
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
-	GDVIRTUAL_BIND(_get_viewport_for_view, "view");
 	GDVIRTUAL_BIND(_get_vrs_texture);
 	GDVIRTUAL_BIND(_get_vrs_texture_format);
 
@@ -239,12 +238,6 @@ Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double
 	}
 
 	return Projection();
-}
-
-Rect2i XRInterfaceExtension::get_viewport_for_view(uint32_t p_view) {
-	Rect2i rect;
-	GDVIRTUAL_CALL(_get_viewport_for_view, p_view, rect);
-	return rect;
 }
 
 RID XRInterfaceExtension::get_vrs_texture() {

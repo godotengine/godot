@@ -142,9 +142,6 @@ public:
 	// These methods are called from the rendering thread.
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each view transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
-	virtual Rect2i get_viewport_for_view(uint32_t p_view) {
-		return Rect2i();
-	} /* get each view viewport rect, used for visionOS VR */
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */

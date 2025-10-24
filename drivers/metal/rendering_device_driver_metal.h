@@ -415,6 +415,7 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
+	virtual bool is_rasterization_rate_map_supported() override final;
 	virtual String get_api_name() const override final { return "Metal"; }
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;

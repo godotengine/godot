@@ -239,7 +239,6 @@ struct MDSubpass {
 	LocalVector<RDD::AttachmentReference> color_references;
 	RDD::AttachmentReference depth_stencil_reference;
 	LocalVector<RDD::AttachmentReference> resolve_references;
-	id<MTLRasterizationRateMap> rasterization_rate_map = nil;
 
 	MTLFmtCaps getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const;
 };
@@ -918,6 +917,7 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDFrameBuffer {
 
 public:
 	Size2i size;
+	id<MTLRasterizationRateMap> rasterization_rate_map = nil;
 	MDFrameBuffer(Vector<MTL::Texture> p_textures, Size2i p_size) :
 			textures(p_textures), size(p_size) {}
 	MDFrameBuffer() {}

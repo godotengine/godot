@@ -603,7 +603,6 @@ public:
 		LocalVector<uint32_t> preserve_attachments;
 		AttachmentReference fragment_shading_rate_reference;
 		Size2i fragment_shading_rate_texel_size;
-		void *rasterization_rate_map = nullptr;
 	};
 
 	struct SubpassDependency {
@@ -824,6 +823,7 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
+	virtual bool is_rasterization_rate_map_supported() { return false; }
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;

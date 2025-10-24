@@ -1074,11 +1074,20 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 
 	Vector<MTL::Texture> textures;
 	textures.resize(p_attachments.size());
+	id<MTLRasterizationRateMap> rasterization_rate_map = nil;
 
 	for (uint32_t i = 0; i < p_attachments.size(); i += 1) {
 		MDAttachment const &a = pass->attachments[i];
-		id<MTLTexture> tex = rid::get(p_attachments[i]);
-		if (tex == nil) {
+		id attacment = rid::get(p_attachments[i]);
+		id<MTLTexture> tex = nil;
+		bool is_rasterization_rate_map = false;
+		if ([attacment conformsToProtocol:@protocol(MTLRasterizationRateMap)]) {
+			rasterization_rate_map = attacment;
+			is_rasterization_rate_map = true;
+		} else if ([attacment conformsToProtocol:@protocol(MTLTexture)]) {
+			tex = attacment;
+		}
+		if (tex == nil && !is_rasterization_rate_map) {
 #if DEV_ENABLED
 			WARN_PRINT("Invalid texture for attachment " + itos(i));
 #endif
@@ -1094,6 +1103,7 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 	}
 
 	MDFrameBuffer *fb = new MDFrameBuffer(textures, Size2i(p_width, p_height));
+	fb->rasterization_rate_map = rasterization_rate_map;
 	return FramebufferID(fb);
 }
 
@@ -1833,7 +1843,6 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
-		subpass.rasterization_rate_map = (__bridge id<MTLRasterizationRateMap>)p_subpasses[i].rasterization_rate_map;
 	}
 
 	static const MTLLoadAction LOAD_ACTIONS[] = {
@@ -2778,6 +2787,13 @@ const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverMetal::get_frag
 
 const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverMetal::get_fragment_density_map_capabilities() {
 	return fdm_capabilities;
+}
+
+bool RenderingDeviceDriverMetal::is_rasterization_rate_map_supported() {
+	// layers more than 2 should be rarely used.
+	// This feature is introduced in the process of adding visionOS support, used when rendering stereo contents.
+	return [device supportsRasterizationRateMapWithLayerCount:1] &&
+			[device supportsRasterizationRateMapWithLayerCount:2];
 }
 
 String RenderingDeviceDriverMetal::get_api_version() const {

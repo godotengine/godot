@@ -427,6 +427,7 @@ public:
 		VRS_METHOD_NONE,
 		VRS_METHOD_FRAGMENT_SHADING_RATE,
 		VRS_METHOD_FRAGMENT_DENSITY_MAP,
+		VRS_METHOD_RASTERIZATION_RATE_MAP,
 	};
 
 private:
@@ -474,8 +475,6 @@ public:
 		Vector<int32_t> resolve_attachments;
 		Vector<int32_t> preserve_attachments;
 		int32_t depth_attachment = ATTACHMENT_UNUSED;
-		// For visionOS foveation support in immersive mode
-		void *rasterization_rate_map = nullptr;
 	};
 
 	typedef int64_t FramebufferFormatID;
@@ -1331,10 +1330,8 @@ public:
 	void draw_list_draw_indirect(DrawListID p_list, bool p_use_indices, RID p_buffer, uint32_t p_offset = 0, uint32_t p_draw_count = 1, uint32_t p_stride = 0);
 
 	void draw_list_set_viewport(DrawListID p_list, const Rect2i &p_rect);
-	void draw_list_set_viewports(DrawListID p_list, VectorView<Rect2i> p_rects);
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
-	void draw_list_set_empty_scissor(DrawListID p_list);
 
 	uint32_t draw_list_get_current_pass();
 	DrawListID draw_list_switch_to_next_pass();

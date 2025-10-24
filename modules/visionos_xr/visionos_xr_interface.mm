@@ -288,7 +288,7 @@ Projection VisionOSXRInterface::get_projection_for_view(uint32_t p_view, double 
 	return eye_projection;
 }
 
-Rect2i VisionOSXRInterface::get_viewport_for_view(uint32_t p_view) {
+Rect2i VisionOSXRInterface::get_render_region() {
 	_THREAD_SAFE_METHOD_
 
 	Rect2 viewport_rect;
@@ -296,10 +296,9 @@ Rect2i VisionOSXRInterface::get_viewport_for_view(uint32_t p_view) {
 		return viewport_rect;
 	}
 
-	ERR_FAIL_COND_V(p_view > get_view_count(), viewport_rect);
 	ERR_FAIL_NULL_V_MSG(current_drawable, viewport_rect, "Current drawable is nil, probably pre_render() has not been called");
 
-	cp_view_t view = cp_drawable_get_view(current_drawable, p_view);
+	cp_view_t view = cp_drawable_get_view(current_drawable, 0);
 	cp_view_texture_map_t view_texture_map = cp_view_get_view_texture_map(view);
 	MTLViewport viewport = cp_view_texture_map_get_viewport(view_texture_map);
 	viewport_rect = MTL::rect_from_mtl_viewport(viewport);
@@ -498,9 +497,19 @@ RID VisionOSXRInterface::get_vrs_texture() {
 	size_t count = cp_drawable_get_rasterization_rate_map_count(current_drawable);
 	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found");
 	id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(current_drawable, 0);
+	MTLSize logical_size = rasterization_rate_map.screenSize;
 
 	RD::Texture texture;
 	texture.driver_id = RDD::TextureID((__bridge void *)rasterization_rate_map);
+	texture.type = RDD::TEXTURE_TYPE_2D_ARRAY;
+	texture.usage_flags = RDD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
+	texture.format = RDD::DATA_FORMAT_R8_UINT;
+	texture.samples = RDD::TEXTURE_SAMPLES_1;
+	texture.width = logical_size.width;
+	texture.height = logical_size.height;
+	texture.depth = 1;
+	texture.mipmaps = 1;
+	texture.layers = rasterization_rate_map.layerCount;
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 
 	current_rasterization_rate_map = texture;
