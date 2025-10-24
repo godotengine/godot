@@ -186,7 +186,7 @@
 			<param index="2" name="icon" type="Texture2D" default="null" />
 			<param index="3" name="selectable" type="bool" default="true" />
 			<description>
-				Inserts an item at the specified index in the item list with the specified text.
+				Inserts an item with the specified text at the specified index in the item list.
 				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
 				If [param selectable] is [code]true[/code], the list item will be selectable.
 			</description>
