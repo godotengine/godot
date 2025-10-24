@@ -178,7 +178,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 		while (todo) {
 			int to_mix = MIN(todo, int(INTERNAL_BUFFER_LEN));
-			int mixed = s.stream_playback->mix(internal_buffer, s.pitch_scale, to_mix);
+			int mixed = s.stream_playback->mix(internal_buffer, p_rate_scale * s.pitch_scale, to_mix);
 
 			for (int i = 0; i < to_mix; i++) {
 				p_buffer[offset + i] += internal_buffer[i] * volume;

@@ -6,6 +6,7 @@
 	<description>
 		Object that holds the project-independent editor settings. These settings are generally visible in the [b]Editor &gt; Editor Settings[/b] menu.
 		Property names use slash delimiters to distinguish sections. Setting values can be of any [Variant] type. It's recommended to use [code]snake_case[/code] for editor settings to be consistent with the Godot editor itself.
+		Editor settings are saved automatically when changed.
 		Accessing the settings can be done using the following methods, such as:
 		[codeblocks]
 		[gdscript]
@@ -798,6 +799,9 @@
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
+		<member name="filesystem/quick_open_dialog/instant_preview" type="bool" setter="" getter="">
+			If [code]true[/code], highlighting a resource will preview it quickly without confirming the selection or closing the dialog.
+		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
 			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
 		</member>
@@ -872,6 +876,9 @@
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks.
 		</member>
+		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
+		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
@@ -923,6 +930,11 @@
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
+		</member>
+		<member name="interface/editor/main_font_custom_opentype_features" type="String" setter="" getter="">
+			List of custom OpenType features to use, if supported by the currently configured main font. Check what OpenType features are supported by your font first.
+			The string should follow the OpenType specification, e.g. [code]ss01,tnum,calt=false[/code]. Microsoft's documentation contains a list of [url=https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist]all registered features[/url].
+			[b]Note:[/b] The default editor main font ([url=https://rsms.me/inter]Inter[/url]) has custom OpenType features in its font file, with [code]ss04[/code] and [code]tnum[/code] enabled and [code]calt[/code] disabled by default. Supported features can be found at its website.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.

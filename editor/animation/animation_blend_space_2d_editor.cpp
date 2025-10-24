@@ -209,6 +209,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				}
 			}
 		}
+
+		// If no point or triangle was selected, select host BlendSpace2D node.
+		if (selected_point == -1 && selected_triangle == -1) {
+			EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
+		}
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -733,7 +738,12 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->add_do_method(this, "_update_space");
 		undo_redo->add_undo_method(this, "_update_space");
 		undo_redo->commit_action();
+
+		// Return selection to host BlendSpace2D node.
+		EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
+
 		updating = false;
+		_update_tool_erase();
 
 		blend_space_draw->queue_redraw();
 	} else if (selected_triangle != -1) {
@@ -745,7 +755,11 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->add_do_method(this, "_update_space");
 		undo_redo->add_undo_method(this, "_update_space");
 		undo_redo->commit_action();
+
+		selected_triangle = -1;
+
 		updating = false;
+		_update_tool_erase();
 
 		blend_space_draw->queue_redraw();
 	}

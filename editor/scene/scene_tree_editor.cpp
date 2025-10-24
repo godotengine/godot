@@ -1362,6 +1362,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			// Wait for the node to be inspected before triggering the unfolding.
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1872,6 +1874,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Dictionary drag_data;
 	drag_data["type"] = "nodes";
 	drag_data["nodes"] = objs;
+	drag_data["scene_root"] = get_tree()->get_edited_scene_root();
 
 	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 	emit_signal(SNAME("nodes_dragged"));
@@ -1890,6 +1893,11 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 	Dictionary d = p_data;
 	if (!d.has("type")) {
+		return false;
+	}
+
+	Object *data_root = d.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
 		return false;
 	}
 

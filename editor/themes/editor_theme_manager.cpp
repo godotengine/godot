@@ -287,8 +287,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 			// Please use alphabetical order if you're adding a new theme here.
 			if (config.preset == "Breeze Dark") {
-				preset_accent_color = Color(0.26, 0.76, 1.00);
-				preset_base_color = Color(0.24, 0.26, 0.28);
+				preset_accent_color = Color(0.239, 0.682, 0.914);
+				preset_base_color = Color(0.1255, 0.1373, 0.149);
 				preset_contrast = config.default_contrast;
 			} else if (config.preset == "Godot 2") {
 				preset_accent_color = Color(0.53, 0.67, 0.89);
@@ -980,6 +980,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 			p_theme->set_constant("scroll_speed", "Tree", 12);
 			p_theme->set_constant("outline_size", "Tree", 0);
@@ -1203,6 +1204,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("outline_size", "TabContainer", 0);
 		p_theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 		p_theme->set_constant("outline_size", "TabBar", 0);
+		p_theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 	}
 
 	// Separators.

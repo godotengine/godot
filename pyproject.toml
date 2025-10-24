@@ -60,7 +60,7 @@ skip = [
 	"core/string/locales.h",
 	"DONORS.md",
 	"editor/project_converter_3_to_4.cpp",
-	"platform/android/java/lib/src/com/*",
+	"platform/android/java/lib/src/main/java/com/*",
 	"platform/web/package-lock.json",
 ]
 ignore-words-list = [

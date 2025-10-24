@@ -123,12 +123,18 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
 		Array array = p_mesh->surface_get_arrays(surface_i);
 		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		const String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
 		String mat_name;
 		if (mat.is_valid()) {
 			mat_name = mat->get_name();
+			if (mat_name.is_empty()) {
+				mat_name = surface_name;
+			}
 		} else {
+			mat_name = surface_name;
 			// Assign default material when no material is assigned.
 			mat.instantiate();
+			mat->set_name(mat_name);
 		}
 		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
@@ -854,30 +860,8 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> p_state) {
 	Array buffers;
 	for (GLTFBufferViewIndex i = 0; i < p_state->buffer_views.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[i];
-
-		d["buffer"] = buffer_view->buffer;
-		d["byteLength"] = buffer_view->byte_length;
-
-		if (buffer_view->byte_offset > 0) {
-			d["byteOffset"] = buffer_view->byte_offset;
-		}
-
-		if (buffer_view->byte_stride != -1) {
-			d["byteStride"] = buffer_view->byte_stride;
-		}
-
-		if (buffer_view->indices) {
-			d["target"] = GLTFDocument::ELEMENT_ARRAY_BUFFER;
-		} else if (buffer_view->vertex_attributes) {
-			d["target"] = GLTFDocument::ARRAY_BUFFER;
-		}
-
-		ERR_FAIL_COND_V(!d.has("buffer"), ERR_INVALID_DATA);
-		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_INVALID_DATA);
-		buffers.push_back(d);
+		const Ref<GLTFBufferView> buffer_view = p_state->buffer_views[i];
+		buffers.push_back(buffer_view->to_dictionary());
 	}
 	print_verbose("glTF: Total buffer views: " + itos(p_state->buffer_views.size()));
 	if (!buffers.size()) {
@@ -893,33 +877,11 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 	}
 	const Array &buffers = p_state->json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
-		const Dictionary &d = buffers[i];
-
-		Ref<GLTFBufferView> buffer_view;
-		buffer_view.instantiate();
-
-		ERR_FAIL_COND_V(!d.has("buffer"), ERR_PARSE_ERROR);
-		buffer_view->buffer = d["buffer"];
-		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_PARSE_ERROR);
-		buffer_view->byte_length = d["byteLength"];
-
-		if (d.has("byteOffset")) {
-			buffer_view->byte_offset = d["byteOffset"];
-		}
-
-		if (d.has("byteStride")) {
-			buffer_view->byte_stride = d["byteStride"];
-			if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
-				ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view at index " + itos(i) + " while importing file '" + p_state->filename + "'. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
-			}
-		}
-
-		if (d.has("target")) {
-			const int target = d["target"];
-			buffer_view->indices = target == GLTFDocument::ELEMENT_ARRAY_BUFFER;
-			buffer_view->vertex_attributes = target == GLTFDocument::ARRAY_BUFFER;
-		}
-
+		const Dictionary &dict = buffers[i];
+		// Both "buffer" and "byteLength" are required by the spec.
+		ERR_FAIL_COND_V(!dict.has("buffer"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("byteLength"), ERR_PARSE_ERROR);
+		Ref<GLTFBufferView> buffer_view = GLTFBufferView::from_dictionary(dict);
 		p_state->buffer_views.push_back(buffer_view);
 	}
 
@@ -931,49 +893,8 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 	Array accessors;
 	for (GLTFAccessorIndex i = 0; i < p_state->accessors.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFAccessor> accessor = p_state->accessors[i];
-		d["componentType"] = accessor->component_type;
-		d["count"] = accessor->count;
-		d["type"] = _get_accessor_type_name(accessor->accessor_type);
-		d["normalized"] = accessor->normalized;
-		d["max"] = accessor->max;
-		d["min"] = accessor->min;
-		if (accessor->buffer_view != -1) {
-			// bufferView may be omitted to zero-initialize the buffer. When this happens, byteOffset MUST also be omitted.
-			if (accessor->byte_offset > 0) {
-				d["byteOffset"] = accessor->byte_offset;
-			}
-			d["bufferView"] = accessor->buffer_view;
-		}
-
-		if (accessor->sparse_count > 0) {
-			Dictionary s;
-			s["count"] = accessor->sparse_count;
-
-			Dictionary si;
-			si["bufferView"] = accessor->sparse_indices_buffer_view;
-			si["componentType"] = accessor->sparse_indices_component_type;
-			if (accessor->sparse_indices_byte_offset > 0) {
-				si["byteOffset"] = accessor->sparse_indices_byte_offset;
-			}
-			ERR_FAIL_COND_V(!si.has("bufferView") || !si.has("componentType"), ERR_PARSE_ERROR);
-			s["indices"] = si;
-
-			Dictionary sv;
-			sv["bufferView"] = accessor->sparse_values_buffer_view;
-			if (accessor->sparse_values_byte_offset > 0) {
-				sv["byteOffset"] = accessor->sparse_values_byte_offset;
-			}
-			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
-			s["values"] = sv;
-
-			ERR_FAIL_COND_V(!s.has("count") || !s.has("indices") || !s.has("values"), ERR_PARSE_ERROR);
-			d["sparse"] = s;
-		}
-
-		accessors.push_back(d);
+		const Ref<GLTFAccessor> accessor = p_state->accessors[i];
+		accessors.push_back(accessor->to_dictionary());
 	}
 
 	if (!accessors.size()) {
@@ -1046,68 +967,12 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 	}
 	const Array &accessors = p_state->json["accessors"];
 	for (GLTFAccessorIndex i = 0; i < accessors.size(); i++) {
-		const Dictionary &d = accessors[i];
-
-		Ref<GLTFAccessor> accessor;
-		accessor.instantiate();
-
-		ERR_FAIL_COND_V(!d.has("componentType"), ERR_PARSE_ERROR);
-		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)d["componentType"];
-		ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
-		accessor->count = d["count"];
-		if (accessor->count <= 0) {
-			ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor at index " + itos(i) + " while importing file '" + p_state->filename + "'. Accessor count must be greater than 0.");
-		}
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		accessor->accessor_type = _get_accessor_type_from_str(d["type"]);
-
-		if (d.has("bufferView")) {
-			accessor->buffer_view = d["bufferView"]; //optional because it may be sparse...
-		}
-
-		if (d.has("byteOffset")) {
-			accessor->byte_offset = d["byteOffset"];
-		}
-
-		if (d.has("normalized")) {
-			accessor->normalized = d["normalized"];
-		}
-
-		if (d.has("max")) {
-			accessor->max = d["max"];
-		}
-
-		if (d.has("min")) {
-			accessor->min = d["min"];
-		}
-
-		if (d.has("sparse")) {
-			const Dictionary &s = d["sparse"];
-
-			ERR_FAIL_COND_V(!s.has("count"), ERR_PARSE_ERROR);
-			accessor->sparse_count = s["count"];
-			ERR_FAIL_COND_V(!s.has("indices"), ERR_PARSE_ERROR);
-			const Dictionary &si = s["indices"];
-
-			ERR_FAIL_COND_V(!si.has("bufferView"), ERR_PARSE_ERROR);
-			accessor->sparse_indices_buffer_view = si["bufferView"];
-			ERR_FAIL_COND_V(!si.has("componentType"), ERR_PARSE_ERROR);
-			accessor->sparse_indices_component_type = (GLTFAccessor::GLTFComponentType)(int32_t)si["componentType"];
-
-			if (si.has("byteOffset")) {
-				accessor->sparse_indices_byte_offset = si["byteOffset"];
-			}
-
-			ERR_FAIL_COND_V(!s.has("values"), ERR_PARSE_ERROR);
-			const Dictionary &sv = s["values"];
-
-			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
-			accessor->sparse_values_buffer_view = sv["bufferView"];
-			if (sv.has("byteOffset")) {
-				accessor->sparse_values_byte_offset = sv["byteOffset"];
-			}
-		}
-
+		const Dictionary &dict = accessors[i];
+		// All of these fields are required by the spec.
+		ERR_FAIL_COND_V(!dict.has("componentType"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("count"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("type"), ERR_PARSE_ERROR);
+		Ref<GLTFAccessor> accessor = GLTFAccessor::from_dictionary(dict);
 		p_state->accessors.push_back(accessor);
 	}
 
@@ -3931,6 +3796,10 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
+	if (!p_image->get_name().is_empty()) {
+		image_dict["name"] = p_image->get_name();
+	}
+
 	if (p_state->filename.to_lower().ends_with("gltf")) {
 		String relative_texture_dir = "textures";
 		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
@@ -4490,6 +4359,16 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+static inline void _set_material_texture_name(const Ref<Texture2D> &p_texture, const String &p_path, const String &p_mat_name, const String &p_suffix) {
+	if (p_texture->get_name().is_empty()) {
+		if (p_path.is_empty()) {
+			p_texture->set_name(p_mat_name + p_suffix);
+		} else {
+			p_texture->set_name(p_path.get_file().get_basename());
+		}
+	}
+}
+
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 	Array materials;
 	for (int32_t i = 0; i < p_state->materials.size(); i++) {
@@ -4499,8 +4378,15 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			materials.push_back(mat_dict);
 			continue;
 		}
-		if (!material->get_name().is_empty()) {
-			mat_dict["name"] = _gen_unique_name(p_state, material->get_name());
+		String mat_name = material->get_name();
+		if (mat_name.is_empty()) {
+			const String &mat_path = material->get_path();
+			if (!mat_path.is_empty() && !mat_path.contains("::")) {
+				mat_name = mat_path.get_file().get_basename();
+			}
+		}
+		if (!mat_name.is_empty()) {
+			mat_dict["name"] = _gen_unique_name(p_state, mat_name);
 		}
 
 		Ref<BaseMaterial3D> base_material = material;
@@ -4521,7 +4407,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 
 			if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-				albedo_texture->set_name(material->get_name() + "_albedo");
+				_set_material_texture_name(albedo_texture, albedo_texture->get_path(), mat_name, "_albedo");
 				gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			if (gltf_texture_index != -1) {
@@ -4556,6 +4442,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				int32_t height = 0;
 				int32_t width = 0;
 				Ref<Image> ao_image;
+				HashSet<String> common_paths; // For setting name
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
@@ -4566,6 +4453,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (ao_image->is_compressed()) {
 						ao_image->decompress();
+					}
+					if (!ao_texture->get_path().is_empty()) {
+						common_paths.insert(ao_texture->get_path());
 					}
 				}
 				Ref<Image> roughness_image;
@@ -4580,6 +4470,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					if (roughness_image->is_compressed()) {
 						roughness_image->decompress();
 					}
+					if (!roughness_texture->get_path().is_empty()) {
+						common_paths.insert(roughness_texture->get_path());
+					}
 				}
 				Ref<Image> metallness_image;
 				if (has_metalness) {
@@ -4592,6 +4485,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (metallness_image->is_compressed()) {
 						metallness_image->decompress();
+					}
+					if (!metallic_texture->get_path().is_empty()) {
+						common_paths.insert(metallic_texture->get_path());
 					}
 				}
 				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
@@ -4652,7 +4548,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				orm_texture->set_image(orm_image);
 				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
-					orm_texture->set_name(material->get_name() + "_orm");
+					// If they all share the same path, use it for the name.
+					const String path = common_paths.size() == 1 ? *common_paths.begin() : String();
+					_set_material_texture_name(orm_texture, path, mat_name, "_orm");
 					orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
 				if (has_ao) {
@@ -4677,9 +4575,11 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
+			String path;
 			{
 				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
+					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
 					if (img.is_valid()) {
@@ -4706,7 +4606,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
-				tex->set_name(material->get_name() + "_normal");
+				_set_material_texture_name(tex, path, mat_name, "_normal");
 				gltf_texture_index = _set_texture(p_state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			nt["scale"] = base_material->get_normal_scale();
@@ -4727,7 +4627,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
-				emission_texture->set_name(material->get_name() + "_emission");
+				_set_material_texture_name(emission_texture, emission_texture->get_path(), mat_name, "_emission");
 				gltf_texture_index = _set_texture(p_state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
@@ -6089,12 +5989,14 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	gltf_mesh.instantiate();
 	gltf_mesh->set_mesh(mesh);
 	gltf_mesh->set_original_name(csg->get_name());
+	const String unique_name = _gen_unique_name(p_state, csg->get_name());
+	gltf_mesh->set_name(unique_name);
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
 	p_gltf_node->transform = csg->get_transform();
 	p_gltf_node->set_original_name(csg->get_name());
-	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
+	p_gltf_node->set_name(unique_name);
 #endif // MODULE_CSG_ENABLED
 }
 
@@ -6139,11 +6041,13 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		gltf_mesh.instantiate();
 		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
+		const String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
+		gltf_mesh->set_name(unique_name);
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
 		new_gltf_node->transform = cell_xform * p_grid_map->get_transform();
 		new_gltf_node->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
+		new_gltf_node->set_name(unique_name);
 	}
 #endif // MODULE_GRIDMAP_ENABLED
 }
@@ -6435,6 +6339,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
 	_set_node_tree_owner(current_node, p_scene_root);
 	current_node->set_transform(gltf_node->transform);
+	current_node->set_visible(gltf_node->visible);
 	current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -6905,6 +6810,14 @@ Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTF
 			}
 			// Else, Godot's MeshInstance3D does not expose the blend shape weights as one property.
 			// But that's fine, we handle this case in _parse_animation_pointer instead.
+		} else if (node_prop == "extensions") {
+			ERR_FAIL_COND_V(split.size() < 5, ret);
+			const String &ext_name = split[3];
+			const String &ext_prop = split[4];
+			if (ext_name == "KHR_node_visibility" && ext_prop == "visible") {
+				ret->append_path_to_property(node_path, "visible");
+				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
+			}
 		}
 	} else if (split[0] == "cameras") {
 		const String &camera_prop = split[2];
@@ -7212,7 +7125,7 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			split_json_pointer.append("weights");
 			split_json_pointer.append(weight_index_string);
 		}
-		// Transform properties. Check for all 3D nodes if we haven't resolved the JSON pointer yet.
+		// Transform and visibility properties. Check for all 3D nodes if we haven't resolved the JSON pointer yet.
 		// Note: Do not put this in an `else`, because otherwise this will not be reached.
 		if (split_json_pointer.is_empty() && Object::cast_to<Node3D>(target_object)) {
 			split_json_pointer.append("nodes");
@@ -7234,6 +7147,11 @@ Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTF
 			} else if (target_prop == "global_transform") {
 				split_json_pointer.append("globalMatrix");
 				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			} else if (target_prop == "visible") {
+				split_json_pointer.append("extensions");
+				split_json_pointer.append("KHR_node_visibility");
+				split_json_pointer.append("visible");
+				ret->set_types(Variant::BOOL, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL);
 			} else {
 				split_json_pointer.clear();
 			}
@@ -8286,7 +8204,20 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		if (obj_model_prop.is_valid() && obj_model_prop->has_json_pointers()) {
 			// Insert the property track into the KHR_animation_pointer pointer tracks.
 			GLTFAnimation::Channel<Variant> channel;
-			channel.interpolation = gltf_interpolation;
+			// Animation samplers used with `int` or `bool` Object Model Data Types **MUST** use `STEP` interpolation.
+			// https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer
+			switch (obj_model_prop->get_object_model_type()) {
+				case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL:
+				case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_INT: {
+					channel.interpolation = GLTFAnimation::INTERP_STEP;
+					if (gltf_interpolation != GLTFAnimation::INTERP_STEP) {
+						WARN_PRINT(vformat("glTF export: Animation track %d on property %s is animating an int or bool, so it MUST use STEP interpolation (Godot \"Nearest\"), but the track in the Godot AnimationPlayer is using a different interpolation. Forcing STEP interpolation. Correct this track's interpolation in the source AnimationPlayer to avoid this warning.", track_index, String(track_path)));
+					}
+				} break;
+				default: {
+					channel.interpolation = gltf_interpolation;
+				} break;
+			}
 			channel.times = times;
 			channel.values.resize(anim_key_count);
 			// If using an expression, determine the base instance to pass to the expression.

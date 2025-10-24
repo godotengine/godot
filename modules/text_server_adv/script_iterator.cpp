@@ -61,7 +61,8 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 	}
 
 	int paren_size = PAREN_STACK_DEPTH;
-	ParenStackEntry *paren_stack = static_cast<ParenStackEntry *>(memalloc(paren_size * sizeof(ParenStackEntry)));
+	ParenStackEntry starter_stack[PAREN_STACK_DEPTH];
+	ParenStackEntry *paren_stack = starter_stack;
 
 	int script_start;
 	int script_end = p_start;
@@ -78,7 +79,9 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 			UChar32 n = (script_end + 1 < p_length) ? str[script_end + 1] : 0;
 			UScriptCode sc = uscript_getScript(ch, &err);
 			if (U_FAILURE(err)) {
-				memfree(paren_stack);
+				if (paren_stack != starter_stack) {
+					memfree(paren_stack);
+				}
 				ERR_FAIL_MSG(u_errorName(err));
 			}
 			if (is_emoji(ch, n)) {
@@ -92,7 +95,11 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 					if (unlikely(paren_sp >= paren_size)) {
 						// If the stack is full, allocate more space to handle deeply nested parentheses. This is unlikely to happen with any real text.
 						paren_size += PAREN_STACK_DEPTH;
-						paren_stack = static_cast<ParenStackEntry *>(memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry)));
+						if (paren_stack == starter_stack) {
+							paren_stack = static_cast<ParenStackEntry *>(memalloc(paren_size * sizeof(ParenStackEntry)));
+						} else {
+							paren_stack = static_cast<ParenStackEntry *>(memrealloc(paren_stack, paren_size * sizeof(ParenStackEntry)));
+						}
 					}
 					paren_stack[paren_sp].pair_index = ch;
 					paren_stack[paren_sp].script_code = script_code;
@@ -144,5 +151,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 		script_ranges.push_back(rng);
 	} while (script_end < p_length);
 
-	memfree(paren_stack);
+	if (paren_stack != starter_stack) {
+		memfree(paren_stack);
+	}
 }

@@ -165,6 +165,7 @@ private:
 	Button *button_hist_prev = nullptr;
 	LineEdit *current_path_line_edit = nullptr;
 
+	HBoxContainer *toolbar_hbc = nullptr;
 	HBoxContainer *toolbar2_hbc = nullptr;
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
@@ -181,6 +182,8 @@ private:
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
 	DisplayMode old_display_mode;
+
+	bool horizontal = false;
 
 	PopupMenu *file_list_popup = nullptr;
 	PopupMenu *tree_popup = nullptr;
@@ -252,6 +255,10 @@ private:
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
 	HashSet<String> cached_valid_conversion_targets;
+
+	Vector<String> prev_selection;
+
+	void _update_selection_changed();
 
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);

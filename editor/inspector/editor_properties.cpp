@@ -3027,6 +3027,11 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 		return false;
 	}
 
+	Object *data_root = p_drag_data.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
+		return false;
+	}
+
 	Node *dropped_node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
 	ERR_FAIL_NULL_V(dropped_node, false);
 
@@ -3472,6 +3477,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 	resource_picker->set_base_type(p_base_type);
 	resource_picker->set_resource_owner(p_object);
+	resource_picker->set_property_path(p_path);
 	resource_picker->set_editable(true);
 	resource_picker->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(resource_picker);

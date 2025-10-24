@@ -3164,7 +3164,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_function", TTRC("Go to Function..."), KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::F);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::J);
 
-	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::L);
+	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);

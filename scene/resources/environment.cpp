@@ -1246,7 +1246,7 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Tonemap", "tonemap_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES,AgX"), "set_tonemapper", "get_tonemapper");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "1,16,0.01,or_greater"), "set_tonemap_white", "get_tonemap_white");
 
 	// SSR
@@ -1264,7 +1264,7 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SSR", "ssr_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssr_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssr_enabled", "is_ssr_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssr_max_steps", PROPERTY_HINT_RANGE, "1,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssr_max_steps", PROPERTY_HINT_RANGE, "32,512,1"), "set_ssr_max_steps", "get_ssr_max_steps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_in", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_in", "get_ssr_fade_in");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_fade_out", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_ssr_fade_out", "get_ssr_fade_out");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssr_depth_tolerance", PROPERTY_HINT_RANGE, "0.01,128,0.1"), "set_ssr_depth_tolerance", "get_ssr_depth_tolerance");
@@ -1522,9 +1522,9 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Adjustments", "adjustment_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjustment_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_adjustment_enabled", "is_adjustment_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_brightness", "get_adjustment_brightness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_brightness", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_adjustment_brightness", "get_adjustment_brightness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.75,1.25,0.005,or_less,or_greater"), "set_adjustment_contrast", "get_adjustment_contrast");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_less,or_greater"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
 
 	// Constants

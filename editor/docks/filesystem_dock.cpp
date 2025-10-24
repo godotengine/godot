@@ -489,7 +489,11 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				button_toggle_display_mode->set_button_icon(get_editor_theme_icon(SNAME("Panels1")));
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				toolbar2_hbc->show();
+				if (horizontal) {
+					toolbar2_hbc->hide();
+				} else {
+					toolbar2_hbc->show();
+				}
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
@@ -2670,6 +2674,16 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_COPY_UID;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_key)) {
 		return FILE_MENU_REMOVE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_folder", p_key)) {
+		return FILE_MENU_NEW_FOLDER;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_scene", p_key)) {
+		return FILE_MENU_NEW_SCENE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_script", p_key)) {
+		return FILE_MENU_NEW_SCRIPT;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_resource", p_key)) {
+		return FILE_MENU_NEW_RESOURCE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_textfile", p_key)) {
+		return FILE_MENU_NEW_TEXTFILE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
 		return FILE_MENU_RENAME;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
@@ -3335,10 +3349,15 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->set_item_icon(p_popup->get_item_index(FILE_MENU_NEW), get_editor_theme_icon(SNAME("Add")));
 
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("Folder..."), FILE_MENU_NEW_FOLDER);
+		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Scene..."), FILE_MENU_NEW_SCENE);
+		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
+		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
+		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
+		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 
 		const PackedStringArray folder_path = { p_paths[0].get_base_dir() };
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path);
@@ -3559,10 +3578,16 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->clear();
 	tree_popup->reset_size();
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
+	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
+	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
+	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
+	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
+
 	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
@@ -3584,6 +3609,7 @@ void FileSystemDock::_tree_empty_selected() {
 	if (file_list_vb->is_visible()) {
 		_update_file_list(false);
 	}
+	_update_selection_changed();
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3636,10 +3662,16 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->reset_size();
 
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTRC("New Folder..."), FILE_MENU_NEW_FOLDER);
+	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_folder"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("New Scene..."), FILE_MENU_NEW_SCENE);
+	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
+	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
+	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
+	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
+
 	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
 	file_list_popup->add_separator();
@@ -3668,6 +3700,16 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
 	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
+}
+
+void FileSystemDock::_update_selection_changed() {
+	Vector<String> selection;
+	selection.append_array(_tree_get_selected());
+	selection.append_array(_file_list_get_selected());
+	if (prev_selection != selection) {
+		prev_selection = selection;
+		emit_signal(SNAME("selection_changed"));
+	}
 }
 
 void FileSystemDock::_tree_mouse_exited() {
@@ -3877,6 +3919,8 @@ void FileSystemDock::_update_import_dock() {
 		return;
 	}
 
+	_update_selection_changed();
+
 	// List selected.
 	Vector<String> selected;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
@@ -4019,12 +4063,14 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
-	bool horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
+	horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
 	if (button_dock_placement->is_visible() == horizontal) {
 		return;
 	}
 
 	if (horizontal) {
+		path_hb->reparent(toolbar_hbc, false);
+		toolbar_hbc->move_child(path_hb, 2);
 		set_meta("_dock_display_mode", get_display_mode());
 		set_meta("_dock_file_display_mode", get_file_list_display_mode());
 
@@ -4035,6 +4081,8 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	} else {
+		path_hb->reparent(file_list_vb);
+		file_list_vb->move_child(path_hb, 0);
 		set_meta("_bottom_display_mode", get_display_mode());
 		set_meta("_bottom_file_display_mode", get_file_list_display_mode());
 
@@ -4130,6 +4178,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 	ADD_SIGNAL(MethodInfo("folder_color_changed"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
@@ -4150,6 +4199,11 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTRC("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
+	ED_SHORTCUT("filesystem_dock/new_folder", TTRC("New Folder..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_scene", TTRC("New Scene..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_script", TTRC("New Script..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_resource", TTRC("New Resource..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_textfile", TTRC("New TextFile..."), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
@@ -4180,7 +4234,7 @@ FileSystemDock::FileSystemDock() {
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	main_vb->add_child(top_vbc);
 
-	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
+	toolbar_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar_hbc);
 
 	HBoxContainer *nav_hbc = memnew(HBoxContainer);
@@ -4276,6 +4330,7 @@ FileSystemDock::FileSystemDock() {
 	split_box->add_child(file_list_vb);
 
 	path_hb = memnew(HBoxContainer);
+	path_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	file_list_vb->add_child(path_hb);
 
 	file_list_search_box = memnew(LineEdit);

@@ -274,13 +274,13 @@ Patches:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
+- `Inter*.woff2`:
+  * Upstream: https://github.com/rsms/inter
+  * Version: v4.1 (e3a3d4c57d5ecc01453a575621882a384c1995a3, 2024)
+  * License: OFL-1.1
 - `JetBrainsMono_Regular.woff2`:
   * Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
-  * License: OFL-1.1
-- `NotoSans*.woff2`:
-  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
-  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
   * License: OFL-1.1
 - `NotoSansBengali*.woff2`:
   * Upstream: https://github.com/notofonts/bengali
@@ -654,7 +654,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
+- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -664,7 +664,7 @@ File extracted from upstream release tarball:
 - From `library/` to `thirdparty/mbedtls/library/`:
   - All `.c` and `.h` files
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
-  `lms.c`, `bignum_core_invasive.h`
+    `lms.c`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core

@@ -472,8 +472,7 @@ void EditorNode::_update_from_settings() {
 	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
 	RS::get_singleton()->environment_set_ssil_quality(RS::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
 	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
-	RS::get_singleton()->environment_set_ssr_roughness_quality(ssr_roughness_quality);
+	RS::get_singleton()->environment_set_ssr_half_size(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size"));
 	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
 	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
@@ -937,6 +936,12 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			// Remember the selected locale to preview node translations.
+			const String preview_locale = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "preview_locale", String());
+			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->get_loaded_locales().has(preview_locale)) {
+				set_preview_locale(preview_locale);
+			}
+
 			if (Engine::get_singleton()->is_recovery_mode_hint()) {
 				EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
 			}
@@ -1014,6 +1019,11 @@ void EditorNode::_notification(int p_what) {
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
+				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
@@ -2673,7 +2683,7 @@ void EditorNode::push_node_item(Node *p_node) {
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
 	if (!p_object) {
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
 		hide_unused_editors();
@@ -2794,7 +2804,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	if (!current_obj) {
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
 		EditorDebuggerNode::get_singleton()->clear_remote_tree_selection();
 		hide_unused_editors();
@@ -2828,7 +2838,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		if (!p_skip_inspector_update) {
 			InspectorDock::get_inspector_singleton()->edit(current_res);
 			SceneTreeDock::get_singleton()->set_selected(nullptr);
-			NodeDock::get_singleton()->set_node(nullptr);
+			NodeDock::get_singleton()->set_object(current_res);
 			InspectorDock::get_singleton()->update(nullptr);
 			EditorDebuggerNode::get_singleton()->clear_remote_tree_selection();
 			ImportDock::get_singleton()->set_edit_path(current_res->get_path());
@@ -2858,7 +2868,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 		InspectorDock::get_inspector_singleton()->edit(current_node);
 		if (current_node->is_inside_tree()) {
-			NodeDock::get_singleton()->set_node(current_node);
+			NodeDock::get_singleton()->set_object(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
@@ -2870,7 +2880,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				}
 			}
 		} else {
-			NodeDock::get_singleton()->set_node(nullptr);
+			NodeDock::get_singleton()->set_object(nullptr);
 			SceneTreeDock::get_singleton()->set_selected(nullptr);
 			InspectorDock::get_singleton()->update(nullptr);
 		}
@@ -2918,7 +2928,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		}
 
 		InspectorDock::get_inspector_singleton()->edit(current_obj);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(selected_node);
 		SceneTreeDock::get_singleton()->set_selection(multi_nodes);
 		InspectorDock::get_singleton()->update(nullptr);
@@ -3532,7 +3542,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			about->popup_centered(Size2(780, 500) * EDSCALE);
 		} break;
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
-			OS::get_singleton()->shell_open("https://fund.godotengine.org");
+			OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=help_menu");
 		} break;
 	}
 }
@@ -4216,6 +4226,8 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 		main_domain->set_enabled(true);
 		main_domain->set_locale_override(p_locale);
 	}
+
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "preview_locale", p_locale);
 
 	_translation_resources_changed();
 }
@@ -7140,6 +7152,13 @@ bool EditorNode::call_build() {
 	}
 
 	return builds_successful;
+}
+
+void EditorNode::call_run_scene(const String &p_scene, Vector<String> &r_args) {
+	for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+		EditorPlugin *plugin = editor_data.get_editor_plugin(i);
+		plugin->run_scene(p_scene, r_args);
+	}
 }
 
 void EditorNode::_inherit_imported(const String &p_action) {

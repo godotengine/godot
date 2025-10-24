@@ -43,6 +43,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -599,6 +600,12 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				action["events"] = array;
 				E.value.variant = action;
 			}
+		}
+	} else if (p_from_version <= 6) {
+		// Check if we still have legacy boot splash (removed in 4.6), map it to new project setting, then remove legacy setting.
+		if (has_setting("application/boot_splash/fullsize")) {
+			set_setting("application/boot_splash/stretch_mode", RenderingServer::map_scaling_option_to_stretch_mode(get_setting("application/boot_splash/fullsize")));
+			set_setting("application/boot_splash/fullsize", Variant());
 		}
 	}
 #endif // DISABLE_DEPRECATED
@@ -1706,7 +1713,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
-	GLOBAL_DEF("gui/common/always_show_focus_state", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Control Supports Keyboard Input,Always"), 1);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);

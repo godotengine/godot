@@ -62,11 +62,16 @@ public:
 		last_perf_time = pt;
 
 		Array custom_monitor_names = performance->call("get_custom_monitor_names");
+		Array custom_monitor_types = performance->call("get_custom_monitor_types");
+
+		Array custom_monitor_data;
+		custom_monitor_data.push_back(custom_monitor_names);
+		custom_monitor_data.push_back(custom_monitor_types);
 
 		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
 		if (monitor_modification_time > last_monitor_modification_time) {
 			last_monitor_modification_time = monitor_modification_time;
-			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_data);
 		}
 
 		int max = performance->get("MONITOR_MAX");

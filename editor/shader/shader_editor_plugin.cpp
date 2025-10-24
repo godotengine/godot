@@ -151,11 +151,8 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			}
 		}
 		es.shader_inc = Ref<ShaderInclude>(si);
-		TextShaderEditor *text_shader = memnew(TextShaderEditor);
-		text_shader->get_code_editor()->set_toggle_list_control(shader_list);
-		es.shader_editor = text_shader;
+		es.shader_editor = memnew(TextShaderEditor);
 		es.shader_editor->edit_shader_include(si);
-		shader_tabs->add_child(es.shader_editor);
 	} else {
 		Shader *s = Object::cast_to<Shader>(p_object);
 		for (uint32_t i = 0; i < edited_shaders.size(); i++) {
@@ -169,15 +166,10 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		es.shader = Ref<Shader>(s);
 		Ref<VisualShader> vs = es.shader;
 		if (vs.is_valid()) {
-			VisualShaderEditor *vs_editor = memnew(VisualShaderEditor);
-			vs_editor->set_toggle_list_control(shader_list);
-			es.shader_editor = vs_editor;
+			es.shader_editor = memnew(VisualShaderEditor);
 		} else {
-			TextShaderEditor *text_shader = memnew(TextShaderEditor);
-			text_shader->get_code_editor()->set_toggle_list_control(shader_list);
-			es.shader_editor = text_shader;
+			es.shader_editor = memnew(TextShaderEditor);
 		}
-		shader_tabs->add_child(es.shader_editor);
 		es.shader_editor->edit_shader(es.shader);
 	}
 
@@ -192,6 +184,9 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		}
 	}
 
+	// `set_toggle_list_control` must be called before adding the editor to the scene tree.
+	es.shader_editor->set_toggle_list_control(shader_list);
+	shader_tabs->add_child(es.shader_editor);
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
 	edited_shaders.push_back(es);
 	_update_shader_list();
@@ -398,34 +393,34 @@ void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_
 
 void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_menu) {
 	if (p_type == FILE) {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_INCLUDE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/new"), FILE_MENU_NEW);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/new_include"), FILE_MENU_NEW_INCLUDE);
 		p_menu->add_separator();
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_MENU_OPEN);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open_include", TTRC("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_MENU_OPEN_INCLUDE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/open"), FILE_MENU_OPEN);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/open_include"), FILE_MENU_OPEN_INCLUDE);
 	}
 
 	if (p_type == FILE || p_type == CONTEXT_VALID_ITEM) {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save", TTRC("Save File"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_MENU_SAVE);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save_as", TTRC("Save File As...")), FILE_MENU_SAVE_AS);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_MENU_SAVE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_MENU_SAVE_AS);
 	}
 
 	if (p_type == FILE) {
 		p_menu->add_separator();
-		p_menu->add_item(TTR("Open File in Inspector"), FILE_MENU_INSPECT);
-		p_menu->add_item(TTR("Inspect Native Shader Code..."), FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/open_in_inspector"), FILE_MENU_INSPECT);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/inspect_native_code"), FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
 		p_menu->add_separator();
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_MENU_CLOSE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_MENU_CLOSE);
 		p_menu->add_separator();
 		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), FILE_MENU_TOGGLE_FILES_PANEL);
 	} else {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_MENU_CLOSE);
-		p_menu->add_item(TTR("Close All"), FILE_MENU_CLOSE_ALL);
-		p_menu->add_item(TTR("Close Other Tabs"), FILE_MENU_CLOSE_OTHER_TABS);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_MENU_CLOSE);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), FILE_MENU_CLOSE_ALL);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), FILE_MENU_CLOSE_OTHER_TABS);
 		if (p_type == CONTEXT_VALID_ITEM) {
 			p_menu->add_separator();
-			p_menu->add_item(TTR("Copy Script Path"), FILE_MENU_COPY_PATH);
-			p_menu->add_item(TTR("Show in FileSystem"), FILE_MENU_SHOW_IN_FILE_SYSTEM);
+			p_menu->add_shortcut(ED_GET_SHORTCUT("shader_editor/copy_path"), FILE_MENU_COPY_PATH);
+			p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), FILE_MENU_SHOW_IN_FILE_SYSTEM);
 		}
 	}
 }
@@ -627,15 +622,9 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			int index = shader_tabs->get_current_tab();
 			if (index != -1) {
 				ERR_FAIL_INDEX(index, (int)edited_shaders.size());
-				TextShaderEditor *editor = Object::cast_to<TextShaderEditor>(edited_shaders[index].shader_editor);
-				if (editor) {
-					editor->get_code_editor()->update_toggle_files_button();
-				} else {
-					VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
-					if (vs_editor) {
-						vs_editor->update_toggle_files_button();
-					}
-				}
+				ShaderEditor *shader_editor = edited_shaders[index].shader_editor;
+				ERR_FAIL_NULL(shader_editor);
+				shader_editor->update_toggle_files_button();
 			}
 		} break;
 	}
@@ -788,7 +777,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
 	}
-	if (make_floating->get_parent()) {
+	if (make_floating->get_parent() != nullptr) {
 		make_floating->get_parent()->remove_child(make_floating);
 	}
 	empty_menu->set_visible(false);
@@ -850,6 +839,14 @@ void ShaderEditorPlugin::_notification(int p_what) {
 }
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
+	ED_SHORTCUT("shader_editor/new", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N);
+	ED_SHORTCUT("shader_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N);
+	ED_SHORTCUT("shader_editor/open", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O);
+	ED_SHORTCUT("shader_editor/open_include", TTRC("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O);
+	ED_SHORTCUT("shader_editor/open_in_inspector", TTRC("Open File in Inspector"));
+	ED_SHORTCUT("shader_editor/inspect_native_code", TTRC("Inspect Native Shader Code..."));
+	ED_SHORTCUT("shader_editor/copy_path", TTRC("Copy Shader Path"));
+
 	window_wrapper = memnew(WindowWrapper);
 	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Shader Editor")));
 	window_wrapper->set_margins_enabled(true);

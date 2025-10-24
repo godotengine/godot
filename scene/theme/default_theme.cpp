@@ -477,6 +477,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("line_spacing", "TextEdit", Math::round(4 * scale));
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
+	theme->set_constant("wrap_offset", "TextEdit", 10);
 
 	// CodeEdit
 
@@ -912,6 +913,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("children_hl_line_width", "Tree", 1);
 	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
+	theme->set_constant("dragging_unfold_wait_msec", "Tree", 500);
 	theme->set_constant("scroll_border", "Tree", Math::round(4 * scale));
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
@@ -1038,6 +1040,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "TabBar", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
+	theme->set_constant("hover_switch_wait_msec", "TabBar", 500);
 
 	// Separators
 

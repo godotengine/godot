@@ -379,7 +379,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				base_types.push_back(type);
 			}
 
-			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+			EditorQuickOpenDialog *quick_open = EditorNode::get_singleton()->get_quick_open_dialog();
+			if (resource_owner) {
+				quick_open->popup_dialog_for_property(base_types, resource_owner, property_path, callable_mp(this, &EditorResourcePicker::_file_selected));
+			} else {
+				quick_open->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
 		} break;
 
 		case OBJ_MENU_INSPECT: {
@@ -671,6 +677,18 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
+static bool _should_hide_type(const StringName &p_type) {
+	if (ClassDB::is_virtual(p_type)) {
+		return true;
+	}
+
+	if (p_type == SNAME("MissingResource")) {
+		return true;
+	}
+
+	return false;
+}
+
 static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
 	if (p_vector->find(p_type)) {
 		// Already added.
@@ -678,9 +696,9 @@ static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vect
 	}
 
 	if (ClassDB::class_exists(p_type)) {
-		// Engine class,
+		// Engine class.
 
-		if (!ClassDB::is_virtual(p_type)) {
+		if (!_should_hide_type(p_type)) {
 			p_vector->push_back(p_type);
 		}
 

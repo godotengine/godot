@@ -1886,6 +1886,63 @@ int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShader
 	}
 }
 
+Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_size, const Size2 &p_window_size, SplashStretchMode p_stretch_mode) {
+	Size2 imgsize = p_image_size;
+	Rect2 screenrect;
+	switch (p_stretch_mode) {
+		case SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
+			screenrect.size = imgsize;
+			screenrect.position = ((p_window_size - screenrect.size) / 2.0).floor();
+		} break;
+		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
+			if (p_window_size.width > p_window_size.height) {
+				// Scale horizontally.
+				screenrect.size.y = p_window_size.height;
+				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+			} else {
+				// Scale vertically.
+				screenrect.size.x = p_window_size.width;
+				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+			}
+		} break;
+		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
+			// Scale vertically.
+			screenrect.size.x = p_window_size.width;
+			screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+			screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+		} break;
+		case SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
+			// Scale horizontally.
+			screenrect.size.y = p_window_size.height;
+			screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+			screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+		} break;
+		case SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
+			double window_aspect = (double)p_window_size.width / p_window_size.height;
+			double img_aspect = imgsize.width / imgsize.height;
+
+			if (window_aspect > img_aspect) {
+				// Scale vertically.
+				screenrect.size.x = p_window_size.width;
+				screenrect.size.y = imgsize.height * p_window_size.width / imgsize.width;
+				screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+			} else {
+				// Scale horizontally.
+				screenrect.size.y = p_window_size.height;
+				screenrect.size.x = imgsize.width * p_window_size.height / imgsize.height;
+				screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+			}
+		} break;
+		case SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
+			screenrect.size.x = p_window_size.width;
+			screenrect.size.y = p_window_size.height;
+		} break;
+	}
+	return screenrect;
+}
+
 RenderingDevice *RenderingServer::get_rendering_device() const {
 	// Return the rendering device we're using globally.
 	return RenderingDevice::get_singleton();
@@ -2486,6 +2543,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_physics_interpolated", "multimesh", "interpolated"), &RenderingServer::multimesh_set_physics_interpolated);
 	ClassDB::bind_method(D_METHOD("multimesh_set_physics_interpolation_quality", "multimesh", "quality"), &RenderingServer::multimesh_set_physics_interpolation_quality);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_reset_physics_interpolation", "multimesh", "index"), &RenderingServer::multimesh_instance_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("multimesh_instances_reset_physics_interpolation", "multimesh"), &RenderingServer::multimesh_instances_reset_physics_interpolation);
 
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
@@ -3053,6 +3111,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_bicubic_upscale", "enable"), &RenderingServer::environment_glow_set_use_bicubic_upscale);
+	ClassDB::bind_method(D_METHOD("environment_set_ssr_half_size", "half_size"), &RenderingServer::environment_set_ssr_half_size);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_roughness_quality", "quality"), &RenderingServer::environment_set_ssr_roughness_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssao_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssil_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssil_quality);
@@ -3494,7 +3553,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_test_texture"), &RenderingServer::get_test_texture);
 	ClassDB::bind_method(D_METHOD("get_white_texture"), &RenderingServer::get_white_texture);
 
+	ClassDB::bind_method(D_METHOD("set_boot_image_with_stretch", "image", "color", "stretch_mode", "use_filter"), &RenderingServer::set_boot_image_with_stretch, DEFVAL(true));
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
+#endif
 	ClassDB::bind_method(D_METHOD("get_default_clear_color"), &RenderingServer::get_default_clear_color);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
@@ -3526,6 +3588,13 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_DRAW);
 	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_SPECIALIZATION);
 	BIND_ENUM_CONSTANT(PIPELINE_SOURCE_MAX);
+
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_WIDTH);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_HEIGHT);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_COVER);
+	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_IGNORE);
 
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
@@ -3574,6 +3643,13 @@ void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plan
 	Geometry3D::MeshData mdata = Geometry3D::build_convex_mesh(p_planes);
 	mesh_add_surface_from_mesh_data(p_mesh, mdata);
 }
+
+#ifndef DISABLE_DEPRECATED
+void RenderingServer::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	SplashStretchMode stretch_mode = map_scaling_option_to_stretch_mode(p_scale);
+	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
+}
+#endif
 
 RID RenderingServer::instance_create2(RID p_base, RID p_scenario) {
 	RID instance = instance_create();
@@ -3732,7 +3808,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
+	GLOBAL_DEF("rendering/environment/screen_space_reflection/half_size", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.05);
