@@ -6267,7 +6267,14 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
 		case SUPPORTS_HDR_OUTPUT:
+#if defined(WINDOWS_ENABLED)
+			// When using a Vulkan swapchain on Windows, some configurations
+			// involving integrated GPU hardware do not function correctly
+			// with HDR output.
+			return false;
+#else
 			return context_driver->is_colorspace_supported();
+#endif // defined(WINDOWS_ENABLED)
 		default:
 			return false;
 	}
