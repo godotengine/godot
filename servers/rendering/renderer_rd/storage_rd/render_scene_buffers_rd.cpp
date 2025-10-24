@@ -750,7 +750,7 @@ RID RenderSceneBuffersRD::get_velocity_depth_buffer() {
 // Opaque-only color
 void RenderSceneBuffersRD::ensure_opaque_only_color_texture() {
 	if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY)) {
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY, base_data_format, get_color_usage_bits(true, false, can_be_storage));
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY, get_base_data_format(), get_color_usage_bits(true, false, can_be_storage));
 	}
 }
 
