@@ -35,13 +35,17 @@
 #include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
 
+class AudioStreamPlaybackPolyphonic;
+
 class AudioStreamPolyphonic : public AudioStream {
 	GDCLASS(AudioStreamPolyphonic, AudioStream)
 	int polyphony = 32;
 
-	AudioServer::PlaybackType playback_type;
+	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	static void _bind_methods();
+
+	LocalVector<Ref<AudioStreamPlaybackPolyphonic>> playbacks;
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
@@ -54,6 +58,7 @@ public:
 	virtual bool is_meta_stream() const override { return true; }
 
 	AudioStreamPolyphonic();
+	~AudioStreamPolyphonic();
 };
 
 class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
@@ -73,11 +78,25 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 		float volume_db = 0;
 		uint32_t id = 0;
 
+		void clear() {
+			active.clear();
+			finish_request.clear();
+			pending_play.clear();
+			play_offset = 0;
+			pitch_scale = 1.0;
+			stream = nullptr;
+			stream_playback = nullptr;
+			prev_volume_db = 0;
+			volume_db = 0;
+			id = 0;
+		}
+
 		Stream() :
 				active(false), pending_play(false), finish_request(false) {}
 	};
 
-	LocalVector<Stream> streams;
+	Mutex streams_mutex;
+	LocalVector<Stream *> streams;
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN];
 
 	bool active = false;
@@ -93,6 +112,8 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 
 protected:
 	static void _bind_methods();
+
+	void resize_streams(int p_voices);
 
 public:
 	typedef int64_t ID;
@@ -132,4 +153,5 @@ private:
 
 public:
 	AudioStreamPlaybackPolyphonic();
+	~AudioStreamPlaybackPolyphonic();
 };
