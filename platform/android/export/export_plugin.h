@@ -93,6 +93,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
@@ -219,6 +220,10 @@ public:
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
+
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+
+	virtual bool is_option_runnable(int p_index) const override { return p_index != 0; }
 
 	virtual String get_options_tooltip() const override;
 
