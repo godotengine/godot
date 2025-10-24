@@ -515,11 +515,21 @@ private:
 	struct FramebufferInfo;
 	struct RenderPassInfo;
 	struct RenderPassState {
+		struct AttachmentLayout {
+			struct AspectLayout {
+				TextureLayout cur_layout = TEXTURE_LAYOUT_UNDEFINED;
+				TextureLayout expected_layout = TEXTURE_LAYOUT_UNDEFINED;
+			};
+
+			AspectLayout aspect_layouts[TEXTURE_ASPECT_MAX];
+		};
+
 		uint32_t current_subpass = UINT32_MAX;
 		const FramebufferInfo *fb_info = nullptr;
 		const RenderPassInfo *pass_info = nullptr;
 		CD3DX12_RECT region_rect = {};
 		bool region_is_all = false;
+		LocalVector<AttachmentLayout> attachment_layouts;
 
 		const VertexFormatInfo *vf_info = nullptr;
 		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_views[8] = {};
@@ -828,6 +838,7 @@ public:
 	virtual void command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_clear_values) override final;
 
 private:
+	void _render_pass_enhanced_barriers_flush(CommandBufferID p_cmd_buffer);
 	void _end_render_pass(CommandBufferID p_cmd_buffer);
 
 public:
