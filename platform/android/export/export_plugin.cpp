@@ -767,7 +767,7 @@ Error EditorExportPlatformAndroid::store_in_apk(APKExportData *ed, const String 
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObject &p_so) {
+Error EditorExportPlatformAndroid::save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so) {
 	if (!p_so.path.get_file().begins_with("lib")) {
 		String err = "Android .so file names must start with \"lib\", but got: " + p_so.path;
 		ERR_PRINT(err);
@@ -801,14 +801,14 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
 	const String simplified_path = simplify_path(p_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
+	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
 	if (err != OK) {
 		return err;
 	}
@@ -822,11 +822,11 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String 
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error EditorExportPlatformAndroid::ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const SharedObject &p_so) {
+Error EditorExportPlatformAndroid::copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so) {
 	ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
 			"Android .so file names must start with \"lib\", but got: " + p_so.path);
 	Vector<ABI> abis = get_abis();
