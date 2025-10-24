@@ -993,7 +993,11 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 				r_result->travel = safe * p_parameters.motion;
 				r_result->remainder = p_parameters.motion - safe * p_parameters.motion;
-				r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
+				if (recovered) {
+					r_result->travel += (body_transform.get_origin() - p_parameters.from.get_origin());
+				} else {
+					r_result->travel -= margin * motion_normal;
+				}
 			}
 
 			collided = true;
