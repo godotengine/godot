@@ -3086,7 +3086,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		}
 
 		// Roll a new uid for this copied .import file to avoid conflict.
-		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id();
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
