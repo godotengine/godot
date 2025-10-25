@@ -5827,47 +5827,47 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 
 					static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
 					bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
-			Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
+					Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
 
-			if (_edit.initial_click_vector == Vector3()) {
-				_edit.initial_click_vector = (click - _edit.center).normalized();
-				_edit.previous_rotation_vector = current_rotation_vector;
-				_edit.accumulated_rotation_angle = 0.0;
-				_edit.display_rotation_angle = 0.0;
-			}
+					if (_edit.initial_click_vector == Vector3()) {
+						_edit.initial_click_vector = (click - _edit.center).normalized();
+						_edit.previous_rotation_vector = current_rotation_vector;
+						_edit.accumulated_rotation_angle = 0.0;
+						_edit.display_rotation_angle = 0.0;
+					}
 
-			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
-			bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
+					static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
+					bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
-			double angle = 0.0f;
-			if (axis_is_orthogonal) {
-				_edit.show_rotation_line = false;
-				Vector3 projection_axis = plane.normal.cross(global_axis);
-				Vector3 delta = intersection - click;
-				float projection = delta.dot(projection_axis);
-				angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
-			} else {
-				_edit.show_rotation_line = true;
-				Vector3 click_axis = (click - _edit.center).normalized();
-				angle = click_axis.signed_angle_to(current_rotation_vector, global_axis);
-			}
+					double angle = 0.0f;
+					if (axis_is_orthogonal) {
+						_edit.show_rotation_line = false;
+						Vector3 projection_axis = plane.normal.cross(global_axis);
+						Vector3 delta = intersection - click;
+						float projection = delta.dot(projection_axis);
+						angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
+					} else {
+						_edit.show_rotation_line = true;
+						Vector3 click_axis = (click - _edit.center).normalized();
+						angle = click_axis.signed_angle_to(current_rotation_vector, global_axis);
+					}
 
-			if (_edit.previous_rotation_vector != Vector3()) {
-				double delta_angle = _edit.previous_rotation_vector.signed_angle_to(current_rotation_vector, global_axis);
-				_edit.accumulated_rotation_angle += delta_angle;
-			}
-			_edit.previous_rotation_vector = current_rotation_vector;
+					if (_edit.previous_rotation_vector != Vector3()) {
+						double delta_angle = _edit.previous_rotation_vector.signed_angle_to(current_rotation_vector, global_axis);
+						_edit.accumulated_rotation_angle += delta_angle;
+					}
+					_edit.previous_rotation_vector = current_rotation_vector;
 
-			bool snapping = _edit.snap || spatial_editor->is_snap_enabled();
-			if (snapping) {
-				snap = spatial_editor->get_rotate_snap();
-				_edit.display_rotation_angle = Math::deg_to_rad(Math::snapped(Math::rad_to_deg(_edit.accumulated_rotation_angle), snap));
-			} else {
-				_edit.display_rotation_angle = _edit.accumulated_rotation_angle;
-			}
-			angle = Math::snapped(Math::rad_to_deg(angle), snap);
-			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
-			angle = Math::deg_to_rad(angle);
+					bool snapping = _edit.snap || spatial_editor->is_snap_enabled();
+					if (snapping) {
+						snap = spatial_editor->get_rotate_snap();
+						_edit.display_rotation_angle = Math::deg_to_rad(Math::snapped(Math::rad_to_deg(_edit.accumulated_rotation_angle), snap));
+					} else {
+						_edit.display_rotation_angle = _edit.accumulated_rotation_angle;
+					}
+					angle = Math::snapped(Math::rad_to_deg(angle), snap);
+					set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
+					angle = Math::deg_to_rad(angle);
 
 					double angle = 0.0f;
 					if (axis_is_orthogonal) {
@@ -5976,6 +5976,8 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.accumulated_rotation_angle = 0.0;
 	_edit.display_rotation_angle = 0.0;
 	_edit.gizmo_initiated = false;
+	// Reset rotation behavior to ensure clean state for next operation
+	_edit.rotation_behavior = ROTATION_BEHAVIOR_TRADITIONAL;
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
