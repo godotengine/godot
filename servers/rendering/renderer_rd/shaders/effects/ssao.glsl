@@ -302,7 +302,7 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 	const float thickness = params.thickness_heuristic;
 
 	// Project view_space_normal onto the plane defined by screen_dir and view_dir
-	vec3 axis_vec = normalize(cross(vec3(screen_dir, 0.0), view_dir));
+	vec3 axis_vec = normalize(cross(view_dir, vec3(screen_dir, 0.0)));
 	vec3 ortho_dir_vec = cross(view_dir, axis_vec);
 	vec3 proj_normal_vec = view_space_normal - axis_vec * dot(view_space_normal, axis_vec);
 
@@ -310,10 +310,7 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 
 	float sign_norm = sign(dot(ortho_dir_vec, proj_normal_vec));
 	float cos_norm = dot(proj_normal_vec, view_dir) / proj_normal_len;
-
-	// The original paper doesn't have this negative sign,
-	// added due to coordinate system differences
-	float n = -sign_norm * acos_fast(cos_norm);
+	float n = sign_norm * acos_fast(cos_norm);
 
 	// this is a lower weight target; not using -1 as in the original paper because it is under horizon
 	vec2 horizon_cos = vec2(-1.0, -1.0);
