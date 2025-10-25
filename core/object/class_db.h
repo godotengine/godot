@@ -171,7 +171,7 @@ public:
 
 	template <typename T>
 	static Object *creator(bool p_notify_postinitialize) {
-		Object *ret = new ("") T;
+		Object *ret = new (DefaultAllocator{}) T;
 		ret->_initialize();
 		if (p_notify_postinitialize) {
 			ret->_postinitialize();
