@@ -267,7 +267,7 @@ Node3D *VehicleWheel3D::get_contact_body() const {
 	return m_raycastInfo.m_groundObject;
 }
 
-//Return the normal force magnitude at contact point along contact_normal. 
+//Return the normal force magnitude at contact point along contact_normal.
 real_t VehicleWheel3D::get_contact_normal_force() const {
 	return m_wheelsSuspensionForce;
 }
