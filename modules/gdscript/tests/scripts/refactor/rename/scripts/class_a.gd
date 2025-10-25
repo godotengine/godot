@@ -46,7 +46,8 @@ func func_of_a_args(a: int):
 	signal_of_a.emit()
 
 func func_of_a_callable(call := func():
-	var x_of_a = 10):
+	var x_of_a = 10
+	print(x_of_a)):
 	pass
 
 static func secretely_a_all_along() -> ClassCisB:
