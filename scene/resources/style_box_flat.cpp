@@ -496,13 +496,9 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	real_t aa_size_scaled = 1.0f;
 	if (aa_on) {
-		real_t scale_factor = 1.0f;
-		CanvasItem *ci = CanvasItem::get_current_item_drawn();
-		if (ci) {
-			Viewport *vp = ci->get_viewport();
-			if (vp) {
-				scale_factor = vp->get_oversampling();
-			}
+		real_t scale_factor = TextServer::get_current_drawn_item_oversampling();
+		if (scale_factor == 0.0) {
+			scale_factor = 1.0;
 		}
 
 		// Adjust AA feather size to account for the 2D scale factor, so that

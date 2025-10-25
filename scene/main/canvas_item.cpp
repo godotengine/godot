@@ -143,18 +143,13 @@ void CanvasItem::_redraw_callback() {
 
 	if (is_visible_in_tree()) {
 		drawing = true;
-		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
-		}
+		TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringName(draw));
 		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(0.0);
-		}
+		TextServer::set_current_drawn_item_oversampling(0.0);
 		drawing = false;
 		draw_commands_dirty = true;
 	}
