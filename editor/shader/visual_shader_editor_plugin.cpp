@@ -497,7 +497,13 @@ void VisualShaderGraphPlugin::register_curve_editor(int p_node_id, int p_index, 
 void VisualShaderGraphPlugin::update_parameter_refs() {
 	for (KeyValue<int, Link> &E : links) {
 		VisualShaderNodeParameterRef *ref = Object::cast_to<VisualShaderNodeParameterRef>(E.value.visual_node);
-		if (ref) {
+
+		// H.Q.Cai Add Start
+		VisualShaderNodeReferenceSetter *setter_reference = cast_to<VisualShaderNodeReferenceSetter>(E.value.visual_node);
+		if (ref || setter_reference) {
+			//if (ref) {
+			// H.Q.Cai Add End
+
 			remove_node(E.value.type, E.key, true);
 			add_node(E.value.type, E.key, true, true);
 		}
@@ -839,6 +845,47 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 		port_offset++;
 	}
+
+
+
+	// H.Q.Cai Add Start
+	Ref<VisualShaderNodeReferenceParameter> ref_parameter = vsnode;
+	if (ref_parameter.is_valid()) {
+		ref_parameter->set_shader_rid(visual_shader->get_rid());
+
+		for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
+			VisualShader::Type type = static_cast<VisualShader::Type>(type_id);
+			int id = visual_shader->find_node_id(type, vsnode);
+
+			if (id != VisualShader::NODE_ID_INVALID) {
+				VisualShaderNodeReferenceParameter::ReferenceMode change_mode = VisualShaderNodeReferenceParameter::shader_type_to_reference_mode(type);
+				ref_parameter->set_direct_reference_mode(change_mode);
+			}
+		}
+	}
+
+	Ref<VisualShaderNodeReferenceSetter> setter_reference = vsnode;
+	if (setter_reference.is_valid()) {
+		LineEdit *line_edit = memnew(LineEdit);
+		register_parameter_name(p_id, line_edit);
+		line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		line_edit->set_text(setter_reference->get_parameter_name());
+		line_edit->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_reference_line_edit_changed).bind(p_id));
+		line_edit->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_reference_line_edit_focus_out).bind(line_edit, p_id));
+
+		if (vsnode->get_input_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
+			HBoxContainer *hbReference = memnew(HBoxContainer);
+			hbReference->add_child(line_edit);
+			node->add_child(hbReference);
+		} else {
+			node->add_child(line_edit);
+		}
+
+		port_offset++;
+	}
+	// H.Q.Cai Add End
+
+
 
 	for (int i = 0; i < editor->plugins.size(); i++) {
 		vsnode->set_meta("id", p_id);
@@ -1436,6 +1483,554 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression_box->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
 	}
 }
+
+
+
+// H.Q.Cai Add Start
+class VisualShaderNodePluginReferenceEditor;
+
+namespace {
+RBMap<const VisualShaderNodeReferenceParameter *, VisualShaderNodePluginReferenceEditor *> s_reference_editor;
+
+VisualShaderNodeReferenceParameter::ReferenceType get_reference_type(const String &p_type_name) {
+	if (p_type_name.matchn("Float")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_FLOAT;
+	}
+
+	if (p_type_name.matchn("Int")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_INT;
+	}
+
+	if (p_type_name.matchn("Uint")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_UINT;
+	}
+
+	if (p_type_name.matchn("Vector2")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR2;
+	}
+
+	if (p_type_name.matchn("Vector3")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR3;
+	}
+
+	if (p_type_name.matchn("Vector4")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR4;
+	}
+
+	if (p_type_name.matchn("Color")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_COLOR;
+	}
+
+	if (p_type_name.matchn("Boolean")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_BOOLEAN;
+	}
+
+	if (p_type_name.matchn("Transform3D")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_TRANSFORM;
+	}
+
+	if (p_type_name.matchn("ImageTexture")) {
+		return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_SAMPLER;
+	}
+
+	return VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX;
+}
+
+int get_type_index(VisualShaderNodeReferenceParameter::ReferenceType reference_type) {
+	return reference_type + 1;
+}
+
+String get_type_name(VisualShaderNodeReferenceParameter::ReferenceType reference_type) {
+	switch (reference_type) {
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_FLOAT:
+			return "Float";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_INT:
+			return "Int";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_UINT:
+			return "Uint";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_COLOR:
+			return "Color";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_BOOLEAN:
+			return "Bool";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_TRANSFORM:
+			return "Transform3D";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR2:
+			return "Vector2";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR3:
+			return "Vector3";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR4:
+			return "Vector4";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_SAMPLER:
+			return "ImageTexture";
+
+		case VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX:
+			break;
+	}
+	return "";
+}
+} //namespace
+
+//////////////// Reference text changed
+
+void VisualShaderEditor::_reference_line_edit_changed(const String &p_text, int p_node_id) {
+	VisualShader::Type type = get_current_shader_type();
+
+	Ref<VisualShaderNodeReferenceSetter> setter_reference = visual_shader->get_node(type, p_node_id);
+	ERR_FAIL_COND(!setter_reference.is_valid());
+
+	if (setter_reference->is_parameter_name_changing()) {
+		return;
+	}
+
+	String pre_name = setter_reference->get_parameter_name();
+	String validated_name = visual_shader->validate_parameter_name(p_text, setter_reference);
+	if (validated_name == pre_name) {
+		return;
+	}
+
+	setter_reference->set_parameter_name_changing();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Set Reference Name"));
+
+	undo_redo->add_do_method(setter_reference.ptr(), "set_parameter_name", validated_name);
+	undo_redo->add_undo_method(setter_reference.ptr(), "set_parameter_name", pre_name);
+
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_parameter_name", type, p_node_id, validated_name);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_parameter_name", type, p_node_id, setter_reference->get_parameter_name());
+
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
+
+	undo_redo->add_do_method(this, "_update_parameters", true);
+	undo_redo->add_undo_method(this, "_update_parameters", true);
+
+	HashSet<String> changed_names;
+	changed_names.insert(pre_name);
+	_update_parameter_refs(changed_names);
+
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_reference_line_edit_focus_out(Object *p_line_edit, int p_node_id) {
+	if (LineEdit *line_edit = cast_to<LineEdit>(p_line_edit)) {
+		_reference_line_edit_changed(line_edit->get_text(), p_node_id);
+	}
+	//_reference_line_edit_changed(cast_to<LineEdit>(p_line_edit)->get_text(), p_node_id);
+}
+
+//////////////// Reference Select Item
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void VisualShaderEditor::_reference_get_select_item(const Ref<VisualShaderNodeReferenceGetter> &p_reference, const String &p_name) {
+	String pre_name = p_reference->get_parameter_name();
+	if (p_name == pre_name) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo_man = EditorUndoRedoManager::get_singleton();
+	undo_redo_man->create_action(TTR("Reference Name Changed"));
+
+	undo_redo_man->add_do_method(p_reference.ptr(), "set_parameter_name", p_name);
+	undo_redo_man->add_undo_method(p_reference.ptr(), "set_parameter_name", pre_name);
+
+	VisualShaderNodeReferenceParameter::ReferenceType cur_type = p_reference->get_reference_type_by_name(p_name);
+	VisualShaderNodeReferenceParameter::ReferenceType pre_type = p_reference->get_reference_type_by_name(pre_name);
+
+	bool type_changed = cur_type != pre_type;
+	if (type_changed) {
+		undo_redo_man->add_do_method(p_reference.ptr(), "set_reference_type", cur_type);
+		undo_redo_man->add_undo_method(p_reference.ptr(), "set_reference_type", pre_type);
+	}
+
+	// update portsports
+	for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
+		VisualShader::Type type = VisualShader::Type(type_id);
+		int id = visual_shader->find_node_id(type, p_reference);
+
+		if (id != VisualShader::NODE_ID_INVALID) {
+			if (type_changed) {
+				List<VisualShader::Connection> conns;
+				visual_shader->get_node_connections(type, &conns);
+
+				for (const VisualShader::Connection &E : conns) {
+					if (E.from_node == id) {
+						if (visual_shader->is_port_types_compatible(p_reference->get_reference_type_by_name(p_name), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
+							continue;
+						}
+
+						undo_redo_man->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+						undo_redo_man->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+
+						undo_redo_man->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+						undo_redo_man->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+					}
+				}
+			}
+
+			undo_redo_man->add_do_method(graph_plugin.ptr(), "update_node", type_id, id);
+			undo_redo_man->add_undo_method(graph_plugin.ptr(), "update_node", type_id, id);
+			break;
+		}
+	}
+
+	undo_redo_man->commit_action();
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void VisualShaderEditor::_reference_set_select_item(const Ref<VisualShaderNodeReferenceSetter> &p_reference, const String &p_name) {
+	VisualShaderNodeReferenceParameter::ReferenceType pre_type = p_reference->get_reference_type();
+	String pre_name = get_type_name(pre_type);
+	if (p_name == pre_name) {
+		return;
+	}
+
+	VisualShaderNodeReferenceParameter::ReferenceType cur_type = get_reference_type(p_name);
+
+	EditorUndoRedoManager *undo_redo_man = EditorUndoRedoManager::get_singleton();
+	undo_redo_man->create_action(TTR("Reference Type Changed"));
+
+	bool type_changed = cur_type != pre_type;
+	if (type_changed) {
+		undo_redo_man->add_do_method(p_reference.ptr(), "set_reference_type", cur_type);
+		undo_redo_man->add_undo_method(p_reference.ptr(), "set_reference_type", pre_type);
+	}
+
+	// update ports
+	for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
+		VisualShader::Type type = static_cast<VisualShader::Type>(type_id);
+		int id = visual_shader->find_node_id(type, p_reference);
+
+		if (id != VisualShader::NODE_ID_INVALID) {
+			if (type_changed) {
+				List<VisualShader::Connection> conns;
+				visual_shader->get_node_connections(type, &conns);
+
+				for (const VisualShader::Connection &E : conns) {
+					if (E.to_node == id) {
+						if (visual_shader->is_port_types_compatible(p_reference->get_reference_type_by_name(p_name), visual_shader->get_node(type, E.from_node)->get_output_port_type(E.from_port))) {
+							continue;
+						}
+
+						undo_redo_man->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+						undo_redo_man->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+
+						undo_redo_man->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+						undo_redo_man->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+					}
+				}
+			}
+
+			undo_redo_man->add_do_method(graph_plugin.ptr(), "update_node", type_id, id);
+			undo_redo_man->add_undo_method(graph_plugin.ptr(), "update_node", type_id, id);
+			break;
+		}
+	}
+
+	undo_redo_man->commit_action();
+}
+
+//////////////// Reference Editor
+
+// ReSharper disable once CppInconsistentNaming
+class VisualShaderNodePluginReferenceEditor : public OptionButton { // NOLINT(cppcoreguidelines-special-member-functions)
+	GDCLASS(VisualShaderNodePluginReferenceEditor, OptionButton)
+
+public:
+	VisualShaderEditor *m_editor = nullptr;
+	Ref<VisualShaderNodeReferenceParameter> m_reference;
+	Ref<Texture2D> m_type_icon[10];
+
+	// ReSharper disable once CppInconsistentNaming
+	// ReSharper disable once CppHidingFunction
+	void _notification(int p_what) {
+		// ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
+		switch (p_what) { // NOLINT(hicpp-multiway-paths-covered)
+			case NOTIFICATION_READY: {
+				connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderNodePluginReferenceEditor::_item_selected));
+			} break;
+			case NOTIFICATION_EXIT_TREE: {
+				s_reference_editor.erase(m_reference.ptr());
+
+				Ref<VisualShaderNodeReferenceSetter> set_reference = m_reference;
+				if (set_reference.is_valid()) {
+					set_reference->disconnect(SNAME("changed_parameter_name"), callable_mp(this, &VisualShaderNodePluginReferenceEditor::_parameter_name_changed));
+					set_reference->disconnect(SNAME("changed_reference_type"), callable_mp(this, &VisualShaderNodePluginReferenceEditor::_reference_type_changed));
+				}
+			} break;
+		}
+	}
+
+	// ReSharper disable once CppInconsistentNaming
+	// ReSharper disable once CppMemberFunctionMayBeConst
+	void _item_selected(int p_item) {
+		Ref<VisualShaderNodeReferenceGetter> get_reference = m_reference;
+		Ref<VisualShaderNodeReferenceSetter> set_reference = m_reference;
+
+		if (get_reference.is_valid()) {
+			m_editor->call_deferred(SNAME("_reference_get_select_item"), get_reference, get_item_text(p_item));
+		} else if (set_reference.is_valid()) {
+			m_editor->call_deferred(SNAME("_reference_set_select_item"), set_reference, get_item_text(p_item));
+		}
+	}
+
+	//////////////// Reference Changed Item
+
+	// ReSharper disable once CppInconsistentNaming
+	// ReSharper disable once CppMemberFunctionMayBeConst
+	void _parameter_name_changed(VisualShaderNode *p_sender_node, const String &p_pre_name, const String &p_cur_name) {
+		Ref<VisualShaderNode> p_reference = Ref(p_sender_node);
+		Ref<VisualShaderNodeReferenceSetter> set_reference = p_reference;
+		if (set_reference.is_valid()) {
+			rest_reference_getter(p_pre_name, set_reference);
+		}
+	}
+
+	// ReSharper disable once CppInconsistentNaming
+	// ReSharper disable once CppMemberFunctionMayBeConst
+	void _reference_type_changed(VisualShaderNode *p_sender_node, VisualShaderNodeReferenceParameter::ReferenceType p_pre_type, VisualShaderNodeReferenceParameter::ReferenceType p_cur_type) {
+		Ref<VisualShaderNode> p_reference = Ref(p_sender_node);
+		Ref<VisualShaderNodeReferenceSetter> set_reference = p_reference;
+		if (set_reference.is_valid()) {
+			rest_reference_getter(p_pre_type, set_reference);
+		}
+	}
+
+	void rest_reference_getter(const String &p_pre_name, const Ref<VisualShaderNodeReferenceSetter> &p_reference_setter) const {
+		for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
+			VisualShader::Type type = static_cast<VisualShader::Type>(type_id);
+
+			Ref<VisualShader> visual_shader = m_editor->get_visual_shader();
+			Vector<int> nodeIds = visual_shader->get_node_list(type);
+
+			Vector<VisualShaderNodeReferenceGetter *> getters;
+			for (int nodeId : nodeIds) {
+				Ref<VisualShaderNodeReferenceGetter> get_reference = visual_shader->get_node(type, nodeId);
+				if (get_reference.is_valid()) {
+					getters.append(get_reference.ptr());
+				}
+			}
+
+			int to_select = -1;
+			for (VisualShaderNodeReferenceGetter *getter_reference : getters) {
+				const VisualShaderNodeReferenceParameter *ref_parameter = static_cast<VisualShaderNodeReferenceParameter *>(getter_reference);
+				if (s_reference_editor.has(ref_parameter) == false) {
+					continue;
+				}
+
+				String getter_parameter_name = getter_reference->get_parameter_name();
+				String current_parameter_name = p_reference_setter->get_parameter_name();
+
+				VisualShaderNodePluginReferenceEditor *ref_editor = s_reference_editor[ref_parameter];
+				ref_editor->clear();
+				ref_editor->add_item("[None]");
+
+				int count = getter_reference->get_references_count();
+				for (int i = 0; i < count; i++) {
+					VisualShaderNodeReferenceParameter::ReferenceType index_type = getter_reference->get_reference_type_by_index(i);
+					String index_parameter_name = getter_reference->get_parameter_name_by_index(i);
+
+					if (p_pre_name.is_empty() == false && p_pre_name == getter_parameter_name) {
+						getter_reference->set_direct_parameter_name(current_parameter_name);
+
+						to_select = i + 1;
+					} else if (index_parameter_name == getter_parameter_name) {
+						to_select = i + 1;
+					}
+
+					if (index_type >= VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						String type_name = get_type_name(getter_reference->get_reference_type_by_index(i));
+						index_type = get_reference_type(type_name);
+					}
+
+					if (index_type < VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						Ref<Texture2D> ref_icon = ref_editor->m_type_icon[index_type];
+						ref_editor->add_icon_item(ref_icon, index_parameter_name);
+					}
+				}
+
+				if (to_select >= 0) {
+					ref_editor->select(to_select);
+				}
+			}
+		}
+	}
+
+	void rest_reference_getter(VisualShaderNodeReferenceParameter::ReferenceType p_pre_type, const Ref<VisualShaderNodeReferenceSetter> &p_reference_setter) const {
+		for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
+			VisualShader::Type type = static_cast<VisualShader::Type>(type_id);
+
+			Ref<VisualShader> visual_shader = m_editor->get_visual_shader();
+			Vector<int> nodes = visual_shader->get_node_list(type);
+
+			Vector<VisualShaderNodeReferenceGetter *> getters;
+			for (int nodeId : nodes) {
+				Ref<VisualShaderNodeReferenceGetter> get_reference = visual_shader->get_node(type, nodeId);
+				if (get_reference.is_valid()) {
+					getters.append(get_reference.ptr());
+				}
+			}
+
+			int to_select = -1;
+			for (VisualShaderNodeReferenceGetter *getter_reference : getters) {
+				const VisualShaderNodeReferenceParameter *ref_parameter = static_cast<VisualShaderNodeReferenceParameter *>(getter_reference);
+				if (s_reference_editor.has(ref_parameter) == false) {
+					ERR_PRINT("s_reference_editor.has(ref_parameter) == false");
+					continue;
+				}
+
+				String getter_parameter_name = getter_reference->get_parameter_name();
+				String current_parameter_name = p_reference_setter->get_parameter_name();
+
+				VisualShaderNodePluginReferenceEditor *ref_editor = s_reference_editor[ref_parameter];
+				ref_editor->clear();
+				ref_editor->add_item("[None]");
+
+				int count = getter_reference->get_references_count();
+				for (int i = 0; i < count; i++) {
+					VisualShaderNodeReferenceParameter::ReferenceType index_type = getter_reference->get_reference_type_by_index(i);
+					String index_parameter_name = getter_reference->get_parameter_name_by_index(i);
+
+					if (index_parameter_name == getter_parameter_name) {
+						if (current_parameter_name == getter_parameter_name) {
+							VisualShaderNodeReferenceParameter::ReferenceType cur_getter_type = getter_reference->get_reference_type();
+							VisualShaderNodeReferenceParameter::ReferenceType real_setter_type = p_reference_setter->get_reference_type();
+
+							if (cur_getter_type != real_setter_type) {
+								getter_reference->set_direct_reference_type(real_setter_type);
+
+								Ref<VisualShaderNode> getter_node = Ref(static_cast<VisualShaderNode *>(getter_reference));
+								int getter_node_id = visual_shader->find_node_id(type, getter_node);
+								do {
+									if (getter_node_id == VisualShader::NODE_ID_INVALID) {
+										WARN_PRINT("rest_reference_getter(...) Can't find node id");
+										break;
+									}
+
+									List<VisualShader::Connection> connectionList;
+									visual_shader->get_node_connections(type, &connectionList);
+
+									VisualShaderGraphPlugin *graph_plugin = m_editor->get_graph_plugin();
+									for (const VisualShader::Connection &E : connectionList) {
+										if (E.from_node == getter_node_id) {
+											if (visual_shader->is_port_types_compatible(VisualShaderNodeReferenceParameter::reference_type_to_port_type(real_setter_type), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
+												continue;
+											}
+
+											visual_shader->disconnect_nodes(type, E.from_node, E.from_port, E.to_node, E.to_port);
+											graph_plugin->disconnect_nodes(type, E.from_node, E.from_port, E.to_node, E.to_port);
+										}
+									}
+
+									graph_plugin->call_deferred(SNAME("update_node"), type_id, getter_node_id);
+
+								} while (false);
+							}
+						}
+
+						to_select = i + 1;
+					}
+
+					if (index_type >= VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						String index_name = get_type_name(getter_reference->get_reference_type_by_index(i));
+						index_type = get_reference_type(index_name);
+					}
+
+					if (index_type < VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						Ref<Texture2D> ref_icon = ref_editor->m_type_icon[index_type];
+						ref_editor->add_icon_item(ref_icon, index_parameter_name);
+					}
+				}
+
+				if (to_select >= 0) {
+					ref_editor->select(to_select);
+				}
+			}
+		}
+	}
+
+	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeReferenceParameter> &p_reference, VisualShader::Type p_type) {
+		m_editor = p_editor;
+		m_reference = p_reference;
+
+		Ref<Texture2D> p_type_icon[] = {
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("float"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("int"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("uint"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Vector2"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Vector3"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Vector4"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Color"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("bool"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Transform3D"), EditorStringName(EditorIcons)),
+			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("ImageTexture"), EditorStringName(EditorIcons)),
+		};
+
+		for (int i = 0; i < 10; i++) {
+			m_type_icon[i] = p_type_icon[i];
+		}
+
+		Ref<VisualShaderNodeReferenceSetter> set_reference = m_reference;
+		Ref<VisualShaderNodeReferenceGetter> get_reference = m_reference;
+
+		int to_select = -1;
+		add_item("[None]");
+
+		if (set_reference.is_valid()) {
+			set_reference->connect(SNAME("changed_parameter_name"), callable_mp(this, &VisualShaderNodePluginReferenceEditor::_parameter_name_changed));
+			set_reference->connect(SNAME("changed_reference_type"), callable_mp(this, &VisualShaderNodePluginReferenceEditor::_reference_type_changed));
+
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_FLOAT], "Float");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_INT], "Int");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_UINT], "Uint");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR2], "Vector2");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR3], "Vector3");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_VECTOR4], "Vector4");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_COLOR], "Color");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_BOOLEAN], "Boolean");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_TRANSFORM], "Transform3D");
+			add_icon_item(m_type_icon[VisualShaderNodeReferenceParameter::REFERENCE_TYPE_SAMPLER], "ImageTexture");
+
+			to_select = get_type_index(set_reference->get_reference_type());
+		} else if (get_reference.is_valid()) {
+			int count = get_reference->get_references_count();
+			for (int i = 0; i < count; i++) {
+				String index_name = get_reference->get_parameter_name_by_index(i);
+				String cur_parameter_name = get_reference->get_parameter_name();
+				if (cur_parameter_name == index_name) {
+					to_select = i + 1;
+				}
+
+				VisualShaderNodeReferenceParameter::ReferenceType index_type = get_reference->get_reference_type_by_index(i);
+				if (index_type >= VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+					index_type = get_reference_type(get_type_name(index_type));
+				}
+
+				if (index_type < VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+					add_icon_item(m_type_icon[index_type], index_name);
+				}
+			}
+		}
+
+		s_reference_editor[m_reference.ptr()] = this;
+
+		if (to_select >= 0) {
+			select(to_select);
+		}
+	}
+};
+// H.Q.Cai Add End
+
+
 
 void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (editor->get_current_shader_type() == p_type && links.has(p_id)) {
@@ -2554,10 +3149,37 @@ void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
 void VisualShaderEditor::_update_parameters(bool p_update_refs) {
 	VisualShaderNodeParameterRef::clear_parameters(visual_shader->get_rid());
 
+
+
+	// H.Q.Cai Add Start
+	VisualShaderNodeReferenceParameter::clear_references(visual_shader->get_rid(), VisualShaderNodeReferenceParameter::REFERENCE_MODE_MAX);
+	// H.Q.Cai Add End
+
+
+
 	for (int t = 0; t < VisualShader::TYPE_MAX; t++) {
 		Vector<int> tnodes = visual_shader->get_node_list((VisualShader::Type)t);
 		for (int i = 0; i < tnodes.size(); i++) {
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node((VisualShader::Type)t, tnodes[i]);
+
+
+
+			// H.Q.Cai Add Start
+			Ref<VisualShaderNodeReferenceParameter> ref_reference = vsnode;
+			if (ref_reference.is_valid()) {
+				Ref<VisualShaderNodeReferenceSetter> setter_reference = ref_reference;
+				if (setter_reference.is_valid()) {
+					String name = ref_reference->get_parameter_name();
+					VisualShaderNodeReferenceParameter::ReferenceMode now_mode = VisualShaderNodeReferenceParameter::shader_type_to_reference_mode(static_cast<VisualShader::Type>(t));
+					ref_reference->set_direct_reference_mode(now_mode);
+
+					VisualShaderNodeReferenceParameter::add_reference(visual_shader->get_rid(), now_mode, setter_reference);
+				}
+			}
+			// H.Q.Cai Add End
+
+
+
 			Ref<VisualShaderNodeParameter> parameter = vsnode;
 
 			if (parameter.is_valid()) {
@@ -2619,6 +3241,27 @@ void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names
 						undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", VisualShader::Type(i), nodes[j]);
 					}
 				}
+
+
+
+				// H.Q.Cai Add Start
+				Ref<VisualShaderNodeReferenceParameter> ref_parameter = visual_shader->get_node(type, nodes[j]);
+				if (ref_parameter.is_valid()) {
+					String parameter_name = ref_parameter->get_parameter_name();
+					if (p_deleted_names.has(parameter_name)) {
+						ref_parameter->remove_parameter_name(parameter_name);
+
+						// undo_redo->add_do_method(refParameter.ptr(), "set_parameter_name", "[None]");
+						// undo_redo->add_undo_method(refParameter.ptr(), "set_parameter_name", parameter_name);
+
+						// undo_redo->add_do_method(graph_plugin.ptr(), "update_node", VisualShader::Type(i), nodes[j]);
+						// undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", VisualShader::Type(i), nodes[j]);
+					}
+				}
+				// H.Q.Cai Add End
+
+
+
 			}
 		}
 	}
@@ -4535,6 +5178,87 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 		_update_parameter_refs(parameter_names);
 	}
+
+
+
+	// H.Q.Cai Add Start
+	for (const int &E : p_nodes) {
+		Ref<VisualShaderNodeReferenceSetter> setter_reference = visual_shader->get_node(type, E);
+
+		if (setter_reference.is_valid()) {
+			const VisualShaderNodeReferenceParameter::ReferenceMode cur_mode = VisualShaderNodeReferenceParameter::shader_type_to_reference_mode(type);
+			VisualShaderNodeReferenceParameter::erase_reference_by_parameter_name(setter_reference->get_shader_rid(), cur_mode, setter_reference->get_parameter_name());
+
+			Vector<int> nodes = visual_shader->get_node_list(type);
+			Vector<VisualShaderNodeReferenceGetter *> getters;
+
+			for (int del_node_id : nodes) {
+				Ref<VisualShaderNodeReferenceGetter> get_reference = visual_shader->get_node(type, del_node_id);
+				if (get_reference.is_valid()) {
+					getters.append(get_reference.ptr());
+				}
+			}
+
+			int to_select = -1;
+			for (VisualShaderNodeReferenceGetter *getter_reference : getters) {
+				const VisualShaderNodeReferenceParameter *ref_parameter = static_cast<VisualShaderNodeReferenceParameter *>(getter_reference);
+				if (s_reference_editor.has(ref_parameter) == false) {
+					ERR_PRINT("s_reference_editor.has(ref_parameter) == false");
+					continue;
+				}
+
+				String getter_parameter_name = getter_reference->get_parameter_name();
+				String setter_parameter_name = setter_reference->get_parameter_name();
+
+				VisualShaderNodePluginReferenceEditor *getter_editor = s_reference_editor[ref_parameter];
+				getter_editor->clear();
+				getter_editor->add_item("[None]");
+
+				int count = getter_reference->get_references_count();
+				for (int i = 0; i < count; i++) {
+					VisualShaderNodeReferenceParameter::ReferenceType index_type = getter_reference->get_reference_type_by_index(i);
+					String index_parameter_name = getter_reference->get_parameter_name_by_index(i);
+
+					if (getter_parameter_name == setter_parameter_name) {
+						getter_reference->set_direct_reference_type(VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX);
+
+						List<VisualShader::Connection> connection_list;
+						visual_shader->get_node_connections(type, &connection_list);
+
+						VisualShaderGraphPlugin *getter_graph_plugin = getter_editor->m_editor->get_graph_plugin();
+						Ref<VisualShaderNode> getter_node = Ref(static_cast<VisualShaderNode *>(getter_reference));
+						int getter_node_id = visual_shader->find_node_id(type, getter_node);
+
+						for (const VisualShader::Connection &connection : connection_list) {
+							if (connection.from_node == getter_node_id) {
+								visual_shader->disconnect_nodes(type, connection.from_node, connection.from_port, connection.to_node, connection.to_port);
+								getter_graph_plugin->disconnect_nodes(type, connection.from_node, connection.from_port, connection.to_node, connection.to_port);
+							}
+						}
+
+						getter_graph_plugin->call_deferred(SNAME("update_node"), type, getter_node_id);
+					} else if (getter_parameter_name == index_parameter_name) {
+						to_select = i + 1;
+					}
+
+					if (index_type >= VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						index_type = get_reference_type(get_type_name(index_type));
+					}
+
+					if (index_type < VisualShaderNodeReferenceParameter::REFERENCE_TYPE_MAX) {
+						getter_editor->add_icon_item(getter_editor->m_type_icon[index_type], index_parameter_name);
+					}
+				}
+
+				if (to_select >= 0) {
+					getter_editor->select(to_select);
+				}
+			}
+		}
+	}
+	// H.Q.Cai Add End
+
+
 }
 
 void VisualShaderEditor::_replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to) {
@@ -6485,6 +7209,15 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_parameter", &VisualShaderEditor::_update_parameter);
 	ClassDB::bind_method("_update_next_previews", &VisualShaderEditor::_update_next_previews);
 	ClassDB::bind_method("_update_current_param", &VisualShaderEditor::_update_current_param);
+
+
+
+	// H.Q.Cai Add Start
+	ClassDB::bind_method("_reference_set_select_item", &VisualShaderEditor::_reference_set_select_item);
+	ClassDB::bind_method("_reference_get_select_item", &VisualShaderEditor::_reference_get_select_item);
+	// H.Q.Cai Add End
+
+
 }
 
 VisualShaderEditor::VisualShaderEditor() {
@@ -7737,6 +8470,28 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("VaryingSetter", "Special", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("VaryingGetter", "Special", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
 	add_options.push_back(AddOption("VaryingSetter", "Special", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_CANVAS_ITEM));
+
+
+
+	// H.Q.Cai Add Start
+	// 增加需要的ReferenceGetter和ReferenceSetter节点类型 两种模式MODE_SPATIAL和MODE_CANVAS_ITEM
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_VERTEX, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_FRAGMENT, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("ReferenceGetter", "Special", "VisualShaderNodeReferenceGetter", TTR("Get Reference."), {}, -1, TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_VERTEX, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_FRAGMENT, Shader::MODE_CANVAS_ITEM));
+	add_options.push_back(AddOption("ReferenceSetter", "Special", "VisualShaderNodeReferenceSetter", TTR("Set Reference."), {}, -1, TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
+	// H.Q.Cai Add End
+
+
+
 	add_options.push_back(AddOption("Reroute", "Special", "VisualShaderNodeReroute", TTR("Reroute connections freely, can be used to connect multiple input ports to single output port.")));
 
 	custom_node_option_idx = add_options.size();
@@ -8130,6 +8885,18 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		editor->setup(vseditor, p_node, vseditor->get_current_shader_type());
 		return editor;
 	}
+
+
+
+	// H.Q.Cai Add Start
+	if (p_shader.is_valid() && (p_node->is_class("VisualShaderNodeReferenceGetter") || p_node->is_class("VisualShaderNodeReferenceSetter"))) {
+		VisualShaderNodePluginReferenceEditor *editor = memnew(VisualShaderNodePluginReferenceEditor);
+		editor->setup(vseditor, p_node, vseditor->get_current_shader_type());
+		return editor;
+	}
+	// H.Q.Cai Add End
+
+
 
 	if (p_node->is_class("VisualShaderNodeParameterRef")) {
 		VisualShaderNodePluginParameterRefEditor *editor = memnew(VisualShaderNodePluginParameterRefEditor);

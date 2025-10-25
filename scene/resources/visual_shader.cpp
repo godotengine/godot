@@ -942,6 +942,18 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 		parameter->set_parameter_name(valid_name);
 	}
 
+
+	// H.Q.Cai Add Start
+	Ref<VisualShaderNodeReferenceParameter> reference = n.node;
+	Ref<VisualShaderNodeReferenceSetter> reference_setter = n.node;
+	if (reference_setter.is_valid() && reference.is_valid()) {
+		String valid_name = validate_parameter_name(reference->get_parameter_name(), reference_setter);
+		reference_setter->set_parameter_name(valid_name);
+	}
+	// H.Q.Cai Add End
+
+
+
 	Ref<VisualShaderNodeInput> input = n.node;
 	if (input.is_valid()) {
 		input->shader_mode = shader_mode;
@@ -2756,6 +2768,14 @@ void VisualShader::_update_shader() const {
 	HashMap<int, List<int>> emitters;
 	HashMap<int, List<int>> varying_setters;
 
+
+
+	// H.Q.Cai Add Start
+	HashMap<int, List<String>> varying_setter_names;
+	// H.Q.Cai Add End
+
+
+
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
 			continue;
@@ -2785,7 +2805,39 @@ void VisualShader::_update_shader() const {
 					varying_setters.insert(i, List<int>());
 				}
 				varying_setters[i].push_back(E.key);
+
+
+
+				// H.Q.Cai Add Start
+				if (!varying_setter_names.has(i)) {
+					varying_setter_names.insert(i, List<String>());
+				}
+				String varying_name = varying_setter->get_varying_name();
+				if (varying_setter_names[i].find(varying_name)) {
+					ERR_PRINT("Varying name already exists: " + varying_name);
+					return;
+				}
+				varying_setter_names[i].push_back(varying_name);
+				// H.Q.Cai Add End
+
+
+
 			}
+
+
+
+			// H.Q.Cai Add Start
+			Ref<VisualShaderNodeReferenceSetter> reference_setter = E.value.node;
+			if (reference_setter.is_valid()) {
+				if (!varying_setters.has(i)) {
+					varying_setters.insert(i, List<int>());
+				}
+				varying_setters[i].push_back(E.key);
+			}
+			// H.Q.Cai Add End
+
+
+
 			Ref<VisualShaderNodeParticleEmit> emit_particle = E.value.node;
 			if (emit_particle.is_valid()) {
 				if (!emitters.has(i)) {
@@ -2943,6 +2995,97 @@ void VisualShader::_update_shader() const {
 		}
 		insertion_pos.insert(i, shader_code.get_string_length() + func_code.get_string_length());
 
+
+
+		// H.Q.Cai Add Start
+		func_code += varying_code;
+		func_code += "\n";
+
+		Error checkError = OK;
+		Type type = static_cast<Type>(i);
+
+		if (varying_setters.has(i)) {
+			List<String> names_running = List<String>();
+			HashMap<String, int> name_to_ids = HashMap<String, int>();
+
+			for (int &E : varying_setters[i]) {
+				Ref<VisualShaderNodeVaryingSetter> varying_setter = graph[type].nodes[E].node;
+				if (varying_setter.is_valid()) {
+					String setter_varying_name = varying_setter->get_varying_name();
+					names_running.push_back(setter_varying_name);
+
+					if (name_to_ids.has(setter_varying_name)) {
+						ERR_PRINT("name_to_ids has " + setter_varying_name);
+					} else {
+						name_to_ids[setter_varying_name] = E;
+					}
+				}
+
+				Ref<VisualShaderNodeReferenceSetter> reference_setter = graph[type].nodes[E].node;
+				if (reference_setter.is_valid()) {
+					String setter_reference_name = reference_setter->get_parameter_name();
+					names_running.push_back(setter_reference_name);
+
+					if (name_to_ids.has(setter_reference_name)) {
+						ERR_PRINT("name_to_ids has " + setter_reference_name);
+					} else {
+						name_to_ids[setter_reference_name] = E;
+					}
+				}
+			}
+
+			for (int &E : varying_setters[i]) {
+				_update_varying_or_reference(type, input_connections, E, E, names_running);
+			}
+
+			int index = 0;
+			for (String &NAME : names_running) {
+				if (name_to_ids.has(NAME) == false) {
+					ERR_PRINT("processed_running.has(...) == false. No found NAME is " + NAME);
+					break;
+				}
+
+				int E = name_to_ids[NAME];
+
+				Ref<VisualShaderNodeVaryingSetter> varying_setter = graph[type].nodes[E].node;
+				Ref<VisualShaderNodeReferenceSetter> reference_setter = graph[type].nodes[E].node;
+				String varying_name;
+				if (varying_setter.is_valid()) {
+					varying_name = varying_setter->get_varying_name();
+				} else if (reference_setter.is_valid()) {
+					varying_name = reference_setter->get_parameter_name();
+				}
+				String index_info("order-{0} name is = {1}");
+				index_info = index_info.format(varray(index, varying_name));
+				WARN_PRINT("Varying running " + index_info);
+				index++;
+
+				checkError = _write_node(type, &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, E, processed, false, classes);
+				ERR_FAIL_COND(checkError != OK);
+			}
+		}
+
+		// 修改原始的调用顺序，先处理varyings，再处理其他节点
+		//Error err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, output_connections, NODE_ID_OUTPUT, processed, false, classes);
+		//ERR_FAIL_COND(err != OK);
+
+		//if (varying_setters.has(i)) {
+		//	for (int &E : varying_setters[i]) {
+		//		err = _write_node(Type(i), &global_code, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+		//		ERR_FAIL_COND(err != OK);
+		//	}
+		//}
+
+		// 修改上面语句为：
+		// err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+		// 注释下面的语句，把它放在这儿
+
+		//checkError = _write_node(type, &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, NODE_ID_OUTPUT, processed, false, classes);
+		//ERR_FAIL_COND(checkError != OK);
+		// H.Q.Cai Add End
+
+
+
 		Error err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, NODE_ID_OUTPUT, processed, false, classes);
 		ERR_FAIL_COND(err != OK);
 
@@ -2963,7 +3106,16 @@ void VisualShader::_update_shader() const {
 		if (shader_mode == Shader::MODE_PARTICLES) {
 			code_map.insert(i, func_code);
 		} else {
-			func_code += varying_code;
+
+
+
+			// H.Q.Cai Add Start
+			// 注释以下语句，把它放在上面
+			//func_code += varying_code;
+			// H.Q.Cai Add End
+
+
+
 			func_code += "}\n";
 			shader_code += func_code;
 		}
@@ -5568,3 +5720,816 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 VisualShaderNodeVaryingGetter::VisualShaderNodeVaryingGetter() {
 	varying_name = "[None]";
 }
+
+
+
+// H.Q.Cai Add Start
+void VisualShader::_update_varying_or_reference(Type type, const HashMap<ConnectionKey, const List<Connection>::Element *> &input_connections, int main_set_node_id, int current_node_id, List<String> &names_running) const {
+	if (main_set_node_id != current_node_id) {
+		const Ref<VisualShaderNode> current_node = graph[type].nodes[current_node_id].node;
+
+		Ref<VisualShaderNodeVaryingGetter> varying_getter = current_node;
+		Ref<VisualShaderNodeReferenceGetter> reference_getter = current_node;
+		if (varying_getter.is_valid()) {
+			String getter_varying_name = varying_getter->get_varying_name();
+
+			String setter_varying_name;
+			const Ref<VisualShaderNodeVaryingSetter> varying_setter = graph[type].nodes[main_set_node_id].node;
+			const Ref<VisualShaderNodeReferenceSetter> reference_setter = graph[type].nodes[main_set_node_id].node;
+			if (varying_setter.is_valid()) {
+				setter_varying_name = varying_setter->get_varying_name();
+			} else if (reference_setter.is_valid()) {
+				setter_varying_name = reference_setter->get_parameter_name();
+			} else {
+				ERR_PRINT("varying_setter or reference_setter is noy typeof VisualShaderNodeVaryingSetter or VisualShaderNodeReferenceSetter");
+			}
+
+			List<String>::Element *setter_element = names_running.find(setter_varying_name);
+			List<String>::Element *getter_element = names_running.find(getter_varying_name);
+
+			if (setter_element == nullptr) {
+				ERR_PRINT("_update_varying_or_reference no find setter_varying_name = " + setter_varying_name);
+			}
+			if (getter_element == nullptr) {
+				String varying_name("getter_varying_name = {0} from setter_varying_name = {1}");
+				varying_name = varying_name.format(varray(getter_varying_name, setter_varying_name));
+			}
+			if (setter_element != nullptr && getter_element != nullptr) {
+				int set_index = names_running.find_index(setter_varying_name);
+				int get_index = names_running.find_index(getter_varying_name);
+
+				if (set_index < get_index) {
+					names_running.move_before(getter_element, setter_element);
+				}
+			}
+		} else if (reference_getter.is_valid()) {
+			String getter_reference_name = reference_getter->get_parameter_name();
+
+			String setter_reference_name;
+			const Ref<VisualShaderNodeReferenceSetter> reference_setter = graph[type].nodes[main_set_node_id].node;
+			const Ref<VisualShaderNodeVaryingSetter> varying_setter = graph[type].nodes[main_set_node_id].node;
+			if (reference_setter.is_valid()) {
+				setter_reference_name = reference_setter->get_parameter_name();
+			} else if (varying_setter.is_valid()) {
+				setter_reference_name = varying_setter->get_varying_name();
+			} else {
+				ERR_PRINT("reference_setter or varying_setter is noy typeof VisualShaderNodeReferenceSetter or VisualShaderNodeVaryingSetter");
+			}
+
+			List<String>::Element *setter_element = names_running.find(setter_reference_name);
+			List<String>::Element *getter_element = names_running.find(getter_reference_name);
+
+			if (setter_element == nullptr) {
+				ERR_PRINT("_update_varying_or_reference no find setter_reference_name = " + setter_reference_name);
+			}
+			if (getter_element == nullptr) {
+				String varying_name("getter_reference_name = {0} from setter_varying_name = {1}");
+				varying_name = varying_name.format(varray(getter_reference_name, setter_reference_name));
+			}
+			if (setter_element != nullptr && getter_element != nullptr) {
+				int set_index = names_running.find_index(setter_reference_name);
+				int get_index = names_running.find_index(getter_reference_name);
+
+				if (set_index < get_index) {
+					names_running.move_before(getter_element, setter_element);
+				}
+			}
+		}
+	}
+
+	const Ref<VisualShaderNode> current_node = graph[type].nodes[current_node_id].node;
+	int input_count = current_node->get_input_port_count();
+	for (int j = 0; j < input_count; j++) {
+		ConnectionKey ck;
+		ck.node = current_node_id; // E
+		ck.port = j;
+
+		if (input_connections.has(ck)) {
+			int from_node = input_connections[ck]->get().from_node;
+			_update_varying_or_reference(type, input_connections, main_set_node_id, from_node, names_running);
+		}
+	}
+}
+
+////////////// Reference Parameter
+namespace {
+RBMap<RID, RBMap<VisualShaderNodeReferenceParameter::ReferenceMode, List<VisualShaderNodeReferenceParameter::Parameter>>> s_reference_parameters;
+//RBMap<VisualShaderNodeReferenceParameter::ReferenceMode, List<VisualShaderNodeReferenceParameter::Parameter>> s_reference_parameters;
+} //namespace
+
+void VisualShaderNodeReferenceParameter::add_reference(const RID &p_shader_rid, ReferenceMode p_reference_mode, const Ref<VisualShaderNodeReferenceSetter> &p_reference_parameter) { // static
+	if (s_reference_parameters.has(p_shader_rid) == false) {
+		s_reference_parameters[p_shader_rid] = RBMap<ReferenceMode, List<Parameter>>();
+	}
+
+	if (s_reference_parameters[p_shader_rid].has(p_reference_mode) == false) {
+		s_reference_parameters[p_shader_rid][p_reference_mode] = List<Parameter>();
+	}
+
+	Parameter parameter = { p_reference_parameter->parameter_name, p_reference_parameter->reference_mode, p_reference_parameter->reference_type };
+	s_reference_parameters[p_shader_rid][p_reference_mode].push_back(parameter);
+}
+
+void VisualShaderNodeReferenceParameter::clear_references(const RID &p_shader_rid, ReferenceMode p_reference_mode) { // static
+	if (s_reference_parameters.has(p_shader_rid) == false) {
+		return;
+	}
+	if (p_reference_mode == REFERENCE_MODE_NONE || p_reference_mode == REFERENCE_MODE_MAX) {
+		s_reference_parameters[p_shader_rid].clear();
+	} else {
+		if (s_reference_parameters[p_shader_rid].has(p_reference_mode) == false) {
+			return;
+		}
+		s_reference_parameters[p_shader_rid][p_reference_mode].clear();
+	}
+}
+
+bool VisualShaderNodeReferenceParameter::has_references(const RID &p_shader_rid, ReferenceMode p_reference_mode) { // static
+	if (p_reference_mode == REFERENCE_MODE_NONE || p_reference_mode == REFERENCE_MODE_MAX) {
+		return false;
+	}
+
+	if (s_reference_parameters.has(p_shader_rid) == false) {
+		return false;
+	}
+
+	return s_reference_parameters[p_shader_rid].has(p_reference_mode);
+}
+
+bool VisualShaderNodeReferenceParameter::erase_reference_by_parameter_name(const RID &p_shader_rid, ReferenceMode p_reference_mode, const String &p_name) { // static
+	if (s_reference_parameters.has(p_shader_rid)) {
+		if (s_reference_parameters[p_shader_rid].has(p_reference_mode)) {
+			List<Parameter>::Element *it = s_reference_parameters[p_shader_rid][p_reference_mode].front();
+
+			while (it) {
+				if (it->get().parameter_name == p_name) {
+					return s_reference_parameters[p_shader_rid][p_reference_mode].erase(it);
+				}
+				it = it->next();
+			}
+		}
+	}
+	return false;
+}
+
+bool VisualShaderNodeReferenceParameter::has_reference_by_parameter_name(const RID &p_shader_rid, ReferenceMode p_reference_mode, const String &p_name) { // static
+	if (s_reference_parameters.has(p_shader_rid) == false) {
+		s_reference_parameters[p_shader_rid] = RBMap<ReferenceMode, List<Parameter>>();
+	}
+
+	if (s_reference_parameters[p_shader_rid].has(p_reference_mode) == false) {
+		s_reference_parameters[p_shader_rid].insert(p_reference_mode, List<Parameter>());
+		return false;
+	}
+
+	for (const Parameter &E : s_reference_parameters[p_shader_rid][p_reference_mode]) { // NOLINT(readability-use-anyofallof)
+		if (E.parameter_name == p_name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void VisualShaderNodeReferenceParameter::set_shader_rid(const RID &p_shader_rid) {
+	shader_rid = p_shader_rid;
+}
+
+const RID &VisualShaderNodeReferenceParameter::get_shader_rid() const {
+	return shader_rid;
+}
+
+int VisualShaderNodeReferenceParameter::get_references_count() const {
+	if (s_reference_parameters.has(shader_rid) == false) {
+		return -1;
+	}
+
+	return s_reference_parameters[shader_rid][reference_mode].size();
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+bool VisualShaderNodeReferenceParameter::remove_parameter_name(const String &p_name) {
+	return erase_reference_by_parameter_name(shader_rid, reference_mode, p_name);
+}
+
+String VisualShaderNodeReferenceParameter::get_parameter_name_by_index(int p_idx) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			int size = s_reference_parameters[shader_rid][reference_mode].size();
+			if (p_idx >= 0 && p_idx < size) {
+				String result_name = s_reference_parameters[shader_rid][reference_mode].get(p_idx).parameter_name;
+				return result_name;
+			}
+		}
+	}
+
+	return {};
+}
+
+VisualShaderNodeReferenceParameter::ReferenceType VisualShaderNodeReferenceParameter::get_reference_type_by_name(const String &p_name) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			for (const Parameter &reference : s_reference_parameters[shader_rid][reference_mode]) {
+				if (reference.parameter_name == p_name) {
+					return reference.type;
+				}
+			}
+		}
+	}
+
+	return REFERENCE_TYPE_MAX;
+}
+
+VisualShaderNodeReferenceParameter::ReferenceType VisualShaderNodeReferenceParameter::get_reference_type_by_index(int p_idx) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			int size = s_reference_parameters[shader_rid][reference_mode].size();
+			if (p_idx >= 0 && p_idx < size) {
+				ReferenceType type = s_reference_parameters[shader_rid][reference_mode].get(p_idx).type;
+				return type;
+			}
+		}
+	}
+
+	return REFERENCE_TYPE_MAX;
+}
+
+VisualShaderNodeReferenceParameter::ReferenceMode VisualShaderNodeReferenceParameter::get_reference_mode_by_name(const String &p_name) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			for (const Parameter &reference : s_reference_parameters[shader_rid][reference_mode]) {
+				if (reference.parameter_name == p_name) {
+					return reference.mode;
+				}
+			}
+		}
+	}
+
+	return REFERENCE_MODE_NONE;
+}
+
+VisualShaderNodeReferenceParameter::ReferenceMode VisualShaderNodeReferenceParameter::get_reference_mode_by_index(int p_idx) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			int size = s_reference_parameters[shader_rid][reference_mode].size();
+			if (p_idx >= 0 && p_idx < size) {
+				ReferenceMode mode = s_reference_parameters[shader_rid][reference_mode].get(p_idx).mode;
+				return mode;
+			}
+		}
+	}
+
+	return REFERENCE_MODE_NONE;
+}
+
+VisualShaderNodeVarying::PortType VisualShaderNodeReferenceParameter::get_port_type_by_index(int p_idx) const {
+	if (s_reference_parameters.has(shader_rid)) {
+		if (s_reference_parameters[shader_rid].has(reference_mode)) {
+			int size = s_reference_parameters[shader_rid][reference_mode].size();
+			if (p_idx >= 0 && p_idx < size) {
+				ReferenceType type = s_reference_parameters[shader_rid][reference_mode].get(p_idx).type;
+				return reference_type_to_port_type(type, 0);
+			}
+		}
+	}
+
+	return PORT_TYPE_SCALAR;
+}
+
+void VisualShaderNodeReferenceParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_parameter_name", "parameter_name"), &VisualShaderNodeReferenceParameter::set_parameter_name);
+	ClassDB::bind_method(D_METHOD("get_parameter_name"), &VisualShaderNodeReferenceParameter::get_parameter_name);
+	ClassDB::bind_method(D_METHOD("set_reference_type", "reference_type"), &VisualShaderNodeReferenceParameter::set_reference_type);
+	ClassDB::bind_method(D_METHOD("get_reference_type"), &VisualShaderNodeReferenceParameter::get_reference_type);
+	ClassDB::bind_method(D_METHOD("set_reference_mode", "reference_mode"), &VisualShaderNodeReferenceParameter::set_reference_mode);
+	ClassDB::bind_method(D_METHOD("get_reference_mode"), &VisualShaderNodeReferenceParameter::get_reference_mode);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "parameter_name"), "set_parameter_name", "get_parameter_name");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "reference_type", PROPERTY_HINT_ENUM, "Float,Int,Uint,Vector2,Vector3,Vector4,Boolean,Transform,Color,Sampler"), "set_reference_type", "get_reference_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "reference_mode", PROPERTY_HINT_ENUM, "None,VertexToVertex,FragToFrag,LightToLight,StartToStart,ProcessToProcess,CollideToCollide,StartCustomToStartCustom,ProcessCustomToProcessCustom,SkyToSky,FogToFog,Max"), "set_reference_mode", "get_reference_mode");
+
+	ADD_SIGNAL(MethodInfo("changed_parameter_name", PropertyInfo(Variant::OBJECT, "sender", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "VisualShaderNode"), PropertyInfo(Variant::STRING, "pre_name"), PropertyInfo(Variant::STRING, "changed_name")));
+	ADD_SIGNAL(MethodInfo("changed_reference_type", PropertyInfo(Variant::OBJECT, "sender", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "VisualShaderNode"), PropertyInfo(Variant::INT, "pre_type", PROPERTY_HINT_ENUM, "Float,Int,Uint,Vector2,Vector3,Vector4,Boolean,Transform,Color,Sampler", PROPERTY_USAGE_DEFAULT), PropertyInfo(Variant::STRING, "changed_type", PROPERTY_HINT_NONE, "Float,Int,Uint,Vector2,Vector3,Vector4,Boolean,Transform,Color,Sampler", PROPERTY_USAGE_DEFAULT)));
+	BIND_CONSTANT(REFERENCE_MODE_NONE)
+	BIND_CONSTANT(REFERENCE_MODE_VERTEX_TO_VERTEX)
+	BIND_CONSTANT(REFERENCE_MODE_FRAG_TO_FRAG)
+	BIND_CONSTANT(REFERENCE_MODE_LIGHT_TO_LIGHT)
+	BIND_CONSTANT(REFERENCE_MODE_START_TO_START)
+	BIND_CONSTANT(REFERENCE_MODE_PROCESS_TO_PROCESS)
+	BIND_CONSTANT(REFERENCE_MODE_COLLIDE_TO_COLLIDE)
+	BIND_CONSTANT(REFERENCE_MODE_START_CUSTOM_TO_START_CUSTOM)
+	BIND_CONSTANT(REFERENCE_MODE_PROCESS_CUSTOM_TO_PROCESS_CUSTOM)
+	BIND_CONSTANT(REFERENCE_MODE_SKY_TO_SKY)
+	BIND_CONSTANT(REFERENCE_MODE_FOG_TO_FOG)
+	BIND_CONSTANT(REFERENCE_MODE_MAX)
+
+	BIND_CONSTANT(REFERENCE_TYPE_FLOAT)
+	BIND_CONSTANT(REFERENCE_TYPE_INT)
+	BIND_CONSTANT(REFERENCE_TYPE_UINT)
+	BIND_CONSTANT(REFERENCE_TYPE_VECTOR2)
+	BIND_CONSTANT(REFERENCE_TYPE_VECTOR3)
+	BIND_CONSTANT(REFERENCE_TYPE_VECTOR4)
+	BIND_CONSTANT(REFERENCE_TYPE_BOOLEAN)
+	BIND_CONSTANT(REFERENCE_TYPE_TRANSFORM)
+	BIND_CONSTANT(REFERENCE_TYPE_COLOR)
+	BIND_CONSTANT(REFERENCE_TYPE_SAMPLER)
+	BIND_CONSTANT(REFERENCE_TYPE_MAX)
+}
+
+String VisualShaderNodeReferenceParameter::get_type_name() const {
+	switch (reference_type) {
+		case REFERENCE_TYPE_FLOAT:
+			return "float";
+
+		case REFERENCE_TYPE_INT:
+			return "int";
+
+		case REFERENCE_TYPE_UINT:
+			return "uint";
+
+		case REFERENCE_TYPE_COLOR:
+			return "vec4";
+
+		case REFERENCE_TYPE_BOOLEAN:
+			return "bool";
+
+		case REFERENCE_TYPE_TRANSFORM:
+			return "mat4";
+
+		case REFERENCE_TYPE_VECTOR2:
+			return "vec2";
+
+		case REFERENCE_TYPE_VECTOR3:
+			return "vec3";
+
+		case REFERENCE_TYPE_VECTOR4:
+			return "vec4";
+
+		case REFERENCE_TYPE_SAMPLER:
+		case REFERENCE_TYPE_MAX:
+			break;
+	}
+	return "";
+}
+
+VisualShaderNode::PortType VisualShaderNodeReferenceParameter::reference_type_to_port_type(ReferenceType p_type, int p_port) {
+	switch (p_type) {
+		case REFERENCE_TYPE_FLOAT:
+			return PORT_TYPE_SCALAR;
+
+		case REFERENCE_TYPE_INT:
+			return PORT_TYPE_SCALAR_INT;
+
+		case REFERENCE_TYPE_UINT:
+			return PORT_TYPE_SCALAR_UINT;
+
+		case REFERENCE_TYPE_VECTOR2:
+			return PORT_TYPE_VECTOR_2D;
+
+		case REFERENCE_TYPE_VECTOR3:
+			return PORT_TYPE_VECTOR_3D;
+
+		case REFERENCE_TYPE_COLOR:
+			return PORT_TYPE_VECTOR_4D;
+
+		case REFERENCE_TYPE_BOOLEAN:
+			return PORT_TYPE_BOOLEAN;
+
+		case REFERENCE_TYPE_TRANSFORM:
+			return PORT_TYPE_TRANSFORM;
+
+		case REFERENCE_TYPE_SAMPLER:
+			return PORT_TYPE_SAMPLER;
+
+		case REFERENCE_TYPE_VECTOR4:
+			return PORT_TYPE_VECTOR_4D;
+
+		case REFERENCE_TYPE_MAX:
+			break;
+	}
+	return PORT_TYPE_MAX;
+}
+
+VisualShaderNodeReferenceParameter::ReferenceMode VisualShaderNodeReferenceParameter::shader_type_to_reference_mode(VisualShader::Type p_type) {
+	switch (p_type) {
+		case VisualShader::TYPE_VERTEX:
+			return REFERENCE_MODE_VERTEX_TO_VERTEX;
+
+		case VisualShader::TYPE_FRAGMENT:
+			return REFERENCE_MODE_FRAG_TO_FRAG;
+
+		case VisualShader::TYPE_LIGHT:
+			return REFERENCE_MODE_LIGHT_TO_LIGHT;
+
+		case VisualShader::TYPE_START:
+			return REFERENCE_MODE_START_TO_START;
+
+		case VisualShader::TYPE_PROCESS:
+			return REFERENCE_MODE_PROCESS_TO_PROCESS;
+
+		case VisualShader::TYPE_COLLIDE:
+			return REFERENCE_MODE_COLLIDE_TO_COLLIDE;
+
+		case VisualShader::TYPE_START_CUSTOM:
+			return REFERENCE_MODE_START_CUSTOM_TO_START_CUSTOM;
+
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return REFERENCE_MODE_PROCESS_CUSTOM_TO_PROCESS_CUSTOM;
+
+		case VisualShader::TYPE_SKY:
+			return REFERENCE_MODE_SKY_TO_SKY;
+
+		case VisualShader::TYPE_FOG:
+			return REFERENCE_MODE_FOG_TO_FOG;
+
+		case VisualShader::TYPE_MAX:
+			break;
+	}
+
+	return REFERENCE_MODE_NONE;
+}
+
+VisualShader::Type VisualShaderNodeReferenceParameter::reference_mode_to_shader_type(ReferenceMode p_mode) {
+	switch (p_mode) {
+		case REFERENCE_MODE_VERTEX_TO_VERTEX:
+			return VisualShader::TYPE_VERTEX;
+
+		case REFERENCE_MODE_FRAG_TO_FRAG:
+			return VisualShader::TYPE_FRAGMENT;
+
+		case REFERENCE_MODE_LIGHT_TO_LIGHT:
+			return VisualShader::TYPE_LIGHT;
+
+		case REFERENCE_MODE_START_TO_START:
+			return VisualShader::TYPE_START;
+
+		case REFERENCE_MODE_PROCESS_TO_PROCESS:
+			return VisualShader::TYPE_PROCESS;
+
+		case REFERENCE_MODE_COLLIDE_TO_COLLIDE:
+			return VisualShader::TYPE_COLLIDE;
+
+		case REFERENCE_MODE_START_CUSTOM_TO_START_CUSTOM:
+			return VisualShader::TYPE_START_CUSTOM;
+
+		case REFERENCE_MODE_PROCESS_CUSTOM_TO_PROCESS_CUSTOM:
+			return VisualShader::TYPE_PROCESS_CUSTOM;
+
+		case REFERENCE_MODE_SKY_TO_SKY:
+			return VisualShader::TYPE_SKY;
+
+		case REFERENCE_MODE_FOG_TO_FOG:
+			return VisualShader::TYPE_FOG;
+
+		case REFERENCE_MODE_NONE:
+		case REFERENCE_MODE_MAX:
+			return VisualShader::TYPE_MAX;
+	}
+
+	return VisualShader::TYPE_MAX;
+}
+
+Vector<StringName> VisualShaderNodeReferenceParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNode::get_editable_properties();
+
+	props.push_back("parameter_name");
+	props.push_back("reference_type");
+	props.push_back("reference_mode");
+
+	return props;
+}
+
+void VisualShaderNodeReferenceParameter::set_direct_reference_type(ReferenceType p_reference_type) {
+	reference_type = p_reference_type;
+}
+
+void VisualShaderNodeReferenceParameter::set_reference_type(ReferenceType p_reference_type) {
+	if (reference_type == p_reference_type) {
+		return;
+	}
+
+	Ref<VisualShaderNodeReferenceSetter> setter = Ref<VisualShaderNodeReferenceSetter>(this);
+	if (setter.is_valid() == false) {
+		reference_type = p_reference_type;
+		return;
+	}
+
+	erase_reference_by_parameter_name(shader_rid, reference_mode, parameter_name);
+
+	ReferenceType pre_reference_type = reference_type;
+	reference_type = p_reference_type;
+
+	add_reference(shader_rid, reference_mode, setter);
+	emit_changed();
+	emit_signal(SNAME("changed_reference_type"), static_cast<VisualShaderNode *>(this), pre_reference_type, p_reference_type);
+}
+
+VisualShaderNodeReferenceParameter::ReferenceType VisualShaderNodeReferenceParameter::get_reference_type() const {
+	return reference_type;
+}
+
+void VisualShaderNodeReferenceParameter::set_direct_reference_mode(ReferenceMode p_reference_mode) {
+	reference_mode = p_reference_mode;
+}
+
+void VisualShaderNodeReferenceParameter::set_reference_mode(ReferenceMode p_reference_mode) {
+	if (reference_mode == p_reference_mode) {
+		return;
+	}
+
+	Ref<VisualShaderNodeReferenceSetter> setter = Ref<VisualShaderNodeReferenceSetter>(this);
+	if (setter.is_valid() == false) {
+		reference_mode = p_reference_mode;
+		return;
+	}
+
+	erase_reference_by_parameter_name(shader_rid, reference_mode, parameter_name);
+
+	reference_mode = p_reference_mode;
+
+	add_reference(shader_rid, reference_mode, setter);
+}
+
+VisualShaderNodeReferenceParameter::ReferenceMode VisualShaderNodeReferenceParameter::get_reference_mode() const {
+	return reference_mode;
+}
+
+bool VisualShaderNodeReferenceParameter::is_parameter_name_changing() const {
+	return is_parameter_name_changing_internal;
+}
+void VisualShaderNodeReferenceParameter::set_parameter_name_changing() {
+	is_parameter_name_changing_internal = true;
+}
+void VisualShaderNodeReferenceParameter::set_parameter_name_changed() {
+	is_parameter_name_changing_internal = false;
+}
+
+void VisualShaderNodeReferenceParameter::set_direct_parameter_name(const String &p_parameter_name) {
+	parameter_name = p_parameter_name;
+}
+
+void VisualShaderNodeReferenceParameter::set_parameter_name(const String &p_parameter_name) {
+	if (parameter_name == p_parameter_name) {
+		return;
+	}
+
+	Ref<VisualShaderNodeReferenceSetter> setter = Ref<VisualShaderNodeReferenceSetter>(this);
+	if (setter.is_valid() == false) {
+		parameter_name = p_parameter_name;
+		set_parameter_name_changed();
+		return;
+	}
+
+	erase_reference_by_parameter_name(shader_rid, reference_mode, parameter_name);
+
+	String pre_parameter_name = parameter_name;
+	parameter_name = p_parameter_name;
+
+	add_reference(shader_rid, reference_mode, setter);
+	emit_changed();
+	emit_signal(SNAME("changed_parameter_name"), static_cast<VisualShaderNode *>(this), pre_parameter_name, p_parameter_name);
+
+	set_parameter_name_changed();
+}
+
+String VisualShaderNodeReferenceParameter::get_parameter_name() const {
+	return parameter_name;
+}
+
+////////////// Reference Setter
+
+String VisualShaderNodeReferenceSetter::get_caption() const {
+	return "ReferenceSetter";
+}
+
+int VisualShaderNodeReferenceSetter::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNode::PortType VisualShaderNodeReferenceSetter::get_input_port_type(int p_port) const {
+	return reference_type_to_port_type(reference_type, p_port);
+}
+
+String VisualShaderNodeReferenceSetter::get_input_port_name(int p_port) const {
+	return {};
+}
+
+int VisualShaderNodeReferenceSetter::get_output_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeReferenceParameter::PortType VisualShaderNodeReferenceSetter::get_output_port_type(int p_port) const {
+	return PORT_TYPE_MAX;
+}
+
+String VisualShaderNodeReferenceSetter::get_output_port_name(int p_port) const {
+	return {}; //no output port means the editor will be used as port
+}
+
+String VisualShaderNodeReferenceSetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code = p_input_vars[0];
+	if (parameter_name == "") {
+		return { String() };
+	}
+
+	if (parameter_name == "[None]" || code == "" || p_for_preview) {
+		switch (reference_type) {
+			case REFERENCE_TYPE_FLOAT:
+				code = "0.0";
+				break;
+
+			case REFERENCE_TYPE_INT:
+				code = "0";
+				break;
+
+			case REFERENCE_TYPE_UINT:
+				code = "0u";
+				break;
+
+			case REFERENCE_TYPE_VECTOR2:
+				code = "vec2(0.0)";
+				break;
+
+			case REFERENCE_TYPE_VECTOR3:
+				code = "vec3(0.0)";
+				break;
+
+			case REFERENCE_TYPE_COLOR:
+				code = "vec4(0.0)";
+				break;
+
+			case REFERENCE_TYPE_BOOLEAN:
+				code = "false";
+				break;
+
+			case REFERENCE_TYPE_TRANSFORM:
+				code = "mat4(1.0)";
+				break;
+
+			case REFERENCE_TYPE_VECTOR4:
+				code = "vec4(0.0)";
+				break;
+
+			case REFERENCE_TYPE_SAMPLER:
+			case REFERENCE_TYPE_MAX:
+				break;
+		}
+	}
+
+	return vformat("	%s ref_%s = %s;\n", get_type_name(), parameter_name, code);
+	;
+}
+
+////////////// Reference Getter
+
+String VisualShaderNodeReferenceGetter::get_caption() const {
+	return "ReferenceGetter";
+}
+
+int VisualShaderNodeReferenceGetter::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeVaryingGetter::PortType VisualShaderNodeReferenceGetter::get_input_port_type(int p_port) const {
+	return PORT_TYPE_MAX;
+}
+
+String VisualShaderNodeReferenceGetter::get_input_port_name(int p_port) const {
+	return {};
+}
+
+int VisualShaderNodeReferenceGetter::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeVaryingGetter::PortType VisualShaderNodeReferenceGetter::get_output_port_type(int p_port) const {
+	return reference_type_to_port_type(reference_type, p_port);
+}
+
+String VisualShaderNodeReferenceGetter::get_output_port_name(int p_port) const {
+	return {};
+}
+
+bool VisualShaderNodeReferenceGetter::has_output_port_preview(int p_port) const {
+	return false;
+}
+
+String VisualShaderNodeReferenceGetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code = parameter_name;
+	if (parameter_name == "") {
+		return { String() };
+	}
+
+	if (parameter_name == "[None]" || p_for_preview) {
+		switch (reference_type) {
+			case REFERENCE_TYPE_FLOAT:
+				code = "0.0";
+				break;
+
+			case REFERENCE_TYPE_INT:
+				code = "0";
+				break;
+
+			case REFERENCE_TYPE_UINT:
+				code = "0u";
+				break;
+
+			case REFERENCE_TYPE_VECTOR2:
+				code = "vec2(0.0)";
+				break;
+
+			case REFERENCE_TYPE_VECTOR3:
+				code = "vec3(0.0)";
+				break;
+
+			case REFERENCE_TYPE_COLOR:
+				code = "vec4(0.0)";
+				break;
+
+			case REFERENCE_TYPE_BOOLEAN:
+				code = "false";
+				break;
+
+			case REFERENCE_TYPE_TRANSFORM:
+				code = "mat4(1.0)";
+				break;
+
+			case REFERENCE_TYPE_VECTOR4:
+				code = "vec4(0.0)";
+				break;
+
+			case REFERENCE_TYPE_SAMPLER:
+			case REFERENCE_TYPE_MAX:
+				break;
+		}
+	}
+
+	return vformat("	%s = ref_%s;\n", p_output_vars[0], code);
+}
+
+////////////// VisualShader extra functions
+
+String VisualShader::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeReferenceSetter> &p_reference) const {
+	String param_name = p_name; //validate name first
+	while (param_name.length() && !is_ascii_alphabet_char(param_name[0])) {
+		param_name = param_name.substr(1, param_name.length() - 1);
+	}
+	if (!param_name.is_empty()) {
+		String valid_name;
+
+		for (int i = 0; i < param_name.length(); i++) {
+			if (is_ascii_identifier_char(param_name[i])) {
+				valid_name += String::chr(param_name[i]);
+			} else if (param_name[i] == ' ') {
+				valid_name += "_";
+			}
+		}
+
+		param_name = valid_name;
+	}
+
+	if (param_name.is_empty()) {
+		param_name = p_reference->get_caption();
+	}
+
+	int attempt = 1;
+
+	while (true) {
+		bool exists = false;
+		for (const Graph &i : graph) {
+			for (const KeyValue<int, Node> &E : i.nodes) {
+				Ref<VisualShaderNodeReferenceSetter> reference = E.value.node;
+				if (reference == p_reference) { //do not test on self
+					continue;
+				}
+				if (reference.is_valid()) {
+					String ref_name = reference->get_parameter_name();
+					if (ref_name == param_name) {
+						exists = true;
+						break;
+					}
+				}
+			}
+			if (exists) {
+				break;
+			}
+		}
+
+		if (exists) {
+			//remove numbers, put new and try again
+			attempt++;
+			while (param_name.length() && is_digit(param_name[param_name.length() - 1])) {
+				param_name = param_name.substr(0, param_name.length() - 1);
+			}
+			ERR_FAIL_COND_V(param_name.is_empty(), String());
+			param_name += itos(attempt);
+		} else {
+			break;
+		}
+	}
+
+	return param_name;
+}
+// H.Q.Cai Add End
+
+

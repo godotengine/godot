@@ -681,6 +681,14 @@ public:
 
 	VisualShaderEditor();
 	~VisualShaderEditor();
+
+	// H.Q.Cai Add Start
+private:
+	void _reference_set_select_item(const Ref<VisualShaderNodeReferenceSetter> &p_reference, const String &p_name);
+	void _reference_get_select_item(const Ref<VisualShaderNodeReferenceGetter> &p_reference, const String &p_name);
+	void _reference_line_edit_changed(const String &p_text, int p_node_id);
+	void _reference_line_edit_focus_out(Object *p_line_edit, int p_node_id);
+	// H.Q.Cai Add End
 };
 
 class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {

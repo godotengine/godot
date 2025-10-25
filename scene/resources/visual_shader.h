@@ -38,6 +38,16 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
+
+
+// H.Q.Cai Add Start
+class VisualShaderNodeReferenceParameter;
+class VisualShaderNodeReferenceSetter;
+class VisualShaderNodeReferenceGetter;
+// H.Q.Cai Add End
+
+
+
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
@@ -253,6 +263,19 @@ public: // internal methods
 	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
 
 	VisualShader();
+
+
+
+	// H.Q.Cai Add Start
+protected:
+	void _update_varying_or_reference(Type type, const HashMap<ConnectionKey, const List<Connection>::Element *> &input_connections, int main_set_node_id, int current_node_id, List<String> &names_running) const;
+
+public:
+	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeReferenceSetter> &p_reference) const;
+	// H.Q.Cai Add End
+
+
+
 };
 
 VARIANT_ENUM_CAST(VisualShader::Type)
@@ -483,6 +506,16 @@ public:
 	void _set_option_index(int p_op, int p_index);
 
 	int get_option_index(int p_op) const;
+
+
+
+	// H.Q.Cai Add Start
+protected:
+	virtual Category get_category() const override { return CATEGORY_NONE; }
+	// H.Q.Cai Add End
+
+
+
 };
 
 /////
@@ -1003,3 +1036,168 @@ public:
 };
 
 extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
+
+
+
+// H.Q.Cai Add Start
+class VisualShaderNodeReferenceParameter : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeReferenceParameter, VisualShaderNode)
+
+public:
+	enum ReferenceMode {
+		REFERENCE_MODE_NONE,
+		REFERENCE_MODE_VERTEX_TO_VERTEX,
+		REFERENCE_MODE_FRAG_TO_FRAG,
+		REFERENCE_MODE_LIGHT_TO_LIGHT,
+		REFERENCE_MODE_START_TO_START,
+		REFERENCE_MODE_PROCESS_TO_PROCESS,
+		REFERENCE_MODE_COLLIDE_TO_COLLIDE,
+		REFERENCE_MODE_START_CUSTOM_TO_START_CUSTOM,
+		REFERENCE_MODE_PROCESS_CUSTOM_TO_PROCESS_CUSTOM,
+		REFERENCE_MODE_SKY_TO_SKY,
+		REFERENCE_MODE_FOG_TO_FOG,
+		REFERENCE_MODE_MAX,
+	};
+
+	enum ReferenceType {
+		REFERENCE_TYPE_FLOAT,
+		REFERENCE_TYPE_INT,
+		REFERENCE_TYPE_UINT,
+		REFERENCE_TYPE_VECTOR2,
+		REFERENCE_TYPE_VECTOR3,
+		REFERENCE_TYPE_VECTOR4,
+		REFERENCE_TYPE_COLOR,
+		REFERENCE_TYPE_BOOLEAN,
+		REFERENCE_TYPE_TRANSFORM,
+		REFERENCE_TYPE_SAMPLER,
+		REFERENCE_TYPE_MAX,
+	};
+
+	struct Parameter {
+		String parameter_name;
+		ReferenceMode mode;
+		ReferenceType type;
+		bool assigned = false;
+	};
+
+protected:
+	RID shader_rid;
+	String parameter_name = "";
+	String type_name = "[None]";
+	ReferenceMode reference_mode = REFERENCE_MODE_NONE;
+	ReferenceType reference_type = REFERENCE_TYPE_MAX;
+
+private:
+	bool is_parameter_name_changing_internal = false;
+
+public: // internal
+	static void add_reference(const RID &p_shader_rid, ReferenceMode p_reference_mode, const Ref<VisualShaderNodeReferenceSetter> &p_reference_parameter);
+	static void clear_references(const RID &p_shader_rid, ReferenceMode p_reference_mode);
+	static bool has_references(const RID &p_shader_rid, ReferenceMode p_reference_mode);
+	static bool erase_reference_by_parameter_name(const RID &p_shader_rid, ReferenceMode p_reference_mode, const String &p_name);
+	static bool has_reference_by_parameter_name(const RID &p_shader_rid, ReferenceMode p_reference_mode, const String &p_name);
+
+	static ReferenceMode shader_type_to_reference_mode(VisualShader::Type p_type);
+	static VisualShader::Type reference_mode_to_shader_type(ReferenceMode p_mode);
+	static PortType reference_type_to_port_type(ReferenceType p_type, int p_port = 0);
+
+	void set_shader_rid(const RID &p_shader);
+	const RID &get_shader_rid() const;
+
+	int get_references_count() const;
+	bool remove_parameter_name(const String &p_name);
+	String get_parameter_name_by_index(int p_idx) const;
+	ReferenceMode get_reference_mode_by_name(const String &p_name) const;
+	ReferenceMode get_reference_mode_by_index(int p_idx) const;
+	ReferenceType get_reference_type_by_name(const String &p_name) const;
+	ReferenceType get_reference_type_by_index(int p_idx) const;
+	PortType get_port_type_by_index(int p_idx) const;
+
+protected:
+	static void _bind_methods();
+
+	String get_type_name() const;
+
+public:
+	String get_caption() const override = 0;
+
+	int get_input_port_count() const override = 0;
+	PortType get_input_port_type(int p_port) const override = 0;
+	String get_input_port_name(int p_port) const override = 0;
+
+	int get_output_port_count() const override = 0;
+	PortType get_output_port_type(int p_port) const override = 0;
+	String get_output_port_name(int p_port) const override = 0;
+
+	String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override = 0;
+
+	Category get_category() const override { return CATEGORY_NONE; }
+
+	Vector<StringName> get_editable_properties() const override;
+
+	bool is_parameter_name_changing() const;
+	void set_parameter_name_changing();
+	void set_parameter_name_changed();
+	void set_direct_parameter_name(const String &p_parameter_name);
+	void set_parameter_name(const String &p_parameter_name);
+	String get_parameter_name() const;
+
+	void set_direct_reference_type(ReferenceType p_reference_type);
+	void set_reference_type(ReferenceType p_reference_type);
+	ReferenceType get_reference_type() const;
+
+	void set_direct_reference_mode(ReferenceMode p_reference_mode);
+	void set_reference_mode(ReferenceMode p_reference_mode);
+	ReferenceMode get_reference_mode() const;
+
+	VisualShaderNodeReferenceParameter() = default;
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeReferenceParameter::ReferenceMode)
+VARIANT_ENUM_CAST(VisualShaderNodeReferenceParameter::ReferenceType)
+
+// ReSharper disable once CppInconsistentNaming
+class VisualShaderNodeReferenceSetter : public VisualShaderNodeReferenceParameter { // NOLINT(cppcoreguidelines-special-member-functions)
+	GDCLASS(VisualShaderNodeReferenceSetter, VisualShaderNodeReferenceParameter)
+
+public:
+	String get_caption() const override;
+
+	int get_input_port_count() const override;
+	PortType get_input_port_type(int p_port) const override;
+	String get_input_port_name(int p_port) const override;
+
+	int get_output_port_count() const override;
+	PortType get_output_port_type(int p_port) const override;
+	String get_output_port_name(int p_port) const override;
+
+	String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeReferenceSetter() = default;
+	~VisualShaderNodeReferenceSetter() override = default;
+};
+
+// ReSharper disable once CppInconsistentNaming
+class VisualShaderNodeReferenceGetter : public VisualShaderNodeReferenceParameter { // NOLINT(cppcoreguidelines-special-member-functions)
+	GDCLASS(VisualShaderNodeReferenceGetter, VisualShaderNodeReferenceParameter)
+
+public:
+	String get_caption() const override;
+
+	int get_input_port_count() const override;
+	PortType get_input_port_type(int p_port) const override;
+	String get_input_port_name(int p_port) const override;
+
+	int get_output_port_count() const override;
+	PortType get_output_port_type(int p_port) const override;
+	String get_output_port_name(int p_port) const override;
+	bool has_output_port_preview(int p_port) const override;
+
+	String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeReferenceGetter() = default;
+};
+// H.Q.Cai Add End
+
+
+

@@ -828,6 +828,16 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
 	GDREGISTER_CLASS(VisualShaderNodeReroute);
 
+
+
+	// H.Q.Cai Add Start
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeReferenceParameter);
+	GDREGISTER_CLASS(VisualShaderNodeReferenceSetter);
+	GDREGISTER_CLASS(VisualShaderNodeReferenceGetter);
+	// H.Q.Cai Add End
+
+
+
 	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
 	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);
 	GDREGISTER_CLASS(VisualShaderNodeTextureSDF);

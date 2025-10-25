@@ -428,6 +428,25 @@ public:
 		return nullptr;
 	}
 
+	// H.Q.Cai Add Start
+	template <typename T_v>
+	int find_index(const T_v &p_val) {
+		Element *it = front();
+		int c = 0;
+
+		while (it) {
+			if (it->value == p_val) {
+				return c;
+			}
+
+			it = it->next();
+			c++;
+		}
+
+		return -1;
+	}
+	// H.Q.Cai Add End
+
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
