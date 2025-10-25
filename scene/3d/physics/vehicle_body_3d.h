@@ -177,7 +177,7 @@ public:
 	real_t get_roll_influence() const;
 
 	real_t get_skidinfo() const;
-	
+
 	//add new getter that returns the normal force at contact point
 	real_t get_contact_normal_force() const;
 
