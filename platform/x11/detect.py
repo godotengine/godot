@@ -344,6 +344,9 @@ def configure(env):
         # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
         env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
 
+    if not env["builtin_recast"]:
+        env.ParseConfig("pkg-config recastnavigation --cflags --libs")
+
     if not env["builtin_wslay"]:
         env.ParseConfig("pkg-config libwslay --cflags --libs")
 
