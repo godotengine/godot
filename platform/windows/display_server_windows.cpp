@@ -4692,7 +4692,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	WindowID window_id = INVALID_WINDOW_ID;
 	bool window_created = false;
-	static HANDLE current_keyboard_id;
+	static int current_keyboard_id;
 
 	// Check whether window exists
 	// FIXME this is O(n), where n is the set of currently open windows and subwindows
@@ -4946,7 +4946,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
 			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-				current_keyboard_id = raw->header.hDevice;
+				this->kb_map_insert((intptr_t)raw->header.hDevice);
+				current_keyboard_id = id_map.get_index((intptr_t)raw->header.hDevice);
 				if (raw->data.keyboard.VKey == VK_SHIFT) {
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
@@ -5031,6 +5032,44 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 			delete[] lpb;
+		} break;
+		case WM_DEVICECHANGE: {
+			UINT device_count = 0;
+
+			if (GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != 0) {
+				break;
+			}
+			if (0 == device_count) {
+				break;
+			}
+			PRAWINPUTDEVICELIST device_list = NULL;
+			device_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
+			if (NULL == device_list) {
+				break;
+			}
+			device_count = GetRawInputDeviceList(device_list, &device_count, sizeof(RAWINPUTDEVICELIST));
+
+			if (device_count != (UINT)-1) {
+				// Remove loop
+				for (const auto &[raw_kb_id, in_use] : id_map) {
+					if (!in_use) {
+						continue; // Skip unused raw IDs
+					}
+					bool listed = false;
+					for (UINT i = 0; i < device_count; ++i) {
+						if ((intptr_t)device_list[i].hDevice == raw_kb_id) {
+							listed = true;
+							break;
+						}
+					}
+					// Only remove the 1st ID that is not listed
+					if (!listed) {
+						this->kb_map_remove(raw_kb_id);
+						break;
+					}
+				}
+			}
+			free(device_list);
 		} break;
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
@@ -6276,12 +6315,9 @@ void DisplayServerWindows::_process_key_events() {
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
-				// Send legacy input
-				// Input::get_singleton()->parse_input_event(k);
-
 				// Send raw input
 				Ref<InputEventKey> k_raw = k->duplicate();
-				k_raw->set_device((int64_t)ke.keyboard_id);
+				k_raw->set_device((intptr_t)ke.keyboard_id);
 				Input::get_singleton()->parse_input_event(k_raw);
 
 			} break;
