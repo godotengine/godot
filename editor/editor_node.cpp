@@ -455,6 +455,10 @@ void EditorNode::_update_from_settings() {
 	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
 	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
+		Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
+		if (!domain->is_enabled()) {
+			domain->set_locale_override(current_fallback_locale);
+		}
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
@@ -468,8 +472,7 @@ void EditorNode::_update_from_settings() {
 	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
 	RS::get_singleton()->environment_set_ssil_quality(RS::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
 	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
-	RS::get_singleton()->environment_set_ssr_roughness_quality(ssr_roughness_quality);
+	RS::get_singleton()->environment_set_ssr_half_size(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size"));
 	RS::SubSurfaceScatteringQuality sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
 	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
@@ -581,7 +584,7 @@ void EditorNode::_update_translations() {
 	if (main->is_enabled()) {
 		// Check for the exact locale.
 		// `get_potential_translations("zh_CN")` could return translations for "zh".
-		if (main->get_loaded_locales().has(main->get_locale_override())) {
+		if (main->has_translation_for_locale(main->get_locale_override())) {
 			// The set of translation resources for the current locale changed.
 			const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
 			if (translations != tracked_translations) {
@@ -682,10 +685,6 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), _get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), _get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
 		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), _get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
-
-		if (EditorDebuggerNode::get_singleton()->is_visible()) {
-			bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanelDebuggerOverride"), EditorStringName(EditorStyles)));
-		}
 
 		_update_renderer_color();
 	}
@@ -937,6 +936,12 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			// Remember the selected locale to preview node translations.
+			const String preview_locale = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "preview_locale", String());
+			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->get_loaded_locales().has(preview_locale)) {
+				set_preview_locale(preview_locale);
+			}
+
 			if (Engine::get_singleton()->is_recovery_mode_hint()) {
 				EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
 			}
@@ -1014,6 +1019,11 @@ void EditorNode::_notification(int p_what) {
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
+				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
@@ -2673,7 +2683,7 @@ void EditorNode::push_node_item(Node *p_node) {
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
 	if (!p_object) {
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
 		hide_unused_editors();
@@ -2794,7 +2804,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	if (!current_obj) {
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		InspectorDock::get_inspector_singleton()->edit(nullptr);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
 		EditorDebuggerNode::get_singleton()->clear_remote_tree_selection();
 		hide_unused_editors();
@@ -2828,7 +2838,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		if (!p_skip_inspector_update) {
 			InspectorDock::get_inspector_singleton()->edit(current_res);
 			SceneTreeDock::get_singleton()->set_selected(nullptr);
-			NodeDock::get_singleton()->set_node(nullptr);
+			NodeDock::get_singleton()->set_object(current_res);
 			InspectorDock::get_singleton()->update(nullptr);
 			EditorDebuggerNode::get_singleton()->clear_remote_tree_selection();
 			ImportDock::get_singleton()->set_edit_path(current_res->get_path());
@@ -2858,7 +2868,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 		InspectorDock::get_inspector_singleton()->edit(current_node);
 		if (current_node->is_inside_tree()) {
-			NodeDock::get_singleton()->set_node(current_node);
+			NodeDock::get_singleton()->set_object(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
@@ -2870,7 +2880,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				}
 			}
 		} else {
-			NodeDock::get_singleton()->set_node(nullptr);
+			NodeDock::get_singleton()->set_object(nullptr);
 			SceneTreeDock::get_singleton()->set_selected(nullptr);
 			InspectorDock::get_singleton()->update(nullptr);
 		}
@@ -2918,7 +2928,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		}
 
 		InspectorDock::get_inspector_singleton()->edit(current_obj);
-		NodeDock::get_singleton()->set_node(nullptr);
+		NodeDock::get_singleton()->set_object(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(selected_node);
 		SceneTreeDock::get_singleton()->set_selection(multi_nodes);
 		InspectorDock::get_singleton()->update(nullptr);
@@ -3532,7 +3542,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			about->popup_centered(Size2(780, 500) * EDSCALE);
 		} break;
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
-			OS::get_singleton()->shell_open("https://fund.godotengine.org");
+			OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=help_menu");
 		} break;
 	}
 }
@@ -4207,8 +4217,17 @@ void EditorNode::set_preview_locale(const String &p_locale) {
 	// Texts set in the editor could be identifiers that should never be translated.
 	// So we need to disable translation entirely.
 	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
-	main_domain->set_enabled(!p_locale.is_empty());
-	main_domain->set_locale_override(p_locale);
+	if (p_locale.is_empty()) {
+		// Disable preview. Use the fallback locale.
+		main_domain->set_enabled(false);
+		main_domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
+	} else {
+		// Preview a specific locale.
+		main_domain->set_enabled(true);
+		main_domain->set_locale_override(p_locale);
+	}
+
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "preview_locale", p_locale);
 
 	_translation_resources_changed();
 }
@@ -7135,6 +7154,13 @@ bool EditorNode::call_build() {
 	return builds_successful;
 }
 
+void EditorNode::call_run_scene(const String &p_scene, Vector<String> &r_args) {
+	for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+		EditorPlugin *plugin = editor_data.get_editor_plugin(i);
+		plugin->run_scene(p_scene, r_args);
+	}
+}
+
 void EditorNode::_inherit_imported(const String &p_action) {
 	open_imported->hide();
 	load_scene(open_import_request, true, true);
@@ -7642,7 +7668,10 @@ EditorNode::EditorNode() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
-	TranslationServer::get_singleton()->get_main_domain()->set_enabled(false);
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
+	domain->set_enabled(false);
+	domain->set_locale_override(TranslationServer::get_singleton()->get_fallback_locale());
+
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();

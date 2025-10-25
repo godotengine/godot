@@ -71,7 +71,7 @@ void EditorRunNative::_notification(int p_what) {
 							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * platform_idx + j);
 							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
 							popup->set_item_indent(-1, 2);
-							if (device_shortcut_id <= 4) {
+							if (device_shortcut_id <= 4 && eep->is_option_runnable(j)) {
 								// Assign shortcuts for the first 4 devices added in the list.
 								popup->set_item_shortcut(-1, ED_GET_SHORTCUT(vformat("remote_deploy/deploy_to_device_%d", device_shortcut_id)), true);
 								device_shortcut_id += 1;
@@ -144,7 +144,9 @@ Error EditorRunNative::start_run_native(int p_id) {
 
 	preset->update_value_overrides();
 
-	emit_signal(SNAME("native_run"), preset);
+	if (eep->is_option_runnable(idx)) {
+		emit_signal(SNAME("native_run"), preset);
+	}
 
 	BitField<EditorExportPlatform::DebugFlags> flags = 0;
 

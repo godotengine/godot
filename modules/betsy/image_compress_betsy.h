@@ -66,6 +66,10 @@ enum BetsyShaderType {
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
 	BETSY_SHADER_ALPHA_STITCH,
+	BETSY_SHADER_RGB_TO_RGBA_FLOAT,
+	BETSY_SHADER_RGB_TO_RGBA_HALF,
+	BETSY_SHADER_RGB_TO_RGBA_UNORM8,
+	BETSY_SHADER_RGB_TO_RGBA_UNORM16,
 	BETSY_SHADER_MAX,
 };
 
@@ -83,6 +87,12 @@ struct BC1PushConstant {
 struct BC4PushConstant {
 	uint32_t channel_idx;
 	uint32_t padding[3] = { 0 };
+};
+
+struct RGBToRGBAPushConstant {
+	uint32_t width;
+	uint32_t height;
+	uint32_t padding[2];
 };
 
 void free_device();

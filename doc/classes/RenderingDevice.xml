@@ -1163,6 +1163,7 @@
 		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
 			The main graphics-compute command queue ([code]rid[/code] parameter is ignored).
 			- Vulkan: [code]VkQueue[/code].
+			- D3D12: [code]ID3D12CommandQueue[/code].
 			- Metal: [code]MTLCommandQueue[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
@@ -1171,6 +1172,7 @@
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
 			- Vulkan: [code]VkImage[/code].
+			- D3D12: [code]ID3D12Resource[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
 			The view of an owned or shared texture.
@@ -2149,7 +2151,17 @@
 		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
 			Input attachment uniform.
 		</constant>
-		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC" value="10" enum="UniformType">
+			Same as UNIFORM_TYPE_UNIFORM_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC" value="11" enum="UniformType">
+			Same as UNIFORM_TYPE_STORAGE_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="12" enum="UniformType">
 			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">

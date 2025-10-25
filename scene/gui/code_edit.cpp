@@ -188,13 +188,14 @@ void CodeEdit::_notification(int p_what) {
 					code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, code_completion_options_count - lines);
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), theme_cache.code_completion_selected_color);
 
+					const String &lang = _get_locale();
 					for (int i = 0; i < lines; i++) {
 						int l = code_completion_line_ofs + i;
 						ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
 
 						Ref<TextLine> tl;
 						tl.instantiate();
-						tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size);
+						tl->add_string(code_completion_options[l].display, theme_cache.font, theme_cache.font_size, lang);
 
 						int yofs = (row_height - tl->get_size().y) / 2;
 						Point2 title_pos(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height + yofs);
@@ -1521,14 +1522,15 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	if (E) {
 		text_rid = E->value;
 	} else {
+		const String &lang = _get_locale();
 		String fc = String::num_int64(p_line + 1).lpad(line_number_digits, line_number_padding);
 		if (is_localizing_numeral_system()) {
-			fc = TS->format_number(fc);
+			fc = TS->format_number(fc, lang);
 		}
 
 		text_rid = TS->create_shaped_text();
 		if (theme_cache.font.is_valid()) {
-			TS->shaped_text_add_string(text_rid, fc, theme_cache.font->get_rids(), theme_cache.font_size, theme_cache.font->get_opentype_features());
+			TS->shaped_text_add_string(text_rid, fc, theme_cache.font->get_rids(), theme_cache.font_size, theme_cache.font->get_opentype_features(), lang);
 		}
 		line_number_text_cache.insert(p_line, text_rid);
 	}
@@ -1869,8 +1871,18 @@ bool CodeEdit::is_line_folded(int p_line) const {
 	return p_line + 1 < get_line_count() && !_is_line_hidden(p_line) && _is_line_hidden(p_line + 1);
 }
 
-TypedArray<int> CodeEdit::get_folded_lines() const {
+TypedArray<int> CodeEdit::get_folded_lines_bind() const {
 	TypedArray<int> folded_lines;
+	for (int i = 0; i < get_line_count(); i++) {
+		if (is_line_folded(i)) {
+			folded_lines.push_back(i);
+		}
+	}
+	return folded_lines;
+}
+
+PackedInt32Array CodeEdit::get_folded_lines() const {
+	PackedInt32Array folded_lines;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_folded(i)) {
 			folded_lines.push_back(i);
@@ -2807,7 +2819,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("toggle_foldable_lines_at_carets"), &CodeEdit::toggle_foldable_lines_at_carets);
 
 	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
-	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
+	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines_bind);
 
 	/* Code region */
 	ClassDB::bind_method(D_METHOD("create_code_region"), &CodeEdit::create_code_region);

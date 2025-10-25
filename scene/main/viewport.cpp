@@ -272,17 +272,31 @@ void Viewport::_sub_window_update_order() {
 		return;
 	}
 
-	if (!gui.sub_windows[gui.sub_windows.size() - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-		int index = gui.sub_windows.size() - 1;
-
-		while (index > 0 && gui.sub_windows[index - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-			--index;
+	// Reorder 'always on top' windows.
+	int last_index = gui.sub_windows.size() - 1;
+	for (int index = last_index, insert_index = last_index; index >= 0; index--) {
+		SubWindow sw = gui.sub_windows[index];
+		Window *parent_window = sw.window->get_parent_visible_window();
+		bool parent_is_always_on_top = (parent_window != nullptr) && parent_window->get_flag(Window::FLAG_ALWAYS_ON_TOP);
+		if (sw.window->get_flag(Window::FLAG_ALWAYS_ON_TOP) || (parent_is_always_on_top && sw.window->is_exclusive())) {
+			if (index != insert_index) {
+				gui.sub_windows.remove_at(index);
+				gui.sub_windows.insert(insert_index, sw);
+			}
+			insert_index--;
 		}
+	}
 
-		if (index != (gui.sub_windows.size() - 1)) {
-			SubWindow sw = gui.sub_windows[gui.sub_windows.size() - 1];
-			gui.sub_windows.remove_at(gui.sub_windows.size() - 1);
-			gui.sub_windows.insert(index, sw);
+	// Reorder exclusive children.
+	for (int parent_index = 0; parent_index < gui.sub_windows.size(); parent_index++) {
+		Window *exclusive_child = gui.sub_windows[parent_index].window->get_exclusive_child();
+		if (exclusive_child != nullptr && exclusive_child->is_visible()) {
+			int child_index = _sub_window_find(exclusive_child);
+			if (child_index < parent_index) {
+				SubWindow sw = gui.sub_windows[child_index];
+				gui.sub_windows.remove_at(child_index);
+				gui.sub_windows.insert(parent_index, sw);
+			}
 		}
 	}
 
@@ -534,7 +548,7 @@ void Viewport::_update_viewport_path() {
 }
 
 bool Viewport::_can_hide_focus_state() {
-	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+	return Engine::get_singleton()->is_editor_hint() || GLOBAL_GET_CACHED(int, "gui/common/show_focus_state_on_pointer_event") < 2;
 }
 
 void Viewport::_on_settings_changed() {
@@ -1118,7 +1132,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	stretch_transform = stretch_transform_new;
 	font_oversampling = new_font_oversampling;
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (!use_xr) {
 #endif
 
@@ -1128,7 +1142,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 		}
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	} // if (!use_xr)
 #endif
 
@@ -4768,6 +4782,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	}
 }
 
+#ifndef XR_DISABLED
 void Viewport::set_use_xr(bool p_use_xr) {
 	ERR_MAIN_THREAD_GUARD;
 	if (use_xr != p_use_xr) {
@@ -4794,6 +4809,7 @@ bool Viewport::is_using_xr() {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
+#endif // XR_DISABLED
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 	ERR_MAIN_THREAD_GUARD;
@@ -5060,8 +5076,10 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
+#ifndef XR_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
+#endif // XR_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &Viewport::set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &Viewport::get_scaling_3d_mode);
@@ -5088,7 +5106,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+#ifndef XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+#endif // XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 #endif // _3D_DISABLED

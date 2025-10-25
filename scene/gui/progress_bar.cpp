@@ -167,7 +167,8 @@ void ProgressBar::_notification(int p_what) {
 				String txt = itos(int(ratio * 100));
 
 				if (is_localizing_numeral_system()) {
-					txt = TS->format_number(txt) + TS->percent_sign();
+					const String &lang = _get_locale();
+					txt = TS->format_number(txt, lang) + TS->percent_sign(lang);
 				} else {
 					txt += String("%");
 				}

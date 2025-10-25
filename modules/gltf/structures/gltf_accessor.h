@@ -32,9 +32,9 @@
 
 #include "../gltf_defines.h"
 
-#include "core/io/resource.h"
+#include "gltf_buffer_view.h"
 
-struct GLTFAccessor : public Resource {
+class GLTFAccessor : public Resource {
 	GDCLASS(GLTFAccessor, Resource);
 	friend class GLTFDocument;
 
@@ -80,6 +80,10 @@ private:
 	GLTFBufferViewIndex sparse_values_buffer_view = 0;
 	int64_t sparse_values_byte_offset = 0;
 
+	// Trivial helper functions.
+	static GLTFAccessor::GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
+	String _get_accessor_type_name() const;
+
 protected:
 	static void _bind_methods();
 
@@ -106,6 +110,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
+	// Property getters and setters.
 	GLTFBufferViewIndex get_buffer_view() const;
 	void set_buffer_view(GLTFBufferViewIndex p_buffer_view);
 
@@ -150,6 +155,10 @@ public:
 
 	int64_t get_sparse_values_byte_offset() const;
 	void set_sparse_values_byte_offset(int64_t p_sparse_values_byte_offset);
+
+	// Dictionary conversion.
+	static Ref<GLTFAccessor> from_dictionary(const Dictionary &p_dict);
+	Dictionary to_dictionary() const;
 };
 
 VARIANT_ENUM_CAST(GLTFAccessor::GLTFAccessorType);

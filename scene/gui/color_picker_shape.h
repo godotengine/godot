@@ -38,6 +38,12 @@ class ColorPickerShape : public Object {
 	void _emit_color_changed();
 
 protected:
+	static inline Ref<Shader> wheel_shader;
+	static inline Ref<Shader> circle_shader;
+	static inline Ref<Shader> circle_ok_color_shader;
+	static inline Ref<Shader> rectangle_ok_color_hs_shader;
+	static inline Ref<Shader> rectangle_ok_color_hl_shader;
+
 	ColorPicker *color_picker = nullptr;
 	bool is_dragging = false;
 
@@ -67,6 +73,9 @@ public:
 	bool is_initialized = false;
 	bool cursor_editing = false;
 	float echo_multiplier = 1;
+
+	static void init_shaders();
+	static void finish_shaders();
 
 	virtual String get_name() const = 0;
 	virtual Ref<Texture2D> get_icon() const = 0;
@@ -113,7 +122,7 @@ protected:
 	Control *square = nullptr;
 	Control *square_overlay = nullptr;
 	Control *value_slider = nullptr;
-	virtual Ref<Shader> _get_shader() const { return ColorPicker::rectangle_ok_color_hs_shader; }
+	virtual Ref<Shader> _get_shader() const { return ColorPickerShape::rectangle_ok_color_hs_shader; }
 	virtual void _initialize_controls() override;
 	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
 
@@ -139,7 +148,7 @@ class ColorPickerShapeOKHLRectangle : public ColorPickerShapeOKHSRectangle {
 	GDCLASS(ColorPickerShapeOKHLRectangle, ColorPickerShapeOKHSRectangle);
 
 protected:
-	virtual Ref<Shader> _get_shader() const override { return ColorPicker::rectangle_ok_color_hl_shader; }
+	virtual Ref<Shader> _get_shader() const override { return ColorPickerShape::rectangle_ok_color_hl_shader; }
 	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
 
 	virtual void _square_draw() override;
@@ -230,7 +239,7 @@ class ColorPickerShapeVHSCircle : public ColorPickerShapeCircle {
 
 protected:
 	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
-	virtual Ref<Shader> _get_shader() const override { return ColorPicker::circle_shader; }
+	virtual Ref<Shader> _get_shader() const override { return ColorPickerShape::circle_shader; }
 
 	virtual void _circle_input(const Ref<InputEvent> &p_event) override;
 	virtual void _value_slider_input(const Ref<InputEvent> &p_event) override;
@@ -251,7 +260,7 @@ class ColorPickerShapeOKHSLCircle : public ColorPickerShapeCircle {
 
 protected:
 	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
-	virtual Ref<Shader> _get_shader() const override { return ColorPicker::circle_ok_color_shader; }
+	virtual Ref<Shader> _get_shader() const override { return ColorPickerShape::circle_ok_color_shader; }
 
 	virtual void _circle_input(const Ref<InputEvent> &p_event) override;
 	virtual void _value_slider_input(const Ref<InputEvent> &p_event) override;

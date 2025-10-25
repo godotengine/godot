@@ -35,6 +35,9 @@
 #define PRINT_RESOURCE_TRACKER_TOTAL 0
 #define PRINT_COMMAND_RECORDING 0
 
+// Prints the total number of bytes used for draw lists in a frame.
+#define PRINT_DRAW_LIST_STATS 0
+
 RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_honors_barriers = false;
 	driver_clears_with_copy_engine = false;
@@ -769,7 +772,7 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 			} break;
 			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
-				driver->command_bind_compute_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				driver->command_bind_compute_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count, bind_uniform_sets_instruction->dynamic_offsets_mask);
 				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
@@ -835,7 +838,15 @@ void RenderingDeviceGraph::_get_draw_list_render_pass_and_framebuffer(const Reco
 	r_framebuffer = it->value.framebuffer;
 }
 
+#if PRINT_DRAW_LIST_STATS
+static uint32_t draw_list_total_size = 0;
+#endif
+
 void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size) {
+#if PRINT_DRAW_LIST_STATS
+	draw_list_total_size += p_instruction_data_size;
+#endif
+
 	uint32_t instruction_data_cursor = 0;
 	while (instruction_data_cursor < p_instruction_data_size) {
 		DEV_ASSERT((instruction_data_cursor + sizeof(DrawListInstruction)) <= p_instruction_data_size);
@@ -854,7 +865,7 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 			} break;
 			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
 				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
-				driver->command_bind_render_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				driver->command_bind_render_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count, bind_uniform_sets_instruction->dynamic_offsets_mask);
 				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
@@ -1419,7 +1430,7 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
 				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
-					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index, "DYNAMIC_OFFSETS", bind_uniform_sets_instruction->dynamic_offsets_mask);
 				}
 				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
@@ -1521,7 +1532,7 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
 				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
 				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
-					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index, "DYNAMIC_OFFSETS", bind_uniform_sets_instruction->dynamic_offsets_mask);
 				}
 				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
@@ -1735,6 +1746,7 @@ void RenderingDeviceGraph::add_compute_list_bind_uniform_sets(RDD::ShaderID p_sh
 	instruction->shader = p_shader;
 	instruction->first_set_index = p_first_set_index;
 	instruction->set_count = p_set_count;
+	instruction->dynamic_offsets_mask = driver->uniform_sets_get_dynamic_offsets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
 
 	RDD::UniformSetID *ids = instruction->uniform_set_ids();
 	for (uint32_t i = 0; i < p_set_count; i++) {
@@ -1853,6 +1865,7 @@ void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shade
 	instruction->shader = p_shader;
 	instruction->first_set_index = p_first_index;
 	instruction->set_count = p_set_count;
+	instruction->dynamic_offsets_mask = driver->uniform_sets_get_dynamic_offsets(p_uniform_sets, p_shader, p_first_index, p_set_count);
 
 	for (uint32_t i = 0; i < p_set_count; i++) {
 		instruction->uniform_set_ids()[i] = p_uniform_sets[i];
@@ -2366,6 +2379,10 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			workarounds_state.draw_list_found = false;
 		}
 
+#if PRINT_DRAW_LIST_STATS
+		draw_list_total_size = 0;
+#endif
+
 		if (p_reorder_commands) {
 #if PRINT_RENDER_GRAPH
 			print_line("BEFORE SORT");
@@ -2416,6 +2433,9 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 
 		_run_label_command_change(r_command_buffer, -1, -1, false, false, nullptr, 0, current_label_index, current_label_level);
 
+#if PRINT_DRAW_LIST_STATS
+		print_line(vformat("Draw list %d bytes", draw_list_total_size));
+#endif
 #if PRINT_COMMAND_RECORDING
 		print_line(vformat("Recorded %d commands", command_count));
 #endif

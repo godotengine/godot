@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/callable_bind.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -180,6 +181,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	const NodeData *nd = &nodes[0];
 
 	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
+	ret_nodes[0] = nullptr; // Sidesteps "maybe uninitialized" false-positives on GCC.
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 

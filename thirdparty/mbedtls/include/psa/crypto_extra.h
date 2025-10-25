@@ -600,15 +600,31 @@ psa_status_t mbedtls_psa_platform_get_builtin_key(
  * This means that PSA core was built with the corresponding PSA_WANT_ALG_xxx
  * set and that psa_crypto_init has already been called.
  *
- * \note When using Mbed TLS version of PSA core (i.e. MBEDTLS_PSA_CRYPTO_C is
- *       set) for now this function only checks the state of the driver
- *       subsystem, not the algorithm. This might be improved in the future.
+ * \note When using the built-in version of the PSA core (i.e.
+ *       #MBEDTLS_PSA_CRYPTO_C is set), for now, this function only checks
+ *       the state of the driver subsystem, not the algorithm.
+ *       This might be improved in the future.
  *
  * \param hash_alg  The hash algorithm.
  *
  * \return 1 if the PSA can handle \p hash_alg, 0 otherwise.
  */
 int psa_can_do_hash(psa_algorithm_t hash_alg);
+
+/**
+ * Tell if PSA is ready for this cipher.
+ *
+ * \note When using the built-in version of the PSA core (i.e.
+ *       #MBEDTLS_PSA_CRYPTO_C is set), for now, this function only checks
+ *       the state of the driver subsystem, not the key type and algorithm.
+ *       This might be improved in the future.
+ *
+ * \param key_type    The key type.
+ * \param cipher_alg  The cipher algorithm.
+ *
+ * \return 1 if the PSA can handle \p cipher_alg, 0 otherwise.
+ */
+int psa_can_do_cipher(psa_key_type_t key_type, psa_algorithm_t cipher_alg);
 
 /**@}*/
 
@@ -743,6 +759,17 @@ int psa_can_do_hash(psa_algorithm_t hash_alg);
  *
  * To make the authentication explicit there are various methods, see Section 5
  * of RFC 8236 for two examples.
+ *
+ * \note The JPAKE implementation has the following limitations:
+ *       - The only supported primitive is ECC on the curve secp256r1, i.e.
+ *         `PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,
+ *          PSA_ECC_FAMILY_SECP_R1, 256)`.
+ *       - The only supported hash algorithm is SHA-256, i.e.
+ *         `PSA_ALG_SHA_256`.
+ *       - When using the built-in implementation, the user ID and the peer ID
+ *         must be `"client"` (6-byte string) and `"server"` (6-byte string),
+ *         or the other way round.
+ *         Third-party drivers may or may not have this limitation.
  *
  */
 #define PSA_ALG_JPAKE                   ((psa_algorithm_t) 0x0a000100)
@@ -1182,6 +1209,8 @@ static psa_algorithm_t psa_pake_cs_get_algorithm(
  * This function overwrites any PAKE algorithm
  * previously set in \p cipher_suite.
  *
+ * \note For #PSA_ALG_JPAKE, the only supported hash algorithm is SHA-256.
+ *
  * \param[out] cipher_suite    The cipher suite structure to write to.
  * \param algorithm            The PAKE algorithm to write.
  *                             (`PSA_ALG_XXX` values of type ::psa_algorithm_t
@@ -1204,6 +1233,10 @@ static psa_pake_primitive_t psa_pake_cs_get_primitive(
 /** Declare the primitive for a PAKE cipher suite.
  *
  * This function overwrites any primitive previously set in \p cipher_suite.
+ *
+ * \note For #PSA_ALG_JPAKE, the only supported primitive is ECC on the curve
+ *       secp256r1, i.e. `PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,
+ *       PSA_ECC_FAMILY_SECP_R1, 256)`.
  *
  * \param[out] cipher_suite    The cipher suite structure to write to.
  * \param primitive            The primitive to write. If this is 0, the
@@ -1543,6 +1576,10 @@ psa_status_t psa_pake_set_password_key(psa_pake_operation_t *operation,
  * values of type ::psa_algorithm_t such that #PSA_ALG_IS_PAKE(\c alg) is true)
  * for more information.
  *
+ * \note When using the built-in implementation of #PSA_ALG_JPAKE, the user ID
+ *       must be `"client"` (6-byte string) or `"server"` (6-byte string).
+ *       Third-party drivers may or may not have this limitation.
+ *
  * \param[in,out] operation     The operation object to set the user ID for. It
  *                              must have been set up by psa_pake_setup() and
  *                              not yet in use (neither psa_pake_output() nor
@@ -1583,6 +1620,10 @@ psa_status_t psa_pake_set_user(psa_pake_operation_t *operation,
  * Refer to the documentation of individual PAKE algorithm types (`PSA_ALG_XXX`
  * values of type ::psa_algorithm_t such that #PSA_ALG_IS_PAKE(\c alg) is true)
  * for more information.
+ *
+ * \note When using the built-in implementation of #PSA_ALG_JPAKE, the peer ID
+ *       must be `"client"` (6-byte string) or `"server"` (6-byte string).
+ *       Third-party drivers may or may not have this limitation.
  *
  * \param[in,out] operation     The operation object to set the peer ID for. It
  *                              must have been set up by psa_pake_setup() and

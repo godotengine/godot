@@ -52,6 +52,7 @@ void NodePath::_update_hash_cache() const {
 void NodePath::prepend_period() {
 	if (data->path.size() && data->path[0].operator String() != ".") {
 		data->path.insert(0, ".");
+		data->concatenated_path = StringName();
 		data->hash_cache_valid = false;
 	}
 }
@@ -179,15 +180,11 @@ NodePath::operator String() const {
 		ret = "/";
 	}
 
-	for (int i = 0; i < data->path.size(); i++) {
-		if (i > 0) {
-			ret += "/";
-		}
-		ret += data->path[i].operator String();
-	}
+	ret += get_concatenated_names();
 
-	for (int i = 0; i < data->subpath.size(); i++) {
-		ret += ":" + data->subpath[i].operator String();
+	String subpath = get_concatenated_subnames();
+	if (!subpath.is_empty()) {
+		ret += ":" + subpath;
 	}
 
 	return ret;
@@ -356,6 +353,7 @@ void NodePath::simplify() {
 			}
 		}
 	}
+	data->concatenated_path = StringName();
 	data->hash_cache_valid = false;
 }
 

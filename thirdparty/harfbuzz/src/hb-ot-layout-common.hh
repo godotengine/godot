@@ -141,6 +141,7 @@ struct hb_subset_layout_context_t :
   const hb_map_t *lookup_index_map;
   const hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map;
   const hb_map_t *feature_index_map;
+  const hb_map_t *feature_map_w_duplicates;
   const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map;
   hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map;
   const hb_set_t *catch_all_record_feature_idxes;
@@ -165,6 +166,7 @@ struct hb_subset_layout_context_t :
       lookup_index_map = &c_->plan->gsub_lookups;
       script_langsys_map = &c_->plan->gsub_langsys;
       feature_index_map = &c_->plan->gsub_features;
+      feature_map_w_duplicates = &c_->plan->gsub_features_w_duplicates;
       feature_substitutes_map = &c_->plan->gsub_feature_substitutes_map;
       feature_record_cond_idx_map = c_->plan->user_axes_location.is_empty () ? nullptr : &c_->plan->gsub_feature_record_cond_idx_map;
       catch_all_record_feature_idxes = &c_->plan->gsub_old_features;
@@ -175,6 +177,7 @@ struct hb_subset_layout_context_t :
       lookup_index_map = &c_->plan->gpos_lookups;
       script_langsys_map = &c_->plan->gpos_langsys;
       feature_index_map = &c_->plan->gpos_features;
+      feature_map_w_duplicates = &c_->plan->gpos_features_w_duplicates;
       feature_substitutes_map = &c_->plan->gpos_feature_substitutes_map;
       feature_record_cond_idx_map = c_->plan->user_axes_location.is_empty () ? nullptr : &c_->plan->gpos_feature_record_cond_idx_map;
       catch_all_record_feature_idxes = &c_->plan->gpos_old_features;
@@ -1082,15 +1085,15 @@ struct LangSys
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     const uint32_t *v;
-    out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
+    out->reqFeatureIndex = l->feature_map_w_duplicates->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
 
     if (!l->visitFeatureIndex (featureIndex.len))
       return_trace (false);
 
     auto it =
     + hb_iter (featureIndex)
-    | hb_filter (l->feature_index_map)
-    | hb_map (l->feature_index_map)
+    | hb_filter (l->feature_map_w_duplicates)
+    | hb_map (l->feature_map_w_duplicates)
     ;
 
     bool ret = bool (it);
@@ -1337,7 +1340,7 @@ struct Lookup
     TRACE_DISPATCH (this, lookup_type);
     unsigned int count = get_subtable_count ();
     for (unsigned int i = 0; i < count; i++) {
-      typename context_t::return_t r = get_subtable<TSubTable> (i).dispatch (c, lookup_type, std::forward<Ts> (ds)...);
+      typename context_t::return_t r = get_subtable<TSubTable> (i).dispatch (c, lookup_type, ds...);
       if (c->stop_sublookup_iteration (r))
 	return_trace (r);
     }
@@ -1387,6 +1390,11 @@ struct Lookup
       {
         unsigned new_flag = lookupFlag;
         new_flag &= ~LookupFlag::UseMarkFilteringSet;
+        // https://github.com/harfbuzz/harfbuzz/issues/5499
+        // If we remove UseMarkFilteringSet flag because the set is now empty,
+        // we need to add IgnoreMarks flag, otherwise the lookup will not
+        // ignore any marks, which changes the behavior.
+        new_flag |= LookupFlag::IgnoreMarks;
         out->lookupFlag = new_flag;
       }
       else
@@ -2078,7 +2086,7 @@ struct ClassDef
     }
   }
   unsigned int get_class (hb_codepoint_t glyph_id,
-			  hb_ot_lookup_cache_t *cache) const
+			  hb_ot_layout_mapping_cache_t *cache) const
   {
     unsigned klass;
     if (cache && cache->get (glyph_id, &klass)) return klass;
@@ -2326,139 +2334,168 @@ struct delta_row_encoding_t
 {
   /* each byte represents a region, value is one of 0/1/2/4, which means bytes
    * needed for this region */
-  hb_vector_t<uint8_t> chars;
+  struct chars_t : hb_vector_t<uint8_t>
+  {
+    int cmp (const chars_t& other) const
+    {
+      return as_array ().cmp (other.as_array ());
+    }
+
+    hb_pair_t<unsigned, unsigned> get_width ()
+    {
+      unsigned width = 0;
+      unsigned columns = 0;
+      for (unsigned i = 0; i < length; i++)
+      {
+	unsigned v = arrayZ[i];
+	width += v;
+	columns += (v != 0);
+      }
+      return hb_pair (width, columns);
+    }
+
+    HB_HOT
+    hb_pair_t<unsigned, unsigned> combine_width (const chars_t& other) const
+    {
+      unsigned combined_width = 0;
+      unsigned combined_columns = 0;
+      for (unsigned i = 0; i < length; i++)
+      {
+        unsigned v = hb_max (arrayZ[i], other.arrayZ[i]);
+	combined_width += v;
+	combined_columns += (v != 0);
+      }
+      return hb_pair (combined_width, combined_columns);
+    }
+  };
+
+  hb_pair_t<unsigned, unsigned> combine_width (const delta_row_encoding_t& other_encoding) const { return chars.combine_width (other_encoding.chars); }
+
+  // Actual data
+
+  chars_t chars;
   unsigned width = 0;
-  hb_vector_t<uint8_t> columns;
   unsigned overhead = 0;
   hb_vector_t<const hb_vector_t<int>*> items;
 
   delta_row_encoding_t () = default;
-  delta_row_encoding_t (hb_vector_t<uint8_t>&& chars_,
-                        const hb_vector_t<int>* row = nullptr) :
-                        delta_row_encoding_t ()
-
+  delta_row_encoding_t (hb_vector_t<const hb_vector_t<int>*> &&rows, unsigned num_cols)
   {
-    chars = std::move (chars_);
-    width = get_width ();
-    columns = get_columns ();
-    overhead = get_chars_overhead (columns);
-    if (row) items.push (row);
+    assert (rows);
+
+    items = std::move (rows);
+
+    if (unlikely (!chars.resize (num_cols)))
+      return;
+
+    calculate_chars ();
+  }
+
+  void merge (const delta_row_encoding_t& other)
+  {
+    items.alloc (items.length + other.items.length);
+    for (auto &row : other.items)
+      add_row (row);
+
+    // Merge chars
+    assert (chars.length == other.chars.length);
+    for (unsigned i = 0; i < chars.length; i++)
+      chars.arrayZ[i] = hb_max (chars.arrayZ[i], other.chars.arrayZ[i]);
+    chars_changed ();
+  }
+
+  void chars_changed ()
+  {
+    auto _ = chars.get_width ();
+    width = _.first;
+    overhead = get_chars_overhead (_.second);
+  }
+
+  void calculate_chars ()
+  {
+    assert (items);
+
+    bool long_words = false;
+
+    for (auto &row : items)
+    {
+      assert (row->length == chars.length);
+
+      /* 0/1/2 byte encoding */
+      for (unsigned i = 0; i < row->length; i++)
+      {
+	int v =  row->arrayZ[i];
+	if (v == 0)
+	  continue;
+	else if (v > 32767 || v < -32768)
+	{
+	  long_words = true;
+	  chars.arrayZ[i] = hb_max (chars.arrayZ[i], 4);
+	}
+	else if (v > 127 || v < -128)
+	  chars.arrayZ[i] = hb_max (chars.arrayZ[i], 2);
+	else
+	  chars.arrayZ[i] = hb_max (chars.arrayZ[i], 1);
+      }
+    }
+
+    if (long_words)
+    {
+      // Convert 1s to 2s
+      for (auto &v : chars)
+	if (v == 1)
+	  v = 2;
+    }
+
+    chars_changed ();
   }
 
   bool is_empty () const
   { return !items; }
 
-  static hb_vector_t<uint8_t> get_row_chars (const hb_vector_t<int>& row)
-  {
-    hb_vector_t<uint8_t> ret;
-    if (!ret.alloc (row.length)) return ret;
-
-    bool long_words = false;
-
-    /* 0/1/2 byte encoding */
-    for (int i = row.length - 1; i >= 0; i--)
-    {
-      int v =  row.arrayZ[i];
-      if (v == 0)
-        ret.push (0);
-      else if (v > 32767 || v < -32768)
-      {
-        long_words = true;
-        break;
-      }
-      else if (v > 127 || v < -128)
-        ret.push (2);
-      else
-        ret.push (1);
-    }
-
-    if (!long_words)
-      return ret;
-
-    /* redo, 0/2/4 bytes encoding */
-    ret.reset ();
-    for (int i = row.length - 1; i >= 0; i--)
-    {
-      int v =  row.arrayZ[i];
-      if (v == 0)
-        ret.push (0);
-      else if (v > 32767 || v < -32768)
-        ret.push (4);
-      else
-        ret.push (2);
-    }
-    return ret;
-  }
-
-  inline unsigned get_width ()
-  {
-    unsigned ret = + hb_iter (chars)
-                   | hb_reduce (hb_add, 0u)
-                   ;
-    return ret;
-  }
-
-  hb_vector_t<uint8_t> get_columns ()
-  {
-    hb_vector_t<uint8_t> cols;
-    cols.alloc (chars.length);
-    for (auto v : chars)
-    {
-      uint8_t flag = v ? 1 : 0;
-      cols.push (flag);
-    }
-    return cols;
-  }
-
-  static inline unsigned get_chars_overhead (const hb_vector_t<uint8_t>& cols)
+  static inline unsigned get_chars_overhead (unsigned num_columns)
   {
     unsigned c = 4 + 6; // 4 bytes for LOffset, 6 bytes for VarData header
-    unsigned cols_bit_count = 0;
-    for (auto v : cols)
-      if (v) cols_bit_count++;
-    return c + cols_bit_count * 2;
+    return c + num_columns * 2;
   }
 
-  unsigned get_gain () const
+  unsigned get_gain (unsigned additional_bytes_per_rows = 1) const
   {
     int count = items.length;
-    return hb_max (0, (int) overhead - count);
+    return hb_max (0, (int) overhead - count * (int) additional_bytes_per_rows);
   }
 
   int gain_from_merging (const delta_row_encoding_t& other_encoding) const
   {
-    int combined_width = 0;
-    for (unsigned i = 0; i < chars.length; i++)
-      combined_width += hb_max (chars.arrayZ[i], other_encoding.chars.arrayZ[i]);
+    // Back of the envelope calculations to reject early.
+    signed additional_bytes_per_rows = other_encoding.width - width;
+    if (additional_bytes_per_rows > 0)
+    {
+      if (get_gain (additional_bytes_per_rows) == 0)
+        return 0;
+    }
+    else
+    {
+      if (other_encoding.get_gain (-additional_bytes_per_rows) == 0)
+	return 0;
+    }
 
-    hb_vector_t<uint8_t> combined_columns;
-    combined_columns.alloc (columns.length);
-    for (unsigned i = 0; i < columns.length; i++)
-      combined_columns.push (columns.arrayZ[i] | other_encoding.columns.arrayZ[i]);
+    auto pair = combine_width (other_encoding);
+    unsigned combined_width = pair.first;
+    unsigned combined_columns = pair.second;
 
-    int combined_overhead = get_chars_overhead (combined_columns);
-    int combined_gain = (int) overhead + (int) other_encoding.overhead - combined_overhead
-                        - (combined_width - (int) width) * items.length
-                        - (combined_width - (int) other_encoding.width) * other_encoding.items.length;
+    int combined_gain = (int) overhead + (int) other_encoding.overhead;
+    combined_gain -= (combined_width - (int) width) * items.length;
+    combined_gain -= (combined_width - (int) other_encoding.width) * other_encoding.items.length;
+    combined_gain -= get_chars_overhead (combined_columns);
 
     return combined_gain;
   }
 
+  bool add_row (const hb_vector_t<int>* row)
+  { return items.push (row); }
+
   static int cmp (const void *pa, const void *pb)
-  {
-    const delta_row_encoding_t *a = (const delta_row_encoding_t *)pa;
-    const delta_row_encoding_t *b = (const delta_row_encoding_t *)pb;
-
-    int gain_a = a->get_gain ();
-    int gain_b = b->get_gain ();
-
-    if (gain_a != gain_b)
-      return gain_a - gain_b;
-
-    return (b->chars).as_array ().cmp ((a->chars).as_array ());
-  }
-
-  static int cmp_width (const void *pa, const void *pb)
   {
     const delta_row_encoding_t *a = (const delta_row_encoding_t *)pa;
     const delta_row_encoding_t *b = (const delta_row_encoding_t *)pb;
@@ -2466,11 +2503,8 @@ struct delta_row_encoding_t
     if (a->width != b->width)
       return (int) a->width - (int) b->width;
 
-    return (b->chars).as_array ().cmp ((a->chars).as_array ());
+    return b->chars.cmp (a->chars);
   }
-
-  bool add_row (const hb_vector_t<int>* row)
-  { return items.push (row); }
 };
 
 struct VarRegionAxis
@@ -2575,7 +2609,7 @@ struct hb_scalar_cache_t
       return scratch_cache;
     }
 
-    auto *cache = (hb_scalar_cache_t *) hb_malloc (sizeof (hb_scalar_cache_t) - sizeof (values) + sizeof (values[0]) * count);
+    auto *cache = (hb_scalar_cache_t *) hb_malloc (sizeof (hb_scalar_cache_t) - sizeof (static_values) + sizeof (static_values[0]) * count);
     if (unlikely (!cache)) return (hb_scalar_cache_t *) &Null(hb_scalar_cache_t);
 
     cache->length = count;
@@ -2593,6 +2627,7 @@ struct hb_scalar_cache_t
 
   void clear ()
   {
+    auto *values = &static_values[0];
     for (unsigned i = 0; i < length; i++)
       values[i] = INVALID;
   }
@@ -2605,6 +2640,7 @@ struct hb_scalar_cache_t
       *value = 0.f;
       return true;
     }
+    auto *values = &static_values[0];
     auto *cached_value = &values[i];
     if (*cached_value != INVALID)
     {
@@ -2618,13 +2654,14 @@ struct hb_scalar_cache_t
   void set (unsigned i, float value)
   {
     if (unlikely (i >= length)) return;
+    auto *values = &static_values[0];
     auto *cached_value = &values[i];
     *cached_value = roundf(value * MULTIPLIER);
   }
 
   private:
   unsigned length;
-  mutable hb_atomic_t<int> values[STATIC_LENGTH];
+  mutable hb_atomic_t<int> static_values[STATIC_LENGTH];
 };
 
 struct VarRegionList
@@ -3439,7 +3476,7 @@ struct ItemVariationStore
     for (unsigned i = 0; i < count; i++)
     {
       hb_inc_bimap_t *map = inner_maps.push ();
-      if (!c->propagate_error(inner_maps))
+      if (unlikely (!c->propagate_error(inner_maps)))
         return_trace(nullptr);
       auto &data = this+dataSets[i];
 
@@ -4425,7 +4462,7 @@ struct FeatureTableSubstitutionRecord
     if (unlikely (!s->extend_min (this))) return_trace (false);
 
     uint32_t *new_feature_idx;
-    if (!c->feature_index_map->has (feature_index, &new_feature_idx))
+    if (!c->feature_map_w_duplicates->has (feature_index, &new_feature_idx))
       return_trace (false);
 
     if (!s->check_assign (featureIndex, *new_feature_idx, HB_SERIALIZE_ERROR_INT_OVERFLOW))
@@ -4443,7 +4480,7 @@ struct FeatureTableSubstitutionRecord
   {
     TRACE_SUBSET (this);
     uint32_t *new_feature_index;
-    if (!c->feature_index_map->has (featureIndex, &new_feature_index))
+    if (!c->feature_map_w_duplicates->has (featureIndex, &new_feature_index))
       return_trace (false);
 
     auto *out = c->subset_context->serializer->embed (this);
@@ -4717,7 +4754,7 @@ struct FeatureVariations
 
     int keep_up_to = -1;
     for (int i = varRecords.len - 1; i >= 0; i--) {
-      if (varRecords[i].intersects_features (this, l->feature_index_map)) {
+      if (varRecords[i].intersects_features (this, l->feature_map_w_duplicates)) {
         keep_up_to = i;
         break;
       }

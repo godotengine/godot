@@ -47,6 +47,9 @@ void EditorExportPlatformIOS::initialize() {
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifdef MACOS_ENABLED
+	_stop_remote_device_poller_thread();
+#endif
 }
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {
@@ -95,9 +98,32 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 	switch (image_scale_mode) {
 		case 0: {
 			String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
-			bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
+			RenderingServer::SplashStretchMode stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
 			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-			value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+			if (logo_path.is_empty()) {
+				value = "center";
+			} else {
+				switch (stretch_mode) {
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
+						value = "center";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
+						value = "scaleAspectFit";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
+						value = "scaleAspectFill";
+					} break;
+					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
+						value = "scaleToFill";
+					} break;
+				}
+			}
 		} break;
 		default: {
 			value = storyboard_image_scale_mode[image_scale_mode - 1];
