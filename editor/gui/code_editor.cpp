@@ -1471,7 +1471,7 @@ void CodeTextEditor::_refactor_rename_request() {
 	String selected_text = text_editor->get_selected_text(0);
 	String symbol = text_editor->get_word(caret_position.y, caret_position.x);
 	String new_symbol = "";
-	Point2i word_start = text_editor->get_word_pos_at_pos(Point2i(caret_position.y, caret_position.x));
+	Point2i word_start = text_editor->get_word_pos_at_pos(caret_position);
 
 	// No symbol selected.
 	if (symbol.is_empty()) {
@@ -2284,7 +2284,6 @@ void CodeTextEditor::_update_refactor_rename_popup_position() {
 		refactor_rename_popup->close();
 		return;
 	}
-	// int line_height = text_editor->get_line_height();
 	refactor_rename_popup->set_position(position_at_line_column + Point2(0, 0));
 }
 
