@@ -1953,6 +1953,10 @@ Dictionary Engine::get_version_info() const {
 	return ::Engine::get_singleton()->get_version_info();
 }
 
+Dictionary Engine::get_build_system_info() const {
+	return ::Engine::get_singleton()->get_build_system_info();
+}
+
 Dictionary Engine::get_author_info() const {
 	return ::Engine::get_singleton()->get_author_info();
 }
@@ -2108,6 +2112,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &Engine::get_main_loop);
 
 	ClassDB::bind_method(D_METHOD("get_version_info"), &Engine::get_version_info);
+	ClassDB::bind_method(D_METHOD("get_build_system_info"), &Engine::get_build_system_info);
 	ClassDB::bind_method(D_METHOD("get_author_info"), &Engine::get_author_info);
 	ClassDB::bind_method(D_METHOD("get_copyright_info"), &Engine::get_copyright_info);
 	ClassDB::bind_method(D_METHOD("get_donor_info"), &Engine::get_donor_info);

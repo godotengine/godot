@@ -112,7 +112,7 @@ def redirect_emitter(target, source, env):
 
 def disable_warnings(self):
     # 'self' is the environment
-    if self.msvc and not using_clang(self):
+    if self.msvc and not self.using_clang:
         self["WARNLEVEL"] = "/w"
     else:
         self["WARNLEVEL"] = "-w"
@@ -667,7 +667,7 @@ def is_apple_clang(env):
 
     if env["platform"] not in ["macos", "ios"]:
         return False
-    if not using_clang(env):
+    if not env.using_clang:
         return False
     try:
         version = (
@@ -710,7 +710,7 @@ def get_compiler_version(env):
         "apple_patch3": -1,
     }
 
-    if env.msvc and not using_clang(env):
+    if env.msvc and not env.using_clang:
         try:
             # FIXME: `-latest` works for most cases, but there are edge-cases where this would
             # benefit from a more nuanced search.
