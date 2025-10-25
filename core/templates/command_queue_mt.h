@@ -71,7 +71,7 @@ class CommandQueueMT {
 
 		// This method exists so we can call it in the parameter pack expansion in call_impl.
 		template <size_t I>
-		_FORCE_INLINE_ auto &get() { return ::tuple_get<I>(args); }
+		_FORCE_INLINE_ auto &get() { return args.template get<I>(); }
 	};
 
 	// Separate class from Command so we can save the space of the ret pointer for commands that don't return.
@@ -98,7 +98,7 @@ class CommandQueueMT {
 
 		// This method exists so we can call it in the parameter pack expansion in call_impl.
 		template <size_t I>
-		_FORCE_INLINE_ auto &get() { return ::tuple_get<I>(args); }
+		_FORCE_INLINE_ auto &get() { return args.template get<I>(); }
 	};
 
 	/***** BASE *******/
