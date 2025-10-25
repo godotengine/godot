@@ -137,7 +137,6 @@ class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	Control *control = nullptr;
 	void _on_create_variation_confirmed();
 	void _on_convert_theme_overrides_to_variation(Control *p_control);
-	void _move_overrides_to_variation(const String &p_variation_name);
 
 public:
 	virtual bool can_handle(Object *p_object) override;

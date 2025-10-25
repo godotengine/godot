@@ -481,7 +481,12 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 	}
 
 	else if (p_group == "Theme") {
-		String hint_text = "Convert Overrides to Theme Type Variation";
+		String hint_text = "Convert Overrides to Type Variation";
+
+		if (control->get_theme_type_variation() != "") {
+			hint_text = vformat("Push Overrides to Type Variation \"%s\"", control->get_theme_type_variation());
+		}
+
 		String hint_icon = "Theme";
 		EditorInspectorActionButton *convert_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
 		convert_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation).bind(control));
@@ -490,79 +495,27 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 }
 
 void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
-	Node *theme_owner_node = p_control->get_theme_owner_node();
-	ERR_FAIL_NULL_MSG(theme_owner_node, "No ancestor of this Control has a Theme.");
-
-	Control *theme_owner_control = Object::cast_to<Control>(theme_owner_node);
-	ERR_FAIL_NULL_MSG(theme_owner_control, "The theme owner is not a Control.");
-
-	theme = theme_owner_control->get_theme();
-	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
-
+	// If this Control doesn't currently have a type variation, we want to prompt
+	// the user for one.
 	control = p_control;
+	if (control->get_theme_type_variation() == "") {
+		create_new_variation_line_edit->set_text("");
+		create_new_variation_dialog->reset_size();
+		create_new_variation_dialog->popup_centered();
+		create_new_variation_line_edit->grab_focus();
+	}
 
-	create_new_variation_line_edit->set_text("");
-	create_new_variation_dialog->reset_size();
-	create_new_variation_dialog->popup_centered();
-	create_new_variation_line_edit->grab_focus();
+	// If it *does* have a type variation, we want to push these changes to it
+	// instead.
+	else {
+		// TODO: Make this undo/redo compatible.
+		control->push_overrides_to_variation();
+	}
 }
 
 void EditorInspectorPluginControl::_on_create_variation_confirmed() {
 	StringName variation_name = create_new_variation_line_edit->get_text();
-	theme->set_type_variation(variation_name, control->get_class_name());
-	_move_overrides_to_variation(variation_name);
-}
-
-void EditorInspectorPluginControl::_move_overrides_to_variation(const String &p_variation_name) {
-	List<ThemeDB::ThemeItemBind> theme_items;
-	ThemeDB::get_singleton()->get_class_items(control->get_class_name(), &theme_items, true);
-
-	// TODO: Make this undo/redo compatible.
-	for (const ThemeDB::ThemeItemBind &item : theme_items) {
-		switch (item.data_type) {
-			case Theme::DATA_TYPE_COLOR:
-				if (control->has_theme_color_override(item.item_name)) {
-					theme->set_color(item.item_name, p_variation_name, control->get_theme_color(item.item_name));
-					control->remove_theme_color_override(item.item_name);
-				}
-				break;
-			case Theme::DATA_TYPE_CONSTANT:
-				if (control->has_theme_constant_override(item.item_name)) {
-					theme->set_constant(item.item_name, p_variation_name, control->get_theme_constant(item.item_name));
-					control->remove_theme_constant_override(item.item_name);
-				}
-				break;
-			case Theme::DATA_TYPE_FONT: {
-				if (control->has_theme_font_override(item.item_name)) {
-					theme->set_font(item.item_name, p_variation_name, control->get_theme_font(item.item_name));
-					control->remove_theme_font_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_FONT_SIZE: {
-				if (control->has_theme_font_size_override(item.item_name)) {
-					theme->set_font_size(item.item_name, p_variation_name, control->get_theme_font_size(item.item_name));
-					control->remove_theme_font_size_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_ICON: {
-				if (control->has_theme_icon_override(item.item_name)) {
-					theme->set_icon(item.item_name, p_variation_name, control->get_theme_icon(item.item_name));
-					control->remove_theme_icon_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_STYLEBOX: {
-				if (control->has_theme_stylebox_override(item.item_name)) {
-					theme->set_stylebox(item.item_name, p_variation_name, control->get_theme_stylebox(item.item_name));
-					control->remove_theme_style_override(item.item_name);
-				}
-			} break;
-
-			default: {
-			} break;
-		}
-	}
-
-	control->set_theme_type_variation(p_variation_name);
+	control->create_variation_from_overrides(variation_name);
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {

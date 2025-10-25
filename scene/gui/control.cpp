@@ -3483,6 +3483,85 @@ int Control::get_theme_default_font_size() const {
 	return data.theme_owner->get_theme_default_font_size();
 }
 
+/// Pushing Theme Overrides to Type Variations.
+#ifdef TOOLS_ENABLED
+void Control::create_variation_from_overrides(const StringName &p_name) {
+	Node *theme_owner_node = get_theme_owner_node();
+	ERR_FAIL_NULL_MSG(theme_owner_node, "No ancestor of this Control has a Theme.");
+
+	Control *theme_owner_control = Object::cast_to<Control>(theme_owner_node);
+	ERR_FAIL_NULL_MSG(theme_owner_control, "The theme owner is not a Control.");
+
+	Ref<Theme> theme = theme_owner_control->get_theme();
+	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
+
+	theme->set_type_variation(p_name, get_class_name());
+	set_theme_type_variation(p_name);
+	push_overrides_to_variation();
+}
+
+void Control::push_overrides_to_variation() {
+	Node *theme_owner_node = get_theme_owner_node();
+	ERR_FAIL_NULL_MSG(theme_owner_node, "No ancestor of this Control has a Theme.");
+
+	Control *theme_owner_control = Object::cast_to<Control>(theme_owner_node);
+	ERR_FAIL_NULL_MSG(theme_owner_control, "The theme owner is not a Control.");
+
+	Ref<Theme> theme = theme_owner_control->get_theme();
+	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
+
+	StringName variation_name = get_theme_type_variation();
+
+	List<ThemeDB::ThemeItemBind> theme_items;
+	ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
+
+	// TODO: Make this undo/redo compatible.
+	for (const ThemeDB::ThemeItemBind &item : theme_items) {
+		switch (item.data_type) {
+			case Theme::DATA_TYPE_COLOR:
+				if (has_theme_color_override(item.item_name)) {
+					theme->set_color(item.item_name, variation_name, get_theme_color(item.item_name));
+					remove_theme_color_override(item.item_name);
+				}
+				break;
+			case Theme::DATA_TYPE_CONSTANT:
+				if (has_theme_constant_override(item.item_name)) {
+					theme->set_constant(item.item_name, variation_name, get_theme_constant(item.item_name));
+					remove_theme_constant_override(item.item_name);
+				}
+				break;
+			case Theme::DATA_TYPE_FONT: {
+				if (has_theme_font_override(item.item_name)) {
+					theme->set_font(item.item_name, variation_name, get_theme_font(item.item_name));
+					remove_theme_font_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_FONT_SIZE: {
+				if (has_theme_font_size_override(item.item_name)) {
+					theme->set_font_size(item.item_name, variation_name, get_theme_font_size(item.item_name));
+					remove_theme_font_size_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_ICON: {
+				if (has_theme_icon_override(item.item_name)) {
+					theme->set_icon(item.item_name, variation_name, get_theme_icon(item.item_name));
+					remove_theme_icon_override(item.item_name);
+				}
+			} break;
+			case Theme::DATA_TYPE_STYLEBOX: {
+				if (has_theme_stylebox_override(item.item_name)) {
+					theme->set_stylebox(item.item_name, variation_name, get_theme_stylebox(item.item_name));
+					remove_theme_style_override(item.item_name);
+				}
+			} break;
+
+			default: {
+			} break;
+		}
+	}
+}
+#endif // TOOLS_ENABLED
+
 /// Bulk actions.
 
 void Control::begin_bulk_theme_override() {
