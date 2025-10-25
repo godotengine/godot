@@ -14,7 +14,9 @@ func test() -> ClassA:
 	print(\"NoNameB name is \" + NoNameB.NONAME_B_NAME)
 	class_b_instance
 	var class_a_instance: = ClassA.new()
+	var class_b_instance: int = 123
 	class_a_instance.signal_of_a.emit()
+	class_b_instance = 456
 	return class_a_instance
 "
 

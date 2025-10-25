@@ -4855,7 +4855,7 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 						// local variable definition. (i.e. deal with shadowing)
 						if ((start_line > local_start_line) || (start_line == local_start_line && start_column >= local_start_column)) {
 							LocalVector<GDScriptParser::Node *> nodes;
-							suite->get_nodes(nodes);
+							suite->get_nodes(nodes, true);
 							for (GDScriptParser::Node *node : nodes) {
 								switch (node->type) {
 									case GDScriptParser::Node::IDENTIFIER: {
