@@ -95,6 +95,10 @@ public:
 	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
+// Works around an issue where memnew_placement (char *) would call the p_description version.
+inline void *operator new(size_t p_size, char *p_dest) {
+	return operator new(p_size, (void *)p_dest);
+}
 void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool
 void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)); ///< operator new that takes a description and uses MemoryStaticPool
 
