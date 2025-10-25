@@ -795,7 +795,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			if (subscript->is_attribute) {
 				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 					GDScriptParser::IdentifierNode *identifier = subscript->attribute;
-					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
+					AHashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(identifier->name);
 
 #ifdef DEBUG_ENABLED
 					if (MI && MI->value.getter == codegen.function_name) {
@@ -986,7 +986,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(assignment->assignee);
 #ifdef DEBUG_ENABLED
 				if (subscript->is_attribute && subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
-					HashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
+					AHashMap<StringName, GDScript::MemberInfo>::Iterator MI = codegen.script->member_indices.find(subscript->attribute->name);
 					if (MI && MI->value.setter == codegen.function_name) {
 						String n = subscript->attribute->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
@@ -2527,7 +2527,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	gd_function->method_info = method_info;
 
 	if (!is_implicit_initializer && !is_implicit_ready && !p_for_lambda) {
-		p_script->member_functions[func_name] = gd_function;
+		p_script->member_functions.insert_new(func_name, gd_function);
 	}
 
 	memdelete(codegen.generator);
@@ -2880,10 +2880,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 				if (variable->is_static) {
 					minfo.index = p_script->static_variables_indices.size();
-					p_script->static_variables_indices[name] = minfo;
+					p_script->static_variables_indices.insert_new(name, minfo);
 				} else {
 					minfo.index = p_script->member_indices.size();
-					p_script->member_indices[name] = minfo;
+					p_script->member_indices.insert_new(name, minfo);
 					p_script->members.insert(name);
 				}
 
@@ -2940,7 +2940,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				prop_info.hint_string = annotation->export_info.hint_string;
 				minfo.property_info = prop_info;
 
-				p_script->member_indices[name] = minfo;
+				p_script->member_indices.insert_new(name, minfo);
 				p_script->members.insert(name);
 			} break;
 

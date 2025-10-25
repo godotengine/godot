@@ -38,6 +38,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
@@ -97,15 +98,15 @@ class GDScript : public Script {
 	GDScript *_owner = nullptr; //for subclasses
 
 	// Members are just indices to the instantiated script.
-	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	AHashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
 	HashSet<StringName> members; // Only members of the current class.
 
 	// Only static variables of the current class.
-	HashMap<StringName, MemberInfo> static_variables_indices;
+	AHashMap<StringName, MemberInfo> static_variables_indices;
 	Vector<Variant> static_variables; // Static variable values.
 
 	HashMap<StringName, Variant> constants;
-	HashMap<StringName, GDScriptFunction *> member_functions;
+	AHashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, Ref<GDScript>> subclasses;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
@@ -144,7 +145,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
-	HashMap<StringName, MemberInfo> old_static_variables_indices;
+	AHashMap<StringName, MemberInfo> old_static_variables_indices;
 	Vector<Variant> old_static_variables;
 	void _save_old_static_data();
 	void _restore_old_static_data();
@@ -265,7 +266,7 @@ public:
 	}
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
-	_FORCE_INLINE_ const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
+	_FORCE_INLINE_ const AHashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	_FORCE_INLINE_ const HashMap<GDScriptFunction *, LambdaInfo> &get_lambda_info() const { return lambda_info; }
 
 	_FORCE_INLINE_ const GDScriptFunction *get_implicit_initializer() const { return implicit_initializer; }
@@ -283,8 +284,8 @@ public:
 	bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
-	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
+	const AHashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const AHashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 	StringName debug_get_static_var_by_index(int p_idx) const;
 
