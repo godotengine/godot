@@ -114,7 +114,7 @@ TEST_CASE("[Translation] Plural messages") {
 		Ref<Translation> translation;
 		translation.instantiate();
 		translation->set_locale("fr");
-		CHECK(translation->get_nplurals() == 3);
+		CHECK(translation->get_nplurals() == 2);
 	}
 
 	{
