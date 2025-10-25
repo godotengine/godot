@@ -696,17 +696,11 @@ elif methods.using_clang(env):
     # Apple LLVM versions differ from upstream LLVM version \o/, compare
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
     if methods.is_apple_clang(env):
-        if cc_version_major < 10:
+        if cc_version_major < 16:
             print_error(
-                "Detected Apple Clang version older than 10, which does not fully "
-                "support C++17. Supported versions are Apple Clang 10 and later."
+                "Detected Apple Clang version older than 16, supported versions are Apple Clang 16 (Xcode 16) and later."
             )
             Exit(255)
-        elif env["debug_paths_relative"] and cc_version_major < 12:
-            print_warning(
-                "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
-            )
-            env["debug_paths_relative"] = False
     else:
         if cc_version_major < 6:
             print_error(
