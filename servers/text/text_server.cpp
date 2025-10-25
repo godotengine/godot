@@ -189,6 +189,8 @@ bool Glyph::operator>(const Glyph &p_a) const {
 	return p_a.start > start;
 }
 
+double TextServer::vp_oversampling = 0.0;
+
 void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &TextServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &TextServer::get_name);
