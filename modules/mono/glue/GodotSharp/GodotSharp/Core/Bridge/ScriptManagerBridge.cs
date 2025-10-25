@@ -250,7 +250,8 @@ namespace Godot.Bridge
                 }
                 if (!foundGlobalBaseScript)
                 {
-                    *outBaseType = Marshaling.ConvertStringToNative(native.Name);
+                    string nativeName = native.GetCustomAttribute<GodotClassNameAttribute>(false)?.Name ?? native.Name;
+                    *outBaseType = Marshaling.ConvertStringToNative(nativeName);
                 }
             }
 
