@@ -328,10 +328,9 @@ void TextureRegionEditor::_commit_drag() {
 			undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
 			undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
 		} else if (node_ninepatch_sprite) {
-			undo_redo->add_do_method(node_ninepatch_sprite, "set_patch_margin", side[edited_margin], node_ninepatch_sprite->get_patch_margin(side[edited_margin]));
-			undo_redo->add_undo_method(node_ninepatch_sprite, "set_patch_margin", side[edited_margin], prev_margin);
-		}
-    else if (res_stylebox.is_valid()) {
+			undo_redo->add_do_method(node_ninepatch_sprite, "set_region_rect", node_ninepatch_sprite->get_region_rect());
+			undo_redo->add_undo_method(node_ninepatch_sprite, "set_region_rect", rect_prev);
+		} else if (res_stylebox.is_valid()) {
 			undo_redo->add_do_method(res_stylebox.ptr(), "set_region_rect", res_stylebox->get_region_rect());
 			undo_redo->add_undo_method(res_stylebox.ptr(), "set_region_rect", rect_prev);
 		} else if (res_atlas_texture.is_valid()) {
@@ -534,7 +533,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 			if (node_ninepatch) {
 				node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
 			}
-      if (node_ninepatch_sprite) {
+			if (node_ninepatch_sprite) {
 				node_ninepatch_sprite->set_patch_margin(side[edited_margin], prev_margin);
 			}
 			if (res_stylebox.is_valid()) {
