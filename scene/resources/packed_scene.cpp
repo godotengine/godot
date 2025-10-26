@@ -879,7 +879,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	}
 
 	// Save the nodes that are chosen as exposed, so they can be restored on load.
-	if (p_node->has_meta(META_MARKED_FOR_EXPOSURE) && (p_node->has_meta(META_EXPOSED_IN_OWNER) && p_node->get_owner() == p_owner)) {
+	if (p_node->has_meta(META_MARKED_FOR_EXPOSURE) || (p_node->has_meta(META_EXPOSED_IN_OWNER) && p_node->get_owner() == p_owner)) {
 		exposed_nodes.push_back(p_owner->get_path_to(p_node));
 	}
 
