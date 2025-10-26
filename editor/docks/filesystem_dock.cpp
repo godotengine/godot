@@ -494,6 +494,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				} else {
 					toolbar2_hbc->show();
 				}
+				button_file_list_display_mode->hide();
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
@@ -513,6 +514,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				tree->ensure_cursor_is_visible();
 				toolbar2_hbc->hide();
+				button_file_list_display_mode->show();
 				_update_tree(get_uncollapsed_paths());
 
 				file_list_vb->show();
