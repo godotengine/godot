@@ -1563,9 +1563,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 		}
 	}
 	project_metadata->set_value(p_section, p_key, p_data);
-
-	Error err = project_metadata->save(path);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + path + "'.");
+	project_metadata_dirty = true;
 }
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const {
@@ -1577,6 +1575,16 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 		ERR_FAIL_COND_V_MSG(err != OK && err != ERR_FILE_NOT_FOUND, p_default, "Cannot load project metadata from file '" + path + "'.");
 	}
 	return project_metadata->get_value(p_section, p_key, p_default);
+}
+
+void EditorSettings::save_project_metadata() {
+	if (!project_metadata_dirty) {
+		return;
+	}
+	const String path = _get_project_metadata_path();
+	Error err = project_metadata->save(path);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + path + "'.");
+	project_metadata_dirty = false;
 }
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
