@@ -119,6 +119,9 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 	do {
 		line = f->get_csv_line(delimiter);
 		String key = line[0];
+		if (key.begins_with("#")) {
+			continue;
+		}
 		if (!key.is_empty()) {
 			ERR_CONTINUE_MSG(line.size() != locales.size() + (int)skipped_locales.size() + 1, vformat("Error importing CSV translation: expected %d locale(s), but the '%s' key has %d locale(s).", locales.size(), key, line.size() - 1));
 
