@@ -398,7 +398,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
 				int final_idx = 0;
 				for (int i = 0; i < p_parent->get_child_count(); i++) {
-					if (p_parent->get_child(i)->has_meta(META_EXPOSED_TREE_ITEM) && p_parent->get_child(i) != I->value.item) {
+					if (p_parent->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE) && p_parent->get_child(i) != I->value.item) {
 						final_idx++;
 					}
 				}
@@ -889,7 +889,7 @@ void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator 
 		TreeItem *TI = item->get_child(i);
 		HashMap<Node *, CachedNode>::Iterator CI = node_cache.find_by_item(TI);
 		Node *n = CI->key;
-		if (TI->has_meta(META_EXPOSED_TREE_ITEM)) {
+		if (TI->has_meta(META_EXPOSED_IN_INSTANCE)) {
 			ordered_children.push_back(n);
 		}
 	}
@@ -2526,7 +2526,7 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 		return HashMap<Node *, CachedNode>::Iterator();
 	}
 	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
-		p_item->set_meta(META_EXPOSED_TREE_ITEM, true);
+		p_item->set_meta(META_EXPOSED_IN_INSTANCE, true);
 	}
 	return cache.insert(p_node, CachedNode(p_node, p_item));
 }

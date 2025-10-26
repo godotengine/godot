@@ -929,5 +929,3 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
-
-#define META_EXPOSED_TREE_ITEM "_exposed_tree_item"
