@@ -561,7 +561,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
-	if (cur_request == ONE_SHOT_REQUEST_ABORT) {
+	if (cur_request == ONE_SHOT_REQUEST_ABORT || (clear_remaining_fade && cur_active && !do_start)) { // Abort on request or when re-entering after OneShot was previously interrupted.
 		set_parameter(internal_active, false);
 		set_parameter(active, false);
 		set_parameter(time_to_restart, -1);
