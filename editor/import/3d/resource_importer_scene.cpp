@@ -1483,8 +1483,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	}
 
 	if (!isroot && node_settings.has("import/exposed")) {
-		p_node->set_meta(META_EXPOSED_IN_OWNER, bool(node_settings["import/exposed"]));
-		p_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, true);
+		if (bool(node_settings["import/exposed"])) {
+			p_node->set_meta(META_EXPOSED_IN_OWNER, true);
+			p_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, true);
+		}
 	}
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
@@ -2781,7 +2783,9 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_STATIC);
 			} break;
 		}
-		mesh_node->set_meta(META_EXPOSED_IN_OWNER, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
+		if (src_mesh_node->has_meta(META_EXPOSED_IN_OWNER)) {
+			mesh_node->set_meta(META_EXPOSED_IN_OWNER, true);
+		}
 		if (mesh_node->get_owner() != nullptr) {
 			mesh_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
 		}

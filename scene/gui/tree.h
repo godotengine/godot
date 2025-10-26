@@ -355,9 +355,6 @@ public:
 	bool is_visible();
 	bool is_visible_in_tree() const;
 
-	void set_exposed(bool p_exposed);
-	bool is_exposed() const;
-
 	void uncollapse_tree();
 
 	void set_custom_minimum_height(int p_height);
@@ -932,3 +929,5 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
+
+#define META_EXPOSED_TREE_ITEM "_exposed_tree_item"

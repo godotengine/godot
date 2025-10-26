@@ -839,17 +839,6 @@ bool TreeItem::is_visible_in_tree() const {
 	return visible && parent_visible_in_tree;
 }
 
-void TreeItem::set_exposed(bool p_exposed) {
-	if (exposed == p_exposed) {
-		return;
-	}
-	exposed = p_exposed;
-}
-
-bool TreeItem::is_exposed() const {
-	return exposed;
-}
-
 void TreeItem::_handle_visibility_changed(bool p_visible) {
 	TreeItem *child = get_first_child();
 	while (child) {
