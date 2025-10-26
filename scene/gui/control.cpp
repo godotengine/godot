@@ -45,6 +45,7 @@
 #include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
@@ -3495,70 +3496,129 @@ void Control::create_variation_from_overrides(const StringName &p_name) {
 	Ref<Theme> theme = theme_owner_control->get_theme();
 	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
 
-	theme->set_type_variation(p_name, get_class_name());
-	set_theme_type_variation(p_name);
-	push_overrides_to_variation();
-}
+	StringName variation_name;
 
-void Control::push_overrides_to_variation() {
-	Node *theme_owner_node = get_theme_owner_node();
-	ERR_FAIL_NULL_MSG(theme_owner_node, "No ancestor of this Control has a Theme.");
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
-	Control *theme_owner_control = Object::cast_to<Control>(theme_owner_node);
-	ERR_FAIL_NULL_MSG(theme_owner_control, "The theme owner is not a Control.");
+	ur->create_action("Create Variation from Overrides", UndoRedo::MERGE_DISABLE, *theme);
 
-	Ref<Theme> theme = theme_owner_control->get_theme();
-	ERR_FAIL_COND_MSG(theme.is_null() || !theme.is_valid(), "The Theme does not exist or is invalid.");
+	if (p_name != "") {
+		ur->add_do_method(*theme, "set_type_variation", p_name, get_class_name());
+		ur->add_undo_method(*theme, "clear_type_variation", p_name);
 
-	StringName variation_name = get_theme_type_variation();
+		ur->force_fixed_history();
+		ur->add_do_method(this, "set_theme_type_variation", p_name);
+
+		ur->force_fixed_history();
+		ur->add_undo_method(this, "set_theme_type_variation", "");
+
+		variation_name = p_name;
+	} else {
+		variation_name = get_theme_type_variation();
+	}
 
 	List<ThemeDB::ThemeItemBind> theme_items;
 	ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
 
-	// TODO: Make this undo/redo compatible.
 	for (const ThemeDB::ThemeItemBind &item : theme_items) {
 		switch (item.data_type) {
 			case Theme::DATA_TYPE_COLOR:
 				if (has_theme_color_override(item.item_name)) {
-					theme->set_color(item.item_name, variation_name, get_theme_color(item.item_name));
-					remove_theme_color_override(item.item_name);
+					ur->add_do_method(*theme, "set_color", item.item_name, variation_name, get_theme_color(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_color_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_color_override", item.item_name, get_theme_color(item.item_name));
+					if (theme->has_color(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_color", item.item_name, variation_name, theme->get_color(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_color", item.item_name, variation_name);
+					}
 				}
 				break;
 			case Theme::DATA_TYPE_CONSTANT:
 				if (has_theme_constant_override(item.item_name)) {
-					theme->set_constant(item.item_name, variation_name, get_theme_constant(item.item_name));
-					remove_theme_constant_override(item.item_name);
+					ur->add_do_method(*theme, "set_constant", item.item_name, variation_name, get_theme_constant(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_constant_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_constant_override", item.item_name, get_theme_constant(item.item_name));
+					if (theme->has_constant(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_constant", item.item_name, variation_name, theme->get_constant(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_constant", item.item_name, variation_name);
+					}
 				}
 				break;
-			case Theme::DATA_TYPE_FONT: {
+			case Theme::DATA_TYPE_FONT:
 				if (has_theme_font_override(item.item_name)) {
-					theme->set_font(item.item_name, variation_name, get_theme_font(item.item_name));
-					remove_theme_font_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_FONT_SIZE: {
-				if (has_theme_font_size_override(item.item_name)) {
-					theme->set_font_size(item.item_name, variation_name, get_theme_font_size(item.item_name));
-					remove_theme_font_size_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_ICON: {
-				if (has_theme_icon_override(item.item_name)) {
-					theme->set_icon(item.item_name, variation_name, get_theme_icon(item.item_name));
-					remove_theme_icon_override(item.item_name);
-				}
-			} break;
-			case Theme::DATA_TYPE_STYLEBOX: {
-				if (has_theme_stylebox_override(item.item_name)) {
-					theme->set_stylebox(item.item_name, variation_name, get_theme_stylebox(item.item_name));
-					remove_theme_style_override(item.item_name);
-				}
-			} break;
+					ur->add_do_method(*theme, "set_font", item.item_name, variation_name, get_theme_font(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_font_override", item.item_name);
 
-			default: {
-			} break;
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_font_override", item.item_name, get_theme_font(item.item_name));
+					if (theme->has_font(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_font", item.item_name, variation_name, theme->get_font(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_font", item.item_name, variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_FONT_SIZE:
+				if (has_theme_font_size_override(item.item_name)) {
+					ur->add_do_method(*theme, "set_font_size", item.item_name, variation_name, get_theme_font_size(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_font_size_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_font_size_override", item.item_name, get_theme_font_size(item.item_name));
+					if (theme->has_font_size(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_font_size", item.item_name, variation_name, theme->get_font_size(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_font_size", item.item_name, variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_ICON:
+				if (has_theme_icon_override(item.item_name)) {
+					ur->add_do_method(*theme, "set_icon", item.item_name, variation_name, get_theme_icon(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_icon_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_icon_override", item.item_name, get_theme_icon(item.item_name));
+					if (theme->has_icon(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_icon", item.item_name, variation_name, theme->get_icon(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_icon", item.item_name, variation_name);
+					}
+				}
+				break;
+			case Theme::DATA_TYPE_STYLEBOX:
+				if (has_theme_stylebox_override(item.item_name)) {
+					ur->add_do_method(*theme, "set_stylebox", item.item_name, variation_name, get_theme_stylebox(item.item_name));
+					ur->force_fixed_history();
+					ur->add_do_method(this, "remove_theme_stylebox_override", item.item_name);
+
+					ur->force_fixed_history();
+					ur->add_undo_method(this, "add_theme_stylebox_override", item.item_name, get_theme_stylebox(item.item_name));
+					if (theme->has_stylebox(item.item_name, variation_name)) {
+						ur->add_undo_method(*theme, "set_stylebox", item.item_name, variation_name, theme->get_stylebox(item.item_name, variation_name));
+					} else {
+						ur->add_undo_method(*theme, "clear_stylebox", item.item_name, variation_name);
+					}
+				}
+				break;
+
+			default:
+				break;
 		}
 	}
+
+	ur->commit_action();
 }
 #endif // TOOLS_ENABLED
 

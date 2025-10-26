@@ -720,7 +720,6 @@ public:
 
 #ifdef TOOLS_ENABLED
 	void create_variation_from_overrides(const StringName &p_name);
-	void push_overrides_to_variation();
 #endif // TOOLS_ENABLED
 
 	// Internationalization.

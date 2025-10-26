@@ -508,12 +508,14 @@ void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Cont
 	// If it *does* have a type variation, we want to push these changes to it
 	// instead.
 	else {
-		// TODO: Make this undo/redo compatible.
-		control->push_overrides_to_variation();
+		control->create_variation_from_overrides("");
 	}
 }
 
 void EditorInspectorPluginControl::_on_create_variation_confirmed() {
+	// TODO: A blank string will make it assume there's already a type variation set.
+	// So we need to pop up some kind of error if the user tries to explicitly enter
+	// an empty string.
 	StringName variation_name = create_new_variation_line_edit->get_text();
 	control->create_variation_from_overrides(variation_name);
 }
