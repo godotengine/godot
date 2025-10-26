@@ -24,6 +24,12 @@
 				Returns the normal of the suspension's collision in world space if the wheel is in contact. If the wheel isn't in contact with anything, returns a vector pointing directly along the suspension axis toward the vehicle in world space.
 			</description>
 		</method>
+		<method name="get_contact_normal_force" qualifiers="const">
+    			<return type="float" />
+    			<description>
+        			Returns the magnitude of the normal force at the wheel's contact point with the ground. This represents the perpendicular force exerted by the surface on the wheel. Returns [code]0.0[/code] if the wheel is not in contact with any surface.
+    			</description>
+		</method>
 		<method name="get_contact_point" qualifiers="const">
 			<return type="Vector3" />
 			<description>
