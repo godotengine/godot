@@ -1293,6 +1293,10 @@ String VisualShader::get_reroute_parameter_name(Type p_type, int p_reroute_node)
 		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
 			return parameter_node->get_parameter_name();
 		}
+		Ref<VisualShaderNodeParameterRef> parameter_ref_node = node->node;
+		if (parameter_ref_node.is_valid() && parameter_ref_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return parameter_ref_node->get_parameter_name();
+		}
 		Ref<VisualShaderNodeInput> input_node = node->node;
 		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
 			return input_node->get_input_real_name();
