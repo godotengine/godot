@@ -90,6 +90,11 @@ public:
 		return priority;
 	}
 
+	constexpr static int NO_TERRAIN = -1;
+	constexpr static int NON_PAINT_TERRAIN = -2;
+	constexpr static int CONNECTING_SIDE = -3;
+	constexpr static int DISCONNECTING_SIDE = -4;
+
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
 	TerrainConstraint() {}
