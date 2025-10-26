@@ -3030,7 +3030,15 @@
 			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an array.
+			The property is the element count of a property array, i.e. a list of groups of related properties. Properties defined with this usage also need a specific [code]class_name[/code] field in the form of [code]label,prefix[/code]. The field may also include additional comma-separated options:
+			- [code]page_size=N[/code]: Overrides [member EditorSettings.interface/inspector/max_array_dictionary_items_per_page] for this array.
+			- [code]add_button_text=text[/code]: The text displayed by the "Add Element" button.
+			- [code]static[/code]: The elements can't be re-arranged.
+			- [code]const[/code]: New elements can't be added.
+			- [code]numbered[/code]: An index will appear next to each element.
+			- [code]unfoldable[/code]: The array can't be folded.
+			- [code]swap_method=method_name[/code]: The method that will be called when two elements switch places. The method should take 2 [int] parameters, which will be indices of the elements being swapped.
+			Note that making a full-fledged property array requires boilerplate code involving [method Object._get_property_list].
 		</constant>
 		<constant name="PROPERTY_USAGE_ALWAYS_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.
