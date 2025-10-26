@@ -684,7 +684,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 	if (r_net_id == 0 || (r_net_id & 0x80000000)) {
 		int path_id = 0;
 		bool verified = multiplayer_cache->send_object_cache(p_sync, p_peer, path_id);
-		ERR_FAIL_COND_V_MSG(path_id < 0, false, "This should never happen!");
+		ERR_FAIL_COND_V_MSG(path_id < 0, false, "Path ID generation failed for synchronizer. This indicates a bug in the multiplayer cache system. Please report this issue with reproduction steps.");
 		if (r_net_id == 0) {
 			// First time path based ID.
 			r_net_id = path_id | 0x80000000;

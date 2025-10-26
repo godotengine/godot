@@ -787,7 +787,7 @@ void SurfaceTool::deindex() {
 }
 
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
-	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "SurfaceTool::_create_list() requires a valid Mesh resource. Pass a valid Mesh object as the first argument.");
 
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != RS::ARRAY_MAX);
@@ -963,7 +963,7 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 }
 
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
-	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "SurfaceTool::create_from() requires a valid Mesh resource. Pass a valid Mesh object as the first argument.");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -978,7 +978,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 }
 
 void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
-	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "SurfaceTool::create_from_blend_shape() requires a valid Mesh resource. Pass a valid Mesh object as the first argument.");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -1018,7 +1018,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 }
 
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
-	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "SurfaceTool::append_from() requires a valid Mesh resource. Pass a valid Mesh object as the first argument.");
 
 	if (vertex_array.is_empty()) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);

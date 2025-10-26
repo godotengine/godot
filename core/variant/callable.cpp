@@ -235,7 +235,7 @@ int Callable::get_unbound_arguments_count() const {
 
 CallableCustom *Callable::get_custom() const {
 	ERR_FAIL_COND_V_MSG(!is_custom(), nullptr,
-			vformat("Can't get custom on non-CallableCustom \"%s\".", operator String()));
+			vformat("Cannot access custom callable data on non-CallableCustom object \"%s\". Use is_custom() to check if the callable is custom before calling get_custom().", operator String()));
 	return custom;
 }
 
