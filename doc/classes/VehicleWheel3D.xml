@@ -27,7 +27,7 @@
 		<method name="get_contact_normal_force" qualifiers="const">
     			<return type="float" />
     			<description>
-        			Returns the magnitude of the normal force at the wheel's contact point with the ground. This represents the perpendicular force exerted by the surface on the wheel. Returns [code]0.0[/code] if the wheel is not in contact with any surface.
+        			Returns the magnitude of the normal force at the wheel's contact point with the ground in Newtons (N). This represents the perpendicular force exerted by the surface on the wheel. Use [method get_contact_normal] to get the direction of this force. Returns [code]0.0[/code] if the wheel is not in contact with any surface.
     			</description>
 		</method>
 		<method name="get_contact_point" qualifiers="const">
