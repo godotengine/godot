@@ -108,4 +108,7 @@ void AnimatableBody2D::_bind_methods() {
 
 AnimatableBody2D::AnimatableBody2D() :
 		StaticBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
+#ifdef TOOLS_ENABLED
+	set_notify_transform(false);
+#endif
 }
