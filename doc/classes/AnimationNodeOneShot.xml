@@ -56,6 +56,9 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<members>
+		<member name="abort_on_reset" type="bool" setter="set_abort_on_reset" getter="is_aborted_on_reset" default="false">
+			If [code]true[/code], the sub-animation will abort if resumed with a reset after a prior interruption.
+		</member>
 		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart" default="false">
 			If [code]true[/code], the sub-animation will restart automatically after finishing.
 			In other words, to start auto restarting, the animation must be played once with the [constant ONE_SHOT_REQUEST_FIRE] request. The [constant ONE_SHOT_REQUEST_ABORT] request stops the auto restarting, but it does not disable the [member autorestart] itself. So, the [constant ONE_SHOT_REQUEST_FIRE] request will start auto restarting again.
