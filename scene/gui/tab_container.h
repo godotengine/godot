@@ -93,6 +93,11 @@ private:
 		Color font_disabled_color;
 		Color font_outline_color;
 
+		Color icon_selected_color;
+		Color icon_hovered_color;
+		Color icon_unselected_color;
+		Color icon_disabled_color;
+
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
@@ -202,6 +207,8 @@ public:
 
 	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
+	void set_switch_on_drag_hover(bool p_enabled);
+	bool get_switch_on_drag_hover() const;
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);

@@ -38,7 +38,7 @@ bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
 }
 
-bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field) {
+bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, const String &p_field, bool p_undo_redo) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es) {
 		return false;
@@ -59,7 +59,10 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
-	ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
+	if (p_undo_redo) {
+		ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
+	}
+
 	for (const NodePath &E : nodes) {
 		Node *n = es->get_node_or_null(E);
 		if (!n) {
@@ -71,7 +74,12 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 			if (node_path_target) {
 				path = n->get_path_to(node_path_target);
 			}
-			ur->add_do_property(n, name, path);
+
+			if (p_undo_redo) {
+				ur->add_do_property(n, name, path);
+			} else {
+				n->set(name, path);
+			}
 		} else {
 			Variant new_value;
 			if (p_field.is_empty()) {
@@ -81,13 +89,22 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 				// only one field
 				new_value = fieldwise_assign(n->get(name), p_value, p_field);
 			}
-			ur->add_do_property(n, name, new_value);
+
+			if (p_undo_redo) {
+				ur->add_do_property(n, name, new_value);
+			} else {
+				n->set(name, new_value);
+			}
 		}
 
-		ur->add_undo_property(n, name, n->get(name));
+		if (p_undo_redo) {
+			ur->add_undo_property(n, name, n->get(name));
+		}
 	}
 
-	ur->commit_action();
+	if (p_undo_redo) {
+		ur->commit_action();
+	}
 	return true;
 }
 
@@ -148,18 +165,20 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				F.name = F.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from MultiNodeEdit.
 			}
 
-			if (!usage.has(F.name)) {
+			PLData *usage_data = usage.getptr(F.name);
+			if (!usage_data) {
 				PLData pld;
 				pld.uses = 0;
 				pld.info = F;
 				pld.info.name = F.name;
-				usage[F.name] = pld;
-				data_list.push_back(usage.getptr(F.name));
+				HashMap<String, MultiNodeEdit::PLData>::Iterator I = usage.insert(F.name, pld);
+				usage_data = &I->value;
+				data_list.push_back(usage_data);
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage[F.name].info == F) {
-				usage[F.name].uses++;
+			if (usage_data->info == F) {
+				usage_data->uses++;
 			}
 		}
 

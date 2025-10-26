@@ -997,7 +997,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));
 	id_edit_dialog->popup_centered(Vector2i(400, 0) * EDSCALE);
-	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred();
+	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred(false);
 }
 
 void TileSourceInspectorPlugin::_confirm_change_id() {

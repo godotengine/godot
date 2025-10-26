@@ -599,10 +599,10 @@ void FindReplaceBar::_show_search(bool p_with_replace, bool p_show_only) {
 
 	if (focus_replace) {
 		search_text->deselect();
-		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)replace_text, &Control::grab_focus).call_deferred(false);
 	} else {
 		replace_text->deselect();
-		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)search_text, &Control::grab_focus).call_deferred(false);
 	}
 
 	if (on_one_line) {
@@ -1466,23 +1466,23 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	if (state.has("folded_lines")) {
-		Vector<int> folded_lines = state["folded_lines"];
-		for (int i = 0; i < folded_lines.size(); i++) {
-			text_editor->fold_line(folded_lines[i]);
+		const PackedInt32Array folded_lines = state["folded_lines"];
+		for (const int &line : folded_lines) {
+			text_editor->fold_line(line);
 		}
 	}
 
 	if (state.has("breakpoints")) {
-		Array breakpoints = state["breakpoints"];
-		for (int i = 0; i < breakpoints.size(); i++) {
-			text_editor->set_line_as_breakpoint(breakpoints[i], true);
+		const PackedInt32Array breakpoints = state["breakpoints"];
+		for (const int &line : breakpoints) {
+			text_editor->set_line_as_breakpoint(line, true);
 		}
 	}
 
 	if (state.has("bookmarks")) {
-		Array bookmarks = state["bookmarks"];
-		for (int i = 0; i < bookmarks.size(); i++) {
-			text_editor->set_line_as_bookmarked(bookmarks[i], true);
+		const PackedInt32Array bookmarks = state["bookmarks"];
+		for (const int &line : bookmarks) {
+			text_editor->set_line_as_bookmarked(line, true);
 		}
 	}
 
@@ -1867,8 +1867,8 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
-void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void CodeTextEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void CodeTextEditor::show_toggle_files_button() {
@@ -1968,7 +1968,7 @@ CodeTextEditor::CodeTextEditor() {
 	zoom_button->set_accessibility_name(TTRC("Zoom Factor"));
 
 	PopupMenu *zoom_menu = zoom_button->get_popup();
-	constexpr int preset_count = std::size(ZOOM_FACTOR_PRESETS);
+	constexpr int preset_count = std_size(ZOOM_FACTOR_PRESETS);
 
 	for (int i = 0; i < preset_count; i++) {
 		float z = ZOOM_FACTOR_PRESETS[i];

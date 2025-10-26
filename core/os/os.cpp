@@ -309,8 +309,13 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// Path to macOS .app bundle embedded icon
+// Path to macOS .app bundle embedded icon (.icns file).
 String OS::get_bundle_icon_path() const {
+	return String();
+}
+
+// Name of macOS .app bundle embedded icon (Liquid Glass asset name).
+String OS::get_bundle_icon_name() const {
 	return String();
 }
 

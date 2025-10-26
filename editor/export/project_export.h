@@ -117,6 +117,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	RichTextLabel *custom_feature_display = nullptr;
 
 	LineEdit *script_key = nullptr;
+	Button *show_script_key = nullptr;
 	Label *script_key_error = nullptr;
 
 	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
@@ -200,6 +201,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _enc_filters_changed(const String &p_text);
 	void _seed_input_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);
+	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
 
 	void _script_export_mode_changed(int p_mode);

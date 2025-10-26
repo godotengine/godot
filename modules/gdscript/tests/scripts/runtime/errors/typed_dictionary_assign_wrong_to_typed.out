@@ -1,6 +1,5 @@
 GDTEST_RUNTIME_ERROR
 >> ERROR: Method/function failed. Returning: false
->>   Attempted to assign an object into a TypedDictionary.Key, that does not inherit from 'GDScript'.
->> ERROR: Method/function failed.
->>   Unable to convert key from "Object" to "Object".
+>>   Attempted to set an object into a TypedDictionary.Key, that does not inherit from 'GDScript'.
+>> ERROR: Condition "!_p->typed_key.validate(key, "set")" is true. Returning: false
 not ok

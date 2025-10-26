@@ -325,6 +325,7 @@ public:
 
 	virtual bool poll_export() { return false; }
 	virtual int get_options_count() const { return 0; }
+	virtual bool is_option_runnable(int p_index) const { return true; }
 	virtual String get_options_tooltip() const { return ""; }
 	virtual Ref<Texture2D> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
@@ -349,6 +350,8 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const { return HashMap<String, Variant>(); }
+
+	virtual void initialize() {}
 };
 
 VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType)

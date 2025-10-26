@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rendering_shader_container_metal.h"
+#import "rendering_shader_container_metal.h"
 
-#include "servers/rendering/rendering_device.h"
+#import "metal_utils.h"
 
+#import "core/io/file_access.h"
 #import "core/io/marshalls.h"
+#import "servers/rendering/rendering_device.h"
 
 #import <Metal/Metal.h>
 #import <spirv.hpp>
@@ -79,10 +81,100 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(MetalDeviceProfile::Pl
 			} break;
 		}
 		res.features.mslVersionMajor = 3;
-		res.features.mslVersionMinor = 2;
+		res.features.mslVersionMinor = 1;
 	}
 
+	res.update_options();
+
 	return &profiles.insert(key, res)->value;
+}
+
+void MetalDeviceProfile::update_options() {
+	options.argument_buffers_tier = features.argument_buffers_tier;
+
+	if (OS::get_singleton()->has_environment(U"GODOT_MTL_ARGUMENT_BUFFERS_TIER")) {
+		uint64_t tier = OS::get_singleton()->get_environment(U"GODOT_MTL_ARGUMENT_BUFFERS_TIER").to_int();
+		switch (tier) {
+			case 1:
+				// All devices support tier 1 argument buffers.
+				options.argument_buffers_tier = ArgumentBuffersTier::Tier1;
+				break;
+			case 2:
+				if (features.argument_buffers_tier >= ArgumentBuffersTier::Tier2) {
+					options.argument_buffers_tier = ArgumentBuffersTier::Tier2;
+				} else {
+					WARN_PRINT("Current device does not support tier 2 argument buffers, leaving as default.");
+				}
+				break;
+			default:
+				WARN_PRINT(vformat("Invalid value for GODOT_MTL_ARGUMENT_BUFFER_TIER: %d. Falling back to device default.", tier));
+				break;
+		}
+	}
+}
+
+void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
+	if (compiler_props.is_valid()) {
+		return;
+	}
+
+	String sdk;
+	switch (device_profile->platform) {
+		case MetalDeviceProfile::Platform::macOS:
+			sdk = "macosx";
+			break;
+		case MetalDeviceProfile::Platform::iOS:
+			sdk = "iphoneos";
+			break;
+	}
+
+	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal" };
+
+	// Compile metal shaders for the minimum supported target instead of the host machine
+	if (min_os_version.is_valid()) {
+		switch (device_profile->platform) {
+			case MetalDeviceProfile::Platform::macOS: {
+				parts.push_back("-mmacosx-version-min=" + min_os_version.to_compiler_os_version());
+				break;
+			}
+			case MetalDeviceProfile::Platform::iOS: {
+				parts.push_back("-mios-version-min=" + min_os_version.to_compiler_os_version());
+				break;
+			}
+		}
+	}
+
+	parts.append_array({ "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" });
+
+	List<String> args = { "-c", String(" ").join(parts) };
+
+	String r_pipe;
+	int exit_code;
+	Error err = OS::get_singleton()->execute("sh", args, &r_pipe, &exit_code, true);
+	ERR_FAIL_COND_MSG(err != OK, "Failed to determine Metal toolchain properties");
+
+	// Parse the lines, which are in the form:
+	//
+	// #define VARNAME VALUE
+	Vector<String> lines = r_pipe.split("\n", false);
+	for (String &line : lines) {
+		Vector<String> name_val = line.trim_prefix("#define ").split(" ");
+		if (name_val.size() != 2) {
+			continue;
+		}
+		if (name_val[0] == "__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__") {
+			compiler_props.os_version_min_required = MinOsVersion((uint32_t)name_val[1].to_int());
+		} else if (name_val[0] == "__METAL_VERSION__") {
+			uint32_t ver = (uint32_t)name_val[1].to_int();
+			uint32_t maj = ver / 100;
+			uint32_t min = (ver % 100) / 10;
+			compiler_props.metal_version = make_msl_version(maj, min);
+		}
+
+		if (compiler_props.is_valid()) {
+			break;
+		}
+	}
 }
 
 Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data) {
@@ -115,9 +207,26 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 			break;
 	}
 
-	// Build the metallib binary.
+	// Build the .metallib binary.
 	{
 		List<String> args{ "-sdk", sdk, "metal", "-O3" };
+
+		// Compile metal shaders for the minimum supported target instead of the host machine.
+		if (min_os_version.is_valid()) {
+			switch (device_profile->platform) {
+				case MetalDeviceProfile::Platform::macOS: {
+					args.push_back("-mmacosx-version-min=" + min_os_version.to_compiler_os_version());
+					break;
+				}
+				case MetalDeviceProfile::Platform::iOS: {
+					args.push_back("-mios-version-min=" + min_os_version.to_compiler_os_version());
+					break;
+				}
+			}
+		} else {
+			WARN_PRINT_ONCE(vformat("Minimum target OS version is not set, so baking shaders for Metal will target the default version of your toolchain: %s", compiler_props.os_version_min_required.to_compiler_os_version()));
+		}
+
 		if (p_stage_data.is_position_invariant) {
 			args.push_back("-fpreserve-invariance");
 		}
@@ -170,10 +279,14 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
-bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) {
+bool RenderingShaderContainerMetal::_set_code_from_spirv(Span<ReflectedShaderStage> p_spirv) {
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
 	using spirv_cross::Resource;
+
+	if (export_mode) {
+		_initialize_toolchain_properties();
+	}
 
 	// initialize Metal-specific reflection data
 	shaders.resize(p_spirv.size());
@@ -182,6 +295,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 	mtl_reflection_specialization_data.resize(reflection_specialization_data.size());
 
 	mtl_reflection_data.set_needs_view_mask_buffer(reflection_data.has_multiview);
+	mtl_reflection_data.profile = *device_profile;
 
 	// set_indexes will contain the starting offsets of each descriptor set in the binding set uniforms data
 	// including the last one, which is the size of reflection_binding_set_uniforms_count.
@@ -199,10 +313,25 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		set_indexes[set_indexes_size - 1] = offset;
 	}
 	CompilerMSL::Options msl_options{};
-	// MAJOR * 10000 + MINOR * 100
-	uint32_t msl_version = CompilerMSL::Options::make_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
-	msl_options.set_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
-	mtl_reflection_data.msl_version = msl_options.msl_version;
+
+	// Determine Metal language version.
+	uint32_t msl_version = 0;
+	{
+		if (export_mode && compiler_props.is_valid()) {
+			// Use the properties determined by the toolchain and minimum OS version.
+			msl_version = compiler_props.metal_version;
+			mtl_reflection_data.os_min_version = compiler_props.os_version_min_required;
+		} else {
+			msl_version = make_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
+			mtl_reflection_data.os_min_version = MinOsVersion();
+		}
+		uint32_t msl_ver_maj = 0;
+		uint32_t msl_ver_min = 0;
+		parse_msl_version(msl_version, msl_ver_maj, msl_ver_min);
+		msl_options.set_msl_version(msl_ver_maj, msl_ver_min);
+		mtl_reflection_data.msl_version = msl_version;
+	}
+
 	msl_options.platform = device_profile->platform == MetalDeviceProfile::Platform::macOS ? CompilerMSL::Options::macOS : CompilerMSL::Options::iOS;
 
 	if (device_profile->platform == MetalDeviceProfile::Platform::iOS) {
@@ -210,12 +339,9 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.ios_support_base_vertex_instance = true;
 	}
 
-	bool disable_argument_buffers = false;
-	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
-		disable_argument_buffers = true;
-	}
+	bool argument_buffers_allowed = get_shader_reflection().has_dynamic_buffers == false;
 
-	if (device_profile->features.argument_buffers_tier >= MetalDeviceProfile::ArgumentBuffersTier::Tier2 && !disable_argument_buffers) {
+	if (device_profile->options.argument_buffers_tier >= MetalDeviceProfile::ArgumentBuffersTier::Tier2 && argument_buffers_allowed) {
 		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
 		msl_options.argument_buffers = true;
 		mtl_reflection_data.set_uses_argument_buffers(true);
@@ -238,7 +364,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.multiview_layered_rendering = true;
 		msl_options.view_mask_buffer_index = VIEW_MASK_BUFFER_INDEX;
 	}
-	if (msl_version >= CompilerMSL::Options::make_msl_version(3, 2)) {
+	if (msl_version >= make_msl_version(3, 2)) {
 		// All 3.2+ versions support device coherence, so we can disable texture fences.
 		msl_options.readwrite_texture_fences = false;
 	}
@@ -251,12 +377,11 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		StageData &stage_data = mtl_shaders.write[i];
-		RD::ShaderStageSPIRVData const &v = p_spirv[i];
+		const ReflectedShaderStage &v = p_spirv[i];
 		RD::ShaderStage stage = v.shader_stage;
 		char const *stage_name = RD::SHADER_STAGE_NAMES[stage];
-		uint32_t const *const ir = reinterpret_cast<uint32_t const *const>(v.spirv.ptr());
-		size_t word_count = v.spirv.size() / sizeof(uint32_t);
-		Parser parser(ir, word_count);
+		Span<uint32_t> spirv = v.spirv();
+		Parser parser(spirv.ptr(), spirv.size());
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
@@ -571,13 +696,19 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		memcpy(binary_data.ptrw(), source.c_str(), stage_data.source_size);
 
 		if (export_mode) {
-			// Try to compile the Metal source code
-			::Vector<uint8_t> library_data;
-			Error compile_err = compile_metal_source(source.c_str(), stage_data, library_data);
-			if (compile_err == OK) {
-				stage_data.library_size = library_data.size();
-				binary_data.resize(stage_data.source_size + stage_data.library_size);
-				memcpy(binary_data.ptrw() + stage_data.source_size, library_data.ptr(), stage_data.library_size);
+			if (compiler_props.is_valid()) {
+				// Try to compile the Metal source code.
+				::Vector<uint8_t> library_data;
+				Error compile_err = compile_metal_source(source.c_str(), stage_data, library_data);
+				if (compile_err == OK) {
+					// If we successfully compiled to a `.metallib`, there are greater restrictions on target platforms,
+					// so we must update the properties.
+					stage_data.library_size = library_data.size();
+					binary_data.resize(stage_data.source_size + stage_data.library_size);
+					memcpy(binary_data.ptrw() + stage_data.source_size, library_data.ptr(), stage_data.library_size);
+				}
+			} else {
+				WARN_PRINT_ONCE("Metal shader baking limited to SPIR-V: Unable to determine toolchain properties to compile .metallib");
 			}
 		}
 
@@ -693,6 +824,7 @@ Ref<RenderingShaderContainer> RenderingShaderContainerFormatMetal::create_contai
 	result.instantiate();
 	result->set_export_mode(export_mode);
 	result->set_device_profile(device_profile);
+	result->set_min_os_version(min_os_version);
 	return result;
 }
 
@@ -704,6 +836,30 @@ RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatMetal::
 	return SHADER_SPIRV_VERSION_1_6;
 }
 
-RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export) :
-		export_mode(p_export), device_profile(p_device_profile) {
+RenderingShaderContainerFormatMetal::RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export, const MinOsVersion p_min_os_version) :
+		export_mode(p_export), min_os_version(p_min_os_version), device_profile(p_device_profile) {
+}
+
+String MinOsVersion::to_compiler_os_version() const {
+	if (version == UINT32_MAX) {
+		return "";
+	}
+
+	uint32_t major = version / 10000;
+	uint32_t minor = (version % 10000) / 100;
+	return vformat("%d.%d", major, minor);
+}
+
+MinOsVersion::MinOsVersion(const String &p_version) {
+	int pos = p_version.find_char('.');
+	if (pos > 0) {
+		version = (uint32_t)(p_version.substr(0, pos).to_int() * 10000 +
+				p_version.substr(pos + 1).to_int() * 100);
+	} else {
+		version = (uint32_t)(p_version.to_int() * 10000);
+	}
+
+	if (version == 0) {
+		version = UINT32_MAX;
+	}
 }

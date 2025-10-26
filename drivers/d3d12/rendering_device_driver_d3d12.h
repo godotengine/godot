@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
@@ -41,6 +42,19 @@
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
+
 #include <d3dx12.h>
 #include <dxgi1_6.h>
 #define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
@@ -48,10 +62,8 @@
 
 #include <wrl/client.h>
 
-#if defined(_MSC_VER) && defined(MemoryBarrier)
-// Annoying define from winnt.h. Reintroduced by some of the headers above.
-#undef MemoryBarrier
-#endif
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
 
 using Microsoft::WRL::ComPtr;
 
@@ -132,38 +144,108 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	MiscFeaturesSupport misc_features_support;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
+	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
 
-	class DescriptorsHeap {
+	class CPUDescriptorsHeapPool;
+
+	struct CPUDescriptorsHeapHandle {
+		ID3D12DescriptorHeap *heap = nullptr;
+		CPUDescriptorsHeapPool *pool = nullptr;
+		uint32_t offset = 0;
+		uint32_t base_offset = 0;
+		uint32_t count = 0;
+		uint32_t nonce = 0;
+
+		uint32_t global_offset() const { return offset + base_offset; }
+	};
+
+	class CPUDescriptorsHeapPool {
+		Mutex mutex;
+
+		struct FreeBlockInfo {
+			ID3D12DescriptorHeap *heap = nullptr;
+			uint32_t global_offset = 0; // Global offset in an address space shared by all the heaps.
+			uint32_t base_offset = 0; // The offset inside the space of this heap.
+			uint32_t size = 0;
+			uint32_t nonce = 0;
+		};
+
+		struct FreeBlockSortIndexSort {
+			_FORCE_INLINE_ bool operator()(const uint32_t &p_l, const uint32_t &p_r) const {
+				return p_l > p_r;
+			}
+		};
+
+		typedef RBMap<uint32_t, FreeBlockInfo> OffsetTableType;
+		typedef RBMap<uint32_t, List<uint32_t>, FreeBlockSortIndexSort> SizeTableType;
+
+		OffsetTableType free_blocks_by_offset;
+		SizeTableType free_blocks_by_size;
+		uint32_t current_offset = 0;
+		uint32_t current_nonce = 0;
+
+		void add_to_size_map(const FreeBlockInfo &p_block);
+		void remove_from_size_map(const FreeBlockInfo &p_block);
+		void verify();
+
+	public:
+		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
+		Error release(const CPUDescriptorsHeapHandle &p_result);
+	};
+
+	class CPUDescriptorsHeapPools {
+		CPUDescriptorsHeapPool pools[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+	public:
+		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
+	};
+
+	struct CPUDescriptorsHeapWalker {
+		uint32_t handle_size = 0;
+		uint32_t handle_count = 0;
+		D3D12_CPU_DESCRIPTOR_HANDLE first_cpu_handle = {};
+		uint32_t handle_index = 0;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE get_curr_cpu_handle();
+		_FORCE_INLINE_ void rewind() { handle_index = 0; }
+		void advance(uint32_t p_count = 1);
+		uint32_t get_current_handle_index() const { return handle_index; }
+		uint32_t get_free_handles() { return handle_count - handle_index; }
+		bool is_at_eof() { return handle_index == handle_count; }
+	};
+
+	struct GPUDescriptorsHeapWalker : CPUDescriptorsHeapWalker {
+		D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
+
+		D3D12_GPU_DESCRIPTOR_HANDLE get_curr_gpu_handle();
+	};
+
+	class CPUDescriptorsHeap {
+		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		CPUDescriptorsHeapHandle handle;
+		uint32_t handle_size = 0;
+
+	public:
+		CPUDescriptorsHeap() = default;
+		Error allocate(RenderingDeviceDriverD3D12 *p_driver, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
+		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
+		~CPUDescriptorsHeap();
+		CPUDescriptorsHeapWalker make_walker() const;
+	};
+
+	class GPUDescriptorsHeap {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		ComPtr<ID3D12DescriptorHeap> heap;
 		uint32_t handle_size = 0;
 
 	public:
-		class Walker { // Texas Ranger.
-			friend class DescriptorsHeap;
-
-			uint32_t handle_size = 0;
-			uint32_t handle_count = 0;
-			D3D12_CPU_DESCRIPTOR_HANDLE first_cpu_handle = {};
-			D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
-			uint32_t handle_index = 0;
-
-		public:
-			D3D12_CPU_DESCRIPTOR_HANDLE get_curr_cpu_handle();
-			D3D12_GPU_DESCRIPTOR_HANDLE get_curr_gpu_handle();
-			_FORCE_INLINE_ void rewind() { handle_index = 0; }
-			void advance(uint32_t p_count = 1);
-			uint32_t get_current_handle_index() const { return handle_index; }
-			uint32_t get_free_handles() { return handle_count - handle_index; }
-			bool is_at_eof() { return handle_index == handle_count; }
-		};
-
-		Error allocate(ID3D12Device *m_device, D3D12_DESCRIPTOR_HEAP_TYPE m_type, uint32_t m_descriptor_count, bool p_for_gpu);
+		Error allocate(RenderingDeviceDriverD3D12 *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
 		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
 		ID3D12DescriptorHeap *get_heap() const { return heap.Get(); }
-
-		Walker make_walker() const;
+		GPUDescriptorsHeapWalker make_walker() const;
 	};
+
+	CPUDescriptorsHeapPools cpu_descriptor_pool;
 
 	struct {
 		ComPtr<ID3D12CommandSignature> draw;
@@ -242,16 +324,29 @@ private:
 		uint64_t size = 0;
 		struct {
 			bool usable_as_uav : 1;
+			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
+
+		bool is_dynamic() const { return flags.is_dynamic; }
+	};
+
+	struct BufferDynamicInfo : BufferInfo {
+		uint32_t frame_idx = UINT32_MAX;
+		uint8_t *persistent_ptr = nullptr;
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
 	};
 
 public:
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
@@ -303,6 +398,7 @@ public:
 	virtual void texture_free(TextureID p_texture) override final;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
+	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
@@ -344,7 +440,7 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<RDD::MemoryBarrier> p_memory_barriers,
+			VectorView<RDD::MemoryAccessBarrier> p_memory_barriers,
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
 			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
 
@@ -498,8 +594,8 @@ private:
 		bool is_screen = false;
 		Size2i size;
 		TightLocalVector<uint32_t> attachments_handle_inds; // RTV heap index for color; DSV heap index for DSV.
-		DescriptorsHeap rtv_heap;
-		DescriptorsHeap dsv_heap; // Used only if not for screen and some depth-stencil attachments.
+		CPUDescriptorsHeap rtv_heap;
+		CPUDescriptorsHeap dsv_heap; // Used only for depth-stencil attachments.
 
 		TightLocalVector<TextureID> attachments; // Color and depth-stencil. Used if not screen.
 		TextureID vrs_attachment;
@@ -609,8 +705,8 @@ private:
 
 	struct UniformSetInfo {
 		struct {
-			DescriptorsHeap resources;
-			DescriptorsHeap samplers;
+			CPUDescriptorsHeap resources;
+			CPUDescriptorsHeap samplers;
 		} desc_heaps;
 
 		struct StateRequirement {
@@ -623,6 +719,7 @@ private:
 
 		struct RecentBind {
 			uint64_t segment_serial = 0;
+			uint32_t dynamic_state_mask = 0;
 			uint32_t root_signature_crc = 0;
 			struct {
 				TightLocalVector<RootDescriptorTable> resources;
@@ -630,6 +727,8 @@ private:
 			} root_tables;
 			int uses = 0;
 		} recent_binds[4]; // A better amount may be empirically found.
+
+		TightLocalVector<BufferDynamicInfo const *, uint32_t> dynamic_buffers;
 
 #ifdef DEV_ENABLED
 		// Filthy, but useful for dev.
@@ -644,6 +743,7 @@ private:
 public:
 	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) override final;
 	virtual void uniform_set_free(UniformSetID p_uniform_set) override final;
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const override final;
 
 	// ----- COMMANDS -----
 
@@ -651,8 +751,7 @@ public:
 
 private:
 	void _command_check_descriptor_sets(CommandBufferID p_cmd_buffer);
-	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute);
-	void _command_bind_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, bool p_for_compute);
+	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets, bool p_for_compute);
 
 public:
 	/******************/
@@ -741,8 +840,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) override final;
@@ -789,8 +887,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override final;
@@ -842,16 +939,16 @@ public:
 private:
 	struct FrameInfo {
 		struct {
-			DescriptorsHeap resources;
-			DescriptorsHeap samplers;
-			DescriptorsHeap aux;
-			DescriptorsHeap rtv;
+			GPUDescriptorsHeap resources;
+			GPUDescriptorsHeap samplers;
+			CPUDescriptorsHeap aux;
+			CPUDescriptorsHeap rtv;
 		} desc_heaps;
 		struct {
-			DescriptorsHeap::Walker resources;
-			DescriptorsHeap::Walker samplers;
-			DescriptorsHeap::Walker aux;
-			DescriptorsHeap::Walker rtv;
+			GPUDescriptorsHeapWalker resources;
+			GPUDescriptorsHeapWalker samplers;
+			CPUDescriptorsHeapWalker aux;
+			CPUDescriptorsHeapWalker rtv;
 		} desc_heap_walkers;
 		struct {
 			bool resources = false;

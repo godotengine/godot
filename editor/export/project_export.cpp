@@ -99,10 +99,12 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
+				show_script_key->set_pressed(false);
 			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			_script_encryption_key_visibility_changed(show_script_key->is_pressed());
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
@@ -284,7 +286,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
 	advanced_options->set_disabled(false);
-	advanced_options->set_pressed(current->are_advanced_options_enabled());
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	if (parameters->get_edited_object() != current.ptr()) {
@@ -395,6 +396,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	enc_in_filters->set_editable(enc_pck_mode);
 	enc_ex_filters->set_editable(enc_pck_mode);
 	script_key->set_editable(enc_pck_mode);
+	show_script_key->set_disabled(!enc_pck_mode);
 	seed_input->set_editable(enc_pck_mode);
 
 	bool enc_directory_mode = current->get_enc_directory();
@@ -491,11 +493,13 @@ void ProjectExportDialog::_advanced_options_pressed() {
 	if (updating) {
 		return;
 	}
+	EditorSettings::get_singleton()->set_setting("_export_preset_advanced_mode", advanced_options->is_pressed());
+	EditorSettings::get_singleton()->save();
 
 	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_advanced_options_enabled(advanced_options->is_pressed());
+	if (current.is_valid()) {
+		current->notify_property_list_changed();
+	}
 	_update_presets();
 }
 
@@ -581,7 +585,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
+	OS::get_singleton()->shell_open(vformat("%s/engine_details/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
@@ -597,6 +601,10 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	enc_in_filters->set_editable(p_pressed);
 	enc_ex_filters->set_editable(p_pressed);
 	script_key->set_editable(p_pressed);
+	show_script_key->set_disabled(!p_pressed);
+	if (!p_pressed) {
+		show_script_key->set_pressed(false);
+	}
 
 	_update_current_preset();
 }
@@ -642,6 +650,12 @@ void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
 	updating_script_key = true;
 	_update_current_preset();
 	updating_script_key = false;
+}
+
+void ProjectExportDialog::_script_encryption_key_visibility_changed(bool p_visible) {
+	show_script_key->set_button_icon(get_editor_theme_icon(p_visible ? SNAME("GuiVisibilityVisible") : SNAME("GuiVisibilityHidden")));
+	show_script_key->set_tooltip_text(p_visible ? TTRC("Hide encryption key") : TTRC("Show encryption key"));
+	script_key->set_secret(!p_visible);
 }
 
 bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
@@ -702,7 +716,6 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
-	preset->set_advanced_options_enabled(current->are_advanced_options_enabled());
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
@@ -1500,6 +1513,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	advanced_options = memnew(CheckButton);
 	advanced_options->set_text(TTR("Advanced Options"));
 	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
+	advanced_options->set_pressed(EDITOR_GET("_export_preset_advanced_mode"));
 	advanced_options->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
 
 	HBoxContainer *preset_configs_container = memnew(HBoxContainer);
@@ -1699,13 +1713,24 @@ ProjectExportDialog::ProjectExportDialog() {
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
+	script_key->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	script_key->set_accessibility_name(TTRC("Encryption Key (256-bits as hexadecimal):"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
+	script_key->set_secret(true);
+
+	show_script_key = memnew(Button);
+	show_script_key->set_toggle_mode(true);
+	show_script_key->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_script_encryption_key_visibility_changed));
+
+	HBoxContainer *encryption_hb = memnew(HBoxContainer);
+	encryption_hb->add_child(script_key);
+	encryption_hb->add_child(show_script_key);
+
 	script_key_error = memnew(Label);
 	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
 	script_key_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
-	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
+	sec_vb->add_margin_child(TTRC("Encryption Key (256-bits as hexadecimal):"), encryption_hb);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_scroll_container);
 

@@ -32,6 +32,7 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/mesh.h"
 
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
@@ -70,6 +71,8 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 

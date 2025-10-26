@@ -40,6 +40,7 @@ class LayerHost final : public Control {
 
 	ScriptEditorDebugger *script_debugger = nullptr;
 	EmbeddedProcessMacOS *process = nullptr;
+	bool window_focused = true;
 
 	struct CustomCursor {
 		Ref<Image> image;
@@ -92,7 +93,6 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 
 	void _try_embed_process();
 	void update_embedded_process();
-	void _joy_connection_changed(int p_index, bool p_connected) const;
 
 protected:
 	void _notification(int p_what);

@@ -31,6 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {

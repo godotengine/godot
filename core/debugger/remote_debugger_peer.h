@@ -31,12 +31,15 @@
 #pragma once
 
 #include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_uds.h"
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
 
 class RemoteDebuggerPeer : public RefCounted {
+	GDSOFTCLASS(RemoteDebuggerPeer, RefCounted);
+
 protected:
 	int max_queued_messages = 4096;
 
@@ -54,8 +57,10 @@ public:
 };
 
 class RemoteDebuggerPeerTCP : public RemoteDebuggerPeer {
+	GDSOFTCLASS(RemoteDebuggerPeerTCP, RemoteDebuggerPeer);
+
 private:
-	Ref<StreamPeerTCP> tcp_client;
+	Ref<StreamPeerSocket> tcp_client;
 	Mutex mutex;
 	Thread thread;
 	List<Array> in_queue;
@@ -74,11 +79,11 @@ private:
 	void _poll();
 	void _write_out();
 	void _read_in();
+	static Error _try_connect(Ref<StreamPeerSocket> p_stream);
 
 public:
-	static RemoteDebuggerPeer *create(const String &p_uri);
-
-	Error connect_to_host(const String &p_host, uint16_t p_port);
+	static RemoteDebuggerPeer *create_tcp(const String &p_uri);
+	static RemoteDebuggerPeer *create_unix(const String &p_uri);
 
 	bool is_peer_connected() override;
 	int get_max_message_size() const override;
@@ -88,6 +93,7 @@ public:
 	void poll() override;
 	void close() override;
 
-	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());
+	RemoteDebuggerPeerTCP(Ref<StreamPeerSocket> p_stream);
+	RemoteDebuggerPeerTCP();
 	~RemoteDebuggerPeerTCP();
 };

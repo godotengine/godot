@@ -24,13 +24,14 @@
 # Макар Разин <makarrazin14@gmail.com>, 2025.
 # Ivan Dortulov <ivandortulov@yahoo.com>, 2025.
 # tomsterBG <tomi4443321@gmail.com>, 2025.
+# Jivko Chterev <Jivko91@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-06-08 19:07+0000\n"
-"Last-Translator: tomsterBG <tomi4443321@gmail.com>\n"
+"PO-Revision-Date: 2025-08-20 10:26+0000\n"
+"Last-Translator: Jivko Chterev <Jivko91@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -38,10 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.12-dev\n"
-
-msgid "Unset"
-msgstr "Незададен"
+"X-Generator: Weblate 5.13\n"
 
 msgid "Physical"
 msgstr "Физически"
@@ -401,6 +399,12 @@ msgstr "Промяна на посоката на въвеждане"
 msgid "Start Unicode Character Input"
 msgstr "Въвеждане на Unicode символ"
 
+msgid "ColorPicker: Delete Preset"
+msgstr "Избирач на цвят: Изтрии конфигурация"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Достъпност: клавиатурно хващане и пускане"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Неправилен входящ параметър %d (не е подаден) в израза"
 
@@ -477,11 +481,32 @@ msgstr "Поставяне на избран(и) ключ(ове)"
 msgid "Delete Selected Key(s)"
 msgstr "Изтриване на избран(и) ключ(ове)"
 
+msgid "Make Handles Free"
+msgstr "Направи дръжките свободни"
+
+msgid "Make Handles Linear"
+msgstr "Направи дръжките линейни"
+
+msgid "Make Handles Balanced"
+msgstr "Направи дръжките балансирани"
+
+msgid "Make Handles Mirrored"
+msgstr "Направи дръжките огледални"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Направи дръжките балансирани (авто тангент)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Направи дръжките огледални (авто тангент)"
+
 msgid "Add Bezier Point"
 msgstr "Добавяне на точка на Безие"
 
 msgid "Move Bezier Points"
 msgstr "Преместване на точки на Безие"
+
+msgid "Scale Bezier Points"
+msgstr "Оразмеряване на Безие точки"
 
 msgid "Select All Keys"
 msgstr "Избиране на всички ключове"
@@ -1189,6 +1214,30 @@ msgstr "Оптимизиране"
 
 msgid "Clean-Up"
 msgstr "Почистване"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Синус"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "четириъгълник"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Еластично"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Назад"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Пружина"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Вход"
 
 msgid "Select Tracks to Copy"
 msgstr "Изберете пътечки за копиране"
@@ -3022,9 +3071,6 @@ msgstr "Профилиране на мрежата"
 msgid "Run the project's default scene."
 msgstr "Пусни цената по подразбиране на проекта."
 
-msgid "Select Mode"
-msgstr "Режим на избиране"
-
 msgid "Clear All"
 msgstr "Изчистване на всичко"
 
@@ -3543,6 +3589,9 @@ msgstr "Задай цвят на предварителен изглед на п
 
 msgid "Set Preview Environment Ground Color"
 msgstr "Задай цвят на предварителен изглед на земя"
+
+msgid "Select Mode"
+msgstr "Режим на избиране"
 
 msgid "Move Mode"
 msgstr "Режим на преместване"

@@ -31,17 +31,17 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
-#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/default_theme_icons.gen.h"
 #include "scene/theme/theme_db.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef BROTLI_ENABLED
 #include "scene/theme/default_font.gen.h"
@@ -79,8 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<SVGTexture> generate_icon(int p_index) {
-	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
+static Ref<DPITexture> generate_icon(int p_index) {
+	return DPITexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -477,6 +477,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("line_spacing", "TextEdit", Math::round(4 * scale));
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
+	theme->set_constant("wrap_offset", "TextEdit", 10);
 
 	// CodeEdit
 
@@ -912,6 +913,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("children_hl_line_width", "Tree", 1);
 	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
+	theme->set_constant("dragging_unfold_wait_msec", "Tree", 500);
 	theme->set_constant("scroll_border", "Tree", Math::round(4 * scale));
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
@@ -993,6 +995,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "TabContainer", Color(0, 0, 0));
 	theme->set_color("drop_mark_color", "TabContainer", Color(1, 1, 1));
 
+	theme->set_color("icon_selected_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_hovered_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_unselected_color", "TabContainer", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "TabContainer", Color(1, 1, 1, 1));
+
 	theme->set_constant("side_margin", "TabContainer", Math::round(8 * scale));
 	theme->set_constant("icon_separation", "TabContainer", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabContainer", 0);
@@ -1025,9 +1032,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "TabBar", Color(0, 0, 0));
 	theme->set_color("drop_mark_color", "TabBar", Color(1, 1, 1));
 
+	theme->set_color("icon_selected_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_hovered_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_unselected_color", "TabBar", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "TabBar", Color(1, 1, 1, 1));
+
 	theme->set_constant("h_separation", "TabBar", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
+	theme->set_constant("hover_switch_wait_msec", "TabBar", 500);
 
 	// Separators
 

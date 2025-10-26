@@ -64,9 +64,7 @@
 #import <Metal/Metal.h>
 #import <os/log.h>
 #import <os/signpost.h>
-#import <spirv.hpp>
-#import <spirv_msl.hpp>
-#import <spirv_parser.hpp>
+#include <algorithm>
 
 #pragma mark - Logging
 
@@ -121,20 +119,44 @@ _FORCE_INLINE_ static bool operator==(MTLSize p_a, MTLSize p_b) {
 /**** BUFFERS ****/
 /*****************/
 
-RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
-	MTLResourceOptions options = MTLResourceHazardTrackingModeTracked;
+RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
+	const uint64_t original_size = p_size;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		p_size = round_up_to_alignment(p_size, 16u) * frame_count;
+	}
+
+	MTLResourceOptions options = 0;
 	switch (p_allocation_type) {
 		case MEMORY_ALLOCATION_TYPE_CPU:
-			options |= MTLResourceStorageModeShared;
+			options = MTLResourceHazardTrackingModeTracked | MTLResourceStorageModeShared;
 			break;
 		case MEMORY_ALLOCATION_TYPE_GPU:
-			options |= MTLResourceStorageModePrivate;
+			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+				options = MTLResourceHazardTrackingModeUntracked | MTLResourceStorageModeShared | MTLResourceCPUCacheModeWriteCombined;
+			} else {
+				options = MTLResourceHazardTrackingModeTracked | MTLResourceStorageModePrivate;
+			}
 			break;
 	}
 
 	id<MTLBuffer> obj = [device newBufferWithLength:p_size options:options];
 	ERR_FAIL_NULL_V_MSG(obj, BufferID(), "Can't create buffer of size: " + itos(p_size));
-	return rid::make(obj);
+
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		MetalBufferDynamicInfo *dyn_buffer = memnew(MetalBufferDynamicInfo);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+		dyn_buffer->set_frame_index(0u);
+		dyn_buffer->size_bytes = round_up_to_alignment(original_size, 16u);
+	} else {
+		buf_info = memnew(BufferInfo);
+	}
+	buf_info->metal_buffer = obj;
+
+	return BufferID(buf_info);
 }
 
 bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) {
@@ -143,28 +165,49 @@ bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, Data
 }
 
 void RenderingDeviceDriverMetal::buffer_free(BufferID p_buffer) {
-	rid::release(p_buffer);
+	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
+	buf_info->metal_buffer = nil; // Tell ARC to release.
+
+	if (buf_info->is_dynamic()) {
+		memdelete((MetalBufferDynamicInfo *)buf_info);
+	} else {
+		memdelete(buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverMetal::buffer_get_allocation_size(BufferID p_buffer) {
-	id<MTLBuffer> obj = rid::get(p_buffer);
-	return obj.allocatedSize;
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	return buf_info->metal_buffer.allocatedSize;
 }
 
 uint8_t *RenderingDeviceDriverMetal::buffer_map(BufferID p_buffer) {
-	id<MTLBuffer> obj = rid::get(p_buffer);
-	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Unable to map private buffers");
-	return (uint8_t *)obj.contents;
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(buf_info->metal_buffer.storageMode != MTLStorageModeShared, nullptr, "Unable to map private buffers");
+	return (uint8_t *)buf_info->metal_buffer.contents;
 }
 
 void RenderingDeviceDriverMetal::buffer_unmap(BufferID p_buffer) {
 	// Nothing to do.
 }
 
+uint8_t *RenderingDeviceDriverMetal::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	MetalBufferDynamicInfo *buf_info = (MetalBufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	return (uint8_t *)buf_info->metal_buffer.contents + buf_info->next_frame_index(frame_count) * buf_info->size_bytes;
+}
+
+void RenderingDeviceDriverMetal::buffer_flush(BufferID p_buffer) {
+	// Nothing to do.
+}
+
 uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer) {
 	if (@available(iOS 16.0, macOS 13.0, *)) {
-		id<MTLBuffer> obj = rid::get(p_buffer);
-		return obj.gpuAddress;
+		const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+		return buf_info->metal_buffer.gpuAddress;
 	} else {
 #if DEV_ENABLED
 		WARN_PRINT_ONCE("buffer_get_device_address is not supported on this OS version.");
@@ -187,25 +230,14 @@ static const MTLTextureType TEXTURE_TYPE[RD::TEXTURE_TYPE_MAX] = {
 	MTLTextureTypeCubeArray,
 };
 
-RenderingDeviceDriverMetal::Result<bool> RenderingDeviceDriverMetal::is_valid_linear(TextureFormat const &p_format) const {
-	if (!flags::any(p_format.usage_bits, TEXTURE_USAGE_CPU_READ_BIT)) {
-		return false;
-	}
+bool RenderingDeviceDriverMetal::is_valid_linear(TextureFormat const &p_format) const {
+	MTLFormatType ft = pixel_formats->getFormatType(p_format.format);
 
-	PixelFormats &pf = *pixel_formats;
-	MTLFormatType ft = pf.getFormatType(p_format.format);
-
-	// Requesting a linear format, which has further restrictions, similar to Vulkan
-	// when specifying VK_IMAGE_TILING_LINEAR.
-
-	ERR_FAIL_COND_V_MSG(p_format.texture_type != TEXTURE_TYPE_2D, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must be 2D");
-	ERR_FAIL_COND_V_MSG(ft != MTLFormatType::DepthStencil, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must not be a depth/stencil format");
-	ERR_FAIL_COND_V_MSG(ft != MTLFormatType::Compressed, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must not be a compressed format");
-	ERR_FAIL_COND_V_MSG(p_format.mipmaps != 1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 mipmap level");
-	ERR_FAIL_COND_V_MSG(p_format.array_layers != 1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 array layer");
-	ERR_FAIL_COND_V_MSG(p_format.samples != TEXTURE_SAMPLES_1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 sample");
-
-	return true;
+	return p_format.texture_type == TEXTURE_TYPE_2D // Linear textures must be 2D textures.
+			&& ft != MTLFormatType::DepthStencil && ft != MTLFormatType::Compressed // Linear textures must not be depth/stencil or compressed formats.)
+			&& p_format.mipmaps == 1 // Linear textures must have 1 mipmap level.
+			&& p_format.array_layers == 1 // Linear textures must have 1 array layer.
+			&& p_format.samples == TEXTURE_SAMPLES_1; // Linear textures must have 1 sample.
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
@@ -292,6 +324,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// Usage.
 
 	MTLResourceOptions options = 0;
+	bool is_linear = false;
 #if defined(VISIONOS_ENABLED)
 	const bool supports_memoryless = true;
 #else
@@ -304,6 +337,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		options = MTLResourceCPUCacheModeDefaultCache | MTLResourceHazardTrackingModeTracked;
 		if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
 			options |= MTLResourceStorageModeShared;
+			// The user has indicated they want to read from the texture on the CPU,
+			// so we'll see if we can use a linear format.
+			// A linear format is a texture that is backed by a buffer,
+			// which allows for CPU access to the texture data via a pointer.
+			is_linear = is_valid_linear(p_format);
 		} else {
 			options |= MTLResourceStorageModePrivate;
 		}
@@ -357,13 +395,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	}
 
 	// Allocate memory.
-
-	bool is_linear;
-	{
-		Result<bool> is_linear_or_err = is_valid_linear(p_format);
-		ERR_FAIL_COND_V(std::holds_alternative<Error>(is_linear_or_err), TextureID());
-		is_linear = std::get<bool>(is_linear_or_err);
-	}
 
 	id<MTLTexture> obj = nil;
 	if (is_linear) {
@@ -525,114 +556,107 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 	return obj.allocatedSize;
 }
 
-void RenderingDeviceDriverMetal::_get_sub_resource(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) const {
-	id<MTLTexture> obj = rid::get(p_texture);
-
-	*r_layout = {};
-
-	PixelFormats &pf = *pixel_formats;
-
-	size_t row_alignment = get_texel_buffer_alignment_for_format(obj.pixelFormat);
-	size_t offset = 0;
-	size_t array_layers = obj.arrayLength;
-	MTLSize size = MTLSizeMake(obj.width, obj.height, obj.depth);
-	MTLPixelFormat pixel_format = obj.pixelFormat;
-
-	// First skip over the mipmap levels.
-	for (uint32_t mipLvl = 0; mipLvl < p_subresource.mipmap; mipLvl++) {
-		MTLSize mip_size = mipmapLevelSizeFromSize(size, mipLvl);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mip_size.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mip_size.height);
-		offset += bytes_per_layer * mip_size.depth * array_layers;
-	}
-
-	// Get current mipmap.
-	MTLSize mip_size = mipmapLevelSizeFromSize(size, p_subresource.mipmap);
-	size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mip_size.width);
-	bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-	size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mip_size.height);
-	r_layout->size = bytes_per_layer * mip_size.depth;
-	r_layout->offset = offset + (r_layout->size * p_subresource.layer - 1);
-	r_layout->depth_pitch = bytes_per_layer;
-	r_layout->row_pitch = bytes_per_row;
-	r_layout->layer_pitch = r_layout->size * array_layers;
-}
-
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	id<MTLTexture> obj = rid::get(p_texture);
 	*r_layout = {};
 
-	if ((obj.resourceOptions & MTLResourceStorageModePrivate) != 0) {
-		MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
+	PixelFormats &pf = *pixel_formats;
+	DataFormat format = pf.getDataFormat(obj.pixelFormat);
 
-		PixelFormats &pf = *pixel_formats;
-		DataFormat format = pf.getDataFormat(obj.pixelFormat);
-		if (p_subresource.mipmap > 0) {
-			r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
-		}
+	MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
 
-		sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
-
-		uint32_t bw = 0, bh = 0;
-		get_compressed_image_format_block_dimensions(format, bw, bh);
-		uint32_t sbw = 0, sbh = 0;
-		r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
-		r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
-		r_layout->depth_pitch = r_layout->size / sz.depth;
-
-		uint32_t array_length = obj.arrayLength;
-		if (obj.textureType == MTLTextureTypeCube) {
-			array_length = 6;
-		} else if (obj.textureType == MTLTextureTypeCubeArray) {
-			array_length *= 6;
-		}
-		r_layout->layer_pitch = r_layout->size / array_length;
-	} else {
-		CRASH_NOW_MSG("need to calculate layout for shared texture");
+	if (p_subresource.mipmap > 0) {
+		r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
 	}
+
+	sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
+
+	uint32_t bw = 0, bh = 0;
+	get_compressed_image_format_block_dimensions(format, bw, bh);
+	uint32_t sbw = 0, sbh = 0;
+	r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
+	r_layout->depth_pitch = r_layout->size / sz.depth;
+
+	uint32_t array_length = obj.arrayLength;
+	if (obj.textureType == MTLTextureTypeCube) {
+		array_length = 6;
+	} else if (obj.textureType == MTLTextureTypeCubeArray) {
+		array_length *= 6;
+	}
+	r_layout->layer_pitch = r_layout->size / array_length;
+}
+
+Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
+	id<MTLTexture> obj = rid::get(p_texture);
+	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, Vector<uint8_t>(), "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
+
+	if (obj.buffer) {
+		ERR_FAIL_COND_V_MSG(p_layer > 0, Vector<uint8_t>(), "A linear texture has a single layer.");
+		ERR_FAIL_COND_V_MSG(obj.mipmapLevelCount > 1, Vector<uint8_t>(), "A linear texture has a single mipmap level.");
+		Vector<uint8_t> image_data;
+		image_data.resize_uninitialized(obj.buffer.length);
+		memcpy(image_data.ptrw(), obj.buffer.contents, obj.buffer.length);
+		return image_data;
+	}
+
+	DataFormat tex_format = pixel_formats->getDataFormat(obj.pixelFormat);
+	uint32_t tex_w = obj.width;
+	uint32_t tex_h = obj.height;
+	uint32_t tex_d = obj.depth;
+	uint32_t tex_mipmaps = obj.mipmapLevelCount;
+
+	// Must iteratively copy the texture data to a buffer.
+
+	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_w, tex_h, tex_d, tex_mipmaps);
+
+	Vector<uint8_t> image_data;
+	image_data.resize(tight_mip_size);
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
+	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex_format);
+	uint32_t blockw = 0, blockh = 0;
+	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
+
+	uint8_t *dest_ptr = image_data.ptrw();
+
+	for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
+		uint32_t bw = STEPIFY(tex_w, blockw);
+		uint32_t bh = STEPIFY(tex_h, blockh);
+
+		uint32_t bytes_per_row = (bw * pixel_size) >> pixel_rshift;
+		uint32_t bytes_per_img = bytes_per_row * bh;
+		uint32_t mip_size = bytes_per_img * tex_d;
+
+		[obj getBytes:(void *)dest_ptr
+				  bytesPerRow:bytes_per_row
+				bytesPerImage:bytes_per_img
+				   fromRegion:MTLRegionMake3D(0, 0, 0, bw, bh, tex_d)
+				  mipmapLevel:mm_i
+						slice:p_layer];
+
+		dest_ptr += mip_size;
+
+		// Next mipmap level.
+		tex_w = MAX(blockw, tex_w >> 1);
+		tex_h = MAX(blockh, tex_h >> 1);
+		tex_d = MAX(1u, tex_d >> 1);
+	}
+
+	// Ensure that the destination pointer is at the end of the image data.
+	DEV_ASSERT(dest_ptr - image_data.ptr() == image_data.size());
+
+	return image_data;
 }
 
 uint8_t *RenderingDeviceDriverMetal::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
 	id<MTLTexture> obj = rid::get(p_texture);
-	ERR_FAIL_NULL_V_MSG(obj.buffer, nullptr, "texture is not created from a buffer");
+	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
+	ERR_FAIL_COND_V_MSG(obj.buffer, nullptr, "Texture mapping is not supported for non-linear textures in Metal.");
+	ERR_FAIL_COND_V_MSG(p_subresource.layer > 0, nullptr, "A linear texture should have a single layer.");
+	ERR_FAIL_COND_V_MSG(p_subresource.mipmap > 0, nullptr, "A linear texture should have a single mipmap.");
 
-	TextureCopyableLayout layout;
-	_get_sub_resource(p_texture, p_subresource, &layout);
-	return (uint8_t *)(obj.buffer.contents) + layout.offset;
-	PixelFormats &pf = *pixel_formats;
-
-	size_t row_alignment = get_texel_buffer_alignment_for_format(obj.pixelFormat);
-	size_t offset = 0;
-	size_t array_layers = obj.arrayLength;
-	MTLSize size = MTLSizeMake(obj.width, obj.height, obj.depth);
-	MTLPixelFormat pixel_format = obj.pixelFormat;
-
-	// First skip over the mipmap levels.
-	for (uint32_t mipLvl = 0; mipLvl < p_subresource.mipmap; mipLvl++) {
-		MTLSize mipExtent = mipmapLevelSizeFromSize(size, mipLvl);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mipExtent.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mipExtent.height);
-		offset += bytes_per_layer * mipExtent.depth * array_layers;
-	}
-
-	if (p_subresource.layer > 1) {
-		// Calculate offset to desired layer.
-		MTLSize mipExtent = mipmapLevelSizeFromSize(size, p_subresource.mipmap);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mipExtent.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mipExtent.height);
-		offset += bytes_per_layer * mipExtent.depth * (p_subresource.layer - 1);
-	}
-
-	// TODO: Confirm with rendering team that there is no other way Godot may attempt to map a texture with multiple mipmaps or array layers.
-
-	// NOTE: It is not possible to create a buffer-backed texture with mipmaps or array layers,
-	//  as noted in the is_valid_linear function, so the offset calculation SHOULD always be zero.
-	//  Given that, this code should be simplified.
-
-	return (uint8_t *)(obj.buffer.contents) + offset;
+	return (uint8_t *)obj.buffer.contents;
 }
 
 void RenderingDeviceDriverMetal::texture_unmap(TextureID p_texture) {
@@ -830,7 +854,7 @@ void RenderingDeviceDriverMetal::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<MemoryBarrier> p_memory_barriers,
+		VectorView<MemoryAccessBarrier> p_memory_barriers,
 		VectorView<BufferBarrier> p_buffer_barriers,
 		VectorView<TextureBarrier> p_texture_barriers) {
 	WARN_PRINT_ONCE("not implemented");
@@ -1135,7 +1159,17 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	// We need to regenerate the shader if the cache is moved to an incompatible device.
 	ERR_FAIL_COND_V_MSG(device_properties->features.argument_buffers_tier < MTLArgumentBuffersTier2 && mtl_reflection_data.uses_argument_buffers(),
 			RDD::ShaderID(),
-			"Shader was generated with argument buffers, but device has limited support");
+			"Shader was compiled with argument buffers enabled, but this device does not support them");
+
+	uint32_t msl_version = make_msl_version(device_properties->features.mslVersionMajor, device_properties->features.mslVersionMinor);
+	ERR_FAIL_COND_V_MSG(msl_version < mtl_reflection_data.msl_version,
+			RDD::ShaderID(),
+			"Shader was compiled for a newer version of Metal");
+
+	MTLGPUFamily compiled_gpu_family = static_cast<MTLGPUFamily>(mtl_reflection_data.profile.gpu);
+	ERR_FAIL_COND_V_MSG(device_properties->features.highestFamily < compiled_gpu_family,
+			RDD::ShaderID(),
+			"Shader was generated for a newer Apple GPU");
 
 	MTLCompileOptions *options = [MTLCompileOptions new];
 	uint32_t major = mtl_reflection_data.msl_version / 10000;
@@ -1176,6 +1210,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 
 		MDLibrary *library = nil;
 		if (shader_data.library_size > 0) {
+			ERR_FAIL_COND_V_MSG(mtl_reflection_data.os_min_version > device_properties->os_version,
+					RDD::ShaderID(),
+					"Metal shader binary was generated for a newer target OS");
 			dispatch_data_t binary = dispatch_data_create(decompressed_code.ptr() + shader_data.source_size, shader_data.library_size, dispatch_get_main_queue(), DISPATCH_DATA_DESTRUCTOR_DEFAULT);
 			library = [MDLibrary newLibraryWithCacheEntry:cd
 												   device:device
@@ -1208,6 +1245,10 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 	uint32_t uniform_sets_count = mtl_refl.uniform_sets.size();
 	uniform_sets.resize(uniform_sets_count);
 
+	DynamicOffsetLayout dynamic_offset_layout;
+	uint8_t dynamic_offset = 0;
+	uint8_t dynamic_count = 0;
+
 	// Create sets.
 	for (uint32_t i = 0; i < uniform_sets_count; i++) {
 		UniformSet &set = uniform_sets.write[i];
@@ -1220,6 +1261,16 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		for (uint32_t j = 0; j < set_size; j++) {
 			const ShaderUniform &uniform = refl_set.ptr()[j];
 			const RSCM::UniformData &bind = mtl_set.ptr()[j];
+
+			switch (uniform.type) {
+				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC:
+				case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+					set.dynamic_uniforms.push_back(j);
+					dynamic_count++;
+				} break;
+				default: {
+				} break;
+			}
 
 			UniformInfo &ui = *iter;
 			++iter;
@@ -1240,6 +1291,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 				BindingInfo bi = from_binding_info_data(info);
 				ui.bindings_secondary.insert((RDC::ShaderStage)info.shader_stage, bi);
 			}
+		}
+		if (dynamic_count > 0) {
+			dynamic_offset_layout.set_offset_count(i, dynamic_offset, dynamic_count);
+			dynamic_offset += dynamic_count;
+			dynamic_count = 0;
 		}
 	}
 
@@ -1335,6 +1391,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		shader = rs;
 	}
 
+	shader->dynamic_offset_layout = dynamic_offset_layout;
+
 	return RDD::ShaderID(shader);
 }
 
@@ -1371,6 +1429,38 @@ void RenderingDeviceDriverMetal::uniform_set_free(UniformSetID p_uniform_set) {
 	memdelete(obj);
 }
 
+uint32_t RenderingDeviceDriverMetal::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const {
+	const MDShader *shader = (const MDShader *)p_shader.id;
+	const DynamicOffsetLayout layout = shader->dynamic_offset_layout;
+
+	if (layout.is_empty()) {
+		return 0u;
+	}
+
+	uint32_t mask = 0u;
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const uint32_t index = p_first_set_index + i;
+		uint32_t shift = layout.get_offset_index_shift(index);
+		const uint32_t count = layout.get_count(index);
+		DEV_ASSERT(shader->sets[index].dynamic_uniforms.size() == count);
+		if (count == 0) {
+			continue;
+		}
+
+		const MDUniformSet *usi = (const MDUniformSet *)p_uniform_sets[i].id;
+		for (uint32_t uniform_index : shader->sets[index].dynamic_uniforms) {
+			const RDD::BoundUniform &uniform = usi->uniforms[uniform_index];
+			DEV_ASSERT(uniform.is_dynamic());
+			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
+			mask |= buf_info->frame_index() << shift;
+			shift += 4u;
+		}
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverMetal::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
 }
 
@@ -1378,26 +1468,25 @@ void RenderingDeviceDriverMetal::command_uniform_set_prepare_for_use(CommandBuff
 
 void RenderingDeviceDriverMetal::command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> buffer = rid::get(p_buffer);
 
 	id<MTLBlitCommandEncoder> blit = cmd->blit_command_encoder();
-	[blit fillBuffer:buffer
+	[blit fillBuffer:((const BufferInfo *)p_buffer.id)->metal_buffer
 			   range:NSMakeRange(p_offset, p_size)
 			   value:0];
 }
 
 void RenderingDeviceDriverMetal::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> src = rid::get(p_src_buffer);
-	id<MTLBuffer> dst = rid::get(p_dst_buffer);
+	const BufferInfo *src = (const BufferInfo *)p_src_buffer.id;
+	const BufferInfo *dst = (const BufferInfo *)p_dst_buffer.id;
 
 	id<MTLBlitCommandEncoder> blit = cmd->blit_command_encoder();
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		BufferCopyRegion region = p_regions[i];
-		[blit copyFromBuffer:src
+		[blit copyFromBuffer:src->metal_buffer
 					 sourceOffset:region.src_offset
-						 toBuffer:dst
+						 toBuffer:dst->metal_buffer
 				destinationOffset:region.dst_offset
 							 size:region.size];
 	}
@@ -1633,7 +1722,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 		BufferID p_buffer,
 		VectorView<BufferTextureCopyRegion> p_regions) {
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
-	id<MTLBuffer> buffer = rid::get(p_buffer);
+	const BufferInfo *buffer = (const BufferInfo *)p_buffer.id;
 	id<MTLTexture> texture = rid::get(p_texture);
 
 	id<MTLBlitCommandEncoder> enc = cmd->blit_command_encoder();
@@ -1689,7 +1778,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 
 		if (p_source == CopySource::Buffer) {
 			for (uint32_t lyrIdx = 0; lyrIdx < region.texture_subresources.layer_count; lyrIdx++) {
-				[enc copyFromBuffer:buffer
+				[enc copyFromBuffer:buffer->metal_buffer
 							   sourceOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
 						  sourceBytesPerRow:bytesPerRow
 						sourceBytesPerImage:bytesPerImg
@@ -1707,7 +1796,7 @@ void RenderingDeviceDriverMetal::_copy_texture_buffer(CommandBufferID p_cmd_buff
 									 sourceLevel:mip_level
 									sourceOrigin:txt_origin
 									  sourceSize:txt_size
-										toBuffer:buffer
+										toBuffer:buffer->metal_buffer
 							   destinationOffset:region.buffer_offset + (bytesPerImg * lyrIdx)
 						  destinationBytesPerRow:bytesPerRow
 						destinationBytesPerImage:bytesPerImg
@@ -1902,14 +1991,9 @@ void RenderingDeviceDriverMetal::command_bind_render_pipeline(CommandBufferID p_
 	cb->bind_pipeline(p_pipeline);
 }
 
-void RenderingDeviceDriverMetal::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
-}
-
-void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
-	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
+	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
@@ -2383,14 +2467,9 @@ void RenderingDeviceDriverMetal::command_bind_compute_pipeline(CommandBufferID p
 	cb->bind_pipeline(p_pipeline);
 }
 
-void RenderingDeviceDriverMetal::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->compute_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
-}
-
-void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
-	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
+	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
@@ -2497,6 +2576,8 @@ void RenderingDeviceDriverMetal::command_insert_breadcrumb(CommandBufferID p_cmd
 #pragma mark - Submission
 
 void RenderingDeviceDriverMetal::begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) {
+	frame_index = p_frame_index;
+	frames_drawn = p_frames_drawn;
 }
 
 void RenderingDeviceDriverMetal::end_segment() {
@@ -2514,8 +2595,8 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 			// Can't set label after creation.
 		} break;
 		case OBJECT_TYPE_BUFFER: {
-			id<MTLBuffer> buffer = rid::get(p_driver_id);
-			buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
+			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
+			buf_info->metal_buffer.label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
 		} break;
 		case OBJECT_TYPE_SHADER: {
 			NSString *label = [NSString stringWithUTF8String:p_name.utf8().get_data()];
@@ -2904,6 +2985,8 @@ static MetalDeviceProfile device_profile_from_properties(MetalDeviceProperties *
 		} break;
 	}
 
+	res.update_options();
+
 	return res;
 }
 
@@ -2917,6 +3000,8 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 	shader_container_format = memnew(RenderingShaderContainerFormatMetal(&device_profile));
 
 	_check_capabilities();
+
+	frame_count = p_frame_count;
 
 	// Set the pipeline cache ID based on the Metal version.
 	pipeline_cache_id = "metal-driver-" + get_api_version();

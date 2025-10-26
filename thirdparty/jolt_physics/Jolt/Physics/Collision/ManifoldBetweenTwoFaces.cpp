@@ -156,37 +156,60 @@ void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, V
 	// Remember size before adding new points, to check at the end if we added some
 	ContactPoints::size_type old_size = outContactPoints1.size();
 
-	// Check if both shapes have polygon faces
-	if (inShape1Face.size() >= 2 // The dynamic shape needs to have at least 2 points or else there can never be more than 1 contact point
-		&& inShape2Face.size() >= 3) // The dynamic/static shape needs to have at least 3 points (in the case that it has 2 points only if the edges match exactly you can have 2 contact points, but this situation is unstable anyhow)
+	// Both faces need to have at least 2 points or else there can never be more than 1 contact point
+	// At least one face needs to have at least 3 points (in the case that it has 2 points only if the edges match exactly you can have 2 contact points, but this situation is unstable anyhow)
+	if (min(inShape1Face.size(), inShape2Face.size()) >= 2
+		&& max(inShape1Face.size(), inShape2Face.size()) >= 3)
 	{
-		// Clip the polygon of face 2 against that of 1
-		ConvexShape::SupportingFace clipped_face;
-		if (inShape1Face.size() >= 3)
-			ClipPolyVsPoly(inShape2Face, inShape1Face, inPenetrationAxis, clipped_face);
-		else if (inShape1Face.size() == 2)
-			ClipPolyVsEdge(inShape2Face, inShape1Face[0], inShape1Face[1], inPenetrationAxis, clipped_face);
-
-		// Determine plane origin and normal for shape 1
-		Vec3 plane_origin = inShape1Face[0];
-		Vec3 plane_normal;
-		Vec3 first_edge = inShape1Face[1] - plane_origin;
-		if (inShape1Face.size() >= 3)
+		// Swap the shapes if the 2nd face doesn't have enough vertices
+		const ConvexShape::SupportingFace *shape1_face, *shape2_face;
+		ContactPoints *contact_points1, *contact_points2;
+		Vec3 penetration_axis;
+		if (inShape2Face.size() >= 3)
 		{
-			// Three vertices, can just calculate the normal
-			plane_normal = first_edge.Cross(inShape1Face[2] - plane_origin);
+			shape1_face = &inShape1Face;
+			shape2_face = &inShape2Face;
+			contact_points1 = &outContactPoints1;
+			contact_points2 = &outContactPoints2;
+			penetration_axis = inPenetrationAxis;
 		}
 		else
 		{
+			shape1_face = &inShape2Face;
+			shape2_face = &inShape1Face;
+			contact_points1 = &outContactPoints2;
+			contact_points2 = &outContactPoints1;
+			penetration_axis = -inPenetrationAxis;
+		}
+
+		// Determine plane origin and first edge direction
+		Vec3 plane_origin = shape1_face->at(0);
+		Vec3 first_edge = shape1_face->at(1) - plane_origin;
+
+		Vec3 plane_normal;
+		ConvexShape::SupportingFace clipped_face;
+		if (shape1_face->size() >= 3)
+		{
+			// Clip the polygon of face 2 against that of 1
+			ClipPolyVsPoly(*shape2_face, *shape1_face, penetration_axis, clipped_face);
+
+			// Three vertices, can just calculate the normal
+			plane_normal = first_edge.Cross(shape1_face->at(2) - plane_origin);
+		}
+		else
+		{
+			// Clip the polygon of face 2 against edge of 1
+			ClipPolyVsEdge(*shape2_face, shape1_face->at(0), shape1_face->at(1), penetration_axis, clipped_face);
+
 			// Two vertices, first find a perpendicular to the edge and penetration axis and then use the perpendicular together with the edge to form a normal
-			plane_normal = first_edge.Cross(inPenetrationAxis).Cross(first_edge);
+			plane_normal = first_edge.Cross(penetration_axis).Cross(first_edge);
 		}
 
 		// If penetration axis and plane normal are perpendicular, fall back to the contact points
-		float penetration_axis_dot_plane_normal = inPenetrationAxis.Dot(plane_normal);
+		float penetration_axis_dot_plane_normal = penetration_axis.Dot(plane_normal);
 		if (penetration_axis_dot_plane_normal != 0.0f)
 		{
-			float penetration_axis_len = inPenetrationAxis.Length();
+			float penetration_axis_len = penetration_axis.Length();
 
 			for (Vec3 p2 : clipped_face)
 			{
@@ -200,9 +223,9 @@ void ManifoldBetweenTwoFaces(Vec3Arg inContactPoint1, Vec3Arg inContactPoint2, V
 				// If the point is less than inMaxContactDistance in front of the plane of face 2, add it as a contact point
 				if (distance * penetration_axis_len < inMaxContactDistance)
 				{
-					Vec3 p1 = p2 - distance * inPenetrationAxis;
-					outContactPoints1.push_back(p1);
-					outContactPoints2.push_back(p2);
+					Vec3 p1 = p2 - distance * penetration_axis;
+					contact_points1->push_back(p1);
+					contact_points2->push_back(p2);
 				}
 			}
 		}

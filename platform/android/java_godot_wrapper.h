@@ -81,6 +81,7 @@ private:
 	jmethodID _verify_apk = nullptr;
 	jmethodID _enable_immersive_mode = nullptr;
 	jmethodID _is_in_immersive_mode = nullptr;
+	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _get_activity = nullptr;
 
@@ -136,6 +137,8 @@ public:
 
 	void enable_immersive_mode(bool p_enabled);
 	bool is_in_immersive_mode();
+
+	void set_window_color(const Color &p_color);
 
 	void on_editor_workspace_selected(const String &p_workspace);
 };

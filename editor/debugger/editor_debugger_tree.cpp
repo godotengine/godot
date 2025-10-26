@@ -40,7 +40,7 @@
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -66,6 +66,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
+			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("multi_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selection_changed));
 			connect("nothing_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_nothing_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
@@ -83,6 +84,27 @@ void EditorDebuggerTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("open"));
+}
+
+void EditorDebuggerTree::_scene_tree_selected() {
+	TreeItem *item = get_selected();
+	if (!item) {
+		return;
+	}
+
+	if (!inspected_object_ids.is_empty()) {
+		inspected_object_ids.clear();
+		deselect_all();
+		item->select(0);
+	}
+
+	uint64_t id = uint64_t(item->get_metadata(0));
+	inspected_object_ids.append(id);
+
+	if (!notify_selection_queued) {
+		callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
+		notify_selection_queued = true;
+	}
 }
 
 void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_column, bool p_selected) {
@@ -372,6 +394,16 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	}
 	if (scroll_item) {
 		scroll_to_item(scroll_item, false);
+	}
+
+	if (new_session) {
+		// Some nodes may stay selected between sessions.
+		// Make sure the inspector shows them properly.
+		if (!notify_selection_queued) {
+			callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
+			notify_selection_queued = true;
+		}
+		new_session = false;
 	}
 
 	last_filter = filter;

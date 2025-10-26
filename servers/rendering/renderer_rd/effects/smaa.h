@@ -37,7 +37,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define RB_SCOPE_SMAA SNAME("rb_smaa")
 
@@ -59,7 +59,7 @@ private:
 	struct SMAAEdgePushConstant {
 		float inv_size[2];
 		float threshold;
-		float reserved;
+		float pad;
 	};
 
 	struct SMAAWeightPushConstant {
@@ -71,7 +71,13 @@ private:
 
 	struct SMAABlendPushConstant {
 		float inv_size[2];
-		float reserved[2];
+		uint32_t flags;
+		float pad;
+	};
+
+	enum SMAABlendFlags {
+		SMAA_BLEND_FLAG_USE_8_BIT_DEBANDING = (1 << 0),
+		SMAA_BLEND_FLAG_USE_10_BIT_DEBANDING = (1 << 1),
 	};
 
 	struct SMAAEffect {
@@ -103,6 +109,13 @@ public:
 
 	void allocate_render_targets(Ref<RenderSceneBuffersRD> p_render_buffers);
 	void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_color, RID p_dst_framebuffer);
+
+	enum DebandingMode {
+		DEBANDING_MODE_DISABLED,
+		DEBANDING_MODE_8_BIT,
+		DEBANDING_MODE_10_BIT,
+	};
+	DebandingMode debanding_mode = DEBANDING_MODE_DISABLED;
 };
 
 } // namespace RendererRD

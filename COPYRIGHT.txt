@@ -123,17 +123,17 @@ Copyright: 2020, Manuel Prandini
 License: Expat
 
 Files: platform/android/java/editor/src/main/java/com/android/*
- platform/android/java/lib/aidl/com/android/*
- platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
- platform/android/java/lib/src/com/google/android/*
- platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
- platform/android/java/lib/src/org/godotengine/godot/input/InputManagerV16.java
+ platform/android/java/lib/src/main/aidl/com/android/*
+ platform/android/java/lib/src/main/res/layout/status_bar_ongoing_event_progress_bar.xml
+ platform/android/java/lib/src/main/java/com/google/android/*
+ platform/android/java/lib/src/main/java/org/godotengine/godot/input/InputManagerCompat.java
+ platform/android/java/lib/src/main/java/org/godotengine/godot/input/InputManagerV16.java
 Comment: The Android Open Source Project
 Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
-Files: platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Files: platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix.java
 Comment: ProcessPhoenix
 Copyright: 2015, Jake Wharton
 License: Apache-2.0
@@ -214,7 +214,7 @@ License: Apache-2.0
 
 Files: thirdparty/basis_universal/*
 Comment: Basis Universal
-Copyright: 2019-2024, Binomial LLC.
+Copyright: 2019-2025, Binomial LLC.
 License: Apache-2.0
 
 Files: thirdparty/brotli/*
@@ -272,6 +272,11 @@ Files: thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
+
+Files: thirdparty/fonts/Inter*.woff2
+Comment: Inter font
+Copyright: 2016, The Inter Project Authors
+License: OFL-1.1
 
 Files: thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
@@ -555,7 +560,7 @@ License: Zlib
 Files: thirdparty/sdl/hidapi/*
 Comment: hidapi
 Copyright: 2010, Alan Ott, Signal 11 Software
-License: BSD-3-Clause
+License: BSD-3-clause
 
 Files: thirdparty/spirv-cross/*
 Comment: SPIRV-Cross

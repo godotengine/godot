@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class JoltArea3D;
 class JoltBody3D;
@@ -411,7 +411,7 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
-	virtual void free(RID p_rid) override;
+	virtual void free_rid(RID p_rid) override;
 
 	virtual void set_active(bool p_active) override;
 

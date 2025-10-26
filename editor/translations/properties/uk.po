@@ -38,13 +38,14 @@
 # Максим Горпиніч <mgorpinic2005@gmail.com>, 2024.
 # Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
 # Максим Горпиніч <maksimgorpinic4@gmail.com>, 2025.
+# Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-06-07 18:05+0000\n"
-"Last-Translator: Максим Горпиніч <maksimgorpinic4@gmail.com>\n"
+"PO-Revision-Date: 2025-09-27 08:07+0000\n"
+"Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -53,7 +54,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.12-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -475,6 +476,9 @@ msgstr "Світ"
 msgid "Map Use Async Iterations"
 msgstr "Карта Використовуйте асинхронні ітерації"
 
+msgid "Region Use Async Iterations"
+msgstr "Використати регіону асинхронних ітерацій"
+
 msgid "Avoidance"
 msgstr "Уникнення"
 
@@ -560,7 +564,7 @@ msgid "Enable Accelerometer"
 msgstr "Увімкнути акселерометр"
 
 msgid "Enable Gravity"
-msgstr "Увімкніть гравітацію"
+msgstr "Увімкнути гравітацію"
 
 msgid "Enable Gyroscope"
 msgstr "Увімкнути гіроскоп"
@@ -741,6 +745,9 @@ msgstr "Масив даних"
 
 msgid "Max Pending Connections"
 msgstr "Макс. к-ть з'єднань у черзі"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Фільтр сусідів увімкнено"
 
 msgid "Region"
 msgstr "Область"
@@ -1207,6 +1214,9 @@ msgstr "Примусово вимкнути стиснення сітки"
 msgid "Node"
 msgstr "Вузол"
 
+msgid "Node Type"
+msgstr "Тип вузла"
+
 msgid "Script"
 msgstr "Скрипт"
 
@@ -1396,6 +1406,9 @@ msgstr "Тип кореня"
 msgid "Root Name"
 msgstr "Назва кореня"
 
+msgid "Root Script"
+msgstr "Кореневий скрипт"
+
 msgid "Apply Root Scale"
 msgstr "Застосувати кореневу шкалу"
 
@@ -1452,6 +1465,15 @@ msgstr "Скрипт імпорту"
 
 msgid "Materials"
 msgstr "Матеріали"
+
+msgid "Extract"
+msgstr "Витяг"
+
+msgid "Extract Format"
+msgstr "Формат вилучення"
+
+msgid "Extract Path"
+msgstr "Вилучення шлях"
 
 msgid "Antialiasing"
 msgstr "Згладжування"
@@ -2409,7 +2431,7 @@ msgid "Stay in Script Editor on Node Selected"
 msgstr "Залишатися в редакторі скриптів на вибраному вузлі"
 
 msgid "Open Script When Connecting Signal to Existing Method"
-msgstr "Відкрити сценарій під час підключення сигналу до існуючого методу"
+msgstr "Відкрити скрипт під час підключення сигналу до існуючого методу"
 
 msgid "Use Default Word Separators"
 msgstr "Використовуйте роздільники слів за умовчанням"
@@ -2454,7 +2476,7 @@ msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Автоматичне перезавантаження та аналіз сценаріїв під час збереження"
 
 msgid "Open Dominant Script on Scene Change"
-msgstr "Відкрийте домінуючий сценарій під час зміни сцени"
+msgstr "Відкрийте домінуючий скрипт під час зміни сцени"
 
 msgid "Drop Preload Resources as UID"
 msgstr "Видалити ресурси попереднього завантаження як UID"
@@ -2674,6 +2696,9 @@ msgstr "Форма кістки"
 
 msgid "Path 3D Tilt Disk Size"
 msgstr "Розмір диска Path 3D Tilt"
+
+msgid "Lightmap GI Probe Size"
+msgstr "Розмір зонда Lightmap GI"
 
 msgid "Primary Grid Steps"
 msgstr "Основні кроки сітки"
@@ -3012,7 +3037,7 @@ msgid "Editor TLS Certificates"
 msgstr "Сертифікати TLS редактора"
 
 msgid "Enable TLS V 1"
-msgstr "Увімкніть TLS V1"
+msgstr "Увімкнути TLS версії 1"
 
 msgid "Remote Host"
 msgstr "Віддалений вузол"
@@ -3316,6 +3341,9 @@ msgstr "Профіль взаємодії рук"
 
 msgid "Eye Gaze Interaction"
 msgstr "Взаємодія погляду очей"
+
+msgid "Render Model"
+msgstr "Рендеринг моделі"
 
 msgid "Binding Modifiers"
 msgstr "Модифікатори прив'язки"
@@ -3664,6 +3692,138 @@ msgstr "Виключити додатки"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "Перейменовано в Godot 4 Підказка"
+
+msgid "Unassigned Variable"
+msgstr "Непризначена змінна"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Непризначена змінна операція Призначення"
+
+msgid "Unused Variable"
+msgstr "Невикористана змінна"
+
+msgid "Unused Local Constant"
+msgstr "Невикористана локальна константа"
+
+msgid "Unused Private Class Variable"
+msgstr "Невикористана змінна приватного класу"
+
+msgid "Unused Parameter"
+msgstr "Невикористаний параметр"
+
+msgid "Unused Signal"
+msgstr "Невикористаний сигнал"
+
+msgid "Shadowed Variable"
+msgstr "Затінена змінна"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Базовий клас затінених змінних"
+
+msgid "Shadowed Global Identifier"
+msgstr "Затінений глобальний ідентифікатор"
+
+msgid "Unreachable Code"
+msgstr "Недосяжний код"
+
+msgid "Unreachable Pattern"
+msgstr "Недосяжний візерунок"
+
+msgid "Standalone Expression"
+msgstr "Автономний вираз"
+
+msgid "Standalone Ternary"
+msgstr "Автономний потрійний"
+
+msgid "Incompatible Ternary"
+msgstr "Несумісний потрійний"
+
+msgid "Untyped Declaration"
+msgstr "Нетипізована декларація"
+
+msgid "Inferred Declaration"
+msgstr "Виведена декларація"
+
+msgid "Unsafe Property Access"
+msgstr "Небезпечний доступ до доповнення"
+
+msgid "Unsafe Method Access"
+msgstr "Небезпечний доступ до методів"
+
+msgid "Unsafe Cast"
+msgstr "Небезпечний кастинг"
+
+msgid "Unsafe Call Argument"
+msgstr "Аргумент небезпечного виклику"
+
+msgid "Unsafe Void Return"
+msgstr "Небезпечне повернення недійсних даних"
+
+msgid "Return Value Discarded"
+msgstr "Повернене значення відкинуто"
+
+msgid "Static Called On Instance"
+msgstr "Статичний виклик екземпляра"
+
+msgid "Missing Tool"
+msgstr "Відсутній інструмент"
+
+msgid "Redundant Static Unload"
+msgstr "Надмірне статичне розвантаження"
+
+msgid "Redundant Await"
+msgstr "Надлишкове очікування"
+
+msgid "Assert Always True"
+msgstr "Завжди стверджуй, що це правда"
+
+msgid "Assert Always False"
+msgstr "Твердження завжди хибне"
+
+msgid "Integer Division"
+msgstr "Цілочисельне ділення"
+
+msgid "Narrowing Conversion"
+msgstr "Звуження конверсії"
+
+msgid "Int As Enum Without Cast"
+msgstr "Цілоліке як перерахування без приведення типів"
+
+msgid "Int As Enum Without Match"
+msgstr "Ціле число як перерахування без збігу"
+
+msgid "Enum Variable Without Default"
+msgstr "Змінна перерахування без значення за замовчуванням"
+
+msgid "Empty File"
+msgstr "Порожній файл"
+
+msgid "Deprecated Keyword"
+msgstr "Застаріле ключове слово"
+
+msgid "Confusable Identifier"
+msgstr "Заплутаний ідентифікатор"
+
+msgid "Confusable Local Declaration"
+msgstr "Гор. відокремлення у таблиці"
+
+msgid "Confusable Local Usage"
+msgstr "Незрозуміле локальне використання"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Перепризначення захоплення, що може призвести до плутанини"
+
+msgid "Inference On Variant"
+msgstr "Висновок про варіант"
+
+msgid "Native Method Override"
+msgstr "Перевизначення рідного методу"
+
+msgid "Get Node Default Without Onready"
+msgstr "Отримати значення вузла за замовчуванням без Onready"
+
+msgid "Onready With Export"
+msgstr "Готовий з експорту"
 
 msgid "Language Server"
 msgstr "Сервер мови"
@@ -4496,6 +4656,9 @@ msgstr "Оновлення кістки"
 msgid "Tracker"
 msgstr "Трекер"
 
+msgid "Make Local to Pose"
+msgstr "Зробити локальним для пози"
+
 msgid "Subject"
 msgstr "Призначення"
 
@@ -4643,6 +4806,9 @@ msgstr "Каталог збірок Gradle"
 msgid "Android Source Template"
 msgstr "Шаблон вихідного коду Android"
 
+msgid "Compress Native Libraries"
+msgstr "Стиснення рідних бібліотек"
+
 msgid "Export Format"
 msgstr "Формат експортування"
 
@@ -4720,6 +4886,9 @@ msgstr "Проведіть пальцем, щоб відхилити"
 
 msgid "Immersive Mode"
 msgstr "Режим занурення"
+
+msgid "Edge to Edge"
+msgstr "Край до краю"
 
 msgid "Support Small"
 msgstr "Підтримка малих"
@@ -4851,10 +5020,10 @@ msgid "Extra Args SCP"
 msgstr "Додаткові аргументи SCP"
 
 msgid "Run Script"
-msgstr "Запустіть сценарій"
+msgstr "Запустіть скрипт"
 
 msgid "Cleanup Script"
-msgstr "Сценарій очищення"
+msgstr "Скрипт очищення"
 
 msgid "macOS"
 msgstr "macOS"
@@ -5062,6 +5231,9 @@ msgstr "Опис використання портативних томів"
 
 msgid "Removable Volumes Usage Description Localized"
 msgstr "ФОпис використання знімних томів локалізовано"
+
+msgid "Min visionOS Version"
+msgstr "Мінімальна версія visionOS"
 
 msgid "Web"
 msgstr "Інтернет"
@@ -5662,6 +5834,18 @@ msgstr "Спростити шлях"
 
 msgid "Simplify Epsilon"
 msgstr "Спростіть Epsilon"
+
+msgid "Path Return Max Length"
+msgstr "Максимальна довжина повернення шляху"
+
+msgid "Path Return Max Radius"
+msgstr "Максимальний радіус повернення шляху"
+
+msgid "Path Search Max Polygons"
+msgstr "Пошук шляху: максимальна кількість полігонів"
+
+msgid "Path Search Max Distance"
+msgstr "Максимальна відстань пошуку шляху"
 
 msgid "Avoidance Enabled"
 msgstr "Уникнення ввімкнено"
@@ -6428,7 +6612,7 @@ msgid "Justification Flags"
 msgstr "Прапори обґрунтування"
 
 msgid "BiDi"
-msgstr "BiDi'"
+msgstr "BiDi"
 
 msgid "Text Direction"
 msgstr "Напрямок тексту"
@@ -7669,6 +7853,27 @@ msgstr "Фільтр імен файлів"
 msgid "Use Native Dialog"
 msgstr "Використовувати рідне діалогове вікно"
 
+msgid "Hidden Files Toggle Enabled"
+msgstr "Перемикач прихованих файлів увімкнено"
+
+msgid "File Filter Toggle Enabled"
+msgstr "Перемикач фільтра файлів увімкнено"
+
+msgid "File Sort Options Enabled"
+msgstr "Параметри сортування файлів увімкнено"
+
+msgid "Folder Creation Enabled"
+msgstr "Створення папок увімкнено"
+
+msgid "Favorites Enabled"
+msgstr "Улюблені ввімкнено"
+
+msgid "Recent List Enabled"
+msgstr "Список останніх увімкнено"
+
+msgid "Layout Toggle Enabled"
+msgstr "Перемикач макета ввімкнено"
+
 msgid "Last Wrap Alignment"
 msgstr "Останнє вирівнювання обтікання"
 
@@ -7779,6 +7984,9 @@ msgstr "Колір відтінку"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ігнорувати недійсний тип підключення"
+
+msgid "Slots Focus Mode"
+msgstr "Режим фокусування слотів"
 
 msgid "Select Mode"
 msgstr "Режим виділення"
@@ -7943,7 +8151,7 @@ msgid "Start Index"
 msgstr "Початковий індекс"
 
 msgid "Switch on Hover"
-msgstr "Увімкніть наведення"
+msgstr "Увімкнути наведення курсора"
 
 msgid "Prefer Global Menu"
 msgstr "Віддавайте перевагу глобальному меню"
@@ -8053,6 +8261,9 @@ msgstr "Активне гортання"
 msgid "Scroll Following"
 msgstr "Прокрутіть слідом"
 
+msgid "Scroll Following Visible Characters"
+msgstr "Прокручування за видимими символами"
+
 msgid "Tab Size"
 msgstr "Розмір табуляції"
 
@@ -8115,6 +8326,9 @@ msgstr "Вибрати колір"
 
 msgid "Ticks on Borders"
 msgstr "Кліщі на кордонах"
+
+msgid "Ticks Position"
+msgstr "Положення кліщів"
 
 msgid "Update on Text Changed"
 msgstr "Оновлення тексту змінено"
@@ -9551,6 +9765,9 @@ msgstr "Шейдер"
 msgid "Depth Draw Mode"
 msgstr "Режим малювання глибини"
 
+msgid "Depth Test"
+msgstr "Тест глибини"
+
 msgid "Shading"
 msgstr "Затінювання"
 
@@ -9727,6 +9944,18 @@ msgstr "MSDF"
 
 msgid "Pixel Range"
 msgstr "Діапазон пікселів"
+
+msgid "Stencil"
+msgstr "Трафарет"
+
+msgid "Compare"
+msgstr "Порівняти"
+
+msgid "Reference"
+msgstr "Довідка"
+
+msgid "Outline Thickness"
+msgstr "Товщина контуру"
 
 msgid "Convex Hull Downsampling"
 msgstr "Зменшення роздільної здатності Convex Hull"
@@ -10048,6 +10277,12 @@ msgstr "Вихідний порт для попереднього перегля
 
 msgid "Modes"
 msgstr "Режими"
+
+msgid "Stencil Modes"
+msgstr "Режими трафаретів"
+
+msgid "Stencil Flags"
+msgstr "Трафаретні прапори"
 
 msgid "Input Name"
 msgstr "Карта введення"
@@ -10426,6 +10661,9 @@ msgstr "Центр Грабер"
 
 msgid "Grabber Offset"
 msgstr "Зсув граббера"
+
+msgid "Tick Offset"
+msgstr "Зсув галочки"
 
 msgid "Updown"
 msgstr "Вгору вниз"
@@ -10956,7 +11194,7 @@ msgid "Picker Cursor BG"
 msgstr "Курсор вибору BG"
 
 msgid "Color Script"
-msgstr "Кольоровий сценарій"
+msgstr "Кольоровий скрипт"
 
 msgid "Color Hue"
 msgstr "Відтінок кольору"
@@ -10972,6 +11210,9 @@ msgstr "Попередньо встановлений фокус"
 
 msgid "Preset BG"
 msgstr "Тло набору"
+
+msgid "Horizontal Rule"
+msgstr "Горизонтальне правило"
 
 msgid "Normal Font"
 msgstr "Звичайний шрифт"
@@ -11029,6 +11270,15 @@ msgstr "Підкреслення альфа"
 
 msgid "Strikethrough Alpha"
 msgstr "Закреслений альфа-файл"
+
+msgid "Touch Dragger Color"
+msgstr "Колір сенсорного перетягувача"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Сенсорний перетягувач Натиснутий колір"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Колір при наведенні курсора на сенсорний перетягувач"
 
 msgid "H Touch Dragger"
 msgstr "H Сенсорний перетягувач"
@@ -11324,6 +11574,21 @@ msgstr "Сценарист фільму"
 msgid "Speaker Mode"
 msgstr "Режим динаміка"
 
+msgid "Video Quality"
+msgstr "Якість відео"
+
+msgid "OGV"
+msgstr "OGV"
+
+msgid "Audio Quality"
+msgstr "Якість звуку"
+
+msgid "Encoding Speed"
+msgstr "Швидкість кодування"
+
+msgid "Keyframe Interval"
+msgstr "Інтервал ключових кадрів"
+
 msgid "Movie File"
 msgstr "Файл фільму"
 
@@ -11347,6 +11612,9 @@ msgstr "Доріжки"
 
 msgid "Path Owner IDs"
 msgstr "Ідентифікатори власника шляху"
+
+msgid "Path Length"
+msgstr "Довжина шляху"
 
 msgid "Default Cell Size"
 msgstr "Розмір комірки за замовчуванням"
@@ -11642,6 +11910,15 @@ msgstr "Туман вимкнено"
 msgid "Specular Occlusion Disabled"
 msgstr "Дзеркальну оклюзію вимкнено"
 
+msgid "Read"
+msgstr "Читання"
+
+msgid "Write"
+msgstr "Написання"
+
+msgid "Write Depth Fail"
+msgstr "Помилка глибини запису"
+
 msgid "Light Only"
 msgstr "Тільки світло"
 
@@ -11662,6 +11939,36 @@ msgstr "Використовуйте половина роздільстю па�
 
 msgid "Use Quarter Res Pass"
 msgstr "Використайте Пропуск у чвертьфінал"
+
+msgid "Float Comparison"
+msgstr "Порівняння чисел з плаваючою точкою"
+
+msgid "Unused Constant"
+msgstr "Невикористана константа"
+
+msgid "Unused Function"
+msgstr "Невикористана функція"
+
+msgid "Unused Struct"
+msgstr "Невикористана структура"
+
+msgid "Unused Uniform"
+msgstr "Невикористана уніформа"
+
+msgid "Unused Varying"
+msgstr "Невикористані Змінні"
+
+msgid "Unused Local Variable"
+msgstr "Невикористана локальна змінна"
+
+msgid "Formatting Error"
+msgstr "Помилка форматування"
+
+msgid "Device Limit Exceeded"
+msgstr "Перевищено ліміт пристроїв"
+
+msgid "Magic Position Write"
+msgstr "Магічна позиція написання"
 
 msgid "Internal Size"
 msgstr "Внутрішній розмір"
@@ -11883,7 +12190,7 @@ msgid "Texel Size"
 msgstr "Розмір текселів"
 
 msgid "Lightmap GI"
-msgstr "Lightmap GI'"
+msgstr "Lightmap GI"
 
 msgid "Use Bicubic Filter"
 msgstr "Використовуйте бікубічний фільтр"
@@ -11959,6 +12266,9 @@ msgstr "Субпіксельна компоновка РК-дисплея"
 
 msgid "Include Text Server Data"
 msgstr "Включити дані текстового сервера"
+
+msgid "Line Breaking Strictness"
+msgstr "Строгість порушення ліній"
 
 msgid "Has Tracking Data"
 msgstr "Є дані відстеження"

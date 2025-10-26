@@ -118,6 +118,37 @@ void RendererMeshStorage::multimesh_instance_set_transform(RID p_multimesh, int 
 }
 
 void RendererMeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->interpolated) {
+		ERR_FAIL_COND(p_index >= mmi->_num_instances);
+		ERR_FAIL_COND(mmi->_vf_size_xform != 8);
+
+		int start = p_index * mmi->_stride;
+		float *ptr = mmi->_data_curr.ptrw();
+		ptr += start;
+
+		const Transform2D &t = p_transform;
+
+		ptr[0] = t.columns[0][0];
+		ptr[1] = t.columns[1][0];
+		ptr[2] = 0;
+		ptr[3] = t.columns[2][0];
+		ptr[4] = t.columns[0][1];
+		ptr[5] = t.columns[1][1];
+		ptr[6] = 0;
+		ptr[7] = t.columns[2][1];
+
+		_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+		if (!Engine::get_singleton()->is_in_physics_frame()) {
+			PHYSICS_INTERPOLATION_WARNING("MultiMesh interpolation is being triggered from outside physics process, this might lead to issues");
+		}
+#endif
+
+		return;
+	}
+
 	_multimesh_instance_set_transform_2d(p_multimesh, p_index, p_transform);
 }
 
@@ -295,6 +326,17 @@ void RendererMeshStorage::multimesh_instance_reset_physics_interpolation(RID p_m
 		for (int n = 0; n < mmi->_stride; n++) {
 			w[start + n] = r[start + n];
 		}
+	}
+}
+
+void RendererMeshStorage::multimesh_instances_reset_physics_interpolation(RID p_multimesh) {
+	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->_data_curr.size()) {
+		// We don't want to invoke COW here, so copy the data directly.
+		ERR_FAIL_COND(mmi->_data_prev.size() != mmi->_data_curr.size());
+		float *w = mmi->_data_prev.ptrw();
+		const float *r = mmi->_data_curr.ptr();
+		memcpy(w, r, sizeof(float) * mmi->_data_curr.size());
 	}
 }
 

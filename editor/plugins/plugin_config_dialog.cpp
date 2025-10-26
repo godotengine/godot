@@ -98,7 +98,6 @@ void PluginConfigDialog::_create_script_for_plugin(const String &p_plugin_path, 
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
 		p_config_file->save(p_plugin_path.path_join("plugin.cfg"));
-		emit_signal(SNAME("plugin_ready"), scr.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
 	}
 }
 
@@ -131,15 +130,6 @@ void PluginConfigDialog::_on_required_text_changed() {
 	String ext = language->get_extension();
 	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
-	}
-	if (active_edit->is_visible()) {
-		if (language->get_name() == "C#") {
-			active_edit->set_pressed(false);
-			active_edit->set_disabled(true);
-			validation_panel->set_message(MSG_ID_ACTIVE, TTR("C# doesn't support activating the plugin on creation because the project must be built first."), EditorValidationPanel::MSG_WARNING);
-		} else {
-			active_edit->set_disabled(false);
-		}
 	}
 }
 
@@ -316,19 +306,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
-
-	// Activate now checkbox
-	Label *active_label = memnew(Label);
-	active_label->set_text(TTR("Activate now?"));
-	active_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	grid->add_child(active_label);
-	plugin_edit_hidden_controls.push_back(active_label);
-
-	active_edit = memnew(CheckBox);
-	active_edit->set_pressed(true);
-	active_edit->set_accessibility_name(TTRC("Activate now?"));
-	grid->add_child(active_edit);
-	plugin_edit_hidden_controls.push_back(active_edit);
 
 	Control *spacing = memnew(Control);
 	vbox->add_child(spacing);

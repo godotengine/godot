@@ -120,6 +120,7 @@ public:
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override {}
 
+	void environment_set_ssr_half_size(bool p_half_size) override {}
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
 
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
@@ -193,6 +194,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override {}
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override {}
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override {}
+	virtual void material_set_use_debanding(bool p_enable) override {}
 
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}

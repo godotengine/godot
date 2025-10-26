@@ -290,6 +290,7 @@ private:
 
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_readonly;
 
 		Color brace_mismatch_color;
 
@@ -432,7 +433,8 @@ public:
 
 	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
-	TypedArray<int> get_folded_lines() const;
+	TypedArray<int> get_folded_lines_bind() const;
+	PackedInt32Array get_folded_lines() const;
 
 	/* Code region */
 	void create_code_region();

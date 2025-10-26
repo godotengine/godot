@@ -52,7 +52,6 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
-#include "thirdparty/misc/ok_color_shader.h"
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -129,6 +128,9 @@ void ColorPicker::_notification(int p_what) {
 				for (ColorPickerShape *shape : shapes) {
 					if (shape->is_initialized) {
 						shape->update_theme();
+						for (Control *c : shape->controls) {
+							c->queue_redraw();
+						}
 					}
 					shape_popup->set_item_icon(i, shape->get_icon());
 					i++;
@@ -252,119 +254,8 @@ void ColorPicker::_update_theme_item_cache() {
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
 
-void ColorPicker::init_shaders() {
-	wheel_shader.instantiate();
-	wheel_shader->set_code(R"(
-// ColorPicker wheel shader.
-
-shader_type canvas_item;
-
-uniform float wheel_radius = 0.42;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-
-	COLOR = vec4(clamp((abs(fract(((a - TAU) / TAU) + vec3(3.0, 2.0, 1.0) / 3.0) * 6.0 - 3.0) - 1.0), 0.0, 1.0), (b + b2 + b3 + b4) / 4.00);
-}
-)");
-
-	circle_shader.instantiate();
-	circle_shader->set_code(R"(
-// ColorPicker circle shader.
-
-shader_type canvas_item;
-
-uniform float v = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-
-	COLOR = vec4(mix(vec3(1.0), clamp(abs(fract(vec3((a - TAU) / TAU) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - vec3(3.0)) - vec3(1.0), 0.0, 1.0), ((float(sqrt(x * x + y * y)) * 2.0)) / 1.0) * vec3(v), (b + b2 + b3 + b4) / 4.00);
-})");
-
-	circle_ok_color_shader.instantiate();
-	circle_ok_color_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hsl circle shader.
-
-uniform float ok_hsl_l = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float h = atan(y, x) / (2.0 * M_PI);
-	float s = sqrt(x * x + y * y) * 2.0;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
-})");
-
-	rectangle_ok_color_hs_shader.instantiate();
-	rectangle_ok_color_hs_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hs rectangle shader.
-
-uniform float ok_hsl_l = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float s = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	COLOR = vec4(col, 1.0);
-})");
-
-	rectangle_ok_color_hl_shader.instantiate();
-	rectangle_ok_color_hl_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hl rectangle shader.
-
-uniform float ok_hsl_s = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float l = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, ok_hsl_s, l));
-	COLOR = vec4(col, 1.0);
-})");
-}
-
-void ColorPicker::finish_shaders() {
-	wheel_shader.unref();
-	circle_shader.unref();
-	circle_ok_color_shader.unref();
-	rectangle_ok_color_hs_shader.unref();
-	rectangle_ok_color_hl_shader.unref();
-}
-
 void ColorPicker::set_focus_on_line_edit() {
-	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred(false);
 }
 
 void ColorPicker::set_focus_on_picker_shape() {
@@ -972,6 +863,7 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	}
 #endif
 
+	_copy_normalized_to_hsv_okhsl();
 	_update_controls();
 	_update_color();
 }
@@ -1195,7 +1087,14 @@ void ColorPicker::add_preset(const Color &p_color) {
 	if (e) {
 		presets.move_to_back(e);
 
-		preset_container->move_child(preset_group->get_pressed_button(), preset_container->get_child_count() - 1);
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			ColorPresetButton *current_btn = Object::cast_to<ColorPresetButton>(preset_container->get_child(i));
+			if (current_btn && p_color == current_btn->get_preset_color()) {
+				preset_container->move_child(current_btn, preset_container->get_child_count() - 1);
+				current_btn->set_pressed(true);
+				break;
+			}
+		}
 	} else {
 		presets.push_back(p_color);
 
@@ -1414,12 +1313,14 @@ void ColorPicker::_update_text_value() {
 		text_type->set_disabled(!is_color_valid_hex(color));
 		hex_label->set_text(ETR("Expr"));
 		c_text->set_text(t);
+		c_text->set_tooltip_text(RTR("Execute an expression as a color."));
 	} else {
 		text_type->set_text("#");
 		text_type->set_button_icon(nullptr);
 		text_type->set_disabled(false);
 		hex_label->set_text(ETR("Hex"));
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
+		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 }
 
@@ -1490,7 +1391,7 @@ void ColorPicker::_sample_draw() {
 
 	sample->draw_rect(rect_new, color);
 
-	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus()) {
+	if (display_old_color && !old_color.is_equal_approx(color) && sample->has_focus(true)) {
 		RID ci = sample->get_canvas_item();
 		theme_cache.sample_focus->draw(ci, rect_old);
 	}
@@ -2431,12 +2332,14 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 }
 
 void ColorPickerButton::_modal_closed() {
-	if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
-		set_pick_color(picker->get_old_color());
-		emit_signal(SNAME("color_changed"), color);
+	if (picker->is_visible_in_tree()) {
+		if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
+			set_pick_color(picker->get_old_color());
+			emit_signal(SNAME("color_changed"), color);
+		}
+		emit_signal(SNAME("popup_closed"));
+		set_pressed(false);
 	}
-	emit_signal(SNAME("popup_closed"));
-	set_pressed(false);
 	if (!get_tree()->get_root()->is_embedding_subwindows()) {
 		get_viewport()->set_disable_input(false);
 	}
@@ -2571,6 +2474,7 @@ void ColorPickerButton::_update_picker() {
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
+		popup->connect("tree_exiting", callable_mp(this, &ColorPickerButton::_modal_closed));
 		picker->connect(SceneStringName(minimum_size_changed), callable_mp((Window *)popup, &Window::reset_size));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
@@ -2661,7 +2565,7 @@ void ColorPresetButton::_notification(int p_what) {
 				WARN_PRINT("Unsupported StyleBox used for ColorPresetButton. Use StyleBoxFlat or StyleBoxTexture instead.");
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RID ci = get_canvas_item();
 				theme_cache.focus_style->draw(ci, Rect2(Point2(), get_size()));
 			}

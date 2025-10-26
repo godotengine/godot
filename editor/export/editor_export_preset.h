@@ -70,7 +70,6 @@ private:
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
-	bool advanced_options_enabled = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;
@@ -133,7 +132,6 @@ public:
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
 
-	void set_advanced_options_enabled(bool p_enabled);
 	bool are_advanced_options_enabled() const;
 
 	void set_dedicated_server(bool p_enable);

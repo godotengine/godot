@@ -311,9 +311,15 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 #endif
 }
 
+void MetalDeviceProperties::init_os_props() {
+	NSOperatingSystemVersion ver = NSProcessInfo.processInfo.operatingSystemVersion;
+	os_version = (uint32_t)ver.majorVersion * 10000 + (uint32_t)ver.minorVersion * 100 + (uint32_t)ver.patchVersion;
+}
+
 MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {
 	init_features(p_device);
 	init_limits(p_device);
+	init_os_props();
 }
 
 MetalDeviceProperties::~MetalDeviceProperties() {

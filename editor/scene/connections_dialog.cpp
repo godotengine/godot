@@ -113,6 +113,33 @@ public:
 		}
 	}
 
+	void update_base_node_relative(Node *p_node) {
+		Node *old_base = nullptr;
+		if (has_meta("__base_node_relative")) {
+			old_base = Object::cast_to<Node>(get_meta("__base_node_relative"));
+		}
+
+		if (old_base == p_node) {
+			return;
+		}
+		// The cdbinds is a proxy object, so we want the node path to be relative to the target node.
+		set_meta("__base_node_relative", p_node);
+
+		if (!old_base) {
+			return;
+		}
+
+		// Update existing outdated node paths.
+		for (int i = 0; i < params.size(); i++) {
+			if (params[i].get_type() != Variant::NODE_PATH) {
+				continue;
+			}
+			StringName property_name = "bind/argument_" + itos(i + 1);
+			Node *n = old_base->get_node(get(property_name));
+			set(property_name, p_node ? p_node->get_path_to(n) : NodePath());
+		}
+	}
+
 	void notify_changed() {
 		notify_property_list_changed();
 	}
@@ -172,17 +199,24 @@ void ConnectDialog::_tree_node_selected() {
 		return;
 	}
 
-	dst_path = source->get_path_to(current);
+	Node *source_node = Object::cast_to<Node>(source);
+	if (source_node) {
+		dst_path = source_node->get_path_to(current);
+	}
+
 	if (!edit_mode) {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
+
+	cdbinds->update_base_node_relative(current);
+
 	_update_method_tree();
 	_update_warning_label();
 	_update_ok_enabled();
 }
 
 void ConnectDialog::_focus_currently_connected() {
-	tree->set_selected(source);
+	tree->set_selected(Object::cast_to<Node>(source));
 }
 
 void ConnectDialog::_unbind_count_changed(double p_count) {
@@ -237,8 +271,9 @@ void ConnectDialog::_remove_bind() {
 /*
  * Automatically generates a name for the callback method.
  */
-StringName ConnectDialog::generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target) {
-	String node_name = p_source->get_name();
+StringName ConnectDialog::generate_method_callback_name(Object *p_source, const String &p_signal_name, Object *p_target) {
+	String node_name = p_source->call("get_name");
+
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
 		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
@@ -462,7 +497,8 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_update_warning_label() {
-	Node *dst = source->get_node(dst_path);
+	Node *dst = Object::cast_to<Node>(source)->get_node(dst_path);
+
 	if (dst == nullptr) {
 		warning_label->set_visible(false);
 		return;
@@ -485,7 +521,7 @@ void ConnectDialog::_update_warning_label() {
 }
 
 void ConnectDialog::_post_popup() {
-	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred(false);
 	callable_mp(dst_method, &LineEdit::select_all).call_deferred();
 }
 
@@ -507,7 +543,7 @@ void ConnectDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connected"));
 }
 
-Node *ConnectDialog::get_source() const {
+Object *ConnectDialog::get_source() const {
 	return source;
 }
 
@@ -663,15 +699,15 @@ void ConnectDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit) {
 	set_hide_on_ok(false);
 
-	source = static_cast<Node *>(p_cd.source);
+	source = p_cd.source;
 	signal = p_cd.signal;
 	signal_args = p_signal_args;
 
 	tree->set_selected(nullptr);
-	tree->set_marked(source);
+	tree->set_marked(Object::cast_to<Node>(source));
 
 	if (p_cd.target) {
-		set_dst_node(static_cast<Node *>(p_cd.target));
+		set_dst_node(Object::cast_to<Node>(p_cd.target));
 		set_dst_method(p_cd.method);
 	}
 
@@ -761,6 +797,7 @@ ConnectDialog::ConnectDialog() {
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
+	tree->get_scene_tree()->set_theme_type_variation("TreeSecondary");
 
 	HBoxContainer *hbc_filter = memnew(HBoxContainer);
 
@@ -954,7 +991,8 @@ void ConnectionsDock::_filter_changed(const String &p_text) {
  */
 void ConnectionsDock::_make_or_edit_connection() {
 	NodePath dst_path = connect_dialog->get_dst_path();
-	Node *target = selected_node->get_node(dst_path);
+	Node *target = Object::cast_to<Node>(selected_object)->get_node(dst_path);
+
 	ERR_FAIL_NULL(target);
 
 	ConnectDialog::ConnectionData cd;
@@ -1047,7 +1085,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 			script_function_args.push_back("extra_arg_" + itos(i) + ": " + Variant::get_type_name(cd.binds[i].get_type()));
 		}
 
-		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
+		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), cd.target, cd.method, script_function_args);
 	}
 
 	if (connect_dialog->is_editing()) {
@@ -1064,7 +1102,7 @@ void ConnectionsDock::_make_or_edit_connection() {
  * Creates single connection w/ undo-redo functionality.
  */
 void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
-	Node *source = Object::cast_to<Node>(p_cd.source);
+	Object *source = p_cd.source;
 	Node *target = Object::cast_to<Node>(p_cd.target);
 
 	if (!source || !target) {
@@ -1088,14 +1126,14 @@ void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
  * Break single connection w/ undo-redo functionality.
  */
 void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
-	ERR_FAIL_COND(p_cd.source != selected_node); // Shouldn't happen but... Bugcheck.
+	ERR_FAIL_COND(p_cd.source != selected_object); // Shouldn't happen but... Bugcheck.
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), p_cd.signal, p_cd.method));
 
 	Callable callable = p_cd.get_callable();
-	undo_redo->add_do_method(selected_node, "disconnect", p_cd.signal, callable);
-	undo_redo->add_undo_method(selected_node, "connect", p_cd.signal, callable, p_cd.flags);
+	undo_redo->add_do_method(selected_object, "disconnect", p_cd.signal, callable);
+	undo_redo->add_undo_method(selected_object, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
@@ -1123,8 +1161,8 @@ void ConnectionsDock::_disconnect_all() {
 		Connection connection = child->get_metadata(0);
 		if (!_is_connection_inherited(connection)) {
 			ConnectDialog::ConnectionData cd = connection;
-			undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
-			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.flags);
+			undo_redo->add_do_method(selected_object, "disconnect", cd.signal, cd.get_callable());
+			undo_redo->add_undo_method(selected_object, "connect", cd.signal, cd.get_callable(), cd.flags);
 		}
 		child = child->get_next();
 	}
@@ -1142,7 +1180,7 @@ void ConnectionsDock::_tree_item_selected() {
 	if (item && _get_item_type(*item) == TREE_ITEM_TYPE_SIGNAL) {
 		connect_button->set_text(TTR("Connect..."));
 		connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
-		connect_button->set_disabled(false);
+		connect_button->set_disabled(is_editing_resource);
 	} else if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
 		connect_button->set_text(TTR("Disconnect"));
 		connect_button->set_button_icon(get_editor_theme_icon(SNAME("Unlinked")));
@@ -1189,19 +1227,24 @@ bool ConnectionsDock::_is_connection_inherited(Connection &p_connection) {
  * Open connection dialog with TreeItem data to CREATE a brand-new connection.
  */
 void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
+	if (is_editing_resource) {
+		return;
+	}
+
 	const Dictionary sinfo = p_item.get_metadata(0);
 	const StringName signal_name = sinfo["name"];
 	const PackedStringArray signal_args = sinfo["args"];
 
+	ConnectDialog::ConnectionData cd;
+
+	Node *selected_node = Object::cast_to<Node>(selected_object);
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
-
-	ConnectDialog::ConnectionData cd;
-	cd.source = selected_node;
-	cd.signal = signal_name;
+	cd.source = selected_object;
 	cd.target = dst_node;
+	cd.signal = signal_name;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
@@ -1218,8 +1261,8 @@ void ConnectionsDock::_open_edit_connection_dialog(TreeItem &p_item) {
 	Connection connection = p_item.get_metadata(0);
 	ConnectDialog::ConnectionData cd = connection;
 
-	Node *src = Object::cast_to<Node>(cd.source);
-	Node *dst = Object::cast_to<Node>(cd.target);
+	Object *src = cd.source;
+	Object *dst = cd.target;
 
 	if (src && dst) {
 		const StringName &signal_name = cd.signal;
@@ -1241,7 +1284,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 
 	Connection connection = p_item.get_metadata(0);
 	ConnectDialog::ConnectionData cd = connection;
-	ERR_FAIL_COND(cd.source != selected_node); // Shouldn't happen but... bugcheck.
+	ERR_FAIL_COND(cd.source != selected_object); // Shouldn't happen but... bugcheck.
 
 	if (!cd.target) {
 		return;
@@ -1312,6 +1355,7 @@ void ConnectionsDock::_signal_menu_about_to_popup() {
 		}
 	}
 
+	signal_menu->set_item_disabled(signal_menu->get_item_index(SIGNAL_MENU_CONNECT), is_editing_resource);
 	signal_menu->set_item_disabled(signal_menu->get_item_index(SIGNAL_MENU_DISCONNECT_ALL), disable_disconnect_all);
 	signal_menu->set_item_disabled(signal_menu->get_item_index(SIGNAL_MENU_OPEN_DOCS), String(meta["class"]).is_empty());
 }
@@ -1479,8 +1523,9 @@ void ConnectionsDock::_bind_methods() {
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 
-void ConnectionsDock::set_node(Node *p_node) {
-	selected_node = p_node;
+void ConnectionsDock::set_object(Object *p_obj) {
+	selected_object = p_obj;
+	is_editing_resource = (Object::cast_to<Resource>(selected_object) != nullptr);
 	update_tree();
 }
 
@@ -1491,15 +1536,15 @@ void ConnectionsDock::update_tree() {
 	}
 	tree->clear();
 
-	if (!selected_node) {
+	if (!selected_object) {
 		return;
 	}
 
 	TreeItem *root = tree->create_item();
 	DocTools *doc_data = EditorHelp::get_doc_data();
 	EditorData &editor_data = EditorNode::get_editor_data();
-	StringName native_base = selected_node->get_class();
-	Ref<Script> script_base = selected_node->get_script();
+	StringName native_base = selected_object->get_class();
+	Ref<Script> script_base = selected_object->get_script();
 
 	while (native_base != StringName()) {
 		String class_name;
@@ -1613,7 +1658,7 @@ void ConnectionsDock::update_tree() {
 
 			// List existing connections.
 			List<Object::Connection> existing_connections;
-			selected_node->get_signal_connection_list(signal_name, &existing_connections);
+			selected_object->get_signal_connection_list(signal_name, &existing_connections);
 
 			for (const Object::Connection &F : existing_connections) {
 				Connection connection = F;
@@ -1627,7 +1672,7 @@ void ConnectionsDock::update_tree() {
 					continue;
 				}
 
-				String path = String(selected_node->get_path_to(target)) + " :: " + cd.method + "()";
+				String path = String(Object::cast_to<Node>(selected_object)->get_path_to(target)) + " :: " + cd.method + "()";
 				if (cd.flags & CONNECT_DEFERRED) {
 					path += " (deferred)";
 				}
@@ -1664,7 +1709,7 @@ void ConnectionsDock::update_tree() {
 		}
 	}
 
-	connect_button->set_text(TTR("Connect..."));
+	connect_button->set_text(TTRC("Connect..."));
 	connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
 	connect_button->set_disabled(true);
 }

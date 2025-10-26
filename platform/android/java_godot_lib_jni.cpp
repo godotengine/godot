@@ -48,11 +48,19 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/os/main_loop.h"
 #include "main/main.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
+
+#include "modules/modules_enabled.gen.h" // For camera.
+
+#ifdef MODULE_CAMERA_ENABLED
+#include "modules/camera/camera_android.h"
+#include "servers/camera/camera_server.h"
+#endif
 
 #ifndef XR_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
@@ -514,7 +522,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIE
 }
 
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value) {
-	jvalret result;
+	jvalue result;
 
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton() != nullptr) {
@@ -528,7 +536,7 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMe
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
 #endif
 
-	return result.obj;
+	return result.l;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_data) {
@@ -592,6 +600,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 
 	// We force redraw to ensure we render at least once when resuming the app.
 	Main::force_redraw();
+#ifdef MODULE_CAMERA_ENABLED
+	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
+	if (camera_android) {
+		camera_android->handle_resume();
+	}
+#endif // MODULE_CAMERA_ENABLED
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
@@ -602,9 +616,29 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 		return;
 	}
 
+#ifdef MODULE_CAMERA_ENABLED
+	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
+	if (camera_android) {
+		camera_android->handle_pause();
+	}
+#endif // MODULE_CAMERA_ENABLED
+
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChange(JNIEnv *env, jclass clazz) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+#ifdef MODULE_CAMERA_ENABLED
+	CameraAndroid *camera_android = Object::cast_to<CameraAndroid>(CameraServer::get_singleton());
+	if (camera_android) {
+		camera_android->handle_rotation_change();
+	}
+#endif // MODULE_CAMERA_ENABLED
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInputToRenderThread(JNIEnv *env, jclass clazz) {

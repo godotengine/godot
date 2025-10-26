@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/callable_bind.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -51,8 +52,8 @@ class ConnectDialog : public ConfirmationDialog {
 
 public:
 	struct ConnectionData {
-		Node *source = nullptr;
-		Node *target = nullptr;
+		Object *source = nullptr;
+		Object *target = nullptr;
 		StringName signal;
 		StringName method;
 		uint32_t flags = 0;
@@ -62,9 +63,9 @@ public:
 		ConnectionData() {}
 
 		ConnectionData(const Connection &p_connection) {
-			source = Object::cast_to<Node>(p_connection.signal.get_object());
+			source = p_connection.signal.get_object();
 			signal = p_connection.signal.get_name();
-			target = Object::cast_to<Node>(p_connection.callable.get_object());
+			target = p_connection.callable.get_object();
 			flags = p_connection.flags;
 
 			Callable base_callable;
@@ -111,7 +112,7 @@ private:
 	Label *connect_to_label = nullptr;
 	LineEdit *from_signal = nullptr;
 	LineEdit *filter_nodes = nullptr;
-	Node *source = nullptr;
+	Object *source = nullptr;
 	ConnectionData source_connection_data;
 	StringName signal;
 	PackedStringArray signal_args;
@@ -170,8 +171,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static StringName generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target);
-	Node *get_source() const;
+	static StringName generate_method_callback_name(Object *p_source, const String &p_signal_name, Object *p_target);
+	Object *get_source() const;
 	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
 	PackedStringArray get_signal_args() const;
@@ -230,7 +231,7 @@ class ConnectionsDock : public VBoxContainer {
 		SLOT_MENU_DISCONNECT,
 	};
 
-	Node *selected_node = nullptr;
+	Object *selected_object = nullptr;
 	ConnectionsDockTree *tree = nullptr;
 
 	ConfirmationDialog *disconnect_all_dialog = nullptr;
@@ -241,6 +242,8 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
 	LineEdit *search_box = nullptr;
+
+	bool is_editing_resource = false;
 
 	void _filter_changed(const String &p_text);
 
@@ -273,7 +276,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_node(Node *p_node);
+	void set_object(Object *p_obj);
 	void update_tree();
 
 	ConnectionsDock();

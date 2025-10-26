@@ -108,6 +108,7 @@ void OpenXRHTCControllerExtension::on_register_metadata() {
 			openxr_metadata->register_io_path(profile_path, "Trigger click", user_path, user_path + "/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 			openxr_metadata->register_io_path(profile_path, "Trigger touch", user_path, user_path + "/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
+			openxr_metadata->register_io_path(profile_path, "Squeeze", user_path, user_path + "/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 			openxr_metadata->register_io_path(profile_path, "Squeeze click", user_path, user_path + "/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 			openxr_metadata->register_io_path(profile_path, "Squeeze touch", user_path, user_path + "/input/squeeze/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 

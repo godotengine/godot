@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/timer.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -48,7 +49,6 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "advanced_options", preset->are_advanced_options_enabled());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -127,6 +127,7 @@ void EditorExport::_bind_methods() {
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	p_platform->initialize();
 	export_platforms.push_back(p_platform);
 
 	should_update_presets = true;
@@ -262,7 +263,6 @@ void EditorExport::load_config() {
 		}
 
 		preset->set_name(config->get_value(section, "name"));
-		preset->set_advanced_options_enabled(config->get_value(section, "advanced_options", false));
 		preset->set_runnable(config->get_value(section, "runnable"));
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 

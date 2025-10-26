@@ -4279,9 +4279,6 @@ msgstr ""
 msgid "Project Run"
 msgstr "Projekti Käivitamine"
 
-msgid "Select Mode"
-msgstr "Valimisrežiim"
-
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Näita valitavate sõlmede Loendit klikkimis asukohas."
 
@@ -5710,6 +5707,9 @@ msgstr ""
 "Stseen sisaldab\n"
 "WorldEnvironment.\n"
 "Eelvaade keelatud."
+
+msgid "Select Mode"
+msgstr "Valimisrežiim"
 
 msgid "Move Mode"
 msgstr "Liigutamisrežiim"
@@ -8190,9 +8190,6 @@ msgstr "Määratud konstant: %s"
 
 msgid "Invalid name for varying."
 msgstr "Kehtetu nimi muutuja jaoks."
-
-msgid "Varying with that name is already exist."
-msgstr "Selle nimega muutuja juba eksisteerib."
 
 msgid "Add Node(s) to Visual Shader"
 msgstr "Lisa Sõlm(ed) Visual Shader'isse"

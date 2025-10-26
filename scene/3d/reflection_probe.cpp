@@ -309,5 +309,5 @@ ReflectionProbe::ReflectionProbe() {
 
 ReflectionProbe::~ReflectionProbe() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(probe);
+	RS::get_singleton()->free_rid(probe);
 }

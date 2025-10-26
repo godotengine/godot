@@ -33,8 +33,6 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#include <algorithm>
-
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
@@ -67,6 +65,8 @@ public:
 };
 
 class RenderingDeviceCommons : public Object {
+	GDSOFTCLASS(RenderingDeviceCommons, Object);
+
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
@@ -607,6 +607,7 @@ public:
 	struct ShaderStageSPIRVData {
 		ShaderStage shader_stage = SHADER_STAGE_MAX;
 		Vector<uint8_t> spirv;
+		Vector<uint64_t> dynamic_buffers;
 	};
 
 	/*********************/
@@ -626,6 +627,8 @@ public:
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -987,7 +990,6 @@ protected:
 
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
 
-	static uint32_t get_image_format_pixel_size(DataFormat p_format);
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
@@ -1009,6 +1011,12 @@ protected:
 	static uint32_t get_format_vertex_size(DataFormat p_format);
 
 public:
+	/*****************/
+	/**** TEXTURE ****/
+	/*****************/
+
+	static uint32_t get_image_format_pixel_size(DataFormat p_format);
+
 	/****************/
 	/**** SHADER ****/
 	/****************/
@@ -1057,6 +1065,7 @@ public:
 		uint32_t fragment_output_mask = 0;
 		bool is_compute = false;
 		bool has_multiview = false;
+		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;
 
@@ -1066,6 +1075,4 @@ public:
 		BitField<ShaderStage> stages_bits = {};
 		BitField<ShaderStage> push_constant_stages = {};
 	};
-
-	static Error reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 };

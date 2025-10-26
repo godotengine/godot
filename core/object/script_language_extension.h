@@ -370,7 +370,7 @@ public:
 		return Object::cast_to<Script>(ret);
 	}
 #ifndef DISABLE_DEPRECATED
-	EXBIND0RC(bool, has_named_classes)
+	GDVIRTUAL0RC(bool, _has_named_classes)
 #endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)

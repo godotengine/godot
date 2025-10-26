@@ -306,6 +306,12 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 			return false;
 		}
 
+#ifndef MACOS_ENABLED
+		if (p_option == "application/liquid_glass_icon") {
+			return false;
+		}
+#endif
+
 		String custom_prof = p_preset->get("codesign/entitlements/custom_file");
 		if (!custom_prof.is_empty() && p_option != "codesign/entitlements/custom_file" && p_option.begins_with("codesign/entitlements/")) {
 			return false;
@@ -467,6 +473,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
@@ -576,13 +583,13 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -595,7 +602,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 						"open \"{temp_dir}/{exe_name}.app\" --args {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
@@ -686,7 +693,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 		{ "is32", "s8mk", false, 16 } //16×16 24-bit RLE + 8-bit uncompressed mask
 	};
 
-	for (uint64_t i = 0; i < std::size(icon_infos); ++i) {
+	for (uint64_t i = 0; i < std_size(icon_infos); ++i) {
 		Ref<Image> copy = p_icon->duplicate();
 		copy->convert(Image::FORMAT_RGBA8);
 		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
@@ -757,7 +764,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].find("$priv_collection") != -1) {
 			bool section_opened = false;
-			for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+			for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -786,7 +793,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 					if (purposes != 0) {
 						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 						strnew += "\t\t\t\t<array>\n";
-						for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+						for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 							if (purposes & (1 << k)) {
 								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 							}
@@ -828,7 +835,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	}
 }
 
-void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary) {
+void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon) {
 	String str = String::utf8((const char *)plist.ptr(), plist.size());
 	String strnew;
 	Vector<String> lines = str.split("\n");
@@ -872,6 +879,12 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
 		} else if (lines[i].contains("$xcodebuild")) {
 			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
+		} else if (lines[i].contains("$liquid_glass_icon")) {
+			if (p_lg_icon_exported) {
+				strnew += lines[i].replace("$liquid_glass_icon", "\t<key>CFBundleIconName</key>\n\t<string>" + p_lg_icon + "</string>\n");
+			} else {
+				strnew += lines[i].replace("$liquid_glass_icon", "");
+			}
 		} else if (lines[i].contains("$usage_descriptions")) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
@@ -931,6 +944,76 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 	for (int i = 0; i < cs.size() - 1; i++) {
 		plist.write[i] = cs[i];
 	}
+}
+
+Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path) {
+	String actool = EDITOR_GET("export/macos/actool").operator String();
+	if (actool.is_empty()) {
+		actool = "actool";
+	}
+
+	List<String> args;
+	args.push_back("--version");
+	String str;
+	String err_str;
+	int exitcode = 0;
+
+	Error err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not start 'actool' executable."));
+		return err;
+	}
+	PList info_plist;
+	if (!info_plist.load_string(str, err_str)) {
+		print_verbose(str);
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not read 'actool' version."));
+		return err;
+	}
+	if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("com.apple.actool.version")) {
+		Ref<PListNode> dict = info_plist.get_root()->data_dict["com.apple.actool.version"];
+		if (dict->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && dict->data_dict.has("short-bundle-version")) {
+			float version = String::utf8(dict->data_dict["short-bundle-version"]->data_string.get_data()).to_float();
+			if (version < 26.0) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), vformat(TTR("At least version 26.0 of 'actool' is required (version %f found)."), version));
+				return ERR_UNAVAILABLE;
+			}
+		}
+	}
+	str.clear();
+
+	String plist = EditorPaths::get_singleton()->get_temp_dir().path_join("assetcatalog.plist");
+	args.clear();
+	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_icon_path));
+	args.push_back("--compile");
+	args.push_back(p_app_path + "/Contents/Resources/");
+	args.push_back("--output-format");
+	args.push_back("human-readable-text");
+	args.push_back("--lightweight-asset-runtime-mode");
+	args.push_back("enabled");
+	args.push_back("--app-icon");
+	args.push_back(p_icon_path.get_file().get_basename());
+	args.push_back("--include-all-app-icons");
+	args.push_back("--enable-on-demand-resources");
+	args.push_back("NO");
+	args.push_back("--development-region");
+	args.push_back("en");
+	args.push_back("--target-device");
+	args.push_back("mac");
+	args.push_back("--minimum-deployment-target");
+	args.push_back("26");
+	args.push_back("--platform");
+	args.push_back("macosx");
+	args.push_back("--output-partial-info-plist");
+	args.push_back(plist);
+
+	err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
+	if (err != OK || str.contains("error:") || !FileAccess::exists(p_app_path + "/Contents/Resources/Assets.car") || !FileAccess::exists(plist)) {
+		print_verbose(str);
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not export liquid glass icon:") + "\n" + str);
+		return err;
+	}
+
+	return OK;
 }
 
 /**
@@ -998,8 +1081,8 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 23) : str.substr(rq_offset + 23, next_nl - rq_offset - 23);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <api uuid> --api-key <api key> <request uuid>\"");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <API UUID> --api-key <API key> <request UUID>\"");
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign staple <app path>\"");
 			}
@@ -1082,9 +1165,10 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 4) : str.substr(rq_offset + 4, next_nl - rq_offset - 4);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --issuer <api uuid> --key-id <api key id> --key <api key path>\" or");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request uuid> --apple-id <your email> --password <app-specific pwd>>\"");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("See instructions on finding your team ID: https://developer.apple.com/help/glossary/team-id"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --issuer <API UUID> --key-id <API key ID> --key <API key path>\" or");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --team-id <team ID> --apple-id <your email> --password <app-specific password>\"");
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 			}
@@ -1861,7 +1945,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (file == "Contents/Info.plist") {
-			_fix_plist(p_preset, data, pkg_name);
+			bool lg_icon_expored = false;
+			String lg_icon = p_preset->get("application/liquid_glass_icon");
+#ifdef MACOS_ENABLED
+			// Export liquid glass.
+			if (!lg_icon.is_empty()) {
+				lg_icon_expored = (_export_liquid_glass_icon(p_preset, tmp_app_path_name, lg_icon) == OK);
+			}
+#endif
+			// Modify plist.
+			_fix_plist(p_preset, data, pkg_name, lg_icon_expored, lg_icon.get_file().get_basename());
 		}
 
 		if (file == "Contents/Resources/PrivacyInfo.xcprivacy") {
@@ -2722,7 +2815,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformMacOS::EditorExportPlatformMacOS() {
+void EditorExportPlatformMacOS::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

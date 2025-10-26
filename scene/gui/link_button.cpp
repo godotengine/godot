@@ -43,7 +43,8 @@ void LinkButton::_shape() {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
-	text_buf->add_string(xl_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	text_buf->add_string(xl_text, font, font_size, lang);
 
 	queue_accessibility_update();
 }
@@ -75,14 +76,14 @@ TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override()
 	return st_parser;
 }
 
-void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LinkButton::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LinkButton::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
@@ -191,7 +192,7 @@ void LinkButton::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					if (has_focus()) {
+					if (has_focus(true)) {
 						color = theme_cache.font_focus_color;
 					} else {
 						color = theme_cache.font_color;
@@ -222,7 +223,7 @@ void LinkButton::_notification(int p_what) {
 				} break;
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				Ref<StyleBox> style = theme_cache.focus;
 				style->draw(ci, Rect2(Point2(), size));
 			}

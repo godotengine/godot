@@ -94,6 +94,8 @@ public:
 	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
 	virtual RID get_uniform_buffer() const override;
 
+	static uint32_t get_uniform_buffer_size_bytes() { return sizeof(UBODATA); }
+
 private:
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
@@ -113,8 +115,12 @@ private:
 	struct UBO {
 		float projection_matrix[16];
 		float inv_projection_matrix[16];
-		float inv_view_matrix[16];
-		float view_matrix[16];
+		float inv_view_matrix[12];
+		float view_matrix[12];
+
+#ifdef REAL_T_IS_DOUBLE
+		float inv_view_precision[4];
+#endif
 
 		float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 		float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];

@@ -23,8 +23,9 @@
 				Called when an error is logged. The error provides the [param function], [param file], and [param line] that it originated from, as well as either the [param code] that generated the error or a [param rationale].
 				The type of error provided by [param error_type] is described in the [enum ErrorType] enumeration.
 				Additionally, [param script_backtraces] provides backtraces for each of the script languages. These will only contain stack frames in editor builds and debug builds by default. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
-				[b]Warning:[/b] This function may be called from multiple different threads, so you may need to do your own locking.
+				[b]Warning:[/b] This method will be called from threads other than the main thread, possibly at the same time, so you will need to have some kind of thread-safety in your implementation of it, like a [Mutex].
 				[b]Note:[/b] [param script_backtraces] will not contain any captured variables, due to its prohibitively high cost. To get those you will need to capture the backtraces yourself, from within the [Logger] virtual methods, using [method Engine.capture_script_backtraces].
+				[b]Note:[/b] Logging errors from this method using functions like [method @GlobalScope.push_error] or [method @GlobalScope.push_warning] is not supported, as it could cause infinite recursion. These errors will only show up in the console output.
 			</description>
 		</method>
 		<method name="_log_message" qualifiers="virtual">
@@ -33,7 +34,8 @@
 			<param index="1" name="error" type="bool" />
 			<description>
 				Called when a message is logged. If [param error] is [code]true[/code], then this message was meant to be sent to [code]stderr[/code].
-				[b]Warning:[/b] This function may be called from multiple different threads, so you may need to do your own locking.
+				[b]Warning:[/b] This method will be called from threads other than the main thread, possibly at the same time, so you will need to have some kind of thread-safety in your implementation of it, like a [Mutex].
+				[b]Note:[/b] Logging another message from this method using functions like [method @GlobalScope.print] is not supported, as it could cause infinite recursion. These messages will only show up in the console output.
 			</description>
 		</method>
 	</methods>

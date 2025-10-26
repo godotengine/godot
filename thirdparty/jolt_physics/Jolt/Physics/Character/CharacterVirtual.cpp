@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
 #include <Jolt/Core/QuickSort.h>
 #include <Jolt/Core/ScopeExit.h>
@@ -541,6 +542,14 @@ inline static bool sCorrectFractionForCharacterPadding(const Shape *inShape, Mat
 	{
 		const ScaledShape *scaled_shape = static_cast<const ScaledShape *>(inShape);
 		return sCorrectFractionForCharacterPadding(scaled_shape->GetInnerShape(), inStart, inDisplacement, inScale * scaled_shape->GetScale(), inPolygon, ioFraction);
+	}
+	else if (inShape->GetType() == EShapeType::Compound)
+	{
+		const CompoundShape *compound = static_cast<const CompoundShape *>(inShape);
+		bool return_value = false;
+		for (const CompoundShape::SubShape &sub_shape : compound->GetSubShapes())
+			return_value |= sCorrectFractionForCharacterPadding(sub_shape.mShape, inStart * sub_shape.GetLocalTransformNoScale(inScale), inDisplacement, sub_shape.TransformScale(inScale), inPolygon, ioFraction);
+		return return_value;
 	}
 	else
 	{
@@ -1886,6 +1895,39 @@ void CharacterVirtual::RestoreState(StateRecorder &inStream)
 	mActiveContacts.resize(num_contacts);
 	for (Contact &c : mActiveContacts)
 		c.RestoreState(inStream);
+}
+
+CharacterVirtualSettings CharacterVirtual::GetCharacterVirtualSettings() const
+{
+	CharacterVirtualSettings settings;
+	settings.mUp = mUp;
+	settings.mSupportingVolume = mSupportingVolume;
+	settings.mMaxSlopeAngle = ACos(mCosMaxSlopeAngle);
+	settings.mEnhancedInternalEdgeRemoval = mEnhancedInternalEdgeRemoval;
+	settings.mShape = mShape;
+	settings.mID = mID;
+	settings.mMass = mMass;
+	settings.mMaxStrength = mMaxStrength;
+	settings.mShapeOffset = mShapeOffset;
+	settings.mBackFaceMode = mBackFaceMode;
+	settings.mPredictiveContactDistance = mPredictiveContactDistance;
+	settings.mMaxCollisionIterations = mMaxCollisionIterations;
+	settings.mMaxConstraintIterations = mMaxConstraintIterations;
+	settings.mMinTimeRemaining = mMinTimeRemaining;
+	settings.mCollisionTolerance = mCollisionTolerance;
+	settings.mCharacterPadding = mCharacterPadding;
+	settings.mMaxNumHits = mMaxNumHits;
+	settings.mHitReductionCosMaxAngle = mHitReductionCosMaxAngle;
+	settings.mPenetrationRecoverySpeed = mPenetrationRecoverySpeed;
+	BodyLockRead lock(mSystem->GetBodyLockInterface(), mInnerBodyID);
+	if (lock.Succeeded())
+	{
+		const Body &body = lock.GetBody();
+		settings.mInnerBodyShape = body.GetShape();
+		settings.mInnerBodyIDOverride = body.GetID();
+		settings.mInnerBodyLayer = body.GetObjectLayer();
+	}
+	return settings;
 }
 
 JPH_NAMESPACE_END

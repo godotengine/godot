@@ -223,6 +223,5 @@ void XRInterface::trigger_haptic_pulse(const String &p_action_name, const String
 }
 
 Array XRInterface::get_supported_environment_blend_modes() {
-	Array default_blend_modes = { XR_ENV_BLEND_MODE_OPAQUE };
-	return default_blend_modes;
+	return Array{ XR_ENV_BLEND_MODE_OPAQUE };
 }

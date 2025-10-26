@@ -51,7 +51,6 @@ public:
 		SCENE_RUN,
 		SCENE_CLOSE_OTHERS,
 		SCENE_CLOSE_RIGHT,
-		SCENE_CLOSE_ALL,
 	};
 
 private:
@@ -81,7 +80,7 @@ private:
 	void _update_context_menu();
 	void _custom_menu_option(int p_option);
 
-	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_tab);
 
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);

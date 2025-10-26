@@ -215,12 +215,12 @@ TEST_CASE("[Object] Construction") {
 }
 
 TEST_CASE("[Object] Script instance property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	object.set("some_name", 100, &valid);
+	object->set("some_name", 100, &valid);
 	CHECK(valid);
 	Variant actual_value;
 	CHECK_MESSAGE(
@@ -229,20 +229,22 @@ TEST_CASE("[Object] Script instance property setter") {
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the object.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	const Variant &actual_value = object.get("some_name", &valid);
+	const Variant &actual_value = object->get("some_name", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the script instance.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Built-in property setter") {

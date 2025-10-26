@@ -33,7 +33,6 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/os.h"
 #include "scene/main/node.h"
 
 #include "thirdparty/doctest/doctest.h"
@@ -381,7 +380,7 @@ TEST_CASE("[Resource] Duplication") {
 		};
 
 		for (const Ref<Resource> &orig : resources) {
-			INFO(std::string(String(orig->get_class_name()).utf8().get_data()));
+			INFO(orig->get_class());
 
 			orig->call("set_defaults");
 			const Ref<Resource> &dupe = p_duplicate_fn(orig);

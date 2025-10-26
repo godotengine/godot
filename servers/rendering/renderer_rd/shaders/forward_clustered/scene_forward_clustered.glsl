@@ -224,23 +224,28 @@ void vertex_shader(vec3 vertex_input,
 		in vec3 tangent_input,
 		in vec3 binormal_input,
 #endif
-		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat3x4 in_model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+		in vec3 model_precision,
+#endif
+		out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+	mat4 model_matrix = transpose(mat4(in_model_matrix[0],
+			in_model_matrix[1],
+			in_model_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USE_DOUBLE_PRECISION
-	vec3 model_precision = vec3(model_matrix[0][3], model_matrix[1][3], model_matrix[2][3]);
-	model_matrix[0][3] = 0.0;
-	model_matrix[1][3] = 0.0;
-	model_matrix[2][3] = 0.0;
-	vec3 view_precision = vec3(inv_view_matrix[0][3], inv_view_matrix[1][3], inv_view_matrix[2][3]);
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
+	vec3 view_precision = scene_data.inv_view_precision.xyz;
 #endif
 
 	mat3 model_normal_matrix;
@@ -404,8 +409,13 @@ void vertex_shader(vec3 vertex_input,
 
 	float roughness_highp = 1.0;
 
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
 #ifdef USE_DOUBLE_PRECISION
-	mat4 modelview = scene_data.view_matrix * model_matrix;
+	mat4 modelview = read_view_matrix * model_matrix;
 
 	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
@@ -420,13 +430,12 @@ void vertex_shader(vec3 vertex_input,
 
 	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
-	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
 #else
-	mat4 modelview = scene_data.view_matrix * model_matrix;
+	mat4 modelview = read_view_matrix * model_matrix;
 #endif
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
@@ -457,14 +466,14 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (read_view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
+	normal = (read_view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #ifdef TANGENT_USED
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (read_view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (read_view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -529,7 +538,9 @@ void vertex_shader(vec3 vertex_input,
 	vec2 clip_pos = clamp((gl_Position.xy / gl_Position.w) * 0.5 + 0.5, 0.0, 1.0);
 #endif
 
-	uvec2 cluster_pos = uvec2(clip_pos / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+	uvec2 screen_size = uvec2(1.0 / scene_data.screen_pixel_size);
+	uvec2 screen_pixel = clamp(uvec2(clip_pos * vec2(screen_size)), uvec2(0), screen_size - uvec2(1));
+	uvec2 cluster_pos = screen_pixel >> implementation_data.cluster_shift;
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 	uint cluster_z = uint(clamp((-vertex_interp.z / scene_data.z_far) * 32.0, 0.0, 31.0));
 
@@ -734,8 +745,6 @@ void main() {
 
 	instance_index_interp = instance_index;
 
-	mat4 model_matrix = instances.data[instance_index].transform;
-
 #ifdef MOTION_VECTORS
 	// Previous vertex.
 	vec3 prev_vertex;
@@ -771,7 +780,11 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[instance_index].prev_model_precision.xyz,
+#endif
+			prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -810,7 +823,12 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, instances.data[instance_index].transform,
+#ifdef USE_DOUBLE_PRECISION
+			instances.data[instance_index].model_precision.xyz,
+#endif
+
+			screen_position);
 }
 
 #[fragment]
@@ -1083,7 +1101,12 @@ vec4 fog_process(vec3 vertex) {
 	}
 
 	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
-		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
+		mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+				scene_data_block.data.inv_view_matrix[1],
+				scene_data_block.data.inv_view_matrix[2],
+				vec4(0.0, 0.0, 0.0, 1.0)));
+
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
 
@@ -1242,16 +1265,14 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-	mat4 read_model_matrix = instances.data[instance_index].transform;
-#ifdef USE_DOUBLE_PRECISION
-	read_model_matrix[0][3] = 0.0;
-	read_model_matrix[1][3] = 0.0;
-	read_model_matrix[2][3] = 0.0;
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
+	mat4 inv_view_matrix = transpose(mat4(scene_data.inv_view_matrix[0],
+			scene_data.inv_view_matrix[1],
+			scene_data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
 	vec3 light_vertex = vertex;
@@ -1264,7 +1285,10 @@ void fragment_shader(in SceneData scene_data) {
 		model_normal_matrix = mat3(read_model_matrix);
 	}
 
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 read_view_matrix = transpose(mat4(scene_data.view_matrix[0],
+			scene_data.view_matrix[1],
+			scene_data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
@@ -1573,6 +1597,12 @@ void fragment_shader(in SceneData scene_data) {
 		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
+
+		// Reject very small roughness values. Lack of precision can collapse
+		// roughness^4 to 0 in GGX specular equations and cause divisions by zero.
+		if (roughness < 0.00000001) {
+			roughness = 0.0;
+		}
 	}
 #endif
 	//apply energy conservation
@@ -1699,7 +1729,7 @@ void fragment_shader(in SceneData scene_data) {
 		uint index = instances.data[instance_index].gi_offset;
 
 		// The world normal.
-		vec3 wnormal = mat3(scene_data.inv_view_matrix) * indirect_normal;
+		vec3 wnormal = mat3(inv_view_matrix) * indirect_normal;
 
 		// The SH coefficients used for evaluating diffuse data from SH probes.
 		const float c[5] = float[](
@@ -1769,9 +1799,9 @@ void fragment_shader(in SceneData scene_data) {
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
 
 		//make vertex orientation the world one, but still align to camera
-		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * indirect_normal;
-		vec3 cam_reflection = mat3(scene_data.inv_view_matrix) * reflect(-view, indirect_normal);
+		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
+		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
 
 		//apply y-mult
 		cam_pos.y *= sdfgi.y_mult;
@@ -1841,9 +1871,9 @@ void fragment_shader(in SceneData scene_data) {
 	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		// Make vertex orientation the world one, but still align to camera.
-		vec3 cam_pos = mat3(scene_data.inv_view_matrix) * vertex;
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * indirect_normal;
-		vec3 ref_vec = mat3(scene_data.inv_view_matrix) * normalize(reflect(-view, indirect_normal));
+		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
+		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
+		vec3 ref_vec = mat3(inv_view_matrix) * normalize(reflect(-view, indirect_normal));
 
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(cam_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -2003,6 +2033,39 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light = ambient_accum.rgb;
 		}
 #endif
+	}
+
+	//process ssr
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
+		bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
+
+		float ssr_mip_level = 0.0;
+		if (resolve_ssr) {
+#ifdef USE_MULTIVIEW
+			ssr_mip_level = textureLod(sampler2DArray(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), vec3(screen_uv, ViewIndex), 0.0).x;
+#else
+			ssr_mip_level = textureLod(sampler2D(ssr_mip_level_buffer, SAMPLER_NEAREST_CLAMP), screen_uv, 0.0).x;
+#endif // USE_MULTIVIEW
+
+			ssr_mip_level *= 14.0;
+		}
+
+#ifdef USE_MULTIVIEW
+		vec4 ssr = textureLod(sampler2DArray(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(screen_uv, ViewIndex), ssr_mip_level);
+#else
+		vec4 ssr = textureLod(sampler2D(ssr_buffer, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), screen_uv, ssr_mip_level);
+#endif // USE_MULTIVIEW
+
+		if (resolve_ssr) {
+			const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+			ssr.rgb /= 1.0 - dot(ssr.rgb, rec709_luminance_weights);
+		}
+
+		// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
+		ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+
+		// Alpha is premultiplied.
+		indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;
 	}
 
 	//finalize ambient light here
@@ -2674,7 +2737,7 @@ void fragment_shader(in SceneData scene_data) {
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
+		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
 
 		float closest_dist = -1e20;
 

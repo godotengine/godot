@@ -61,7 +61,7 @@ SkinReference::~SkinReference() {
 	if (skeleton_node) {
 		skeleton_node->skin_bindings.erase(this);
 	}
-	RS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free_rid(skeleton);
 }
 
 ///////////////////////////////////////
@@ -289,13 +289,15 @@ void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_process_changed();
-			_make_dirty();
-			_make_modifiers_dirty();
-			force_update_all_dirty_bones();
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
-			update_flags = UPDATE_FLAG_POSE;
+		} break;
+		case NOTIFICATION_POST_ENTER_TREE: {
+			_make_dirty();
+			_make_modifiers_dirty();
+			force_update_all_dirty_bones();
+			update_flags |= UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
 #ifdef TOOLS_ENABLED
@@ -315,11 +317,11 @@ void Skeleton3D::_notification(int p_what) {
 			Bone *bonesptr = bones.ptr();
 			int len = bones.size();
 
-			thread_local LocalVector<bool> bone_global_pose_dirty_backup;
+			LocalVector<bool> bone_global_pose_dirty_backup;
 
 			// Process modifiers.
 
-			thread_local LocalVector<BonePoseBackup> bones_backup;
+			LocalVector<BonePoseBackup> bones_backup;
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
 				bones_backup.resize(bones.size());
@@ -929,7 +931,7 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 	dirty = true;
-	_update_deferred();
+	_update_deferred(modifiers.is_empty() ? UPDATE_FLAG_POSE : (UpdateFlag)(UPDATE_FLAG_POSE | UPDATE_FLAG_MODIFIER));
 }
 
 void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {

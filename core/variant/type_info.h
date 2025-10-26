@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 #include <type_traits>
 
@@ -205,7 +207,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	};
 
 template <typename T>
-inline StringName __constant_get_enum_name(T param, const String &p_constant) {
+inline StringName __constant_get_enum_name(T param) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
@@ -230,7 +232,7 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	};
 
 template <typename T>
-inline StringName __constant_get_bitfield_name(T param, const String &p_constant) {
+inline StringName __constant_get_bitfield_name(T param) {
 	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
@@ -242,5 +244,59 @@ struct ZeroInitializer {
 		if constexpr (std::is_scalar_v<T>) {
 			value = {};
 		}
+	}
+};
+
+namespace GodotTypeInfo {
+namespace Internal {
+
+template <typename T>
+Variant::Type get_variant_type() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return Variant::Type::OBJECT;
+	} else {
+		return GetTypeInfo<T>::VARIANT_TYPE;
+	}
+}
+
+template <typename T>
+const String get_object_class_name_or_empty() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return T::get_class_static();
+	} else {
+		return "";
+	}
+}
+
+template <typename T>
+const String get_variant_type_identifier() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return T::get_class_static();
+	} else if constexpr (std::is_same_v<Variant, T>) {
+		return "Variant";
+	} else {
+		return Variant::get_type_name(GetTypeInfo<T>::VARIANT_TYPE);
+	}
+}
+
+} //namespace Internal
+} //namespace GodotTypeInfo
+
+template <typename T>
+struct GetTypeInfo<TypedArray<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, GodotTypeInfo::Internal::get_variant_type_identifier<T>());
+	}
+};
+
+template <typename K, typename V>
+struct GetTypeInfo<TypedDictionary<K, V>> {
+	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE,
+				vformat("%s;%s", GodotTypeInfo::Internal::get_variant_type_identifier<K>(), GodotTypeInfo::Internal::get_variant_type_identifier<V>()));
 	}
 };

@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-08 05:33+0000\n"
+"PO-Revision-Date: 2025-09-16 06:20+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "აპლიკაცია"
@@ -1277,6 +1277,9 @@ msgstr "ტექსტურის შევსების გამოყე�
 
 msgid "Atlas Coords"
 msgstr "ატლასის კოორდინატები"
+
+msgid "Size in Atlas"
+msgstr "ზომა ატლასში"
 
 msgid "Speed"
 msgstr "სიჩქარე"
@@ -2748,6 +2751,9 @@ msgstr "მარჯვენა ზღვარი"
 msgid "Bottom Margin"
 msgstr "ქვედა ზღვარი"
 
+msgid "Draw Drag Margin"
+msgstr "გადათრევის საზღვრის დახატვა"
+
 msgid "Tweaks"
 msgstr "მცირე ცვლილებები"
 
@@ -3150,6 +3156,9 @@ msgstr "მოტორი"
 msgid "Target Velocity"
 msgstr "სამიზნის სიჩქარე"
 
+msgid "Bone 2D Nodepath"
+msgstr "ძვლის 2D Nodepath"
+
 msgid "Bone 2D Index"
 msgstr "ძვლის 2D ინდექსი"
 
@@ -3445,6 +3454,9 @@ msgstr "ამრეკლავი"
 
 msgid "Bake Mode"
 msgstr "ცხობის რეჟიმი"
+
+msgid "Reverse Cull Face"
+msgstr "კულინგის ზედაპირის შებრუნება"
 
 msgid "Transmittance Bias"
 msgstr "გამტარობის წანაცვლება"
@@ -6332,6 +6344,9 @@ msgstr "მაგალითი ნიღბები"
 
 msgid "Depth Draw"
 msgstr "ღრმა ხატვა"
+
+msgid "Cull"
+msgstr "კულინგი"
 
 msgid "Wireframe"
 msgstr "კარკასი"

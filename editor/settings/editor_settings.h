@@ -138,7 +138,7 @@ public:
 	static String get_newest_settings_path();
 
 	static void create();
-	void setup_language();
+	void setup_language(bool p_initial_setup);
 	void setup_network();
 	static void save();
 	static void destroy();

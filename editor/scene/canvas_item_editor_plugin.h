@@ -58,6 +58,7 @@ public:
 	Transform2D prev_xform;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
+	Vector2 prev_pivot_ratio;
 	real_t prev_anchors[4] = { (real_t)0.0 };
 
 	Transform2D pre_drag_xform;
@@ -185,6 +186,12 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
+
 	const String locked_transform_warning = TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed.");
 
 	bool selection_menu_additive_selection = false;
@@ -259,6 +266,8 @@ private:
 	real_t ruler_width_scaled = 16.0;
 	int ruler_font_size = 8;
 	Point2 node_create_position;
+	real_t grab_distance = 0.0;
+	bool simple_panning = false;
 
 	MenuOption last_option;
 
@@ -378,6 +387,9 @@ private:
 	Ref<Shortcut> set_pivot_shortcut;
 	Ref<Shortcut> multiply_grid_step_shortcut;
 	Ref<Shortcut> divide_grid_step_shortcut;
+	Ref<Shortcut> reset_transform_position_shortcut;
+	Ref<Shortcut> reset_transform_rotation_shortcut;
+	Ref<Shortcut> reset_transform_scale_shortcut;
 
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
@@ -417,6 +429,7 @@ private:
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
+	void _reset_transform(TransformType p_type);
 
 public:
 	enum ThemePreviewMode {
@@ -478,6 +491,8 @@ private:
 	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
+
+	void _commit_drag();
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
