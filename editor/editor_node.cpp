@@ -684,6 +684,47 @@ void EditorNode::_propagate_translation_notification() {
 	scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
+void EditorNode::_update_system_menu_icons(bool dark_mode) {
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_NEW_SCENE), get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_OPEN_SCENE), get_editor_theme_native_menu_icon(SNAME("PackedScene"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_SAVE_SCENE), get_editor_theme_native_menu_icon(SNAME("Save"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_QUICK_OPEN), get_editor_theme_native_menu_icon(SNAME("Load"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_UNDO), get_editor_theme_native_menu_icon(SNAME("RotateLeft"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+#ifdef MACOS_ENABLED
+	if (menu_type != MENU_TYPE_GLOBAL) {
+		file_menu->set_item_icon(file_menu->get_item_index(SCENE_QUIT), get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	}
+#else
+	file_menu->set_item_icon(file_menu->get_item_index(SCENE_QUIT), get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+#endif
+
+	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("ClassList"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_EXPORT), get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_RELOAD_CURRENT_PROJECT), get_editor_theme_native_menu_icon(SNAME("Reload"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_QUIT_TO_PROJECT_MANAGER), get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+
+#ifdef MACOS_ENABLED
+	if (menu_type != MENU_TYPE_GLOBAL) {
+		settings_menu->set_item_icon(settings_menu->get_item_index(EDITOR_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	}
+#else
+	settings_menu->set_item_icon(settings_menu->get_item_index(EDITOR_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+#endif
+	settings_menu->set_item_icon(settings_menu->get_item_index(EDITOR_TAKE_SCREENSHOT), get_editor_theme_native_menu_icon(SNAME("Image"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	settings_menu->set_item_icon(settings_menu->get_item_index(EDITOR_MANAGE_FEATURE_PROFILES), get_editor_theme_native_menu_icon(SNAME("Override"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+
+	help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+#ifdef MACOS_ENABLED
+	if (menu_type != MENU_TYPE_GLOBAL) {
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+	}
+#else
+	help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+#endif
+	help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+}
+
 void EditorNode::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
@@ -740,10 +781,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		distraction_free->set_button_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		update_distraction_free_button_theme();
 
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+		_update_system_menu_icons(dark_mode);
 
 		_update_renderer_color();
 	}
@@ -4019,10 +4057,8 @@ void EditorNode::_check_system_theme_changed() {
 		// Update system menus.
 		bool dark_mode = DisplayServer::get_singleton()->is_dark_mode();
 
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), menu_type == MENU_TYPE_GLOBAL, dark_mode));
+		_update_system_menu_icons(dark_mode);
+
 		editor_dock_manager->update_docks_menu();
 	}
 }
@@ -7898,15 +7934,15 @@ void EditorNode::set_unfocused_low_processor_usage_mode_enabled(bool p_enabled) 
 	unfocused_low_processor_usage_mode_enabled = p_enabled;
 }
 
-void EditorNode::_build_file_menu() {
+void EditorNode::_build_file_menu(bool dark_mode) {
 	if (!file_menu) {
 		return;
 	}
 	file_menu->clear(false);
 
-	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), SCENE_NEW_SCENE);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/new_scene"), SCENE_NEW_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_inherited_scene"), SCENE_NEW_INHERITED_SCENE);
-	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/open_scene"), SCENE_OPEN_SCENE);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("PackedScene"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/open_scene"), SCENE_OPEN_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), SCENE_OPEN_PREV);
 	if (!recent_scenes) {
 		recent_scenes = memnew(PopupMenu);
@@ -7916,12 +7952,12 @@ void EditorNode::_build_file_menu() {
 	file_menu->add_submenu_node_item(TTRC("Open Recent"), recent_scenes, SCENE_OPEN_RECENT);
 	file_menu->add_separator();
 
-	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), SCENE_SAVE_SCENE);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Save"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/save_scene"), SCENE_SAVE_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), SCENE_SAVE_AS_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), SCENE_SAVE_ALL_SCENES);
 	file_menu->add_separator();
 
-	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/quick_open"), SCENE_QUICK_OPEN);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Load"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/quick_open"), SCENE_QUICK_OPEN);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/quick_open_scene"), SCENE_QUICK_OPEN_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/quick_open_script"), SCENE_QUICK_OPEN_SCRIPT);
 	file_menu->add_separator();
@@ -7934,7 +7970,7 @@ void EditorNode::_build_file_menu() {
 	file_menu->add_submenu_node_item(TTRC("Export As..."), export_as_menu, SCENE_EXPORT_AS);
 	file_menu->add_separator();
 
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), SCENE_UNDO, false, true);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("RotateLeft"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("ui_undo"), SCENE_UNDO, false, true);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), SCENE_REDO, false, true);
 	file_menu->add_separator();
 
@@ -7945,21 +7981,21 @@ void EditorNode::_build_file_menu() {
 	if (menu_type != MENU_TYPE_GLOBAL) {
 		// On macOS "Quit" option is in the "app" menu.
 		file_menu->add_separator();
-		file_menu->add_shortcut(ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
+		file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
 	}
 #else
 	file_menu->add_separator();
-	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
+	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
 #endif
 }
 
-void EditorNode::_build_project_menu() {
+void EditorNode::_build_project_menu(bool dark_mode) {
 	if (!project_menu) {
 		return;
 	}
 	project_menu->clear(false);
 
-	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/project_settings"), PROJECT_OPEN_SETTINGS);
+	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ClassList"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/project_settings"), PROJECT_OPEN_SETTINGS);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), PROJECT_FIND_IN_FILES);
 	project_menu->add_separator();
 
@@ -7973,7 +8009,7 @@ void EditorNode::_build_project_menu() {
 	project_menu->set_item_submenu_node(project_menu->get_item_index(PROJECT_VERSION_CONTROL), vcs_actions_menu);
 
 	project_menu->add_separator();
-	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/export"), PROJECT_EXPORT);
+	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/export"), PROJECT_EXPORT);
 	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
 	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
 #ifndef ANDROID_ENABLED
@@ -7991,11 +8027,11 @@ void EditorNode::_build_project_menu() {
 	project_menu->add_submenu_node_item(TTRC("Tools"), tool_menu);
 
 	project_menu->add_separator();
-	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/reload_current_project"), PROJECT_RELOAD_CURRENT_PROJECT);
-	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), PROJECT_QUIT_TO_PROJECT_MANAGER, true);
+	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Reload"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/reload_current_project"), PROJECT_RELOAD_CURRENT_PROJECT);
+	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/quit_to_project_list"), PROJECT_QUIT_TO_PROJECT_MANAGER, true);
 }
 
-void EditorNode::_build_settings_menu() {
+void EditorNode::_build_settings_menu(bool dark_mode) {
 	if (!settings_menu) {
 		return;
 	}
@@ -8004,10 +8040,10 @@ void EditorNode::_build_settings_menu() {
 #ifdef MACOS_ENABLED
 	if (menu_type != MENU_TYPE_GLOBAL) {
 		// On macOS "Settings" option is in the "app" menu.
-		settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
+		settings_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 	}
 #else
-	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
+	settings_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 #endif
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/command_palette"), EDITOR_COMMAND_PALETTE);
 	settings_menu->add_separator();
@@ -8021,7 +8057,7 @@ void EditorNode::_build_settings_menu() {
 	settings_menu->add_submenu_node_item(TTRC("Editor Layout"), editor_layouts);
 	settings_menu->add_separator();
 
-	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
+	settings_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Image"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
 	settings_menu->set_item_tooltip(-1, TTRC("Screenshots are stored in the user data folder (\"user://\")."));
 
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), EDITOR_TOGGLE_FULLSCREEN);
@@ -8039,14 +8075,14 @@ void EditorNode::_build_settings_menu() {
 	settings_menu->add_separator();
 #endif
 
-	settings_menu->add_item(TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
+	settings_menu->add_icon_item(get_editor_theme_native_menu_icon(SNAME("Override"), menu_type == MENU_TYPE_GLOBAL, dark_mode), TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
 	settings_menu->add_item(TTRC("Manage Export Templates..."), EDITOR_MANAGE_EXPORT_TEMPLATES);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	settings_menu->add_item(TTRC("Configure FBX Importer..."), EDITOR_CONFIGURE_FBX_IMPORTER);
 #endif
 }
 
-void EditorNode::_build_help_menu() {
+void EditorNode::_build_help_menu(bool dark_mode) {
 	if (!help_menu) {
 		return;
 	}
@@ -8057,7 +8093,7 @@ void EditorNode::_build_help_menu() {
 	} else {
 		help_menu->set_system_menu(NativeMenu::INVALID_MENU_ID);
 	}
-	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
+
 	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, dark_mode), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
 	help_menu->add_separator();
 	help_menu->add_shortcut(ED_GET_SHORTCUT("editor/online_docs"), HELP_DOCS);
@@ -8105,10 +8141,11 @@ void EditorNode::_update_main_menu_type() {
 	menu_type = new_menu_type;
 
 	// Update menu items.
-	_build_file_menu();
-	_build_project_menu();
-	_build_settings_menu();
-	_build_help_menu();
+	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
+	_build_file_menu(dark_mode);
+	_build_project_menu(dark_mode);
+	_build_settings_menu(dark_mode);
+	_build_help_menu(dark_mode);
 
 	// Delete all menu.
 	if (main_menu_bar) {

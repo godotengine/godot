@@ -525,6 +525,7 @@ private:
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
+	void _update_system_menu_icons(bool dark_mode);
 	void _update_theme(bool p_skip_creation = false);
 	void _build_icon_type_cache();
 	void _enable_pending_addons();
@@ -715,10 +716,10 @@ private:
 	MenuType menu_type = MENU_TYPE_NONE;
 	Vector<PopupMenu *> main_menu_items;
 
-	void _build_file_menu();
-	void _build_project_menu();
-	void _build_settings_menu();
-	void _build_help_menu();
+	void _build_file_menu(bool dark_mode);
+	void _build_project_menu(bool dark_mode);
+	void _build_settings_menu(bool dark_mode);
+	void _build_help_menu(bool dark_mode);
 
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
