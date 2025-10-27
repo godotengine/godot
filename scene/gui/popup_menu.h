@@ -228,6 +228,8 @@ class PopupMenu : public Popup {
 	String _atr(int p_idx, const String &p_text) const;
 
 protected:
+	void _hover_active_submenu_item();
+
 	virtual void _pre_popup() override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
