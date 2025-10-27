@@ -91,6 +91,7 @@ class TranslationServer : public Object {
 	static inline HashMap<String, String> country_rename_map;
 	static inline HashMap<String, String> variant_map;
 	static inline HashMap<String, String> plural_rules_map;
+	static inline HashMap<String, int> num_system_map;
 
 	void init_locale_info();
 
@@ -136,6 +137,10 @@ public:
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
+
+	String format_number(const String &p_string, const String &p_locale) const;
+	String parse_number(const String &p_string, const String &p_locale) const;
+	String get_percent_sign(const String &p_locale) const;
 
 	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
