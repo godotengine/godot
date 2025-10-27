@@ -37,6 +37,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -211,6 +212,40 @@ public class GodotIO {
 			return display.getRefreshRate();
 		}
 		return fallback;
+	}
+
+	public float[] getHdrCapabilities() {
+		Activity activity = godot.getActivity();
+
+		Display display = null;
+		if (activity != null) {
+			display = activity.getWindowManager().getDefaultDisplay();
+		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			display = godot.getContext().getDisplay();
+		}
+
+		// The size and order of this array is critical, make sure it matches with java_godot_io_wrapper!
+		float[] result = new float[5];
+		if (display != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				result[0] = display.isHdr() ? 1.0f : 0.0f;
+			} else {
+				result[0] = 0.0f;
+			}
+
+			Display.HdrCapabilities capabilities = display.getHdrCapabilities();
+			result[1] = capabilities.getDesiredMinLuminance();
+			result[2] = capabilities.getDesiredMaxLuminance();
+			result[3] = capabilities.getDesiredMaxAverageLuminance();
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && display.isHdrSdrRatioAvailable()) {
+				result[4] = display.getHdrSdrRatio();
+			} else {
+				result[4] = -1.0f;
+			}
+		}
+
+		return result;
 	}
 
 	public int[] getDisplaySafeArea() {
