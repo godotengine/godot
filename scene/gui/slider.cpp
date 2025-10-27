@@ -477,6 +477,9 @@ bool Slider::is_scrollable() const {
 }
 
 void Slider::set_respect_grabber_area_min_size(bool p_respect) {
+	if (respect_grabber_area_min_size == p_respect) {
+		return;
+	}
 	respect_grabber_area_min_size = p_respect;
 	queue_redraw();
 }
