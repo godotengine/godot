@@ -69,12 +69,37 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
 				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
+
+				bool highlighted = mouse_inside || has_focus(true);
+				Ref<StyleBox> grabber_area = highlighted ? theme_cache.grabber_area_hl_style : theme_cache.grabber_area_style;
+				Size2i min_size = grabber_area->get_minimum_size();
+
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
-					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
+					int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+					double areasize = get_size().height - grab_height;
+					double effective_areasize = areasize - min_size.height + grabber->get_height() / 2 + grabber_shift;
+
+					if (respect_grabber_area_min_size && effective_areasize > 0) {
+						double click_pos_from_bottom = get_size().height - (double)grab.pos;
+						double ratio = (click_pos_from_bottom - min_size.height) / effective_areasize;
+						set_as_ratio(CLAMP(ratio, 0.0, 1.0));
+					} else {
+						set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
+					}
 				} else {
-					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
-					set_as_ratio(is_layout_rtl() ? 1 - v : v);
+					int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+					double areasize = get_size().width - grab_width;
+					double effective_areasize = areasize - min_size.width + grabber->get_width() / 2 + grabber_shift;
+
+					if (respect_grabber_area_min_size && effective_areasize > 0) {
+						double click_pos = (double)grab.pos;
+						double ratio = (click_pos - min_size.width) / effective_areasize;
+						set_as_ratio(CLAMP(is_layout_rtl() ? 1 - ratio : ratio, 0.0, 1.0));
+					} else {
+						double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+						set_as_ratio(is_layout_rtl() ? 1 - v : v);
+					}
 				}
 				set_block_signals(false);
 				grab.active = true;
@@ -111,17 +136,32 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
 			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
-			if (orientation == VERTICAL) {
-				motion = -motion;
-			} else if (is_layout_rtl()) {
+			if (orientation == VERTICAL || is_layout_rtl()) {
 				motion = -motion;
 			}
 			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
-			double umotion = motion / double(areasize);
-			set_as_ratio(grab.uvalue + umotion);
+
+			double effective_areasize = areasize;
+			if (respect_grabber_area_min_size) {
+				Ref<StyleBox> grabber_area = theme_cache.grabber_area_hl_style;
+				Size2i min_size = grabber_area->get_minimum_size();
+
+				if (orientation == VERTICAL) {
+					int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+					effective_areasize = areasize - min_size.height + grabber->get_height() / 2 + grabber_shift;
+				} else {
+					int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+					effective_areasize = areasize - min_size.width + grabber->get_width() / 2 + grabber_shift;
+				}
+			}
+
+			if (effective_areasize > 0) {
+				double umotion = motion / effective_areasize;
+				set_as_ratio(grab.uvalue + umotion);
+			}
 		}
 	}
 
