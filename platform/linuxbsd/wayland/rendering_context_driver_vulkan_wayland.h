@@ -40,6 +40,7 @@ private:
 
 protected:
 	SurfaceID surface_create(const void *p_platform_data) override final;
+	virtual bool is_colorspace_externally_managed() const override final;
 
 public:
 	struct WindowPlatformData {

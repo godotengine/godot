@@ -185,10 +185,11 @@ public:
 
 	// Tonemap
 	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
+	virtual void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) = 0;
 
 	virtual RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const = 0;
 	virtual float environment_get_exposure(RID p_env) const = 0;
-	virtual float environment_get_white(RID p_env) const = 0;
+	virtual float environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const = 0;
 
 	// Fog
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
@@ -341,13 +342,13 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
-	virtual void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas) = 0;
+	virtual void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas, float p_window_output_max_value) = 0;
 
 	struct RenderInfo {
 		int info[RS::VIEWPORT_RENDER_INFO_TYPE_MAX][RS::VIEWPORT_RENDER_INFO_MAX] = {};
 	};
 
-	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, float p_window_output_max_value, RenderInfo *r_render_info = nullptr) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;
