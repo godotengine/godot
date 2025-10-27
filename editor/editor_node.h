@@ -395,6 +395,9 @@ private:
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
 
+	PopupMenu *plugins_menu = nullptr;
+	HashMap<String, String> pending_plugin_reload;
+
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
@@ -676,6 +679,9 @@ private:
 
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
+
+	void _update_plugins_menu();
+	void _plugins_menu_option(int p_id);
 
 	void _update_addon_config();
 
