@@ -478,9 +478,7 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 		ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
 		pos_warning->set_control(control);
 		add_custom_control(pos_warning);
-	}
-
-	else if (p_group == "Theme") {
+	} else if (p_group == "Theme") {
 		String hint_text = "Convert Overrides to Type Variation";
 
 		if (control->get_theme_type_variation() != "") {
