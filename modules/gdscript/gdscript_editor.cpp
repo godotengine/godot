@@ -5041,6 +5041,11 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 							_refactor_rename_symbol_match_from_class(context, p_symbol, p_path, type_datatype.class_type->get_datatype().script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, type_datatype.class_type);
 							REFACTOR_RENAME_RETURN(OK);
 						} break;
+						case GDScriptParser::DataType::BUILTIN: {
+							// `void` case.
+							REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_NAME);
+							REFACTOR_RENAME_RETURN(OK);
+						} break;
 						default: {
 							// Do nothing.
 						}

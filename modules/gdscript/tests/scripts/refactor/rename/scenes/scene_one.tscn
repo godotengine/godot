@@ -24,6 +24,12 @@ func test() -> ClassA:
 resource_name = "InternalScript2"
 script/source = "extends Control
 
+enum InternalScriptEnum {
+	INTERNAL_SCRIPT_ENUM_ONE = 1,
+	INTERNAL_SCRIPT_ENUM_TWO = 20,
+	INTERNAL_SCRIPT_ENUM_THREE = 200,
+}
+
 signal inner_script_signal
 @export var class_a_instance: ClassA
 
