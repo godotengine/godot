@@ -1232,3 +1232,32 @@ static const char *plural_rules[][2] = {
 	{ "cy", "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n==3 ? 3 : n==6 ? 4 : 5);" },
 	{ nullptr, nullptr }
 };
+
+static const struct NumSystemData {
+	const char *locales;
+	const char32_t *digits;
+	const char32_t *percent_sign;
+	const char32_t *exp_l;
+	const char32_t *exp_u;
+} num_system_data[] = {
+	// Eastern Arabic numerals.
+	{ "ar ar_AE ar_BH ar_DJ ar_EG ar_ER ar_IL ar_IQ ar_JO ar_KM ar_KW ar_LB ar_MR ar_OM ar_PS ar_QA ar_SA ar_SD ar_SO ar_SS ar_SY ar_TD ar_YE ckb ckb_IQ ckb_IR sd sd_PK sd_Arab sd_Arab_PK", U"٠١٢٣٤٥٦٧٨٩٫", U"٪", U"اس", U"اس" },
+	// Persian and Urdu numerals.
+	{ "fa fa_AF fa_IR ks ks_IN ks_Arab ks_Arab_IN lrc lrc_IQ lrc_IR mzn mzn_IR pa_PK pa_Arab pa_Arab_PK ps ps_AF ps_PK ur_IN uz_AF uz_Arab uz_Arab_AF", U"۰۱۲۳۴۵۶۷۸۹٫", U"٪", U"اس", U"اس" },
+	// Bengali numerals.
+	{ "as as_IN bn bn_BD bn_IN mni mni_IN mni_Beng mni_Beng_IN", U"০১২৩৪৫৬৭৮৯.", U"%", U"e", U"E" },
+	// Devanagari numerals.
+	{ "mr mr_IN ne ne_IN ne_NP sa sa_IN", U"०१२३४५६७८९.", U"%", U"e", U"E" },
+	// Dzongkha numerals.
+	{ "dz dz_BT", U"༠༡༢༣༤༥༦༧༨༩.", U"%", U"e", U"E" },
+	// Santali numerals.
+	{ "sat sat_IN sat_Olck sat_Olck_IN", U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.", U"%", U"e", U"E" },
+	// Burmese numerals.
+	{ "my my_MM", U"၀၁၂၃၄၅၆၇၈၉.", U"%", U"e", U"E" },
+	// Chakma numerals.
+	{ "ccp ccp_BD ccp_IN", U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.", U"%", U"e", U"E" },
+	// Adlam numerals.
+	{ "ff ff_Adlm_BF ff_Adlm_CM ff_Adlm_GH ff_Adlm_GM ff_Adlm_GN ff_Adlm_GW ff_Adlm_LR ff_Adlm_MR ff_Adlm_NE ff_Adlm_NG ff_Adlm_SL ff_Adlm_SN", U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.", U"%", U"𞤉", U"𞤉" },
+	// End sentinel.
+	{ nullptr, nullptr, nullptr, nullptr, nullptr }
+};

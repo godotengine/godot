@@ -31,6 +31,7 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -116,29 +117,31 @@ void EditorProfiler::clear() {
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
-static String _get_percent_txt(float p_value, float p_total) {
-	if (p_total == 0) {
-		p_total = 0.00001;
-	}
-
-	return TS->format_number(String::num((p_value / p_total) * 100, 1)) + TS->percent_sign();
-}
-
 String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_calls) {
-	const int dmode = display_mode->get_selected();
+	const String &lang = _get_locale();
+	const TranslationServer *ts = TranslationServer::get_singleton();
 
-	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(rtos(p_time * 1000).pad_decimals(2)) + " " + TTR("ms");
-	} else if (dmode == DISPLAY_AVERAGE_TIME) {
-		if (p_calls == 0) {
-			return TS->format_number("0.00") + " " + TTR("ms");
-		} else {
-			return TS->format_number(rtos((p_time / p_calls) * 1000).pad_decimals(2)) + " " + TTR("ms");
-		}
-	} else if (dmode == DISPLAY_FRAME_PERCENT) {
-		return _get_percent_txt(p_time, m.frame_time);
-	} else if (dmode == DISPLAY_PHYSICS_FRAME_PERCENT) {
-		return _get_percent_txt(p_time, m.physics_frame_time);
+	switch (display_mode->get_selected()) {
+		case DISPLAY_FRAME_TIME: {
+			return ts->format_number(rtos(p_time * 1000).pad_decimals(2), lang) + " " + TTR("ms");
+		} break;
+
+		case DISPLAY_AVERAGE_TIME: {
+			if (p_calls == 0) {
+				return ts->format_number("0.00", lang) + " " + TTR("ms");
+			}
+			return ts->format_number(rtos((p_time / p_calls) * 1000).pad_decimals(2), lang) + " " + TTR("ms");
+		} break;
+
+		case DISPLAY_FRAME_PERCENT: {
+			float total = m.frame_time == 0 ? 0.00001 : m.frame_time;
+			return ts->format_number(String::num((p_time / total) * 100, 1), lang) + ts->get_percent_sign(lang);
+		} break;
+
+		case DISPLAY_PHYSICS_FRAME_PERCENT: {
+			float total = m.physics_frame_time == 0 ? 0.00001 : m.physics_frame_time;
+			return ts->format_number(String::num((p_time / total) * 100, 1), lang) + ts->get_percent_sign(lang);
+		} break;
 	}
 
 	return "err";

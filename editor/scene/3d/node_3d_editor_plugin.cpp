@@ -36,6 +36,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -3230,7 +3231,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				geometry->surface_end();
 
 				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
+				ruler_label->set_text(TranslationServer::get_singleton()->format_number(vformat("%.3f m", distance), _get_locale()));
 
 				Vector3 center = (start_pos + end_pos) / 2;
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);

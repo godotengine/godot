@@ -36,6 +36,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/main/timer.h"
@@ -252,7 +253,7 @@ String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index,
 		if (p_list_items[i]->list_type == LIST_NUMBERS) {
 			segment = itos(p_list_index[i]);
 			if (is_localizing_numeral_system()) {
-				segment = TS->format_number(segment, _find_language(p_item));
+				segment = TranslationServer::get_singleton()->format_number(segment, _find_language(p_item));
 			}
 			segments++;
 		} else if (p_list_items[i]->list_type == LIST_LETTERS) {
