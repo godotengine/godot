@@ -152,7 +152,7 @@ public:
 
 	virtual AABB get_aabb() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;
-	
+
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
 
