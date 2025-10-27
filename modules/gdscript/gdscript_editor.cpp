@@ -4672,7 +4672,9 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 	r_result.error = (err);         \
 	return err;
 
-	r_result.symbol = p_symbol;
+	String symbol = p_symbol;
+
+	r_result.symbol = symbol;
 	r_result.code = p_code;
 
 	if (ClassDB::class_exists(p_symbol)) {
@@ -4718,6 +4720,11 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 
 	GDScriptParser::RefactorRenameContext context = parser.get_refactor_rename_context();
 	context.base = p_owner;
+
+	if (context.node->type == GDScriptParser::Node::Type::LITERAL) {
+		symbol = ((GDScriptParser::LiteralNode *)context.node)->value;
+		r_result.symbol = symbol;
+	}
 
 	// Allows class functions with the names like built-ins to be handled properly.
 	if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_ATTRIBUTE) {
@@ -4780,6 +4787,8 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 
 	switch (context.type) {
 		case GDScriptParser::REFACTOR_RENAME_TYPE_LITERAL: {
+			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(ScriptLanguage::RefactorRenameSymbolResultType::REFACTOR_RENAME_SYMBOL_RESULT_LITERAL);
+			REFACTOR_RENAME_RETURN(OK);
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD: {
 			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(ScriptLanguage::RefactorRenameSymbolResultType::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT);

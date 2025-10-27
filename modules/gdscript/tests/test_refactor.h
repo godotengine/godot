@@ -220,7 +220,6 @@ static void run_test_cfg(const String &p_config_path) {
 		ProcessCodeData data;
 		Error err = process_code(gdscript->get_source_code(), Point2i(refactor_column, refactor_line), data);
 		FAIL_COND_MSG(err != OK, "couldn't process code");
-		FAIL_COND_MSG(data.symbol != refactor_symbol, vformat("symbol found (%s) doesn't match with the symbol specified in the configuration file (%s)", data.symbol, refactor_symbol));
 
 		ScriptLanguage::RefactorRenameSymbolResult refactor_result;
 		const HashMap<String, String> unsaved_scripts_code;
@@ -228,6 +227,8 @@ static void run_test_cfg(const String &p_config_path) {
 
 		Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(data.code, data.symbol, refactor_file, owner, unsaved_scripts_code, refactor_result);
 		FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
+
+		FAIL_COND_MSG(refactor_result.symbol != refactor_symbol, vformat("symbol found (%s) doesn't match with the symbol specified in the configuration file (%s)", refactor_result.symbol, refactor_symbol));
 
 		CHECK(outside_refactor == refactor_result.outside_refactor);
 		if (!outside_refactor) {

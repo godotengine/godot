@@ -34,6 +34,7 @@ signal signal_of_b
 var property_of_b
 
 func func_of_b():
+	property_of_b = (4.2515152 + 13282.414281) / 213.1239
 	print(property_of_b)
 	signal_of_b.emit()
 	pass
