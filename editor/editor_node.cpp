@@ -7897,6 +7897,8 @@ EditorNode::EditorNode() {
 	theme = EditorThemeManager::generate_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
+	EDITOR_DEF("_export_preset_advanced_mode", false); // Could be accessed in EditorExportPreset.
+
 	register_exporters();
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTRC("Pan View"), Key::SPACE);
