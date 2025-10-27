@@ -64,6 +64,7 @@ public:
 	virtual void set_ipv6_only_enabled(bool p_enabled) override;
 	virtual void set_tcp_no_delay_enabled(bool p_enabled) override;
 	virtual void set_reuse_address_enabled(bool p_enabled) override;
+	virtual void set_reuse_port_enabled(bool p_enabled) override;
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 
@@ -197,6 +198,8 @@ void MockNetSocket::set_ipv6_only_enabled(bool p_enabled) {}
 void MockNetSocket::set_tcp_no_delay_enabled(bool p_enabled) {}
 
 void MockNetSocket::set_reuse_address_enabled(bool p_enabled) {}
+
+void MockNetSocket::set_reuse_port_enabled(bool p_enabled) {}
 
 Error MockNetSocket::join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) {
 	return OK;
