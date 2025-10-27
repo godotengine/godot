@@ -2557,8 +2557,7 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	return I;
 }
 
-HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator
-SceneTreeEditor::NodeCache::find_by_item(TreeItem *p_item) {
+HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::find_by_item(TreeItem *p_item) {
 	for (HashMap<Node *, CachedNode>::Iterator I = cache.begin(); I; ++I) {
 		if (I->value.item == p_item) {
 			return I;

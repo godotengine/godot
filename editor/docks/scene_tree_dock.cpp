@@ -1521,8 +1521,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_TOGGLE_SCENE_EXPOSE_NODE: {
-			const List<Node *>::Element *first_selected =
-					editor_selection->get_top_selected_node_list().front();
+			const List<Node *>::Element *first_selected = editor_selection->get_top_selected_node_list().front();
 			if (first_selected == nullptr) {
 				return;
 			}
