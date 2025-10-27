@@ -3389,6 +3389,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
+		// Enable HDR if requested and available.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR) && RD::get_singleton() && RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HDR_OUTPUT)) {
+			bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+			DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+		}
+
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
