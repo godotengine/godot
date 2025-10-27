@@ -154,9 +154,7 @@ static void run_test_cfg(const String &p_config_path) {
 	String config_path = ProjectSettings::get_singleton()->localize_path(p_config_path);
 
 	String file_message = vformat("[File] %s", config_path);
-	// SUBCASE(file_message.utf8().get_data()) {
-	INFO(vformat("=> %s", file_message));
-	if (true) {
+	SUBCASE(file_message.utf8().get_data()) {
 		ConfigFile conf;
 		FAIL_COND_MSG(conf.load(config_path) != OK, vformat("No config file found at \"%s\".", config_path));
 
