@@ -532,11 +532,12 @@ void Tween::_bind_methods() {
 }
 
 Tween::Tween() {
-	ERR_FAIL_MSG("Tween can't be created directly. Use create_tween() method.");
+	dead = true;
 }
 
 Tween::Tween(SceneTree *p_parent_tree) {
 	parent_tree = p_parent_tree;
+	running = true;
 	valid = true;
 }
 
