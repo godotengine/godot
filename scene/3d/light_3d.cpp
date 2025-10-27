@@ -221,6 +221,16 @@ Ref<Texture2D> Light3D::get_projector() const {
 	return projector;
 }
 
+void Light3D::set_extra_cull_margin(float p_margin) {
+	ERR_FAIL_COND(p_margin < 0);
+	extra_cull_margin = p_margin;
+	RS::get_singleton()->instance_set_extra_visibility_margin(get_instance(), extra_cull_margin);
+}
+
+float Light3D::get_extra_cull_margin() const {
+	return extra_cull_margin;
+}
+
 void Light3D::owner_changed_notify() {
 	// For cases where owner changes _after_ entering tree (as example, editor editing).
 	_update_visibility();
@@ -381,6 +391,9 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
 	ClassDB::bind_method(D_METHOD("get_correlated_color"), &Light3D::get_correlated_color);
 
+	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &Light3D::set_extra_cull_margin);
+	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &Light3D::get_extra_cull_margin);
+
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lux", PROPERTY_HINT_RANGE, "0,150000.0,0.01,or_greater,suffix:lx"), "set_param", "get_param", PARAM_INTENSITY);
@@ -397,6 +410,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_bake_mode", "get_bake_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "light_extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_shadow", "has_shadow");
