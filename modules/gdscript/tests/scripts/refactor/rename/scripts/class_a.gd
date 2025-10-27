@@ -39,7 +39,7 @@ func _func_of_a_underscore():
 	pass
 
 
-static func func_of_a_static():
+static func func_of_a_static() -> void:
 	pass
 
 func func_of_a_args(a: int):
