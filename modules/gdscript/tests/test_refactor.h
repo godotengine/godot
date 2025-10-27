@@ -209,10 +209,15 @@ static void run_test_cfg(const String &p_config_path) {
 			}
 		}
 
+		// [output] outside_refactor
 		FAIL_COND_MSG(conf.get_value("output", "outside_refactor", false).get_type() != Variant::Type::BOOL, "output.outside_refactor is not of type bool");
 		bool outside_refactor = conf.get_value("output", "outside_refactor", false);
+		// [output] refactor_has_failed
 		FAIL_COND_MSG(conf.get_value("output", "refactor_failed", false).get_type() != Variant::Type::BOOL, "output.refactor_failed is not of type bool");
 		bool refactor_has_failed = conf.get_value("output", "refactor_failed", false);
+		// [output] refactor_result_type
+		FAIL_COND_MSG(conf.get_value("output", "refactor_result_type", "").get_type() != Variant::Type::STRING, "output.refactor_result_type is not of type String");
+		String refactor_result_type = conf.get_value("output", "refactor_result_type", "");
 
 		Ref<GDScript> gdscript = ResourceLoader::load(refactor_file);
 		FAIL_COND_MSG(gdscript.is_null(), vformat("couldn't load script \"%s\"", refactor_file));
@@ -237,6 +242,76 @@ static void run_test_cfg(const String &p_config_path) {
 
 		if (!refactor_to.is_empty()) {
 			CHECK(refactor_to == refactor_result.new_symbol);
+		}
+
+		if (!refactor_result_type.is_empty()) {
+			String refactor_result_type_as_string;
+			switch (refactor_result.type) {
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_NONE: {
+					refactor_result_type_as_string = "NONE";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CONTROL_FLOW: {
+					refactor_result_type_as_string = "CONTROL_FLOW";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_LITERAL: {
+					refactor_result_type_as_string = "LITERAL";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD: {
+					refactor_result_type_as_string = "KEYWORD";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_NATIVE: {
+					refactor_result_type_as_string = "NATIVE";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_NOT_EXPOSED: {
+					refactor_result_type_as_string = "NOT_EXPOSED";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_SCRIPT: {
+					refactor_result_type_as_string = "SCRIPT";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_GLOBAL_CLASS_NAME: {
+					refactor_result_type_as_string = "GLOBAL_CLASS_NAME";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_NAME: {
+					refactor_result_type_as_string = "CLASS_NAME";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT: {
+					refactor_result_type_as_string = "CLASS_CONSTANT";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_PROPERTY: {
+					refactor_result_type_as_string = "CLASS_PROPERTY";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_METHOD: {
+					refactor_result_type_as_string = "CLASS_METHOD";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_SIGNAL: {
+					refactor_result_type_as_string = "CLASS_SIGNAL";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_ENUM: {
+					refactor_result_type_as_string = "CLASS_ENUM";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_ENUM_VALUE: {
+					refactor_result_type_as_string = "CLASS_ENUM_VALUE";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_CLASS_ANNOTATION: {
+					refactor_result_type_as_string = "CLASS_ANNOTATION";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_LOCAL_CONSTANT: {
+					refactor_result_type_as_string = "LOCAL_CONSTANT";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_LOCAL_VARIABLE: {
+					refactor_result_type_as_string = "LOCAL_VARIABLE";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_LOCAL_FOR_VARIABLE: {
+					refactor_result_type_as_string = "LOCAL_FOR_VARIABLE";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_LOCAL_PATTERN_BIND: {
+					refactor_result_type_as_string = "LOCAL_PATTERN_BIND";
+				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_MAX: {
+					refactor_result_type_as_string = "MAX";
+				} break;
+			}
+			CHECK(refactor_result_type == refactor_result_type_as_string);
 		}
 
 		auto indent_string = [](const String &p_text, uint8_t p_size) -> String {
