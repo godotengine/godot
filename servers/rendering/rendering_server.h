@@ -346,6 +346,7 @@ public:
 	virtual void reflection_probe_set_update_mode(RID p_probe, RSE::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
 	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) = 0;
+	virtual void reflection_probe_queue_update(RID p_probe) = 0;
 
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RSE::ReflectionProbeAmbientMode p_mode) = 0;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
