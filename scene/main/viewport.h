@@ -401,6 +401,7 @@ private:
 		bool drag_successful = false;
 		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
+		int drag_threshold = 10;
 
 		Window *subwindow_focused = nullptr;
 		Window *currently_dragged_subwindow = nullptr;
@@ -705,6 +706,9 @@ public:
 	TypedArray<Window> get_embedded_subwindows() const;
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
+
+	void set_drag_threshold(int p_threshold);
+	int get_drag_threshold() const;
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window();
