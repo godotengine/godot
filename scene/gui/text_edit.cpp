@@ -7095,6 +7095,7 @@ Color TextEdit::get_font_color() const {
 void TextEdit::_bind_methods() {
 	/* Text */
 	// Text properties
+	ClassDB::bind_method(D_METHOD("get_text_canvas_item"), &TextEdit::get_text_canvas_item);
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &TextEdit::has_ime_text);
 	ClassDB::bind_method(D_METHOD("cancel_ime"), &TextEdit::cancel_ime);
 	ClassDB::bind_method(D_METHOD("apply_ime"), &TextEdit::apply_ime);
