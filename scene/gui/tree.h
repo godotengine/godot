@@ -140,7 +140,6 @@ private:
 
 	bool collapsed = false; // Won't show children.
 	bool visible = true;
-	bool exposed = false;
 	bool parent_visible_in_tree = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
