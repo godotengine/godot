@@ -40,9 +40,11 @@
 
 class CheckBox;
 class CheckButton;
+class ConfirmationDialog;
 class EditorSelection;
 class GridContainer;
 class Label;
+class LineEdit;
 class OptionButton;
 class PanelContainer;
 class PopupPanel;
@@ -134,7 +136,7 @@ class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	bool inside_control_category = false;
 
 	Ref<Theme> theme;
-	Control *control = nullptr;
+	Control *current_control = nullptr;
 	void _on_create_variation_confirmed();
 	void _on_convert_theme_overrides_to_variation(Control *p_control);
 

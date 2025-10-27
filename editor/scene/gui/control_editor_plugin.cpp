@@ -495,8 +495,8 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
 	// If this Control doesn't currently have a type variation, we want to prompt
 	// the user for one.
-	control = p_control;
-	if (control->get_theme_type_variation() == "") {
+	current_control = p_control;
+	if (current_control->get_theme_type_variation() == "") {
 		create_new_variation_line_edit->set_text("");
 		create_new_variation_dialog->reset_size();
 		create_new_variation_dialog->popup_centered();
@@ -506,7 +506,7 @@ void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Cont
 	// If it *does* have a type variation, we want to push these changes to it
 	// instead.
 	else {
-		control->create_variation_from_overrides("");
+		current_control->create_variation_from_overrides("");
 	}
 }
 
@@ -515,7 +515,7 @@ void EditorInspectorPluginControl::_on_create_variation_confirmed() {
 	// So we need to pop up some kind of error if the user tries to explicitly enter
 	// an empty string.
 	StringName variation_name = create_new_variation_line_edit->get_text();
-	control->create_variation_from_overrides(variation_name);
+	current_control->create_variation_from_overrides(variation_name);
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
