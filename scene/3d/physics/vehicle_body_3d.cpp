@@ -307,7 +307,6 @@ void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_contact_body"), &VehicleWheel3D::get_contact_body);
 	ClassDB::bind_method(D_METHOD("get_contact_point"), &VehicleWheel3D::get_contact_point);
 	ClassDB::bind_method(D_METHOD("get_contact_normal"), &VehicleWheel3D::get_contact_normal);
-	//add new binding for get_contact_normal_force
 	ClassDB::bind_method(D_METHOD("get_contact_normal_force"), &VehicleWheel3D::get_contact_normal_force);
 
 	ClassDB::bind_method(D_METHOD("set_roll_influence", "roll_influence"), &VehicleWheel3D::set_roll_influence);
