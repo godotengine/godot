@@ -67,20 +67,6 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	price->set_text(p_cost);
 }
 
-// TODO: Refactor this method to use the TextServer.
-void EditorAssetLibraryItem::clamp_width(int p_max_width) {
-	int text_pixel_width = title->get_button_font()->get_string_size(title_text).x * EDSCALE;
-
-	if (text_pixel_width > p_max_width) {
-		// Truncate title text to within the current column width.
-		int max_length = p_max_width / (text_pixel_width / title_text.length());
-		String truncated_text = title_text.left(max_length - 3) + "...";
-		title->set_text(truncated_text);
-	} else {
-		title->set_text(title_text);
-	}
-}
-
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
 	ERR_FAIL_COND(p_type != EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index != 0);
@@ -148,11 +134,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	title = memnew(LinkButton);
 	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
+	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
 	category->set_accessibility_name(TTRC("Category"));
+	category->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
@@ -162,6 +150,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	author = memnew(LinkButton);
 	author->set_tooltip_text(TTRC("Author"));
+	author->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	author->set_accessibility_name(TTRC("Author"));
 	author_price_hbox->add_child(author);
 
@@ -1398,7 +1387,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
 				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
-				item->clamp_width(asset_items_column_width);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
 				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
@@ -1533,16 +1521,6 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 
 	if (new_columns != asset_items->get_columns()) {
 		asset_items->set_columns(new_columns);
-	}
-
-	asset_items_column_width = (get_size().x / new_columns) - (120 * EDSCALE);
-
-	for (int i = 0; i < asset_items->get_child_count(); i++) {
-		EditorAssetLibraryItem *item = Object::cast_to<EditorAssetLibraryItem>(asset_items->get_child(i));
-		if (!item || !item->is_visible()) {
-			continue;
-		}
-		item->clamp_width(asset_items_column_width);
 	}
 }
 
