@@ -158,6 +158,13 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
+		<method name="reversed" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+				Returns a reversed copy of this array. See also [method reverse].
+				[b]Note:[/b] This method creates a copy, which may have a noticeable performance cost. To perform in-place reversal instead, use [method reverse].
+			</description>
+		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Color" />

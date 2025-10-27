@@ -701,6 +701,12 @@
 				Reverses the order of all elements in the array.
 			</description>
 		</method>
+		<method name="reversed" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns a reversed copy of this array. See also [method reverse].
+			</description>
+		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="Variant" />
