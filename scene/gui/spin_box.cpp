@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/string/translation_server.h"
 #include "scene/theme/theme_db.h"
 
 void SpinBoxLineEdit::_accessibility_action_inc(const Variant &p_data) {
@@ -88,7 +89,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
 	String value = String::num(get_value(), Math::range_step_decimals(step));
 	if (is_localizing_numeral_system()) {
-		value = TS->format_number(value, _get_locale());
+		value = TranslationServer::get_singleton()->format_number(value, _get_locale());
 	}
 
 	if (p_only_update_if_value_changed && value == last_text_value) {
@@ -139,7 +140,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 	const String &lang = _get_locale();
 	text = text.replace_char(';', ',');
-	text = TS->parse_number(text, lang);
+	text = TranslationServer::get_singleton()->parse_number(text, lang);
 	// Ignore the prefix and suffix in the expression.
 	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
@@ -148,7 +149,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
-		text = TS->parse_number(text, lang);
+		text = TranslationServer::get_singleton()->parse_number(text, lang);
 		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 		err = expr->parse(text);
