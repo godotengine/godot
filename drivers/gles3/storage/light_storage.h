@@ -57,6 +57,7 @@ struct Light {
 	RSE::LightBakeMode bake_mode = RSE::LIGHT_BAKE_DYNAMIC;
 	uint32_t max_sdfgi_cascade = 2;
 	uint32_t cull_mask = 0xFFFFFFFF;
+	float extra_cull_margin = 0.0;
 	uint32_t shadow_caster_mask = 0xFFFFFFFF;
 	bool distance_fade = false;
 	real_t distance_fade_begin = 40.0;
@@ -330,6 +331,7 @@ public:
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
+	virtual void light_set_extra_cull_margin(RID p_light, float p_margin) override;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override;
 

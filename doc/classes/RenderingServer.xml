@@ -2178,6 +2178,14 @@
 				Sets the distance fade for this 3D light. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
 			</description>
 		</method>
+		<method name="light_set_extra_cull_margin">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+				Sets the extra cull margin for this light, allowing it to not get culled by the Forward+ clustering algorithm. Set along with [member Light3D.light_extra_cull_margin]. This allows vertex lights to not get culled early while their influence is still visible on screen.
+			</description>
+		</method>
 		<method name="light_set_max_sdfgi_cascade">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
