@@ -5,9 +5,9 @@ class_name ClassA
 class InnerA:
 	class InnerInnerA:
 		enum EnumOfInnerInnerA {
-		ENUM_VALUE_1,
-		ENUM_VALUE_2,
-	}
+			ENUM_VALUE_1,
+			ENUM_VALUE_2,
+		}
 
 	enum EnumOfInnerA {
 		ENUM_VALUE_1,
