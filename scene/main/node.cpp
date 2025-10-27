@@ -2932,6 +2932,10 @@ Node *Node::duplicate(int p_flags) const {
 
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
+	if (p_flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
+
 	_duplicate_properties(this, this, dupe, p_flags);
 
 	if (p_flags & DUPLICATE_SIGNALS) {
@@ -2951,6 +2955,10 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	Node *dupe = _duplicate(flags, &r_duplimap);
 
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
+	if (flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
 
 	_duplicate_properties(this, this, dupe, flags);
 
@@ -3024,6 +3032,20 @@ void Node::_emit_editor_state_changed() {
 }
 #endif
 
+void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
+	bool is_valid = false;
+	Variant scr = p_original->get(CoreStringName(script), &is_valid);
+	if (is_valid) {
+		p_copy->set(CoreStringName(script), scr);
+	}
+
+	for (int i = 0; i < p_original->get_child_count(false); i++) {
+		Node *copy_child = p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
+		_duplicate_scripts(p_original->get_child(i, false), copy_child);
+	}
+}
+
 // Duplicate node's properties.
 // This has to be called after nodes have been duplicated since there might be properties
 // of type Node that can be updated properly only if duplicated node tree is complete.
@@ -3031,13 +3053,6 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 	List<PropertyInfo> props;
 	p_original->get_property_list(&props);
 	const StringName &script_property_name = CoreStringName(script);
-	if (p_flags & DUPLICATE_SCRIPTS) {
-		bool is_valid = false;
-		Variant scr = p_original->get(script_property_name, &is_valid);
-		if (is_valid) {
-			p_copy->set(script_property_name, scr);
-		}
-	}
 	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
