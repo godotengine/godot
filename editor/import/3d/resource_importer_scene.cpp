@@ -1482,6 +1482,13 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+	if (!isroot && node_settings.has("import/exposed")) {
+		if (bool(node_settings["import/exposed"])) {
+			p_node->set_meta(META_EXPOSED_IN_OWNER, true);
+			p_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, true);
+		}
+	}
+
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
@@ -2120,10 +2127,12 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "node/node_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/exposed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/exposed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
@@ -2205,6 +2214,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/exposed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_velocity_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_angular_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
@@ -2218,6 +2228,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/exposed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rest_pose/load_pose", PROPERTY_HINT_ENUM, "Default Pose,Use AnimationPlayer,Load External Animation", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "rest_pose/external_animation_library", PROPERTY_HINT_RESOURCE_TYPE, "Animation,AnimationLibrary", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "rest_pose/selected_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), ""));
@@ -2772,7 +2783,12 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_STATIC);
 			} break;
 		}
-
+		if (src_mesh_node->has_meta(META_EXPOSED_IN_OWNER)) {
+			mesh_node->set_meta(META_EXPOSED_IN_OWNER, true);
+		}
+		if (mesh_node->get_owner() != nullptr) {
+			mesh_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
+		}
 		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
 		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
 		mesh_node->set_visible(src_mesh_node->is_visible());

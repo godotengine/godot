@@ -5201,6 +5201,15 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_path));
 	}
 
+	Vector<NodePath> exposed_nodes = scene->get_state()->get_exposed_nodes();
+	instantiated_scene->set_meta(META_CONTAINS_EXPOSED_NODES, exposed_nodes.size() > 0);
+	for (const NodePath &e_path : exposed_nodes) {
+		Node *ei = instantiated_scene->get_node_or_null(e_path);
+		if (ei) {
+			ei->set_meta(META_EXPOSED_IN_INSTANCE, true);
+		}
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(p_parent, "add_child", instantiated_scene, true);
 	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
