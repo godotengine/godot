@@ -101,7 +101,7 @@ private:
 			// Allocate on demand to save memory.
 
 			uint32_t real_capacity = this->_capacity_mask + 1;
-			this->_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
+			this->_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static_zeroed(sizeof(RawAHashTableMetadata) * real_capacity));
 			_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (this->_get_resize_count(this->_capacity_mask) + 1)));
 		}
 
@@ -125,7 +125,7 @@ private:
 			return;
 		}
 
-		this->_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static(sizeof(Metadata) * real_capacity));
+		this->_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static(sizeof(RawAHashTableMetadata) * real_capacity));
 		_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (this->_get_resize_count(this->_capacity_mask) + 1)));
 
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
@@ -138,7 +138,7 @@ private:
 			}
 		}
 
-		memcpy(this->_metadata, p_other._metadata, sizeof(Metadata) * real_capacity);
+		memcpy(this->_metadata, p_other._metadata, sizeof(RawAHashTableMetadata) * real_capacity);
 	}
 
 public:
@@ -156,7 +156,7 @@ public:
 			return;
 		}
 
-		memset(this->_metadata, EMPTY_HASH, (this->_capacity_mask + 1) * sizeof(Metadata));
+		memset(this->_metadata, RAHT_EMPTY_HASH, (this->_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < this->_size; i++) {
 				_elements[i].key.~TKey();
@@ -221,14 +221,14 @@ public:
 		}
 
 		uint32_t next_meta_idx = (meta_idx + 1) & this->_capacity_mask;
-		while (this->_metadata[next_meta_idx].hash != EMPTY_HASH && this->_get_probe_length(next_meta_idx, this->_metadata[next_meta_idx].hash, this->_capacity_mask) != 0) {
+		while (this->_metadata[next_meta_idx].hash != RAHT_EMPTY_HASH && this->_get_probe_length(next_meta_idx, this->_metadata[next_meta_idx].hash, this->_capacity_mask) != 0) {
 			SWAP(this->_metadata[next_meta_idx], this->_metadata[meta_idx]);
 
 			meta_idx = next_meta_idx;
 			next_meta_idx = (next_meta_idx + 1) & this->_capacity_mask;
 		}
 
-		this->_metadata[meta_idx].hash = EMPTY_HASH;
+		this->_metadata[meta_idx].hash = RAHT_EMPTY_HASH;
 		_elements[element_idx].key.~TKey();
 		_elements[element_idx].value.~TValue();
 		this->_size--;
@@ -258,14 +258,14 @@ public:
 		const_cast<TKey &>(element.key) = p_new_key;
 
 		uint32_t next_meta_idx = (meta_idx + 1) & this->_capacity_mask;
-		while (this->_metadata[next_meta_idx].hash != EMPTY_HASH && this->_get_probe_length(next_meta_idx, this->_metadata[next_meta_idx].hash, this->_capacity_mask) != 0) {
+		while (this->_metadata[next_meta_idx].hash != RAHT_EMPTY_HASH && this->_get_probe_length(next_meta_idx, this->_metadata[next_meta_idx].hash, this->_capacity_mask) != 0) {
 			SWAP(this->_metadata[next_meta_idx], this->_metadata[meta_idx]);
 
 			meta_idx = next_meta_idx;
 			next_meta_idx = (next_meta_idx + 1) & this->_capacity_mask;
 		}
 
-		this->_metadata[meta_idx].hash = EMPTY_HASH;
+		this->_metadata[meta_idx].hash = RAHT_EMPTY_HASH;
 
 		uint32_t hash = this->_hash(p_new_key);
 		this->_insert_metadata(hash, element_idx);
@@ -559,7 +559,7 @@ public:
 		this->_capacity_mask = next_power_of_2(this->_capacity_mask) - 1;
 	}
 	AHashMap() {
-			this->_capacity_mask = (INITIAL_CAPACITY - 1);
+			this->_capacity_mask = (RAHT_INITIAL_CAPACITY - 1);
 	}
 
 	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
@@ -581,7 +581,7 @@ public:
 			Memory::free_static(this->_metadata);
 			_elements = nullptr;
 		}
-		this->_capacity_mask = INITIAL_CAPACITY - 1;
+		this->_capacity_mask = RAHT_INITIAL_CAPACITY - 1;
 		this->_size = 0;
 	}
 

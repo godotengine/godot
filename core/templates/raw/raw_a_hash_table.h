@@ -73,24 +73,24 @@ class Variant;
  * It is recommended to use `HashMap` if `KeyValue` size is very large.
  */
 
-struct Metadata {
+struct RawAHashTableMetadata {
 	uint32_t hash;
 	uint32_t element_idx;
 };
 
 // Must be a power of two.
-static constexpr uint32_t INITIAL_CAPACITY = 16;
-static constexpr uint32_t EMPTY_HASH = 0;
-static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+static constexpr uint32_t RAHT_INITIAL_CAPACITY = 16;
+static constexpr uint32_t RAHT_EMPTY_HASH = 0;
+static_assert(RAHT_EMPTY_HASH == 0, "RAHT_EMPTY_HASH must always be 0 for the memcpy() optimization.");
 
 template <typename TKey,
 		typename Hasher,
 		typename Comparator>
 class RawAHashTable {
 protected:
-	static_assert(sizeof(Metadata) == 8);
+	static_assert(sizeof(RawAHashTableMetadata) == 8);
 
-	Metadata *_metadata = nullptr;
+	RawAHashTableMetadata *_metadata = nullptr;
 
 	// Due to optimization, this is `capacity - 1`. Use + 1 to get normal capacity.
 	uint32_t _capacity_mask = 0;
@@ -112,8 +112,8 @@ protected:
 	uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
-		if (unlikely(hash == EMPTY_HASH)) {
-			hash = EMPTY_HASH + 1;
+		if (unlikely(hash == RAHT_EMPTY_HASH)) {
+			hash = RAHT_EMPTY_HASH + 1;
 		}
 
 		return hash;
@@ -136,14 +136,14 @@ protected:
 		}
 
 		uint32_t meta_idx = p_hash & _capacity_mask;
-		Metadata metadata = _metadata[meta_idx];
+		RawAHashTableMetadata metadata = _metadata[meta_idx];
 		if (metadata.hash == p_hash && _eq(_get_key(metadata.element_idx), p_key)) {
 			r_element_idx = metadata.element_idx;
 			r_meta_idx = meta_idx;
 			return true;
 		}
 
-		if (metadata.hash == EMPTY_HASH) {
+		if (metadata.hash == RAHT_EMPTY_HASH) {
 			return false;
 		}
 
@@ -158,7 +158,7 @@ protected:
 				return true;
 			}
 
-			if (metadata.hash == EMPTY_HASH) {
+			if (metadata.hash == RAHT_EMPTY_HASH) {
 				return false;
 			}
 
@@ -174,19 +174,19 @@ protected:
 	uint32_t _insert_metadata(uint32_t p_hash, uint32_t p_element_idx) {
 		uint32_t meta_idx = p_hash & _capacity_mask;
 
-		if (_metadata[meta_idx].hash == EMPTY_HASH) {
-			_metadata[meta_idx] = Metadata{ p_hash, p_element_idx };
+		if (_metadata[meta_idx].hash == RAHT_EMPTY_HASH) {
+			_metadata[meta_idx] = RawAHashTableMetadata{ p_hash, p_element_idx };
 			return meta_idx;
 		}
 
 		uint32_t distance = 1;
 		meta_idx = (meta_idx + 1) & _capacity_mask;
-		Metadata metadata;
+		RawAHashTableMetadata metadata;
 		metadata.hash = p_hash;
 		metadata.element_idx = p_element_idx;
 
 		while (true) {
-			if (_metadata[meta_idx].hash == EMPTY_HASH) {
+			if (_metadata[meta_idx].hash == RAHT_EMPTY_HASH) {
 #ifdef DEV_ENABLED
 				if (unlikely(distance > 12)) {
 					WARN_PRINT("Excessive collision count, is the right hash function being used?");
@@ -215,15 +215,15 @@ protected:
 		uint32_t real_capacity = next_power_of_2(_capacity_mask);
 		_capacity_mask = real_capacity - 1;
 
-		Metadata *old_map_data = _metadata;
+		RawAHashTableMetadata *old_map_data = _metadata;
 
-		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
+		_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static_zeroed(sizeof(RawAHashTableMetadata) * real_capacity));
 		_resize_elements(_get_resize_count(_capacity_mask) + 1);
 
 		if (_size != 0) {
 			for (uint32_t i = 0; i < real_old_capacity; i++) {
-				Metadata metadata = old_map_data[i];
-				if (metadata.hash != EMPTY_HASH) {
+				RawAHashTableMetadata metadata = old_map_data[i];
+				if (metadata.hash != RAHT_EMPTY_HASH) {
 					_insert_metadata(metadata.hash, metadata.element_idx);
 				}
 			}
