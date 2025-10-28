@@ -6129,6 +6129,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return false;
+		case SUPPORTS_POINT_SIZE:
+			return false;
 		default:
 			return false;
 	}

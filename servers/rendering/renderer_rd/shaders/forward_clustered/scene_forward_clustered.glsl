@@ -178,6 +178,11 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
 }
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) out vec2 point_coord_interp;
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -265,7 +270,7 @@ void vertex_shader(vec3 vertex_input,
 		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
 		uint stride = 3 + 1 + 1; //particles always uses this format
 
-		uint offset = trail_size * stride * gl_InstanceIndex;
+		uint offset = trail_size * stride * INSTANCE_INDEX;
 
 #ifdef COLOR_USED
 		vec4 pcolor;
@@ -307,7 +312,7 @@ void vertex_shader(vec3 vertex_input,
 
 #else
 		uint stride = multimesh_stride();
-		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
+		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
 		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -437,6 +442,10 @@ void vertex_shader(vec3 vertex_input,
 #endif
 	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_SIZE_USED
+	float point_size = 1.0;
+#endif
 
 	{
 #CODE : VERTEX
@@ -695,6 +704,27 @@ void vertex_shader(vec3 vertex_input,
 		gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
 	}
 #endif
+
+#ifdef POINT_SIZE_USED
+	if (sc_emulate_point_size) {
+		vec2 point_coords[6] = vec2[](
+				vec2(0, 1),
+				vec2(0, 0),
+				vec2(1, 1),
+				vec2(0, 0),
+				vec2(1, 0),
+				vec2(1, 1));
+
+		vec2 point_coord = point_coords[gl_VertexIndex % 6];
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+
+#ifdef POINT_COORD_USED
+		point_coord_interp = point_coord;
+#endif
+	} else {
+		gl_PointSize = point_size;
+	}
+#endif
 }
 
 void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position, vec3 p_compressed_aabb_size,
@@ -740,7 +770,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 void main() {
 	uint instance_index = draw_call.instance_index;
 	if (!sc_multimesh()) {
-		instance_index += gl_InstanceIndex;
+		instance_index += INSTANCE_INDEX;
 	}
 
 	instance_index_interp = instance_index;
@@ -967,6 +997,11 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 12) in vec4 diffuse_light_interp;
 layout(location = 13) in vec4 specular_light_interp;
 #endif
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) in vec2 point_coord_interp;
+#endif
+
 //defines to keep compatibility with vertex
 
 #ifdef USE_MULTIVIEW
@@ -1290,6 +1325,19 @@ void fragment_shader(in SceneData scene_data) {
 			scene_data.view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_COORD_USED
+#ifdef POINT_SIZE_USED
+	vec2 point_coord;
+	if (sc_emulate_point_size) {
+		point_coord = point_coord_interp;
+	} else {
+		point_coord = gl_PointCoord;
+	}
+#else // !POINT_SIZE_USED
+	vec2 point_coord = vec2(0.5);
+#endif
+#endif
 
 	{
 #CODE : FRAGMENT
