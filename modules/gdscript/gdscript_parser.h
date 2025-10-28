@@ -504,10 +504,12 @@ public:
 	};
 
 	struct AwaitNode : public ExpressionNode {
+		IdentifierNode *identifier = nullptr;
 		ExpressionNode *to_await = nullptr;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
 			_get_nodes_push(to_await, p_nodes, p_deep);
 		}
 

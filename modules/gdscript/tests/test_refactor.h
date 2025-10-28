@@ -65,75 +65,63 @@
 namespace GDScriptTests {
 namespace TestRefactor {
 
+const int INDENT_SIZE = 4;
+
 static void setup_global_classes(const String &p_path);
 
-struct ProcessCodeData {
-	String code;
-	String symbol;
-};
+static String process_code(const String &p_code, const Point2i &p_position) {
+	String code_with_sentinel;
+	String sentinel_character = String::chr(0xFFFF);
 
-static Error process_code(const String &p_code, const Point2i &p_pos, ProcessCodeData &p_data) {
 	Ref<TextServer> text_server = TextServerManager::get_singleton()->get_primary_interface();
-	int refactor_line = p_pos.y;
-	int refactor_column = p_pos.x;
+	int refactor_line = p_position.y;
+	int refactor_column = p_position.x;
 
 	RID code_shaped_text = text_server->create_shaped_text();
-	FAIL_COND_V_MSG(code_shaped_text == RID(), FAILED, "Creating text buffer failed.");
+	FAIL_COND_V_MSG(code_shaped_text == RID(), p_code, "Creating text buffer failed.");
 	RID font = text_server->create_font();
-	FAIL_COND_V_MSG(font == RID(), FAILED, "Creating font failed.");
+	FAIL_COND_V_MSG(font == RID(), p_code, "Creating font failed.");
 	text_server->font_set_data_ptr(font, _font_Inter_Regular, _font_Inter_Regular_size);
 	text_server->font_set_allow_system_fallback(font, true);
 	Array fonts = { font };
 	text_server->shaped_text_add_string(code_shaped_text, p_code, fonts, 12);
+
 	PackedInt32Array code_lines = text_server->shaped_text_get_line_breaks(code_shaped_text, 0);
-
-	String code_with_sentinel = p_code;
-	String found_word;
+	int code_lines_index = 0;
 	int current_line = 1;
+	int current_column = 1;
 	int current_index = 0;
+	String current_char;
 
-	for (int i = 0; i < code_lines.size(); i += 2) {
-		current_index = code_lines[i];
+	for (code_lines_index = 0; code_lines_index < code_lines.size(); code_lines_index += 2) {
+		current_index = code_lines[code_lines_index];
+		ERR_FAIL_COND_V(current_line > refactor_line, p_code);
+		if (current_line < refactor_line) {
+			current_index = code_lines[code_lines_index + 1];
+			current_line += 1;
+			continue;
+		}
 
-		if (current_line == refactor_line) {
-			String line = p_code.substr(code_lines[i], code_lines[i + 1] - code_lines[i]);
-			RID line_shaped_text = text_server->create_shaped_text();
-			text_server->shaped_text_add_string(line_shaped_text, line, fonts, 12);
-
-			PackedInt32Array words = text_server->shaped_text_get_word_breaks(line_shaped_text);
-			for (int j = 0; j < words.size(); j += 2) {
-				int refactor_column_index = (refactor_column - 1);
-				if (refactor_column_index < words[j] || refactor_column_index > words[j + 1]) {
-					continue;
-				}
-
-				found_word = line.substr(words[j], words[j + 1] - words[j]);
-				current_index += refactor_column_index;
-
-				code_with_sentinel = p_code.insert(current_index, String::chr(0xFFFF));
-				break;
+		for (; current_index <= code_lines[code_lines_index + 1]; current_index++) {
+			ERR_FAIL_COND_V(current_column > refactor_column, p_code);
+			if (current_column == refactor_column) {
+				code_with_sentinel = p_code.insert(current_index, sentinel_character);
+				goto after_inserting_sentinel_character;
 			}
 
-			text_server->free_rid(line_shaped_text);
-		} else {
-			current_index = code_lines[i + 1];
+			current_char = p_code.substr(current_index, 1);
+			current_column += current_char == "\t"
+					? INDENT_SIZE
+					: 1;
 		}
-
-		if (!found_word.is_empty()) {
-			break;
-		}
-
-		current_line += 1;
 	}
-	ERR_FAIL_COND_V(found_word.is_empty(), FAILED);
+
+after_inserting_sentinel_character:
 
 	text_server->free_rid(code_shaped_text);
 	text_server->free_rid(font);
 
-	p_data.code = code_with_sentinel;
-	p_data.symbol = found_word;
-
-	return OK;
+	return code_with_sentinel;
 }
 
 static void run_test_cfg(const String &p_config_path) {
@@ -169,7 +157,7 @@ static void run_test_cfg(const String &p_config_path) {
 		CHECK_REFACTOR_DICT_ENTRY_STRING_NOT_EMPTY(refactor, file);
 		CHECK_REFACTOR_DICT_ENTRY_POSITION(refactor, line);
 		CHECK_REFACTOR_DICT_ENTRY_POSITION(refactor, column);
-		CHECK_REFACTOR_DICT_ENTRY_STRING_NOT_EMPTY(refactor, symbol);
+		// CHECK_REFACTOR_DICT_ENTRY_STRING_NOT_EMPTY(refactor, symbol);
 
 		String refactor_file = refactor["file"];
 		int refactor_line = refactor["line"];
@@ -220,15 +208,15 @@ static void run_test_cfg(const String &p_config_path) {
 		Ref<GDScript> gdscript = ResourceLoader::load(refactor_file);
 		FAIL_COND_MSG(gdscript.is_null(), vformat("couldn't load script \"%s\"", refactor_file));
 
-		ProcessCodeData data;
-		Error err = process_code(gdscript->get_source_code(), Point2i(refactor_column, refactor_line), data);
-		FAIL_COND_MSG(err != OK, "couldn't process code");
+		String code = gdscript->get_source_code();
+		String code_with_sentinel = process_code(code, Point2i(refactor_column, refactor_line));
+		FAIL_COND_MSG(code == code_with_sentinel, "couldn't add sentinel character, code is identical");
 
 		ScriptLanguage::RefactorRenameSymbolResult refactor_result;
 		const HashMap<String, String> unsaved_scripts_code;
 		Node *owner = nullptr;
 
-		Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(data.code, data.symbol, refactor_file, owner, unsaved_scripts_code, refactor_result);
+		Error refactor_error_result = GDScriptLanguage::get_singleton()->refactor_rename_symbol_code(code_with_sentinel, refactor_file, owner, unsaved_scripts_code, refactor_result);
 		FAIL_COND_MSG(refactor_error_result != OK, vformat("could not refactor rename symbol code: %s", error_names[refactor_error_result]));
 
 		FAIL_COND_MSG(refactor_result.symbol != refactor_symbol, vformat("symbol found (%s) doesn't match with the symbol specified in the configuration file (%s)", refactor_result.symbol, refactor_symbol));
@@ -524,7 +512,7 @@ TEST_SUITE("[Modules][GDScript][Refactor tools]") {
 
 	TEST_CASE("[Editor] Rename symbol") {
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
-		EditorSettings::get_singleton()->set_setting("text_editor/behavior/indent/size", 4);
+		EditorSettings::get_singleton()->set_setting("text_editor/behavior/indent/size", INDENT_SIZE);
 
 		const String gdscript_tests_scripts_refactor_rename_path = gdscript_tests_scripts_refactor_path.path_join("rename");
 

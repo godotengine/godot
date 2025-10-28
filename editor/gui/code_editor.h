@@ -219,7 +219,7 @@ public:
 };
 
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
-typedef void (*CodeTextEditorRefactorRenameSymbolFunc)(void *p_ud, const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
+typedef void (*CodeTextEditorRefactorRenameSymbolFunc)(void *p_ud, const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -307,7 +307,7 @@ protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
-	virtual void _refactor_rename_symbol_script(const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {}
+	virtual void _refactor_rename_symbol_script(const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();

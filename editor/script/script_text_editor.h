@@ -210,8 +210,8 @@ protected:
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 	void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
 
-	static void _refactor_rename_symbol_scripts(void *p_ud, const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
-	void _refactor_rename_symbol_script(const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
+	static void _refactor_rename_symbol_scripts(void *p_ud, const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
+	void _refactor_rename_symbol_script(const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result);
 
 	void _load_theme_settings();
 	void _set_theme_for_script();
