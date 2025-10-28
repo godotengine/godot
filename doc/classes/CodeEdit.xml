@@ -562,6 +562,9 @@
 		<member name="gutters_draw_line_numbers" type="bool" setter="set_draw_line_numbers" getter="is_draw_line_numbers_enabled" default="false">
 			If [code]true[/code], the line number gutter is drawn. Line numbers start at [code]1[/code] and are incremented for each line of text. Clicking and dragging in the line number gutter will select entire lines of text.
 		</member>
+		<member name="gutters_line_numbers_min_digits" type="int" setter="set_line_numbers_min_digits" getter="get_line_numbers_min_digits" default="3">
+			The minimum width in digits reserved for the line number gutter.
+		</member>
 		<member name="gutters_zero_pad_line_numbers" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded" default="false">
 			If [code]true[/code], line numbers drawn in the gutter are zero padded based on the total line count. Requires [member gutters_draw_line_numbers] to be set to [code]true[/code].
 		</member>
