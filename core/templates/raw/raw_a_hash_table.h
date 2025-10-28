@@ -1,0 +1,238 @@
+/**************************************************************************/
+/*  raw_a_hash_table.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "core/os/memory.h"
+#include "core/templates/hashfuncs.h"
+
+class String;
+class StringName;
+class Variant;
+
+/**
+ * An array-based implementation of a hash map. It is very efficient in terms of performance and
+ * memory usage. Works like a dynamic array, adding elements to the end of the array, and
+ * allows you to access array elements by their index by using `get_by_index` method.
+ * Example:
+ * ```
+ *  AHashMap<int, Object *> map;
+ *
+ *  int get_object_id_by_number(int p_number) {
+ *		int id = map.get_index(p_number);
+ *		return id;
+ *  }
+ *
+ *  Object *get_object_by_id(int p_id) {
+ *		map.get_by_index(p_id).value;
+ *  }
+ * ```
+ * Still, don`t erase the elements because ID can break.
+ *
+ * When an element erase, its place is taken by the element from the end.
+ *
+ *        <-------------
+ *      |               |
+ *  6 8 X 9 32 -1 5 -10 7 X X X
+ *  6 8 7 9 32 -1 5 -10 X X X X
+ *
+ *
+ * Use RBMap if you need to iterate over sorted elements.
+ *
+ * Use HashMap if:
+ *   - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
+ *   - You need to preserve the insertion order when using erase.
+ *
+ * It is recommended to use `HashMap` if `KeyValue` size is very large.
+ */
+
+struct Metadata {
+	uint32_t hash;
+	uint32_t element_idx;
+};
+
+// Must be a power of two.
+static constexpr uint32_t INITIAL_CAPACITY = 16;
+static constexpr uint32_t EMPTY_HASH = 0;
+static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+
+template <typename TKey,
+		typename Hasher,
+		typename Comparator>
+class RawAHashTable {
+protected:
+	static_assert(sizeof(Metadata) == 8);
+
+	Metadata *_metadata = nullptr;
+
+	// Due to optimization, this is `capacity - 1`. Use + 1 to get normal capacity.
+	uint32_t _capacity_mask = 0;
+	uint32_t _size = 0;
+
+	static _FORCE_INLINE_ uint32_t _get_resize_count(uint32_t p_capacity_mask) {
+		return p_capacity_mask ^ (p_capacity_mask + 1) >> 2; // = get_capacity() * 0.75 - 1; Works only if p_capacity_mask = 2^n - 1.
+	}
+
+	static _FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_meta_idx, uint32_t p_hash, uint32_t p_capacity) {
+		const uint32_t original_idx = p_hash & p_capacity;
+		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
+	}
+
+	virtual const TKey &_get_key(uint32_t idx) const = 0;
+	virtual void _resize_elements(uint32_t p_new_capacity) = 0;
+	virtual bool _is_elements_valid() const = 0;
+
+	uint32_t _hash(const TKey &p_key) const {
+		uint32_t hash = Hasher::hash(p_key);
+
+		if (unlikely(hash == EMPTY_HASH)) {
+			hash = EMPTY_HASH + 1;
+		}
+
+		return hash;
+	}
+
+	bool _eq(const TKey &a, const TKey &b) const {
+		return Comparator::compare(a, b);
+	}
+
+	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
+		if (unlikely(!_is_elements_valid())) {
+			return false; // Failed lookups, no _elements.
+		}
+		return _lookup_idx_with_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
+	}
+
+	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
+		if (unlikely(!_is_elements_valid())) {
+			return false; // Failed lookups, no _elements.
+		}
+
+		uint32_t meta_idx = p_hash & _capacity_mask;
+		Metadata metadata = _metadata[meta_idx];
+		if (metadata.hash == p_hash && _eq(_get_key(metadata.element_idx), p_key)) {
+			r_element_idx = metadata.element_idx;
+			r_meta_idx = meta_idx;
+			return true;
+		}
+
+		if (metadata.hash == EMPTY_HASH) {
+			return false;
+		}
+
+		// A collision occurred.
+		meta_idx = (meta_idx + 1) & _capacity_mask;
+		uint32_t distance = 1;
+		while (true) {
+			metadata = _metadata[meta_idx];
+			if (metadata.hash == p_hash && _eq(_get_key(metadata.element_idx), p_key)) {
+				r_element_idx = metadata.element_idx;
+				r_meta_idx = meta_idx;
+				return true;
+			}
+
+			if (metadata.hash == EMPTY_HASH) {
+				return false;
+			}
+
+			if (distance > _get_probe_length(meta_idx, metadata.hash, _capacity_mask)) {
+				return false;
+			}
+
+			meta_idx = (meta_idx + 1) & _capacity_mask;
+			distance++;
+		}
+	}
+
+	uint32_t _insert_metadata(uint32_t p_hash, uint32_t p_element_idx) {
+		uint32_t meta_idx = p_hash & _capacity_mask;
+
+		if (_metadata[meta_idx].hash == EMPTY_HASH) {
+			_metadata[meta_idx] = Metadata{ p_hash, p_element_idx };
+			return meta_idx;
+		}
+
+		uint32_t distance = 1;
+		meta_idx = (meta_idx + 1) & _capacity_mask;
+		Metadata metadata;
+		metadata.hash = p_hash;
+		metadata.element_idx = p_element_idx;
+
+		while (true) {
+			if (_metadata[meta_idx].hash == EMPTY_HASH) {
+#ifdef DEV_ENABLED
+				if (unlikely(distance > 12)) {
+					WARN_PRINT("Excessive collision count, is the right hash function being used?");
+				}
+#endif
+				_metadata[meta_idx] = metadata;
+				return meta_idx;
+			}
+
+			// Not an empty slot, let's check the probing length of the existing one.
+			uint32_t existing_probe_len = _get_probe_length(meta_idx, _metadata[meta_idx].hash, _capacity_mask);
+			if (existing_probe_len < distance) {
+				SWAP(metadata, _metadata[meta_idx]);
+				distance = existing_probe_len;
+			}
+
+			meta_idx = (meta_idx + 1) & _capacity_mask;
+			distance++;
+		}
+	}
+
+	void _resize_and_rehash(uint32_t p_new_capacity) {
+		uint32_t real_old_capacity = _capacity_mask + 1;
+		// Capacity can't be 0 and must be 2^n - 1.
+		_capacity_mask = MAX(4u, p_new_capacity);
+		uint32_t real_capacity = next_power_of_2(_capacity_mask);
+		_capacity_mask = real_capacity - 1;
+
+		Metadata *old_map_data = _metadata;
+
+		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
+		_resize_elements(_get_resize_count(_capacity_mask) + 1);
+
+		if (_size != 0) {
+			for (uint32_t i = 0; i < real_old_capacity; i++) {
+				Metadata metadata = old_map_data[i];
+				if (metadata.hash != EMPTY_HASH) {
+					_insert_metadata(metadata.hash, metadata.element_idx);
+				}
+			}
+		}
+
+		Memory::free_static(old_map_data);
+	}
+
+public:
+
+	virtual ~RawAHashTable(){}
+};
