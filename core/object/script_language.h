@@ -417,6 +417,9 @@ public:
 		String symbol;
 		String new_symbol;
 		String code;
+		Vector2i start;
+		Vector2i sentinel;
+		Vector2i end;
 		Error error = FAILED;
 		bool outside_refactor = false;
 		RefactorRenameSymbolResultType type = RefactorRenameSymbolResultType::REFACTOR_RENAME_SYMBOL_RESULT_NONE;
@@ -569,7 +572,7 @@ public:
 		RefactorRenameSymbolResult() = default;
 	};
 
-	virtual Error refactor_rename_symbol_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, const HashMap<String, String> &p_unsaved_scripts_source_code, RefactorRenameSymbolResult &r_result) { return ERR_UNAVAILABLE; }
+	virtual Error refactor_rename_symbol_code(const String &p_code, const String &p_path, Object *p_owner, const HashMap<String, String> &p_unsaved_scripts_source_code, RefactorRenameSymbolResult &r_result) { return ERR_UNAVAILABLE; }
 
 	// Lookup.
 	enum LookupResultType {

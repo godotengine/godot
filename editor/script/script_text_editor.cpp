@@ -1212,12 +1212,12 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 }
 
-void ScriptTextEditor::_refactor_rename_symbol_scripts(void *p_ud, const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
+void ScriptTextEditor::_refactor_rename_symbol_scripts(void *p_ud, const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
 	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
-	ste->_refactor_rename_symbol_script(p_code, p_symbol, p_new_symbol, r_result);
+	ste->_refactor_rename_symbol_script(p_code, p_new_symbol, r_result);
 }
 
-void ScriptTextEditor::_refactor_rename_symbol_script(const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
+void ScriptTextEditor::_refactor_rename_symbol_script(const String &p_code, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
 	r_result.matches.clear();
 
 	Node *base = get_tree()->get_edited_scene_root();
@@ -1237,7 +1237,7 @@ void ScriptTextEditor::_refactor_rename_symbol_script(const String &p_code, cons
 		}
 	}
 
-	script->get_language()->refactor_rename_symbol_code(p_code, p_symbol, script->get_path(), base, unsaved_scripts_source_code, r_result);
+	script->get_language()->refactor_rename_symbol_code(p_code, script->get_path(), base, unsaved_scripts_source_code, r_result);
 }
 
 void ScriptTextEditor::_update_breakpoint_list() {
@@ -2706,7 +2706,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				open_docs = true;
 			}
 			ScriptLanguage::RefactorRenameSymbolResult rename_result;
-			_refactor_rename_symbol_script(tx->get_text_for_code_completion(), word_at_pos, "", rename_result);
+			_refactor_rename_symbol_script(tx->get_text_for_code_completion(), "", rename_result);
 			if (!rename_result.has_failed()) {
 				can_rename = true;
 			}

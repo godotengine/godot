@@ -2752,7 +2752,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 
 	// Completion can appear whenever an expression is expected.
 	make_completion_context(COMPLETION_IDENTIFIER, nullptr, -1, false);
-	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, nullptr, -1);
 
 	GDScriptTokenizer::Token token = current;
 	GDScriptTokenizer::Token::Type token_type = token.type;
@@ -3234,6 +3233,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
+	IdentifierNode *identifier = alloc_node<IdentifierNode>();
+	await->identifier = identifier;
+	identifier->name = previous.get_name();
+	reset_extents(identifier, previous);
+	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
+
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
 		push_error(R"(Expected signal or coroutine after "await".)");

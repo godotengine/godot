@@ -7,7 +7,7 @@ script/source = "extends Node2D
 var class_b_instance: B
 
 func _ready() -> void:
-	test()
+	await test()
 
 func test() -> ClassA:
 	const NoNameB = preload(\"res://scripts/noname_b.gd\")
