@@ -46,9 +46,9 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
+				If the process is successfully created, this method returns the new process's ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="create_process">

@@ -22,7 +22,7 @@
 			If [code]true[/code], each generated depth value will by offset by some amount. The specific amount is generated per polygon based on the values of [member depth_bias_slope_factor] and [member depth_bias_constant_factor].
 		</member>
 		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor" default="0.0">
-			A constant scale applied to the slope of each polygons' depth. Applied before [member depth_bias_constant_factor].
+			A constant scale applied to the slope of each polygon's depth. Applied before [member depth_bias_constant_factor].
 		</member>
 		<member name="discard_primitives" type="bool" setter="set_discard_primitives" getter="get_discard_primitives" default="false">
 			If [code]true[/code], primitives are discarded immediately before the rasterization stage.
