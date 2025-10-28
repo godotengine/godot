@@ -5239,10 +5239,10 @@ RenderForwardClustered::~RenderForwardClustered() {
 	dfg_lut.shader.version_free(dfg_lut.shader_version);
 
 	if (ltc.lut1_texture.is_valid()) {
-		RS::get_singleton()->free(ltc.lut1_texture);
+		RS::get_singleton()->free_rid(ltc.lut1_texture);
 	}
 	if (ltc.lut2_texture.is_valid()) {
-		RS::get_singleton()->free(ltc.lut2_texture);
+		RS::get_singleton()->free_rid(ltc.lut2_texture);
 	}
 
 	{
