@@ -432,6 +432,24 @@ void GDScriptParser::make_refactor_rename_context(RefactorRenameType p_type, Var
 	refactor_rename_context = context;
 }
 
+void GDScriptParser::make_refactor_rename_context(RefactorRenameType p_type, GDScriptTokenizer::Token p_token) {
+	if (!is_for_refactor_rename()) {
+		return;
+	}
+	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
+		return;
+	}
+	RefactorRenameContext context;
+	context.type = p_type;
+	context.current_class = current_class;
+	context.current_function = current_function;
+	context.current_suite = current_suite;
+	context.current_line = tokenizer->get_cursor_line();
+	context.token = p_token;
+	context.parser = this;
+	refactor_rename_context = context;
+}
+
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, ParsingType p_type, bool p_parse_body) {
 	clear();
 
@@ -912,6 +930,7 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *n_class = alloc_node<ClassNode>();
+	make_refactor_rename_context(RefactorRenameType::REFACTOR_RENAME_TYPE_KEYWORD, previous);
 
 	ClassNode *previous_class = current_class;
 	current_class = n_class;
@@ -966,6 +985,8 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 }
 
 void GDScriptParser::parse_class_name() {
+	make_refactor_rename_context(RefactorRenameType::REFACTOR_RENAME_TYPE_KEYWORD, previous);
+
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "class_name".)")) {
 		current_class->identifier = parse_identifier();
 		current_class->fqcn = String(current_class->identifier->name);
@@ -3233,14 +3254,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
-	IdentifierNode *keyword = alloc_node<IdentifierNode>();
-	reset_extents(keyword, previous);
-	update_extents(keyword);
-	complete_extents(keyword);
-	await->keyword = keyword;
-	keyword->name = previous.get_name();
-	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, keyword);
-
+	make_refactor_rename_context(GDScriptParser::RefactorRenameType::REFACTOR_RENAME_TYPE_KEYWORD, previous);
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
 		push_error(R"(Expected signal or coroutine after "await".)");
@@ -3412,8 +3426,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 		}
 		if (!is_builtin) {
 			make_completion_context(COMPLETION_ATTRIBUTE, attribute, -1);
-			make_refactor_rename_context(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute, -1);
 		}
+		make_refactor_rename_context(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute, -1);
 	}
 
 	attribute->base = p_previous_operand;
