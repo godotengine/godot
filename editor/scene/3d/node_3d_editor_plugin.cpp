@@ -3153,6 +3153,16 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
+
+	if (selection_buffer_viewport) {
+		selection_buffer_viewport->set_scaling_3d_mode(scaling_3d_mode);
+		selection_buffer_viewport->set_scaling_3d_scale(scaling_3d_scale);
+		selection_buffer_viewport->set_fsr_sharpness(fsr_sharpness);
+
+		if (spatial_editor->outline_enabled) {
+			_queue_update_outline();
+		}
+	}
 }
 
 static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
@@ -6434,7 +6444,7 @@ Node3DEditorViewport::~Node3DEditorViewport() {
 	for (const KeyValue<ObjectID, Vector<RID>> &E : cached_outline_instances) {
 		for (const RID &instance : E.value) {
 			if (instance.is_valid()) {
-				rs->free(instance);
+				rs->free_rid(instance);
 			}
 		}
 	}
@@ -6944,6 +6954,13 @@ void Node3DEditorViewport::_init_outline() {
 	selection_buffer_viewport->set_world_3d(memnew(World3D));
 	selection_buffer_viewport->set_transparent_background(true);
 
+	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
+	selection_buffer_viewport->set_scaling_3d_mode(scaling_3d_mode);
+	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+	selection_buffer_viewport->set_scaling_3d_scale(scaling_3d_scale);
+	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
+	selection_buffer_viewport->set_fsr_sharpness(fsr_sharpness);
+
 	add_child(selection_buffer_viewport);
 
 	selection_buffer_camera = memnew(Camera3D);
@@ -7070,7 +7087,7 @@ void Node3DEditorViewport::_update_outline_material(Ref<ShaderMaterial> p_materi
 
 	p_material->set_shader_parameter("outline_color", outline_color);
 	p_material->set_shader_parameter("active_outline_color", active_outline_color);
-	p_material->set_shader_parameter("outline_width", thickness);
+	p_material->set_shader_parameter("outline_width", thickness * EDSCALE);
 }
 
 void Node3DEditorViewport::_create_selection_buffer_instances(Node3D *p_node, bool p_is_active, RID p_scenario) {
@@ -7120,32 +7137,46 @@ void Node3DEditorViewport::_create_selection_buffer_instances(Node3D *p_node, bo
 
 		if (geometry_valid) {
 			RenderingServer *rs = RenderingServer::get_singleton();
+
+			bool is_newly_outlined = !current_outlined_nodes.has(node_id);
+			bool active_status_changed = !cached_outline_is_active.has(node_id) || cached_outline_is_active[node_id] != p_is_active;
+
 			int i = 0;
 			for (GeometryInstance3D *geom_inst : geometry_instances) {
 				RID instance = cached_instances[i];
 
 				rs->instance_set_transform(instance, geom_inst->get_global_transform());
-				rs->instance_geometry_set_material_override(instance, id_mat->get_rid());
-				rs->instance_set_layer_mask(instance, 1 << SELECTION_OUTLINE_LAYER);
-				rs->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
-				rs->instance_set_visible(instance, true);
+
+				if (active_status_changed) {
+					rs->instance_geometry_set_material_override(instance, id_mat->get_rid());
+				}
+
+				if (is_newly_outlined) {
+					rs->instance_set_visible(instance, true);
+				}
 
 				selection_id_instances[node_id].push_back(instance);
 				i++;
 			}
+
+			cached_outline_is_active[node_id] = p_is_active;
 			return;
 		}
 
 		RenderingServer *rs = RenderingServer::get_singleton();
 		for (const RID &instance : cached_instances) {
 			if (instance.is_valid()) {
-				rs->free(instance);
+				rs->free_rid(instance);
 			}
 		}
 		cached_instances.clear();
 
 		if (cached_base_rids.has(node_id)) {
 			cached_base_rids[node_id].clear();
+		}
+
+		if (cached_outline_is_active.has(node_id)) {
+			cached_outline_is_active.erase(node_id);
 		}
 	}
 
@@ -7173,13 +7204,14 @@ void Node3DEditorViewport::_create_selection_buffer_instances(Node3D *p_node, bo
 
 	cached_outline_instances[node_id] = new_instances;
 	cached_base_rids[node_id] = new_base_rids;
+	cached_outline_is_active[node_id] = p_is_active;
 }
 
 void Node3DEditorViewport::_hide_aabb_instances(const HashMap<Node *, Object *> &p_selection) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	for (const KeyValue<Node *, Object *> &E : p_selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E.key);
-		if (!sp) {
+		if (!sp || !sp->is_inside_tree()) {
 			continue;
 		}
 		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
@@ -7195,19 +7227,17 @@ void Node3DEditorViewport::_hide_aabb_instances(const HashMap<Node *, Object *> 
 }
 
 void Node3DEditorViewport::_update_outline() {
-	_clear_outline();
 	EditorSelection *es = EditorNode::get_singleton()->get_editor_selection();
 	ERR_FAIL_NULL(es);
 
 	const HashMap<Node *, Object *> &selection = es->get_selection();
-	if (selection.is_empty()) {
-		outline_compositor->set_visible(false);
-		return;
-	}
-
 	bool should_show_outline = spatial_editor->outline_enabled && gizmos_visible && !previewing_cinema && !previewing;
-	if (!should_show_outline) {
+
+	if (selection.is_empty() || !should_show_outline) {
+		_clear_outline();
+		current_outlined_nodes.clear();
 		outline_compositor->set_visible(false);
+
 		return;
 	}
 
@@ -7218,13 +7248,39 @@ void Node3DEditorViewport::_update_outline() {
 	if (!active_node && !selection.is_empty()) {
 		active_node = Object::cast_to<Node3D>(selection.begin()->key);
 	}
+
+	HashSet<ObjectID> selected_nodes;
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E.key);
-		if (!sp) {
+		if (sp && sp->is_inside_tree()) {
+			selected_nodes.insert(sp->get_instance_id());
+		}
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	for (const ObjectID &outlined_id : current_outlined_nodes) {
+		if (!selected_nodes.has(outlined_id)) {
+			if (cached_outline_instances.has(outlined_id)) {
+				for (const RID &instance : cached_outline_instances[outlined_id]) {
+					if (instance.is_valid()) {
+						rs->instance_set_visible(instance, false);
+					}
+				}
+			}
+		}
+	}
+
+	selection_id_instances.clear();
+
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (!sp || !sp->is_inside_tree()) {
 			continue;
 		}
 		_create_selection_buffer_instances(sp, (sp == active_node), scenario);
 	}
+
+	current_outlined_nodes = selected_nodes;
 
 	RenderingServer::get_singleton()->viewport_set_update_mode(selection_buffer_viewport->get_viewport_rid(), RenderingServer::VIEWPORT_UPDATE_ONCE);
 
@@ -7315,12 +7371,36 @@ void Node3DEditorViewport::_clear_outline() {
 		} else {
 			for (const RID &instance : instances) {
 				if (instance.is_valid()) {
-					rs->free(instance);
+					rs->free_rid(instance);
 				}
 			}
 		}
 	}
 	selection_id_instances.clear();
+}
+
+void Node3DEditorViewport::_clear_cached_outline_for_node(Node3D *p_node) {
+	ERR_FAIL_NULL(p_node);
+	ObjectID node_id = p_node->get_instance_id();
+
+	if (cached_outline_instances.has(node_id)) {
+		RenderingServer *rs = RenderingServer::get_singleton();
+		Vector<RID> &instances = cached_outline_instances[node_id];
+		for (const RID &instance : instances) {
+			if (instance.is_valid()) {
+				rs->free_rid(instance);
+			}
+		}
+		cached_outline_instances.erase(node_id);
+	}
+
+	if (cached_base_rids.has(node_id)) {
+		cached_base_rids.erase(node_id);
+	}
+
+	if (cached_outline_is_active.has(node_id)) {
+		cached_outline_is_active.erase(node_id);
+	}
 }
 
 void Node3DEditorViewport::_find_geometry_instances_recursive(Node *p_node, List<GeometryInstance3D *> &r_list) {
@@ -9711,6 +9791,13 @@ void Node3DEditor::_node_removed(Node *p_node) {
 			if (directional_light_count == 0) {
 				_update_preview_environment();
 			}
+		}
+	}
+
+	Node3D *sp = Object::cast_to<Node3D>(p_node);
+	if (sp) {
+		for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+			viewports[i]->_clear_cached_outline_for_node(sp);
 		}
 	}
 

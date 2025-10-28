@@ -270,6 +270,8 @@ private:
 	HashMap<ObjectID, Vector<RID>> selection_id_instances;
 	HashMap<ObjectID, Vector<RID>> cached_outline_instances;
 	HashMap<ObjectID, Vector<RID>> cached_base_rids;
+	HashMap<ObjectID, bool> cached_outline_is_active;
+	HashSet<ObjectID> current_outlined_nodes;
 	bool outline_update_pending = false;
 
 	bool transforming = false;
@@ -583,6 +585,7 @@ private:
 	void _hide_aabb_instances(const HashMap<Node *, Object *> &p_selection);
 	void _sync_selection_buffer_camera();
 	void _clear_outline();
+	void _clear_cached_outline_for_node(Node3D *p_node);
 	void _find_geometry_instances_recursive(Node *p_node, List<GeometryInstance3D *> &r_list);
 	void _update_selected_item_aabb(Node3D *p_node);
 
