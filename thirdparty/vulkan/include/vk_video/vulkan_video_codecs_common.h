@@ -20,6 +20,10 @@ extern "C" {
 
 
 #define vulkan_video_codecs_common 1
+#if !defined(VK_NO_STDINT_H)
+    #include <stdint.h>
+#endif
+
 #define VK_MAKE_VIDEO_STD_VERSION(major, minor, patch) \
     ((((uint32_t)(major)) << 22) | (((uint32_t)(minor)) << 12) | ((uint32_t)(patch)))
 

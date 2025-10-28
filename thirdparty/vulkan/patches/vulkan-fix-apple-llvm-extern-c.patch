@@ -1,0 +1,28 @@
+diff --git a/thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std.h b/thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std.h
+index 21c7b667fd..089f30912c 100644
+--- a/thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std.h
++++ b/thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std.h
+@@ -20,7 +20,7 @@ extern "C" {
+ 
+ 
+ #define vulkan_video_codec_h264std 1
+-#include <stdint.h>
++#include "vulkan_video_codecs_common.h"
+ #define STD_VIDEO_H264_CPB_CNT_LIST_SIZE  32
+ #define STD_VIDEO_H264_SCALING_LIST_4X4_NUM_LISTS 6
+ #define STD_VIDEO_H264_SCALING_LIST_4X4_NUM_ELEMENTS 16
+diff --git a/thirdparty/vulkan/include/vk_video/vulkan_video_codecs_common.h b/thirdparty/vulkan/include/vk_video/vulkan_video_codecs_common.h
+index f486d3ca3f..43bfcd09ad 100644
+--- a/thirdparty/vulkan/include/vk_video/vulkan_video_codecs_common.h
++++ b/thirdparty/vulkan/include/vk_video/vulkan_video_codecs_common.h
+@@ -20,6 +20,10 @@ extern "C" {
+ 
+ 
+ #define vulkan_video_codecs_common 1
++#if !defined(VK_NO_STDINT_H)
++    #include <stdint.h>
++#endif
++
+ #define VK_MAKE_VIDEO_STD_VERSION(major, minor, patch) \
+     ((((uint32_t)(major)) << 22) | (((uint32_t)(minor)) << 12) | ((uint32_t)(patch)))
+ 
