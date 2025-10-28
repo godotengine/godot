@@ -672,7 +672,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 		ss = p_node->get_scene_instance_state();
 	}
 
-	if (ss.is_valid()) {
+	while (ss.is_valid()) {
 		String path = ss->get_path();
 
 		if (!checked_paths.has(path)) {
@@ -683,6 +683,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 			checked_paths.insert(path);
 		}
+		ss = ss->get_base_scene_state();
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -717,6 +718,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		ep.step(TTR("Updating scene..."), 1);
 		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_NULL_V(new_scene, false);
+
+		EditorNode::get_singleton()->make_unique_inheritance(new_scene);
 
 		// Transfer selection.
 		List<Node *> new_selection;
