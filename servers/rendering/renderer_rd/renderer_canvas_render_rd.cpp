@@ -602,7 +602,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			Transform2D final_xform;
-			if (!RSG::canvas->_interpolation_data.interpolation_enabled || !l->interpolated) {
+			if (!RSG::canvas->_interpolation_data.interpolation_enabled || !l->interpolated || !l->on_interpolate_transform_list) {
 				final_xform = l->xform_curr;
 			} else {
 				real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
