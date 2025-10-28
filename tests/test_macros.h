@@ -41,6 +41,12 @@
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/readme.md#reference
 #include "thirdparty/doctest/doctest.h"
 
+// Forces a test file to be linked.
+#define TEST_FORCE_LINK(m_name)   \
+	namespace ForceLink {         \
+	void force_link_##m_name() {} \
+	}
+
 // The test is skipped with this, run pending tests with `--test --no-skip`.
 #define TEST_CASE_PENDING(name) TEST_CASE(name *doctest::skip())
 
