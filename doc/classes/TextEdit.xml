@@ -190,7 +190,7 @@
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Cut's the current selection. Can be overridden with [method _cut].
+				Cuts the current selection. Can be overridden with [method _cut].
 			</description>
 		</method>
 		<method name="delete_selection">
@@ -675,7 +675,7 @@
 		<method name="get_tab_size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [TextEdit]'s' tab size.
+				Returns the [TextEdit]'s tab size.
 			</description>
 		</method>
 		<method name="get_total_gutter_width" qualifiers="const">
