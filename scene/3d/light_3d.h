@@ -87,6 +87,7 @@ private:
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
 	Vector2 area_size;
+	Ref<Texture2D> area_texture;
 	bool area_normalize_energy;
 
 	// bind helpers
@@ -153,6 +154,9 @@ public:
 
 	void set_area_size(Vector2 p_size);
 	Vector2 get_area_size() const;
+
+	void set_area_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_area_texture() const;
 
 	void set_area_normalize_energy(bool p_enable);
 	bool get_area_normalize_energy() const;

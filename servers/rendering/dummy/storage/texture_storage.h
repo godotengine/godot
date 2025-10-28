@@ -149,8 +149,8 @@ public:
 	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
 	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
 
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool is_area_light_texture = false) override {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override {}
 
 	/* DECAL INSTANCE */
 

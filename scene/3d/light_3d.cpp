@@ -248,6 +248,31 @@ Ref<Texture2D> Light3D::get_projector() const {
 	return projector;
 }
 
+void Light3D::set_area_texture(const Ref<Texture2D> &p_texture) {
+	area_texture = p_texture;
+	RID tex_id = area_texture.is_valid() ? area_texture->get_rid() : RID();
+
+#ifdef DEBUG_ENABLED
+	if (p_texture.is_valid() &&
+			(p_texture->is_class("AnimatedTexture") ||
+					p_texture->is_class("AtlasTexture") ||
+					p_texture->is_class("CameraTexture") ||
+					p_texture->is_class("CanvasTexture") ||
+					p_texture->is_class("MeshTexture") ||
+					p_texture->is_class("Texture2DRD") ||
+					p_texture->is_class("ViewportTexture"))) {
+		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+	}
+#endif
+
+	RS::get_singleton()->light_area_set_texture(light, tex_id);
+	update_configuration_warnings();
+}
+
+Ref<Texture2D> Light3D::get_area_texture() const {
+	return area_texture;
+}
+
 void Light3D::owner_changed_notify() {
 	// For cases where owner changes _after_ entering tree (as example, editor editing).
 	_update_visibility();
@@ -403,6 +428,9 @@ void Light3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_projector", "projector"), &Light3D::set_projector);
 	ClassDB::bind_method(D_METHOD("get_projector"), &Light3D::get_projector);
+
+	ClassDB::bind_method(D_METHOD("set_area_texture", "texture"), &Light3D::set_area_texture);
+	ClassDB::bind_method(D_METHOD("get_area_texture"), &Light3D::get_area_texture);
 
 	ClassDB::bind_method(D_METHOD("set_temperature", "temperature"), &Light3D::set_temperature);
 	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
@@ -734,17 +762,14 @@ void AreaLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "area_normalize_energy"), "set_area_normalize_energy", "get_area_normalize_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "area_size", PROPERTY_HINT_LINK, "suffix:m"), "set_area_size", "get_area_size");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "area_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_area_texture", "get_area_texture");
 }
 
 PackedStringArray AreaLight3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
 	if (get_projector().is_valid()) {
-		warnings.push_back(RTR("Projector texture is not yet implemented."));
-	}
-
-	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+		warnings.push_back(RTR("Projector texture is not supported for area lights. Use the area_texture field instead."));
 	}
 
 	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
