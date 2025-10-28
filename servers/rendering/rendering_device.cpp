@@ -5097,10 +5097,6 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		uint32_t to_draw;
 
 		if (p_procedural_vertices > 0) {
-#ifdef DEBUG_ENABLED
-			ERR_FAIL_COND_MSG(draw_list.validation.pipeline_vertex_format != INVALID_ID,
-					"Procedural vertices requested, but pipeline expects a vertex array.");
-#endif
 			to_draw = p_procedural_vertices;
 		} else {
 #ifdef DEBUG_ENABLED

@@ -1259,7 +1259,7 @@ void MeshStorage::update_mesh_instances() {
 	RD::get_singleton()->compute_list_end();
 }
 
-RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, uint32_t &r_position_stride) {
+RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) {
 	Vector<RD::VertexAttribute> attributes;
 	uint32_t normal_tangent_stride = 0;
 	uint32_t attribute_stride = 0;
@@ -1396,6 +1396,10 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 					skin_stride += sizeof(int16_t) * 4;
 				} break;
 			}
+
+			if (p_point_size_emulated) {
+				vd.frequency = RD::VERTEX_FREQUENCY_INSTANCE;
+			}
 		}
 
 		if (!(p_input_mask & (1ULL << i))) {
@@ -1447,9 +1451,9 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 	return RD::get_singleton()->vertex_format_create(attributes);
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
 	uint32_t position_stride = 0;
-	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, position_stride);
+	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
 
 	Vector<RID> buffers;
 	Vector<uint64_t> offsets;
@@ -1513,7 +1517,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	v.current_buffer = p_current_buffer;
 	v.previous_buffer = p_previous_buffer;
 	v.input_motion_vectors = p_input_motion_vectors;
-	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers, offsets);
+	v.point_size_emulated = p_point_size_emulated;
+	v.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : s->vertex_count, v.vertex_format, buffers, offsets);
 }
 
 ////////////////// MULTIMESH

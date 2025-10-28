@@ -2564,6 +2564,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return true;
+		case SUPPORTS_POINT_SIZE:
+			return true;
 		default:
 			return false;
 	}

@@ -478,9 +478,9 @@ RID RendererCanvasRenderRD::_get_pipeline_specialization_or_ubershader(CanvasSha
 			RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 			uint64_t input_mask = p_shader_data->get_vertex_input_mask(r_pipeline_key.variant, r_pipeline_key.ubershader);
 			if (p_mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			}
 		}
 
