@@ -39,11 +39,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.3'
-
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:
