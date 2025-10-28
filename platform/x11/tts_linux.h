@@ -41,7 +41,8 @@
 
 #include "speechd-so_wrap.h"
 
-class TTS_Linux {
+class TTS_Linux : public Object {
+	GDCLASS(TTS_Linux, Object);
 	_THREAD_SAFE_CLASS_
 
 	List<OS::TTSUtterance> queue;
@@ -58,6 +59,11 @@ class TTS_Linux {
 	static void speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark);
 
 	static TTS_Linux *singleton;
+
+protected:
+	static void _bind_methods();
+	void _speech_event(size_t p_msg_id, size_t p_client_id, int p_type);
+	void _speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark);
 
 public:
 	static TTS_Linux *get_singleton();
