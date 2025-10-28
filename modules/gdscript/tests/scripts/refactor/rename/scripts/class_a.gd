@@ -29,6 +29,7 @@ enum EnumOfA {
 signal signal_of_a
 
 var property_of_a
+@export var export_property_of_a: Color
 
 
 func func_of_a():

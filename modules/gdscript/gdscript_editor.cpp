@@ -4695,6 +4695,9 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 
 	if (context.node) {
 		switch (context.node->type) {
+			case GDScriptParser::Node::ANNOTATION: {
+				symbol = static_cast<GDScriptParser::AnnotationNode *>(context.node)->name;
+			} break;
 			case GDScriptParser::Node::IDENTIFIER: {
 				symbol = static_cast<GDScriptParser::IdentifierNode *>(context.node)->name;
 			} break;
@@ -5089,8 +5092,7 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 			}
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_ANNOTATION: {
-			const String annotation_symbol = "@" + symbol;
-			if (!parser.annotation_exists(annotation_symbol)) {
+			if (!parser.annotation_exists(symbol)) {
 				break;
 			}
 			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_ANNOTATION);
