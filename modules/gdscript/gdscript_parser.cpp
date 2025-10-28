@@ -399,7 +399,7 @@ void GDScriptParser::make_refactor_rename_context(RefactorRenameType p_type, Nod
 	if (!is_for_refactor_rename()) {
 		return;
 	}
-	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
+	if (previous.cursor_place == GDScriptTokenizerText::CURSOR_NONE && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
 		return;
 	}
 	RefactorRenameContext context;
@@ -418,7 +418,7 @@ void GDScriptParser::make_refactor_rename_context(RefactorRenameType p_type, Var
 	if (!is_for_refactor_rename()) {
 		return;
 	}
-	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
+	if (previous.cursor_place == GDScriptTokenizerText::CURSOR_NONE && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
 		return;
 	}
 	RefactorRenameContext context;
@@ -436,7 +436,7 @@ void GDScriptParser::make_refactor_rename_context(RefactorRenameType p_type, GDS
 	if (!is_for_refactor_rename()) {
 		return;
 	}
-	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
+	if (p_token.cursor_place == GDScriptTokenizer::CURSOR_NONE) {
 		return;
 	}
 	RefactorRenameContext context;
