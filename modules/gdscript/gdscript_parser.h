@@ -1759,6 +1759,7 @@ public:
 	enum RefactorRenameType {
 		REFACTOR_RENAME_TYPE_NONE,
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
+		REFACTOR_RENAME_TYPE_CONTROL_FLOW, // Control-flow keywords (e.g. break, continue).
 		REFACTOR_RENAME_TYPE_ANNOTATION, // Annotation (following @).
 		REFACTOR_RENAME_TYPE_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
 		REFACTOR_RENAME_TYPE_ASSIGN, // Assignment based on type (e.g. enum values).
