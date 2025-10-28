@@ -5855,6 +5855,15 @@ String String::unquote() const {
 	return substr(1, length() - 2);
 }
 
+// MinGW-GCC false positives because CharStringT::length() is int (so possibly < 0).
+// Don't silence for regular GCC/Clang as this is code that _could_ exhibit actual overflow bugs.
+#ifdef __MINGW32__
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0")
+GODOT_GCC_WARNING_IGNORE("-Warray-bounds")
+GODOT_GCC_WARNING_IGNORE("-Wrestrict")
+#endif
+
 Vector<uint8_t> String::to_ascii_buffer() const {
 	const String *s = this;
 	if (s->is_empty()) {
@@ -5902,6 +5911,10 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 
 	return retval;
 }
+
+#ifdef __MINGW32__
+GODOT_GCC_WARNING_POP
+#endif
 
 Vector<uint8_t> String::to_utf32_buffer() const {
 	const String *s = this;
