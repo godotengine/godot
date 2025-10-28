@@ -201,6 +201,7 @@ public:
 			uint32_t render_pass = 0;
 			uint32_t wireframe = false;
 			uint32_t ubershader = false;
+			bool emulate_point_size = false;
 
 			uint32_t hash() const {
 				uint32_t h = hash_murmur3_one_32(vertex_format_id);
@@ -214,6 +215,7 @@ public:
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
 				h = hash_murmur3_one_32(ubershader, h);
+				h = hash_murmur3_one_32(emulate_point_size, h);
 				return hash_fmix32(h);
 			}
 		};
@@ -345,6 +347,7 @@ public:
 	SceneForwardMobileShaderRD shader;
 	ShaderCompiler compiler;
 	bool use_fp16 = false;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;
