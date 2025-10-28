@@ -4693,40 +4693,41 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 	r_result.sentinel = cursor_position;
 	r_result.code = p_code;
 
-	if (context.node == nullptr) {
-		r_result.start = cursor_position;
-		r_result.end = cursor_position;
-		REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NONE);
-		REFACTOR_RENAME_RETURN(OK);
-	}
-
-	switch (context.node->type) {
-		case GDScriptParser::Node::IDENTIFIER: {
-			symbol = static_cast<GDScriptParser::IdentifierNode *>(context.node)->name;
-		} break;
-		case GDScriptParser::Node::LITERAL: {
-			symbol = static_cast<GDScriptParser::LiteralNode *>(context.node)->value;
-		} break;
-		case GDScriptParser::Node::SUBSCRIPT: {
-			if (static_cast<GDScriptParser::SubscriptNode *>(context.node)->is_attribute) {
-				symbol = static_cast<GDScriptParser::SubscriptNode *>(context.node)->attribute->name;
-			} else {
-				goto context_node_type_error;
-			}
-		} break;
-		case GDScriptParser::Node::AWAIT: {
-			symbol = "await";
-		} break;
-		default: {
-		context_node_type_error:
-			// Unexpected node type.
+	if (context.node) {
+		switch (context.node->type) {
+			case GDScriptParser::Node::IDENTIFIER: {
+				symbol = static_cast<GDScriptParser::IdentifierNode *>(context.node)->name;
+			} break;
+			case GDScriptParser::Node::LITERAL: {
+				symbol = static_cast<GDScriptParser::LiteralNode *>(context.node)->value;
+			} break;
+			case GDScriptParser::Node::SUBSCRIPT: {
+				if (static_cast<GDScriptParser::SubscriptNode *>(context.node)->is_attribute) {
+					symbol = static_cast<GDScriptParser::SubscriptNode *>(context.node)->attribute->name;
+				} else {
+					goto context_node_type_error;
+				}
+			} break;
+			default: {
+			context_node_type_error:
+				// Unexpected node type.
+				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NONE);
+				REFACTOR_RENAME_RETURN(FAILED);
+			} break;
+		}
+		r_result.start = { context.node->start_column, context.node->start_line };
+		r_result.end = { context.node->end_column, context.node->end_line };
+	} else {
+		if (context.token.type == GDScriptTokenizer::Token::EMPTY) {
+			r_result.start = cursor_position;
+			r_result.end = cursor_position;
 			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NONE);
-			REFACTOR_RENAME_RETURN(FAILED);
-		} break;
+			REFACTOR_RENAME_RETURN(OK);
+		}
+		symbol = context.token.get_name();
+		r_result.start = { context.token.start_column, context.token.start_line };
+		r_result.end = { context.token.end_column, context.token.end_line };
 	}
-
-	r_result.start = { context.node->start_column, context.node->start_line };
-	r_result.end = { context.node->end_column, context.node->end_line };
 	r_result.symbol = symbol;
 
 	if (ClassDB::class_exists(symbol)) {

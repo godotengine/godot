@@ -370,6 +370,7 @@ public:
 		int start_column = 0, end_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
+		GDScriptTokenizer::Token token;
 
 		DataType datatype;
 
@@ -504,12 +505,10 @@ public:
 	};
 
 	struct AwaitNode : public ExpressionNode {
-		IdentifierNode *keyword = nullptr;
 		ExpressionNode *to_await = nullptr;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
-			_get_nodes_push(keyword, p_nodes, p_deep);
 			_get_nodes_push(to_await, p_nodes, p_deep);
 		}
 
@@ -1759,6 +1758,7 @@ public:
 
 	enum RefactorRenameType {
 		REFACTOR_RENAME_TYPE_NONE,
+		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
 		REFACTOR_RENAME_TYPE_ANNOTATION, // Annotation (following @).
 		REFACTOR_RENAME_TYPE_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
 		REFACTOR_RENAME_TYPE_ASSIGN, // Assignment based on type (e.g. enum values).
@@ -1786,6 +1786,7 @@ public:
 
 	struct RefactorRenameContext : ParsingContext {
 		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
+		GDScriptTokenizer::Token token;
 	};
 
 private:
@@ -1916,6 +1917,7 @@ private:
 		node->next = list;
 		list = node;
 
+		node->token = previous;
 		reset_extents(node, previous);
 		nodes_in_progress.push_back(node);
 
@@ -1966,6 +1968,7 @@ private:
 	void override_refactor_rename_context(const Node *p_for_node, RefactorRenameType p_type, Node *p_node, int p_argument = -1);
 	void make_refactor_rename_context(RefactorRenameType p_type, Node *p_node, int p_argument = -1);
 	void make_refactor_rename_context(RefactorRenameType p_type, Variant::Type p_builtin_type);
+	void make_refactor_rename_context(RefactorRenameType p_type, GDScriptTokenizer::Token p_token);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
