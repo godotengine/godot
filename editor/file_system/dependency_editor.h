@@ -37,15 +37,37 @@
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
+class LineEdit;
+class MenuButton;
+
+enum class DependencyEditorSortBy {
+	TYPE,
+	TYPE_REVERSE,
+	NAME,
+	NAME_REVERSE,
+	PATH,
+	PATH_REVERSE,
+	MAX,
+};
+
+enum class DependencyEditorColumn {
+	TYPE,
+	NAME,
+	PATH,
+	MAX,
+};
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
 	Tree *tree = nullptr;
 	Button *fixdeps = nullptr;
+	LineEdit *filter = nullptr;
+	MenuButton *menu_sort = nullptr;
 
 	EditorFileDialog *search = nullptr;
 
+	DependencyEditorSortBy sort_by = DependencyEditorSortBy::PATH;
 	String replacing;
 	String editing;
 	List<String> missing;
@@ -54,13 +76,20 @@ class DependencyEditor : public AcceptDialog {
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button);
+	void _filter_changed(const String &p_text);
+	List<String> _filter_deps(const List<String> &p_deps);
 	void _fix_all();
 	void _update_list();
-
+	void _update_menu_sort();
+	MenuButton *_create_sort_menu_button();
+	void _sort_popup(int p_id);
 	void _update_file();
 
 public:
 	void edit(const String &p_path);
+	static bool _sort_by_type(const String &p_a, const String &p_b, bool p_reverse);
+	static bool _sort_by_path(const String &p_a, const String &p_b, bool p_reverse);
+	static bool _sort_by_file(const String &p_a, const String &p_b, bool p_reverse);
 	DependencyEditor();
 };
 
