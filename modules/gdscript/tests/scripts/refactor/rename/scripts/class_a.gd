@@ -30,9 +30,15 @@ signal signal_of_a
 
 var property_of_a
 
+
 func func_of_a():
 	prints("EnumOfInnerInnerB value:", B.InnerB.InnerInnerB.EnumOfInnerInnerB.ENUM_VALUE_1)
-	pass
+
+	for i in range(5):
+		if i == 3:
+			break
+		if i % 2 == 0:
+			continue
 
 
 func _func_of_a_underscore():
