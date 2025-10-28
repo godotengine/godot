@@ -30,6 +30,8 @@
 
 #include "export.h"
 
+#include "template_modifier.h"
+
 #include "core/io/image_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -40,7 +42,7 @@
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
-	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 public:
@@ -189,7 +191,7 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 
 Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	if (p_preset->get("application/modify_resources")) {
-		_rcedit_add_data(p_preset, p_path);
+		_add_data(p_preset, p_path);
 	}
 	return OK;
 }
@@ -249,34 +251,9 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 }
 
-Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
-	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
-
-	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find rcedit executable at \"%s\"."), rcedit_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (rcedit_path == String()) {
-		rcedit_path = "rcedit"; // try to run rcedit from PATH
-	}
-
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
-
-	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (wine_path == String()) {
-		wine_path = "wine"; // try to run wine from PATH
-	}
-#endif
-
+Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
-	String tmp_icon_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("_rcedit.ico");
+	String tmp_icon_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("_tmp.ico");
 	if (!icon_path.empty()) {
 		if (_process_icon(p_preset, icon_path, tmp_icon_path) != OK) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
@@ -284,78 +261,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		}
 	}
 
-	String file_verion = p_preset->get("application/file_version");
-	String product_version = p_preset->get("application/product_version");
-	String company_name = p_preset->get("application/company_name");
-	String product_name = p_preset->get("application/product_name");
-	String file_description = p_preset->get("application/file_description");
-	String copyright = p_preset->get("application/copyright");
-	String trademarks = p_preset->get("application/trademarks");
-	String comments = p_preset->get("application/comments");
-
-	List<String> args;
-	args.push_back(p_path);
-	if (icon_path != String()) {
-		args.push_back("--set-icon");
-		args.push_back(tmp_icon_path);
-	}
-	if (file_verion != String()) {
-		args.push_back("--set-file-version");
-		args.push_back(file_verion);
-	}
-	if (product_version != String()) {
-		args.push_back("--set-product-version");
-		args.push_back(product_version);
-	}
-	if (company_name != String()) {
-		args.push_back("--set-version-string");
-		args.push_back("CompanyName");
-		args.push_back(company_name);
-	}
-	if (product_name != String()) {
-		args.push_back("--set-version-string");
-		args.push_back("ProductName");
-		args.push_back(product_name);
-	}
-	if (file_description != String()) {
-		args.push_back("--set-version-string");
-		args.push_back("FileDescription");
-		args.push_back(file_description);
-	}
-	if (copyright != String()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalCopyright");
-		args.push_back(copyright);
-	}
-	if (trademarks != String()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalTrademarks");
-		args.push_back(trademarks);
-	}
-
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	args.push_front(rcedit_path);
-	rcedit_path = wine_path;
-#endif
-
-	String str;
-	Error err = OS::get_singleton()->execute(rcedit_path, args, true, nullptr, &str, nullptr, true);
-
-	if (FileAccess::exists(tmp_icon_path)) {
-		DirAccess::remove_file_or_error(tmp_icon_path);
-	}
-
-	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
-		return err;
-	}
-	print_line("rcedit (" + p_path + "): " + str);
-
-	if (str.find("Fatal error") != -1) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("rcedit failed to modify executable: %s."), str));
-		return FAILED;
-	}
+	TemplateModifier::modify(p_preset, p_path, tmp_icon_path);
 
 	return OK;
 }
@@ -536,11 +442,6 @@ bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<Edito
 	String err = "";
 	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates);
 
-	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
-	if (p_preset->get("application/modify_resources") && rcedit_path.empty()) {
-		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > rcedit) to change the icon or app information data.") + "\n";
-	}
-
 	if (!err.empty()) {
 		r_error = err;
 	}
@@ -670,17 +571,12 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 
 void register_windows_exporter() {
 #ifndef ANDROID_ENABLED
-	EDITOR_DEF("export/windows/rcedit", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/windows/signtool", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #else
 	EDITOR_DEF("export/windows/osslsigncode", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
-	// On non-Windows we need WINE to run rcedit
-	EDITOR_DEF("export/windows/wine", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/wine", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 #endif
 
