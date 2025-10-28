@@ -3234,9 +3234,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
+	reset_extents(identifier, previous);
+	update_extents(identifier);
+	complete_extents(identifier);
 	await->identifier = identifier;
 	identifier->name = previous.get_name();
-	reset_extents(identifier, previous);
 	make_refactor_rename_context(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
 
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
