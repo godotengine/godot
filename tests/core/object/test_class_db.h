@@ -714,7 +714,7 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
 
 		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
 			SignalData signal;
