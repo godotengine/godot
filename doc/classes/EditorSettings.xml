@@ -252,7 +252,7 @@
 		</member>
 		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
-			[b]Warning:[/b] Enabling this setting can cause stuttering when running a project with a large amount of nodes (typically a few thousands of nodes or more), even if the editor window isn't focused. This is due to the remote scene tree being updated every second regardless of whether the editor is focused.
+			[b]Warning:[/b] Enabling this setting can cause stuttering when running a project with a large amount of nodes (typically a few thousand nodes or more), even if the editor window isn't focused. This is due to the remote scene tree being updated every second regardless of whether the editor is focused.
 		</member>
 		<member name="debugger/auto_switch_to_stack_trace" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Stack Trace[/b] panel when the debugger hits a breakpoint or steps.
@@ -321,7 +321,7 @@
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
 		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
-			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
+			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This setting can also be changed in the Scene dock's top menu.
 		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
@@ -1182,7 +1182,7 @@
 			Control which property editors are colored when they are opened.
 			- [b]Containers &amp; Resources:[/b] Color all Array, Dictionary, and Resource Editors.
 			- [b]Resources:[/b] Color all Resource Editors.
-			- [b]External Resources:[/b] Color Resource Editors that edits an external resource.
+			- [b]External Resources:[/b] Color Resource Editors that edit an external resource.
 		</member>
 		<member name="interface/inspector/open_resources_in_current_inspector" type="bool" setter="" getter="">
 			If [code]true[/code], subresources can be edited in the current inspector view. If the resource type is defined in [member interface/inspector/resources_to_open_in_new_inspector] or if this setting is [code]false[/code], attempting to edit a subresource always opens a new inspector view.

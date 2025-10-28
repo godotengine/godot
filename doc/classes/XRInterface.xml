@@ -54,7 +54,7 @@
 		<method name="get_supported_environment_blend_modes">
 			<return type="Array" />
 			<description>
-				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
+				Returns an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
 			</description>
 		</method>
 		<method name="get_system_info">

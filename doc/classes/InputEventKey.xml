@@ -117,7 +117,7 @@
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
-			The key Unicode character code (when relevant), shifted by modifier keys. Unicode character codes for composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information. Unicode character codes are meant for text input.
+			The key Unicode character code (when relevant), shifted by modifier keys. Unicode character codes for graphemes and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information. Unicode character codes are meant for text input.
 			[b]Note:[/b] This property is set by the engine only for a pressed event. If the event is sent by an IME or a virtual keyboard, no corresponding key released event is sent.
 		</member>
 	</members>

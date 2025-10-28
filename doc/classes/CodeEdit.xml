@@ -138,7 +138,7 @@
 		<method name="create_code_region">
 			<return type="void" />
 			<description>
-				Creates a new code region with the selection. At least one single line comment delimiter have to be defined (see [method add_comment_delimiter]).
+				Creates a new code region with the selection. At least one single line comment delimiter has to be defined (see [method add_comment_delimiter]).
 				A code region is a part of code that is highlighted when folded and can help organize your script.
 				Code region start and end tags can be customized (see [method set_code_region_tags]).
 				Code regions are delimited using start and end tags (respectively [code]region[/code] and [code]endregion[/code] by default) preceded by one line comment delimiter. (eg. [code]#region[/code] and [code]#endregion[/code])
@@ -674,7 +674,7 @@
 			Marks the option as a keyword.
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
-			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+			The option is local to the location of the code completion query - e.g. a local variable. Subsequent location values represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
 			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.

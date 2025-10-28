@@ -77,7 +77,7 @@
 		<method name="is_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if screen reader is support by this implementation.
+				Returns [code]true[/code] if screen reader is supported by this implementation.
 			</description>
 		</method>
 		<method name="set_window_focused">
@@ -220,7 +220,7 @@
 		<method name="update_set_checked">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
-			<param index="1" name="checekd" type="bool" />
+			<param index="1" name="checked" type="bool" />
 			<description>
 				Sets element checked state.
 			</description>
@@ -772,7 +772,7 @@
 			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
 		</constant>
 		<constant name="ROLE_TEXT_RUN" value="47" enum="AccessibilityRole">
-			Unifor text run.
+			Uniform text run.
 			Note: This role is used for internal text elements, and should not be assigned to nodes.
 		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">

@@ -447,7 +447,7 @@
 			If [code]true[/code], the width is equal to the largest column width of all columns.
 		</member>
 		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="ItemList.ScrollHintMode" default="0">
-			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
+			The way in which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.

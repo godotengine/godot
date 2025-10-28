@@ -264,7 +264,7 @@
 			If [code]true[/code], shows a search bar at the top of the [PopupMenu] for filtering items. See [member search_bar_min_item_count] for dynamically controlling its visibility based on the number of items.
 		</member>
 		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
-			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
+			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well as items that match the individual characters of the search query, but not in sequence.
 			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
 		</member>
 		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">

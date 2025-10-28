@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StaticBody2D" inherits="PhysicsBody2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 2D physics body that can't be moved by external forces. When moved manually, it doesn't affect other bodies in its path.
+		A 2D physics body unaffected by external forces. When moved manually, it doesn't affect other bodies in its path.
 	</brief_description>
 	<description>
 		A static 2D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationMixer]s (with [member AnimationMixer.callback_mode_process] set to [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS]), and [RemoteTransform2D].

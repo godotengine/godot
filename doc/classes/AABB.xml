@@ -4,7 +4,7 @@
 		A 3D axis-aligned bounding box.
 	</brief_description>
 	<description>
-		The [AABB] built-in [Variant] type represents an axis-aligned bounding box in a 3D space. It is defined by its [member position] and [member size], which are [Vector3]. It is frequently used for fast overlap tests (see [method intersects]). Although [AABB] itself is axis-aligned, it can be combined with [Transform3D] to represent a rotated or skewed bounding box.
+		The [AABB] built-in [Variant] type represents an axis-aligned bounding box in a 3D space. It is defined by its [member position] and [member size], which are [Vector3]. It is frequently used for fast overlap tests (see [method intersects]). [AABB] is axis-aligned, but it can be used with [Transform3D] to represent a rotated or skewed bounding box.
 		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2]. There is no version of [AABB] that uses integer coordinates.
 		[b]Note:[/b] Negative values for [member size] are not supported. With negative size, most [AABB] methods do not work correctly. Use [method abs] to get an equivalent [AABB] with a non-negative size.
 		[b]Note:[/b] In a boolean context, an [AABB] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector3.ZERO]). Otherwise, it always evaluates to [code]true[/code].
@@ -255,7 +255,7 @@
 		<method name="has_surface" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this bounding box has a surface or a length, that is, at least one component of [member size] is greater than [code]0[/code]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if any [member size] axis is greater than [code]0[/code].
 			</description>
 		</method>
 		<method name="has_volume" qualifiers="const">
@@ -310,7 +310,7 @@
 			<param index="1" name="dir" type="Vector3" />
 			<description>
 				Returns the first point where this bounding box and the given ray intersect, as a [Vector3]. If no intersection occurs, returns [code]null[/code].
-				The ray begin at [param from], faces [param dir] and extends towards infinity.
+				The ray begins at [param from], faces [param dir] and extends towards infinity.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">

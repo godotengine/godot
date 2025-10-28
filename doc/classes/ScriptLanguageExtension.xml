@@ -400,7 +400,7 @@
 		<constant name="LOOKUP_RESULT_MAX" value="11" enum="LookupResultType">
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
-			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+			The option is local to the location of the code completion query - e.g. a local variable. Subsequent location values represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
 			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.

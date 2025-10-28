@@ -548,7 +548,7 @@
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 		<constant name="PARAM_TURB_VEL_INFLUENCE" value="13" enum="Parameter">
-			Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum und maximum influence on each particles velocity.
+			Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum and maximum influence on each particles velocity.
 		</constant>
 		<constant name="PARAM_TURB_INIT_DISPLACEMENT" value="14" enum="Parameter">
 			Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum and maximum displacement of the particles spawn position.

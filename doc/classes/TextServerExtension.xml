@@ -26,7 +26,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Optional, implement if font supports extra spacing or baseline offset.
-				Creates a new variation existing font which is reusing the same glyph cache and font data.
+				Creates a new variation of an existing font which is reusing the same glyph cache and font data.
 			</description>
 		</method>
 		<method name="_create_shaped_text" qualifiers="virtual required">
@@ -95,7 +95,7 @@
 			<param index="5" name="color" type="Color" />
 			<param index="6" name="oversampling" type="float" />
 			<description>
-				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_font_draw_glyph_outline" qualifiers="virtual required const">
@@ -109,7 +109,7 @@
 			<param index="6" name="color" type="Color" />
 			<param index="7" name="oversampling" type="float" />
 			<description>
-				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size]. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_font_get_antialiasing" qualifiers="virtual const">
@@ -1428,7 +1428,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character position closest to the [param pos].
+				Returns grapheme position closest to the [param pos].
 			</description>
 		</method>
 		<method name="_shaped_text_draw" qualifiers="virtual const">
@@ -1441,7 +1441,7 @@
 			<param index="5" name="color" type="Color" />
 			<param index="6" name="oversampling" type="float" />
 			<description>
-				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_shaped_text_draw_outline" qualifiers="virtual const">
@@ -1455,7 +1455,7 @@
 			<param index="6" name="color" type="Color" />
 			<param index="7" name="oversampling" type="float" />
 			<description>
-				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="_shaped_text_duplicate" qualifiers="virtual required">
@@ -1494,7 +1494,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
 			<description>
-				Returns array of the composite character boundaries.
+				Returns array of the grapheme boundaries.
 			</description>
 		</method>
 		<method name="_shaped_text_get_custom_ellipsis" qualifiers="virtual const">
@@ -1531,7 +1531,7 @@
 			<param index="1" name="start" type="int" />
 			<param index="2" name="end" type="int" />
 			<description>
-				Returns dominant direction of in the range of text.
+				Returns dominant direction in the range of text.
 			</description>
 		</method>
 		<method name="_shaped_text_get_ellipsis_glyph_count" qualifiers="virtual required const">
@@ -1574,7 +1574,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character's bounds as offsets from the start of the line.
+				Returns grapheme's bounds as offsets from the start of the line.
 			</description>
 		</method>
 		<method name="_shaped_text_get_inferred_direction" qualifiers="virtual const">
@@ -1768,7 +1768,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character end position closest to the [param pos].
+				Returns grapheme end position closest to the [param pos].
 			</description>
 		</method>
 		<method name="_shaped_text_next_grapheme_pos" qualifiers="virtual const">
@@ -1793,7 +1793,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="pos" type="int" />
 			<description>
-				Returns composite character start position closest to the [param pos].
+				Returns grapheme start position closest to the [param pos].
 			</description>
 		</method>
 		<method name="_shaped_text_prev_grapheme_pos" qualifiers="virtual const">
@@ -1937,7 +1937,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns array of the composite character boundaries.
+				Returns array of the grapheme boundaries.
 			</description>
 		</method>
 		<method name="_string_get_word_breaks" qualifiers="virtual const">

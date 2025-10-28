@@ -134,7 +134,7 @@
 			<param index="4" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new multistate item with text [param label].
-				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
+				Contrary to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 				[codeblock]
 				func _ready():
@@ -704,7 +704,7 @@
 			[b]Note:[/b] When enabled, [member allow_search] is ignored.
 		</member>
 		<member name="search_bar_fuzzy_search_enabled" type="bool" setter="set_search_bar_fuzzy_search_enabled" getter="is_search_bar_fuzzy_search_enabled" default="true">
-			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well items that match the individual characters of the search query, but not in sequence.
+			If [code]true[/code], enables fuzzy searching in the [PopupMenu] search bar. This allows the search results to include items that almost match the search query, as well as items that match the individual characters of the search query, but not in sequence.
 			Use [member search_bar_fuzzy_search_max_misses] to set the maximum number of mismatches allowed in the search results.
 		</member>
 		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">

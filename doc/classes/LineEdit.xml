@@ -138,7 +138,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the correct column at the end of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				Returns the correct column at the end of a grapheme like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the grapheme. Also returns the correct column with the caret at mid grapheme and for non-graphemes.
 				[b]Note:[/b] To check at caret location use [code]get_next_composite_character_column(get_caret_column())[/code]
 			</description>
 		</method>
@@ -146,7 +146,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the correct column at the start of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				Returns the correct column at the start of a grapheme like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the grapheme. Also returns the correct column with the caret at mid grapheme and for non-graphemes.
 				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_column())[/code]
 			</description>
 		</method>
@@ -264,7 +264,7 @@
 			The text's horizontal alignment.
 		</member>
 		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
-			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
+			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire grapheme such as ❤️‍🩹, instead of deleting part of the grapheme.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], makes the caret blink.
@@ -279,8 +279,8 @@
 			If [code]true[/code], the [LineEdit] will always show the caret, even if not editing or focus is lost.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
-			Allow moving caret, selecting and removing the individual composite character components.
-			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
+			Allow moving caret, selecting and removing the individual grapheme components.
+			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual grapheme components.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
 			If [code]true[/code], the [LineEdit] will show a clear button if [member text] is not empty, which can be used to clear the text quickly.

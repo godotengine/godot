@@ -12,7 +12,7 @@
 		a_vector=Vector3(1, 0, 2)
 		[/codeblock]
 		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
-		The following example shows how to create a simple [ConfigFile] and save it on disc:
+		The following example shows how to create a simple [ConfigFile] and save it on disk:
 		[codeblocks]
 		[gdscript]
 		# Create new ConfigFile object.

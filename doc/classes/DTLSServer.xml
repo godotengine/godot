@@ -26,7 +26,7 @@
 				var peer = server.take_connection()
 				var dtls_peer = dtls.take_connection(peer)
 				if dtls_peer.get_status() != PacketPeerDTLS.STATUS_HANDSHAKING:
-					continue # It is normal that 50% of the connections fails due to cookie exchange.
+					continue # It is normal that 50% of the connections fail due to cookie exchange.
 				print("Peer connected!")
 				peers.append(dtls_peer)
 
@@ -63,7 +63,7 @@
 					PacketPeerDtls dtlsPeer = _dtls.TakeConnection(peer);
 					if (dtlsPeer.GetStatus() != PacketPeerDtls.Status.Handshaking)
 					{
-						continue; // It is normal that 50% of the connections fails due to cookie exchange.
+						continue; // It is normal that 50% of the connections fail due to cookie exchange.
 					}
 					GD.Print("Peer connected!");
 					_peers.Add(dtlsPeer);

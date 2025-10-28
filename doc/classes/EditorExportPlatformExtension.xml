@@ -265,7 +265,7 @@
 		<method name="get_config_missing_templates" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] is export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+				Returns [code]true[/code] if export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
 			</description>
 		</method>
 		<method name="set_config_error" qualifiers="const">
@@ -279,7 +279,7 @@
 			<return type="void" />
 			<param index="0" name="missing_templates" type="bool" />
 			<description>
-				Set to [code]true[/code] is export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+				Set to [code]true[/code] if export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
 			</description>
 		</method>
 	</methods>

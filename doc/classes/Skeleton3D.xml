@@ -69,7 +69,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns an array containing the bone indexes of all the child node of the passed in bone, [param bone_idx].
+				Returns an array containing the bone indexes of all the child nodes of the passed in bone, [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
@@ -414,7 +414,7 @@
 		</signal>
 		<signal name="skeleton_updated">
 			<description>
-				Emitted when the final pose has been calculated will be applied to the skin in the update process.
+				Emitted when the final pose has been calculated and will be applied to the skin in the update process.
 				This means that all [SkeletonModifier3D] processing is complete. In order to detect the completion of the processing of each [SkeletonModifier3D], use [signal SkeletonModifier3D.modification_processed].
 			</description>
 		</signal>

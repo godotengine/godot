@@ -432,7 +432,7 @@
 			<description>
 				Adds a control to the bottom panel (together with Output, Debug, Animation, etc.). Returns a reference to a button that is outside the scene tree. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
 				[param shortcut] is a shortcut that, when activated, will toggle the bottom panel's visibility. The shortcut object is only set when this control is added to the bottom panel.
-				[b]Note[/b] See the default editor bottom panel shortcuts in the Editor Settings for inspiration. By convention, they all use [kbd]Alt[/kbd] modifier.
+				[b]Note:[/b] See the default editor bottom panel shortcuts in the Editor Settings for inspiration. By convention, they all use the [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -825,7 +825,7 @@
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				Emitted when the given [param resource] was saved on disc. See also [signal scene_saved].
+				Emitted when the given [param resource] was saved on disk. See also [signal scene_saved].
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -843,7 +843,7 @@
 		<signal name="scene_saved">
 			<param index="0" name="filepath" type="String" />
 			<description>
-				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved].
+				Emitted when a scene was saved on disk. The argument is a file path to the saved scene. See also [signal resource_saved].
 			</description>
 		</signal>
 	</signals>

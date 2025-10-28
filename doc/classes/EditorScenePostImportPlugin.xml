@@ -70,7 +70,7 @@
 			<return type="void" />
 			<param index="0" name="scene" type="Node" />
 			<description>
-				Pre-process the scene. This function is called right after the scene format loader loaded the scene and no changes have been made.
+				Pre-process the scene. This function is called right after the scene format loader loads the scene and no changes have been made.
 				Pre-process may be used to adjust internal import options in the [code]"nodes"[/code], [code]"meshes"[/code], [code]"animations"[/code] or [code]"materials"[/code] keys inside [code]get_option_value("_subresources")[/code].
 			</description>
 		</method>

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[Skeleton2D] parents a hierarchy of [Bone2D] nodes. It holds a reference to each [Bone2D]'s rest pose and acts as a single point of access to its bones.
-		To set up different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. The inverse kinematics be applied by increasing [member SkeletonModificationStack2D.modification_count] and creating the desired number of modifications.
+		To set up different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. The inverse kinematics can be applied by increasing [member SkeletonModificationStack2D.modification_count] and creating the desired number of modifications.
 	</description>
 	<tutorials>
 		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>

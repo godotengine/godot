@@ -59,7 +59,7 @@
 			<param index="0" name="outline" type="PackedVector2Array" />
 			<param index="1" name="index" type="int" />
 			<description>
-				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position.
+				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed index.
 			</description>
 		</method>
 		<method name="add_polygon">
@@ -165,7 +165,7 @@
 			<return type="void" />
 			<param index="0" name="vertices" type="PackedVector2Array" />
 			<description>
-				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
+				Sets the vertices that can then be indexed to create polygons with the [method add_polygon] method.
 			</description>
 		</method>
 	</methods>

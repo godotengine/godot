@@ -16,7 +16,7 @@
 			The size of the [url=https://en.wikipedia.org/wiki/Fast_Fourier_transform]Fast Fourier transform[/url] buffer. Higher values smooth out the effect over time, but have greater latency. The effects of this higher latency are especially noticeable on audio signals that have sudden amplitude changes.
 		</member>
 		<member name="oversampling" type="int" setter="set_oversampling" getter="get_oversampling" default="4">
-			The oversampling factor to use. Higher values result in better quality, but are more demanding on the CPU and may cause audio cracking if the CPU can't keep up.
+			The oversampling factor to use. Higher values result in better quality, but are more demanding on the CPU and may cause audio crackling if the CPU can't keep up.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch scale to use. [code]1.0[/code] is the default pitch and plays sounds unaffected. [member pitch_scale] can range from 0 (infinitely low pitch, inaudible) to 16 (16 times higher than the initial pitch).

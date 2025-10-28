@@ -296,7 +296,7 @@
 		</member>
 		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="1">
 			Ordinarily, tracks can be set to [constant Animation.UPDATE_DISCRETE] to update infrequently, usually when using nearest interpolation.
-			However, when blending with [constant Animation.UPDATE_CONTINUOUS] several results are considered. The [member callback_mode_discrete] specify it explicitly. See also [enum AnimationCallbackModeDiscrete].
+			However, when blending with [constant Animation.UPDATE_CONTINUOUS] several results are considered. The [member callback_mode_discrete] specifies it explicitly. See also [enum AnimationCallbackModeDiscrete].
 			To make the blended results look good, it is recommended to set this to [constant ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to update every frame during blending. Other values exist for compatibility and they are fine if there is no blending, but not so, may produce artifacts.
 		</member>
 		<member name="callback_mode_method" type="int" setter="set_callback_mode_method" getter="get_callback_mode_method" enum="AnimationMixer.AnimationCallbackModeMethod" default="0">
@@ -360,12 +360,12 @@
 		</signal>
 		<signal name="mixer_applied">
 			<description>
-				Notifies when the blending result related have been applied to the target objects.
+				Notifies when the blending results have been applied to the target objects.
 			</description>
 		</signal>
 		<signal name="mixer_updated">
 			<description>
-				Notifies when the property related process have been updated.
+				Notifies when the property-related process has been updated.
 			</description>
 		</signal>
 	</signals>

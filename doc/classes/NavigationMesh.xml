@@ -76,7 +76,7 @@
 			<return type="void" />
 			<param index="0" name="vertices" type="PackedVector3Array" />
 			<description>
-				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
+				Sets the vertices that can then be indexed to create polygons with the [method add_polygon] method.
 			</description>
 		</method>
 	</methods>

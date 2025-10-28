@@ -4,7 +4,7 @@
 		The [AimModifier3D] rotates a bone to look at a reference bone.
 	</brief_description>
 	<description>
-		This is a simple version of [LookAtModifier3D] that only allows bone to the reference without advanced options such as angle limitation or time-based interpolation.
+		This is a simple version of [LookAtModifier3D] that only allows a bone to look at the reference without advanced options such as angle limitation or time-based interpolation.
 		The feature is simplified, but instead it is implemented with smooth tracking without euler, see [method set_use_euler].
 	</description>
 	<tutorials>
@@ -67,8 +67,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets relative option in the setting at [param index] to [param enabled].
-				If sets [param enabled] to [code]true[/code], the rotation is applied relative to the pose.
-				If sets [param enabled] to [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [AimModifier3D]'s result.
+				If [param enabled] is set to [code]true[/code], the rotation is applied relative to the pose.
+				If [param enabled] is set to [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [AimModifier3D]'s result.
 			</description>
 		</method>
 		<method name="set_use_euler">
@@ -76,8 +76,8 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If sets [param enabled] to [code]true[/code], it provides rotation with using euler.
-				If sets [param enabled] to [code]false[/code], it provides rotation with using rotation by arc generated from the forward axis vector and the vector toward the reference.
+				If [param enabled] is set to [code]true[/code], it provides rotation with using euler.
+				If [param enabled] is set to [code]false[/code], it provides rotation with using rotation by arc generated from the forward axis vector and the vector toward the reference.
 			</description>
 		</method>
 		<method name="set_use_secondary_rotation">
@@ -85,7 +85,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If sets [param enabled] to [code]true[/code], it provides rotation by two axes. It is enabled only if [method is_using_euler] is [code]true[/code].
+				If [param enabled] is set to [code]true[/code], it provides rotation by two axes. It is enabled only if [method is_using_euler] is [code]true[/code].
 			</description>
 		</method>
 	</methods>

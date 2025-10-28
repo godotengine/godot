@@ -70,7 +70,7 @@
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns a [Rect2] representing the shapes boundary.
+				Returns a [Rect2] representing the shape's boundary.
 			</description>
 		</method>
 	</methods>

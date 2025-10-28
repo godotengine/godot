@@ -1554,7 +1554,7 @@
 			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13" enum="SliderJointParam">
-			A factor applied to the all rotation once the limit is surpassed.
+			A factor applied to all rotations once the limit is surpassed.
 			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14" enum="SliderJointParam">
@@ -1566,7 +1566,7 @@
 			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16" enum="SliderJointParam">
-			A factor that gets applied to the all rotation in the limits.
+			A factor that gets applied to all rotations in the limits.
 			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
 		</constant>
 		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17" enum="SliderJointParam">

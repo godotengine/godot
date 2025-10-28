@@ -219,7 +219,7 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/position" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The position of for the vertex at [code]index[/code].
+			The position of the vertex at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/tilt" type="float" setter="" getter="" default="0.0">

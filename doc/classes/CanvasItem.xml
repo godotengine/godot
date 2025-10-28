@@ -58,7 +58,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
+				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -71,7 +71,7 @@
 			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
+				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_circle">
@@ -256,7 +256,7 @@
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="12" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
@@ -276,7 +276,7 @@
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="13" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -379,7 +379,7 @@
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="10" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws [param text] using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
@@ -407,7 +407,7 @@
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="11" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] outline using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draws [param text] outline using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -501,7 +501,7 @@
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
+				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]'s coordinate system.
 			</description>
 		</method>
 		<method name="get_instance_shader_parameter" qualifiers="const">

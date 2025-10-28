@@ -186,7 +186,7 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/position" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
-			The position of for the vertex at [code]index[/code].
+			The position of the vertex at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 	</members>

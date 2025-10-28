@@ -74,7 +74,7 @@
 			<description>
 				Returns the projected obstructions as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
 				- [code]vertices[/code] - A [PackedFloat32Array] that defines the outline points of the projected shape.
-				- [code]carve[/code] - A [bool] that defines how the projected shape affects the navigation mesh baking. If [code]true[/code] the projected shape will not be affected by addition offsets, e.g. agent radius.
+				- [code]carve[/code] - A [bool] that defines how the projected shape affects the navigation mesh baking. If [code]true[/code] the projected shape will not be affected by additional offsets, e.g. agent radius.
 			</description>
 		</method>
 		<method name="get_traversable_outlines" qualifiers="const">

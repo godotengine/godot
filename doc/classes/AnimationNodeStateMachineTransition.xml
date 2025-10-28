@@ -45,7 +45,7 @@
 		</member>
 		<member name="xfade_time" type="float" setter="set_xfade_time" getter="get_xfade_time" default="0.0">
 			The time to cross-fade between this state and the next.
-			[b]Note:[/b] [AnimationNodeStateMachine] transitions the current state immediately after the start of the fading. The precise remaining time can only be inferred from the main animation. When [AnimationNodeOutput] is considered as the most upstream, so the [member xfade_time] is not scaled depending on the downstream delta. See also [member AnimationNodeOneShot.fadeout_time].
+			[b]Note:[/b] [AnimationNodeStateMachine] transitions the current state immediately after the start of the fading. The precise remaining time can only be inferred from the main animation. When [AnimationNodeOutput] is considered as the most upstream, the [member xfade_time] is not scaled depending on the downstream delta. See also [member AnimationNodeOneShot.fadeout_time].
 		</member>
 	</members>
 	<signals>

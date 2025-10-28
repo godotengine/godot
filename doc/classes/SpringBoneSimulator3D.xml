@@ -319,7 +319,7 @@
 			<return type="void" />
 			<description>
 				Resets a simulating state with respect to the current bone pose.
-				It is useful to prevent the simulation result getting violent. For example, calling this immediately after a call to [method AnimationPlayer.play] without a fading, or within the previous [signal SkeletonModifier3D.modification_processed] signal if it's condition changes significantly.
+				It is useful to prevent the simulation result getting violent. For example, calling this immediately after a call to [method AnimationPlayer.play] without a fading, or within the previous [signal SkeletonModifier3D.modification_processed] signal if its condition changes significantly.
 			</description>
 		</method>
 		<method name="set_center_bone">
@@ -637,7 +637,7 @@
 	</methods>
 	<members>
 		<member name="external_force" type="Vector3" setter="set_external_force" getter="get_external_force" default="Vector3(0, 0, 0)">
-			The constant force that always affected bones. It is equal to the result when the parent [Skeleton3D] moves at this speed in the opposite direction.
+			The constant force that always affects bones. It is equal to the result when the parent [Skeleton3D] moves at this speed in the opposite direction.
 			This is useful for effects such as wind and anti-gravity.
 		</member>
 		<member name="mutable_bone_axes" type="bool" setter="set_mutable_bone_axes" getter="are_bone_axes_mutable" default="true">

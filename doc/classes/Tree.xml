@@ -73,7 +73,7 @@
 			<return type="void" />
 			<description>
 				Makes the currently focused cell visible.
-				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row is focused logically.
+				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row are focused logically.
 				[b]Note:[/b] Despite the name of this method, the focus cursor itself is only visible in [constant SELECT_MULTI] mode.
 			</description>
 		</method>
@@ -398,7 +398,7 @@
 			If [code]true[/code], the tree's root is hidden.
 		</member>
 		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="Tree.ScrollHintMode" default="0">
-			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
+			The way in which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
 		</member>
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.

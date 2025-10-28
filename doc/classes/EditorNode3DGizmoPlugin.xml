@@ -53,7 +53,7 @@
 			<param index="3" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a group of subgizmos being edited (see [method _subgizmos_intersect_ray] and [method _subgizmos_intersect_frustum]). This usually means creating an [UndoRedo] action for the change, using the current transforms as "do" and the [param restores] transforms as "undo".
-				If the [param cancel] argument is [code]true[/code], the [param restores] transforms should be directly set, without any [UndoRedo] action. As with all subgizmo methods, transforms are given in local space respect to the gizmo's Node3D. Called for this plugin's active gizmos.
+				If the [param cancel] argument is [code]true[/code], the [param restores] transforms should be directly set, without any [UndoRedo] action. As with all subgizmo methods, transforms are given in local space with respect to the gizmo's Node3D. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_create_gizmo" qualifiers="virtual const">
@@ -101,7 +101,7 @@
 			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<param index="1" name="subgizmo_id" type="int" />
 			<description>
-				Override this method to return the current transform of a subgizmo. As with all subgizmo methods, the transform should be in local space respect to the gizmo's Node3D. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
+				Override this method to return the current transform of a subgizmo. As with all subgizmo methods, the transform should be in local space with respect to the gizmo's Node3D. This transform will be requested at the start of an edit and used in the [code]restore[/code] argument in [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_has_gizmo" qualifiers="virtual const">
@@ -117,7 +117,7 @@
 			<param index="1" name="handle_id" type="int" />
 			<param index="2" name="secondary" type="bool" />
 			<description>
-				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
+				Override this method to return [code]true[/code] whenever the given handle should be highlighted in the editor. The [param secondary] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_is_selectable_when_hidden" qualifiers="virtual const">
@@ -161,7 +161,7 @@
 			<param index="1" name="camera" type="Camera3D" />
 			<param index="2" name="frustum_planes" type="Plane[]" />
 			<description>
-				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and [param frustum_planes], this method should return which subgizmos are contained within the frustums. The [param frustum_planes] argument consists of an array with all the [Plane]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and [param frustum_planes], this method should return which subgizmos are contained within the frustum. The [param frustum_planes] argument consists of an array with all the [Plane]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_ray" qualifiers="virtual const">

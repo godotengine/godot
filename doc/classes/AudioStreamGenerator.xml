@@ -68,7 +68,7 @@
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">
-			The length of the buffer to generate (in seconds). Lower values result in less latency, but require the script to generate audio data faster, resulting in increased CPU usage and more risk for audio cracking if the CPU can't keep up.
+			The length of the buffer to generate (in seconds). Lower values result in less latency, but require the script to generate audio data faster, resulting in increased CPU usage and more risk for audio crackling if the CPU can't keep up.
 		</member>
 		<member name="mix_rate" type="float" setter="set_mix_rate" getter="get_mix_rate" default="44100.0">
 			The sample rate to use (in Hz). Higher values are more demanding for the CPU to generate, but result in better quality.

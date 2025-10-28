@@ -144,7 +144,7 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the hyperbolic arc (also called inverse) tangent of [param x], returning a value in radians. Use it to get the angle from an angle's tangent in hyperbolic space if [param x] is between -1 and 1 (non-inclusive).
-				In mathematics, the inverse hyperbolic tangent is only defined for -1 &lt; [param x] &lt; 1 in the real set, so values equal or lower to -1 for [param x] return negative [constant @GDScript.INF] and values equal or higher than 1 return positive [constant @GDScript.INF] in order to prevent [method atanh] from returning [constant @GDScript.NAN].
+				In mathematics, the inverse hyperbolic tangent is only defined for -1 &lt; [param x] &lt; 1 in the real set, so values lower than or equal to -1 for [param x] return negative [constant @GDScript.INF] and values equal or higher than 1 return positive [constant @GDScript.INF] in order to prevent [method atanh] from returning [constant @GDScript.NAN].
 				[codeblock]
 				var a = atanh(0.9) # Returns 1.47221948958322
 				tanh(a) # Returns 0.9
@@ -813,7 +813,7 @@
 			<description>
 				Returns the integer modulus of [param x] divided by [param y] that wraps equally in positive and negative.
 				[codeblock]
-				print("#(i)  (i % 3)   (posmod(i, 3))")
+				print("(i)  (i % 3)   (posmod(i, 3))")
 				for i in range(-3, 4):
 					print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
@@ -1498,10 +1498,10 @@
 				var a = wrap(4, 5, 10)
 				# a is 9 (int)
 
-				var a = wrap(7, 5, 10)
+				a = wrap(7, 5, 10)
 				# a is 7 (int)
 
-				var a = wrap(10.5, 5, 10)
+				a = wrap(10.5, 5, 10)
 				# a is 5.5 (float)
 				[/codeblock]
 			</description>

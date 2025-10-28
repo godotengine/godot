@@ -46,9 +46,9 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
+				If the process is successfully created, this method returns the new process's ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="create_process">
@@ -605,7 +605,7 @@
 			<return type="String" />
 			<description>
 				Returns the branded version used in marketing, followed by the build number (on Windows), the version number (on macOS), or the SDK version and incremental build number (on Android). Examples include [code]11 (build 22000)[/code], [code]Sequoia (15.0.0)[/code], and [code]15 (SDK 35 build abc528-11988f)[/code].
-				This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				This value can then be appended to [method get_name] to get a full, human-readable operating system name. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
 				[b]Note:[/b] This method is only supported on Windows, macOS, and Android. On other operating systems, it returns the same value as [method get_version].
 			</description>
 		</method>
@@ -857,7 +857,7 @@
 			<param index="0" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], when opening a file for writing, a temporary file is used in its place. When closed, it is automatically applied to the target file.
-				This can useful when files may be opened by other applications, such as antiviruses, text editors, or even the Godot editor itself.
+				This can be useful when files may be opened by other applications, such as antiviruses, text editors, or even the Godot editor itself.
 			</description>
 		</method>
 		<method name="shell_open">

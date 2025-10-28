@@ -128,7 +128,7 @@
 			Sets the member keyword colors. All existing member keyword will be removed. The [Dictionary] key is the member keyword. The value is the member keyword color.
 		</member>
 		<member name="member_variable_color" type="Color" setter="set_member_variable_color" getter="get_member_variable_color" default="Color(0, 0, 0, 1)">
-			Sets color for member variables. A member variable is non-keyword, non-function string proceeded with a '.'.
+			Sets color for member variables. A member variable is non-keyword, non-function string preceded with a '.'.
 		</member>
 		<member name="number_color" type="Color" setter="set_number_color" getter="get_number_color" default="Color(0, 0, 0, 1)">
 			Sets the color for numbers.

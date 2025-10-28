@@ -51,7 +51,7 @@
 			<param index="3" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_dropcap" qualifiers="const">
@@ -61,7 +61,7 @@
 			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="3" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_dropcap_outline" qualifiers="const">
@@ -72,7 +72,7 @@
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw drop cap outline into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw drop cap outline into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_line" qualifiers="const">
@@ -83,7 +83,7 @@
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_line_outline" qualifiers="const">
@@ -95,7 +95,7 @@
 			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw outline of the single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw outline of the single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_outline" qualifiers="const">
@@ -107,7 +107,7 @@
 			<param index="4" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as a font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
