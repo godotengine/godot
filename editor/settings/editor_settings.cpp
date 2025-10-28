@@ -1824,6 +1824,9 @@ float EditorSettings::get_auto_display_scale() {
 		return 1.0;
 	}
 
+#if defined(WINDOWS_ENABLED)
+	return DisplayServer::get_singleton()->screen_get_dpi(screen) / 96.0;
+#else
 	// Use the smallest dimension to use a correct display scale on portrait displays.
 	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
 	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
@@ -1839,7 +1842,9 @@ float EditorSettings::get_auto_display_scale() {
 		return 0.75;
 	}
 	return 1.0;
-#endif
+#endif // defined(WINDOWS_ENABLED)
+
+#endif // defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
 // Shortcuts
