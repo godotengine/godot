@@ -249,6 +249,7 @@ private:
 	struct DecalAtlas {
 		struct Texture {
 			int panorama_to_dp_users;
+			int area_light_users;
 			int users;
 			Rect2 uv_rect;
 		};
@@ -632,8 +633,8 @@ public:
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
 	void decal_atlas_remove_texture(RID p_texture);
 
-	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
-	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false, bool p_is_area_light_texture = false) override;
 
 	_FORCE_INLINE_ Vector3 decal_get_size(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);

@@ -944,9 +944,9 @@ float integrate_edge_hill(vec3 p0, vec3 p1) {
 	float theta_sintheta = a / b;
 
 	if (x < 0.0) {
-		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta;
+		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
 	}
-	return theta_sintheta * cross(p0, p1).y;
+	return theta_sintheta * cross(p0, p1);
 }
 
 float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
@@ -956,9 +956,9 @@ float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
 		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
 		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
 		vec3 half_point = normalize(half_point_t);
-		return integrate_edge_hill(p_proj0, half_point) + integrate_edge_hill(half_point, p_proj1);
+		return integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y;
 	}
-	return integrate_edge_hill(p_proj0, p_proj1);
+	return integrate_edge_hill(p_proj0, p_proj1).y;
 }
 
 void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
@@ -1065,7 +1065,43 @@ void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
 	}
 }
 
-void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], out float integral, out hvec3 color) {
+vec3 fetch_ltc_diffuse_filtered_texture(vec4 texture_rect, vec3 L0, vec3 L1, vec3 L2, vec3 L3) {
+	L0 = normalize(L0);
+	L1 = normalize(L1);
+	L2 = normalize(L2);
+	L3 = normalize(L3);
+
+	vec3 F = vec3(0.0); // form factor
+	F += integrate_edge_hill(L0, L1);
+	F += integrate_edge_hill(L1, L2);
+	F += integrate_edge_hill(L2, L3);
+	F += integrate_edge_hill(L3, L0);
+
+	//return F;
+	vec2 uv;
+
+	if (dot(F, F) < 1e-16) {
+		uv = vec2(0.5);
+	} else {
+		vec3 lx = L1 - L0;
+		vec3 ly = L3 - L0;
+		vec3 ln = cross(lx, ly);
+
+		float d = dot(L0, ln) / dot(F, ln);
+		vec3 isec = d * F;
+
+		vec3 li = isec - L0; // light to intersection
+		uv = vec2(dot(li, lx) / dot(lx, lx), dot(li, ly) / dot(ly, ly));
+	}
+
+	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw;
+	return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, 0.0).xyz; // todo: do we need a unique area_texture sampler?
+}
+
+vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out hvec3 tex_color) {
+	// default is white
+	tex_color = vec3(1.0);
+	
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
@@ -1080,13 +1116,15 @@ void ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 point
 	L[2] = M_inv * points[2];
 	L[3] = M_inv * points[3];
 
-	color = hvec3(1.0); // can sample texture for colored area lights here.
-
 	int n = 0;
 	clip_quad_to_horizon(L, n);
 	if (n == 0) {
 		integral = 0.0;
 		return;
+	}
+
+	if (texture_rect != vec4(0.0)) {
+		tex_color = fetch_ltc_diffuse_filtered_texture(texture_rect, B*points[0], B*points[1], B*points[2], B*points[3]);
 	}
 
 	vec3 L_proj[5];
@@ -1325,8 +1363,8 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	hvec3 ltc_diffuse_tex_color = vec3(1.0);
 	float ltc_specular = float(0.0);
 	hvec3 ltc_specular_tex_color = vec3(1.0);
-	ltc_evaluate(vertex, normal, eye_vec, mat3(1), points, ltc_diffuse, ltc_diffuse_tex_color);
-	ltc_evaluate(vertex, normal, eye_vec, M_inv, points, ltc_specular, ltc_specular_tex_color);
+	ltc_evaluate(vertex, normal, eye_vec, mat3(1), points, area_lights.data[idx].projector_rect, ltc_diffuse, ltc_diffuse_tex_color);
+	ltc_evaluate(vertex, normal, eye_vec, M_inv, points, area_lights.data[idx].projector_rect, ltc_specular, ltc_specular_tex_color);
 	ltc_diffuse = max(ltc_diffuse, 0.0) / (2.0 * M_PI);
 	ltc_specular = max(ltc_specular, 0.0) / (2.0 * M_PI);
 

@@ -81,6 +81,8 @@ public:
 	virtual Vector2 light_area_get_size(RID p_light) const = 0;
 	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
 	virtual bool light_area_get_normalize_energy(RID p_light) const = 0;
+	virtual void light_area_set_texture(RID p_light, RID p_texture) = 0;
+	virtual RID light_area_get_texture(RID p_light) const = 0;
 
 	virtual bool light_has_shadow(RID p_light) const = 0;
 

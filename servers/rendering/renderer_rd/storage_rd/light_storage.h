@@ -82,6 +82,7 @@ private:
 		RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
 		Vector2 area_size = Vector2(1, 1);
 		bool area_normalize_energy = true;
+		RID area_texture;
 		uint64_t version = 0;
 
 		Dependency dependency;
@@ -528,6 +529,8 @@ public:
 	virtual Vector2 light_area_get_size(RID p_light) const override;
 	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) override;
 	virtual bool light_area_get_normalize_energy(RID p_light) const override;
+	virtual void light_area_set_texture(RID p_light, RID p_texture) override;
+	virtual RID light_area_get_texture(RID p_light) const override;
 
 	virtual RS::LightType light_get_type(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);

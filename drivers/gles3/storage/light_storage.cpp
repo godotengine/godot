@@ -357,6 +357,13 @@ bool LightStorage::light_area_get_normalize_energy(RID p_light) const {
 	return light->area_normalize_energy;
 }
 
+void LightStorage::light_area_set_texture(RID p_light, RID p_texture) {
+	// not implemented
+}
+RID LightStorage::light_area_get_texture(RID p_light) const {
+	return RID(); // not implemented
+}
+
 RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, RS::LIGHT_BAKE_DISABLED);

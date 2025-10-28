@@ -3071,6 +3071,11 @@ void TextureStorage::update_decal_atlas() {
 			si.size.height = (src_tex->height / border) + 1;
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
+			if (E.value.area_light_users > 0) { // reserve additional size for gaussian-filtered mipmaps
+				si.size.width = (src_tex->width * 3 / 2 / border) + 2;
+				si.pixel_size = Size2i(src_tex->width * 3 / 2, src_tex->height);
+			}
+
 			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
 			}
@@ -3158,6 +3163,27 @@ void TextureStorage::update_decal_atlas() {
 		decal_atlas.size.height = border;
 	}
 
+	//{ // filter area light textures
+	//	RID area_light_mipmap_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), decal_atlas.texture, 0, 0);
+	//	Vector<RID> area_light_fb_texture_vec;
+	//	area_light_fb_texture_vec.push_back(area_light_mipmap_tex);
+	//	RID area_light_fb = RD::get_singleton()->framebuffer_create(area_light_fb_texture_vec);
+	//	Color clear_color(0, 0, 0, 0);
+	//	Vector<Color> cc;
+	//	cc.push_back(clear_color);
+	//	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(area_light_fb, RD::DRAW_CLEAR_ALL, cc);
+	//	for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
+	//		if (E.value.area_light_users > 0) {
+	//			// TODO: we might need an intermediate buffer if src == dst is illegal
+	//			//copy_effects->gaussian_blur(); // later
+	//			DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+	//			Texture *src_tex = get_texture(E.key);
+	//			copy_effects->copy_to_atlas_fb(src_tex->rd_texture, area_light_fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+	//		}
+	//	}
+	//	copy_effects->copy_to_fb_rect(area_light_mipmap_tex, area_light_fb, Rect2i(Point2i(), mm.size));
+	//}
+
 	//blit textures
 
 	RD::TextureFormat tformat;
@@ -3213,7 +3239,24 @@ void TextureStorage::update_decal_atlas() {
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
-					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+
+					if (t->area_light_users == 0) {
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					} else {
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, Rect2(t->uv_rect.position.x, t->uv_rect.position.y, t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y), draw_list, false, t->panorama_to_dp_users > 0);
+					}
+					/*
+					if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
+						int l2 = floor(log2(MIN(t->uv_rect.size.x * decal_atlas.size.x, t->uv_rect.size.y * decal_atlas.size.y)));
+						for (int j = 0; j < l2; j++) {
+							Rect2 uv_rect = t->uv_rect;
+							uv_rect.position.x += uv_rect.size.x / 3 * 2;
+							uv_rect.position.y += uv_rect.size.y - uv_rect.size.y / pow(2, j);
+							uv_rect.size = uv_rect.size / pow(2, j+1);
+							// TODO: should / could we use copy_to_fb_rect instead?
+							copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+						}
+					}*/
 				}
 
 				RD::get_singleton()->draw_list_end();
@@ -3229,11 +3272,12 @@ void TextureStorage::update_decal_atlas() {
 	}
 }
 
-void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp, bool p_is_area_light_texture) {
 	if (!decal_atlas.textures.has(p_texture)) {
 		DecalAtlas::Texture t;
 		t.users = 1;
 		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
+		t.area_light_users = p_is_area_light_texture ? 1 : 0;
 		decal_atlas.textures[p_texture] = t;
 		decal_atlas.dirty = true;
 	} else {
@@ -3242,16 +3286,23 @@ void TextureStorage::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_t
 		if (p_panorama_to_dp) {
 			t->panorama_to_dp_users++;
 		}
+		if (p_is_area_light_texture) {
+			t->area_light_users++;
+		}
 	}
 }
 
-void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
+void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp, bool p_is_area_light_texture) {
 	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
 	ERR_FAIL_NULL(t);
 	t->users--;
 	if (p_panorama_to_dp) {
 		ERR_FAIL_COND(t->panorama_to_dp_users == 0);
 		t->panorama_to_dp_users--;
+	}
+	if (p_is_area_light_texture) {
+		ERR_FAIL_COND(t->area_light_users == 0);
+		t->area_light_users--;
 	}
 	if (t->users == 0) {
 		decal_atlas.textures.erase(p_texture);
