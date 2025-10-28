@@ -318,7 +318,7 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 		margins->queue_free();
 		margins = nullptr;
 	} else if (p_enabled && !margins) {
-		Size2 borders = Size2(4, 4) * EDSCALE;
+		Size2 borders = vec2_from_scalar(4 * EDSCALE);
 		margins = memnew(MarginContainer);
 		margins->add_theme_constant_override("margin_right", borders.width);
 		margins->add_theme_constant_override("margin_top", borders.height);
@@ -501,7 +501,7 @@ ScreenSelect::ScreenSelect() {
 	}
 
 	// Create the popup.
-	const Size2 borders = Size2(4, 4) * EDSCALE;
+	const Size2 borders = vec2_from_scalar(4 * EDSCALE);
 
 	popup = memnew(PopupPanel);
 	popup->connect("popup_hide", callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));

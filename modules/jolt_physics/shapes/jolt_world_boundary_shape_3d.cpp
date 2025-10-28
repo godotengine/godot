@@ -67,7 +67,7 @@ void JoltWorldBoundaryShape3D::set_data(const Variant &p_data) {
 AABB JoltWorldBoundaryShape3D::get_aabb() const {
 	const float size = JoltProjectSettings::world_boundary_shape_size;
 	const float half_size = size / 2.0f;
-	return AABB(Vector3(-half_size, -half_size, -half_size), Vector3(size, half_size, size));
+	return AABB(vec3_from_scalar(-half_size), Vector3(size, half_size, size));
 }
 
 String JoltWorldBoundaryShape3D::to_string() const {

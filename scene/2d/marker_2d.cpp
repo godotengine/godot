@@ -64,7 +64,7 @@ void Marker2D::_draw_cross() {
 #ifdef DEBUG_ENABLED
 Rect2 Marker2D::_edit_get_rect() const {
 	real_t extents = get_gizmo_extents();
-	return Rect2(Point2(-extents, -extents), Size2(extents * 2, extents * 2));
+	return Rect2(vec2_from_scalar(-extents), vec2_from_scalar(extents * 2));
 }
 
 bool Marker2D::_edit_use_rect() const {

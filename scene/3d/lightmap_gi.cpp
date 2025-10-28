@@ -745,7 +745,7 @@ void LightmapGI::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cel
 
 		AABB subcell;
 		subcell.position = Vector3(pos) * p_cell_size;
-		subcell.size = Vector3(half_size, half_size, half_size) * p_cell_size;
+		subcell.size = vec3_from_scalar(half_size * p_cell_size);
 
 		if (!Geometry3D::triangle_box_overlap(subcell.get_center(), subcell.size * 0.5, p_triangle)) {
 			continue;

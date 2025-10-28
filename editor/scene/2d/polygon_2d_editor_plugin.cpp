@@ -932,7 +932,7 @@ void Polygon2DEditor::_center_view() {
 	Size2 texture_size;
 	if (node->get_texture().is_valid()) {
 		texture_size = node->get_texture()->get_size();
-		Vector2 zoom_factor = (canvas->get_size() - Vector2(1, 1) * 50 * EDSCALE) / texture_size;
+		Vector2 zoom_factor = (canvas->get_size() - vec2_from_scalar(50 * EDSCALE)) / texture_size;
 		zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
 	} else {
 		zoom_widget->set_zoom(EDSCALE);
@@ -981,7 +981,7 @@ void Polygon2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
 		max_corner = max_corner.max(points[i]);
 	}
 	Size2 page_size = canvas->get_size() / draw_zoom;
-	Vector2 margin = Vector2(50, 50) * EDSCALE / draw_zoom;
+	Vector2 margin = vec2_from_scalar(50 * EDSCALE) / draw_zoom;
 	min_corner -= page_size - margin;
 	max_corner += page_size - margin;
 
@@ -1182,7 +1182,7 @@ void Polygon2DEditor::_canvas_draw() {
 		if (weight_r) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
-			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
+			canvas->draw_rect(Rect2(draw_pos - vec2_from_scalar(2 * EDSCALE), vec2_from_scalar(int(5 * EDSCALE))), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
 		} else {
 			if (i < uv_draw_max) {
 				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
@@ -1364,7 +1364,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas_background = memnew(Panel);
 	uv_main_hsc->add_child(canvas_background);
 	canvas_background->set_h_size_flags(SIZE_EXPAND_FILL);
-	canvas_background->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+	canvas_background->set_custom_minimum_size(vec2_from_scalar(200 * EDSCALE));
 	canvas_background->set_clip_contents(true);
 
 	preview_polygon = memnew(Polygon2D);

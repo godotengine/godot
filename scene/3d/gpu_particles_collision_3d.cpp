@@ -82,7 +82,7 @@ real_t GPUParticlesCollisionSphere3D::get_radius() const {
 }
 
 AABB GPUParticlesCollisionSphere3D::get_aabb() const {
-	return AABB(Vector3(-radius, -radius, -radius), Vector3(radius * 2, radius * 2, radius * 2));
+	return AABB(vec3_from_scalar(-radius), vec3_from_scalar(radius * 2));
 }
 
 GPUParticlesCollisionSphere3D::GPUParticlesCollisionSphere3D() :
@@ -506,7 +506,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	params.cells = (float *)cells_data.ptrw();
 	params.size = sdf_size;
 	params.cell_size = cell_size;
-	params.cell_offset = aabb.position + Vector3(cell_size * 0.5, cell_size * 0.5, cell_size * 0.5);
+	params.cell_offset = aabb.position + vec3_from_scalar(cell_size * 0.5);
 	params.bvh = bvh.ptr();
 	params.triangles = faces.ptr();
 	params.thickness = th;
@@ -933,7 +933,7 @@ real_t GPUParticlesAttractorSphere3D::get_radius() const {
 }
 
 AABB GPUParticlesAttractorSphere3D::get_aabb() const {
-	return AABB(Vector3(-radius, -radius, -radius), Vector3(radius * 2, radius * 2, radius * 2));
+	return AABB(vec3_from_scalar(-radius), vec3_from_scalar(radius * 2));
 }
 
 GPUParticlesAttractorSphere3D::GPUParticlesAttractorSphere3D() :

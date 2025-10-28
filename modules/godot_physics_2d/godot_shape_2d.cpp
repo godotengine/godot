@@ -122,7 +122,7 @@ void GodotWorldBoundaryShape2D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(arr.size() != 2);
 	normal = arr[0];
 	d = arr[1];
-	configure(Rect2(Vector2(-1e15, -1e15), Vector2(1e15 * 2, 1e15 * 2)));
+	configure(Rect2(vec2_from_scalar(-1e15), vec2_from_scalar(1e15 * 2)));
 }
 
 Variant GodotWorldBoundaryShape2D::get_data() const {

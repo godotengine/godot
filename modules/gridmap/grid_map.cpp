@@ -684,7 +684,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 		xform.basis = _ortho_bases[c.rot];
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(vec3_from_scalar(cell_scale));
 		if (baked_meshes.is_empty()) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!item_id_to_multimesh_item_placements.has(c.item)) {
@@ -1330,7 +1330,7 @@ Array GridMap::get_meshes() const {
 		xform.basis = _ortho_bases[E.value.rot];
 
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(vec3_from_scalar(cell_scale));
 
 		meshes.push_back(xform * mesh_library->get_item_mesh_transform(id));
 		meshes.push_back(mesh);
@@ -1384,7 +1384,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 		xform.basis = _ortho_bases[E.value.rot];
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(vec3_from_scalar(cell_scale));
 
 		const OctantKey ok = get_octant_key_from_index_key(key);
 

@@ -174,7 +174,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 					const Vector3 safe_scale = get_global_basis().get_scale().abs().maxf(0.001);
 					// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
 					const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
-					const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
+					const Vector3 uniform_max_scale = vec3_from_scalar(scaling_max_value);
 					const Transform3D debug_transform = Transform3D(Basis().scaled(uniform_max_scale), get_global_position());
 
 					RS::get_singleton()->instance_set_transform(fake_agent_radius_debug_instance_rid, debug_transform);
@@ -452,7 +452,7 @@ void NavigationObstacle3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 	if (obstacle_radius > 0.0) {
 		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
 		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
-		const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
+		const Vector3 uniform_max_scale = vec3_from_scalar(scaling_max_value);
 		const Transform3D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform3D(Basis().scaled(uniform_max_scale), obstacle->get_global_position());
 
 		Vector<Vector3> obstruction_circle_vertices;

@@ -91,7 +91,7 @@ Transform2D CanvasLayer::get_transform() const {
 Transform2D CanvasLayer::get_final_transform() const {
 	if (is_following_viewport()) {
 		Transform2D follow;
-		follow.scale(Vector2(get_follow_viewport_scale(), get_follow_viewport_scale()));
+		follow.scale(vec2_from_scalar(get_follow_viewport_scale()));
 		if (vp) {
 			follow = vp->get_canvas_transform() * follow;
 		}

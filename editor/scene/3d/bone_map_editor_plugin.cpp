@@ -341,7 +341,7 @@ void BoneMapper::update_group_idx() {
 
 void BoneMapper::_pick_bone(const StringName &p_bone_name) {
 	picker_key_name = p_bone_name;
-	picker->popup_bones_tree(Size2(500, 500) * EDSCALE);
+	picker->popup_bones_tree(vec2_from_scalar(500 * EDSCALE));
 }
 
 void BoneMapper::_apply_picker_selection() {
