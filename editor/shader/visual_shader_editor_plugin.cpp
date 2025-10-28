@@ -2112,6 +2112,9 @@ void VisualShaderEditor::_update_preview_parameter_list() {
 	List<PropertyInfo> properties;
 	RenderingServer::get_singleton()->get_shader_parameter_list(visual_shader->get_rid(), &properties);
 
+	// check whether properties changed
+	bool is_dirty = false;
+
 	HashSet<String> params_to_remove;
 	for (const KeyValue<String, PropertyInfo> &E : parameter_props) {
 		params_to_remove.insert(E.key);
@@ -2127,6 +2130,11 @@ void VisualShaderEditor::_update_preview_parameter_list() {
 			preview_material->set_shader_parameter(param_name, RenderingServer::get_singleton()->shader_get_parameter_default(visual_shader->get_rid(), param_name));
 		}
 
+		if (!params_to_remove.has(param_name)) {
+			// new parameter, mark dirty
+			is_dirty = true;
+		}
+
 		parameter_props.insert(param_name, prop);
 		params_to_remove.erase(param_name);
 
@@ -2135,6 +2143,11 @@ void VisualShaderEditor::_update_preview_parameter_list() {
 			current_prop->update_editor_property_status();
 			current_prop->update_cache();
 		}
+	}
+
+	if (!is_dirty && params_to_remove.is_empty()) {
+		// skip fresh preview parameter list
+		return;
 	}
 
 	_update_preview_parameter_tree();
@@ -5206,6 +5219,9 @@ void VisualShaderEditor::_param_selected() {
 	_clear_preview_param();
 
 	TreeItem *item = parameters->get_selected();
+
+	ERR_FAIL_NULL_MSG(item, "Cannot find selected TreeItem.");
+
 	selected_param_id = item->get_meta("id");
 
 	PropertyInfo pi = parameter_props.get(selected_param_id);
