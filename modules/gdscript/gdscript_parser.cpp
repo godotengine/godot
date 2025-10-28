@@ -2300,6 +2300,7 @@ GDScriptParser::BreakNode *GDScriptParser::parse_break() {
 	}
 	BreakNode *break_node = alloc_node<BreakNode>();
 	complete_extents(break_node);
+	make_refactor_rename_context(RefactorRenameType::REFACTOR_RENAME_TYPE_CONTROL_FLOW, previous);
 	end_statement(R"("break")");
 	return break_node;
 }
@@ -2311,6 +2312,7 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	current_suite->has_continue = true;
 	ContinueNode *cont = alloc_node<ContinueNode>();
 	complete_extents(cont);
+	make_refactor_rename_context(RefactorRenameType::REFACTOR_RENAME_TYPE_CONTROL_FLOW, previous);
 	end_statement(R"("continue")");
 	return cont;
 }
