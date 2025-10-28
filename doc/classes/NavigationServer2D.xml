@@ -255,7 +255,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="velocity" type="Vector2" />
 			<description>
-				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position far away use [method agent_set_velocity_forced] instead to reset the internal velocity state.
+				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agents and obstacles. When an agent is teleported to a new position far away use [method agent_set_velocity_forced] instead to reset the internal velocity state.
 			</description>
 		</method>
 		<method name="agent_set_velocity_forced">
@@ -439,7 +439,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
-				Set the links's navigation layers. This allows selecting links from a path request (when using [method NavigationServer2D.map_get_path]).
+				Sets the link's navigation layers. This allows selecting links from a path request (when using [method NavigationServer2D.map_get_path]).
 			</description>
 		</method>
 		<method name="link_set_owner_id">
@@ -736,7 +736,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Set the obstacles's [code]avoidance_layers[/code] bitmask.
+				Sets the obstacle's [code]avoidance_layers[/code] bitmask.
 			</description>
 		</method>
 		<method name="obstacle_set_map">

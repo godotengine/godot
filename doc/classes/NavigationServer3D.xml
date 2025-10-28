@@ -278,8 +278,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets if the agent uses the 2D avoidance or the 3D avoidance while avoidance is enabled.
-				If [code]true[/code] the agent calculates avoidance velocities in 3D for the xyz-axis, e.g. for games that take place in air, underwater or space. The 3D using agent only avoids other 3D avoidance using agent's. The 3D using agent only reacts to radius based avoidance obstacles. The 3D using agent ignores any vertices based obstacles. The 3D using agent only avoids other 3D using agent's.
-				If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axis ignoring the y-axis. The 2D using agent only avoids other 2D avoidance using agent's. The 2D using agent reacts to radius avoidance obstacles. The 2D using agent reacts to vertices based avoidance obstacles. The 2D using agent only avoids other 2D using agent's. 2D using agents will ignore other 2D using agents or obstacles that are below their current position or above their current position including the agents height in 2D avoidance.
+				If [code]true[/code] the agent calculates avoidance velocities in 3D for the xyz-axes, e.g. for games that take place in air, underwater, or space. The 3D agent only avoids other 3D avoidance agents. The 3D agent only reacts to radius based avoidance obstacles. The 3D agent ignores any vertices based obstacles. The 3D agent only avoids other 3D agents.
+				If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axes ignoring the y-axis. The 2D agent only avoids other 2D avoidance agents. The 2D agent reacts to radius avoidance obstacles. The 2D agent reacts to vertex based avoidance obstacles. The 2D agent only avoids other 2D agents. 2D agents will ignore other 2D agents or obstacles that are below their current position or above their current position including the agent's height in 2D avoidance.
 			</description>
 		</method>
 		<method name="agent_set_velocity">
@@ -287,7 +287,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="velocity" type="Vector3" />
 			<description>
-				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position use [method agent_set_velocity_forced] as well to reset the internal simulation velocity.
+				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agents and obstacles. When an agent is teleported to a new position use [method agent_set_velocity_forced] as well to reset the internal simulation velocity.
 			</description>
 		</method>
 		<method name="agent_set_velocity_forced">
@@ -471,7 +471,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
-				Set the links's navigation layers. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
+				Sets the link's navigation layers. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
 			</description>
 		</method>
 		<method name="link_set_owner_id">
@@ -831,7 +831,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Set the obstacles's [code]avoidance_layers[/code] bitmask.
+				Sets the obstacle's [code]avoidance_layers[/code] bitmask.
 			</description>
 		</method>
 		<method name="obstacle_set_height">
