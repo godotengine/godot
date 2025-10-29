@@ -1826,6 +1826,22 @@ void TileMapLayer::_update_cells_callback(bool p_force_cleanup) {
 	GDVIRTUAL_CALL(_update_cells, dirty_cell_positions, forced_cleanup);
 }
 
+TileSet::TerrainsPattern TileMapLayer::get_terrain_pattern_of_cell(const Vector2i &p_position, int p_terrain_set) const {
+	TileMapCell cell = get_cell(p_position);
+	if (cell.source_id != TileSet::INVALID_SOURCE) {
+		TileSetSource *source = *tile_set->get_source(cell.source_id);
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source) {
+			// Get tile data.
+			TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
+			if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+				return tile_data->get_terrains_pattern();
+			}
+		}
+	}
+	return TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+}
+
 TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const TerrainConstraints &p_constraints, TileSet::TerrainsPattern p_current_pattern) const {
 	if (tile_set.is_null()) {
 		return TileSet::TerrainsPattern();
@@ -2370,19 +2386,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 		const Vector2i &coords = p_to_replace[i];
 
 		// Select the best pattern for the given constraints.
-		TileSet::TerrainsPattern current_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-		TileMapCell cell = get_cell(coords);
-		if (cell.source_id != TileSet::INVALID_SOURCE) {
-			TileSetSource *source = *tile_set->get_source(cell.source_id);
-			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-			if (atlas_source) {
-				// Get tile data.
-				TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-				if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-					current_pattern = tile_data->get_terrains_pattern();
-				}
-			}
-		}
+		TileSet::TerrainsPattern current_pattern = get_terrain_pattern_of_cell(coords, p_terrain_set);
 		TileSet::TerrainsPattern pattern = _get_best_terrain_pattern_for_constraints(p_terrain_set, coords, constraints, current_pattern);
 
 		// Update the constraint set with the new ones.
@@ -3017,19 +3021,7 @@ void TileMapLayer::set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p
 			set_cell(kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-			TileMapCell cell = get_cell(kv.key);
-			if (cell.source_id != TileSet::INVALID_SOURCE) {
-				TileSetSource *source = *tile_set->get_source(cell.source_id);
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-						in_map_terrain_pattern = tile_data->get_terrains_pattern();
-					}
-				}
-			}
+			TileSet::TerrainsPattern in_map_terrain_pattern = get_terrain_pattern_of_cell(kv.key, p_terrain_set);
 			if (in_map_terrain_pattern != kv.value) {
 				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 				set_cell(kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
@@ -3057,19 +3049,7 @@ void TileMapLayer::set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_ter
 			set_cell(kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-			TileMapCell cell = get_cell(kv.key);
-			if (cell.source_id != TileSet::INVALID_SOURCE) {
-				TileSetSource *source = *tile_set->get_source(cell.source_id);
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-						in_map_terrain_pattern = tile_data->get_terrains_pattern();
-					}
-				}
-			}
+			TileSet::TerrainsPattern in_map_terrain_pattern = get_terrain_pattern_of_cell(kv.key, p_terrain_set);
 			if (in_map_terrain_pattern != kv.value) {
 				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
 				set_cell(kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);

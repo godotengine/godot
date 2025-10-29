@@ -610,6 +610,7 @@ public:
 	Rect2 get_rect(bool &r_changed) const;
 
 	// Terrains.
+	TileSet::TerrainsPattern get_terrain_pattern_of_cell(const Vector2i &p_position, int p_terrain_set) const;
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_constraints(const Vector<Vector2i> &p_to_replace, int p_terrain_set, const TerrainConstraints &p_constraints) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_path(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true) const; // Not exposed.
