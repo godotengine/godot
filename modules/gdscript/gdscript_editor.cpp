@@ -4698,6 +4698,14 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 			case GDScriptParser::Node::ANNOTATION: {
 				symbol = static_cast<GDScriptParser::AnnotationNode *>(context.node)->name;
 			} break;
+			case GDScriptParser::Node::ARRAY: {
+				// GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(context.node);
+				// if (array_node->token.type == GDScriptTokenizer::Token::Type::EMPTY) {
+				// 	REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NONE);
+				// 	REFACTOR_RENAME_RETURN(FAILED);
+				// }
+				// symbol = array_node->token.source;
+			} break;
 			case GDScriptParser::Node::IDENTIFIER: {
 				symbol = static_cast<GDScriptParser::IdentifierNode *>(context.node)->name;
 			} break;
@@ -5096,6 +5104,10 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				break;
 			}
 			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_ANNOTATION);
+			REFACTOR_RENAME_RETURN(OK);
+		} break;
+		case GDScriptParser::REFACTOR_RENAME_TYPE_ARRAY: {
+			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_SYMBOL);
 			REFACTOR_RENAME_RETURN(OK);
 		} break;
 		default: {

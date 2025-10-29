@@ -245,6 +245,9 @@ static void run_test_cfg(const String &p_config_path) {
 				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD: {
 					refactor_result_type_as_string = "KEYWORD";
 				} break;
+				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_SYMBOL: {
+					refactor_result_type_as_string = "SYMBOL";
+				} break;
 				case ScriptLanguage::REFACTOR_RENAME_SYMBOL_RESULT_NATIVE: {
 					refactor_result_type_as_string = "NATIVE";
 				} break;
