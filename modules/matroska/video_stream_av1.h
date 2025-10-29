@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  video_coding_common.h                                                 */
+/*  video_stream_av1.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,31 +30,48 @@
 
 #pragma once
 
-#include "video_coding_av1.h"
-#include "video_coding_av1_decode.h"
-#include "video_coding_h264.h"
-#include "video_coding_h264_decode.h"
+#include "scene/resources/video_stream_encoding.h"
+#include "servers/rendering/rendering_device.h"
 
-#include <cstdint>
+class VideoStreamAV1 : public VideoStreamEncoding {
+	GDCLASS(VideoStreamAV1, VideoStreamEncoding);
 
-enum VideoCodingOperation {
-	VIDEO_OPERATION_DECODE_H264 = (1 << 0),
-	VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
-};
+private:
+	const uint8_t *src = nullptr;
+	uint8_t shift = 0;
 
-enum VideoCodingChromaSubsampling {
-	VIDEO_CODING_CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_420 = (1 << 1),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_422 = (1 << 2),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_444 = (1 << 3),
-};
+	VideoCodingAV1SequenceHeader av1_sequence_header;
 
-struct VideoProfile {
-	VideoCodingOperation operation;
-	VideoCodingChromaSubsampling chroma_subsampling = VIDEO_CODING_CHROMA_SUBSAMPLING_420;
-	uint32_t luma_bit_depth = 8;
-	uint32_t chroma_bit_depth = 8;
+	RenderingDevice *local_device;
 
-	VideoCodingH264ProfileIdc h264_profile_idc;
-	VideoCodingH264PictureLayout h264_picture_layout;
+	VideoProfile video_profile;
+	RID video_session;
+
+	RID texture_sampler;
+
+	uint64_t read_bits(uint8_t p_bits);
+	uint64_t read_uvlc();
+	uint64_t read_leb128();
+	int64_t read_su(uint8_t p_bits);
+
+	int64_t read_delta_q();
+
+	bool parse_open_bitstream_unit(VideoDecodeAV1Frame *r_av1_frame);
+	VideoCodingAV1SequenceHeader parse_sequence_header();
+	VideoDecodeAV1Frame parse_frame_header();
+	VideoDecodeAV1Frame parse_frame();
+
+	void parse_tile_info(VideoCodingAV1TileInfo *r_tile_info);
+
+public:
+	virtual void parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
+
+	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
+	virtual RID create_video_session(uint32_t p_width, uint32_t p_height) final override;
+	virtual RID create_texture_sampler(RD::SamplerState &p_sampler_template) final override;
+	virtual RID create_texture(RD::TextureFormat &p_texture_template) final override;
+
+	virtual void parse_container_block(Vector<uint8_t> p_block, RID p_dst_texture) final override;
+
+	VideoStreamAV1();
 };

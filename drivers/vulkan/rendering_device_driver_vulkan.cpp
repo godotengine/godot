@@ -566,6 +566,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -6474,7 +6475,17 @@ Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfil
 
 		r_profile->pNext = h264_decode_profile;
 		r_profile->videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
+	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
+		VkVideoDecodeAV1ProfileInfoKHR *av1_decode_profile = (VkVideoDecodeAV1ProfileInfoKHR *)malloc(sizeof(VkVideoDecodeAV1ProfileInfoKHR));
+		av1_decode_profile->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR;
+		av1_decode_profile->pNext = nullptr;
+		av1_decode_profile->stdProfile = STD_VIDEO_AV1_PROFILE_MAIN;
+		av1_decode_profile->filmGrainSupport = false;
+
+		r_profile->pNext = av1_decode_profile;
+		r_profile->videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR;
 	} else {
+		// TODO support H.265/VP9
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -6496,6 +6507,14 @@ void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProf
 		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
 		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
 		decode_capabilities.pNext = &h264_decode_capabilities;
+	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
+		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
+		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		video_capabilities.pNext = &decode_capabilities;
+
+		VkVideoDecodeAV1CapabilitiesKHR av1_decode_capabilities = {};
+		av1_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		decode_capabilities.pNext = &av1_decode_capabilities;
 	}
 
 	//TODO expose capabilities
@@ -6585,6 +6604,14 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
 		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
 		decode_capabilities.pNext = &h264_decode_capabilities;
+	} else if (p_profile.operation == VIDEO_OPERATION_DECODE_AV1) {
+		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
+		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		video_capabilities.pNext = &decode_capabilities;
+
+		VkVideoDecodeAV1CapabilitiesKHR av1_decode_capabilities = {};
+		av1_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR;
+		decode_capabilities.pNext = &av1_decode_capabilities;
 	}
 
 	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
@@ -6921,6 +6948,86 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 	video_session_info->vk_session_parameters = session_parameters;
 }
 
+void RenderingDeviceDriverVulkan::video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) {
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	StdVideoAV1SequenceHeader av1_sequence_header = {};
+	av1_sequence_header.flags.still_picture = p_sequence_header.still_picture_flag;
+	av1_sequence_header.flags.reduced_still_picture_header = p_sequence_header.reduced_still_picture_header_flag;
+	av1_sequence_header.flags.use_128x128_superblock = p_sequence_header.use_128x128_superblock_flag;
+	av1_sequence_header.flags.enable_filter_intra = p_sequence_header.enable_filter_intra_flag;
+	av1_sequence_header.flags.enable_intra_edge_filter = p_sequence_header.enable_intra_edge_filter_flag;
+	av1_sequence_header.flags.enable_interintra_compound = p_sequence_header.enable_interintra_compound_flag;
+	av1_sequence_header.flags.enable_masked_compound = p_sequence_header.enable_masked_compound_flag;
+	av1_sequence_header.flags.enable_warped_motion = p_sequence_header.enable_warped_motion_flag;
+	av1_sequence_header.flags.enable_dual_filter = p_sequence_header.enable_dual_filter_flag;
+	av1_sequence_header.flags.enable_order_hint = p_sequence_header.enable_order_hint_flag;
+	av1_sequence_header.flags.enable_jnt_comp = p_sequence_header.enable_jnt_comp_flag;
+	av1_sequence_header.flags.enable_ref_frame_mvs = p_sequence_header.enable_ref_frame_mvs_flag;
+	av1_sequence_header.flags.frame_id_numbers_present_flag = p_sequence_header.frame_id_numbers_present_flag;
+	av1_sequence_header.flags.enable_superres = p_sequence_header.enable_superres_flag;
+	av1_sequence_header.flags.enable_cdef = p_sequence_header.enable_cdef_flag;
+	av1_sequence_header.flags.enable_restoration = p_sequence_header.enable_restoration_flag;
+	av1_sequence_header.flags.film_grain_params_present = p_sequence_header.film_grain_params_present_flag;
+	av1_sequence_header.flags.timing_info_present_flag = p_sequence_header.timing_info_present_flag;
+	av1_sequence_header.flags.initial_display_delay_present_flag = p_sequence_header.initial_display_delay_present_flag;
+
+	av1_sequence_header.seq_profile = StdVideoAV1Profile(p_sequence_header.seq_profile);
+
+	av1_sequence_header.frame_width_bits_minus_1 = p_sequence_header.frame_width_bits_minus_1;
+	av1_sequence_header.frame_height_bits_minus_1 = p_sequence_header.frame_height_bits_minus_1;
+	av1_sequence_header.max_frame_width_minus_1 = p_sequence_header.max_frame_width_minus_1;
+	av1_sequence_header.max_frame_height_minus_1 = p_sequence_header.max_frame_height_minus_1;
+
+	av1_sequence_header.delta_frame_id_length_minus_2 = p_sequence_header.delta_frame_id_length_minus_2;
+	av1_sequence_header.additional_frame_id_length_minus_1 = p_sequence_header.additional_frame_id_length_minus_1;
+
+	av1_sequence_header.order_hint_bits_minus_1 = p_sequence_header.order_hint_bits - 1;
+
+	av1_sequence_header.seq_force_integer_mv = p_sequence_header.seq_force_integer_mv;
+	av1_sequence_header.seq_force_screen_content_tools = p_sequence_header.seq_force_screen_content_tools;
+
+	StdVideoAV1ColorConfig *vk_color_config = (StdVideoAV1ColorConfig *)ALLOCA(sizeof(StdVideoAV1ColorConfig));
+	vk_color_config->flags.mono_chrome = p_sequence_header.color_config.monochrome_flag;
+	vk_color_config->flags.color_range = p_sequence_header.color_config.color_range_flag;
+	vk_color_config->flags.separate_uv_delta_q = p_sequence_header.color_config.separate_uv_delta_q;
+	vk_color_config->flags.color_description_present_flag = p_sequence_header.color_config.color_description_present_flag;
+
+	vk_color_config->BitDepth = p_sequence_header.color_config.bit_depth;
+
+	vk_color_config->subsampling_x = p_sequence_header.color_config.subsampling_x;
+	vk_color_config->subsampling_y = p_sequence_header.color_config.subsampling_y;
+
+	vk_color_config->color_primaries = StdVideoAV1ColorPrimaries(p_sequence_header.color_config.color_primaries);
+	vk_color_config->transfer_characteristics = StdVideoAV1TransferCharacteristics(p_sequence_header.color_config.transfer_characteristics);
+	vk_color_config->matrix_coefficients = StdVideoAV1MatrixCoefficients(p_sequence_header.color_config.matrix_coefficients);
+	vk_color_config->chroma_sample_position = StdVideoAV1ChromaSamplePosition(p_sequence_header.color_config.chroma_sample_position);
+
+	av1_sequence_header.pColorConfig = vk_color_config;
+
+	av1_sequence_header.pTimingInfo = nullptr;
+
+	VkVideoDecodeAV1SessionParametersCreateInfoKHR av1_parameter_info = {};
+	av1_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	av1_parameter_info.pNext = nullptr;
+	av1_parameter_info.pStdSequenceHeader = &av1_sequence_header;
+
+	VkVideoSessionParametersCreateInfoKHR parameter_info = {};
+	parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	parameter_info.pNext = &av1_parameter_info;
+	parameter_info.flags = 0;
+	parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
+	parameter_info.videoSession = video_session_info->vk_session;
+
+	VkVideoSessionParametersKHR session_parameters;
+	VkResult err = vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Failed to create AV1 Session Parameters.");
+	}
+
+	video_session_info->vk_session_parameters = session_parameters;
+}
+
 void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_session) {
 	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
 
@@ -7111,6 +7218,9 @@ void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBuffe
 	end_coding.flags = 0;
 
 	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &end_coding);
+}
+
+void RenderingDeviceDriverVulkan::command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) {
 }
 
 /**************/

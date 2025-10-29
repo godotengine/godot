@@ -5491,6 +5491,9 @@ RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const Video
 void RenderingDeviceDriverD3D12::video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
 }
 
+void RenderingDeviceDriverD3D12::video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) {
+}
+
 void RenderingDeviceDriverD3D12::video_session_free(VideoSessionID p_video_session) {
 }
 
@@ -5498,6 +5501,9 @@ void RenderingDeviceDriverD3D12::command_video_session_reset(CommandBufferID p_c
 }
 
 void RenderingDeviceDriverD3D12::command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) {
+}
+
+void RenderingDeviceDriverD3D12::command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) {
 }
 
 /**************/
