@@ -436,6 +436,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			Size2 rs = right_container->get_combined_minimum_size();
+			rs.y = MAX(rs.y, rect.size.y);
 			if (is_layout_rtl()) {
 				fit_child_in_rect(right_container, Rect2(0, 0, rs.width, rs.y));
 			} else {
@@ -444,6 +445,7 @@ void EditorProperty::_notification(int p_what) {
 
 			Size2 ls = left_container->get_combined_minimum_size();
 			real_t right_size = rect.size.x + rs.x;
+			ls.y = MAX(ls.y, rect.size.y);
 			if (is_layout_rtl()) {
 				fit_child_in_rect(left_container, Rect2(right_size, 0, size.x - right_size, ls.y));
 			} else {
@@ -463,9 +465,8 @@ void EditorProperty::_notification(int p_what) {
 				size.height = bottom_editor->get_offset(SIDE_TOP) - _get_v_separation();
 			} else if (label_reference) {
 				size.height = label_reference->get_size().height;
-			} else if (label_overlayed) {
-				size.height = left_container->get_size().height;
 			}
+			size.height = MAX(size.height, left_container->get_size().height);
 
 			// Only draw the label if it's not empty.
 			if (label.is_empty()) {
