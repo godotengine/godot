@@ -163,6 +163,12 @@ public:
 		sort_custom<Comparator<T>>();
 	}
 
+	Vector<T> sorted() const {
+		Vector<T> result = *this;
+		result.sort();
+		return result;
+	}
+
 	template <typename Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, typename... Args>
 	void sort_custom(Args &&...args) {
 		Size len = _cowdata.size();
