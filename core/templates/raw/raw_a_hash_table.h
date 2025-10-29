@@ -105,11 +105,11 @@ protected:
 		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
 	}
 
-	virtual const TKey &_get_key(uint32_t idx) const = 0;
-	virtual void _resize_elements(uint32_t p_new_capacity) = 0;
-	virtual bool _is_elements_valid() const = 0;
+	_FORCE_INLINE_ virtual const TKey &_get_key(uint32_t idx) const = 0;
+	_FORCE_INLINE_ virtual void _resize_elements(uint32_t p_new_capacity) = 0;
+	_FORCE_INLINE_ virtual bool _is_elements_valid() const = 0;
 
-	uint32_t _hash(const TKey &p_key) const {
+	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
 		if (unlikely(hash == RAHT_EMPTY_HASH)) {
@@ -119,11 +119,11 @@ protected:
 		return hash;
 	}
 
-	bool _eq(const TKey &a, const TKey &b) const {
+	_FORCE_INLINE_ bool _eq(const TKey &a, const TKey &b) const {
 		return Comparator::compare(a, b);
 	}
 
-	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
+	_FORCE_INLINE_ bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
 		if (unlikely(!_is_elements_valid())) {
 			return false; // Failed lookups, no _elements.
 		}
