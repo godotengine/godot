@@ -3596,7 +3596,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 	if (grouped == nullptr) {
 		push_error(R"(Expected grouping expression.)");
 	} else {
+		grouped->token_expression_parenthesis_open = previous;
 		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after grouping expression.)*");
+		grouped->token_expression_parenthesis_close = previous;
 	}
 	return grouped;
 }

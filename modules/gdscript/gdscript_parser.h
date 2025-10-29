@@ -389,8 +389,8 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		GDScriptTokenizer::Token token_expression_parenthesis_left;
-		GDScriptTokenizer::Token token_expression_parenthesis_right;
+		GDScriptTokenizer::Token token_expression_parenthesis_open;
+		GDScriptTokenizer::Token token_expression_parenthesis_close;
 
 		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
