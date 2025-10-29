@@ -264,7 +264,6 @@ private:
 	EditorPluginList *editor_plugins_force_input_forwarding = nullptr;
 	EditorPluginList *editor_plugins_force_over = nullptr;
 	EditorPluginList *editor_plugins_over = nullptr;
-	EditorQuickOpenDialog *quick_open_color_palette = nullptr;
 	EditorResourcePreview *resource_preview = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
