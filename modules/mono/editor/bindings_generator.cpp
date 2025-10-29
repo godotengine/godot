@@ -4250,7 +4250,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
 
 		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
 			SignalInterface isignal;
