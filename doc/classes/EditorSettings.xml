@@ -225,6 +225,9 @@
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
 			A comma separated list of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files), e.g. [code]"txt,md,cfg,ini,log,json,yml,yaml,toml,xml"[/code].
 		</member>
+		<member name="docks/filesystem/thumbnail_file_size_threshold" type="int" setter="" getter="">
+			If the accumulated file size of all external and internal resources in scene exceeds this value (in bytes), will not automatically generate thumbnails.
+		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
 		</member>
