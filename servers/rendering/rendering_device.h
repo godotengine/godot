@@ -424,6 +424,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
+		RID ycbcr_sampler;
 
 		bool operator==(const TextureView &p_other) const {
 			if (format_override != p_other.format_override) {
@@ -1456,6 +1457,29 @@ public:
 	void compute_list_end();
 
 private:
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	struct VideoSession {
+		VideoProfile video_profile;
+		RDD::VideoSessionID driver_id;
+	};
+
+	RID_Owner<VideoSession, true> video_session_owner;
+
+	RDD::CommandPoolID decode_pool;
+	RDD::CommandBufferID decode_buffer;
+
+public:
+	void video_profile_get_capabilities(const VideoProfile &p_profile);
+	void video_profile_get_format_properties(const VideoProfile &p_profile);
+
+	RID video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height);
+
+	void video_session_begin();
+	void video_session_end();
+
+private:
 	/*************************/
 	/**** TRANSFER WORKER ****/
 	/*************************/
@@ -1526,9 +1550,11 @@ private:
 	RDD::CommandQueueFamilyID main_queue_family;
 	RDD::CommandQueueFamilyID transfer_queue_family;
 	RDD::CommandQueueFamilyID present_queue_family;
+	RDD::CommandQueueFamilyID decode_queue_family;
 	RDD::CommandQueueID main_queue;
 	RDD::CommandQueueID transfer_queue;
 	RDD::CommandQueueID present_queue;
+	RDD::CommandQueueID decode_queue;
 
 	/**************************/
 	/**** FRAME MANAGEMENT ****/

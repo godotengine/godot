@@ -998,6 +998,10 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	return BufferID(buf_info);
 }
 
+RDD::BufferID RenderingDeviceDriverD3D12::buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) {
+	return RDD::BufferID();
+}
+
 bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 	buf_info->texel_format = p_format;
@@ -2484,6 +2488,10 @@ RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueu
 	CommandQueueInfo *command_queue = memnew(CommandQueueInfo);
 	command_queue->d3d_queue = d3d_queue;
 	return CommandQueueID(command_queue);
+}
+
+Error RenderingDeviceDriverD3D12::command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) {
+	return OK;
 }
 
 Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
@@ -5464,6 +5472,26 @@ void RenderingDeviceDriverD3D12::end_segment() {
 	f.descriptor_allocations.resize(f.descriptor_allocation_count);
 
 	segment_begun = false;
+}
+
+/**********************/
+/**** VIDEO CODING ****/
+/**********************/
+
+void RenderingDeviceDriverD3D12::video_profile_get_capabilities(const VideoProfile &p_profile) {
+}
+
+void RenderingDeviceDriverD3D12::video_profile_get_format_properties(const VideoProfile &p_profile) {
+}
+
+RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) {
+	return RDD::VideoSessionID();
+}
+
+void RenderingDeviceDriverD3D12::video_session_free(VideoSessionID p_video_session) {
+}
+
+void RenderingDeviceDriverD3D12::command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) {
 }
 
 /**************/

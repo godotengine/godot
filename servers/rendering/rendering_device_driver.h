@@ -170,6 +170,7 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_VIDEO_DECODE_SRC_BIT = (1 << 13),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 		// There are no Vulkan-equivalent. Try to use unused/unclaimed bits.
 		BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT = (1 << 31),
@@ -187,6 +188,7 @@ public:
 	 * @return the buffer.
 	 */
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
+	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
@@ -209,6 +211,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
+		SamplerID ycbcr_sampler;
 	};
 
 	enum TextureLayout {
@@ -232,6 +235,8 @@ public:
 		TEXTURE_ASPECT_COLOR = 0,
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
+		TEXTURE_ASPECT_PLANE0 = 4,
+		TEXTURE_ASPECT_PLANE1 = 5,
 		TEXTURE_ASPECT_MAX
 	};
 
@@ -244,6 +249,8 @@ public:
 		TEXTURE_ASPECT_COLOR_BIT = (1 << TEXTURE_ASPECT_COLOR),
 		TEXTURE_ASPECT_DEPTH_BIT = (1 << TEXTURE_ASPECT_DEPTH),
 		TEXTURE_ASPECT_STENCIL_BIT = (1 << TEXTURE_ASPECT_STENCIL),
+		TEXTURE_ASPECT_PLANE0_BIT = (1 << TEXTURE_ASPECT_PLANE0),
+		TEXTURE_ASPECT_PLANE1_BIT = (1 << TEXTURE_ASPECT_PLANE1),
 	};
 
 	struct TextureSubresource {
@@ -409,7 +416,8 @@ public:
 	enum CommandQueueFamilyBits {
 		COMMAND_QUEUE_FAMILY_GRAPHICS_BIT = 0x1,
 		COMMAND_QUEUE_FAMILY_COMPUTE_BIT = 0x2,
-		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4
+		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4,
+		COMMAND_QUEUE_FAMILY_DECODE_BIT = 0x20,
 	};
 
 	// The requested command queue family must support all specified bits or it'll fail to return a valid family otherwise. If a valid surface is specified, the queue must support presenting to it.
@@ -419,6 +427,7 @@ public:
 	// ----- QUEUE -----
 
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) = 0;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) = 0;
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) = 0;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) = 0;
 
@@ -754,6 +763,19 @@ public:
 
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
 	virtual void end_segment() = 0;
+
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	DEFINE_ID(VideoSession);
+
+	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) = 0;
+	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) = 0;
+
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) = 0;
+	virtual void video_session_free(VideoSessionID p_video_session) = 0;
+
+	virtual void command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) = 0;
 
 	/**************/
 	/**** MISC ****/

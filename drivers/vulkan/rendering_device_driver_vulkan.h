@@ -227,6 +227,7 @@ public:
 	};
 
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
+	virtual BufferID buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
@@ -275,6 +276,11 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 public:
+	struct SamplerInfo {
+		VkSampler vk_sampler = VK_NULL_HANDLE;
+		VkSamplerYcbcrConversion vk_ycbcr_conversion = VK_NULL_HANDLE;
+	};
+
 	virtual SamplerID sampler_create(const SamplerState &p_state) final override;
 	virtual void sampler_free(SamplerID p_sampler) final override;
 	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) override final;
@@ -350,6 +356,7 @@ private:
 
 public:
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
+	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) override final;
 	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
 
@@ -694,6 +701,33 @@ public:
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
 
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+	struct VideoCodingSessionInfo {
+		VkVideoSessionKHR vk_session;
+		VkVideoSessionCreateInfoKHR vk_session_create_info;
+		VkVideoSessionParametersKHR vk_session_parameters;
+
+		VideoCodingOperation video_operation;
+
+		TextureID dpb_image;
+		Vector<VkImageView> dpb_views;
+		uint64_t current_dpb_index;
+
+		Vector<void *> std_reference_infos;
+	};
+
+	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
+
+	virtual void video_profile_get_capabilities(const VideoProfile &p_profile) override final;
+	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
+
+	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) override final;
+	virtual void video_session_free(VideoSessionID p_video_session) override final;
+
+	virtual void command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) override final;
+
 	/**************/
 	/**** MISC ****/
 	/**************/
@@ -728,7 +762,9 @@ private:
 			ShaderInfo,
 			UniformSetInfo,
 			RenderPassInfo,
-			CommandBufferInfo>;
+			CommandBufferInfo,
+			SamplerInfo,
+			VideoCodingSessionInfo>;
 	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/

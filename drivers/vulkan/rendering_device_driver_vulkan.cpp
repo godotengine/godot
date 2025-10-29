@@ -559,6 +559,13 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false);
 
+	// Required for video coding
+	_register_requested_device_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, false);
+	// Vulkan video extensions for hardware video processing
+	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
+
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
 	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, false);
@@ -1109,7 +1116,7 @@ Error RenderingDeviceDriverVulkan::_add_queue_create_info(LocalVector<VkDeviceQu
 	uint32_t queue_family_count = queue_family_properties.size();
 	queue_families.resize(queue_family_count);
 
-	VkQueueFlags queue_flags_mask = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	VkQueueFlags queue_flags_mask = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_VIDEO_DECODE_BIT_KHR;
 	const uint32_t max_queue_count_per_family = 1;
 	static const float queue_priorities[max_queue_count_per_family] = {};
 	for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -1238,7 +1245,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		vulkan_1_1_features.variablePointersStorageBuffer = 0;
 		vulkan_1_1_features.variablePointers = 0;
 		vulkan_1_1_features.protectedMemory = 0;
-		vulkan_1_1_features.samplerYcbcrConversion = 0;
+		vulkan_1_1_features.samplerYcbcrConversion = 1;
 		vulkan_1_1_features.shaderDrawParameters = 0;
 		create_info_next = &vulkan_1_1_features;
 	} else {
@@ -1712,6 +1719,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_STORAGE_BIT, VK_BUFFER_USAGE_
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDEX_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT, VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 
 RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
@@ -1818,6 +1826,90 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	buf_info->allocation.handle = allocation;
 	buf_info->allocation.size = alloc_info.size;
 	buf_info->size = original_size;
+
+	return BufferID(buf_info);
+}
+
+RDD::BufferID RenderingDeviceDriverVulkan::buffer_create_video_session(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const VideoProfile &p_profile) {
+	VkBufferCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	create_info.size = p_size;
+	create_info.usage = p_usage;
+	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_UNKNOWN;
+	uint32_t vma_flags_to_remove = 0;
+
+	VmaAllocationCreateInfo alloc_create_info = {};
+	switch (p_allocation_type) {
+		case MEMORY_ALLOCATION_TYPE_CPU: {
+			bool is_src = p_usage.has_flag(BUFFER_USAGE_TRANSFER_FROM_BIT);
+			bool is_dst = p_usage.has_flag(BUFFER_USAGE_TRANSFER_TO_BIT);
+			if (is_src && !is_dst) {
+				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+				vma_flags_to_remove |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+			}
+			if (is_dst && !is_src) {
+				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+				vma_flags_to_remove |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+			}
+			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+			alloc_create_info.requiredFlags = (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		} break;
+		case MEMORY_ALLOCATION_TYPE_GPU: {
+			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+			if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+				// We must set it right now or else vmaFindMemoryTypeIndexForBufferInfo will use wrong parameters.
+				alloc_create_info.usage = vma_usage;
+			}
+			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
+				uint32_t mem_type_index = 0;
+				vmaFindMemoryTypeIndexForBufferInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
+				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
+			}
+		} break;
+	}
+
+	VkVideoProfileInfoKHR video_profile;
+	vk_video_profile_from_state(p_profile, &video_profile);
+
+	VkVideoProfileListInfoKHR video_profile_list;
+	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+	video_profile_list.pNext = nullptr;
+	video_profile_list.profileCount = 1;
+	video_profile_list.pProfiles = &video_profile;
+
+	create_info.pNext = &video_profile_list;
+
+	VkBuffer vk_buffer = VK_NULL_HANDLE;
+	VmaAllocation allocation = nullptr;
+	VmaAllocationInfo alloc_info = {};
+
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		alloc_create_info.preferredFlags &= ~vma_flags_to_remove;
+		alloc_create_info.usage = vma_usage;
+		VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	} else {
+		VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	}
+
+	// Bookkeep.
+	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	buf_info->vk_buffer = vk_buffer;
+	buf_info->allocation.handle = allocation;
+	buf_info->allocation.size = alloc_info.size;
+	buf_info->size = p_size;
 
 	return BufferID(buf_info);
 }
@@ -2010,6 +2102,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImageCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 
+	void *create_info_next = nullptr;
 	if (p_format.shareable_formats.size()) {
 		create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 
@@ -2022,12 +2115,30 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 			VkImageFormatListCreateInfoKHR *format_list_create_info = ALLOCA_SINGLE(VkImageFormatListCreateInfoKHR);
 			*format_list_create_info = {};
 			format_list_create_info->sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
+			format_list_create_info->pNext = create_info_next;
 			format_list_create_info->viewFormatCount = p_format.shareable_formats.size();
 			format_list_create_info->pViewFormats = vk_allowed_formats;
 
-			create_info.pNext = format_list_create_info;
+			create_info_next = format_list_create_info;
 		}
 	}
+
+	if (p_format.video_profiles.size()) {
+		VkVideoProfileInfoKHR *vk_video_profiles = ALLOCA_ARRAY(VkVideoProfileInfoKHR, p_format.video_profiles.size());
+		for (int64_t i = 0; i < p_format.video_profiles.size(); i++) {
+			vk_video_profile_from_state(p_format.video_profiles[i], vk_video_profiles + i);
+		}
+
+		VkVideoProfileListInfoKHR *video_profile_list = ALLOCA_SINGLE(VkVideoProfileListInfoKHR);
+		video_profile_list->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+		video_profile_list->pNext = create_info_next;
+		video_profile_list->profileCount = 1;
+		video_profile_list->pProfiles = vk_video_profiles;
+
+		create_info_next = video_profile_list;
+	}
+
+	create_info.pNext = create_info_next;
 
 	if (p_format.texture_type == TEXTURE_TYPE_CUBE || p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
 		create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
@@ -2084,6 +2195,12 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
 	}
 
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -2163,15 +2280,30 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
+	void *image_view_create_info_next = nullptr;
+
 	VkImageViewASTCDecodeModeEXT decode_mode;
 	if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
 		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK) {
 			decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
-			decode_mode.pNext = nullptr;
+			decode_mode.pNext = image_view_create_info_next;
 			decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
-			image_view_create_info.pNext = &decode_mode;
+			image_view_create_info_next = &decode_mode;
 		}
 	}
+
+	VkSamplerYcbcrConversionInfo ycbcr_sampler_info = {};
+	if (p_view.ycbcr_sampler.id) {
+		SamplerInfo *sampler_info = (SamplerInfo *)p_view.ycbcr_sampler.id;
+
+		ycbcr_sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+		ycbcr_sampler_info.pNext = image_view_create_info_next;
+		ycbcr_sampler_info.conversion = sampler_info->vk_ycbcr_conversion;
+
+		image_view_create_info_next = &ycbcr_sampler_info;
+	}
+
+	image_view_create_info.pNext = image_view_create_info_next;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
@@ -2524,6 +2656,8 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_WHITE, V
 static_assert(ENUM_MEMBERS_EQUAL(RDD::SAMPLER_BORDER_COLOR_INT_OPAQUE_WHITE, VK_BORDER_COLOR_INT_OPAQUE_WHITE));
 
 RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p_state) {
+	SamplerInfo *sampler_info = VersatileResource::allocate<SamplerInfo>(resources_allocator);
+
 	VkSamplerCreateInfo sampler_create_info = {};
 	sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	sampler_create_info.pNext = nullptr;
@@ -2544,15 +2678,45 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 	sampler_create_info.borderColor = (VkBorderColor)p_state.border_color;
 	sampler_create_info.unnormalizedCoordinates = p_state.unnormalized_uvw;
 
+	VkSamplerYcbcrConversionInfo ycbcr_conversion_info = {};
+	if (p_state.enable_ycbcr) {
+		ycbcr_conversion_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+		ycbcr_conversion_info.pNext = nullptr;
+
+		VkSamplerYcbcrConversionCreateInfo ycbcr_conversion_create_info = {};
+		ycbcr_conversion_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
+		ycbcr_conversion_create_info.pNext = nullptr;
+		ycbcr_conversion_create_info.format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+		ycbcr_conversion_create_info.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709;
+		ycbcr_conversion_create_info.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW;
+		ycbcr_conversion_create_info.components.r = VK_COMPONENT_SWIZZLE_R;
+		ycbcr_conversion_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
+		ycbcr_conversion_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
+		ycbcr_conversion_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
+		ycbcr_conversion_create_info.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_conversion_create_info.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		ycbcr_conversion_create_info.chromaFilter = VK_FILTER_LINEAR;
+		ycbcr_conversion_create_info.forceExplicitReconstruction = false;
+
+		VkSamplerYcbcrConversion sampler_ycbcr_conversion;
+		vkCreateSamplerYcbcrConversion(vk_device, &ycbcr_conversion_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &sampler_ycbcr_conversion);
+		sampler_info->vk_ycbcr_conversion = sampler_ycbcr_conversion;
+
+		ycbcr_conversion_info.conversion = sampler_ycbcr_conversion;
+		sampler_create_info.pNext = &ycbcr_conversion_info;
+	}
+
 	VkSampler vk_sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
 	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
 
-	return SamplerID(vk_sampler);
+	sampler_info->vk_sampler = vk_sampler;
+	return SamplerID(sampler_info);
 }
 
 void RenderingDeviceDriverVulkan::sampler_free(SamplerID p_sampler) {
-	vkDestroySampler(vk_device, (VkSampler)p_sampler.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
+	SamplerInfo *sampler_info = (SamplerInfo *)p_sampler.id;
+	vkDestroySampler(vk_device, sampler_info->vk_sampler, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
 }
 
 bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_filter) {
@@ -2878,6 +3042,27 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	}
 
 	return CommandQueueID(command_queue);
+}
+
+Error RenderingDeviceDriverVulkan::command_queue_execute(CommandQueueID p_cmd_queue, CommandBufferID p_cmd_buffer, FenceID p_fence) {
+	CommandQueue *command_queue = (CommandQueue *)p_cmd_queue.id;
+	Queue &device_queue = queue_families[command_queue->queue_family][command_queue->queue_index];
+
+	const CommandBufferInfo *rdd_command_buffer = (const CommandBufferInfo *)(p_cmd_buffer.id);
+	Fence *fence_info = (Fence *)p_fence.id;
+
+	VkSubmitInfo submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.waitSemaphoreCount = 0;
+	submit_info.pWaitSemaphores = nullptr;
+	submit_info.commandBufferCount = 1;
+	submit_info.pCommandBuffers = &rdd_command_buffer->vk_command_buffer;
+	submit_info.signalSemaphoreCount = 0;
+	submit_info.pSignalSemaphores = nullptr;
+
+	vkQueueSubmit(device_queue.queue, 1, &submit_info, fence_info->vk_fence);
+
+	return OK;
 }
 
 Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
@@ -3826,13 +4011,29 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 							}
 						}
 						if (immutable_bind_index >= 0) {
-							layout_binding.pImmutableSamplers = (VkSampler *)&p_immutable_samplers[immutable_bind_index].ids[0].id;
+							SamplerInfo *sampler_info = (SamplerInfo *)p_immutable_samplers[immutable_bind_index].ids[0].id;
+							layout_binding.pImmutableSamplers = &sampler_info->vk_sampler;
 						}
 					}
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					layout_binding.descriptorCount = uniform.length;
+
+					// Immutable samplers: here they get set in the layoutbinding, given that they will not be changed later.
+					int immutable_bind_index = -1;
+					if (immutable_samplers_enabled && p_immutable_samplers.size() > 0) {
+						for (int k = 0; k < p_immutable_samplers.size(); k++) {
+							if (p_immutable_samplers[k].binding == layout_binding.binding) {
+								immutable_bind_index = k;
+								break;
+							}
+						}
+						if (immutable_bind_index >= 0) {
+							SamplerInfo *sampler_info = (SamplerInfo *)p_immutable_samplers[immutable_bind_index].ids[0].id;
+							layout_binding.pImmutableSamplers = &sampler_info->vk_sampler;
+						}
+					}
 				} break;
 				case UNIFORM_TYPE_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
@@ -4241,7 +4442,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j].id)->vk_sampler;
 					vk_img_infos[j].imageView = VK_NULL_HANDLE;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				}
@@ -4260,7 +4461,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					}
 #endif
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j * 2 + 0].id)->vk_sampler;
 					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j * 2 + 1].id)->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
@@ -4330,7 +4531,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
 					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
+					vk_img_infos[j].sampler = ((SamplerInfo *)uniform.ids[j * 2 + 0].id)->vk_sampler;
 
 					const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[j * 2 + 1].id;
 					vk_buf_infos[j] = {};
@@ -6236,6 +6437,257 @@ void RenderingDeviceDriverVulkan::end_segment() {
 	// Per-frame segments are not required in Vulkan.
 }
 
+Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile) {
+	r_profile->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
+
+	r_profile->chromaSubsampling = p_profile.chroma_subsampling;
+
+	// TODO this will fail for monochrome video
+	if (p_profile.luma_bit_depth == 8) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+	} else if (p_profile.luma_bit_depth == 10) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_10_BIT_KHR;
+	} else if (p_profile.luma_bit_depth == 12) {
+		r_profile->lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_12_BIT_KHR;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	if (p_profile.chroma_bit_depth == 8) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+	} else if (p_profile.chroma_bit_depth == 10) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_10_BIT_KHR;
+	} else if (p_profile.chroma_bit_depth == 12) {
+		r_profile->chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_12_BIT_KHR;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	return ERR_INVALID_PARAMETER;
+}
+
+void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProfile &p_profile) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
+
+	VkVideoCapabilitiesKHR video_capabilities = {};
+	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+	//TODO expose capabilities
+	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_MSG("Video profile is not supported");
+	}
+}
+
+void RenderingDeviceDriverVulkan::video_profile_get_format_properties(const VideoProfile &p_profile) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
+
+	VkVideoProfileListInfoKHR video_profile_list;
+	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+	video_profile_list.pNext = nullptr;
+	video_profile_list.profileCount = 1;
+	video_profile_list.pProfiles = &video_profile;
+
+	//TODO: expose src format capabilities
+	VkPhysicalDeviceVideoFormatInfoKHR video_src_format_info;
+	video_src_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
+	video_src_format_info.pNext = &video_profile_list;
+	video_src_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR;
+
+	uint32_t video_src_formats_count = 0;
+	VkResult err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, nullptr);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Video profile is not supported");
+	}
+
+	TightLocalVector<VkVideoFormatPropertiesKHR> video_src_formats;
+	video_src_formats.resize(video_src_formats_count);
+	for (uint8_t i = 0; i < video_src_formats_count; i++) {
+		video_src_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+		video_src_formats[i].pNext = nullptr;
+	}
+
+	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, video_src_formats.ptr());
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Video profile is not supported");
+	}
+
+	//TODO: expose dst format capabilities
+	VkPhysicalDeviceVideoFormatInfoKHR video_dst_format_info;
+	video_dst_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
+	video_dst_format_info.pNext = &video_profile_list;
+	video_dst_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+
+	uint32_t video_dst_formats_count = 0;
+	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, nullptr);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Video profile is not supported");
+	}
+
+	TightLocalVector<VkVideoFormatPropertiesKHR> video_dst_formats;
+	video_dst_formats.resize(video_dst_formats_count);
+	for (uint8_t i = 0; i < video_dst_formats_count; i++) {
+		video_dst_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+		video_dst_formats[i].pNext = nullptr;
+	}
+
+	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, video_dst_formats.ptr());
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Video profile is not supported");
+	}
+}
+
+RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) {
+	VkVideoProfileInfoKHR video_profile = {};
+	vk_video_profile_from_state(p_profile, &video_profile);
+
+	TextureInfo *dpb_info = (TextureInfo *)p_dpb.id;
+
+	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
+	uint32_t command_queue_family_index = command_queue_family.id - 1;
+
+	// TODO use video_profile_get_capabilities
+	VkVideoCapabilitiesKHR video_capabilities = {};
+	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(), "Video profile is not supported");
+	}
+
+	VkVideoSessionCreateInfoKHR session_info = {};
+	session_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR;
+	session_info.pNext = nullptr;
+	session_info.queueFamilyIndex = command_queue_family_index;
+	session_info.flags = 0;
+	session_info.pVideoProfile = &video_profile;
+	session_info.pictureFormat = dpb_info->vk_create_info.format;
+	session_info.maxCodedExtent.width = dpb_info->vk_create_info.extent.width;
+	session_info.maxCodedExtent.height = dpb_info->vk_create_info.extent.height;
+	session_info.referencePictureFormat = dpb_info->vk_create_info.format;
+	session_info.maxDpbSlots = dpb_info->vk_create_info.arrayLayers;
+	session_info.maxActiveReferencePictures = p_max_active_reference_pictures;
+	session_info.pStdHeaderVersion = &video_capabilities.stdHeaderVersion;
+
+	VkVideoSessionKHR video_session;
+	result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	uint32_t memory_requirements_count;
+	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, nullptr);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	TightLocalVector<VkVideoSessionMemoryRequirementsKHR> memory_requirements;
+	memory_requirements.resize(memory_requirements_count);
+	for (uint64_t i = 0; i < memory_requirements_count; i++) {
+		memory_requirements[i].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
+		memory_requirements[i].pNext = nullptr;
+	}
+
+	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	LocalVector<VkBindVideoSessionMemoryInfoKHR> memory_infos;
+	for (VkVideoSessionMemoryRequirementsKHR memory_requirement : memory_requirements) {
+		VmaAllocationCreateInfo allocation_create_info = {};
+		allocation_create_info.flags = 0;
+		allocation_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		allocation_create_info.requiredFlags = 0;
+		allocation_create_info.preferredFlags = 0;
+		allocation_create_info.memoryTypeBits = memory_requirement.memoryRequirements.memoryTypeBits;
+		allocation_create_info.pool = nullptr;
+		allocation_create_info.pUserData = nullptr;
+		allocation_create_info.priority = 0.0;
+
+		VmaAllocation allocation = nullptr;
+		VmaAllocationInfo allocation_info = {};
+
+		result = vmaAllocateMemory(allocator, &memory_requirement.memoryRequirements, &allocation_create_info, &allocation, &allocation_info);
+		if (result != VK_SUCCESS) {
+			ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+		}
+
+		VkBindVideoSessionMemoryInfoKHR memory;
+		memory.sType = VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR;
+		memory.pNext = nullptr;
+		memory.memoryBindIndex = memory_requirement.memoryBindIndex;
+		memory.memory = allocation_info.deviceMemory;
+		memory.memoryOffset = allocation_info.offset;
+		memory.memorySize = allocation_info.size;
+
+		memory_infos.push_back(memory);
+	}
+
+	result = vkBindVideoSessionMemoryKHR(vk_device, video_session, memory_infos.size(), memory_infos.ptr());
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	VideoCodingSessionInfo *video_session_info = VersatileResource::allocate<VideoCodingSessionInfo>(resources_allocator);
+	video_session_info->vk_session = video_session;
+	video_session_info->vk_session_create_info = session_info;
+
+	video_session_info->video_operation = p_profile.operation;
+
+	video_session_info->dpb_image = p_dpb;
+	video_session_info->dpb_views.push_back(dpb_info->vk_view);
+	video_session_info->current_dpb_index = 0;
+
+	return RDD::VideoSessionID(video_session_info);
+}
+
+void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_session) {
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	if (video_session_info->vk_session_parameters != VK_NULL_HANDLE) {
+		vkDestroyVideoSessionParametersKHR(vk_device, video_session_info->vk_session_parameters, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR));
+	}
+
+	if (video_session_info->vk_session != VK_NULL_HANDLE) {
+		vkDestroyVideoSessionKHR(vk_device, video_session_info->vk_session, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR));
+	}
+
+	VersatileResource::free(resources_allocator, video_session_info);
+}
+
+void RenderingDeviceDriverVulkan::command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) {
+	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	VkVideoBeginCodingInfoKHR begin_cmd = {};
+	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
+	begin_cmd.pNext = nullptr;
+	begin_cmd.flags = 0;
+	begin_cmd.videoSession = video_session_info->vk_session;
+	begin_cmd.videoSessionParameters = video_session_info->vk_session_parameters;
+	begin_cmd.referenceSlotCount = 0;
+	begin_cmd.pReferenceSlots = nullptr;
+
+	vkCmdBeginVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &begin_cmd);
+
+	VkVideoCodingControlInfoKHR cmd_control;
+	cmd_control.sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR;
+	cmd_control.pNext = nullptr;
+	cmd_control.flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR;
+
+	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
+
+	VkVideoEndCodingInfoKHR end_coding;
+	end_coding.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
+	end_coding.pNext = nullptr;
+	end_coding.flags = 0;
+
+	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &end_coding);
+}
+
 /**************/
 /**** MISC ****/
 /**************/
@@ -6250,7 +6702,11 @@ void RenderingDeviceDriverVulkan::set_object_name(ObjectType p_type, ID p_driver
 			_set_object_name(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)tex_info->vk_view, p_name + " View");
 		} break;
 		case OBJECT_TYPE_SAMPLER: {
-			_set_object_name(VK_OBJECT_TYPE_SAMPLER, p_driver_id.id, p_name);
+			const SamplerInfo *sampler_info = (const SamplerInfo *)p_driver_id.id;
+			_set_object_name(VK_OBJECT_TYPE_SAMPLER, (uint64_t)sampler_info->vk_sampler, p_name);
+			if (sampler_info->vk_ycbcr_conversion) {
+				_set_object_name(VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION, (uint64_t)sampler_info->vk_ycbcr_conversion, p_name + "YCbCr Conversion");
+			}
 		} break;
 		case OBJECT_TYPE_BUFFER: {
 			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
@@ -6465,6 +6921,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return framebuffer_depth_resolve;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_VIDEO_ENCODE_DECODE:
+			return true; //TODO add real condition
 		default:
 			return false;
 	}
