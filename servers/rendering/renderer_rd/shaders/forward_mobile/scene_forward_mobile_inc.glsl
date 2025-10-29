@@ -141,24 +141,28 @@ bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 16) & 1U) != 0;
 }
 
-bool sc_scene_use_reflection_cubemap() {
+bool sc_scene_use_reflection_color() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
 }
 
-bool sc_scene_roughness_limiter_enabled() {
+bool sc_scene_use_reflection_cubemap() {
 	return ((sc_packed_0() >> 18) & 1U) != 0;
 }
 
-bool sc_material_feedback() {
+bool sc_scene_roughness_limiter_enabled() {
 	return ((sc_packed_0() >> 19) & 1U) != 0;
 }
 
+bool sc_material_feedback() {
+	return ((sc_packed_0() >> 20) & 1U) != 0;
+}
+
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 20) & 63U;
+	return (sc_packed_0() >> 24) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 26) & 63U;
+	return (sc_packed_0() >> 30) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
