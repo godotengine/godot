@@ -1062,6 +1062,8 @@ public:
 		String full_path;
 		bool use_dollar = true;
 
+		LocalVector<GDScriptTokenizer::Token> token_get_node_path;
+
 		GetNodeNode() {
 			type = GET_NODE;
 		}
