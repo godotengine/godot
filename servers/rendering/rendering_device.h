@@ -40,6 +40,8 @@
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_device_graph.h"
+#include "servers/rendering/video/av1.h"
+#include "servers/rendering/video/av1_decode.h"
 
 class RDTextureFormat;
 class RDTextureView;
@@ -1415,9 +1417,11 @@ public:
 
 	RID video_session_create(const VideoProfile &p_profile, uint32_t p_width, uint32_t p_height);
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
+	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);
 
 	void video_session_begin();
 	void video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoCodingDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture);
+	void video_session_decode_av1(RID p_video_session, Span<uint8_t> p_obu, VideoDecodeAV1Frame p_std_av1_info, RID p_dst_texture);
 	void video_session_end();
 
 private:

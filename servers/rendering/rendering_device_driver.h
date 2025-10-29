@@ -49,6 +49,8 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/video/av1.h"
+#include "servers/rendering/video/av1_decode.h"
 
 class RenderingShaderContainer;
 class RenderingShaderContainerFormat;
@@ -760,10 +762,12 @@ public:
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) = 0;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) = 0;
+	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) = 0;
 	virtual void video_session_free(VideoSessionID p_video_session) = 0;
 
 	virtual void command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) = 0;
 	virtual void command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoCodingDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) = 0;
+	virtual void command_video_session_decode_av1(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeAV1Frame p_std_av1_info, TextureID p_dst_texture) = 0;
 
 	/**************/
 	/**** MISC ****/

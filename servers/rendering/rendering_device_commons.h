@@ -373,6 +373,7 @@ public:
 
 	enum VideoCodingOperation {
 		VIDEO_OPERATION_DECODE_H264 = (1 << 0),
+		VIDEO_OPERATION_DECODE_AV1 = (1 << 2),
 	};
 
 	enum VideoCodingChromaSubsampling {
