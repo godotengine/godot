@@ -6602,7 +6602,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
-	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
