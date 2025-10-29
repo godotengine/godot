@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  video_coding_common.h                                                 */
+/*  video_coding_h264_decode.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,28 +30,23 @@
 
 #pragma once
 
-#include "video_coding_h264.h"
-#include "video_coding_h264_decode.h"
-
 #include <cstdint>
 
-enum VideoCodingOperation {
-	VIDEO_OPERATION_DECODE_H264 = (1 << 0),
-};
+struct VideoDecodeH264SliceHeader {
+	bool is_intra;
+	bool is_reference;
+	bool complementary_field_pair;
 
-enum VideoCodingChromaSubsampling {
-	VIDEO_CODING_CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_420 = (1 << 1),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_422 = (1 << 2),
-	VIDEO_CODING_CHROMA_SUBSAMPLING_444 = (1 << 3),
-};
+	uint8_t pic_parameter_set_id;
+	uint8_t seq_parameter_set_id;
 
-struct VideoProfile {
-	VideoCodingOperation operation;
-	VideoCodingChromaSubsampling chroma_subsampling = VIDEO_CODING_CHROMA_SUBSAMPLING_420;
-	uint32_t luma_bit_depth = 8;
-	uint32_t chroma_bit_depth = 8;
+	uint16_t frame_num;
 
-	VideoCodingH264ProfileIdc h264_profile_idc;
-	VideoCodingH264PictureLayout h264_picture_layout;
+	bool field_pic_flag;
+	bool bottom_field_flag;
+
+	uint16_t idr_pic_id;
+
+	int32_t pic_order_cnt_top_field;
+	int32_t pic_order_cnt_bottom_field;
 };
