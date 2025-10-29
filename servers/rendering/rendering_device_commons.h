@@ -367,6 +367,27 @@ public:
 		COMPARE_OP_MAX
 	};
 
+	/**********************/
+	/**** VIDEO CODING ****/
+	/**********************/
+
+	enum VideoCodingOperation {
+	};
+
+	enum VideoCodingChromaSubsampling {
+		VIDEO_CHROMA_SUBSAMPLING_MONOCHROME = (1 << 0),
+		VIDEO_CHROMA_SUBSAMPLING_420 = (1 << 1),
+		VIDEO_CHROMA_SUBSAMPLING_422 = (1 << 2),
+		VIDEO_CHROMA_SUBSAMPLING_444 = (1 << 3),
+	};
+
+	struct VideoProfile {
+		VideoCodingOperation operation;
+		VideoCodingChromaSubsampling chroma_subsampling = VIDEO_CHROMA_SUBSAMPLING_420;
+		uint32_t luma_bit_depth = 8;
+		uint32_t chroma_bit_depth = 8;
+	};
+
 	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
@@ -421,7 +442,9 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
+		TEXTURE_USAGE_VIDEO_DECODE_DST_BIT = (1 << 12),
+		TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT = (1 << 14),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT,
 	};
 
 	struct TextureFormat {
@@ -435,6 +458,7 @@ public:
 		TextureSamples samples = TEXTURE_SAMPLES_1;
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
+		Vector<VideoProfile> video_profiles;
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 
@@ -532,6 +556,8 @@ public:
 		float max_lod = 1e20; // Something very large should do.
 		SamplerBorderColor border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
 		bool unnormalized_uvw = false;
+
+		bool enable_ycbcr = false;
 	};
 
 	/**********************/
@@ -954,6 +980,7 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_VIDEO_ENCODE_DECODE,
 	};
 
 	enum SubgroupOperations {
