@@ -1842,6 +1842,28 @@ TileSet::TerrainsPattern TileMapLayer::get_terrain_pattern_of_cell(const Vector2
 	return TileSet::TerrainsPattern(*tile_set, p_terrain_set);
 }
 
+void TileMapLayer::_prepare_terrain_fill(const Vector<Vector2i> &p_coords_array, Vector<Vector2i> &r_can_modify_list, RBSet<Vector2i> &r_can_modify_set, RBSet<Vector2i> &r_painted_set) const {
+	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
+		const Vector2i &coords = p_coords_array[i];
+		r_can_modify_list.push_back(coords);
+		r_can_modify_set.insert(coords);
+		r_painted_set.insert(coords);
+	}
+	for (Vector2i coords : p_coords_array) {
+		// Find the adequate neighbor.
+		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
+			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
+			if (tile_set->is_existing_neighbor(bit)) {
+				Vector2i neighbor = tile_set->get_neighbor_cell(coords, bit);
+				if (!r_can_modify_set.has(neighbor)) {
+					r_can_modify_list.push_back(neighbor);
+					r_can_modify_set.insert(neighbor);
+				}
+			}
+		}
+	}
+}
+
 TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const TerrainConstraints &p_constraints, TileSet::TerrainsPattern p_current_pattern) const {
 	if (tile_set.is_null()) {
 		return TileSet::TerrainsPattern();
@@ -2411,25 +2433,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(c
 	Vector<Vector2i> can_modify_list;
 	RBSet<Vector2i> can_modify_set;
 	RBSet<Vector2i> painted_set;
-	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
-		const Vector2i &coords = p_coords_array[i];
-		can_modify_list.push_back(coords);
-		can_modify_set.insert(coords);
-		painted_set.insert(coords);
-	}
-	for (Vector2i coords : p_coords_array) {
-		// Find the adequate neighbor.
-		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_existing_neighbor(bit)) {
-				Vector2i neighbor = tile_set->get_neighbor_cell(coords, bit);
-				if (!can_modify_set.has(neighbor)) {
-					can_modify_list.push_back(neighbor);
-					can_modify_set.insert(neighbor);
-				}
-			}
-		}
-	}
+	_prepare_terrain_fill(p_coords_array, can_modify_list, can_modify_set, painted_set);
 
 	// Build a set, out of the possibly modified tiles, of the one with a center bit that is set (or will be) to the painted terrain.
 	RBSet<Vector2i> cells_with_terrain_center_bit;
@@ -2530,25 +2534,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 	Vector<Vector2i> can_modify_list;
 	RBSet<Vector2i> can_modify_set;
 	RBSet<Vector2i> painted_set;
-	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
-		const Vector2i &coords = p_coords_array[i];
-		can_modify_list.push_back(coords);
-		can_modify_set.insert(coords);
-		painted_set.insert(coords);
-	}
-	for (Vector2i coords : p_coords_array) {
-		// Find the adequate neighbor.
-		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
-				Vector2i neighbor = tile_set->get_neighbor_cell(coords, bit);
-				if (!can_modify_set.has(neighbor)) {
-					can_modify_list.push_back(neighbor);
-					can_modify_set.insert(neighbor);
-				}
-			}
-		}
-	}
+	_prepare_terrain_fill(p_coords_array, can_modify_list, can_modify_set, painted_set);
 
 	TerrainConstraints constraints;
 
@@ -2580,25 +2566,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(c
 	Vector<Vector2i> can_modify_list;
 	RBSet<Vector2i> can_modify_set;
 	RBSet<Vector2i> painted_set;
-	for (int i = p_coords_array.size() - 1; i >= 0; i--) {
-		const Vector2i &coords = p_coords_array[i];
-		can_modify_list.push_back(coords);
-		can_modify_set.insert(coords);
-		painted_set.insert(coords);
-	}
-	for (Vector2i coords : p_coords_array) {
-		// Find the adequate neighbor.
-		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
-			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_existing_neighbor(bit)) {
-				Vector2i neighbor = tile_set->get_neighbor_cell(coords, bit);
-				if (!can_modify_set.has(neighbor)) {
-					can_modify_list.push_back(neighbor);
-					can_modify_set.insert(neighbor);
-				}
-			}
-		}
-	}
+	_prepare_terrain_fill(p_coords_array, can_modify_list, can_modify_set, painted_set);
 
 	// Add constraint by the new ones.
 	TerrainConstraints constraints;
