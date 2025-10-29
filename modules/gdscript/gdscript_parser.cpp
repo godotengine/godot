@@ -3891,15 +3891,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 		PATH_STATE_NODE_NAME,
 	} path_state = PATH_STATE_START;
 
-	if (previous.type == GDScriptTokenizer::Token::DOLLAR) {
+	if (symbol_token.type == GDScriptTokenizer::Token::DOLLAR) {
 		// Detect initial slash, which will be handled in the loop if it matches.
-		match(GDScriptTokenizer::Token::SLASH);
+		if (match(GDScriptTokenizer::Token::SLASH)) {
+			get_node->token_get_node_path.push_back(previous);
+		}
 	} else {
 		get_node->use_dollar = false;
 	}
 
 	int context_argument = 0;
-
 	do {
 		if (previous.type == GDScriptTokenizer::Token::PERCENT) {
 			if (path_state != PATH_STATE_START && path_state != PATH_STATE_SLASH) {
@@ -3973,7 +3974,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			complete_extents(get_node);
 			return nullptr;
 		}
-	} while (match(GDScriptTokenizer::Token::SLASH) || match(GDScriptTokenizer::Token::PERCENT));
+
+		if (match(GDScriptTokenizer::Token::SLASH) || match(GDScriptTokenizer::Token::PERCENT)) {
+			get_node->token_get_node_path.push_back(previous);
+			continue;
+		}
+		break;
+
+	} while (true);
 
 	complete_extents(get_node);
 	return get_node;
@@ -3981,10 +3989,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	PreloadNode *preload = alloc_node<PreloadNode>();
+	preload->token_preload_keyword = previous;
 	preload->resolved_path = "<missing path>";
 
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "preload".)");
+	preload->token_preload_parenthesis_open = previous;
 
 	make_completion_context(COMPLETION_RESOURCE_PATH, preload);
 	if (refactor_rename_was_cursor_just_parsed()) {
@@ -4008,6 +4018,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after preload path.)*");
+	preload->token_preload_parenthesis_close = previous;
 	complete_extents(preload);
 
 	return preload;
