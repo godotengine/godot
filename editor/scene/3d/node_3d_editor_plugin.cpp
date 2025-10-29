@@ -3153,16 +3153,6 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
-
-	if (selection_buffer_viewport) {
-		selection_buffer_viewport->set_scaling_3d_mode(scaling_3d_mode);
-		selection_buffer_viewport->set_scaling_3d_scale(scaling_3d_scale);
-		selection_buffer_viewport->set_fsr_sharpness(fsr_sharpness);
-
-		if (spatial_editor->outline_enabled) {
-			_queue_update_outline();
-		}
-	}
 }
 
 static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
@@ -6954,12 +6944,10 @@ void Node3DEditorViewport::_init_outline() {
 	selection_buffer_viewport->set_world_3d(memnew(World3D));
 	selection_buffer_viewport->set_transparent_background(true);
 
-	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
-	selection_buffer_viewport->set_scaling_3d_mode(scaling_3d_mode);
-	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
-	selection_buffer_viewport->set_scaling_3d_scale(scaling_3d_scale);
-	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
-	selection_buffer_viewport->set_fsr_sharpness(fsr_sharpness);
+	if (!OS::get_singleton()->has_feature("mobile") && !OS::get_singleton()->has_feature("web")) {
+		selection_buffer_viewport->set_scaling_3d_mode(Viewport::SCALING_3D_MODE_BILINEAR);
+		selection_buffer_viewport->set_scaling_3d_scale(2.0);
+	}
 
 	add_child(selection_buffer_viewport);
 
@@ -7081,9 +7069,9 @@ void fragment() {
 void Node3DEditorViewport::_update_outline_material(Ref<ShaderMaterial> p_material) {
 	ERR_FAIL_COND(p_material.is_null());
 
-	Color outline_color = EDITOR_GET("editors/3d/selection_outline/color");
-	Color active_outline_color = EDITOR_GET("editors/3d/selection_outline/active_color");
-	float thickness = EDITOR_GET("editors/3d/selection_outline/thickness");
+	Color outline_color = EDITOR_GET("editors/3d/selection_box_color");
+	Color active_outline_color = EDITOR_GET("editors/3d/active_selection_box_color");
+	float thickness = EDITOR_GET("editors/3d/selection_outline_thickness");
 
 	p_material->set_shader_parameter("outline_color", outline_color);
 	p_material->set_shader_parameter("active_outline_color", active_outline_color);
@@ -9449,7 +9437,7 @@ void Node3DEditor::_notification(int p_what) {
 					active_selection_box_mat->set_albedo(active_selection_box_color);
 					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
 				}
-				outline_enabled = EDITOR_GET("editors/3d/selection_outline/enabled");
+				outline_enabled = EDITOR_GET("editors/3d/selection_outline_enabled");
 				update_outlines_all_viewports();
 				{
 					EditorSelection *es = EditorNode::get_singleton()->get_editor_selection();
@@ -10514,7 +10502,7 @@ Node3DEditor::Node3DEditor() {
 		viewport_base->add_child(viewports[i]);
 	}
 
-	outline_enabled = EDITOR_GET("editors/3d/selection_outline/enabled");
+	outline_enabled = EDITOR_GET("editors/3d/selection_outline_enabled");
 
 	/* SNAP DIALOG */
 
