@@ -30,6 +30,9 @@
 
 #include "animated_texture.h"
 
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+
 void AnimatedTexture::_update_proxy() {
 	RWLockRead r(rw_lock);
 

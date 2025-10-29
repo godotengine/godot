@@ -30,6 +30,8 @@
 
 #include "placeholder_textures.h"
 
+#include "servers/rendering/rendering_server.h"
+
 void PlaceholderTexture2D::set_size(Size2 p_size) {
 	size = p_size;
 	emit_changed();

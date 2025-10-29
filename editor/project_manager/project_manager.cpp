@@ -265,6 +265,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			rename_btn->set_button_icon(get_editor_theme_icon(SNAME("Rename")));
 			duplicate_btn->set_button_icon(get_editor_theme_icon(SNAME("Duplicate")));
 			manage_tags_btn->set_button_icon(get_editor_theme_icon("Script"));
+			show_in_fm_btn->set_button_icon(get_editor_theme_icon("Load"));
 			erase_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			erase_missing_btn->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 			create_tag_btn->set_button_icon(get_editor_theme_icon("Add"));
@@ -280,6 +281,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			duplicate_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			manage_tags_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			show_in_fm_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			erase_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 
@@ -738,6 +740,17 @@ void ProjectManager::_duplicate_project_with_action(PostDuplicateAction p_post_a
 	project_dialog->show_dialog(false);
 }
 
+void ProjectManager::_show_project_in_file_manager() {
+	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
+	if (selected_list.is_empty()) {
+		return;
+	}
+
+	for (const ProjectList::Item &E : selected_list) {
+		OS::get_singleton()->shell_show_in_file_manager(E.path, true);
+	}
+}
+
 void ProjectManager::_erase_project() {
 	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
 
@@ -792,6 +805,7 @@ void ProjectManager::_update_project_buttons() {
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
 	duplicate_btn->set_disabled(empty_selection || is_missing_project_selected);
 	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
+	show_in_fm_btn->set_disabled(empty_selection || is_missing_project_selected);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
 	erase_missing_btn->set_disabled(!project_list->is_any_project_missing());
@@ -1631,6 +1645,11 @@ ProjectManager::ProjectManager() {
 			manage_tags_btn->set_text(TTRC("Manage Tags"));
 			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTRC("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
 			project_list_sidebar->add_child(manage_tags_btn);
+
+			show_in_fm_btn = memnew(Button);
+			show_in_fm_btn->set_text(TTRC("Show in File Manager"));
+			show_in_fm_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_project_in_file_manager));
+			project_list_sidebar->add_child(show_in_fm_btn);
 
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTRC("Remove"));

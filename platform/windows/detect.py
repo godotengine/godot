@@ -350,10 +350,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
-    # Once it was thought that only debug builds would be too large,
-    # but this has recently stopped being true. See the mingw function
-    # for notes on why this shouldn't be enabled for gcc
-    env.AppendUnique(CCFLAGS=["/bigobj"])
+    env.AppendUnique(CCFLAGS=["/bigobj"])  # Support big objects.
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -449,10 +446,6 @@ def configure_msvc(env: "SConsEnvironment"):
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
-
-        # Needed for avoiding C1128.
-        if env["target"] == "release_debug":
-            env.Append(CXXFLAGS=["/bigobj"])
 
         # PIX
         if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
@@ -637,12 +630,6 @@ def configure_mingw(env: "SConsEnvironment"):
         print("Detected GCC to be a wrapper for Clang.")
         env["use_llvm"] = True
 
-    if env.dev_build:
-        # Allow big objects. It's supposed not to have drawbacks but seems to break
-        # GCC LTO, so enabling for debug builds only (which are not built with LTO
-        # and are the only ones with too big objects).
-        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
-
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
     else:
@@ -659,6 +646,10 @@ def configure_mingw(env: "SConsEnvironment"):
     else:
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
+
+    # NOTE: Big objects have historically broken LTO on mingw-gcc specifically. While that no
+    # longer appears to be the case, this notice is retained for posterity.
+    env.AppendUnique(CCFLAGS=["-Wa,-mbig-obj"])  # Support big objects.
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True

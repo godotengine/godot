@@ -72,6 +72,12 @@ if env["builtin_freetype"]:
     if env["builtin_libpng"]:
         env_freetype.Prepend(CPPPATH=["#thirdparty/libpng"])
 
+    if "text_server_adv" in env.module_list:
+        # HarfBuzz is only available if TextServerAdvanced is enabled
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_HARFBUZZ"])
+        if env["builtin_harfbuzz"]:
+            env_freetype.Prepend(CPPPATH=["#thirdparty/harfbuzz/src/"])
+
     sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.
     if env["platform"] == "web":

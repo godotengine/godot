@@ -52,5 +52,7 @@ public:
 
 	String get_as_text() const;
 
+	static Ref<Shortcut> make_from_action(const StringName &p_action);
+
 	static bool is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2);
 };

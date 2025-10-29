@@ -120,12 +120,12 @@ struct KerxSubTableFormat0
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
     for (const KernPair& pair : pairs)
     {
-      left_set.add (pair.left);
-      right_set.add (pair.right);
+      first_set.add (pair.left);
+      second_set.add (pair.right);
     }
   }
 
@@ -140,7 +140,7 @@ struct KerxSubTableFormat0
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
+      if (!(*c->first_set)[left] || !(*c->second_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -396,10 +396,10 @@ struct KerxSubTableFormat1
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
-    machine.collect_initial_glyphs (left_set, num_glyphs, *this);
-    //machine.collect_glyphs (right_set, num_glyphs); // right_set is unused for machine kerning
+    machine.collect_initial_glyphs (first_set, num_glyphs, *this);
+    //machine.collect_glyphs (second_set, num_glyphs); // second_set is unused for machine kerning
   }
 
   protected:
@@ -451,10 +451,10 @@ struct KerxSubTableFormat2
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
-    (this+leftClassTable).collect_glyphs (left_set, num_glyphs);
-    (this+rightClassTable).collect_glyphs (right_set, num_glyphs);
+    (this+leftClassTable).collect_glyphs (first_set, num_glyphs);
+    (this+rightClassTable).collect_glyphs (second_set, num_glyphs);
   }
 
   struct accelerator_t
@@ -468,7 +468,7 @@ struct KerxSubTableFormat2
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
+      if (!(*c->first_set)[left] || !(*c->second_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -629,6 +629,8 @@ struct KerxSubTableFormat4
 	}
 	o.attach_type() = OT::Layout::GPOS_impl::ATTACH_TYPE_MARK;
 	o.attach_chain() = (int) mark - (int) buffer->idx;
+	if (c->buffer_is_reversed)
+	  o.attach_chain() = -o.attach_chain();
 	buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
       }
 
@@ -671,10 +673,10 @@ struct KerxSubTableFormat4
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
-    machine.collect_initial_glyphs (left_set, num_glyphs, *this);
-    //machine.collect_glyphs (right_set, num_glyphs); // right_set is unused for machine kerning
+    machine.collect_initial_glyphs (first_set, num_glyphs, *this);
+    //machine.collect_glyphs (second_set, num_glyphs); // second_set is unused for machine kerning
   }
 
   protected:
@@ -762,19 +764,19 @@ struct KerxSubTableFormat6
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
     if (is_long ())
     {
       const auto &t = u.l;
-      (this+t.rowIndexTable).collect_glyphs (left_set, num_glyphs);
-      (this+t.columnIndexTable).collect_glyphs (right_set, num_glyphs);
+      (this+t.rowIndexTable).collect_glyphs (first_set, num_glyphs);
+      (this+t.columnIndexTable).collect_glyphs (second_set, num_glyphs);
     }
     else
     {
       const auto &t = u.s;
-      (this+t.rowIndexTable).collect_glyphs (left_set, num_glyphs);
-      (this+t.columnIndexTable).collect_glyphs (right_set, num_glyphs);
+      (this+t.rowIndexTable).collect_glyphs (first_set, num_glyphs);
+      (this+t.columnIndexTable).collect_glyphs (second_set, num_glyphs);
     }
   }
 
@@ -789,7 +791,7 @@ struct KerxSubTableFormat6
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
+      if (!(*c->first_set)[left] || !(*c->second_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -878,15 +880,15 @@ struct KerxSubTable
   }
 
   template <typename set_t>
-  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  void collect_glyphs (set_t &first_set, set_t &second_set, unsigned num_glyphs) const
   {
     unsigned int subtable_type = get_type ();
     switch (subtable_type) {
-    case 0:	u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 1:	u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 2:	u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 4:	u.format4.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 6:	u.format6.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 0:	u.format0.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 1:	u.format1.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 2:	u.format2.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 4:	u.format4.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 6:	u.format6.collect_glyphs (first_set, second_set, num_glyphs); return;
     default:	return;
     }
   }
@@ -923,8 +925,8 @@ struct KerxSubTable
 
 struct kern_subtable_accelerator_data_t
 {
-  hb_bit_set_t left_set;
-  hb_bit_set_t right_set;
+  hb_bit_set_t first_set;
+  hb_bit_set_t second_set;
   mutable hb_aat_class_cache_t class_cache;
 };
 
@@ -1017,9 +1019,8 @@ struct KerxTable
       if (HB_DIRECTION_IS_HORIZONTAL (c->buffer->props.direction) != st->u.header.is_horizontal ())
 	goto skip;
 
-      c->left_set = &subtable_accel.left_set;
-      c->right_set = &subtable_accel.right_set;
-      c->machine_glyph_set = &subtable_accel.left_set;
+      c->first_set = &subtable_accel.first_set;
+      c->second_set = &subtable_accel.second_set;
       c->machine_class_cache = &subtable_accel.class_cache;
 
       if (!c->buffer_intersects_machine ())
@@ -1051,8 +1052,8 @@ struct KerxTable
 	}
       }
 
-      if (reverse)
-	c->buffer->reverse ();
+      if (reverse != c->buffer_is_reversed)
+        c->reverse_buffer ();
 
       {
 	/* See comment in sanitize() for conditional here. */
@@ -1060,15 +1061,14 @@ struct KerxTable
 	ret |= st->dispatch (c);
       }
 
-      if (reverse)
-	c->buffer->reverse ();
-
       (void) c->buffer->message (c->font, "end subtable %u", c->lookup_index);
 
     skip:
       st = &StructAfter<SubTable> (*st);
       c->set_lookup_index (c->lookup_index + 1);
     }
+    if (c->buffer_is_reversed)
+      c->reverse_buffer ();
 
     return ret;
   }
@@ -1133,7 +1133,7 @@ struct KerxTable
       if (unlikely (accel_data.subtable_accels.in_error ()))
 	  return accel_data;
 
-      st->collect_glyphs (subtable_accel.left_set, subtable_accel.right_set, num_glyphs);
+      st->collect_glyphs (subtable_accel.first_set, subtable_accel.second_set, num_glyphs);
       subtable_accel.class_cache.clear ();
 
       st = &StructAfter<SubTable> (*st);

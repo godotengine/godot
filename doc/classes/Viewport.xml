@@ -285,7 +285,7 @@
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
-				Stops the input from propagating further down the [SceneTree].
+				Stops the input from propagating further up the [SceneTree].
 				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>

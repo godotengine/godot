@@ -32,6 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/font.h"
+#include "servers/rendering/rendering_server.h"
 
 class CanvasLayer;
 class MultiMesh;

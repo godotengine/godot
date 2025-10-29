@@ -31,6 +31,7 @@
 #include "camera_texture.h"
 
 #include "servers/camera/camera_feed.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);

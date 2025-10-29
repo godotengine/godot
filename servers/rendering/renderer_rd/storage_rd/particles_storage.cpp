@@ -180,17 +180,22 @@ void process() {
 
 		for (int i = 0; i <= ParticlesShader::MAX_USERDATAS; i++) {
 			for (int j = 0; j < ParticlesShader::COPY_MODE_MAX; j++) {
-				particles_shader.copy_pipelines[i * ParticlesShader::COPY_MODE_MAX + j] = RD::get_singleton()->compute_pipeline_create(particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, i * ParticlesShader::COPY_MODE_MAX + j));
+				particles_shader.copy_pipelines[i][j].create_compute_pipeline(particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, i * ParticlesShader::COPY_MODE_MAX + j));
 			}
 		}
 	}
 }
 
 ParticlesStorage::~ParticlesStorage() {
-	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	for (int i = 0; i <= ParticlesShader::MAX_USERDATAS; i++) {
+		for (int j = 0; j < ParticlesShader::COPY_MODE_MAX; j++) {
+			particles_shader.copy_pipelines[i][j].free();
+		}
+	}
 
 	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
 
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	material_storage->material_free(particles_shader.default_material);
 	material_storage->shader_free(particles_shader.default_shader);
 
@@ -1183,7 +1188,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	//todo should maybe compute all particle systems together?
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, m->shader_data->pipeline);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, m->shader_data->pipeline.get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles_shader.base_uniform_set, BASE_UNIFORM_SET);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->particles_material_uniform_set, MATERIAL_UNIFORM_SET);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->collision_textures_uniform_set, COLLISION_TEXTURTES_UNIFORM_SET);
@@ -1294,7 +1299,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	if (do_sort) {
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_SORT_BUFFER + particles->userdata_count * ParticlesShader::COPY_MODE_MAX]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[particles->userdata_count][ParticlesShader::COPY_MODE_FILL_SORT_BUFFER].get_rid());
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
@@ -1311,10 +1316,9 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	uint32_t copy_pipeline = do_sort ? ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER : ParticlesShader::COPY_MODE_FILL_INSTANCES;
-	copy_pipeline += particles->userdata_count * ParticlesShader::COPY_MODE_MAX;
+	uint32_t copy_mode = do_sort ? ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER : ParticlesShader::COPY_MODE_FILL_INSTANCES;
 	copy_push_constant.copy_mode_2d = particles->mode == RS::PARTICLES_MODE_2D ? 1 : 0;
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[copy_pipeline]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[particles->userdata_count][copy_mode].get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
 	if (do_sort) {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
@@ -1642,7 +1646,7 @@ void ParticlesStorage::update_particles() {
 
 			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 			copy_push_constant.copy_mode_2d = particles->mode == RS::PARTICLES_MODE_2D ? 1 : 0;
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_INSTANCES + particles->userdata_count * ParticlesShader::COPY_MODE_MAX]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[particles->userdata_count][ParticlesShader::COPY_MODE_FILL_INSTANCES].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->trail_bind_pose_uniform_set, 2);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
@@ -1714,6 +1718,8 @@ void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code) {
 
 	if (version.is_null()) {
 		version = particles_storage->particles_shader.shader.version_create();
+	} else {
+		pipeline.free();
 	}
 
 	for (uint32_t i = 0; i < ParticlesShader::MAX_USERDATAS; i++) {
@@ -1731,7 +1737,7 @@ void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code) {
 
 	//update pipelines
 
-	pipeline = RD::get_singleton()->compute_pipeline_create(particles_storage->particles_shader.shader.version_get_shader(version, 0));
+	pipeline.create_compute_pipeline(particles_storage->particles_shader.shader.version_get_shader(version, 0));
 
 	valid = true;
 }
@@ -1753,7 +1759,8 @@ Pair<ShaderRD *, RID> ParticlesStorage::ParticlesShaderData::get_native_shader_a
 }
 
 ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {
-	//pipeline variants will clear themselves if shader is gone
+	pipeline.free();
+
 	if (version.is_valid()) {
 		ParticlesStorage::get_singleton()->particles_shader.shader.version_free(version);
 	}

@@ -37,6 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;
@@ -364,6 +365,11 @@ private:
 		TRANSFORM_XZ,
 		TRANSFORM_XY,
 	};
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
 
 	struct EditData {
 		TransformMode mode;
@@ -403,6 +409,7 @@ private:
 	struct Cursor {
 		Vector3 pos;
 		real_t x_rot, y_rot, distance, fov_scale;
+		real_t unsnapped_x_rot, unsnapped_y_rot;
 		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
@@ -411,6 +418,8 @@ private:
 			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
 			x_rot = 0.5;
 			y_rot = -0.5;
+			unsnapped_x_rot = x_rot;
+			unsnapped_y_rot = y_rot;
 			distance = 4;
 			fov_scale = 1.0;
 			region_select = false;
@@ -522,6 +531,8 @@ private:
 	void _project_settings_changed();
 
 	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+
+	void _reset_transform(TransformType p_type);
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();

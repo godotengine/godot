@@ -346,7 +346,6 @@ class ScriptEditor : public PanelContainer {
 	VBoxContainer *scripts_vbox = nullptr;
 	VBoxContainer *overview_vbox = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
-	Label *filename = nullptr;
 	Button *members_overview_alphabeta_sort_button = nullptr;
 	bool members_overview_enabled;
 	ItemList *help_overview = nullptr;
@@ -362,7 +361,6 @@ class ScriptEditor : public PanelContainer {
 
 	float zoom_factor = 1.0f;
 
-	TextureRect *script_icon = nullptr;
 	Label *script_name_label = nullptr;
 
 	Button *script_back = nullptr;
@@ -411,6 +409,7 @@ class ScriptEditor : public PanelContainer {
 	void _resave_scripts(const String &p_str);
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
+	bool _script_exists(const String &p_path) const;
 
 	void _add_recent_script(const String &p_path);
 	void _update_recent_scripts();

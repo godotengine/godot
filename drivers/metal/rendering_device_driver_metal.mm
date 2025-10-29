@@ -187,25 +187,14 @@ static const MTLTextureType TEXTURE_TYPE[RD::TEXTURE_TYPE_MAX] = {
 	MTLTextureTypeCubeArray,
 };
 
-RenderingDeviceDriverMetal::Result<bool> RenderingDeviceDriverMetal::is_valid_linear(TextureFormat const &p_format) const {
-	if (!flags::any(p_format.usage_bits, TEXTURE_USAGE_CPU_READ_BIT)) {
-		return false;
-	}
+bool RenderingDeviceDriverMetal::is_valid_linear(TextureFormat const &p_format) const {
+	MTLFormatType ft = pixel_formats->getFormatType(p_format.format);
 
-	PixelFormats &pf = *pixel_formats;
-	MTLFormatType ft = pf.getFormatType(p_format.format);
-
-	// Requesting a linear format, which has further restrictions, similar to Vulkan
-	// when specifying VK_IMAGE_TILING_LINEAR.
-
-	ERR_FAIL_COND_V_MSG(p_format.texture_type != TEXTURE_TYPE_2D, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must be 2D");
-	ERR_FAIL_COND_V_MSG(ft != MTLFormatType::DepthStencil, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must not be a depth/stencil format");
-	ERR_FAIL_COND_V_MSG(ft != MTLFormatType::Compressed, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must not be a compressed format");
-	ERR_FAIL_COND_V_MSG(p_format.mipmaps != 1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 mipmap level");
-	ERR_FAIL_COND_V_MSG(p_format.array_layers != 1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 array layer");
-	ERR_FAIL_COND_V_MSG(p_format.samples != TEXTURE_SAMPLES_1, ERR_CANT_CREATE, "Linear (TEXTURE_USAGE_CPU_READ_BIT) textures must have 1 sample");
-
-	return true;
+	return p_format.texture_type == TEXTURE_TYPE_2D // Linear textures must be 2D textures.
+			&& ft != MTLFormatType::DepthStencil && ft != MTLFormatType::Compressed // Linear textures must not be depth/stencil or compressed formats.)
+			&& p_format.mipmaps == 1 // Linear textures must have 1 mipmap level.
+			&& p_format.array_layers == 1 // Linear textures must have 1 array layer.
+			&& p_format.samples == TEXTURE_SAMPLES_1; // Linear textures must have 1 sample.
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
@@ -292,6 +281,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// Usage.
 
 	MTLResourceOptions options = 0;
+	bool is_linear = false;
 #if defined(VISIONOS_ENABLED)
 	const bool supports_memoryless = true;
 #else
@@ -304,6 +294,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		options = MTLResourceCPUCacheModeDefaultCache | MTLResourceHazardTrackingModeTracked;
 		if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
 			options |= MTLResourceStorageModeShared;
+			// The user has indicated they want to read from the texture on the CPU,
+			// so we'll see if we can use a linear format.
+			// A linear format is a texture that is backed by a buffer,
+			// which allows for CPU access to the texture data via a pointer.
+			is_linear = is_valid_linear(p_format);
 		} else {
 			options |= MTLResourceStorageModePrivate;
 		}
@@ -357,13 +352,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	}
 
 	// Allocate memory.
-
-	bool is_linear;
-	{
-		Result<bool> is_linear_or_err = is_valid_linear(p_format);
-		ERR_FAIL_COND_V(std::holds_alternative<Error>(is_linear_or_err), TextureID());
-		is_linear = std::get<bool>(is_linear_or_err);
-	}
 
 	id<MTLTexture> obj = nil;
 	if (is_linear) {
@@ -525,114 +513,107 @@ uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_tex
 	return obj.allocatedSize;
 }
 
-void RenderingDeviceDriverMetal::_get_sub_resource(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) const {
-	id<MTLTexture> obj = rid::get(p_texture);
-
-	*r_layout = {};
-
-	PixelFormats &pf = *pixel_formats;
-
-	size_t row_alignment = get_texel_buffer_alignment_for_format(obj.pixelFormat);
-	size_t offset = 0;
-	size_t array_layers = obj.arrayLength;
-	MTLSize size = MTLSizeMake(obj.width, obj.height, obj.depth);
-	MTLPixelFormat pixel_format = obj.pixelFormat;
-
-	// First skip over the mipmap levels.
-	for (uint32_t mipLvl = 0; mipLvl < p_subresource.mipmap; mipLvl++) {
-		MTLSize mip_size = mipmapLevelSizeFromSize(size, mipLvl);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mip_size.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mip_size.height);
-		offset += bytes_per_layer * mip_size.depth * array_layers;
-	}
-
-	// Get current mipmap.
-	MTLSize mip_size = mipmapLevelSizeFromSize(size, p_subresource.mipmap);
-	size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mip_size.width);
-	bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-	size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mip_size.height);
-	r_layout->size = bytes_per_layer * mip_size.depth;
-	r_layout->offset = offset + (r_layout->size * p_subresource.layer - 1);
-	r_layout->depth_pitch = bytes_per_layer;
-	r_layout->row_pitch = bytes_per_row;
-	r_layout->layer_pitch = r_layout->size * array_layers;
-}
-
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	id<MTLTexture> obj = rid::get(p_texture);
 	*r_layout = {};
 
-	if ((obj.resourceOptions & MTLResourceStorageModePrivate) != 0) {
-		MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
+	PixelFormats &pf = *pixel_formats;
+	DataFormat format = pf.getDataFormat(obj.pixelFormat);
 
-		PixelFormats &pf = *pixel_formats;
-		DataFormat format = pf.getDataFormat(obj.pixelFormat);
-		if (p_subresource.mipmap > 0) {
-			r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
-		}
+	MTLSize sz = MTLSizeMake(obj.width, obj.height, obj.depth);
 
-		sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
-
-		uint32_t bw = 0, bh = 0;
-		get_compressed_image_format_block_dimensions(format, bw, bh);
-		uint32_t sbw = 0, sbh = 0;
-		r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
-		r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
-		r_layout->depth_pitch = r_layout->size / sz.depth;
-
-		uint32_t array_length = obj.arrayLength;
-		if (obj.textureType == MTLTextureTypeCube) {
-			array_length = 6;
-		} else if (obj.textureType == MTLTextureTypeCubeArray) {
-			array_length *= 6;
-		}
-		r_layout->layer_pitch = r_layout->size / array_length;
-	} else {
-		CRASH_NOW_MSG("need to calculate layout for shared texture");
+	if (p_subresource.mipmap > 0) {
+		r_layout->offset = get_image_format_required_size(format, sz.width, sz.height, sz.depth, p_subresource.mipmap);
 	}
+
+	sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
+
+	uint32_t bw = 0, bh = 0;
+	get_compressed_image_format_block_dimensions(format, bw, bh);
+	uint32_t sbw = 0, sbh = 0;
+	r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
+	r_layout->depth_pitch = r_layout->size / sz.depth;
+
+	uint32_t array_length = obj.arrayLength;
+	if (obj.textureType == MTLTextureTypeCube) {
+		array_length = 6;
+	} else if (obj.textureType == MTLTextureTypeCubeArray) {
+		array_length *= 6;
+	}
+	r_layout->layer_pitch = r_layout->size / array_length;
+}
+
+Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
+	id<MTLTexture> obj = rid::get(p_texture);
+	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, Vector<uint8_t>(), "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
+
+	if (obj.buffer) {
+		ERR_FAIL_COND_V_MSG(p_layer > 0, Vector<uint8_t>(), "A linear texture has a single layer.");
+		ERR_FAIL_COND_V_MSG(obj.mipmapLevelCount > 1, Vector<uint8_t>(), "A linear texture has a single mipmap level.");
+		Vector<uint8_t> image_data;
+		image_data.resize_uninitialized(obj.buffer.length);
+		memcpy(image_data.ptrw(), obj.buffer.contents, obj.buffer.length);
+		return image_data;
+	}
+
+	DataFormat tex_format = pixel_formats->getDataFormat(obj.pixelFormat);
+	uint32_t tex_w = obj.width;
+	uint32_t tex_h = obj.height;
+	uint32_t tex_d = obj.depth;
+	uint32_t tex_mipmaps = obj.mipmapLevelCount;
+
+	// Must iteratively copy the texture data to a buffer.
+
+	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_w, tex_h, tex_d, tex_mipmaps);
+
+	Vector<uint8_t> image_data;
+	image_data.resize(tight_mip_size);
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
+	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex_format);
+	uint32_t blockw = 0, blockh = 0;
+	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
+
+	uint8_t *dest_ptr = image_data.ptrw();
+
+	for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
+		uint32_t bw = STEPIFY(tex_w, blockw);
+		uint32_t bh = STEPIFY(tex_h, blockh);
+
+		uint32_t bytes_per_row = (bw * pixel_size) >> pixel_rshift;
+		uint32_t bytes_per_img = bytes_per_row * bh;
+		uint32_t mip_size = bytes_per_img * tex_d;
+
+		[obj getBytes:(void *)dest_ptr
+				  bytesPerRow:bytes_per_row
+				bytesPerImage:bytes_per_img
+				   fromRegion:MTLRegionMake3D(0, 0, 0, bw, bh, tex_d)
+				  mipmapLevel:mm_i
+						slice:p_layer];
+
+		dest_ptr += mip_size;
+
+		// Next mipmap level.
+		tex_w = MAX(blockw, tex_w >> 1);
+		tex_h = MAX(blockh, tex_h >> 1);
+		tex_d = MAX(1u, tex_d >> 1);
+	}
+
+	// Ensure that the destination pointer is at the end of the image data.
+	DEV_ASSERT(dest_ptr - image_data.ptr() == image_data.size());
+
+	return image_data;
 }
 
 uint8_t *RenderingDeviceDriverMetal::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
 	id<MTLTexture> obj = rid::get(p_texture);
-	ERR_FAIL_NULL_V_MSG(obj.buffer, nullptr, "texture is not created from a buffer");
+	ERR_FAIL_COND_V_MSG(obj.storageMode != MTLStorageModeShared, nullptr, "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
+	ERR_FAIL_COND_V_MSG(obj.buffer, nullptr, "Texture mapping is not supported for non-linear textures in Metal.");
+	ERR_FAIL_COND_V_MSG(p_subresource.layer > 0, nullptr, "A linear texture should have a single layer.");
+	ERR_FAIL_COND_V_MSG(p_subresource.mipmap > 0, nullptr, "A linear texture should have a single mipmap.");
 
-	TextureCopyableLayout layout;
-	_get_sub_resource(p_texture, p_subresource, &layout);
-	return (uint8_t *)(obj.buffer.contents) + layout.offset;
-	PixelFormats &pf = *pixel_formats;
-
-	size_t row_alignment = get_texel_buffer_alignment_for_format(obj.pixelFormat);
-	size_t offset = 0;
-	size_t array_layers = obj.arrayLength;
-	MTLSize size = MTLSizeMake(obj.width, obj.height, obj.depth);
-	MTLPixelFormat pixel_format = obj.pixelFormat;
-
-	// First skip over the mipmap levels.
-	for (uint32_t mipLvl = 0; mipLvl < p_subresource.mipmap; mipLvl++) {
-		MTLSize mipExtent = mipmapLevelSizeFromSize(size, mipLvl);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mipExtent.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mipExtent.height);
-		offset += bytes_per_layer * mipExtent.depth * array_layers;
-	}
-
-	if (p_subresource.layer > 1) {
-		// Calculate offset to desired layer.
-		MTLSize mipExtent = mipmapLevelSizeFromSize(size, p_subresource.mipmap);
-		size_t bytes_per_row = pf.getBytesPerRow(pixel_format, mipExtent.width);
-		bytes_per_row = round_up_to_alignment(bytes_per_row, row_alignment);
-		size_t bytes_per_layer = pf.getBytesPerLayer(pixel_format, bytes_per_row, mipExtent.height);
-		offset += bytes_per_layer * mipExtent.depth * (p_subresource.layer - 1);
-	}
-
-	// TODO: Confirm with rendering team that there is no other way Godot may attempt to map a texture with multiple mipmaps or array layers.
-
-	// NOTE: It is not possible to create a buffer-backed texture with mipmaps or array layers,
-	//  as noted in the is_valid_linear function, so the offset calculation SHOULD always be zero.
-	//  Given that, this code should be simplified.
-
-	return (uint8_t *)(obj.buffer.contents) + offset;
+	return (uint8_t *)obj.buffer.contents;
 }
 
 void RenderingDeviceDriverMetal::texture_unmap(TextureID p_texture) {

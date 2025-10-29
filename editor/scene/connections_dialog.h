@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/callable_bind.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
