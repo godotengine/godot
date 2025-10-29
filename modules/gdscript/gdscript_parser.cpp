@@ -3708,6 +3708,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	if (previous.type == GDScriptTokenizer::Token::SUPER) {
 		// Super call.
 		call->is_super = true;
+		call->token_call_keyword_super = previous;
+
 		if (!check(GDScriptTokenizer::Token::PERIOD)) {
 			make_completion_context(COMPLETION_SUPER, call);
 			// There's no make_refactor_rename_context() here as `REFACTOR_RENAME_TYPE_SUPER`
@@ -3716,6 +3718,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		push_multiline(true);
 		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 			// Implicit call to the parent method of the same name.
+			call->token_call_parenthesis_open = previous;
+
 			if (current_function == nullptr) {
 				push_error(R"(Cannot use implicit "super" call outside of a function.)");
 				pop_multiline();
@@ -3728,21 +3732,36 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				call->function_name = SNAME("<anonymous>");
 			}
 		} else {
-			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
+			// Period.
+			if (consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)")) {
+				call->token_call_keyword_super_period = previous;
+			}
+
 			make_completion_context(COMPLETION_SUPER_METHOD, call);
 			if (refactor_rename_was_cursor_just_parsed()) {
 				refactor_rename_set_context(REFACTOR_RENAME_TYPE_SUPER_METHOD);
 				refactor_rename_context.node = call;
 			}
+
+			// Identifier.
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
 				pop_multiline();
 				complete_extents(call);
 				return nullptr;
 			}
+
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
+			if (refactor_rename_was_cursor_just_parsed()) {
+				refactor_rename_set_context(REFACTOR_RENAME_TYPE_IDENTIFIER);
+				refactor_rename_context.node = identifier;
+			}
+
+			// Parenthesis open.
+			if (consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
+				call->token_call_parenthesis_open = previous;
+			} else {
 				pop_multiline();
 				complete_extents(call);
 				return nullptr;
@@ -3820,33 +3839,44 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		completion_type = COMPLETION_CALL_ARGUMENTS;
 		refactor_rename_type = REFACTOR_RENAME_TYPE_CALL_ARGUMENTS;
 		argument_index++;
-	} while (match(GDScriptTokenizer::Token::COMMA));
+
+		if (match(GDScriptTokenizer::Token::COMMA)) {
+			call->token_call_argument_commas.push_back(previous);
+			continue;
+		}
+		break;
+
+	} while (true);
 	pop_completion_call();
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
+	call->token_call_parenthesis_close = previous;
 	complete_extents(call);
 
 	return call;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	GDScriptTokenizer::Token symbol_token = previous;
+
 	// We want code completion after a DOLLAR even if the current code is invalid.
 	make_completion_context(COMPLETION_GET_NODE, nullptr, -1);
 
 	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
-		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
+		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", symbol_token.get_name()));
 		return nullptr;
 	}
 
 	if (check(GDScriptTokenizer::Token::LITERAL)) {
 		if (current.literal.get_type() != Variant::STRING) {
-			push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
+			push_error(vformat(R"(Expected node path as string or identifier after "%s".)", symbol_token.get_name()));
 			return nullptr;
 		}
 	}
 
 	GetNodeNode *get_node = alloc_node<GetNodeNode>();
+	get_node->token_get_node_path.push_back(symbol_token);
 	if (refactor_rename_was_cursor_just_parsed()) {
 		refactor_rename_set_context(REFACTOR_RENAME_TYPE_GET_NODE);
 		refactor_rename_context.node = get_node;
