@@ -48,6 +48,8 @@ public:
 	class Action;
 	class Bit {
 		friend class RBMap<Bit, Action>;
+		friend class RBSet<Bit>;
+
 		Vector2i base_cell_coords;
 		int bit = -1;
 
@@ -569,8 +571,8 @@ private:
 	// Terrains.
 	void _prepare_terrain_fill(const Vector<Vector2i> &p_coords_array, Vector<Vector2i> &r_can_modify_list, RBSet<Vector2i> &r_can_modify_set, RBSet<Vector2i> &r_painted_set) const;
 	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const TerrainConstraints &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
-	TerrainConstraints _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	TerrainConstraints _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
+	void _add_terrain_pattern_as_constraints(const Vector2i &p_position, int p_terrain_set, const TileSet::TerrainsPattern &p_terrains_pattern, TerrainConstraints &r_constraints, int p_priority) const;
+	void _add_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains, TerrainConstraints &r_constraints) const;
 
 	void _tile_set_changed();
 
