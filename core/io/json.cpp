@@ -76,6 +76,12 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 		case Variant::FLOAT: {
 			const double num = p_var;
 
+			if (!Math::is_finite(num)) {
+				WARN_PRINT_ONCE("The JSON specification only permits finite numbers. Non-compliant values will be converted to `null`.");
+				r_result += "null";
+				return;
+			}
+
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
 			if (num == double(0.0)) {
@@ -371,9 +377,14 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				}
 
 				if (p_str[index] == '-' || is_digit(p_str[index])) {
-					//a number
+					// A number.
 					const char32_t *rptr;
 					double number = String::to_float(&p_str[index], &rptr);
+					if (rptr == p_str) {
+						// `r_end` doubles as an error handler when matching `p_str`.
+						r_err_str = "Invalid number";
+						return ERR_PARSE_ERROR;
+					}
 					index += (rptr - &p_str[index]);
 					r_token.type = TK_NUMBER;
 					r_token.value = number;
