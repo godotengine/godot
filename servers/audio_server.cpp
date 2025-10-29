@@ -50,6 +50,10 @@
 // #define GODOT_AUDIO_DRIVER_MANAGER_LOGGING_ENABLED
 #endif
 
+#ifdef ANDROID_ENABLED
+#define GODOT_AUDIO_DRIVER_DISALLOW_MUTING
+#endif
+
 AudioDriver *AudioDriver::singleton = nullptr;
 AudioDriver *AudioDriver::get_singleton() {
 	return singleton;
@@ -182,10 +186,16 @@ int AudioDriverManager::driver_count = 1;
 int AudioDriverManager::desired_driver_id = -2;
 int AudioDriverManager::actual_driver_id = -2;
 
+#ifdef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
+uint32_t AudioDriverManager::_mute_state = 0;
+uint32_t AudioDriverManager::_mute_state_final = 0;
+uint32_t AudioDriverManager::_mute_state_mask = 0;
+#else
 // Defaults are for the editor, outside the editor will be overridden.
 uint32_t AudioDriverManager::_mute_state = AudioDriverManager::MuteFlags::MUTE_FLAG_DISABLED;
 uint32_t AudioDriverManager::_mute_state_final = AudioDriverManager::MuteFlags::MUTE_FLAG_DISABLED;
 uint32_t AudioDriverManager::_mute_state_mask = UINT32_MAX;
+#endif
 
 void AudioDriverManager::add_driver(AudioDriver *p_driver) {
 	ERR_FAIL_COND(driver_count >= MAX_DRIVERS);
@@ -301,12 +311,22 @@ void AudioDriverManager::initialize(int p_driver) {
 	bool mute_on_silence = GLOBAL_DEF("audio/muting/mute_on_silence", false);
 	bool mute_on_focus_loss = GLOBAL_DEF("audio/muting/mute_on_focus_loss", false);
 
+#ifdef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
+	// This is just to silence warnings.
+	(void)mute_driver;
+	(void)mute_on_pause;
+	(void)mute_on_silence;
+	(void)mute_on_focus_loss;
+#endif
+
 	// Defaults for outside the editor.
 #ifdef TOOLS_ENABLED
 	if (!(Engine::get_singleton()->is_editor_hint() || Main::is_project_manager())) {
 #else
 	{
 #endif
+
+#ifndef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
 		// Note that these can be set differently on different platforms if desired.
 		// e.g. Android may want to ensure mute when app paused etc.
 		_mute_state = mute_driver ? MuteFlags::MUTE_FLAG_DISABLED : 0;
@@ -324,6 +344,7 @@ void AudioDriverManager::initialize(int p_driver) {
 		}
 
 		_update_mute_state();
+#endif
 	}
 
 	_set_driver(p_driver);
@@ -335,10 +356,13 @@ AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 }
 
 void AudioDriverManager::_update_mute_state() {
+#ifndef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
 	_mute_state_final = _mute_state & _mute_state_mask;
+#endif
 }
 
 void AudioDriverManager::set_mute_sensitivity(MuteFlags p_flag, bool p_enabled) {
+#ifndef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
 	if (p_enabled) {
 		_mute_state_mask |= p_flag;
 	} else {
@@ -346,9 +370,12 @@ void AudioDriverManager::set_mute_sensitivity(MuteFlags p_flag, bool p_enabled) 
 	}
 	_update_mute_state();
 	_set_driver(desired_driver_id);
+#endif
 }
 
 void AudioDriverManager::set_mute_flag(MuteFlags p_flag, bool p_enabled) {
+#ifndef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
+
 #ifdef GODOT_AUDIO_DRIVER_MANAGER_LOGGING_ENABLED
 	_log("set_mute_flag " + itos(p_flag) + " " + String(Variant(p_enabled)) + ", flags was " + itos(_mute_state) + " (final flags " + itos(_mute_state_final) + ")");
 #endif
@@ -370,6 +397,8 @@ void AudioDriverManager::set_mute_flag(MuteFlags p_flag, bool p_enabled) {
 	_log("\tflags now " + itos(_mute_state) + " (final flags " + itos(_mute_state_final) + ")");
 #endif
 	_set_driver(desired_driver_id);
+
+#endif
 }
 
 //////////////////////////////////////////////
