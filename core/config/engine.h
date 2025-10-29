@@ -83,6 +83,10 @@ private:
 #endif
 	int32_t gpu_idx = -1;
 
+	double _delta_time = 0.0;
+	double _physics_delta_time = 0.0;
+	double _unscaled_physics_delta_time = 0.0;
+
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
 
@@ -141,6 +145,11 @@ public:
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }
 	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
+
+	double get_delta_time() const { return _delta_time; }
+	double get_unscaled_delta_time() const { return _process_step; }
+	double get_physics_delta_time() const { return _physics_delta_time; }
+	double get_unscaled_physics_delta_time() const { return _unscaled_physics_delta_time; }
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
