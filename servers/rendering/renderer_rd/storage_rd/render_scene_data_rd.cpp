@@ -197,6 +197,17 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		RS::EnvironmentReflectionSource ref_src = render_scene_render->environment_get_reflection_source(p_env);
 		if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY) {
 			ubo.flags |= SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP;
+		} else if (
+				(ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_COLOR) ||
+				(ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_CLEAR_COLOR)) {
+			ubo.flags |= SCENE_DATA_FLAGS_USE_REFLECTION_COLOR;
+
+			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : render_scene_render->environment_get_bg_color(p_env);
+			color = color.srgb_to_linear();
+
+			ubo.reflection_color[0] = color.r;
+			ubo.reflection_color[1] = color.g;
+			ubo.reflection_color[2] = color.b;
 		}
 
 		if ((ubo.flags & SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP) || (ubo.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
