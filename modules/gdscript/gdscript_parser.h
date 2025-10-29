@@ -598,7 +598,8 @@ public:
 		bool is_super = false;
 		bool is_static = false;
 
-		GDScriptTokenizer::Token token_call_preceding_period;
+		GDScriptTokenizer::Token token_call_keyword_super;
+		GDScriptTokenizer::Token token_call_keyword_super_period;
 		GDScriptTokenizer::Token token_call_parenthesis_open;
 		GDScriptTokenizer::Token token_call_parenthesis_close;
 		LocalVector<GDScriptTokenizer::Token> token_call_argument_commas;
