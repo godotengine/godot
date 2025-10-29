@@ -121,7 +121,10 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 			column_to_translation[i] = translation;
 		}
 
-		ERR_FAIL_COND_V_MSG(column_to_translation.is_empty(), ERR_PARSE_ERROR, "Error importing CSV translation: The CSV file must have at least one column for key and one column for translation.");
+		if (column_to_translation.is_empty()) {
+			WARN_PRINT(vformat("CSV file '%s' does not contain any translation.", p_source_file));
+			return OK;
+		}
 	}
 
 	// Parse content rows.
