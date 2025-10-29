@@ -626,8 +626,7 @@ public:
 		ExpressionNode *operand = nullptr;
 		TypeNode *cast_type = nullptr;
 
-		GDScriptTokenizer::Token token_cast_parenthesis_open;
-		GDScriptTokenizer::Token token_cast_parenthesis_close;
+		GDScriptTokenizer::Token token_cast_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);

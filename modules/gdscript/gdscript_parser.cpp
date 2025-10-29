@@ -3685,6 +3685,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	CastNode *cast = alloc_node<CastNode>();
+	cast->token_cast_keyword = previous;
 	reset_extents(cast, p_previous_operand);
 	update_extents(cast);
 
