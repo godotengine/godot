@@ -304,6 +304,8 @@ private:
 	bool expanded = false;
 	int expansion_rows = 0;
 	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
+	bool dragging = false;
+	bool dragging_value_to_set = false;
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
