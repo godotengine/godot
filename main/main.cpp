@@ -4802,10 +4802,11 @@ bool Main::iteration() {
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
+	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
+
 	const int physics_ticks_per_second = Engine::get_singleton()->get_user_physics_ticks_per_second();
 	const double physics_step = 1.0 / physics_ticks_per_second;
-
-	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
+	double scaled_physics_step = physics_step * time_scale;
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
@@ -4813,6 +4814,9 @@ bool Main::iteration() {
 
 	Engine::get_singleton()->_process_step = process_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
+	Engine::get_singleton()->_delta_time = scaled_step;
+	Engine::get_singleton()->_physics_delta_time = scaled_physics_step;
+	Engine::get_singleton()->_unscaled_physics_delta_time = physics_step;
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
