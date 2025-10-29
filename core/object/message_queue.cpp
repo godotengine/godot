@@ -324,19 +324,18 @@ MessageQueue::~MessageQueue() {
 
 	while (read_pos < buffer_end) {
 		Message *message = (Message *)&buffer[read_pos];
+		read_pos += sizeof(Message);
+
 		Variant *args = (Variant *)(message + 1);
 		int argc = message->args;
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			for (int i = 0; i < argc; i++) {
 				args[i].~Variant();
 			}
+			read_pos += sizeof(Variant) * argc;
 		}
-		message->~Message();
 
-		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			read_pos += sizeof(Variant) * message->args;
-		}
+		message->~Message();
 	}
 
 	singleton = nullptr;
