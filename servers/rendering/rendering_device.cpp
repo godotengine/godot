@@ -5826,6 +5826,13 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 
 	uint32_t max_active_reference_pictures;
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		dpb_format.array_layers = 17;
+		max_active_reference_pictures = 16;
+	} else {
+		dpb_format.array_layers = 999999;
+		max_active_reference_pictures = 999999;
+	}
 
 	RDD::TextureView dpb_view = {};
 	dpb_view.format = dpb_format.format;
@@ -5844,9 +5851,53 @@ RID RenderingDevice::video_session_create(const VideoProfile &p_profile, uint32_
 	return rid;
 }
 
+// TODO validate everything is alright
+void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	driver->video_session_add_h264_parameters(video_session->driver_id, p_sps_sets, p_pps_sets);
+
+	RDD::FenceID fence = driver->fence_create();
+
+	driver->command_buffer_begin(decode_buffer);
+	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
+	driver->command_buffer_end(decode_buffer);
+	driver->command_queue_execute(decode_queue, decode_buffer, fence);
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
+}
+
 void RenderingDevice::video_session_begin() {
 	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
+}
+
+void RenderingDevice::video_session_decode_h264(RID p_video_session, Span<uint8_t> p_nal_unit, VideoDecodeH264SliceHeader p_std_h264_info, RID p_dst_texture) {
+	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
+	ERR_FAIL_NULL(video_session);
+
+	uint64_t buffer_size = p_nal_unit.size() + 3;
+	buffer_size += 128 - (buffer_size % 128);
+
+	BitField<RDD::BufferUsageBits> buffer_usage = {};
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
+	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+
+	RDD::BufferID src_buffer = driver->buffer_create_video_session(buffer_size, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, video_session->video_profile);
+	uint8_t *write_ptr = driver->buffer_map(src_buffer);
+
+	uint8_t start_code[3] = { 0, 0, 1 };
+	memcpy(write_ptr, start_code, sizeof(start_code));
+	memcpy(write_ptr + sizeof(start_code), p_nal_unit.begin(), p_nal_unit.size());
+	driver->buffer_unmap(src_buffer);
+
+	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
+	ERR_FAIL_NULL(dst_texture);
+
+	driver->command_video_session_decode_h264(decode_buffer, video_session->driver_id, src_buffer, p_std_h264_info, dst_texture->driver_id);
+	driver->buffer_free(src_buffer);
 }
 
 void RenderingDevice::video_session_end() {

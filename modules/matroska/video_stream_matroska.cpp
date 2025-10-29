@@ -37,6 +37,7 @@
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 #include "matroska.h"
+#include "modules/matroska/video_stream_h264.h"
 #include "scene/resources/texture.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -630,6 +631,9 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 				if (inner_id == MATROSKA_ID_TRACK_CODEC_ID) {
 					track.codec_id = read_string();
 					print_line(vformat("Track #%d (%s)", track.track_number, track.codec_id));
+					if (track.codec_id == "V_MPEG4/ISO/AVC") {
+						video_stream_encoding = memnew(VideoStreamH264);
+					}
 					continue;
 				}
 

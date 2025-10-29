@@ -565,6 +565,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	// Vulkan video extensions for hardware video processing
 	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -6463,7 +6464,21 @@ Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfil
 		return ERR_INVALID_PARAMETER;
 	}
 
-	return ERR_INVALID_PARAMETER;
+	// TODO don't use c-style memory management
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		VkVideoDecodeH264ProfileInfoKHR *h264_decode_profile = (VkVideoDecodeH264ProfileInfoKHR *)malloc(sizeof(VkVideoDecodeH264ProfileInfoKHR));
+		h264_decode_profile->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR;
+		h264_decode_profile->pNext = nullptr;
+		h264_decode_profile->stdProfileIdc = StdVideoH264ProfileIdc(p_profile.h264_profile_idc);
+		h264_decode_profile->pictureLayout = VkVideoDecodeH264PictureLayoutFlagBitsKHR(p_profile.h264_picture_layout);
+
+		r_profile->pNext = h264_decode_profile;
+		r_profile->videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	return OK;
 }
 
 void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProfile &p_profile) {
@@ -6472,6 +6487,16 @@ void RenderingDeviceDriverVulkan::video_profile_get_capabilities(const VideoProf
 
 	VkVideoCapabilitiesKHR video_capabilities = {};
 	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
+		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		video_capabilities.pNext = &decode_capabilities;
+
+		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
+		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		decode_capabilities.pNext = &h264_decode_capabilities;
+	}
 
 	//TODO expose capabilities
 	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
@@ -6551,6 +6576,16 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	// TODO use video_profile_get_capabilities
 	VkVideoCapabilitiesKHR video_capabilities = {};
 	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+	if (p_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		VkVideoDecodeCapabilitiesKHR decode_capabilities = {};
+		decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		video_capabilities.pNext = &decode_capabilities;
+
+		VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities = {};
+		h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		decode_capabilities.pNext = &h264_decode_capabilities;
+	}
 
 	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
 	if (result != VK_SUCCESS) {
@@ -6644,6 +6679,248 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	return RDD::VideoSessionID(video_session_info);
 }
 
+void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) {
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+
+	TightLocalVector<StdVideoH264SequenceParameterSet> sps_sets;
+	for (VideoCodingH264SequenceParameterSet rd_sps : p_sps_sets) {
+		StdVideoH264SequenceParameterSet vk_sps;
+
+		vk_sps.flags.constraint_set0_flag = rd_sps.constraint_set0_flag;
+		vk_sps.flags.constraint_set1_flag = rd_sps.constraint_set1_flag;
+		vk_sps.flags.constraint_set2_flag = rd_sps.constraint_set2_flag;
+		vk_sps.flags.constraint_set3_flag = rd_sps.constraint_set3_flag;
+		vk_sps.flags.constraint_set4_flag = rd_sps.constraint_set4_flag;
+		vk_sps.flags.constraint_set5_flag = rd_sps.constraint_set5_flag;
+		vk_sps.flags.direct_8x8_inference_flag = rd_sps.direct_8x8_inference_flag;
+		vk_sps.flags.mb_adaptive_frame_field_flag = rd_sps.mb_adaptive_frame_field_flag;
+		vk_sps.flags.frame_mbs_only_flag = rd_sps.frame_mbs_only_flag;
+		vk_sps.flags.delta_pic_order_always_zero_flag = rd_sps.delta_pic_order_always_zero_flag;
+		vk_sps.flags.separate_colour_plane_flag = rd_sps.separate_colour_plane_flag;
+		vk_sps.flags.gaps_in_frame_num_value_allowed_flag = rd_sps.gaps_in_frame_num_value_allowed_flag;
+		vk_sps.flags.qpprime_y_zero_transform_bypass_flag = rd_sps.qpprime_y_zero_transform_bypass_flag;
+		vk_sps.flags.frame_cropping_flag = rd_sps.frame_cropping_flag;
+		vk_sps.flags.seq_scaling_matrix_present_flag = rd_sps.seq_scaling_matrix_present_flag;
+		vk_sps.flags.vui_parameters_present_flag = rd_sps.vui_parameters_present_flag;
+
+		vk_sps.profile_idc = StdVideoH264ProfileIdc(rd_sps.profile_idc);
+		switch (rd_sps.level_idc) {
+			case 10: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_0;
+			} break;
+
+			case 11: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_1;
+			} break;
+
+			case 12: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_2;
+			} break;
+
+			case 13: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_1_3;
+			} break;
+
+			case 20: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_0;
+			} break;
+
+			case 21: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_1;
+			} break;
+
+			case 22: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_2_2;
+			} break;
+
+			case 30: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_0;
+			} break;
+
+			case 31: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_1;
+			} break;
+
+			case 32: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_3_2;
+			} break;
+
+			case 40: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_0;
+			} break;
+
+			case 41: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_1;
+			} break;
+
+			case 42: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_4_2;
+			} break;
+
+			case 50: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_0;
+			} break;
+
+			case 51: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_1;
+			} break;
+
+			case 52: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_5_2;
+			} break;
+
+			case 60: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_0;
+			} break;
+
+			case 61: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_1;
+			} break;
+
+			case 62: {
+				vk_sps.level_idc = STD_VIDEO_H264_LEVEL_IDC_6_2;
+			} break;
+
+			default: {
+				ERR_PRINT(vformat("Invalid level %d", rd_sps.level_idc));
+			}
+		}
+
+		vk_sps.chroma_format_idc = StdVideoH264ChromaFormatIdc(rd_sps.chroma_format_idc);
+
+		vk_sps.seq_parameter_set_id = rd_sps.seq_parameter_set_id;
+
+		vk_sps.bit_depth_luma_minus8 = rd_sps.bit_depth_luma_minus8;
+		vk_sps.bit_depth_chroma_minus8 = rd_sps.bit_depth_chroma_minus8;
+
+		vk_sps.log2_max_frame_num_minus4 = rd_sps.log2_max_frame_num_minus4;
+		vk_sps.pic_order_cnt_type = StdVideoH264PocType(rd_sps.pic_order_cnt_type);
+
+		// H.264 POC type 0
+		vk_sps.log2_max_pic_order_cnt_lsb_minus4 = rd_sps.log2_max_pic_order_cnt_lsb_minus4;
+
+		// H.264 POC type 1
+		vk_sps.offset_for_non_ref_pic = 0;
+		vk_sps.offset_for_top_to_bottom_field = 0;
+		vk_sps.num_ref_frames_in_pic_order_cnt_cycle = 0;
+		vk_sps.pOffsetForRefFrame = nullptr;
+
+		vk_sps.max_num_ref_frames = rd_sps.max_num_ref_frames;
+
+		vk_sps.pic_width_in_mbs_minus1 = rd_sps.pic_width_in_mbs_minus1;
+		vk_sps.pic_height_in_map_units_minus1 = rd_sps.pic_height_in_map_units_minus1;
+
+		vk_sps.frame_crop_left_offset = rd_sps.frame_crop_left_offset;
+		vk_sps.frame_crop_right_offset = rd_sps.frame_crop_right_offset;
+		vk_sps.frame_crop_top_offset = rd_sps.frame_crop_top_offset;
+		vk_sps.frame_crop_bottom_offset = rd_sps.frame_crop_bottom_offset;
+
+		// TODO scaling lists
+		vk_sps.pScalingLists = nullptr;
+
+		StdVideoH264SequenceParameterSetVui *vk_sps_vui = ALLOCA_SINGLE(StdVideoH264SequenceParameterSetVui);
+
+		vk_sps_vui->flags.aspect_ratio_info_present_flag = rd_sps.vui.aspect_ratio_info_present_flag;
+		vk_sps_vui->flags.overscan_info_present_flag = rd_sps.vui.overscan_info_present_flag;
+		vk_sps_vui->flags.overscan_appropriate_flag = rd_sps.vui.overscan_appropriate_flag;
+		vk_sps_vui->flags.video_signal_type_present_flag = rd_sps.vui.video_signal_type_present_flag;
+		vk_sps_vui->flags.video_full_range_flag = rd_sps.vui.video_full_range_flag;
+		vk_sps_vui->flags.color_description_present_flag = rd_sps.vui.color_description_present_flag;
+		vk_sps_vui->flags.chroma_loc_info_present_flag = rd_sps.vui.chroma_loc_info_present_flag;
+		vk_sps_vui->flags.timing_info_present_flag = rd_sps.vui.timing_info_present_flag;
+		vk_sps_vui->flags.fixed_frame_rate_flag = rd_sps.vui.fixed_frame_rate_flag;
+		vk_sps_vui->flags.bitstream_restriction_flag = rd_sps.vui.bitstream_restriction_flag;
+		vk_sps_vui->flags.nal_hrd_parameters_present_flag = rd_sps.vui.nal_hrd_parameters_present_flag;
+		vk_sps_vui->flags.vcl_hrd_parameters_present_flag = rd_sps.vui.vcl_hrd_parameters_present_flag;
+
+		vk_sps_vui->aspect_ratio_idc = StdVideoH264AspectRatioIdc(rd_sps.vui.aspect_ratio_idc);
+
+		vk_sps_vui->sar_width = rd_sps.vui.sar_width;
+		vk_sps_vui->sar_height = rd_sps.vui.sar_height;
+
+		vk_sps_vui->video_format = rd_sps.vui.video_format;
+
+		vk_sps_vui->colour_primaries = rd_sps.vui.colour_primaries;
+		vk_sps_vui->transfer_characteristics = rd_sps.vui.transfer_characteristics;
+		vk_sps_vui->matrix_coefficients = rd_sps.vui.matrix_coefficients;
+
+		vk_sps_vui->num_units_in_tick = rd_sps.vui.num_units_in_tick;
+		vk_sps_vui->time_scale = rd_sps.vui.time_scale;
+
+		vk_sps_vui->max_num_reorder_frames = rd_sps.vui.max_num_reorder_frames;
+		vk_sps_vui->max_dec_frame_buffering = rd_sps.vui.max_dec_frame_buffering;
+
+		vk_sps_vui->chroma_sample_loc_type_top_field = rd_sps.vui.chroma_sample_loc_type_top_field;
+		vk_sps_vui->chroma_sample_loc_type_bottom_field = rd_sps.vui.chroma_sample_loc_type_bottom_field;
+
+		vk_sps.pSequenceParameterSetVui = vk_sps_vui;
+
+		sps_sets.push_back(vk_sps);
+	}
+
+	TightLocalVector<StdVideoH264PictureParameterSet> pps_sets;
+	for (VideoCodingH264PictureParameterSet rd_pps : p_pps_sets) {
+		StdVideoH264PictureParameterSet vk_pps;
+
+		vk_pps.flags.transform_8x8_mode_flag = rd_pps.transform_8x8_mode_flag;
+		vk_pps.flags.redundant_pic_cnt_present_flag = rd_pps.redundant_pic_cnt_present_flag;
+		vk_pps.flags.constrained_intra_pred_flag = rd_pps.constrained_intra_pred_flag;
+		vk_pps.flags.deblocking_filter_control_present_flag = rd_pps.deblocking_filter_control_present_flag;
+		vk_pps.flags.weighted_pred_flag = rd_pps.weighted_pred_flag;
+		vk_pps.flags.bottom_field_pic_order_in_frame_present_flag = rd_pps.bottom_field_pic_order_in_frame_present_flag;
+		vk_pps.flags.entropy_coding_mode_flag = rd_pps.entropy_coding_mode_flag;
+		vk_pps.flags.pic_scaling_matrix_present_flag = rd_pps.bottom_field_pic_order_in_frame_present_flag;
+
+		vk_pps.seq_parameter_set_id = rd_pps.seq_parameter_set_id;
+		vk_pps.pic_parameter_set_id = rd_pps.pic_parameter_set_id;
+
+		vk_pps.num_ref_idx_l0_default_active_minus1 = rd_pps.num_ref_idx_l0_default_active_minus1;
+		vk_pps.num_ref_idx_l1_default_active_minus1 = rd_pps.num_ref_idx_l1_default_active_minus1;
+
+		vk_pps.weighted_bipred_idc = StdVideoH264WeightedBipredIdc(rd_pps.weighted_bipred_idc);
+
+		vk_pps.pic_init_qp_minus26 = rd_pps.pic_init_qp_minus26;
+		vk_pps.pic_init_qs_minus26 = rd_pps.pic_init_qs_minus26;
+
+		vk_pps.chroma_qp_index_offset = rd_pps.chroma_qp_index_offset;
+		vk_pps.second_chroma_qp_index_offset = rd_pps.second_chroma_qp_index_offset;
+
+		vk_pps.pScalingLists = nullptr;
+
+		pps_sets.push_back(vk_pps);
+	}
+
+	VkVideoDecodeH264SessionParametersAddInfoKHR h264_add_info = {};
+	h264_add_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR;
+	h264_add_info.pNext = nullptr;
+	h264_add_info.stdSPSCount = sps_sets.size();
+	h264_add_info.pStdSPSs = sps_sets.ptr();
+	h264_add_info.stdPPSCount = pps_sets.size();
+	h264_add_info.pStdPPSs = pps_sets.ptr();
+
+	VkVideoDecodeH264SessionParametersCreateInfoKHR h264_parameter_info = {};
+	h264_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	h264_parameter_info.pNext = nullptr;
+	h264_parameter_info.maxStdSPSCount = sps_sets.size();
+	h264_parameter_info.maxStdPPSCount = pps_sets.size();
+	h264_parameter_info.pParametersAddInfo = &h264_add_info;
+
+	VkVideoSessionParametersCreateInfoKHR parameter_info = {};
+	parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	parameter_info.pNext = &h264_parameter_info;
+	parameter_info.flags = 0;
+	parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
+	parameter_info.videoSession = video_session_info->vk_session;
+
+	VkVideoSessionParametersKHR session_parameters;
+	VkResult err = vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_MSG("Failed to create parameters");
+	}
+
+	video_session_info->vk_session_parameters = session_parameters;
+}
+
 void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_session) {
 	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
 
@@ -6680,6 +6957,154 @@ void RenderingDeviceDriverVulkan::command_video_session_reset(CommandBufferID p_
 
 	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
 
+	VkVideoEndCodingInfoKHR end_coding;
+	end_coding.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
+	end_coding.pNext = nullptr;
+	end_coding.flags = 0;
+
+	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &end_coding);
+}
+
+void RenderingDeviceDriverVulkan::command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) {
+	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	VideoCodingSessionInfo *video_session_info = (VideoCodingSessionInfo *)p_video_session.id;
+	BufferInfo *src_buffer_info = (BufferInfo *)p_src_buffer.id;
+	TextureInfo *dst_texture_info = (TextureInfo *)p_dst_texture.id;
+
+	VkExtent2D extent = video_session_info->vk_session_create_info.maxCodedExtent;
+
+	// Rebuild previous references
+	TightLocalVector<VkVideoReferenceSlotInfoKHR> reference_slot_infos = {};
+	TightLocalVector<VkVideoPictureResourceInfoKHR> reference_slot_pictures = {};
+	TightLocalVector<VkVideoDecodeH264DpbSlotInfoKHR> h264_dpb_slots = {};
+
+	reference_slot_infos.resize(video_session_info->std_reference_infos.size() + 1);
+	reference_slot_pictures.resize(video_session_info->std_reference_infos.size() + 1);
+	h264_dpb_slots.resize(video_session_info->std_reference_infos.size() + 1);
+
+	for (uint32_t i = 0; i < video_session_info->std_reference_infos.size(); i++) {
+		VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[i];
+		VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[i];
+		VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[i];
+
+		h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
+		h264_dpb_slot.pNext = nullptr;
+		h264_dpb_slot.pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[i];
+
+		reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+		reference_slot_picture.pNext = nullptr;
+		reference_slot_picture.codedOffset.x = 0;
+		reference_slot_picture.codedOffset.y = 0;
+		reference_slot_picture.codedExtent = extent;
+		reference_slot_picture.baseArrayLayer = 0;
+		reference_slot_picture.imageViewBinding = video_session_info->dpb_views[i];
+
+		reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+		reference_slot_info.pNext = &h264_dpb_slot;
+		reference_slot_info.slotIndex = i;
+		reference_slot_info.pPictureResource = &reference_slot_picture;
+	}
+
+	// Insert next reference
+	uint64_t dpb_index = video_session_info->current_dpb_index;
+	VkVideoReferenceSlotInfoKHR &reference_slot_info = reference_slot_infos[dpb_index];
+	VkVideoPictureResourceInfoKHR &reference_slot_picture = reference_slot_pictures[dpb_index];
+	VkVideoDecodeH264DpbSlotInfoKHR &h264_dpb_slot = h264_dpb_slots[dpb_index];
+	StdVideoDecodeH264ReferenceInfo *h264_reference_slot = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
+
+	h264_reference_slot->flags.bottom_field_flag = 0;
+	h264_reference_slot->flags.top_field_flag = 0;
+	h264_reference_slot->flags.is_non_existing = 0;
+	h264_reference_slot->flags.used_for_long_term_reference = 0;
+	h264_reference_slot->FrameNum = p_std_h264_info.frame_num;
+	h264_reference_slot->PicOrderCnt[0] = p_std_h264_info.pic_order_cnt_top_field;
+	h264_reference_slot->PicOrderCnt[1] = p_std_h264_info.pic_order_cnt_bottom_field;
+
+	h264_dpb_slot.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
+	h264_dpb_slot.pNext = nullptr;
+	h264_dpb_slot.pStdReferenceInfo = h264_reference_slot;
+
+	reference_slot_picture.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	reference_slot_picture.pNext = nullptr;
+	reference_slot_picture.codedOffset.x = 0;
+	reference_slot_picture.codedOffset.y = 0;
+	reference_slot_picture.codedExtent = extent;
+	reference_slot_picture.baseArrayLayer = 0;
+	reference_slot_picture.imageViewBinding = video_session_info->dpb_views[dpb_index];
+
+	reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+	reference_slot_info.pNext = &h264_dpb_slot;
+	reference_slot_info.slotIndex = -1;
+	reference_slot_info.pPictureResource = &reference_slot_picture;
+
+	VkVideoBeginCodingInfoKHR begin_cmd = {};
+	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
+	begin_cmd.pNext = nullptr;
+	begin_cmd.flags = 0;
+	begin_cmd.videoSession = video_session_info->vk_session;
+	begin_cmd.videoSessionParameters = video_session_info->vk_session_parameters;
+	begin_cmd.referenceSlotCount = reference_slot_infos.size();
+	begin_cmd.pReferenceSlots = reference_slot_infos.ptr();
+
+	vkCmdBeginVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &begin_cmd);
+
+	// Prepare to decode this image
+	StdVideoDecodeH264PictureInfo std_h264_info = {};
+	std_h264_info.flags.field_pic_flag = p_std_h264_info.field_pic_flag;
+	std_h264_info.flags.is_intra = p_std_h264_info.is_intra;
+	std_h264_info.flags.IdrPicFlag = p_std_h264_info.is_intra;
+	std_h264_info.flags.bottom_field_flag = p_std_h264_info.bottom_field_flag;
+	std_h264_info.flags.is_reference = p_std_h264_info.is_reference;
+	std_h264_info.flags.complementary_field_pair = p_std_h264_info.complementary_field_pair;
+
+	std_h264_info.seq_parameter_set_id = p_std_h264_info.seq_parameter_set_id;
+	std_h264_info.pic_parameter_set_id = p_std_h264_info.pic_parameter_set_id;
+
+	std_h264_info.frame_num = p_std_h264_info.frame_num;
+	std_h264_info.idr_pic_id = p_std_h264_info.idr_pic_id;
+
+	std_h264_info.PicOrderCnt[0] = p_std_h264_info.pic_order_cnt_top_field;
+	std_h264_info.PicOrderCnt[1] = p_std_h264_info.pic_order_cnt_bottom_field;
+
+	uint32_t slice_offset = 0;
+	VkVideoDecodeH264PictureInfoKHR h264_picture_info = {};
+	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
+	h264_picture_info.pNext = nullptr;
+	h264_picture_info.pStdPictureInfo = &std_h264_info;
+	h264_picture_info.sliceCount = 1;
+	h264_picture_info.pSliceOffsets = &slice_offset;
+
+	VkVideoPictureResourceInfoKHR picture_info = {};
+	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	picture_info.pNext = nullptr;
+	picture_info.codedOffset.x = 0;
+	picture_info.codedOffset.y = 0;
+	picture_info.codedExtent = extent;
+	picture_info.baseArrayLayer = 0;
+	picture_info.imageViewBinding = dst_texture_info->vk_view;
+
+	VkVideoReferenceSlotInfoKHR target_reference_slot_info = {};
+	target_reference_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
+	target_reference_slot_info.pNext = &h264_dpb_slot;
+	target_reference_slot_info.slotIndex = video_session_info->current_dpb_index;
+	target_reference_slot_info.pPictureResource = &reference_slot_picture;
+
+	// TODO reference slots
+	VkVideoDecodeInfoKHR decode_info = {};
+	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
+	decode_info.pNext = &h264_picture_info;
+	decode_info.flags = 0;
+	decode_info.srcBuffer = src_buffer_info->vk_buffer;
+	decode_info.srcBufferOffset = 0;
+	decode_info.srcBufferRange = src_buffer_info->size;
+	decode_info.dstPictureResource = picture_info;
+	decode_info.pSetupReferenceSlot = &target_reference_slot_info;
+	decode_info.referenceSlotCount = 0;
+	decode_info.pReferenceSlots = nullptr;
+
+	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);
+
+	// End video coding
 	VkVideoEndCodingInfoKHR end_coding;
 	end_coding.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
 	end_coding.pNext = nullptr;

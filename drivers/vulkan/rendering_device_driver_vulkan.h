@@ -724,9 +724,11 @@ public:
 	virtual void video_profile_get_format_properties(const VideoProfile &p_profile) override final;
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, TextureID p_dpb, uint32_t p_max_active_reference_pictures) override final;
+	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
 	virtual void command_video_session_reset(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session) override final;
+	virtual void command_video_session_decode_h264(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, VideoDecodeH264SliceHeader p_std_h264_info, TextureID p_dst_texture) override final;
 
 	/**************/
 	/**** MISC ****/
