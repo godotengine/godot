@@ -3756,6 +3756,8 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			const Color v_line_color = get_theme_color(SNAME("v_line_color"), SNAME("AnimationTrackEditGroup"));
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationTrackEditGroup"));
 
+			const Ref<StyleBox> &stylebox_hover = get_theme_stylebox(SceneStringName(hover), SNAME("AnimationTrackEditGroup"));
+
 			if (root) {
 				Node *n = root->get_node_or_null(node);
 				if (n && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
@@ -3764,6 +3766,13 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			}
 
 			draw_style_box(stylebox_header, Rect2(Point2(), get_size()));
+
+			if (hovered) {
+				// Draw hover feedback for AnimationTrackEditGroup.
+				// Add a limit to just show hover over portion with text.
+				int limit = timeline->get_name_limit();
+				draw_style_box(stylebox_hover, Rect2(Point2(1 * EDSCALE, 0), Size2(limit - 1 * EDSCALE, get_size().height)));
+			}
 
 			int limit = timeline->get_name_limit();
 
@@ -3839,6 +3848,14 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 				draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 			}
 		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (hovered) {
+				hovered = false;
+				// When the mouse cursor exits the AnimationTrackEditGroup, we're no longer hovering the group.
+				queue_redraw();
+			}
+		} break;
 	}
 }
 
@@ -3857,6 +3874,18 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 			if (n) {
 				editor_selection->add_node(n);
 			}
+		}
+	}
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Point2 pos = mm->get_position();
+		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+
+		bool was_hovered = hovered;
+		hovered = node_name_rect.has_point(pos);
+
+		if (was_hovered != hovered) {
+			queue_redraw();
 		}
 	}
 }

@@ -2131,6 +2131,10 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		p_theme->set_stylebox("header", "AnimationTrackEditGroup", style_animation_track_header);
 
+		Ref<StyleBoxFlat> style_animation_track_group_hover = p_config.base_style->duplicate();
+		style_animation_track_group_hover->set_bg_color(p_config.highlight_color);
+		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEditGroup", style_animation_track_group_hover);
+
 		p_theme->set_color("bg_color", "AnimationTrackEditGroup", p_config.surface_base_color);
 		p_theme->set_color("h_line_color", "AnimationTrackEditGroup", Color(1, 1, 1, 0));
 		p_theme->set_color("v_line_color", "AnimationTrackEditGroup", Color(1, 1, 1, 0));
