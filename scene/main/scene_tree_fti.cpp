@@ -767,9 +767,9 @@ SceneTreeFTI::SceneTreeFTI() {
 
 	data.traversal_mode = TM_DEFAULT;
 
-	if (traversal_mode_string == "Legacy") {
+	if (traversal_mode_string == Variant("Legacy")) {
 		data.traversal_mode = TM_LEGACY;
-	} else if (traversal_mode_string == "Debug") {
+	} else if (traversal_mode_string == Variant("Debug")) {
 		// Don't allow debug mode in final exports,
 		// it will almost certainly be a mistake.
 #ifdef DEBUG_ENABLED

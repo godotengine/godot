@@ -3039,7 +3039,7 @@ void EditorHelp::remove_class(const String &p_class) {
 void EditorHelp::_load_doc_thread(void *p_udata) {
 	bool use_script_cache = (bool)p_udata;
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
-	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
+	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == (Variant)doc_version_hash) {
 		Array classes = cache_res->get_meta("classes", Array());
 		for (int i = 0; i < classes.size(); i++) {
 			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));

@@ -2857,7 +2857,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		bool rvalid = false;
 		bool has_export_templates = false;
 
-		if (p_preset->get("custom_template/debug") != "") {
+		if (p_preset->get("custom_template/debug") != Variant("")) {
 			dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 			if (!dvalid) {
 				template_err += TTR("Custom debug template not found.") + "\n";
@@ -2867,7 +2867,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 		}
 
-		if (p_preset->get("custom_template/release") != "") {
+		if (p_preset->get("custom_template/release") != Variant("")) {
 			rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 			if (!rvalid) {
 				template_err += TTR("Custom release template not found.") + "\n";
