@@ -160,11 +160,11 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("get_resources_paths"), &ResourceLoader::get_resource_paths);
-	ClassDB::bind_method(D_METHOD("get_resource_paths_of_type"), &ResourceLoader::get_resource_paths_of_type);
-	ClassDB::bind_method(D_METHOD("get_resource_paths_with_path_prefix"), &ResourceLoader::get_resource_paths_with_path_prefix);
-	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_name_prefix"), &ResourceLoader::get_resource_paths_with_file_name_prefix);
-	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_extension"), &ResourceLoader::get_resource_paths_with_file_extension);
+	ClassDB::bind_method(D_METHOD("get_resource_paths", "with_godot_type"), &ResourceLoader::get_resource_paths);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_of_type", "type_hint", "with_godot_type"), &ResourceLoader::get_resource_paths_of_type);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_path_prefix", "path_prefix", "with_godot_type"), &ResourceLoader::get_resource_paths_with_path_prefix);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_name_prefix", "file_name_prefix", "with_godot_type"), &ResourceLoader::get_resource_paths_with_file_name_prefix);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_extension", "file_extension", "with_godot_type"), &ResourceLoader::get_resource_paths_with_file_extension);
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
