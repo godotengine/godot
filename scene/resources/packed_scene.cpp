@@ -190,6 +190,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	LocalVector<DeferredNodePathProperties> deferred_node_paths;
 
+	LocalVector<Node *> pending_notify_nodes;
+
 	bool deep_search_warned = false;
 
 	for (int i = 0; i < nc; i++) {
@@ -357,6 +359,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			//properties
 			int nprop_count = n.properties.size();
 			if (nprop_count) {
+				pending_notify_nodes.push_back(node);
 				const NodeData::Property *nprops = &n.properties[0];
 
 				Dictionary missing_resource_properties;
@@ -501,8 +504,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						E.value->setup_local_to_scene(); // Setup may be required for the resource to work properly.
 					}
 				}
-
-				node->notification(Object::NOTIFICATION_EXPORT_ASSIGNED);
 			}
 
 			//name
@@ -701,6 +702,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		if (ei) {
 			ret_nodes[0]->set_editable_instance(ei, true);
 		}
+	}
+
+	for (Node *node : pending_notify_nodes) {
+		node->notification(Node::NOTIFICATION_EXPORT_ASSIGNED);
 	}
 
 	return ret_nodes[0];

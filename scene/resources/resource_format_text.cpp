@@ -686,6 +686,8 @@ Error ResourceLoaderText::load() {
 		if (!missing_resource_properties.is_empty()) {
 			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
+
+		res->notification(Object::NOTIFICATION_EXPORT_ASSIGNED);
 	}
 
 	while (true) {
@@ -832,6 +834,7 @@ Error ResourceLoaderText::load() {
 			resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
 
+		resource->notification(Object::NOTIFICATION_EXPORT_ASSIGNED);
 		error = OK;
 
 		return error;
@@ -1438,7 +1441,6 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 	}
 	if (err == OK) {
 		Ref<Resource> resource = loader.get_resource();
-		resource->notification(NOTIFICATION_EXPORT_ASSIGNED);
 		return resource;
 	} else {
 		return Ref<Resource>();

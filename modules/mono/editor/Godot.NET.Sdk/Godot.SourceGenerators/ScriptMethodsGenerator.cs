@@ -248,10 +248,10 @@ namespace Godot.SourceGenerators
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override void ValidateExportedProperties()\n    {\n");
-                source.Append("        base.ValidateExportedProperties();\n");
 
                 GenerateNullChecksForValidation(source, exportedNonNullableGodotTypes);
 
+                source.Append("        base.ValidateExportedProperties();\n");
                 source.Append("    }\n");
             }
 
