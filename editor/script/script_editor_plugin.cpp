@@ -4160,13 +4160,8 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
-	if (find_in_files_button->get_index() != find_in_files_button->get_parent()->get_child_count()) {
-		find_in_files_button->get_parent()->move_child(find_in_files_button, -1);
-	}
-	if (!find_in_files_button->is_visible()) {
-		find_in_files_button->show();
-	}
-
+	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
+	find_in_files_button->show();
 	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
 }
 
@@ -4566,7 +4561,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	find_in_files->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
-	find_in_files->hide();
 	find_in_files_button->hide();
 
 	history_pos = -1;

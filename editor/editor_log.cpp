@@ -33,6 +33,7 @@
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -223,7 +224,7 @@ void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_button_icon(Ref<Texture2D>());
+	_set_dock_tab_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -274,8 +275,12 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 }
 
-void EditorLog::set_tool_button(Button *p_tool_button) {
-	tool_button = p_tool_button;
+void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
+	// TODO: Remove this hack once EditorLog is converted to a dock.
+	EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
+	if (parent) {
+		parent->set_dock_icon(p_icon);
+	}
 }
 
 void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -401,7 +406,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" ERROR: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
@@ -410,7 +415,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" WARNING: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project

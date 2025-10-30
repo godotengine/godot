@@ -65,12 +65,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
-	add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
-	add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
-	add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
-
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
@@ -333,12 +327,6 @@ void EditorDebuggerNode::_notification(int p_what) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
 
-			Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
-			add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
-			add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
-			add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
-			add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
-
 			remote_scene_tree->update_icon_max_width();
 		} break;
 
@@ -441,26 +429,33 @@ void EditorDebuggerNode::_update_errors() {
 			dbg->update_tabs();
 		});
 
-		if (error_count == 0 && warning_count == 0) {
-			debugger_button->set_text(TTR("Debugger"));
-			debugger_button->remove_theme_color_override(SceneStringName(font_color));
-			debugger_button->set_button_icon(Ref<Texture2D>());
-		} else {
-			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
-				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else if (error_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Error")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Warning")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-			}
-		}
 		last_error_count = error_count;
 		last_warning_count = warning_count;
+
+		// TODO: Replace this hack once EditorDebuggerNode is converted to a dock.
+		EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
+		if (!parent) {
+			return;
+		}
+
+		if (error_count == 0 && warning_count == 0) {
+			set_name(TTR("Debugger"));
+			parent->set_dock_icon(Ref<Texture2D>());
+			parent->set_title_color(Color(0, 0, 0, 0));
+		} else {
+			set_name(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			if (error_count >= 1 && warning_count >= 1) {
+				parent->set_dock_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
+				// Use error color to represent the highest level of severity reported.
+				parent->set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else if (error_count >= 1) {
+				parent->set_dock_icon(get_editor_theme_icon(SNAME("Error")));
+				parent->set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else {
+				parent->set_dock_icon(get_editor_theme_icon(SNAME("Warning")));
+				parent->set_title_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			}
+		}
 	}
 }
 

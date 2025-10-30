@@ -63,9 +63,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="1">
-			The available layouts for this dock, as a bitmask.
-			If you want to make all layouts available, use [code]available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL[/code].
+		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
+			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
+			If you want to make all layouts available, use [code]available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING[/code].
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="default_slot" type="int" setter="set_default_slot" getter="get_default_slot" enum="EditorPlugin.DockSlot" default="-1">
@@ -78,6 +78,12 @@
 		<member name="dock_shortcut" type="Shortcut" setter="set_dock_shortcut" getter="get_dock_shortcut">
 			The shortcut used to open the dock. This property can only be set before this dock is added via [method EditorPlugin.add_dock].
 		</member>
+		<member name="global" type="bool" setter="set_global" getter="is_global" default="true">
+			If [code]true[/code], the dock appears in the Editor &gt; Editor Docks menu and can be closed.
+		</member>
+		<member name="hidden" type="bool" setter="set_hidden" getter="is_hidden" default="false">
+			If [code]true[/code], the dock's tab will be hidden. If [member global] is [code]true[/code], the dock will not appear in the dock menu.
+		</member>
 		<member name="icon_name" type="StringName" setter="set_icon_name" getter="get_icon_name" default="&amp;&quot;&quot;">
 			The icon for the dock, as a name from the [code]EditorIcons[/code] theme type in the editor theme. You can find the list of available icons [url=https://godot-editor-icons.github.io/]here[/url].
 		</member>
@@ -87,14 +93,19 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The title of the dock's tab. If empty, the dock's [member Node.name] will be used. If the name is auto-generated (contains [code]@[/code]), the first child's name will be used instead.
 		</member>
+		<member name="title_color" type="Color" setter="set_title_color" getter="get_title_color" default="Color(0, 0, 0, 0)">
+			Color of the dock tab's title. If transparent, default color will be used.
+		</member>
 	</members>
 	<constants>
 		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
 			Allows placing the dock in the vertical dock slots on either side of the editor.
-			[b]Note:[/b] Currently this flag has no effect because the bottom panel is not a proper dock slot. This means that the dock can always be vertical.
 		</constant>
 		<constant name="DOCK_LAYOUT_HORIZONTAL" value="2" enum="DockLayout" is_bitfield="true">
-			Allows placing the dock in the editor's bottom panel. Implement [method _update_layout] to handle changing layouts.
+			Allows placing the dock in the editor's bottom panel.
+		</constant>
+		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
+			Allows making the dock float (open in a separate window).
 		</constant>
 	</constants>
 </class>
