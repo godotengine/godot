@@ -212,8 +212,8 @@ HashSet<ObjectID> SnapshotDataObject::get_unique_inbound_references() {
 void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String, ObjectID> &r_ret_val, const String &p_current_path) {
 	String path_divider = p_current_path.size() > 0 ? "/" : ""; // Make sure we don't start with a /.
 	switch (p_var.get_type()) {
-		case Variant::Type::INT:
-		case Variant::Type::OBJECT: { // Means ObjectID.
+		case Variant::INT:
+		case Variant::OBJECT: { // Means ObjectID.
 			ObjectID as_id = ObjectID((uint64_t)p_var);
 			if (!objects.has(as_id)) {
 				return;
@@ -221,7 +221,7 @@ void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String,
 			r_ret_val[p_current_path] = as_id;
 			break;
 		}
-		case Variant::Type::DICTIONARY: {
+		case Variant::DICTIONARY: {
 			Dictionary dict = (Dictionary)p_var;
 			LocalVector<Variant> keys = dict.get_key_list();
 			for (Variant &k : keys) {
@@ -232,7 +232,7 @@ void GameStateSnapshot::_get_outbound_references(Variant &p_var, HashMap<String,
 			}
 			break;
 		}
-		case Variant::Type::ARRAY: {
+		case Variant::ARRAY: {
 			Array arr = (Array)p_var;
 			int i = 0;
 			for (Variant &v : arr) {

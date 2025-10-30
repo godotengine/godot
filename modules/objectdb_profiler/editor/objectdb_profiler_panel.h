@@ -46,10 +46,10 @@ class ObjectDBProfilerPanel : public Control {
 protected:
 	static constexpr int SNAPSHOT_CACHE_MAX_SIZE = 10;
 
-	enum OdbProfilerMenuOptions {
-		ODB_MENU_RENAME,
-		ODB_MENU_SHOW_IN_FOLDER,
-		ODB_MENU_DELETE,
+	enum MenuOptions {
+		OPTION_RENAME,
+		OPTION_SHOW_IN_FOLDER,
+		OPTION_DELETE,
 	};
 
 	struct PartialSnapshot {

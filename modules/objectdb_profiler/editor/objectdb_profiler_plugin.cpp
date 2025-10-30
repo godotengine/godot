@@ -56,10 +56,10 @@ ObjectDBProfilerPlugin::ObjectDBProfilerPlugin() {
 
 void ObjectDBProfilerPlugin::_notification(int p_what) {
 	switch (p_what) {
-		case Node::NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE: {
 			add_debugger_plugin(debugger);
 		} break;
-		case Node::NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_EXIT_TREE: {
 			remove_debugger_plugin(debugger);
 		}
 	}

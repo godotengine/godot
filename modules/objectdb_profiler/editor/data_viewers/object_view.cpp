@@ -45,18 +45,13 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	item_data_map.clear();
 	data_item_map.clear();
 
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-
 	objects_view = memnew(HSplitContainer);
+	objects_view->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(objects_view);
-	objects_view->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 
 	VBoxContainer *object_column = memnew(VBoxContainer);
-	object_column->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	object_column->set_h_size_flags(SIZE_EXPAND_FILL);
 	objects_view->add_child(object_column);
-	object_column->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_column->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
 	object_list = memnew(Tree);
 
@@ -64,19 +59,18 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_column->add_child(filter_bar);
 	int sort_idx = 0;
 	if (diff_data) {
-		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
+		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, sort_idx++);
 	}
-	filter_bar->add_sort_option(TTRC("Class"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
-	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
-	filter_bar->add_sort_option(TTRC("Inbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
-	TreeSortAndFilterBar::SortOptionIndexes default_sort = filter_bar->add_sort_option(
-			TTRC("Outbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
+	TreeSortAndFilterBar::SortOptionIndexes default_sort;
+	filter_bar->add_sort_option(TTRC("Class"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, sort_idx++);
+	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, sort_idx++);
+	filter_bar->add_sort_option(TTRC("Inbound References"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, sort_idx++);
+	default_sort = filter_bar->add_sort_option(TTRC("Outbound References"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, sort_idx++);
 
 	// Tree of objects.
-	object_list->set_select_mode(Tree::SelectMode::SELECT_ROW);
-	object_list->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	object_list->set_hide_folding(false);
-	object_column->add_child(object_list);
+	object_list->set_select_mode(Tree::SELECT_ROW);
+	object_list->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	object_list->set_hide_folding(true);
 	object_list->set_hide_root(true);
 	object_list->set_columns(diff_data ? 5 : 4);
 	object_list->set_column_titles_visible(true);
@@ -98,21 +92,20 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list->set_column_expand(offset + 2, false);
 	object_list->set_column_clip_content(offset + 2, false);
 	object_list->set_column_title_tooltip_text(offset + 2, TTRC("Number of inbound references"));
-	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
+	object_list->set_column_custom_minimum_width(offset + 2, 64 * EDSCALE);
 	object_list->set_column_title(offset + 3, TTRC("Out"));
 	object_list->set_column_expand(offset + 3, false);
 	object_list->set_column_clip_content(offset + 3, false);
 	object_list->set_column_title_tooltip_text(offset + 3, TTRC("Number of outbound references"));
-	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
+	object_list->set_column_custom_minimum_width(offset + 3, 64 * EDSCALE);
 	object_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_object_selected));
-	object_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	object_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	object_column->add_child(object_list);
 
 	object_details = memnew(VBoxContainer);
-	object_details->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	object_details->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	object_details->set_h_size_flags(SIZE_EXPAND_FILL);
 	objects_view->add_child(object_details);
-	object_details->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_details->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
 	object_list->create_item();
 	_insert_data(snapshot_data, TTRC("A"));
@@ -144,7 +137,9 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item->set_text(offset + 0, pair.value->type_name);
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
+		item->set_text_alignment(offset + 2, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_text(offset + 3, String::num_uint64(pair.value->outbound_references.size()));
+		item->set_text_alignment(offset + 3, HORIZONTAL_ALIGNMENT_CENTER);
 		item_data_map[item] = pair.value;
 		data_item_map[pair.value] = item;
 	}
@@ -160,25 +155,24 @@ void SnapshotObjectView::_object_selected() {
 	SnapshotDataObject *d = item_data_map[object_list->get_selected()];
 	EditorNode::get_singleton()->push_item(static_cast<Object *>(d));
 
-	DarkPanelContainer *object_panel = memnew(DarkPanelContainer);
-	VBoxContainer *object_panel_content = memnew(VBoxContainer);
-	object_panel_content->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_panel_content->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	PanelContainer *object_panel = memnew(PanelContainer);
+	object_panel->set_theme_type_variation("PanelContainerFlat");
+	object_panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	object_details->add_child(object_panel);
+	VBoxContainer *object_panel_content = memnew(VBoxContainer);
 	object_panel->add_child(object_panel_content);
 	object_panel_content->add_child(memnew(SpanningHeader(d->get_name())));
 
 	ScrollContainer *properties_scroll = memnew(ScrollContainer);
 	properties_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	properties_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_AUTO);
-	properties_scroll->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	properties_scroll->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	properties_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	object_panel_content->add_child(properties_scroll);
 
 	VBoxContainer *properties_container = memnew(VBoxContainer);
-	properties_container->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	properties_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	properties_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	properties_container->add_theme_constant_override("separation", 8 * EDSCALE);
 	properties_scroll->add_child(properties_container);
-	properties_container->add_theme_constant_override("separation", 8);
 
 	inbound_tree = _make_references_list(properties_container, TTRC("Inbound References"), TTRC("Source"), TTRC("Other object referencing this object"), TTRC("Property"), TTRC("Property of other object referencing this object"));
 	inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(inbound_tree));
@@ -227,12 +221,10 @@ void SnapshotObjectView::_reference_selected(Tree *p_source_tree) {
 
 Tree *SnapshotObjectView::_make_references_list(Control *p_container, const String &p_name, const String &p_col_1, const String &p_col_1_tooltip, const String &p_col_2, const String &p_col_2_tooltip) {
 	VBoxContainer *vbox = memnew(VBoxContainer);
-	vbox->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	vbox->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	vbox->add_theme_constant_override("separation", 4);
+	vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbox->set_custom_minimum_size(Vector2(300 * EDSCALE, 0));
+	vbox->add_theme_constant_override("separation", 4 * EDSCALE);
 	p_container->add_child(vbox);
-
-	vbox->set_custom_minimum_size(Vector2(300, 0) * EDSCALE);
 
 	RichTextLabel *lbl = memnew(RichTextLabel("[center]" + p_name + "[center]"));
 	lbl->set_fit_content(true);
@@ -240,8 +232,7 @@ Tree *SnapshotObjectView::_make_references_list(Control *p_container, const Stri
 	vbox->add_child(lbl);
 	Tree *tree = memnew(Tree);
 	tree->set_hide_folding(true);
-	vbox->add_child(tree);
-	tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
+	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
@@ -254,7 +245,8 @@ Tree *SnapshotObjectView::_make_references_list(Control *p_container, const Stri
 	tree->set_column_clip_content(1, false);
 	tree->set_column_title_tooltip_text(1, p_col_2_tooltip);
 	tree->set_v_scroll_enabled(false);
-	tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbox->add_child(tree);
 
 	return tree;
 }

@@ -63,37 +63,31 @@ SnapshotClassView::SnapshotClassView() {
 void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
 	SnapshotView::show_snapshot(p_data, p_diff_data);
 
-	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-
 	HSplitContainer *classes_view = memnew(HSplitContainer);
+	classes_view->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(classes_view);
-	classes_view->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-	classes_view->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	classes_view->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	classes_view->set_split_offset(0);
 
 	VBoxContainer *class_list_column = memnew(VBoxContainer);
-	class_list_column->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	class_list_column->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	class_list_column->set_h_size_flags(SIZE_EXPAND_FILL);
 	classes_view->add_child(class_list_column);
 
 	class_tree = memnew(Tree);
 
 	TreeSortAndFilterBar *filter_bar = memnew(TreeSortAndFilterBar(class_tree, TTRC("Filter Classes")));
-	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, 0);
+	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SORT_TYPE_ALPHA, 0);
 
 	TreeSortAndFilterBar::SortOptionIndexes default_sort;
 	if (!diff_data) {
-		default_sort = filter_bar->add_sort_option(TTRC("Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
+		default_sort = filter_bar->add_sort_option(TTRC("Count"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, 1);
 	} else {
-		filter_bar->add_sort_option(TTRC("A Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 1);
-		filter_bar->add_sort_option(TTRC("B Count"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 2);
-		default_sort = filter_bar->add_sort_option(TTRC("Delta"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, 3);
+		filter_bar->add_sort_option(TTRC("A Count"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, 1);
+		filter_bar->add_sort_option(TTRC("B Count"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, 2);
+		default_sort = filter_bar->add_sort_option(TTRC("Delta"), TreeSortAndFilterBar::SORT_TYPE_NUMERIC, 3);
 	}
 	class_list_column->add_child(filter_bar);
 
-	class_tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
+	class_tree->set_select_mode(Tree::SELECT_ROW);
 	class_tree->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	class_tree->set_hide_folding(false);
 	class_tree->set_hide_root(true);
@@ -103,32 +97,35 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 	class_tree->set_column_expand(0, true);
 	class_tree->set_column_custom_minimum_width(0, 200 * EDSCALE);
 	class_tree->set_column_title(1, diff_data ? TTRC("A Count") : TTRC("Count"));
+	class_tree->set_column_title_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
+	class_tree->set_column_custom_minimum_width(1, 64 * EDSCALE);
 	class_tree->set_column_expand(1, false);
 	if (diff_data) {
 		class_tree->set_column_title_tooltip_text(1, vformat(TTR("A: %s"), snapshot_data->name));
 		class_tree->set_column_title_tooltip_text(2, vformat(TTR("B: %s"), diff_data->name));
 		class_tree->set_column_title(2, TTRC("B Count"));
+		class_tree->set_column_title_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
+		class_tree->set_column_custom_minimum_width(2, 64 * EDSCALE);
 		class_tree->set_column_expand(2, false);
 		class_tree->set_column_title(3, TTRC("Delta"));
+		class_tree->set_column_title_alignment(3, HORIZONTAL_ALIGNMENT_CENTER);
+		class_tree->set_column_custom_minimum_width(1, 64 * EDSCALE);
 		class_tree->set_column_expand(3, false);
 	}
 	class_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_class_selected));
-	class_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	class_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	class_tree->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	class_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_list_column->add_child(class_tree);
 
 	VSplitContainer *object_lists = memnew(VSplitContainer);
-	classes_view->add_child(object_lists);
 	object_lists->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
-	object_lists->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_lists->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	object_lists->set_h_size_flags(SIZE_EXPAND_FILL);
 	if (!diff_data) {
 		object_lists->add_child(object_list = _make_object_list_tree(TTRC("Objects")));
 	} else {
 		object_lists->add_child(object_list = _make_object_list_tree(TTRC("A Objects")));
 		object_lists->add_child(diff_object_list = _make_object_list_tree(TTRC("B Objects")));
 	}
+	classes_view->add_child(object_lists);
 
 	HashMap<String, ClassData> grouped_by_class;
 	grouped_by_class["Object"] = ClassData("Object", "");
@@ -152,6 +149,7 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 		next.tree_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		int a_count = next.get_recursive_instance_count(grouped_by_class, snapshot_data);
 		next.tree_node->set_text(1, String::num_int64(a_count));
+		next.tree_node->set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
 		if (diff_data) {
 			int b_count = next.get_recursive_instance_count(grouped_by_class, diff_data);
 			next.tree_node->set_text(2, String::num_int64(b_count));
@@ -173,7 +171,7 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 
 Tree *SnapshotClassView::_make_object_list_tree(const String &p_column_name) {
 	Tree *list = memnew(Tree);
-	list->set_select_mode(Tree::SelectMode::SELECT_ROW);
+	list->set_select_mode(Tree::SELECT_ROW);
 	list->set_hide_folding(true);
 	list->set_hide_root(true);
 	list->set_columns(1);
@@ -181,8 +179,7 @@ Tree *SnapshotClassView::_make_object_list_tree(const String &p_column_name) {
 	list->set_column_title(0, p_column_name);
 	list->set_column_expand(0, true);
 	list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_object_selected).bind(list));
-	list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	list->set_v_size_flags(SIZE_EXPAND_FILL);
 	return list;
 }
 
@@ -250,7 +247,7 @@ void SnapshotClassView::_populate_object_list(GameStateSnapshot *p_snapshot, Tre
 			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			item->set_text(0, pair.value->get_name());
 			item->set_metadata(0, pair.value->remote_object_id);
-			item->set_text_overrun_behavior(0, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
+			item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 			object_count++;
 		}
 	}
