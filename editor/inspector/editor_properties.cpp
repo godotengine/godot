@@ -3014,7 +3014,7 @@ void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
-	if (p_drag_data["type"] != "nodes") {
+	if (!p_drag_data.has("type") || p_drag_data["type"] != "nodes") {
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
