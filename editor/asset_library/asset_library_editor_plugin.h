@@ -47,6 +47,7 @@
 #include "scene/main/http_request.h"
 
 class EditorFileDialog;
+class HSeparator;
 class MenuButton;
 
 class EditorAssetLibraryItem : public PanelContainer {
@@ -57,15 +58,23 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *category = nullptr;
 	LinkButton *author = nullptr;
 	Label *price = nullptr;
+	HSeparator *separator = nullptr;
+	Control *spacer = nullptr;
+	HBoxContainer *author_price_hbox = nullptr;
 
 	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
 
+	int author_width = 0;
+	int price_width = 0;
+
 	void _asset_clicked();
 	void _category_clicked();
 	void _author_clicked();
+
+	void _calculate_misc_links_size();
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
@@ -75,6 +84,8 @@ protected:
 
 public:
 	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
+
+	void calculate_misc_links_ratio();
 
 	EditorAssetLibraryItem(bool p_clickable = false);
 };

@@ -108,6 +108,7 @@ public:
 	UnderlineMode get_underline_mode() const;
 
 	Ref<Font> get_button_font() const;
+	int get_button_font_size() const;
 
 	LinkButton(const String &p_text = String());
 };
