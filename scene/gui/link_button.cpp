@@ -154,6 +154,10 @@ Ref<Font> LinkButton::get_button_font() const {
 	return theme_cache.font;
 }
 
+int LinkButton::get_button_font_size() const {
+	return theme_cache.font_size;
+}
+
 void LinkButton::pressed() {
 	if (uri.is_empty()) {
 		return;
