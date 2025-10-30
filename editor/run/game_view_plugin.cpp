@@ -792,8 +792,8 @@ void GameView::_hide_selection_toggled(bool p_pressed) {
 	EditorSettings::get_singleton()->set_project_metadata("game_view", "hide_selection", p_pressed);
 }
 
-void GameView::_debug_mute_audio_button_pressed() {
-	debug_mute_audio = !debug_mute_audio;
+void GameView::_debug_mute_audio_button_toggled(bool p_pressed) {
+	debug_mute_audio = p_pressed;
 	debug_mute_audio_button->set_button_icon(get_editor_theme_icon(debug_mute_audio ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
 	debugger->set_debug_mute_audio(debug_mute_audio);
@@ -1233,8 +1233,9 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	debug_mute_audio_button = memnew(Button);
 	main_menu_hbox->add_child(debug_mute_audio_button);
-	debug_mute_audio_button->set_theme_type_variation("FlatButton");
-	debug_mute_audio_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_debug_mute_audio_button_pressed));
+	debug_mute_audio_button->set_toggle_mode(true);
+	debug_mute_audio_button->set_theme_type_variation(SceneStringName(FlatButton));
+	debug_mute_audio_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_debug_mute_audio_button_toggled));
 	debug_mute_audio_button->set_tooltip_text(debug_mute_audio ? TTRC("Unmute game audio.") : TTRC("Mute game audio."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
