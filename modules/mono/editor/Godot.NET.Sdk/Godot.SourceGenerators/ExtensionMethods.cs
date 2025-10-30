@@ -32,6 +32,11 @@ namespace Godot.SourceGenerators
             disabledGenerators != null &&
             disabledGenerators.Split(';').Contains(generatorName));
 
+        public static bool IsGodotEnableExportNullChecks(this GeneratorExecutionContext context)
+            => context.TryGetGlobalAnalyzerProperty("GodotEnableExportNullChecks", out string? toggle) &&
+               toggle != null &&
+               toggle.Equals("true", StringComparison.OrdinalIgnoreCase);
+
         public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
         {
             while (symbol != null)

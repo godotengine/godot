@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -18,6 +19,8 @@ namespace Godot.SourceGenerators
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
+
+            bool enableExportNullChecks = context.IsGodotEnableExportNullChecks();
 
             INamedTypeSymbol[] godotClasses = context
                 .Compilation.SyntaxTrees
@@ -50,7 +53,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var godotClass in godotClasses)
                 {
-                    VisitGodotScriptClass(context, typeCache, godotClass);
+                    VisitGodotScriptClass(context, typeCache, godotClass, enableExportNullChecks);
                 }
             }
         }
@@ -72,7 +75,8 @@ namespace Godot.SourceGenerators
         private static void VisitGodotScriptClass(
             GeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
-            INamedTypeSymbol symbol
+            INamedTypeSymbol symbol,
+            bool enableExportNullChecks
         )
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
@@ -133,6 +137,39 @@ namespace Godot.SourceGenerators
             var godotClassMethods = methodSymbols.WhereHasGodotCompatibleSignature(typeCache)
                 .Distinct(new MethodOverloadEqualityComparer())
                 .ToArray();
+
+            // Collect exported properties/fields for null checks if feature is enabled
+            List<(string Name, ITypeSymbol Type)>? exportedNonNullableGodotTypes = null;
+            if (enableExportNullChecks)
+            {
+                exportedNonNullableGodotTypes = new List<(string, ITypeSymbol)>();
+
+                // Collect exported properties
+                var propertySymbols = members
+                    .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
+                    .Cast<IPropertySymbol>();
+
+                foreach (var property in propertySymbols)
+                {
+                    if (IsExportedNonNullableGodotType(property, property.Type, context.Compilation, typeCache))
+                    {
+                        exportedNonNullableGodotTypes.Add((property.Name, property.Type));
+                    }
+                }
+
+                // Collect exported fields
+                var fieldSymbols = members
+                    .Where(s => !s.IsStatic && s is { Kind: SymbolKind.Field, IsImplicitlyDeclared: false })
+                    .Cast<IFieldSymbol>();
+
+                foreach (var field in fieldSymbols)
+                {
+                    if (IsExportedNonNullableGodotType(field, field.Type, context.Compilation, typeCache))
+                    {
+                        exportedNonNullableGodotTypes.Add((field.Name, field.Type));
+                    }
+                }
+            }
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
@@ -205,16 +242,41 @@ namespace Godot.SourceGenerators
 
             // Generate InvokeGodotClassMethod
 
-            if (godotClassMethods.Length > 0)
+            if (godotClassMethods.Length > 0 || exportedNonNullableGodotTypes is { Count: > 0 })
             {
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
 
+                bool hasNotifictaionMethod = false;
                 foreach (var method in godotClassMethods)
                 {
-                    GenerateMethodInvoker(method, source);
+                    if (method.Method.Name == "_Notification")
+                    {
+                        hasNotifictaionMethod = true;
+                    }
+                    GenerateMethodInvoker(method, source, exportedNonNullableGodotTypes);
+                }
+
+                if (!hasNotifictaionMethod)
+                {
+                    // If there is no _Notification method, we still need to generate null checks
+                    // for exported non-nullable Godot types in case of NOTIFICATION_SCENE_INSTANTIATED
+                    if (exportedNonNullableGodotTypes is { Count: > 0 })
+                    {
+                        source.Append("        if (method == MethodName._Notification && args.Count == 1) {\n");
+                        source.Append("            if (");
+                        source.AppendNativeVariantToManagedExpr("args[0]",
+                            context.Compilation.GetSpecialType(SpecialType.System_Int32),
+                            MarshalType.Int32);
+                        source.Append(" == (int)global::Godot.Node.NotificationSceneInstantiated) {\n");
+
+                        GenerateNullChecksForNotification(source, exportedNonNullableGodotTypes);
+
+                        source.Append("            }\n");
+                        source.Append("        }\n");
+                    }
                 }
 
                 source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
@@ -283,6 +345,12 @@ namespace Godot.SourceGenerators
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
+
+            // Generate global suppressions file if there are exported non-nullable types
+            if (exportedNonNullableGodotTypes != null && exportedNonNullableGodotTypes.Count > 0)
+            {
+                GenerateGlobalSuppressions(context, symbol, members, exportedNonNullableGodotTypes);
+            }
         }
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
@@ -419,9 +487,27 @@ namespace Godot.SourceGenerators
             source.Append(") {\n           return true;\n        }\n");
         }
 
+        private static void GenerateNullChecksForNotification(
+            StringBuilder source,
+            List<(string Name, ITypeSymbol Type)> exportedNonNullableGodotTypes
+        )
+        {
+            foreach (var (memberName, memberType) in exportedNonNullableGodotTypes)
+            {
+                source.Append("                if (this.");
+                source.Append(memberName);
+                source.Append(" == null) throw new global::System.NullReferenceException(\"The exported property/field '");
+                source.Append(memberName);
+                source.Append("' of type '");
+                source.Append(memberType.ToDisplayString());
+                source.Append("' is null.\");\n");
+            }
+        }
+
         private static void GenerateMethodInvoker(
             GodotMethodData method,
-            StringBuilder source
+            StringBuilder source,
+            List<(string Name, ITypeSymbol Type)>? exportedNonNullableGodotTypes = null
         )
         {
             string methodName = method.Method.Name;
@@ -431,6 +517,21 @@ namespace Godot.SourceGenerators
             source.Append(" && args.Count == ");
             source.Append(method.ParamTypes.Length);
             source.Append(") {\n");
+
+            // Generate null checks for _Notification with NOTIFICATION_SCENE_INSTANTIATED
+            if (methodName == "_Notification" &&
+                method.ParamTypes.Length == 1 &&
+                exportedNonNullableGodotTypes is { Count: > 0 })
+            {
+                source.Append("            if (");
+                source.AppendNativeVariantToManagedExpr("args[0]",
+                    method.ParamTypeSymbols[0], method.ParamTypes[0]);
+                source.Append(" == (int)global::Godot.Node.NotificationSceneInstantiated) {\n");
+
+                GenerateNullChecksForNotification(source, exportedNonNullableGodotTypes);
+
+                source.Append("            }\n");
+            }
 
             if (method.RetType != null)
                 source.Append("            var callRet = ");
@@ -469,6 +570,90 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("        }\n");
+        }
+
+        private static void GenerateGlobalSuppressions(
+            GeneratorExecutionContext context,
+            INamedTypeSymbol symbol,
+            ImmutableArray<ISymbol> members,
+            List<(string Name, ITypeSymbol Type)> exportedNonNullableGodotTypes)
+        {
+            var suppressionsSource = new StringBuilder();
+
+            suppressionsSource.Append("// <auto-generated/>\n");
+            suppressionsSource.Append("// This file contains global suppressions for exported non-nullable Godot types\n");
+            suppressionsSource.Append("\n");
+            suppressionsSource.Append("using System.Diagnostics.CodeAnalysis;\n");
+            suppressionsSource.Append("\n");
+
+            foreach (var (memberName, _) in exportedNonNullableGodotTypes)
+            {
+                // Determine if it's a field or property to use correct Target format
+                var memberSymbol = members.FirstOrDefault(m => m.Name == memberName);
+                string targetPrefix = memberSymbol?.Kind == SymbolKind.Property ? "P:" : "F:";
+
+                suppressionsSource.Append("[module: SuppressMessage(\"Compiler\", \"CS8618\", Scope=\"member\", Target=\"");
+                suppressionsSource.Append(targetPrefix);
+                suppressionsSource.Append(symbol.ToDisplayString());
+                suppressionsSource.Append(".");
+                suppressionsSource.Append(memberName);
+                suppressionsSource.Append("\", Justification = \"Member's nullability has been checked by Godot when initialized.\")]\n");
+            }
+
+            string suppressionsHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
+                                    + "_GlobalSuppressions.generated";
+
+            context.AddSource(suppressionsHint, SourceText.From(suppressionsSource.ToString(), Encoding.UTF8));
+        }
+
+        private static bool IsNullableContextEnabledForSymbol(ISymbol symbol, Compilation compilation)
+        {
+            // Get the syntax reference for the symbol declaration
+            var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+            if (syntaxReference == null)
+                return false;
+
+            var syntaxTree = syntaxReference.SyntaxTree;
+            var syntaxNode = syntaxReference.GetSyntax();
+
+            // Get the nullable context options at the declaration location
+            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+            var nullableContext = semanticModel.GetNullableContext(syntaxNode.SpanStart);
+
+            // Check if nullable reference types are enabled (either as warnings or errors)
+            return (nullableContext & NullableContext.Enabled) != 0;
+        }
+
+        private static bool IsExportedNonNullableGodotType(ISymbol memberSymbol, ITypeSymbol memberType, Compilation compilation, MarshalUtils.TypeCache _)
+        {
+            // Check if the member has the [Export] attribute
+            bool isExported = memberSymbol.GetAttributes()
+                .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
+
+            if (!isExported)
+                return false;
+
+            // Check if the type is a Godot compatible class type (Node, Resource, or derived)
+            if (memberType is not INamedTypeSymbol namedType)
+                return false;
+
+            // Check if it's a reference type and check nullable annotation
+            if (!memberType.IsReferenceType)
+                return false;
+
+            // Check if member has nullable context enabled (either via #nullable or project settings)
+            if (!IsNullableContextEnabledForSymbol(memberSymbol, compilation))
+                return false;
+
+            // If the type is nullable annotated (e.g., Node?), skip it
+            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
+                return false;
+
+            // Check if the type inherits from Node or Resource
+            bool isNodeOrResource = namedType.InheritsFrom("GodotSharp", GodotClasses.Node) ||
+                                    namedType.InheritsFrom("GodotSharp", "Godot.Resource");
+
+            return isNodeOrResource;
         }
     }
 }
