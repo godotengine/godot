@@ -115,6 +115,8 @@ private:
 	void _setup_composition_layer();
 	void _clear_composition_layer();
 
+	void _viewport_size_changed();
+
 protected:
 	OpenXRAPI *openxr_api = nullptr;
 	OpenXRCompositionLayerExtension *composition_layer_extension = nullptr;

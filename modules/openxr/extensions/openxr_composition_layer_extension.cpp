@@ -232,6 +232,8 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_viewport(RID p_viewp
 			free_swapchain();
 			subviewport.viewport_size = Size2i();
 		}
+	} else if (subviewport.viewport_size != p_size) {
+		subviewport.viewport_size = p_size;
 	}
 }
 
