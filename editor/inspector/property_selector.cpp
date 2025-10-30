@@ -32,6 +32,8 @@
 
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
@@ -82,6 +84,10 @@ void PropertySelector::_update_search() {
 
 	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
 	const String search_text = search_box->get_text().replace_char(' ', '_');
+
+	// Set up font.
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
 
 	if (properties) {
 		List<PropertyInfo> props;
@@ -145,6 +151,9 @@ void PropertySelector::_update_search() {
 
 			TreeItem *item = search_options->create_item(category ? category : root);
 			item->set_text(0, E.name);
+			if (use_monospace_font) {
+				item->set_custom_font(0, monospace_font);
+			}
 			item->set_metadata(0, E.name);
 			item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(E.type)));
 
@@ -306,6 +315,9 @@ void PropertySelector::_update_search() {
 			}
 
 			item->set_text(0, desc);
+			if (use_monospace_font) {
+				item->set_custom_font(0, monospace_font);
+			}
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
@@ -504,6 +516,11 @@ void PropertySelector::_create_subproperty(TreeItem *p_parent_item, const String
 
 	TreeItem *item = search_options->create_item(p_parent_item);
 	item->set_text(0, p_name);
+
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	if (use_monospace_font) {
+		item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+	}
 	item->set_metadata(0, String(p_parent_item->get_metadata(0)) + ":" + p_name);
 	item->set_icon(0, search_options->get_editor_theme_icon(Variant::get_type_name(p_type)));
 
