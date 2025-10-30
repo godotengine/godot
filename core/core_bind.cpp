@@ -69,6 +69,27 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	return res;
 }
 
+PackedStringArray ResourceLoader::get_resource_paths(const bool &p_with_godot_type) {
+	return ::ResourceLoader::get_resource_paths(p_with_godot_type);
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_of_type(const String &p_type_hint, const bool &p_with_godot_type) {
+	return ::ResourceLoader::get_resource_paths_of_type(p_type_hint, p_with_godot_type);
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type) {
+	return ::ResourceLoader::get_resource_paths_with_path_prefix(p_path_prefix, p_with_godot_type);
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type) {
+	return ::ResourceLoader::get_resource_paths_with_file_name_prefix(p_file_name_prefix, p_with_godot_type);
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type) {
+	return ::ResourceLoader::get_resource_paths_with_file_extension(p_file_extension, p_with_godot_type);
+}
+
+
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
 	Ref<Resource> ret = ::ResourceLoader::load(p_path, p_type_hint, ResourceFormatLoader::CacheMode(p_cache_mode), &err);
@@ -138,6 +159,12 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
+
+	ClassDB::bind_method(D_METHOD("get_resources_paths"), &ResourceLoader::get_resource_paths);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_of_type"), &ResourceLoader::get_resource_paths_of_type);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_path_prefix"), &ResourceLoader::get_resource_paths_with_path_prefix);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_name_prefix"), &ResourceLoader::get_resource_paths_with_file_name_prefix);
+	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_extension"), &ResourceLoader::get_resource_paths_with_file_extension);
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);

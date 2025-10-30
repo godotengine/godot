@@ -685,6 +685,36 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	}
 }
 
+PackedStringArray ResourceLoader::get_resource_paths(const bool &p_with_godot_type) {
+	PackedStringArray paths;
+	ResourceCache::get_cached_resource_paths(p_with_godot_type, &paths);
+	return paths;
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_of_type(const String &p_type_hint, const bool &p_with_godot_type) {
+	PackedStringArray paths;
+	ResourceCache::get_cached_resource_paths_of_type(p_with_godot_type, p_type_hint, &paths);
+	return paths;
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type) {
+	PackedStringArray paths;
+	ResourceCache::get_cached_resource_paths_with_path_prefix(p_path_prefix, p_with_godot_type, &paths);
+	return paths;
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type) {
+	PackedStringArray paths;
+	ResourceCache::get_cached_resource_paths_with_file_name_prefix(p_file_name_prefix, p_with_godot_type, &paths);
+	return paths;
+}
+
+PackedStringArray ResourceLoader::get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type) {
+	PackedStringArray paths;
+	ResourceCache::get_cached_resource_paths_with_file_extension(p_file_extension, p_with_godot_type, &paths);
+	return paths;
+}
+
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, float *r_progress) {
 	bool ensure_progress = false;
 	ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
