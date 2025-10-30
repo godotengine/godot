@@ -238,6 +238,7 @@ private:
 
 	String current_path = "res://";
 	String select_after_scan;
+	String main_scene_path;
 
 	bool updating_tree = false;
 	int tree_update_id;
