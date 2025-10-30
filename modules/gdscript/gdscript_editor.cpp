@@ -4693,33 +4693,32 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 	r_result.sentinel = cursor_position;
 	r_result.code = p_code;
 
+	GDScriptTokenizer::Token context_token;
+
 	if (context.node) {
-		GDScriptTokenizer::Token context_token;
+		GDScriptTokenizer::CodeArea context_code_area = context.node->get_code_area();
+
+		if (context_code_area.contains(Pair<int, int>{ cursor_position.y, cursor_position.x - 1 })) {
+			context_token = parser.get_token(cursor_position.y, cursor_position.x - 1);
+			if (!context_code_area.contains(context_token.get_code_area())) {
+				context_token = GDScriptTokenizer::Token();
+			}
+		}
+
+		GDScriptTokenizer::Token context_token_temp = parser.get_token(cursor_position.y, cursor_position.x);
+		if (context_code_area.contains(context_token_temp.get_code_area())) {
+			context_token = context_token_temp;
+		}
+
 		switch (context.node->type) {
 			case GDScriptParser::Node::ANNOTATION: {
 				symbol = static_cast<GDScriptParser::AnnotationNode *>(context.node)->name;
 			} break;
 			case GDScriptParser::Node::ARRAY: {
-				// Non-specific result, cursor is in tokens.
-				GDScriptParser::ArrayNode *array_node = static_cast<GDScriptParser::ArrayNode *>(context.node);
-				if (array_node->token_array_bracket_open.has_cursor()) {
-					context_token = array_node->token_array_bracket_open;
-				} else if (array_node->token_array_bracket_close.has_cursor()) {
-					context_token = array_node->token_array_bracket_close;
-				} else {
-					for (GDScriptTokenizer::Token &argument_comma : array_node->token_array_argument_commas) {
-						if (argument_comma.has_cursor()) {
-							context_token = argument_comma;
-							break;
-						}
-					}
-				}
 			} break;
 			case GDScriptParser::Node::BREAK: {
-				context_token = static_cast<GDScriptParser::BreakNode *>(context.node)->token_break_keyword;
 			} break;
 			case GDScriptParser::Node::CONTINUE: {
-				context_token = static_cast<GDScriptParser::ContinueNode *>(context.node)->token_continue_keyword;
 			} break;
 			case GDScriptParser::Node::IDENTIFIER: {
 				symbol = static_cast<GDScriptParser::IdentifierNode *>(context.node)->name;
