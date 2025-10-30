@@ -2007,67 +2007,6 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("focus", "EditorAudioBus", p_config.button_style_focus);
 	}
 
-	// Editor GUI widgets.
-	{
-		// EditorSpinSlider.
-		p_theme->set_color("label_color", "EditorSpinSlider", p_config.font_color);
-		p_theme->set_color("read_only_label_color", "EditorSpinSlider", p_config.font_readonly_color);
-
-		Ref<StyleBoxFlat> editor_spin_label_bg = p_config.base_style->duplicate();
-		editor_spin_label_bg->set_bg_color(p_config.dark_color_3);
-		editor_spin_label_bg->set_border_width_all(0);
-		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
-
-		// TODO Use separate arrows instead like on SpinBox. Planned for a different PR.
-		p_theme->set_icon("updown", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("updown_disabled", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
-
-		// Launch Pad and Play buttons.
-		Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
-		style_launch_pad->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		p_theme->set_stylebox("LaunchPadNormal", EditorStringName(EditorStyles), style_launch_pad);
-		Ref<StyleBoxFlat> style_launch_pad_movie = style_launch_pad->duplicate();
-		style_launch_pad_movie->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
-		style_launch_pad_movie->set_border_color(p_config.accent_color);
-		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
-		p_theme->set_stylebox("LaunchPadMovieMode", EditorStringName(EditorStyles), style_launch_pad_movie);
-		Ref<StyleBoxFlat> style_launch_pad_recovery_mode = style_launch_pad->duplicate();
-		style_launch_pad_recovery_mode->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
-		style_launch_pad_recovery_mode->set_border_color(p_config.warning_color);
-		style_launch_pad_recovery_mode->set_border_width_all(Math::round(2 * EDSCALE));
-		p_theme->set_stylebox("LaunchPadRecoveryMode", EditorStringName(EditorStyles), style_launch_pad_recovery_mode);
-
-		p_theme->set_stylebox("MovieWriterButtonNormal", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
-		Ref<StyleBoxFlat> style_write_movie_button = p_config.button_style_pressed->duplicate();
-		style_write_movie_button->set_bg_color(p_config.accent_color);
-		style_write_movie_button->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		style_write_movie_button->set_content_margin(SIDE_TOP, 0);
-		style_write_movie_button->set_content_margin(SIDE_BOTTOM, 0);
-		style_write_movie_button->set_content_margin(SIDE_LEFT, 0);
-		style_write_movie_button->set_content_margin(SIDE_RIGHT, 0);
-		style_write_movie_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
-		p_theme->set_stylebox("MovieWriterButtonPressed", EditorStringName(EditorStyles), style_write_movie_button);
-
-		// Profiler autostart indicator panel.
-		Ref<StyleBoxFlat> style_profiler_autostart = style_launch_pad->duplicate();
-		style_profiler_autostart->set_bg_color(Color(1, 0.867, 0.396));
-		p_theme->set_type_variation("ProfilerAutostartIndicator", "Button");
-		p_theme->set_stylebox(CoreStringName(normal), "ProfilerAutostartIndicator", style_profiler_autostart);
-		p_theme->set_stylebox(SceneStringName(pressed), "ProfilerAutostartIndicator", style_profiler_autostart);
-		p_theme->set_stylebox("hover", "ProfilerAutostartIndicator", style_profiler_autostart);
-
-		// Recovery mode button style
-		Ref<StyleBoxFlat> style_recovery_mode_button = p_config.button_style_pressed->duplicate();
-		style_recovery_mode_button->set_bg_color(p_config.warning_color);
-		style_recovery_mode_button->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		style_recovery_mode_button->set_content_margin_all(0);
-		// Recovery mode button is implicitly styled from the panel's background.
-		// So, remove any existing borders. (e.g. from draw_extra_borders config)
-		style_recovery_mode_button->set_border_width_all(0);
-		style_recovery_mode_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
-		p_theme->set_stylebox("RecoveryModeButton", EditorStringName(EditorStyles), style_recovery_mode_button);
-	}
-
 	// Standard GUI variations.
 	{
 		// Custom theme type for MarginContainer with 4px margins.
@@ -2259,6 +2198,80 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		// Secondary trees and item lists.
 		p_theme->set_type_variation("TreeSecondary", "Tree");
 		p_theme->set_type_variation("ItemListSecondary", "ItemList");
+	}
+
+	// Editor GUI widgets.
+	{
+		// EditorSpinSlider.
+		p_theme->set_color("label_color", "EditorSpinSlider", p_config.font_color);
+		p_theme->set_color("read_only_label_color", "EditorSpinSlider", p_config.font_readonly_color);
+		p_theme->set_color(SceneStringName(font_color), "EditorSpinSlider", p_config.font_color);
+		p_theme->set_color("font_uneditable_color", "EditorSpinSlider", p_config.font_readonly_color);
+
+		p_theme->set_font(SceneStringName(font), "EditorSpinSlider", p_theme->get_font(SceneStringName(font), SNAME("LineEdit")));
+		p_theme->set_font_size(SceneStringName(font_size), "EditorSpinSlider", p_theme->get_font_size(SceneStringName(font_size), SNAME("LineEdit")));
+
+		p_theme->set_constant("updown_v_separation", "EditorSpinSlider", 0);
+
+		p_theme->set_stylebox(CoreStringName(normal), "EditorSpinSlider", p_theme->get_stylebox(CoreStringName(normal), "LineEdit")->duplicate());
+		p_theme->set_stylebox("read_only", "EditorSpinSlider", p_theme->get_stylebox("read_only", "LineEdit")->duplicate());
+		p_theme->set_stylebox("focus", "EditorSpinSlider", p_config.button_style_focus);
+		Ref<StyleBoxFlat> editor_spin_label_bg = p_config.base_style->duplicate();
+		editor_spin_label_bg->set_bg_color(p_config.dark_color_3);
+		editor_spin_label_bg->set_border_width_all(0);
+		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
+		p_theme->set_stylebox("updown_hovered", "EditorSpinSlider", p_theme->get_stylebox(SceneStringName(hover), "FlatMenuButton")->duplicate());
+		p_theme->set_stylebox("updown_pressed", "EditorSpinSlider", p_theme->get_stylebox(SceneStringName(pressed), "FlatMenuButton")->duplicate());
+
+		p_theme->set_icon("up_arrow", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUp"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("down_arrow", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxDown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("grabber", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("grabber_highlight", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSliderGrabberHl"), EditorStringName(EditorIcons)));
+
+		// Launch Pad and Play buttons.
+		Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
+		style_launch_pad->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		p_theme->set_stylebox("LaunchPadNormal", EditorStringName(EditorStyles), style_launch_pad);
+		Ref<StyleBoxFlat> style_launch_pad_movie = style_launch_pad->duplicate();
+		style_launch_pad_movie->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
+		style_launch_pad_movie->set_border_color(p_config.accent_color);
+		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
+		p_theme->set_stylebox("LaunchPadMovieMode", EditorStringName(EditorStyles), style_launch_pad_movie);
+		Ref<StyleBoxFlat> style_launch_pad_recovery_mode = style_launch_pad->duplicate();
+		style_launch_pad_recovery_mode->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
+		style_launch_pad_recovery_mode->set_border_color(p_config.warning_color);
+		style_launch_pad_recovery_mode->set_border_width_all(Math::round(2 * EDSCALE));
+		p_theme->set_stylebox("LaunchPadRecoveryMode", EditorStringName(EditorStyles), style_launch_pad_recovery_mode);
+
+		p_theme->set_stylebox("MovieWriterButtonNormal", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
+		Ref<StyleBoxFlat> style_write_movie_button = p_config.button_style_pressed->duplicate();
+		style_write_movie_button->set_bg_color(p_config.accent_color);
+		style_write_movie_button->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		style_write_movie_button->set_content_margin(SIDE_TOP, 0);
+		style_write_movie_button->set_content_margin(SIDE_BOTTOM, 0);
+		style_write_movie_button->set_content_margin(SIDE_LEFT, 0);
+		style_write_movie_button->set_content_margin(SIDE_RIGHT, 0);
+		style_write_movie_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
+		p_theme->set_stylebox("MovieWriterButtonPressed", EditorStringName(EditorStyles), style_write_movie_button);
+
+		// Profiler autostart indicator panel.
+		Ref<StyleBoxFlat> style_profiler_autostart = style_launch_pad->duplicate();
+		style_profiler_autostart->set_bg_color(Color(1, 0.867, 0.396));
+		p_theme->set_type_variation("ProfilerAutostartIndicator", "Button");
+		p_theme->set_stylebox(CoreStringName(normal), "ProfilerAutostartIndicator", style_profiler_autostart);
+		p_theme->set_stylebox(SceneStringName(pressed), "ProfilerAutostartIndicator", style_profiler_autostart);
+		p_theme->set_stylebox("hover", "ProfilerAutostartIndicator", style_profiler_autostart);
+
+		// Recovery mode button style
+		Ref<StyleBoxFlat> style_recovery_mode_button = p_config.button_style_pressed->duplicate();
+		style_recovery_mode_button->set_bg_color(p_config.warning_color);
+		style_recovery_mode_button->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		style_recovery_mode_button->set_content_margin_all(0);
+		// Recovery mode button is implicitly styled from the panel's background.
+		// So, remove any existing borders. (e.g. from draw_extra_borders config)
+		style_recovery_mode_button->set_border_width_all(0);
+		style_recovery_mode_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
+		p_theme->set_stylebox("RecoveryModeButton", EditorStringName(EditorStyles), style_recovery_mode_button);
 	}
 
 	// Editor inspector.
