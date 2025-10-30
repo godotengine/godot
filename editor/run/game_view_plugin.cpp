@@ -1209,7 +1209,6 @@ void GameView::_switch_resolution_presets(int p_preset) {
 		Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
 		custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index - 1)];
 	}
-
 	_update_embed_window_size();
 }
 
