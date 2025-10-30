@@ -1556,7 +1556,12 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	Error err;
 
 	Ref<Resource> res;
-	if (ResourceLoader::exists(p_resource, "")) {
+	if (force_textfile_extensions.has(p_resource.get_extension())) {
+		res = ResourceCache::get_ref(p_resource);
+		if (res.is_null() || !res->is_class("TextFile")) {
+			res = ScriptEditor::get_singleton()->open_file(p_resource);
+		}
+	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	} else if (textfile_extensions.has(p_resource.get_extension())) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
@@ -7897,6 +7902,8 @@ EditorNode::EditorNode() {
 	theme = EditorThemeManager::generate_theme();
 	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 
+	EDITOR_DEF("_export_preset_advanced_mode", false); // Could be accessed in EditorExportPreset.
+
 	register_exporters();
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTRC("Pan View"), Key::SPACE);
@@ -7909,6 +7916,8 @@ EditorNode::EditorNode() {
 	for (const String &E : other_file_ext) {
 		other_file_extensions.insert(E);
 	}
+
+	force_textfile_extensions.insert("csv"); // CSV translation source, has `Translation` resource type, but not loadable as resource.
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);

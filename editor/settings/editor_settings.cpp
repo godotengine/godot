@@ -1174,7 +1174,7 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 }
 
 String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path) {
-	Ref<RegEx> regex = RegEx::create_from_string(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
+	Ref<RegEx> regex = RegEx::create_from_string(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|zed(it(or)?)?|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
 	Ref<RegExMatch> editor_match = regex->search(p_path.to_lower().get_file().get_basename());
 
 	if (editor_match.is_null()) {
@@ -1186,7 +1186,7 @@ String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path)
 
 	if (editor.begins_with("rider")) {
 		new_exec_flags = "{project} --line {line} {file}";
-	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
+	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text" || editor == "zed" || editor == "zedit" || editor == "zeditor") {
 		new_exec_flags = "{project} {file}:{line}:{col}";
 	} else if (editor == "vim" || editor == "gvim") {
 		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
@@ -1514,7 +1514,8 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
+	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), Variant(), vformat(R"(EditorSettings not instantiated yet when getting setting "%s".)", p_setting));
+	ERR_FAIL_COND_V_MSG(!EditorSettings::get_singleton()->has_setting(p_setting), Variant(), vformat(R"(Editor setting "%s" does not exist.)", p_setting));
 	return EditorSettings::get_singleton()->get_setting(p_setting);
 }
 
@@ -1823,6 +1824,9 @@ float EditorSettings::get_auto_display_scale() {
 		return 1.0;
 	}
 
+#if defined(WINDOWS_ENABLED)
+	return DisplayServer::get_singleton()->screen_get_dpi(screen) / 96.0;
+#else
 	// Use the smallest dimension to use a correct display scale on portrait displays.
 	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
 	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
@@ -1838,7 +1842,9 @@ float EditorSettings::get_auto_display_scale() {
 		return 0.75;
 	}
 	return 1.0;
-#endif
+#endif // defined(WINDOWS_ENABLED)
+
+#endif // defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
 // Shortcuts

@@ -1056,7 +1056,15 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 			if (s.begins_with("i:")) {
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
-				return s.substr(2).to_float();
+				const String sub = s.substr(2);
+				if (sub == "inf") {
+					return Math::INF;
+				} else if (sub == "-inf") {
+					return -Math::INF;
+				} else if (sub == "nan") {
+					return Math::NaN;
+				}
+				return sub.to_float();
 			} else if (s.begins_with("s:")) {
 				return s.substr(2);
 			} else if (s.begins_with("sn:")) {

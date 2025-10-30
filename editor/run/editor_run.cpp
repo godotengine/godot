@@ -168,10 +168,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		}
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			print_line(vformat("Running: %s", exec));
+			PackedStringArray output;
+			output.reserve_exact(instance_args.size() + 1);
+			output.append(vformat("Running: %s", exec));
 			for (const String &E : instance_args) {
-				print_line(" %s", E);
+				output.append(E);
 			}
+			print_line(String(" ").join(output));
 		}
 
 		OS::ProcessID pid = 0;

@@ -121,6 +121,17 @@ public:
 			return priority;
 		}
 
+		void update_action(const Action &p_other) {
+			if (terrain == p_other.terrain) {
+				if (priority < p_other.priority) {
+					priority = p_other.priority;
+				}
+			} else if (p_other.is_valid()) {
+				terrain = p_other.terrain;
+				priority = p_other.priority;
+			}
+		}
+
 		// Public constructor always creates an invalid action
 		constexpr Action() {}
 
@@ -157,6 +168,11 @@ public:
 		if (!a.is_valid()) {
 			a = p_action;
 		}
+	}
+
+	void change_action(Bit p_target, Action p_action) {
+		Action &a = _data[p_target];
+		a.update_action(p_action);
 	}
 
 	using ConstIterator = RBMap<Bit, Action>::ConstIterator;

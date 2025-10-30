@@ -183,11 +183,13 @@ namespace Godot.SourceGenerators
 
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
-                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
+                .WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType);
 
         private static SymbolDisplayFormat FullyQualifiedFormatIncludeGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
-                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included);
+                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included)
+                .WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType);
 
         public static string FullQualifiedNameOmitGlobal(this ITypeSymbol symbol)
             => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
@@ -210,7 +212,7 @@ namespace Godot.SourceGenerators
 
         private static void FullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
         {
-            if (node is NameSyntax ns && isFirstNode)
+            if (node is NameSyntax ns && (isFirstNode || node.Parent is not MemberAccessExpressionSyntax))
             {
                 SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
                 sb.Append(nameInfo.Symbol?.ToDisplayString(FullyQualifiedFormatIncludeGlobal) ?? ns.ToString());

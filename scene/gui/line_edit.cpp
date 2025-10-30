@@ -2773,7 +2773,6 @@ void LineEdit::show_emoji_and_symbol_picker() {
 void LineEdit::set_emoji_menu_enabled(bool p_enabled) {
 	if (emoji_menu_enabled != p_enabled) {
 		emoji_menu_enabled = p_enabled;
-		_update_context_menu();
 	}
 }
 

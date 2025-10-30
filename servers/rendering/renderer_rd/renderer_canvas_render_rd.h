@@ -626,7 +626,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _prepare_batch_texture_info(RID p_texture, TextureState &p_state, TextureInfo *p_info);
 
 	// non-UMA
-	InstanceData *new_instance_data(const InstanceData &template_instance);
+	InstanceData *new_instance_data(Batch &p_current_batch, const InstanceData &template_instance);
 	[[nodiscard]] Batch *_new_batch(bool &r_batch_broken);
 	void _add_to_batch(bool &r_batch_broken, Batch *&r_current_batch);
 	void _allocate_instance_buffer();

@@ -307,9 +307,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
     if not env["builtin_recastnavigation"]:
-        # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
-        env.Append(LIBS=["Recast"])
+        env.ParseConfig("pkg-config recastnavigation --cflags --libs")
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.

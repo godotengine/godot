@@ -3315,6 +3315,12 @@ void EditorHelp::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
+				if (is_visible_in_tree()) {
+					_update_doc();
+				} else {
+					update_pending = true;
+				}
+
 				_class_desc_resized(true);
 			}
 			update_toggle_files_button();

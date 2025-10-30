@@ -321,6 +321,9 @@ String TextLine::get_ellipsis_char() const {
 }
 
 void TextLine::set_width(float p_width) {
+	if (width == p_width) {
+		return;
+	}
 	width = p_width;
 	if (alignment == HORIZONTAL_ALIGNMENT_FILL || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		dirty = true;

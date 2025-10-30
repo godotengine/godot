@@ -1932,12 +1932,12 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 
 void TileMapLayer::_add_terrain_pattern_as_constraints(const Vector2i &p_position, int p_terrain_set, const TileSet::TerrainsPattern &p_terrains_pattern, TerrainConstraints &r_constraints, int p_priority) const {
 	// Compute the constraints needed from the surrounding tiles.
-	r_constraints.set(TerrainConstraints::CenterBit(p_position), TerrainConstraints::TargetTerrain(p_terrains_pattern.get_terrain(), p_priority));
+	r_constraints.change_action(TerrainConstraints::CenterBit(p_position), TerrainConstraints::TargetTerrain(p_terrains_pattern.get_terrain(), p_priority));
 
 	for (uint32_t i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		TileSet::CellNeighbor side = TileSet::CellNeighbor(i);
 		if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, side)) {
-			r_constraints.set(TerrainConstraints::PeeringBit(tile_set, p_position, side), TerrainConstraints::TargetTerrain(p_terrains_pattern.get_terrain_peering_bit(side), p_priority));
+			r_constraints.change_action(TerrainConstraints::PeeringBit(tile_set, p_position, side), TerrainConstraints::TargetTerrain(p_terrains_pattern.get_terrain_peering_bit(side), p_priority));
 		}
 	}
 }
@@ -1997,7 +1997,7 @@ void TileMapLayer::_add_terrain_constraints_from_painted_cells_list(const RBSet<
 
 		// Set the adequate terrain.
 		if (max > 0) {
-			r_constraints.add_if_unset(E_bit, TerrainConstraints::TargetTerrain(max_terrain));
+			r_constraints.add_if_unset(E_bit, TerrainConstraints::TargetTerrain(max_terrain, 8));
 		}
 	}
 
@@ -2015,7 +2015,7 @@ void TileMapLayer::_add_terrain_constraints_from_painted_cells_list(const RBSet<
 
 		int terrain = (tile_data && tile_data->get_terrain_set() == p_terrain_set) ? tile_data->get_terrain() : -1;
 		if (!p_ignore_empty_terrains || terrain >= 0) {
-			r_constraints.add_if_unset(TerrainConstraints::CenterBit(E_coords), TerrainConstraints::TargetTerrain(terrain));
+			r_constraints.add_if_unset(TerrainConstraints::CenterBit(E_coords), TerrainConstraints::TargetTerrain(terrain, 8));
 		}
 	}
 }
@@ -2406,7 +2406,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 		TileSet::TerrainsPattern pattern = _get_best_terrain_pattern_for_constraints(p_terrain_set, coords, constraints, current_pattern);
 
 		// Update the constraint set with the new ones.
-		_add_terrain_pattern_as_constraints(coords, p_terrain_set, pattern, constraints, 5);
+		_add_terrain_pattern_as_constraints(coords, p_terrain_set, pattern, constraints, 6);
 
 		output[coords] = pattern;
 	}

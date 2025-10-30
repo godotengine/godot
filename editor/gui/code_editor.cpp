@@ -123,6 +123,7 @@ GotoLinePopup::GotoLinePopup() {
 	vbc->add_child(l);
 
 	line_input = memnew(LineEdit);
+	line_input->set_emoji_menu_enabled(false);
 	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));

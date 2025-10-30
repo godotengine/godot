@@ -61,11 +61,15 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: misc/dist/linux/org.godotengine.Godot.appdata.xml
+Comment: Linux AppStream Metadata File
+Copyright: 2017-2022, Rémi Verschelde
+License: CC0-1.0
+
 Files: modules/betsy/alpha_stitch.glsl
  modules/betsy/bc1.glsl
  modules/betsy/bc4.glsl
  modules/betsy/bc6h.glsl
- modules/betsy/CrossPlatformSettings_piece_all.glsl
 Comment: Betsy
 Copyright: 2020-2022, Matias N. Goldberg
 License: Expat
@@ -79,8 +83,8 @@ Files: modules/godot_physics_3d/gjk_epa.cpp
  modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.cpp
  modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.h
  modules/godot_physics_3d/joints/godot_hinge_joint_3d.cpp
- modules/godot_physics_3d/joints/godot_hinge_joint_3d_sw.h
- modules/godot_physics_3d/joints/godot_jacobian_entry_3d_sw.h
+ modules/godot_physics_3d/joints/godot_hinge_joint_3d.h
+ modules/godot_physics_3d/joints/godot_jacobian_entry_3d.h
  modules/godot_physics_3d/joints/godot_pin_joint_3d.cpp
  modules/godot_physics_3d/joints/godot_pin_joint_3d.h
  modules/godot_physics_3d/joints/godot_slider_joint_3d.cpp
@@ -126,8 +130,6 @@ Files: platform/android/java/editor/src/main/java/com/android/*
  platform/android/java/lib/src/main/aidl/com/android/*
  platform/android/java/lib/src/main/res/layout/status_bar_ongoing_event_progress_bar.xml
  platform/android/java/lib/src/main/java/com/google/android/*
- platform/android/java/lib/src/main/java/org/godotengine/godot/input/InputManagerCompat.java
- platform/android/java/lib/src/main/java/org/godotengine/godot/input/InputManagerV16.java
 Comment: The Android Open Source Project
 Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
@@ -151,21 +153,21 @@ Copyright: 2014-present Godot Engine contributors
  1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
 License: Expat and WOL
 
-Files: ./servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
+Files: servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
 Comment: NVidia's FXAA 3.11, simplified by Simon Rodriguez
 Copyright: 2014-2015, NVIDIA CORPORATION
  2017 Simon Rodriguez
 License: BSD-3-clause and Expat
 
-Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
- ./servers/rendering/renderer_rd/shaders/ssao.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
- ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Files: servers/rendering/renderer_rd/shaders/effects/ss_effects_downsample.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_blur.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_importance_map.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil.glsl
 Comment: Intel ASSAO and related files
 Copyright: 2016, Intel Corporation
 License: Expat
@@ -175,9 +177,9 @@ Comment: Temporal Anti-Aliasing resolve implementation
 Copyright: 2016, Panos Karabelas
 License: Expat
 
-Files: servers/rendering/renderer_rd/shaders/smaa_blending.glsl
- servers/rendering/renderer_rd/shaders/smaa_weight_calculation.glsl
- servers/rendering/renderer_rd/shaders/smaa_edge_detection.glsl
+Files: servers/rendering/renderer_rd/shaders/effects/smaa_blending.glsl
+ servers/rendering/renderer_rd/shaders/effects/smaa_weight_calculation.glsl
+ servers/rendering/renderer_rd/shaders/effects/smaa_edge_detection.glsl
  thirdparty/smaa/*
 Comment: Subpixel Morphological Antialiasing
 Copyright: 2013, Jorge Jimenez
@@ -502,7 +504,7 @@ Files: thirdparty/misc/r128.c
  thirdparty/misc/r128.h
 Comment: r128 library
 Copyright: Alan Hickman
-License: public-domain or Unlicense
+License: Unlicense
 
 Files: thirdparty/misc/smaz.c
  thirdparty/misc/smaz.h
@@ -514,12 +516,12 @@ Files: thirdparty/misc/smolv.cpp
  thirdparty/misc/smolv.h
 Comment: SMOL-V
 Copyright: 2016-2024, Aras Pranckevicius
-License: public-domain or Unlicense or Expat
+License: Unlicense or Expat
 
 Files: thirdparty/misc/stb_rect_pack.h
 Comment: stb libraries
 Copyright: Sean Barrett
-License: public-domain or Unlicense or Expat
+License: Unlicense or Expat
 
 Files: thirdparty/misc/yuv2rgb.h
 Comment: YUV2RGB

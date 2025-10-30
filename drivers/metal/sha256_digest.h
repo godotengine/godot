@@ -34,6 +34,7 @@
 #import <simd/simd.h>
 #import <zlib.h>
 
+#include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
 
 struct SHA256Digest {
@@ -71,5 +72,12 @@ struct SHA256Digest {
 
 	static SHA256Digest deserialize(LocalVector<uint8_t> p_ser) {
 		return SHA256Digest((const char *)p_ser.ptr());
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<SHA256Digest> {
+	static bool compare(const SHA256Digest &p_lhs, const SHA256Digest &p_rhs) {
+		return memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
 	}
 };

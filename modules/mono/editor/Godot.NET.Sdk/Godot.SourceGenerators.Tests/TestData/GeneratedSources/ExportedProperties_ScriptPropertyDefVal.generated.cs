@@ -11,7 +11,7 @@ partial class ExportedProperties
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(67);
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(70);
         string __NotGenerateComplexLamdaProperty_default_value = default;
         values.Add(PropertyName.@NotGenerateComplexLamdaProperty, global::Godot.Variant.From<string>(__NotGenerateComplexLamdaProperty_default_value));
         string __NotGenerateLamdaNoFieldProperty_default_value = default;
@@ -24,12 +24,18 @@ partial class ExportedProperties
         values.Add(PropertyName.@FullPropertyString, global::Godot.Variant.From<string>(__FullPropertyString_default_value));
         string __FullPropertyString_Complex_default_value = new string("FullPropertyString_Complex")   + global::System.Convert.ToInt32("1");
         values.Add(PropertyName.@FullPropertyString_Complex, global::Godot.Variant.From<string>(__FullPropertyString_Complex_default_value));
+        float __FullPropertyStaticImport_default_value = global::Godot.Mathf.Pi;
+        values.Add(PropertyName.@FullPropertyStaticImport, global::Godot.Variant.From<float>(__FullPropertyStaticImport_default_value));
         string __LamdaPropertyString_default_value = "LamdaPropertyString";
         values.Add(PropertyName.@LamdaPropertyString, global::Godot.Variant.From<string>(__LamdaPropertyString_default_value));
+        float __LambdaPropertyStaticImport_default_value = global::Godot.Mathf.Tau;
+        values.Add(PropertyName.@LambdaPropertyStaticImport, global::Godot.Variant.From<float>(__LambdaPropertyStaticImport_default_value));
         string __PrimaryCtorParameter_default_value = default;
         values.Add(PropertyName.@PrimaryCtorParameter, global::Godot.Variant.From<string>(__PrimaryCtorParameter_default_value));
         float __ConstantMath_default_value = 2  * global::Godot.Mathf.Pi;
         values.Add(PropertyName.@ConstantMath, global::Godot.Variant.From<float>(__ConstantMath_default_value));
+        float __ConstantMathStaticImport_default_value = global::Godot.Mathf.RadToDeg(2  * global::Godot.Mathf.Pi);
+        values.Add(PropertyName.@ConstantMathStaticImport, global::Godot.Variant.From<float>(__ConstantMathStaticImport_default_value));
         string __StaticStringAddition_default_value = string.Empty   + string.Empty;
         values.Add(PropertyName.@StaticStringAddition, global::Godot.Variant.From<string>(__StaticStringAddition_default_value));
         bool __PropertyBoolean_default_value = true;
