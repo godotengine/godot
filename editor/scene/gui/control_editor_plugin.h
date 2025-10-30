@@ -34,8 +34,6 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 
 class CheckBox;

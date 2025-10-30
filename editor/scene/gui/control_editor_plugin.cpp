@@ -502,7 +502,6 @@ void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Cont
 		create_new_variation_dialog->popup_centered();
 		create_new_variation_line_edit->grab_focus();
 	}
-
 	// If it *does* have a type variation, we want to push these changes to it
 	// instead.
 	else {
