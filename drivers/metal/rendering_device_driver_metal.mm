@@ -65,6 +65,11 @@
 #import <os/signpost.h>
 #include <algorithm>
 
+// Compat: Older SDKs may not define MTLGPUAddress. Define it as 64-bit.
+#ifndef MTLGPUAddress
+typedef uint64_t MTLGPUAddress;
+#endif
+
 #pragma mark - Logging
 
 extern os_log_t LOG_DRIVER;
@@ -1409,7 +1414,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 						if (idx.buffer != UINT32_MAX) {
 							// Emulated atomic image access.
 							id<MTLBuffer> buffer = (texture.parentTexture ? texture.parentTexture : texture).buffer;
-							*(MTLGPUAddress *)(ptr + idx.buffer + j) = buffer.gpuAddress;
+							*(uint64_t *)(ptr + idx.buffer + j) = buffer.gpuAddress;
 
 							add_usage(buffer, ui.active_stages, ui.usage);
 						}
