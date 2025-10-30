@@ -973,6 +973,7 @@ public:
 	DEBUG_VIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
 	DEBUG_VIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
 	DEBUG_VIRTUAL int get_persistent_signal_connection_count() const;
+	DEBUG_VIRTUAL uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const;
 	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
