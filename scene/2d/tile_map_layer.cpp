@@ -1889,7 +1889,7 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 
 		// Check the center bit constraint.
 		if (cell_constraints[TileSet::CELL_NEIGHBOR_MAX].is_targetted() && cell_constraints[TileSet::CELL_NEIGHBOR_MAX].get_terrain() != terrain_pattern.get_terrain()) {
-			score += cell_constraints[TileSet::CELL_NEIGHBOR_MAX].get_priority(); // Increase score if pattern does not match targetted terrain
+			score += cell_constraints[TileSet::CELL_NEIGHBOR_MAX].get_priority(); // Increase score if pattern does not match targeted terrain
 		}
 		if (cell_constraints[TileSet::CELL_NEIGHBOR_MAX].is_unconstrained() && p_current_pattern.get_terrain() != terrain_pattern.get_terrain()) {
 			continue; // Ignore a pattern that cannot keep bits without constraints unmodified.
@@ -1902,7 +1902,7 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 			if (cell_constraints[i].is_valid()) {
 				// Check if the bit is compatible with the constraints.
 				if (cell_constraints[i].is_targetted() && cell_constraints[i].get_terrain() != terrain_pattern.get_terrain_peering_bit(bit)) {
-					score += cell_constraints[i].get_priority(); // Increase score if pattern does not match targetted terrain
+					score += cell_constraints[i].get_priority(); // Increase score if pattern does not match targeted terrain
 				}
 				if (cell_constraints[i].is_unconstrained() && p_current_pattern.get_terrain_peering_bit(bit) != terrain_pattern.get_terrain_peering_bit(bit)) {
 					invalid_pattern = true; // Ignore a pattern that cannot keep bits without constraints unmodified.
