@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -5,7 +6,7 @@ namespace Godot.SourceGenerators.Tests;
 public class ScriptSerializationGeneratorTests
 {
     [Fact]
-    public async void ScriptBoilerplate()
+    public async Task ScriptBoilerplate()
     {
         await CSharpSourceGeneratorVerifier<ScriptSerializationGenerator>.VerifyNoCompilerDiagnostics(
             "ScriptBoilerplate.cs",
