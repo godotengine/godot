@@ -232,7 +232,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		main_vbox->add_theme_constant_override("separation", top_bar_separation);
 
 		background_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("Background", EditorStringName(EditorStyles)));
-		main_view_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "TabContainer"));
+		main_view_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("panel_container", "ProjectManager"));
 
 		title_bar_logo->set_button_icon(get_editor_theme_icon("TitleBarLogo"));
 
