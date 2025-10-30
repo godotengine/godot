@@ -373,6 +373,8 @@ public:
 
 		DataType datatype;
 
+		GDScriptTokenizer::CodeArea get_code_area() const { return GDScriptTokenizer::CodeArea(start_line, start_column, end_line, end_column); }
+
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
@@ -389,9 +391,6 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		GDScriptTokenizer::Token token_expression_parenthesis_open;
-		GDScriptTokenizer::Token token_expression_parenthesis_close;
-
 		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
 
@@ -403,8 +402,6 @@ public:
 		StringName name;
 		Vector<ExpressionNode *> arguments;
 		Vector<Variant> resolved_arguments;
-
-		GDScriptTokenizer::Token token_annotation;
 
 		/** Information of the annotation. Might be null for unknown annotations. */
 		AnnotationInfo *info = nullptr;
@@ -428,10 +425,6 @@ public:
 	struct ArrayNode : public ExpressionNode {
 		Vector<ExpressionNode *> elements;
 
-		GDScriptTokenizer::Token token_array_bracket_open;
-		GDScriptTokenizer::Token token_array_bracket_close;
-		LocalVector<GDScriptTokenizer::Token> token_array_argument_commas;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
 			_get_nodes_push_iterable(elements, p_nodes, p_deep);
@@ -445,10 +438,6 @@ public:
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
 		ExpressionNode *message = nullptr;
-
-		GDScriptTokenizer::Token token_assert_keyword;
-		GDScriptTokenizer::Token token_assert_parenthesis_open;
-		GDScriptTokenizer::Token token_assert_parenthesis_close;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -505,8 +494,6 @@ public:
 		ExpressionNode *assigned_value = nullptr;
 		bool use_conversion_assign = false;
 
-		GDScriptTokenizer::Token token_assignment_symbol;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(assignee, p_nodes, p_deep);
@@ -520,8 +507,6 @@ public:
 
 	struct AwaitNode : public ExpressionNode {
 		ExpressionNode *to_await = nullptr;
-
-		GDScriptTokenizer::Token token_await_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -562,8 +547,6 @@ public:
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
 
-		GDScriptTokenizer::Token token_binary_op_symbol;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(left_operand, p_nodes, p_deep);
@@ -576,16 +559,12 @@ public:
 	};
 
 	struct BreakNode : public Node {
-		GDScriptTokenizer::Token token_break_keyword;
-
 		BreakNode() {
 			type = BREAK;
 		}
 	};
 
 	struct BreakpointNode : public Node {
-		GDScriptTokenizer::Token token_breakpoint_keyword;
-
 		BreakpointNode() {
 			type = BREAKPOINT;
 		}
@@ -597,12 +576,6 @@ public:
 		StringName function_name;
 		bool is_super = false;
 		bool is_static = false;
-
-		GDScriptTokenizer::Token token_call_keyword_super;
-		GDScriptTokenizer::Token token_call_keyword_super_period;
-		GDScriptTokenizer::Token token_call_parenthesis_open;
-		GDScriptTokenizer::Token token_call_parenthesis_close;
-		LocalVector<GDScriptTokenizer::Token> token_call_argument_commas;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -626,8 +599,6 @@ public:
 	struct CastNode : public ExpressionNode {
 		ExpressionNode *operand = nullptr;
 		TypeNode *cast_type = nullptr;
-
-		GDScriptTokenizer::Token token_cast_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -654,7 +625,6 @@ public:
 #ifdef TOOLS_ENABLED
 			MemberDocData doc_data;
 #endif // TOOLS_ENABLED
-			GDScriptTokenizer::Token token_enum_value_separator_comma;
 		};
 
 		IdentifierNode *identifier = nullptr;
@@ -663,10 +633,6 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
-
-		GDScriptTokenizer::Token token_enum_keyword;
-		GDScriptTokenizer::Token token_enum_brace_open;
-		GDScriptTokenizer::Token token_enum_brace_close;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -896,8 +862,6 @@ public:
 		bool resolved_interface = false;
 		bool resolved_body = false;
 
-		GDScriptTokenizer::Token token_class_symbol_class_name;
-
 		StringName get_global_name() const {
 			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();
 		}
@@ -947,16 +911,12 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
-		GDScriptTokenizer::Token token_constant_keyword;
-
 		ConstantNode() {
 			type = CONSTANT;
 		}
 	};
 
 	struct ContinueNode : public Node {
-		GDScriptTokenizer::Token token_continue_keyword;
-
 		ContinueNode() {
 			type = CONTINUE;
 		}
@@ -966,8 +926,6 @@ public:
 		struct DictionaryElement {
 			ExpressionNode *key = nullptr;
 			ExpressionNode *value = nullptr;
-			GDScriptTokenizer::Token token_dictionary_element_separator_assignment;
-			GDScriptTokenizer::Token token_dictionary_element_separator_comma;
 		};
 		Vector<DictionaryElement> elements;
 
@@ -976,9 +934,6 @@ public:
 			PYTHON_DICT,
 		};
 		Style style = PYTHON_DICT;
-
-		GDScriptTokenizer::Token token_dictionary_brace_open;
-		GDScriptTokenizer::Token token_dictionary_brace_close;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -999,10 +954,6 @@ public:
 		bool use_conversion_assign = false;
 		ExpressionNode *list = nullptr;
 		SuiteNode *loop = nullptr;
-
-		GDScriptTokenizer::Token token_for_keyword_for;
-		GDScriptTokenizer::Token token_for_keyword_in;
-		GDScriptTokenizer::Token token_for_colon;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -1040,9 +991,6 @@ public:
 		bool resolved_signature = false;
 		bool resolved_body = false;
 
-		GDScriptTokenizer::Token token_function_keyword_static;
-		GDScriptTokenizer::Token token_function_keyword_func;
-
 		_FORCE_INLINE_ bool is_vararg() const { return rest_parameter != nullptr; }
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
@@ -1061,8 +1009,6 @@ public:
 	struct GetNodeNode : public ExpressionNode {
 		String full_path;
 		bool use_dollar = true;
-
-		LocalVector<GDScriptTokenizer::Token> token_get_node_path;
 
 		GetNodeNode() {
 			type = GET_NODE;
@@ -1104,8 +1050,6 @@ public:
 		FunctionNode *source_function = nullptr; // TODO: Rename to disambiguate `function_source`.
 
 		int usages = 0; // Useful for binds/iterator variable.
-
-		GDScriptTokenizer::Token token_identifier;
 
 		Node *get_source_node() const {
 			switch (source) {
@@ -1151,9 +1095,6 @@ public:
 		ExpressionNode *condition = nullptr;
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;
-
-		GDScriptTokenizer::Token token_if_keyword;
-		GDScriptTokenizer::Token token_if_colon;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -1204,9 +1145,6 @@ public:
 		ExpressionNode *test = nullptr;
 		Vector<MatchBranchNode *> branches;
 
-		GDScriptTokenizer::Token token_match_keyword;
-		GDScriptTokenizer::Token token_match_colon;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(test, p_nodes, p_deep);
@@ -1239,16 +1177,12 @@ public:
 	};
 
 	struct ParameterNode : public AssignableNode {
-		GDScriptTokenizer::Token token_parameter_following_comma;
-
 		ParameterNode() {
 			type = PARAMETER;
 		}
 	};
 
 	struct PassNode : public Node {
-		GDScriptTokenizer::Token token_pass_keyword;
-
 		PassNode() {
 			type = PASS;
 		}
@@ -1324,10 +1258,6 @@ public:
 		String resolved_path;
 		Ref<Resource> resource;
 
-		GDScriptTokenizer::Token token_preload_keyword;
-		GDScriptTokenizer::Token token_preload_parenthesis_open;
-		GDScriptTokenizer::Token token_preload_parenthesis_close;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(path, p_nodes, p_deep);
@@ -1342,8 +1272,6 @@ public:
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
 
-		GDScriptTokenizer::Token token_return_keyword;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(return_value, p_nodes, p_deep);
@@ -1356,8 +1284,6 @@ public:
 
 	struct SelfNode : public ExpressionNode {
 		ClassNode *current_class = nullptr;
-
-		GDScriptTokenizer::Token token_self_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -1380,10 +1306,6 @@ public:
 #endif // TOOLS_ENABLED
 
 		int usages = 0;
-
-		GDScriptTokenizer::Token token_signal_keyword;
-		GDScriptTokenizer::Token token_signal_parenthesis_open;
-		GDScriptTokenizer::Token token_signal_parenthesis_close;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -1558,9 +1480,6 @@ public:
 		ExpressionNode *true_expr = nullptr;
 		ExpressionNode *false_expr = nullptr;
 
-		GDScriptTokenizer::Token token_ternary_op_symbol_question_mark;
-		GDScriptTokenizer::Token token_ternary_op_symbol_colon;
-
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
 			_get_nodes_push(condition, p_nodes, p_deep);
@@ -1576,8 +1495,6 @@ public:
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
 		Vector<TypeNode *> container_types;
-
-		GDScriptTokenizer::Token token_type_preceding_colon;
 
 		TypeNode *get_container_type_or_null(int p_index) const {
 			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
@@ -1598,8 +1515,6 @@ public:
 		ExpressionNode *operand = nullptr;
 		TypeNode *test_type = nullptr;
 		DataType test_datatype;
-
-		GDScriptTokenizer::Token token_type_test_keyword_is;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -1623,8 +1538,6 @@ public:
 		OpType operation = OP_POSITIVE;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
-
-		GDScriptTokenizer::Token token_type_test_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			ExpressionNode::get_nodes(p_nodes, p_deep);
@@ -1662,8 +1575,6 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
-
-		GDScriptTokenizer::Token token_var_keyword;
 
 		Node *get_setter() const {
 			switch (property) {
@@ -1710,8 +1621,6 @@ public:
 	struct WhileNode : public Node {
 		ExpressionNode *condition = nullptr;
 		SuiteNode *loop = nullptr;
-
-		GDScriptTokenizer::Token token_while_keyword;
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
 			Node::get_nodes(p_nodes, p_deep);
@@ -1930,6 +1839,7 @@ private:
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
+	LocalVector<GDScriptTokenizer::Token> tokens;
 
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
@@ -2227,6 +2137,8 @@ public:
 
 	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
 #endif // TOOLS_ENABLED
+
+	GDScriptTokenizer::Token get_token(int p_line, int p_column) const;
 
 	GDScriptParser();
 	~GDScriptParser();
