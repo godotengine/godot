@@ -2,19 +2,7 @@
  *  FIPS-180-2 compliant SHA-256 implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The SHA-256 Secure Hash Standard was published by NIST in 2002.
@@ -22,9 +10,47 @@
  *  http://csrc.nist.gov/publications/fips/fips180-2/fips180-2.pdf
  */
 
+#if defined(__clang__) &&  (__clang_major__ >= 4)
+
+/* Ideally, we would simply use MBEDTLS_ARCH_IS_ARMV8_A in the following #if,
+ * but that is defined by build_info.h, and we need this block to happen first. */
+#if defined(__ARM_ARCH) && (__ARM_ARCH_PROFILE == 'A')
+#if __ARM_ARCH >= 8
+#define MBEDTLS_SHA256_ARCH_IS_ARMV8_A
+#endif
+#endif
+
+#if defined(MBEDTLS_SHA256_ARCH_IS_ARMV8_A) && !defined(__ARM_FEATURE_CRYPTO)
+/* TODO: Re-consider above after https://reviews.llvm.org/D131064 merged.
+ *
+ * The intrinsic declaration are guarded by predefined ACLE macros in clang:
+ * these are normally only enabled by the -march option on the command line.
+ * By defining the macros ourselves we gain access to those declarations without
+ * requiring -march on the command line.
+ *
+ * `arm_neon.h` is included by common.h, so we put these defines
+ * at the top of this file, before any includes.
+ */
+#define __ARM_FEATURE_CRYPTO 1
+/* See: https://arm-software.github.io/acle/main/acle.html#cryptographic-extensions
+ *
+ * `__ARM_FEATURE_CRYPTO` is deprecated, but we need to continue to specify it
+ * for older compilers.
+ */
+#define __ARM_FEATURE_SHA2   1
+#define MBEDTLS_ENABLE_ARM_CRYPTO_EXTENSIONS_COMPILER_FLAG
+#endif
+
+#endif /* defined(__clang__) &&  (__clang_major__ >= 4) */
+
+/* Ensure that SIG_SETMASK is defined when -std=c99 is used. */
+#if !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
 #include "common.h"
 
-#if defined(MBEDTLS_SHA256_C)
+#if defined(MBEDTLS_SHA256_C) || defined(MBEDTLS_SHA224_C)
 
 #include "mbedtls/sha256.h"
 #include "mbedtls/platform_util.h"
@@ -34,16 +60,170 @@
 
 #include "mbedtls/platform.h"
 
-#define SHA256_VALIDATE_RET(cond)                           \
-    MBEDTLS_INTERNAL_VALIDATE_RET(cond, MBEDTLS_ERR_SHA256_BAD_INPUT_DATA)
-#define SHA256_VALIDATE(cond)  MBEDTLS_INTERNAL_VALIDATE(cond)
+#if defined(MBEDTLS_ARCH_IS_ARMV8_A)
+
+#  if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT) || \
+    defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
+#       if !defined(MBEDTLS_HAVE_NEON_INTRINSICS)
+#           if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+#               warning "Target does not support NEON instructions"
+#               undef MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT
+#           else
+#               error "Target does not support NEON instructions"
+#           endif
+#       endif
+#   endif
+
+#  if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT) || \
+    defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
+/* *INDENT-OFF* */
+
+#   if !defined(__ARM_FEATURE_CRYPTO) || defined(MBEDTLS_ENABLE_ARM_CRYPTO_EXTENSIONS_COMPILER_FLAG)
+#      if defined(__ARMCOMPILER_VERSION)
+#        if __ARMCOMPILER_VERSION <= 6090000
+#          error "Must use minimum -march=armv8-a+crypto for MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_*"
+#        endif
+#          pragma clang attribute push (__attribute__((target("sha2"))), apply_to=function)
+#          define MBEDTLS_POP_TARGET_PRAGMA
+#      elif defined(__clang__)
+#        if __clang_major__ < 4
+#          error "A more recent Clang is required for MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_*"
+#        endif
+#        pragma clang attribute push (__attribute__((target("crypto"))), apply_to=function)
+#        define MBEDTLS_POP_TARGET_PRAGMA
+#      elif defined(__GNUC__)
+         /* FIXME: GCC 5 claims to support Armv8 Crypto Extensions, but some
+          *        intrinsics are missing. Missing intrinsics could be worked around.
+          */
+#        if __GNUC__ < 6
+#          error "A more recent GCC is required for MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_*"
+#        else
+#          pragma GCC push_options
+#          pragma GCC target ("arch=armv8-a+crypto")
+#          define MBEDTLS_POP_TARGET_PRAGMA
+#        endif
+#      else
+#        error "Only GCC and Clang supported for MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_*"
+#      endif
+#    endif
+/* *INDENT-ON* */
+
+#  endif
+#  if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+#    if defined(__unix__)
+#      if defined(__linux__)
+/* Our preferred method of detection is getauxval() */
+#        include <sys/auxv.h>
+/* These are not always defined via sys/auxv.h */
+#        if !defined(HWCAP_SHA2)
+#          define HWCAP_SHA2  (1 << 6)
+#        endif
+#        if !defined(HWCAP2_SHA2)
+#          define HWCAP2_SHA2 (1 << 3)
+#        endif
+#      endif
+/* Use SIGILL on Unix, and fall back to it on Linux */
+#      include <signal.h>
+#    endif
+#  endif
+#elif !defined(MBEDTLS_PLATFORM_IS_WINDOWS_ON_ARM64)
+#  undef MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY
+#  undef MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT
+#endif
+
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+/*
+ * Capability detection code comes early, so we can disable
+ * MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT if no detection mechanism found
+ */
+#if defined(MBEDTLS_ARCH_IS_ARM64) && defined(HWCAP_SHA2)
+static int mbedtls_a64_crypto_sha256_determine_support(void)
+{
+    return (getauxval(AT_HWCAP) & HWCAP_SHA2) ? 1 : 0;
+}
+#elif defined(MBEDTLS_ARCH_IS_ARM32) && defined(HWCAP2_SHA2)
+static int mbedtls_a64_crypto_sha256_determine_support(void)
+{
+    return (getauxval(AT_HWCAP2) & HWCAP2_SHA2) ? 1 : 0;
+}
+#elif defined(__APPLE__)
+static int mbedtls_a64_crypto_sha256_determine_support(void)
+{
+    return 1;
+}
+#elif defined(MBEDTLS_PLATFORM_IS_WINDOWS_ON_ARM64)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+#include <processthreadsapi.h>
+
+static int mbedtls_a64_crypto_sha256_determine_support(void)
+{
+    return IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE) ?
+           1 : 0;
+}
+#elif defined(__unix__) && defined(SIG_SETMASK)
+/* Detection with SIGILL, setjmp() and longjmp() */
+#include <signal.h>
+#include <setjmp.h>
+
+static jmp_buf return_from_sigill;
+
+/*
+ * Armv8-A SHA256 support detection via SIGILL
+ */
+static void sigill_handler(int signal)
+{
+    (void) signal;
+    longjmp(return_from_sigill, 1);
+}
+
+static int mbedtls_a64_crypto_sha256_determine_support(void)
+{
+    struct sigaction old_action, new_action;
+
+    sigset_t old_mask;
+    if (sigprocmask(0, NULL, &old_mask)) {
+        return 0;
+    }
+
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    new_action.sa_handler = sigill_handler;
+
+    sigaction(SIGILL, &new_action, &old_action);
+
+    static int ret = 0;
+
+    if (setjmp(return_from_sigill) == 0) {         /* First return only */
+        /* If this traps, we will return a second time from setjmp() with 1 */
+#if defined(MBEDTLS_ARCH_IS_ARM64)
+        asm volatile ("sha256h q0, q0, v0.4s" : : : "v0");
+#else
+        asm volatile ("sha256h.32 q0, q0, q0" : : : "q0");
+#endif
+        ret = 1;
+    }
+
+    sigaction(SIGILL, &old_action, NULL);
+    sigprocmask(SIG_SETMASK, &old_mask, NULL);
+
+    return ret;
+}
+#else
+#warning "No mechanism to detect ARMV8_CRYPTO found, using C code only"
+#undef MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT
+#endif  /* HWCAP_SHA2, __APPLE__, __unix__ && SIG_SETMASK */
+
+#endif  /* MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT */
 
 #if !defined(MBEDTLS_SHA256_ALT)
 
+#define SHA256_BLOCK_SIZE 64
+
 void mbedtls_sha256_init(mbedtls_sha256_context *ctx)
 {
-    SHA256_VALIDATE(ctx != NULL);
-
     memset(ctx, 0, sizeof(mbedtls_sha256_context));
 }
 
@@ -59,25 +239,33 @@ void mbedtls_sha256_free(mbedtls_sha256_context *ctx)
 void mbedtls_sha256_clone(mbedtls_sha256_context *dst,
                           const mbedtls_sha256_context *src)
 {
-    SHA256_VALIDATE(dst != NULL);
-    SHA256_VALIDATE(src != NULL);
-
     *dst = *src;
 }
 
 /*
  * SHA-256 context setup
  */
-int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
+int mbedtls_sha256_starts(mbedtls_sha256_context *ctx, int is224)
 {
-    SHA256_VALIDATE_RET(ctx != NULL);
-    SHA256_VALIDATE_RET(is224 == 0 || is224 == 1);
+#if defined(MBEDTLS_SHA224_C) && defined(MBEDTLS_SHA256_C)
+    if (is224 != 0 && is224 != 1) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#elif defined(MBEDTLS_SHA256_C)
+    if (is224 != 0) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#else /* defined MBEDTLS_SHA224_C only */
+    if (is224 == 0) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#endif
 
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
     if (is224 == 0) {
-        /* SHA-256 */
+#if defined(MBEDTLS_SHA256_C)
         ctx->state[0] = 0x6A09E667;
         ctx->state[1] = 0xBB67AE85;
         ctx->state[2] = 0x3C6EF372;
@@ -86,8 +274,9 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
         ctx->state[5] = 0x9B05688C;
         ctx->state[6] = 0x1F83D9AB;
         ctx->state[7] = 0x5BE0CD19;
+#endif
     } else {
-        /* SHA-224 */
+#if defined(MBEDTLS_SHA224_C)
         ctx->state[0] = 0xC1059ED8;
         ctx->state[1] = 0x367CD507;
         ctx->state[2] = 0x3070DD17;
@@ -96,20 +285,15 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
         ctx->state[5] = 0x68581511;
         ctx->state[6] = 0x64F98FA7;
         ctx->state[7] = 0xBEFA4FA4;
+#endif
     }
 
+#if defined(MBEDTLS_SHA224_C)
     ctx->is224 = is224;
+#endif
 
     return 0;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha256_starts(mbedtls_sha256_context *ctx,
-                           int is224)
-{
-    mbedtls_sha256_starts_ret(ctx, is224);
-}
-#endif
 
 #if !defined(MBEDTLS_SHA256_PROCESS_ALT)
 static const uint32_t K[] =
@@ -131,6 +315,146 @@ static const uint32_t K[] =
     0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
     0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
 };
+
+#endif
+
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT) || \
+    defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
+
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
+#  define mbedtls_internal_sha256_process_many_a64_crypto mbedtls_internal_sha256_process_many
+#  define mbedtls_internal_sha256_process_a64_crypto      mbedtls_internal_sha256_process
+#endif
+
+static size_t mbedtls_internal_sha256_process_many_a64_crypto(
+    mbedtls_sha256_context *ctx, const uint8_t *msg, size_t len)
+{
+    uint32x4_t abcd = vld1q_u32(&ctx->state[0]);
+    uint32x4_t efgh = vld1q_u32(&ctx->state[4]);
+
+    size_t processed = 0;
+
+    for (;
+         len >= SHA256_BLOCK_SIZE;
+         processed += SHA256_BLOCK_SIZE,
+         msg += SHA256_BLOCK_SIZE,
+         len -= SHA256_BLOCK_SIZE) {
+        uint32x4_t tmp, abcd_prev;
+
+        uint32x4_t abcd_orig = abcd;
+        uint32x4_t efgh_orig = efgh;
+
+        uint32x4_t sched0 = vreinterpretq_u32_u8(vld1q_u8(msg + 16 * 0));
+        uint32x4_t sched1 = vreinterpretq_u32_u8(vld1q_u8(msg + 16 * 1));
+        uint32x4_t sched2 = vreinterpretq_u32_u8(vld1q_u8(msg + 16 * 2));
+        uint32x4_t sched3 = vreinterpretq_u32_u8(vld1q_u8(msg + 16 * 3));
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__  /* Will be true if not defined */
+                                               /* Untested on BE */
+        sched0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(sched0)));
+        sched1 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(sched1)));
+        sched2 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(sched2)));
+        sched3 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(sched3)));
+#endif
+
+        /* Rounds 0 to 3 */
+        tmp = vaddq_u32(sched0, vld1q_u32(&K[0]));
+        abcd_prev = abcd;
+        abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+        efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+        /* Rounds 4 to 7 */
+        tmp = vaddq_u32(sched1, vld1q_u32(&K[4]));
+        abcd_prev = abcd;
+        abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+        efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+        /* Rounds 8 to 11 */
+        tmp = vaddq_u32(sched2, vld1q_u32(&K[8]));
+        abcd_prev = abcd;
+        abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+        efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+        /* Rounds 12 to 15 */
+        tmp = vaddq_u32(sched3, vld1q_u32(&K[12]));
+        abcd_prev = abcd;
+        abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+        efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+        for (int t = 16; t < 64; t += 16) {
+            /* Rounds t to t + 3 */
+            sched0 = vsha256su1q_u32(vsha256su0q_u32(sched0, sched1), sched2, sched3);
+            tmp = vaddq_u32(sched0, vld1q_u32(&K[t]));
+            abcd_prev = abcd;
+            abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+            efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+            /* Rounds t + 4 to t + 7 */
+            sched1 = vsha256su1q_u32(vsha256su0q_u32(sched1, sched2), sched3, sched0);
+            tmp = vaddq_u32(sched1, vld1q_u32(&K[t + 4]));
+            abcd_prev = abcd;
+            abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+            efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+            /* Rounds t + 8 to t + 11 */
+            sched2 = vsha256su1q_u32(vsha256su0q_u32(sched2, sched3), sched0, sched1);
+            tmp = vaddq_u32(sched2, vld1q_u32(&K[t + 8]));
+            abcd_prev = abcd;
+            abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+            efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+
+            /* Rounds t + 12 to t + 15 */
+            sched3 = vsha256su1q_u32(vsha256su0q_u32(sched3, sched0), sched1, sched2);
+            tmp = vaddq_u32(sched3, vld1q_u32(&K[t + 12]));
+            abcd_prev = abcd;
+            abcd = vsha256hq_u32(abcd_prev, efgh, tmp);
+            efgh = vsha256h2q_u32(efgh, abcd_prev, tmp);
+        }
+
+        abcd = vaddq_u32(abcd, abcd_orig);
+        efgh = vaddq_u32(efgh, efgh_orig);
+    }
+
+    vst1q_u32(&ctx->state[0], abcd);
+    vst1q_u32(&ctx->state[4], efgh);
+
+    return processed;
+}
+
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+/*
+ * This function is for internal use only if we are building both C and Armv8-A
+ * versions, otherwise it is renamed to be the public mbedtls_internal_sha256_process()
+ */
+static
+#endif
+int mbedtls_internal_sha256_process_a64_crypto(mbedtls_sha256_context *ctx,
+                                               const unsigned char data[SHA256_BLOCK_SIZE])
+{
+    return (mbedtls_internal_sha256_process_many_a64_crypto(ctx, data,
+                                                            SHA256_BLOCK_SIZE) ==
+            SHA256_BLOCK_SIZE) ? 0 : -1;
+}
+
+#endif /* MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT || MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY */
+
+#if defined(MBEDTLS_POP_TARGET_PRAGMA)
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
+#undef MBEDTLS_POP_TARGET_PRAGMA
+#endif
+
+#if !defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+#define mbedtls_internal_sha256_process_many_c mbedtls_internal_sha256_process_many
+#define mbedtls_internal_sha256_process_c      mbedtls_internal_sha256_process
+#endif
+
+
+#if !defined(MBEDTLS_SHA256_PROCESS_ALT) && \
+    !defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
 
 #define  SHR(x, n) (((x) & 0xFFFFFFFF) >> (n))
 #define ROTR(x, n) (SHR(x, n) | ((x) << (32 - (n))))
@@ -158,8 +482,15 @@ static const uint32_t K[] =
         (d) += local.temp1; (h) = local.temp1 + local.temp2;        \
     } while (0)
 
-int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
-                                    const unsigned char data[64])
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+/*
+ * This function is for internal use only if we are building both C and Armv8
+ * versions, otherwise it is renamed to be the public mbedtls_internal_sha256_process()
+ */
+static
+#endif
+int mbedtls_internal_sha256_process_c(mbedtls_sha256_context *ctx,
+                                      const unsigned char data[SHA256_BLOCK_SIZE])
 {
     struct {
         uint32_t temp1, temp2, W[64];
@@ -167,9 +498,6 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
     } local;
 
     unsigned int i;
-
-    SHA256_VALIDATE_RET(ctx != NULL);
-    SHA256_VALIDATE_RET((const unsigned char *) data != NULL);
 
     for (i = 0; i < 8; i++) {
         local.A[i] = ctx->state[i];
@@ -246,35 +574,88 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha256_process(mbedtls_sha256_context *ctx,
-                            const unsigned char data[64])
+#endif /* !MBEDTLS_SHA256_PROCESS_ALT && !MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY */
+
+
+#if !defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY)
+
+static size_t mbedtls_internal_sha256_process_many_c(
+    mbedtls_sha256_context *ctx, const uint8_t *data, size_t len)
 {
-    mbedtls_internal_sha256_process(ctx, data);
+    size_t processed = 0;
+
+    while (len >= SHA256_BLOCK_SIZE) {
+        if (mbedtls_internal_sha256_process_c(ctx, data) != 0) {
+            return 0;
+        }
+
+        data += SHA256_BLOCK_SIZE;
+        len  -= SHA256_BLOCK_SIZE;
+
+        processed += SHA256_BLOCK_SIZE;
+    }
+
+    return processed;
 }
-#endif
-#endif /* !MBEDTLS_SHA256_PROCESS_ALT */
+
+#endif /* !MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_ONLY */
+
+
+#if defined(MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT)
+
+static int mbedtls_a64_crypto_sha256_has_support(void)
+{
+    static int done = 0;
+    static int supported = 0;
+
+    if (!done) {
+        supported = mbedtls_a64_crypto_sha256_determine_support();
+        done = 1;
+    }
+
+    return supported;
+}
+
+static size_t mbedtls_internal_sha256_process_many(mbedtls_sha256_context *ctx,
+                                                   const uint8_t *msg, size_t len)
+{
+    if (mbedtls_a64_crypto_sha256_has_support()) {
+        return mbedtls_internal_sha256_process_many_a64_crypto(ctx, msg, len);
+    } else {
+        return mbedtls_internal_sha256_process_many_c(ctx, msg, len);
+    }
+}
+
+int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx,
+                                    const unsigned char data[SHA256_BLOCK_SIZE])
+{
+    if (mbedtls_a64_crypto_sha256_has_support()) {
+        return mbedtls_internal_sha256_process_a64_crypto(ctx, data);
+    } else {
+        return mbedtls_internal_sha256_process_c(ctx, data);
+    }
+}
+
+#endif /* MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT */
+
 
 /*
  * SHA-256 process buffer
  */
-int mbedtls_sha256_update_ret(mbedtls_sha256_context *ctx,
-                              const unsigned char *input,
-                              size_t ilen)
+int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
+                          const unsigned char *input,
+                          size_t ilen)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
-
-    SHA256_VALIDATE_RET(ctx != NULL);
-    SHA256_VALIDATE_RET(ilen == 0 || input != NULL);
 
     if (ilen == 0) {
         return 0;
     }
 
     left = ctx->total[0] & 0x3F;
-    fill = 64 - left;
+    fill = SHA256_BLOCK_SIZE - left;
 
     ctx->total[0] += (uint32_t) ilen;
     ctx->total[0] &= 0xFFFFFFFF;
@@ -295,13 +676,15 @@ int mbedtls_sha256_update_ret(mbedtls_sha256_context *ctx,
         left = 0;
     }
 
-    while (ilen >= 64) {
-        if ((ret = mbedtls_internal_sha256_process(ctx, input)) != 0) {
-            return ret;
+    while (ilen >= SHA256_BLOCK_SIZE) {
+        size_t processed =
+            mbedtls_internal_sha256_process_many(ctx, input, ilen);
+        if (processed < SHA256_BLOCK_SIZE) {
+            return MBEDTLS_ERR_ERROR_GENERIC_ERROR;
         }
 
-        input += 64;
-        ilen  -= 64;
+        input += processed;
+        ilen  -= processed;
     }
 
     if (ilen > 0) {
@@ -311,27 +694,16 @@ int mbedtls_sha256_update_ret(mbedtls_sha256_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha256_update(mbedtls_sha256_context *ctx,
-                           const unsigned char *input,
-                           size_t ilen)
-{
-    mbedtls_sha256_update_ret(ctx, input, ilen);
-}
-#endif
-
 /*
  * SHA-256 final digest
  */
-int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx,
-                              unsigned char output[32])
+int mbedtls_sha256_finish(mbedtls_sha256_context *ctx,
+                          unsigned char *output)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
-
-    SHA256_VALIDATE_RET(ctx != NULL);
-    SHA256_VALIDATE_RET((unsigned char *) output != NULL);
+    int truncated = 0;
 
     /*
      * Add padding: 0x80 then 0x00 until 8 bytes remain for the length
@@ -345,10 +717,10 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx,
         memset(ctx->buffer + used, 0, 56 - used);
     } else {
         /* We'll need an extra block */
-        memset(ctx->buffer + used, 0, 64 - used);
+        memset(ctx->buffer + used, 0, SHA256_BLOCK_SIZE - used);
 
         if ((ret = mbedtls_internal_sha256_process(ctx, ctx->buffer)) != 0) {
-            return ret;
+            goto exit;
         }
 
         memset(ctx->buffer, 0, 56);
@@ -365,7 +737,7 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx,
     MBEDTLS_PUT_UINT32_BE(low,  ctx->buffer, 60);
 
     if ((ret = mbedtls_internal_sha256_process(ctx, ctx->buffer)) != 0) {
-        return ret;
+        goto exit;
     }
 
     /*
@@ -379,49 +751,58 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx,
     MBEDTLS_PUT_UINT32_BE(ctx->state[5], output, 20);
     MBEDTLS_PUT_UINT32_BE(ctx->state[6], output, 24);
 
-    if (ctx->is224 == 0) {
+#if defined(MBEDTLS_SHA224_C)
+    truncated = ctx->is224;
+#endif
+    if (!truncated) {
         MBEDTLS_PUT_UINT32_BE(ctx->state[7], output, 28);
     }
 
-    return 0;
-}
+    ret = 0;
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha256_finish(mbedtls_sha256_context *ctx,
-                           unsigned char output[32])
-{
-    mbedtls_sha256_finish_ret(ctx, output);
+exit:
+    mbedtls_sha256_free(ctx);
+    return ret;
 }
-#endif
 
 #endif /* !MBEDTLS_SHA256_ALT */
 
 /*
  * output = SHA-256( input buffer )
  */
-int mbedtls_sha256_ret(const unsigned char *input,
-                       size_t ilen,
-                       unsigned char output[32],
-                       int is224)
+int mbedtls_sha256(const unsigned char *input,
+                   size_t ilen,
+                   unsigned char *output,
+                   int is224)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha256_context ctx;
 
-    SHA256_VALIDATE_RET(is224 == 0 || is224 == 1);
-    SHA256_VALIDATE_RET(ilen == 0 || input != NULL);
-    SHA256_VALIDATE_RET((unsigned char *) output != NULL);
+#if defined(MBEDTLS_SHA224_C) && defined(MBEDTLS_SHA256_C)
+    if (is224 != 0 && is224 != 1) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#elif defined(MBEDTLS_SHA256_C)
+    if (is224 != 0) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#else /* defined MBEDTLS_SHA224_C only */
+    if (is224 == 0) {
+        return MBEDTLS_ERR_SHA256_BAD_INPUT_DATA;
+    }
+#endif
 
     mbedtls_sha256_init(&ctx);
 
-    if ((ret = mbedtls_sha256_starts_ret(&ctx, is224)) != 0) {
+    if ((ret = mbedtls_sha256_starts(&ctx, is224)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha256_update_ret(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_sha256_update(&ctx, input, ilen)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha256_finish_ret(&ctx, output)) != 0) {
+    if ((ret = mbedtls_sha256_finish(&ctx, output)) != 0) {
         goto exit;
     }
 
@@ -431,37 +812,30 @@ exit:
     return ret;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha256(const unsigned char *input,
-                    size_t ilen,
-                    unsigned char output[32],
-                    int is224)
-{
-    mbedtls_sha256_ret(input, ilen, output, is224);
-}
-#endif
-
 #if defined(MBEDTLS_SELF_TEST)
 /*
  * FIPS-180-2 test vectors
  */
-static const unsigned char sha256_test_buf[3][57] =
+static const unsigned char sha_test_buf[3][57] =
 {
     { "abc" },
     { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" },
     { "" }
 };
 
-static const size_t sha256_test_buflen[3] =
+static const size_t sha_test_buflen[3] =
 {
     3, 56, 1000
 };
 
-static const unsigned char sha256_test_sum[6][32] =
+typedef const unsigned char (sha_test_sum_t)[32];
+
+/*
+ * SHA-224 test vectors
+ */
+#if defined(MBEDTLS_SHA224_C)
+static sha_test_sum_t sha224_test_sum[] =
 {
-    /*
-     * SHA-224 test vectors
-     */
     { 0x23, 0x09, 0x7D, 0x22, 0x34, 0x05, 0xD8, 0x22,
       0x86, 0x42, 0xA4, 0x77, 0xBD, 0xA2, 0x55, 0xB3,
       0x2A, 0xAD, 0xBC, 0xE4, 0xBD, 0xA0, 0xB3, 0xF7,
@@ -473,11 +847,16 @@ static const unsigned char sha256_test_sum[6][32] =
     { 0x20, 0x79, 0x46, 0x55, 0x98, 0x0C, 0x91, 0xD8,
       0xBB, 0xB4, 0xC1, 0xEA, 0x97, 0x61, 0x8A, 0x4B,
       0xF0, 0x3F, 0x42, 0x58, 0x19, 0x48, 0xB2, 0xEE,
-      0x4E, 0xE7, 0xAD, 0x67 },
+      0x4E, 0xE7, 0xAD, 0x67 }
+};
+#endif
 
-    /*
-     * SHA-256 test vectors
-     */
+/*
+ * SHA-256 test vectors
+ */
+#if defined(MBEDTLS_SHA256_C)
+static sha_test_sum_t sha256_test_sum[] =
+{
     { 0xBA, 0x78, 0x16, 0xBF, 0x8F, 0x01, 0xCF, 0xEA,
       0x41, 0x41, 0x40, 0xDE, 0x5D, 0xAE, 0x22, 0x23,
       0xB0, 0x03, 0x61, 0xA3, 0x96, 0x17, 0x7A, 0x9C,
@@ -491,16 +870,25 @@ static const unsigned char sha256_test_sum[6][32] =
       0xF1, 0x80, 0x9A, 0x48, 0xA4, 0x97, 0x20, 0x0E,
       0x04, 0x6D, 0x39, 0xCC, 0xC7, 0x11, 0x2C, 0xD0 }
 };
+#endif
 
 /*
  * Checkup routine
  */
-int mbedtls_sha256_self_test(int verbose)
+static int mbedtls_sha256_common_self_test(int verbose, int is224)
 {
-    int i, j, k, buflen, ret = 0;
+    int i, buflen, ret = 0;
     unsigned char *buf;
     unsigned char sha256sum[32];
     mbedtls_sha256_context ctx;
+
+#if defined(MBEDTLS_SHA224_C) && defined(MBEDTLS_SHA256_C)
+    sha_test_sum_t *sha_test_sum = (is224) ? sha224_test_sum : sha256_test_sum;
+#elif defined(MBEDTLS_SHA256_C)
+    sha_test_sum_t *sha_test_sum = sha256_test_sum;
+#else
+    sha_test_sum_t *sha_test_sum = sha224_test_sum;
+#endif
 
     buf = mbedtls_calloc(1024, sizeof(unsigned char));
     if (NULL == buf) {
@@ -513,42 +901,39 @@ int mbedtls_sha256_self_test(int verbose)
 
     mbedtls_sha256_init(&ctx);
 
-    for (i = 0; i < 6; i++) {
-        j = i % 3;
-        k = i < 3;
-
+    for (i = 0; i < 3; i++) {
         if (verbose != 0) {
-            mbedtls_printf("  SHA-%d test #%d: ", 256 - k * 32, j + 1);
+            mbedtls_printf("  SHA-%d test #%d: ", 256 - is224 * 32, i + 1);
         }
 
-        if ((ret = mbedtls_sha256_starts_ret(&ctx, k)) != 0) {
+        if ((ret = mbedtls_sha256_starts(&ctx, is224)) != 0) {
             goto fail;
         }
 
-        if (j == 2) {
+        if (i == 2) {
             memset(buf, 'a', buflen = 1000);
 
-            for (j = 0; j < 1000; j++) {
-                ret = mbedtls_sha256_update_ret(&ctx, buf, buflen);
+            for (int j = 0; j < 1000; j++) {
+                ret = mbedtls_sha256_update(&ctx, buf, buflen);
                 if (ret != 0) {
                     goto fail;
                 }
             }
 
         } else {
-            ret = mbedtls_sha256_update_ret(&ctx, sha256_test_buf[j],
-                                            sha256_test_buflen[j]);
+            ret = mbedtls_sha256_update(&ctx, sha_test_buf[i],
+                                        sha_test_buflen[i]);
             if (ret != 0) {
                 goto fail;
             }
         }
 
-        if ((ret = mbedtls_sha256_finish_ret(&ctx, sha256sum)) != 0) {
+        if ((ret = mbedtls_sha256_finish(&ctx, sha256sum)) != 0) {
             goto fail;
         }
 
 
-        if (memcmp(sha256sum, sha256_test_sum[i], 32 - k * 4) != 0) {
+        if (memcmp(sha256sum, sha_test_sum[i], 32 - is224 * 4) != 0) {
             ret = 1;
             goto fail;
         }
@@ -576,6 +961,20 @@ exit:
     return ret;
 }
 
+#if defined(MBEDTLS_SHA256_C)
+int mbedtls_sha256_self_test(int verbose)
+{
+    return mbedtls_sha256_common_self_test(verbose, 0);
+}
+#endif /* MBEDTLS_SHA256_C */
+
+#if defined(MBEDTLS_SHA224_C)
+int mbedtls_sha224_self_test(int verbose)
+{
+    return mbedtls_sha256_common_self_test(verbose, 1);
+}
+#endif /* MBEDTLS_SHA224_C */
+
 #endif /* MBEDTLS_SELF_TEST */
 
-#endif /* MBEDTLS_SHA256_C */
+#endif /* MBEDTLS_SHA256_C || MBEDTLS_SHA224_C */

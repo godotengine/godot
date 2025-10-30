@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
-		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
 		var state_machine = $AnimationTree.get("parameters/playback")
@@ -41,10 +40,34 @@
 				Returns the playback position within the current animation state.
 			</description>
 		</method>
+		<method name="get_fading_from_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback state length of the node from [method get_fading_from_node]. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
 		<method name="get_fading_from_node" qualifiers="const">
 			<return type="StringName" />
 			<description>
 				Returns the starting state of currently fading animation.
+			</description>
+		</method>
+		<method name="get_fading_from_play_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position of the node from [method get_fading_from_node]. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
+		<method name="get_fading_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length of the current fade animation. Returns [code]0[/code] if no animation fade is occurring.
+			</description>
+		</method>
+		<method name="get_fading_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position of the current fade animation. Returns [code]0[/code] if no animation fade is occurring.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
@@ -94,4 +117,19 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
+	<signals>
+		<signal name="state_finished">
+			<param index="0" name="state" type="StringName" />
+			<description>
+				Emitted when the [param state] finishes playback. If [param state] is a state machine set to grouped mode, its signals are passed through with its name prefixed.
+				If there is a crossfade, this will be fired when the influence of the [method get_fading_from_node] animation is no longer present.
+			</description>
+		</signal>
+		<signal name="state_started">
+			<param index="0" name="state" type="StringName" />
+			<description>
+				Emitted when the [param state] starts playback. If [param state] is a state machine set to grouped mode, its signals are passed through with its name prefixed.
+			</description>
+		</signal>
+	</signals>
 </class>

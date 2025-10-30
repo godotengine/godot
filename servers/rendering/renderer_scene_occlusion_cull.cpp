@@ -32,20 +32,7 @@
 
 RendererSceneOcclusionCull *RendererSceneOcclusionCull::singleton = nullptr;
 
-const Vector3 RendererSceneOcclusionCull::HZBuffer::corners[8] = {
-	Vector3(0, 0, 0),
-	Vector3(0, 0, 1),
-	Vector3(0, 1, 0),
-	Vector3(0, 1, 1),
-	Vector3(1, 0, 0),
-	Vector3(1, 0, 1),
-	Vector3(1, 1, 0),
-	Vector3(1, 1, 1)
-};
-
-bool RendererSceneOcclusionCull::HZBuffer::is_empty() const {
-	return sizes.is_empty();
-}
+bool RendererSceneOcclusionCull::HZBuffer::occlusion_jitter_enabled = false;
 
 void RendererSceneOcclusionCull::HZBuffer::clear() {
 	if (sizes.is_empty()) {
@@ -62,10 +49,12 @@ void RendererSceneOcclusionCull::HZBuffer::clear() {
 	}
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(debug_texture);
+	RS::get_singleton()->free_rid(debug_texture);
 }
 
 void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
+	occlusion_buffer_size = p_size;
+
 	if (p_size == Size2i()) {
 		clear();
 		return;
@@ -118,12 +107,15 @@ void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
 
 	debug_data.resize(sizes[0].x * sizes[0].y);
 	if (debug_texture.is_valid()) {
-		RS::get_singleton()->free(debug_texture);
+		RS::get_singleton()->free_rid(debug_texture);
 		debug_texture = RID();
 	}
 }
 
 void RendererSceneOcclusionCull::HZBuffer::update_mips() {
+	// Keep this up to date as a local to be used for occlusion timers.
+	occlusion_frame = Engine::get_singleton()->get_frames_drawn();
+
 	if (sizes.is_empty()) {
 		return;
 	}
@@ -179,7 +171,7 @@ RID RendererSceneOcclusionCull::HZBuffer::get_debug_texture() {
 
 	unsigned char *ptrw = debug_data.ptrw();
 	for (int i = 0; i < debug_data.size(); i++) {
-		ptrw[i] = MIN(mips[0][i] / debug_tex_range, 1.0) * 255;
+		ptrw[i] = MIN(Math::log(1.0 + mips[0][i]) / Math::log(1.0 + debug_tex_range), 1.0) * 255;
 	}
 
 	debug_image->set_data(sizes[0].x, sizes[0].y, false, Image::FORMAT_L8, debug_data);

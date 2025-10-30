@@ -32,8 +32,6 @@
 
 #include "core/typedefs.h"
 
-#include <stdlib.h>
-
 Size2 TextureButton::get_minimum_size() const {
 	Size2 rscale = Control::get_minimum_size();
 
@@ -103,8 +101,8 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 			point *= scale;
 
 			// finally, we need to check if the point is inside a rectangle with a position >= 0,0 and a size <= mask_size
-			rect.position = Point2(MAX(0, _texture_region.position.x), MAX(0, _texture_region.position.y));
-			rect.size = Size2(MIN(mask_size.x, _texture_region.size.x), MIN(mask_size.y, _texture_region.size.y));
+			rect.position = _texture_region.position.maxf(0);
+			rect.size = mask_size.min(_texture_region.size);
 		}
 
 		if (!rect.has_point(point)) {
@@ -170,21 +168,22 @@ void TextureButton::_notification(int p_what) {
 
 			Point2 ofs;
 			Size2 size;
-			bool draw_focus = (has_focus() && focused.is_valid());
+			bool draw_focus = (has_focus(true) && focused.is_valid());
 
 			// If no other texture is valid, try using focused texture.
-			bool draw_focus_only = draw_focus && !texdraw.is_valid();
+			bool draw_focus_only = draw_focus && texdraw.is_null();
 			if (draw_focus_only) {
 				texdraw = focused;
 			}
 
-			if (texdraw.is_valid()) {
-				size = texdraw->get_size();
-				_texture_region = Rect2(Point2(), texdraw->get_size());
+			if (texdraw.is_valid() || click_mask.is_valid()) {
+				const Size2 texdraw_size = texdraw.is_valid() ? texdraw->get_size() : Size2(click_mask->get_size());
+
+				size = texdraw_size;
+				_texture_region = Rect2(Point2(), texdraw_size);
 				_tile = false;
 				switch (stretch_mode) {
 					case STRETCH_KEEP:
-						size = texdraw->get_size();
 						break;
 					case STRETCH_SCALE:
 						size = get_size();
@@ -194,18 +193,17 @@ void TextureButton::_notification(int p_what) {
 						_tile = true;
 						break;
 					case STRETCH_KEEP_CENTERED:
-						ofs = (get_size() - texdraw->get_size()) / 2;
-						size = texdraw->get_size();
+						ofs = (get_size() - texdraw_size) / 2;
 						break;
 					case STRETCH_KEEP_ASPECT_CENTERED:
 					case STRETCH_KEEP_ASPECT: {
 						Size2 _size = get_size();
-						float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
+						float tex_width = texdraw_size.width * _size.height / texdraw_size.height;
 						float tex_height = _size.height;
 
 						if (tex_width > _size.width) {
 							tex_width = _size.width;
-							tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
+							tex_height = texdraw_size.height * tex_width / texdraw_size.width;
 						}
 
 						if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
@@ -217,10 +215,9 @@ void TextureButton::_notification(int p_what) {
 					} break;
 					case STRETCH_KEEP_ASPECT_COVERED: {
 						size = get_size();
-						Size2 tex_size = texdraw->get_size();
-						Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
+						Size2 scale_size = size / texdraw_size;
 						float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
-						Size2 scaled_tex_size = tex_size * scale;
+						Size2 scaled_tex_size = texdraw_size * scale;
 						Point2 ofs2 = ((scaled_tex_size - size) / scale).abs() / 2.0f;
 						_texture_region = Rect2(ofs2, size / scale);
 					} break;
@@ -233,10 +230,12 @@ void TextureButton::_notification(int p_what) {
 
 				if (draw_focus_only) {
 					// Do nothing, we only needed to calculate the rectangle.
-				} else if (_tile) {
-					draw_texture_rect(texdraw, Rect2(ofs, size), _tile);
-				} else {
-					draw_texture_rect_region(texdraw, Rect2(ofs, size), _texture_region);
+				} else if (texdraw.is_valid()) {
+					if (_tile) {
+						draw_texture_rect(texdraw, Rect2(ofs, size), _tile);
+					} else {
+						draw_texture_rect_region(texdraw, Rect2(ofs, size), _texture_region);
+					}
 				}
 			} else {
 				_position_rect = Rect2();
@@ -339,11 +338,11 @@ Ref<BitMap> TextureButton::get_click_mask() const {
 
 Ref<Texture2D> TextureButton::get_texture_focused() const {
 	return focused;
-};
+}
 
 void TextureButton::set_texture_focused(const Ref<Texture2D> &p_focused) {
-	focused = p_focused;
-};
+	_set_texture(&focused, p_focused);
+}
 
 void TextureButton::_set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture) {
 	DEV_ASSERT(p_destination);
@@ -419,5 +418,3 @@ void TextureButton::set_flip_v(bool p_flip) {
 bool TextureButton::is_flipped_v() const {
 	return vflip;
 }
-
-TextureButton::TextureButton() {}

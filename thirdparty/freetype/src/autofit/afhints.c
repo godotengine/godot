@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (body).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -979,8 +979,8 @@
       /* compute coordinates & Bezier flags, next and prev */
       {
         FT_Vector*  vec           = outline->points;
-        char*       tag           = outline->tags;
-        FT_Short    endpoint      = outline->contours[0];
+        FT_Byte*    tag           = outline->tags;
+        FT_UShort   endpoint      = outline->contours[0];
         AF_Point    end           = points + endpoint;
         AF_Point    prev          = end;
         FT_Int      contour_index = 0;
@@ -1046,16 +1046,16 @@
 
       /* set up the contours array */
       {
-        AF_Point*  contour       = hints->contours;
-        AF_Point*  contour_limit = contour + hints->num_contours;
-        short*     end           = outline->contours;
-        short      idx           = 0;
+        AF_Point*   contour       = hints->contours;
+        AF_Point*   contour_limit = contour + hints->num_contours;
+        FT_UShort*  end           = outline->contours;
+        FT_Int      idx           = 0;
 
 
         for ( ; contour < contour_limit; contour++, end++ )
         {
           contour[0] = points + idx;
-          idx        = (short)( end[0] + 1 );
+          idx        = *end + 1;
         }
       }
 
@@ -1292,7 +1292,7 @@
     AF_Point    point = hints->points;
     AF_Point    limit = point + hints->num_points;
     FT_Vector*  vec   = outline->points;
-    char*       tag   = outline->tags;
+    FT_Byte*    tag   = outline->tags;
 
 
     for ( ; point < limit; point++, vec++, tag++ )

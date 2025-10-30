@@ -38,7 +38,7 @@ Variant AnimationMixer::_post_process_key_value_bind_compat_86687(const Ref<Anim
 }
 
 void AnimationMixer::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("_post_process_key_value_bind_compat", "animation", "track", "value", "object", "object_idx"), &AnimationMixer::_post_process_key_value_bind_compat_86687);
+	ClassDB::bind_compatibility_method(D_METHOD("_post_process_key_value", "animation", "track", "value", "object", "object_idx"), &AnimationMixer::_post_process_key_value_bind_compat_86687);
 }
 
 #endif // DISABLE_DEPRECATED

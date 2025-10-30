@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include "sharpyuv/sharpyuv_cpu.h"
+#include "src/webp/types.h"
 
 //-----------------------------------------------------------------------------
 
@@ -69,8 +70,7 @@ uint64_t (*SharpYuvUpdateY)(const uint16_t* src, const uint16_t* ref,
 void (*SharpYuvUpdateRGB)(const int16_t* src, const int16_t* ref, int16_t* dst,
                           int len);
 void (*SharpYuvFilterRow)(const int16_t* A, const int16_t* B, int len,
-                          const uint16_t* best_y, uint16_t* out,
-                          int bit_depth);
+                          const uint16_t* best_y, uint16_t* out, int bit_depth);
 
 extern VP8CPUInfo SharpYuvGetCPUInfo;
 extern void InitSharpYuvSSE2(void);

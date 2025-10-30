@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileSystemDock" inherits="VBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FileSystemDock" inherits="EditorDock" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's dock for managing files in the project.
 	</brief_description>
@@ -51,6 +51,11 @@
 				Emitted when a file is moved from [param old_file] path to [param new_file] path.
 			</description>
 		</signal>
+		<signal name="folder_color_changed">
+			<description>
+				Emitted when folders change color.
+			</description>
+		</signal>
 		<signal name="folder_moved">
 			<param index="0" name="old_folder" type="String" />
 			<param index="1" name="new_folder" type="String" />
@@ -80,6 +85,11 @@
 			<param index="0" name="resource" type="Resource" />
 			<description>
 				Emitted when an external [param resource] had its file removed.
+			</description>
+		</signal>
+		<signal name="selection_changed">
+			<description>
+				Emitted when the selection changes. Use [method EditorInterface.get_selected_paths] in the connected method to get the selected paths.
 			</description>
 		</signal>
 	</signals>

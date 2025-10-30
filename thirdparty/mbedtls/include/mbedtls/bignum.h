@@ -5,28 +5,14 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_BIGNUM_H
 #define MBEDTLS_BIGNUM_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
+#include "mbedtls/platform_util.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -66,15 +52,15 @@
 
 #if !defined(MBEDTLS_MPI_WINDOW_SIZE)
 /*
- * Maximum window size used for modular exponentiation. Default: 2
+ * Maximum window size used for modular exponentiation. Default: 3
  * Minimum value: 1. Maximum value: 6.
  *
  * Result is an array of ( 2 ** MBEDTLS_MPI_WINDOW_SIZE ) MPIs used
- * for the sliding window calculation. (So 64 by default)
+ * for the sliding window calculation. (So 8 by default)
  *
  * Reduction in size, reduces speed.
  */
-#define MBEDTLS_MPI_WINDOW_SIZE                           2        /**< Maximum window size used. */
+#define MBEDTLS_MPI_WINDOW_SIZE                           3        /**< Maximum window size used. */
 #endif /* !MBEDTLS_MPI_WINDOW_SIZE */
 
 #if !defined(MBEDTLS_MPI_MAX_SIZE)
@@ -132,6 +118,7 @@
         #endif /* !MBEDTLS_HAVE_INT64 */
 typedef  int64_t mbedtls_mpi_sint;
 typedef uint64_t mbedtls_mpi_uint;
+#define MBEDTLS_MPI_UINT_MAX                UINT64_MAX
     #elif defined(__GNUC__) && (                         \
     defined(__amd64__) || defined(__x86_64__)     || \
     defined(__ppc64__) || defined(__powerpc64__)  || \
@@ -144,6 +131,7 @@ typedef uint64_t mbedtls_mpi_uint;
         #endif /* MBEDTLS_HAVE_INT64 */
 typedef  int64_t mbedtls_mpi_sint;
 typedef uint64_t mbedtls_mpi_uint;
+#define MBEDTLS_MPI_UINT_MAX                UINT64_MAX
         #if !defined(MBEDTLS_NO_UDBL_DIVISION)
 /* mbedtls_t_udbl defined as 128-bit unsigned int */
 typedef unsigned int mbedtls_t_udbl __attribute__((mode(TI)));
@@ -159,6 +147,7 @@ typedef unsigned int mbedtls_t_udbl __attribute__((mode(TI)));
         #endif /* !MBEDTLS_HAVE_INT64 */
 typedef  int64_t mbedtls_mpi_sint;
 typedef uint64_t mbedtls_mpi_uint;
+#define MBEDTLS_MPI_UINT_MAX                UINT64_MAX
         #if !defined(MBEDTLS_NO_UDBL_DIVISION)
 /* mbedtls_t_udbl defined as 128-bit unsigned int */
 typedef __uint128_t mbedtls_t_udbl;
@@ -168,6 +157,7 @@ typedef __uint128_t mbedtls_t_udbl;
 /* Force 64-bit integers with unknown compiler */
 typedef  int64_t mbedtls_mpi_sint;
 typedef uint64_t mbedtls_mpi_uint;
+#define MBEDTLS_MPI_UINT_MAX                UINT64_MAX
     #endif
 #endif /* !MBEDTLS_HAVE_INT32 */
 
@@ -178,11 +168,21 @@ typedef uint64_t mbedtls_mpi_uint;
     #endif /* !MBEDTLS_HAVE_INT32 */
 typedef  int32_t mbedtls_mpi_sint;
 typedef uint32_t mbedtls_mpi_uint;
+#define MBEDTLS_MPI_UINT_MAX                UINT32_MAX
     #if !defined(MBEDTLS_NO_UDBL_DIVISION)
 typedef uint64_t mbedtls_t_udbl;
         #define MBEDTLS_HAVE_UDBL
     #endif /* !MBEDTLS_NO_UDBL_DIVISION */
 #endif /* !MBEDTLS_HAVE_INT64 */
+
+/*
+ * Sanity check that exactly one of MBEDTLS_HAVE_INT32 or MBEDTLS_HAVE_INT64 is defined,
+ * so that code elsewhere doesn't have to check.
+ */
+#if (!(defined(MBEDTLS_HAVE_INT32) || defined(MBEDTLS_HAVE_INT64))) || \
+    (defined(MBEDTLS_HAVE_INT32) && defined(MBEDTLS_HAVE_INT64))
+#error "Only 32-bit or 64-bit limbs are supported in bignum"
+#endif
 
 /** \typedef mbedtls_mpi_uint
  * \brief The type of machine digits in a bignum, called _limbs_.
@@ -194,7 +194,7 @@ typedef uint64_t mbedtls_t_udbl;
 /** \typedef mbedtls_mpi_sint
  * \brief The signed type corresponding to #mbedtls_mpi_uint.
  *
- * This is always a signed integer type with no padding bits. The size
+ * This is always an signed integer type with no padding bits. The size
  * is platform-dependent.
  */
 
@@ -206,6 +206,12 @@ extern "C" {
  * \brief          MPI structure
  */
 typedef struct mbedtls_mpi {
+    /** Pointer to limbs.
+     *
+     * This may be \c NULL if \c n is 0.
+     */
+    mbedtls_mpi_uint *MBEDTLS_PRIVATE(p);
+
     /** Sign: -1 if the mpi is negative, 1 otherwise.
      *
      * The number 0 must be represented with `s = +1`. Although many library
@@ -217,16 +223,19 @@ typedef struct mbedtls_mpi {
      * Note that this implies that calloc() or `... = {0}` does not create
      * a valid MPI representation. You must call mbedtls_mpi_init().
      */
-    int s;
+    signed short MBEDTLS_PRIVATE(s);
 
     /** Total number of limbs in \c p.  */
-    size_t n;
-
-    /** Pointer to limbs.
-     *
-     * This may be \c NULL if \c n is 0.
+    unsigned short MBEDTLS_PRIVATE(n);
+    /* Make sure that MBEDTLS_MPI_MAX_LIMBS fits in n.
+     * Use the same limit value on all platforms so that we don't have to
+     * think about different behavior on the rare platforms where
+     * unsigned short can store values larger than the minimum required by
+     * the C language, which is 65535.
      */
-    mbedtls_mpi_uint *p;
+#if MBEDTLS_MPI_MAX_LIMBS > 65535
+#error "MBEDTLS_MPI_MAX_LIMBS > 65535 is not supported"
+#endif
 }
 mbedtls_mpi;
 
@@ -597,6 +606,8 @@ int mbedtls_mpi_write_binary_le(const mbedtls_mpi *X,
  * \brief          Perform a left-shift on an MPI: X <<= count
  *
  * \param X        The MPI to shift. This must point to an initialized MPI.
+ *                 The MPI pointed by \p X may be resized to fit
+ *                 the resulting number.
  * \param count    The number of bits to shift by.
  *
  * \return         \c 0 if successful.
@@ -870,7 +881,7 @@ int mbedtls_mpi_mod_int(mbedtls_mpi_uint *r, const mbedtls_mpi *A,
                         mbedtls_mpi_sint b);
 
 /**
- * \brief          Perform a sliding-window exponentiation: X = A^E mod N
+ * \brief          Perform a modular exponentiation: X = A^E mod N
  *
  * \param X        The destination MPI. This must point to an initialized MPI.
  *                 This must not alias E or N.
@@ -918,7 +929,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  *                 be relevant in applications like deterministic ECDSA.
  */
 int mbedtls_mpi_fill_random(mbedtls_mpi *X, size_t size,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /** Generate a random number uniformly in a range.
@@ -956,13 +967,14 @@ int mbedtls_mpi_fill_random(mbedtls_mpi *X, size_t size,
 int mbedtls_mpi_random(mbedtls_mpi *X,
                        mbedtls_mpi_sint min,
                        const mbedtls_mpi *N,
-                       int (*f_rng)(void *, unsigned char *, size_t),
+                       mbedtls_f_rng_t *f_rng,
                        void *p_rng);
 
 /**
  * \brief          Compute the greatest common divisor: G = gcd(A, B)
  *
  * \param G        The destination MPI. This must point to an initialized MPI.
+ *                 This will always be positive or 0.
  * \param A        The first operand. This must point to an initialized MPI.
  * \param B        The second operand. This must point to an initialized MPI.
  *
@@ -977,10 +989,12 @@ int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
  * \brief          Compute the modular inverse: X = A^-1 mod N
  *
  * \param X        The destination MPI. This must point to an initialized MPI.
+ *                 The value returned on success will be between [1, N-1].
  * \param A        The MPI to calculate the modular inverse of. This must point
- *                 to an initialized MPI.
+ *                 to an initialized MPI. This value can be negative, in which
+ *                 case a positive answer will still be returned in \p X.
  * \param N        The base of the modular inversion. This must point to an
- *                 initialized MPI.
+ *                 initialized MPI and be greater than one.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
@@ -991,37 +1005,6 @@ int mbedtls_mpi_gcd(mbedtls_mpi *G, const mbedtls_mpi *A,
  */
 int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
                         const mbedtls_mpi *N);
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#if defined(MBEDTLS_DEPRECATED_WARNING)
-#define MBEDTLS_DEPRECATED      __attribute__((deprecated))
-#else
-#define MBEDTLS_DEPRECATED
-#endif
-/**
- * \brief          Perform a Miller-Rabin primality test with error
- *                 probability of 2<sup>-80</sup>.
- *
- * \deprecated     Superseded by mbedtls_mpi_is_prime_ext() which allows
- *                 specifying the number of Miller-Rabin rounds.
- *
- * \param X        The MPI to check for primality.
- *                 This must point to an initialized MPI.
- * \param f_rng    The RNG function to use. This must not be \c NULL.
- * \param p_rng    The RNG parameter to be passed to \p f_rng.
- *                 This may be \c NULL if \p f_rng doesn't use a
- *                 context parameter.
- *
- * \return         \c 0 if successful, i.e. \p X is probably prime.
- * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
- * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p X is not prime.
- * \return         Another negative error code on other kinds of failure.
- */
-MBEDTLS_DEPRECATED int mbedtls_mpi_is_prime(const mbedtls_mpi *X,
-                                            int (*f_rng)(void *, unsigned char *, size_t),
-                                            void *p_rng);
-#undef MBEDTLS_DEPRECATED
-#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
 /**
  * \brief          Miller-Rabin primality test.
@@ -1051,7 +1034,7 @@ MBEDTLS_DEPRECATED int mbedtls_mpi_is_prime(const mbedtls_mpi *X,
  * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_is_prime_ext(const mbedtls_mpi *X, int rounds,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             mbedtls_f_rng_t *f_rng,
                              void *p_rng);
 /**
  * \brief Flags for mbedtls_mpi_gen_prime()
@@ -1084,7 +1067,7 @@ typedef enum {
  *                 \c 3 and #MBEDTLS_MPI_MAX_BITS.
  */
 int mbedtls_mpi_gen_prime(mbedtls_mpi *X, size_t nbits, int flags,
-                          int (*f_rng)(void *, unsigned char *, size_t),
+                          mbedtls_f_rng_t *f_rng,
                           void *p_rng);
 
 #if defined(MBEDTLS_SELF_TEST)

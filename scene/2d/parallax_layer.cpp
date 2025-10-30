@@ -71,19 +71,14 @@ void ParallaxLayer::_update_mirroring() {
 	if (pb) {
 		RID c = pb->get_canvas();
 		RID ci = get_canvas_item();
-		Point2 mirrorScale = mirroring * get_scale();
-		RenderingServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirrorScale);
+		Point2 mirror_scale = mirroring * orig_scale;
+		RenderingServer::get_singleton()->canvas_set_item_mirroring(c, ci, mirror_scale);
+		RenderingServer::get_singleton()->canvas_item_set_interpolated(ci, false);
 	}
 }
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
-	mirroring = p_mirroring;
-	if (mirroring.x < 0) {
-		mirroring.x = 0;
-	}
-	if (mirroring.y < 0) {
-		mirroring.y = 0;
-	}
+	mirroring = p_mirroring.maxf(0);
 
 	_update_mirroring();
 }
@@ -123,12 +118,12 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 
 	if (mirroring.x) {
 		real_t den = mirroring.x * p_scale;
-		new_ofs.x -= den * ceil(new_ofs.x / den);
+		new_ofs.x -= den * std::ceil(new_ofs.x / den);
 	}
 
 	if (mirroring.y) {
 		real_t den = mirroring.y * p_scale;
-		new_ofs.y -= den * ceil(new_ofs.y / den);
+		new_ofs.y -= den * std::ceil(new_ofs.y / den);
 	}
 
 	set_position(new_ofs);
@@ -138,7 +133,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 }
 
 PackedStringArray ParallaxLayer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));
@@ -162,4 +157,6 @@ void ParallaxLayer::_bind_methods() {
 }
 
 ParallaxLayer::ParallaxLayer() {
+	// ParallaxLayer is always updated every frame so there is no need to interpolate.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

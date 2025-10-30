@@ -23,6 +23,8 @@
 #ifndef _TVG_LOAD_MODULE_H_
 #define _TVG_LOAD_MODULE_H_
 
+#include <atomic>
+#include "tvgCommon.h"
 #include "tvgRender.h"
 #include "tvgInlist.h"
 
@@ -32,17 +34,20 @@ struct LoadModule
     INLIST_ITEM(LoadModule);
 
     //Use either hashkey(data) or hashpath(path)
-    uint64_t hashkey;
-    char* hashpath = nullptr;
+    union {
+        uintptr_t hashkey;
+        char* hashpath = nullptr;
+    };
 
     FileType type;                                  //current loader file type
-    uint16_t sharing = 0;                           //reference count
+    atomic<uint16_t> sharing{};                     //reference count
     bool readied = false;                           //read done already.
+    bool pathcache = false;                         //cached by path
 
     LoadModule(FileType type) : type(type) {}
     virtual ~LoadModule()
     {
-        free(hashpath);
+        if (pathcache) free(hashpath);
     }
 
     virtual bool open(const string& path) { return false; }
@@ -57,6 +62,12 @@ struct LoadModule
         return true;
     }
 
+    bool cached()
+    {
+        if (hashkey) return true;
+        return false;
+    }
+
     virtual bool close()
     {
         if (sharing == 0) return true;
@@ -68,15 +79,17 @@ struct LoadModule
 
 struct ImageLoader : LoadModule
 {
+    static atomic<ColorSpace> cs;                   //desired value
+
     float w = 0, h = 0;                             //default image size
-    Surface surface;
+    RenderSurface surface;
 
     ImageLoader(FileType type) : LoadModule(type) {}
 
     virtual bool animatable() { return false; }  //true if this loader supports animation.
     virtual Paint* paint() { return nullptr; }
 
-    virtual Surface* bitmap()
+    virtual RenderSurface* bitmap()
     {
         if (surface.data) return &surface;
         return nullptr;
@@ -84,13 +97,21 @@ struct ImageLoader : LoadModule
 };
 
 
+struct FontMetrics
+{
+    //TODO: add necessary metrics
+    float minw;
+};
+
+
 struct FontLoader : LoadModule
 {
-    float scale = 1.0f;
-
     FontLoader(FileType type) : LoadModule(type) {}
 
-    virtual bool request(Shape* shape, char* text, bool italic = false) = 0;
+    using LoadModule::read;
+
+    virtual bool read(Shape* shape, char* text, FontMetrics& out) = 0;
+    virtual float transform(Paint* paint, FontMetrics& mertrics, float fontSize, bool italic) = 0;
 };
 
 #endif //_TVG_LOAD_MODULE_H_

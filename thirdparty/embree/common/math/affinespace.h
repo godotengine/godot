@@ -337,7 +337,7 @@ namespace embree
     if (D) *D = sqrtf(D_x);
     return true;
   }
-
+  
   __forceinline void AffineSpace3fa_store_unaligned(const AffineSpace3fa &source, AffineSpace3fa* ptr)
   {
     Vec3fa::storeu(&ptr->l.vx, source.l.vx);

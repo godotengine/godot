@@ -54,16 +54,7 @@ using namespace tvg;
     #define strdup _strdup
 #endif
 
-//TVG class identifier values
-#define TVG_CLASS_ID_UNDEFINED 0
-#define TVG_CLASS_ID_SHAPE     1
-#define TVG_CLASS_ID_SCENE     2
-#define TVG_CLASS_ID_PICTURE   3
-#define TVG_CLASS_ID_LINEAR    4
-#define TVG_CLASS_ID_RADIAL    5
-#define TVG_CLASS_ID_TEXT      6
-
-enum class FileType { Tvg = 0, Svg, Ttf, Lottie, Raw, Png, Jpg, Webp, Gif, Unknown };
+enum class FileType { Png = 0, Jpg, Webp, Tvg, Svg, Lottie, Ttf, Raw, Gif, Unknown };
 
 using Size = Point;
 
@@ -86,5 +77,17 @@ uint16_t THORVG_VERSION_NUMBER();
 
 #define P(A) ((A)->pImpl)              //Access to pimpl.
 #define PP(A) (((Paint*)(A))->pImpl)   //Access to pimpl.
+
+
+//for debugging
+#if 0
+#include <sys/time.h>
+static inline double THORVG_TIMESTAMP()
+{
+   struct timeval tv;
+   gettimeofday(&tv, NULL);
+   return (tv.tv_sec + tv.tv_usec / 1000000.0);
+}
+#endif
 
 #endif //_TVG_COMMON_H_

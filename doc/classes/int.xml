@@ -6,7 +6,7 @@
 	<description>
 		Signed 64-bit integer type. This means that it can take values from [code]-2^63[/code] to [code]2^63 - 1[/code], i.e. from [code]-9223372036854775808[/code] to [code]9223372036854775807[/code]. When it exceeds these bounds, it will wrap around.
 		[int]s can be automatically converted to [float]s when necessary, for example when passing them as arguments in functions. The [float] will be as close to the original integer as possible.
-		Likewise, [float]s can be automatically converted into [int]s. This will truncate the [float], discarding anything after the floating point.
+		Likewise, [float]s can be automatically converted into [int]s. This will truncate the [float], discarding anything after the floating-point.
 		[b]Note:[/b] In a boolean context, an [int] will evaluate to [code]false[/code] if it equals [code]0[/code], and to [code]true[/code] otherwise.
 		[codeblocks]
 		[gdscript]
@@ -119,7 +119,7 @@
 				var flags = 0b101
 				# Check if the first or second bit are enabled.
 				if flags &amp; 0b011:
-				    do_stuff() # This line will run.
+					do_stuff() # This line will run.
 				[/codeblock]
 			</description>
 		</operator>

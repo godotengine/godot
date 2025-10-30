@@ -1,7 +1,7 @@
 /* -*- tab-width: 4; -*- */
 /* vi: set sw=2 ts=4 expandtab: */
 
-/* $Id: ee6f7be4d43390de78e1815ed158012c78ddeff1 $ */
+/* $Id$ */
 
 /*
  * Copyright 2010-2020 The Khronos Group Inc.
@@ -10,7 +10,7 @@
 
 /**
  * @internal
- * @file checkheader.c
+ * @file
  * @~English
  *
  * @brief Function to verify a KTX file header
@@ -27,6 +27,10 @@
 
 #include "ktx.h"
 #include "ktxint.h"
+#include "vkformat_enum.h"
+
+bool isProhibitedFormat(VkFormat format);
+bool isValidFormat(VkFormat format);
 
 /**
  * @internal
@@ -112,7 +116,7 @@ KTX_error_code  ktxCheckHeader1_(KTX_header* pHeader,
         if (pHeader->numberOfArrayElements > 0)
         {
             /* No 3D array textures yet. */
-            return KTX_UNSUPPORTED_TEXTURE_TYPE;
+            return KTX_UNSUPPORTED_FEATURE;
         }
         pSuppInfo->textureDimension = 3;
     }
@@ -192,6 +196,20 @@ KTX_error_code ktxCheckHeader2_(KTX_header2* pHeader,
         return KTX_UNKNOWN_FILE_FORMAT;
     }
 
+    /* Check format */
+    if (isProhibitedFormat(pHeader->vkFormat))
+    {
+        return KTX_FILE_DATA_ERROR;
+    }
+    if (!isValidFormat(pHeader->vkFormat))
+    {
+        return KTX_UNSUPPORTED_FEATURE;
+    }
+    if (pHeader->supercompressionScheme == KTX_SS_BASIS_LZ && pHeader->vkFormat != VK_FORMAT_UNDEFINED)
+    {
+        return KTX_FILE_DATA_ERROR;
+    }
+
     /* Check texture dimensions. KTX files can store 8 types of textures:
        1D, 2D, 3D, cube, and array variants of these. There is currently
        no extension for 3D array textures in any 3D API. */
@@ -208,7 +226,7 @@ KTX_error_code ktxCheckHeader2_(KTX_header2* pHeader,
         if (pHeader->layerCount > 0)
         {
             /* No 3D array textures yet. */
-            return KTX_UNSUPPORTED_TEXTURE_TYPE;
+            return KTX_UNSUPPORTED_FEATURE;
         }
         pSuppInfo->textureDimension = 3;
     }
@@ -228,6 +246,16 @@ KTX_error_code ktxCheckHeader2_(KTX_header2* pHeader,
             /* cube map needs 2D faces */
             return KTX_FILE_DATA_ERROR;
         }
+        if (pHeader->pixelDepth != 0)
+        {
+            /* cube map cannot have depth */
+            return KTX_FILE_DATA_ERROR;
+        }
+        if (pHeader->pixelWidth != pHeader->pixelHeight)
+        {
+            /* cube map needs square faces */
+            return KTX_FILE_DATA_ERROR;
+        }
     }
     else if (pHeader->faceCount != 1)
     {
@@ -244,6 +272,18 @@ KTX_error_code ktxCheckHeader2_(KTX_header2* pHeader,
     else
     {
         pSuppInfo->generateMipmaps = 0;
+    }
+
+    // Check supercompression
+    switch (pHeader->supercompressionScheme) {
+      case KTX_SS_NONE:
+      case KTX_SS_BASIS_LZ:
+      case KTX_SS_ZSTD:
+      case KTX_SS_ZLIB:
+        break;
+      default:
+        // Unsupported supercompression
+        return KTX_UNSUPPORTED_FEATURE;
     }
 
     // This test works for arrays too because height or depth will be 0.

@@ -129,6 +129,12 @@ namespace embree
         const Vec4<float> b = BSplineBasis::derivative2(t);
         return madd(b.x,v0,madd(b.y,v1,madd(b.z,v2,b.w*v3)));
       }
+
+      __forceinline void eval(const float t, Vertex& p, Vertex& dp) const
+      {
+        p = eval(t);
+        dp = eval_du(t);
+      }
       
       __forceinline void eval(const float t, Vertex& p, Vertex& dp, Vertex& ddp) const
       {
@@ -307,7 +313,7 @@ namespace embree
   }
 
   template<typename CurveGeometry>
-  __forceinline BSplineCurveT<Vec3ff> enlargeRadiusToMinWidth(const IntersectContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const BSplineCurveT<Vec3ff>& curve)
+  __forceinline BSplineCurveT<Vec3ff> enlargeRadiusToMinWidth(const RayQueryContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const BSplineCurveT<Vec3ff>& curve)
   {
     return BSplineCurveT<Vec3ff>(enlargeRadiusToMinWidth(context,geom,ray_org,curve.v0),
                                  enlargeRadiusToMinWidth(context,geom,ray_org,curve.v1),

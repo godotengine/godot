@@ -30,6 +30,7 @@ int GLAD_EGL_VERSION_1_3 = 0;
 int GLAD_EGL_VERSION_1_4 = 0;
 int GLAD_EGL_VERSION_1_5 = 0;
 int GLAD_EGL_ANDROID_blob_cache = 0;
+int GLAD_EGL_EXT_platform_base = 0;
 int GLAD_EGL_KHR_platform_wayland = 0;
 int GLAD_EGL_KHR_platform_x11 = 0;
 
@@ -46,7 +47,9 @@ PFNEGLCREATEPBUFFERFROMCLIENTBUFFERPROC glad_eglCreatePbufferFromClientBuffer = 
 PFNEGLCREATEPBUFFERSURFACEPROC glad_eglCreatePbufferSurface = NULL;
 PFNEGLCREATEPIXMAPSURFACEPROC glad_eglCreatePixmapSurface = NULL;
 PFNEGLCREATEPLATFORMPIXMAPSURFACEPROC glad_eglCreatePlatformPixmapSurface = NULL;
+PFNEGLCREATEPLATFORMPIXMAPSURFACEEXTPROC glad_eglCreatePlatformPixmapSurfaceEXT = NULL;
 PFNEGLCREATEPLATFORMWINDOWSURFACEPROC glad_eglCreatePlatformWindowSurface = NULL;
+PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC glad_eglCreatePlatformWindowSurfaceEXT = NULL;
 PFNEGLCREATESYNCPROC glad_eglCreateSync = NULL;
 PFNEGLCREATEWINDOWSURFACEPROC glad_eglCreateWindowSurface = NULL;
 PFNEGLDESTROYCONTEXTPROC glad_eglDestroyContext = NULL;
@@ -61,6 +64,7 @@ PFNEGLGETCURRENTSURFACEPROC glad_eglGetCurrentSurface = NULL;
 PFNEGLGETDISPLAYPROC glad_eglGetDisplay = NULL;
 PFNEGLGETERRORPROC glad_eglGetError = NULL;
 PFNEGLGETPLATFORMDISPLAYPROC glad_eglGetPlatformDisplay = NULL;
+PFNEGLGETPLATFORMDISPLAYEXTPROC glad_eglGetPlatformDisplayEXT = NULL;
 PFNEGLGETPROCADDRESSPROC glad_eglGetProcAddress = NULL;
 PFNEGLGETSYNCATTRIBPROC glad_eglGetSyncAttrib = NULL;
 PFNEGLINITIALIZEPROC glad_eglInitialize = NULL;
@@ -145,6 +149,12 @@ static void glad_egl_load_EGL_ANDROID_blob_cache( GLADuserptrloadfunc load, void
     if(!GLAD_EGL_ANDROID_blob_cache) return;
     glad_eglSetBlobCacheFuncsANDROID = (PFNEGLSETBLOBCACHEFUNCSANDROIDPROC) load(userptr, "eglSetBlobCacheFuncsANDROID");
 }
+static void glad_egl_load_EGL_EXT_platform_base( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_EGL_EXT_platform_base) return;
+    glad_eglCreatePlatformPixmapSurfaceEXT = (PFNEGLCREATEPLATFORMPIXMAPSURFACEEXTPROC) load(userptr, "eglCreatePlatformPixmapSurfaceEXT");
+    glad_eglCreatePlatformWindowSurfaceEXT = (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC) load(userptr, "eglCreatePlatformWindowSurfaceEXT");
+    glad_eglGetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC) load(userptr, "eglGetPlatformDisplayEXT");
+}
 
 
 
@@ -183,6 +193,7 @@ static int glad_egl_find_extensions_egl(EGLDisplay display) {
     if (!glad_egl_get_extensions(display, &extensions)) return 0;
 
     GLAD_EGL_ANDROID_blob_cache = glad_egl_has_extension(extensions, "EGL_ANDROID_blob_cache");
+    GLAD_EGL_EXT_platform_base = glad_egl_has_extension(extensions, "EGL_EXT_platform_base");
     GLAD_EGL_KHR_platform_wayland = glad_egl_has_extension(extensions, "EGL_KHR_platform_wayland");
     GLAD_EGL_KHR_platform_x11 = glad_egl_has_extension(extensions, "EGL_KHR_platform_x11");
 
@@ -248,6 +259,7 @@ int gladLoadEGLUserPtr(EGLDisplay display, GLADuserptrloadfunc load, void* userp
 
     if (!glad_egl_find_extensions_egl(display)) return 0;
     glad_egl_load_EGL_ANDROID_blob_cache(load, userptr);
+    glad_egl_load_EGL_EXT_platform_base(load, userptr);
 
 
     return version;

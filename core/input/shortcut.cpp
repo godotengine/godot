@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "shortcut.h"
-#include "core/os/keyboard.h"
 
 void Shortcut::set_events(const Array &p_events) {
 	for (int i = 0; i < p_events.size(); i++) {
@@ -84,6 +83,17 @@ String Shortcut::get_as_text() const {
 	}
 
 	return "None";
+}
+
+Ref<Shortcut> Shortcut::make_from_action(const StringName &p_action) {
+	Ref<InputEventAction> event;
+	event.instantiate();
+	event->set_action(p_action);
+
+	Ref<Shortcut> shortcut;
+	shortcut.instantiate();
+	shortcut->set_events({ event });
+	return shortcut;
 }
 
 bool Shortcut::has_valid_event() const {

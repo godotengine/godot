@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_CALLABLE_H
-#define VARIANT_CALLABLE_H
+#pragma once
 
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -50,9 +49,8 @@ public:
 	bool is_valid() const override;
 	StringName get_method() const override;
 	ObjectID get_object() const override;
+	int get_argument_count(bool &r_is_valid) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	VariantCallable(const Variant &p_variant, const StringName &p_method);
 };
-
-#endif // VARIANT_CALLABLE_H

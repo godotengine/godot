@@ -22,8 +22,10 @@
 
 #include <string.h>
 
+#include <atomic>
 #include "tvgInlist.h"
 #include "tvgLoader.h"
+#include "tvgLock.h"
 
 #ifdef THORVG_SVG_LOADER_SUPPORT
     #include "tvgSvgLoader.h"
@@ -56,22 +58,43 @@
 #include "tvgRawLoader.h"
 
 
-uint64_t HASH_KEY(const char* data, uint64_t size)
+uintptr_t HASH_KEY(const char* data)
 {
-    return (((uint64_t) data) << 32) | size;
+    return reinterpret_cast<uintptr_t>(data);
 }
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static mutex mtx;
+//TODO: remove it.
+atomic<ColorSpace> ImageLoader::cs{ColorSpace::ARGB8888};
+
+static Key _key;
 static Inlist<LoadModule> _activeLoaders;
 
 
 static LoadModule* _find(FileType type)
 {
     switch(type) {
+        case FileType::Png: {
+#ifdef THORVG_PNG_LOADER_SUPPORT
+            return new PngLoader;
+#endif
+            break;
+        }
+        case FileType::Jpg: {
+#ifdef THORVG_JPG_LOADER_SUPPORT
+            return new JpgLoader;
+#endif
+            break;
+        }
+        case FileType::Webp: {
+#ifdef THORVG_WEBP_LOADER_SUPPORT
+            return new WebpLoader;
+#endif
+            break;
+        }
         case FileType::Tvg: {
 #ifdef THORVG_TVG_LOADER_SUPPORT
             return new TvgLoader;
@@ -98,24 +121,6 @@ static LoadModule* _find(FileType type)
         }
         case FileType::Raw: {
             return new RawLoader;
-            break;
-        }
-        case FileType::Png: {
-#ifdef THORVG_PNG_LOADER_SUPPORT
-            return new PngLoader;
-#endif
-            break;
-        }
-        case FileType::Jpg: {
-#ifdef THORVG_JPG_LOADER_SUPPORT
-            return new JpgLoader;
-#endif
-            break;
-        }
-        case FileType::Webp: {
-#ifdef THORVG_WEBP_LOADER_SUPPORT
-            return new WebpLoader;
-#endif
             break;
         }
         default: {
@@ -169,13 +174,13 @@ static LoadModule* _find(FileType type)
 }
 
 
+#ifdef THORVG_FILE_IO_SUPPORT
 static LoadModule* _findByPath(const string& path)
 {
     auto ext = path.substr(path.find_last_of(".") + 1);
     if (!ext.compare("tvg")) return _find(FileType::Tvg);
     if (!ext.compare("svg")) return _find(FileType::Svg);
     if (!ext.compare("json")) return _find(FileType::Lottie);
-    if (!ext.compare("lottie")) return _find(FileType::Lottie);
     if (!ext.compare("png")) return _find(FileType::Png);
     if (!ext.compare("jpg")) return _find(FileType::Jpg);
     if (!ext.compare("webp")) return _find(FileType::Webp);
@@ -183,6 +188,7 @@ static LoadModule* _findByPath(const string& path)
     if (!ext.compare("otf") || !ext.compare("otc")) return _find(FileType::Ttf);
     return nullptr;
 }
+#endif
 
 
 static FileType _convert(const string& mimeType)
@@ -211,12 +217,12 @@ static LoadModule* _findByType(const string& mimeType)
 
 static LoadModule* _findFromCache(const string& path)
 {
-    unique_lock<mutex> lock{mtx};
+    ScopedLock lock(_key);
 
     auto loader = _activeLoaders.head;
 
     while (loader) {
-        if (loader->hashpath && !strcmp(loader->hashpath, path.c_str())) {
+        if (loader->pathcache && !strcmp(loader->hashpath, path.c_str())) {
             ++loader->sharing;
             return loader;
         }
@@ -231,11 +237,10 @@ static LoadModule* _findFromCache(const char* data, uint32_t size, const string&
     auto type = _convert(mimeType);
     if (type == FileType::Unknown) return nullptr;
 
-    unique_lock<mutex> lock{mtx};
+    auto key = HASH_KEY(data);
+    ScopedLock lock(_key);
+
     auto loader = _activeLoaders.head;
-
-    auto key = HASH_KEY(data, size);
-
     while (loader) {
         if (loader->type == type && loader->hashkey == key) {
             ++loader->sharing;
@@ -263,12 +268,16 @@ bool LoaderMgr::term()
     auto loader = _activeLoaders.head;
 
     //clean up the remained font loaders which is globally used.
-    while (loader && loader->type == FileType::Ttf) {
+    while (loader) {
+        if (loader->type != FileType::Ttf) {
+            loader = loader->next;
+            continue;
+        }
         auto ret = loader->close();
         auto tmp = loader;
         loader = loader->next;
         _activeLoaders.remove(tmp);
-        if (ret) delete(loader);
+        if (ret) delete(tmp);
     }
     return true;
 }
@@ -277,9 +286,9 @@ bool LoaderMgr::term()
 bool LoaderMgr::retrieve(LoadModule* loader)
 {
     if (!loader) return false;
+
     if (loader->close()) {
-        {
-            unique_lock<mutex> lock{mtx};
+        if (loader->cached()) {
             _activeLoaders.remove(loader);
         }
         delete(loader);
@@ -290,22 +299,51 @@ bool LoaderMgr::retrieve(LoadModule* loader)
 
 LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
 {
+#ifdef THORVG_FILE_IO_SUPPORT
     *invalid = false;
 
-    if (auto loader = _findFromCache(path)) return loader;
+    //TODO: svg & lottie is not sharable.
+    auto allowCache = true;
+    auto ext = path.substr(path.find_last_of(".") + 1);
+    if (!ext.compare("svg") || !ext.compare("json")) allowCache = false;
+
+    if (allowCache) {
+        if (auto loader = _findFromCache(path)) return loader;
+    }
 
     if (auto loader = _findByPath(path)) {
         if (loader->open(path)) {
-            loader->hashpath = strdup(path.c_str());
-            {
-                unique_lock<mutex> lock{mtx};
-                _activeLoaders.back(loader);
+            if (allowCache) {
+                loader->hashpath = strdup(path.c_str());
+                loader->pathcache = true;
+                {
+                    ScopedLock lock(_key);
+                    _activeLoaders.back(loader);
+                }
             }
             return loader;
         }
         delete(loader);
-        *invalid = true;
     }
+    //Unknown MimeType. Try with the candidates in the order
+    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+        if (auto loader = _find(static_cast<FileType>(i))) {
+            if (loader->open(path)) {
+                if (allowCache) {
+                    loader->hashpath = strdup(path.c_str());
+                    loader->pathcache = true;
+                    {
+                        ScopedLock lock(_key);
+                        _activeLoaders.back(loader);
+                    }
+                }
+                return loader;
+            }
+            delete(loader);
+        }
+    }
+    *invalid = true;
+#endif
     return nullptr;
 }
 
@@ -321,7 +359,7 @@ LoadModule* LoaderMgr::loader(const char* key)
     auto loader = _activeLoaders.head;
 
     while (loader) {
-        if (loader->hashpath && strstr(loader->hashpath, key)) {
+        if (loader->pathcache && strstr(loader->hashpath, key)) {
             ++loader->sharing;
             return loader;
         }
@@ -333,36 +371,49 @@ LoadModule* LoaderMgr::loader(const char* key)
 
 LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mimeType, bool copy)
 {
-    if (auto loader = _findFromCache(data, size, mimeType)) return loader;
+    //Note that users could use the same data pointer with the different content.
+    //Thus caching is only valid for shareable.
+    auto allowCache = !copy;
+
+    //TODO: lottie is not sharable.
+    if (allowCache) {
+        auto type = _convert(mimeType);
+        if (type == FileType::Lottie) allowCache = false;
+    }
+
+    if (allowCache) {
+        if (auto loader = _findFromCache(data, size, mimeType)) return loader;
+    }
 
     //Try with the given MimeType
     if (!mimeType.empty()) {
         if (auto loader = _findByType(mimeType)) {
             if (loader->open(data, size, copy)) {
-                loader->hashkey = HASH_KEY(data, size);                
-                unique_lock<mutex> lock{mtx};
-                _activeLoaders.back(loader);
+                if (allowCache) {
+                    loader->hashkey = HASH_KEY(data);
+                    ScopedLock lock(_key);
+                    _activeLoaders.back(loader);
+                }
                 return loader;
             } else {
                 TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported.", mimeType.c_str());
                 delete(loader);
             }
         }
-    //Unkown MimeType. Try with the candidates in the order
-    } else {
-        for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
-            auto loader = _find(static_cast<FileType>(i));
-            if (loader) {
-                if (loader->open(data, size, copy)) {
-                    loader->hashkey = HASH_KEY(data, size);
-                    {
-                        unique_lock<mutex> lock{mtx};
-                        _activeLoaders.back(loader);
-                    }
-                    return loader;
+    }
+    //Unknown MimeType. Try with the candidates in the order
+    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+        auto loader = _find(static_cast<FileType>(i));
+        if (loader) {
+            if (loader->open(data, size, copy)) {
+                if (allowCache) {
+                    loader->hashkey = HASH_KEY(data);
+                    ScopedLock lock(_key);
+                    _activeLoaders.back(loader);
                 }
-                delete(loader);
+                return loader;
             }
+            delete(loader);
         }
     }
     return nullptr;
@@ -371,19 +422,47 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
 
 LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h, bool copy)
 {
-    //TODO: should we check premultiplied??
-    if (auto loader = _findFromCache((const char*)(data), w * h, "raw")) return loader;
+    //Note that users could use the same data pointer with the different content.
+    //Thus caching is only valid for shareable.
+    if (!copy) {
+        //TODO: should we check premultiplied??
+        if (auto loader = _findFromCache((const char*)(data), w * h, "raw")) return loader;
+    }
 
     //function is dedicated for raw images only
     auto loader = new RawLoader;
     if (loader->open(data, w, h, copy)) {
-        loader->hashkey = HASH_KEY((const char*)data, w * h);
-        {
-            unique_lock<mutex> lock{mtx};
+        if (!copy) {
+            loader->hashkey = HASH_KEY((const char*)data);
+            ScopedLock lock(_key);
             _activeLoaders.back(loader);
         }
         return loader;
     }
     delete(loader);
+    return nullptr;
+}
+
+
+//loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
+LoadModule* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const string& mimeType, bool copy)
+{
+#ifdef THORVG_TTF_LOADER_SUPPORT
+    //TODO: add check for mimetype ?
+    if (auto loader = _findFromCache(name)) return loader;
+
+    //function is dedicated for ttf loader (the only supported font loader)
+    auto loader = new TtfLoader;
+    if (loader->open(data, size, copy)) {
+        loader->hashpath = strdup(name);
+        loader->pathcache = true;
+        ScopedLock lock(_key);
+        _activeLoaders.back(loader);
+        return loader;
+    }
+
+    TVGLOG("LOADER", "The font data \"%s\" could not be loaded.", name);
+    delete(loader);
+#endif
     return nullptr;
 }

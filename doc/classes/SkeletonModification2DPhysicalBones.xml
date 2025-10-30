@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonModification2DPhysicalBones" inherits="SkeletonModification2D" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonModification2DPhysicalBones" inherits="SkeletonModification2D" experimental="Physical bones may be changed in the future to perform the position update of [Bone2D] on their own, without needing this resource." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modification that applies the transforms of [PhysicalBone2D] nodes to [Bone2D] nodes.
 	</brief_description>
 	<description>
 		This modification takes the transforms of [PhysicalBone2D] nodes and applies them to [Bone2D] nodes. This allows the [Bone2D] nodes to react to physics thanks to the linked [PhysicalBone2D] nodes.
-		Experimental. Physical bones may be changed in the future to perform the position update of [Bone2D] on their own.
 	</description>
 	<tutorials>
 	</tutorials>

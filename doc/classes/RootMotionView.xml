@@ -17,7 +17,7 @@
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
 			The grid's cell size in 3D units.
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0.5, 0.5, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0.5, 0.5, 1, 1)" keywords="colour">
 			The grid's color.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">

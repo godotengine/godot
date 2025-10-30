@@ -1,13 +1,15 @@
 using Godot;
+using GodotTools.Build;
 using GodotTools.Internals;
 using JetBrains.Annotations;
-using static GodotTools.Internals.Globals;
 
 namespace GodotTools
 {
     public partial class HotReloadAssemblyWatcher : Node
     {
+#nullable disable
         private Timer _watchTimer;
+#nullable enable
 
         public override void _Notification(int what)
         {
@@ -16,14 +18,20 @@ namespace GodotTools
                 RestartTimer();
 
                 if (Internal.IsAssembliesReloadingNeeded())
+                {
+                    BuildManager.UpdateLastValidBuildDateTime();
                     Internal.ReloadAssemblies(softReload: false);
+                }
             }
         }
 
         private void TimerTimeout()
         {
             if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies(softReload: false);
+            }
         }
 
         [UsedImplicitly]

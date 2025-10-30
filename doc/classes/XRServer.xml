@@ -19,9 +19,9 @@
 		</method>
 		<method name="add_tracker">
 			<return type="void" />
-			<param index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRTracker" />
 			<description>
-				Registers a new [XRPositionalTracker] that tracks a spatial location in real space.
+				Registers a new [XRTracker] that tracks a physical object.
 			</description>
 		</method>
 		<method name="center_on_hmd">
@@ -30,11 +30,17 @@
 			<param index="1" name="keep_height" type="bool" />
 			<description>
 				This is an important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
-				For platforms that do not offer spatial tracking, our origin point (0, 0, 0) is the location of our HMD, but you have little control over the direction the player is facing in the real world.
+				For platforms that do not offer spatial tracking, our origin point [code](0, 0, 0)[/code] is the location of our HMD, but you have little control over the direction the player is facing in the real world.
 				For platforms that do offer spatial tracking, our origin point depends very much on the system. For OpenVR, our origin point is usually the center of the tracking space, on the ground. For other platforms, it's often the location of the tracking camera.
 				This method allows you to center your tracker on the location of the HMD. It will take the current location of the HMD and use that to adjust all your tracking data; in essence, realigning the real world to your player's current position in the game world.
 				For this method to produce usable results, tracking information must be available. This often takes a few frames after starting your game.
 				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
+			</description>
+		</method>
+		<method name="clear_reference_frame">
+			<return type="void" />
+			<description>
+				Clears the reference frame that was set by previous calls to [method center_on_hmd].
 			</description>
 		</method>
 		<method name="find_interface" qualifiers="const">
@@ -76,7 +82,7 @@
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRTracker" />
 			<param index="0" name="tracker_name" type="StringName" />
 			<description>
 				Returns the positional tracker with the given [param tracker_name].
@@ -98,13 +104,17 @@
 		</method>
 		<method name="remove_tracker">
 			<return type="void" />
-			<param index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRTracker" />
 			<description>
-				Removes this positional [param tracker].
+				Removes this [param tracker].
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="camera_locked_to_origin" type="bool" setter="set_camera_locked_to_origin" getter="is_camera_locked_to_origin" default="false">
+			If set to [code]true[/code], the scene will be rendered as if the camera is locked to the [XROrigin3D].
+			[b]Note:[/b] This doesn't provide a very comfortable experience for users. This setting exists for doing benchmarking or automated testing, where you want to control what is rendered via code.
+		</member>
 		<member name="primary_interface" type="XRInterface" setter="set_primary_interface" getter="get_primary_interface">
 			The primary [XRInterface] currently bound to the [XRServer].
 		</member>
@@ -113,7 +123,7 @@
 			[b]Note:[/b] This property is managed by the current [XROrigin3D] node. It is exposed for access from GDExtensions.
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
-			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.
+			The scale of the game world compared to the real world. By default, most AR/VR platforms assume that 1 game unit corresponds to 1 real world meter.
 		</member>
 	</members>
 	<signals>
@@ -127,6 +137,11 @@
 			<param index="0" name="interface_name" type="StringName" />
 			<description>
 				Emitted when an interface is removed.
+			</description>
+		</signal>
+		<signal name="reference_frame_changed">
+			<description>
+				Emitted when the reference frame transform changes.
 			</description>
 		</signal>
 		<signal name="tracker_added">
@@ -153,7 +168,7 @@
 	</signals>
 	<constants>
 		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">
-			The tracker tracks the location of the players head. This is usually a location centered between the players eyes. Note that for handheld AR devices this can be the current location of the device.
+			The tracker tracks the location of the player's head. This is usually a location centered between the player's eyes. Note that for handheld AR devices this can be the current location of the device.
 		</constant>
 		<constant name="TRACKER_CONTROLLER" value="2" enum="TrackerType">
 			The tracker tracks the location of a controller.
@@ -163,6 +178,15 @@
 		</constant>
 		<constant name="TRACKER_ANCHOR" value="8" enum="TrackerType">
 			The tracker tracks the location and size of an AR anchor.
+		</constant>
+		<constant name="TRACKER_HAND" value="16" enum="TrackerType">
+			The tracker tracks the location and joints of a hand.
+		</constant>
+		<constant name="TRACKER_BODY" value="32" enum="TrackerType">
+			The tracker tracks the location and joints of a body.
+		</constant>
+		<constant name="TRACKER_FACE" value="64" enum="TrackerType">
+			The tracker tracks the expressions of a face.
 		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">
 			Used internally to filter trackers of any known type.

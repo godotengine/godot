@@ -120,7 +120,7 @@ struct CoverageFormat2_4
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2)
+    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len))
     {
       for (auto g : *glyphs)
         if (get_coverage (g) != NOT_COVERED)
@@ -156,6 +156,8 @@ struct CoverageFormat2_4
 	intersect_glyphs << g;
     }
   }
+
+  unsigned cost () const { return hb_bit_storage ((unsigned) rangeRecord.len); /* bsearch cost */ }
 
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const

@@ -1,7 +1,7 @@
 /* -*- tab-width: 4; -*- */
 /* vi: set sw=2 ts=4 expandtab: */
 
-/* $Id: e36ad79b5eac8ea237d6a05602c71aadab575519 $ */
+/* $Id$ */
 
 /*
  * Copyright 2010-2020 The Khronos Group Inc.
@@ -28,6 +28,9 @@
 
 #ifndef MAX
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#endif
+#ifndef MIN
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #endif
 
 #define QUOTE(x) #x
@@ -212,6 +215,37 @@ KTX_error_code _ktxUnpackETC(const GLubyte* srcETC, const GLenum srcFormat,
                              GLint R16Formats, GLboolean supportsSRGB);
 
 /*
+ * @internal
+ * ktxCompressZLIBBounds
+ *
+ * Returns upper bound for compresses data using miniz (ZLIB)
+ */
+ktx_size_t ktxCompressZLIBBounds(ktx_size_t srcLength);
+
+/*
+ * @internal
+ * ktxCompressZLIBInt
+ *
+ * Compresses data using miniz (ZLIB)
+ */
+KTX_error_code ktxCompressZLIBInt(unsigned char* pDest,
+                                  ktx_size_t* pDestLength,
+                                  const unsigned char* pSrc,
+                                  ktx_size_t srcLength,
+                                  ktx_uint32_t level);
+
+/*
+ * @internal
+ * ktxUncompressZLIBInt
+ *
+ * Uncompresses data using miniz (ZLIB)
+ */
+KTX_error_code ktxUncompressZLIBInt(unsigned char* pDest,
+                                    ktx_size_t* pDestLength,
+                                    const unsigned char* pSrc,
+                                    ktx_size_t srcLength);
+
+/*
  * Pad nbytes to next multiple of n
  */
 #define _KTX_PADN(n, nbytes) (ktx_uint32_t)(n * ceilf((float)(nbytes) / n))
@@ -257,7 +291,55 @@ KTX_error_code _ktxUnpackETC(const GLubyte* srcETC, const GLenum srcFormat,
  ======================================
 */
 
-void printKTX2Info2(ktxStream* src, KTX_header2* header);
+KTX_error_code printKTX2Info2(ktxStream* src, KTX_header2* header);
+
+/*
+ * fopen a file identified by a UTF-8 path.
+ */
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <assert.h>
+#include <windows.h>
+#include <shellapi.h>
+#include <stdlib.h>
+
+// For Windows, we convert the UTF-8 path and mode to UTF-16 path and use
+// _wfopen which correctly handles unicode characters.
+static inline FILE* ktxFOpenUTF8(char const* path, char const* mode) {
+    int wpLen = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
+    int wmLen = MultiByteToWideChar(CP_UTF8, 0, mode, -1, NULL, 0);
+    FILE* fp = NULL;
+    if (wpLen > 0 && wmLen > 0)
+    {
+        wchar_t* wpath = (wchar_t*)malloc(wpLen * sizeof(wchar_t));
+        wchar_t* wmode = (wchar_t*)malloc(wmLen * sizeof(wchar_t));
+        MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, wpLen);
+        MultiByteToWideChar(CP_UTF8, 0, mode, -1, wmode, wmLen);
+        // Returned errno_t value is also set in the global errno.
+        // Apps use that for error detail as libktx only returns
+        // KTX_FILE_OPEN_FAILED.
+        (void)_wfopen_s(&fp, wpath, wmode);
+        free(wpath);
+        free(wmode);
+        return fp;
+    } else {
+        assert(KTX_FALSE
+               && "ktxFOpenUTF8 called with zero length path or mode.");
+        return NULL;
+    }
+}
+#else
+// For other platforms there is no need for any conversion, they
+// support UTF-8 natively.
+static inline FILE* ktxFOpenUTF8(char const* path, char const* mode) {
+    return fopen(path, mode);
+}
+#endif
 
 #ifdef __cplusplus
 }

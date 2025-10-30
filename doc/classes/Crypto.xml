@@ -8,66 +8,67 @@
 		Currently, this includes asymmetric key encryption/decryption, signing/verification, and generating cryptographically secure random bytes, RSA keys, HMAC digests, and self-signed [X509Certificate]s.
 		[codeblocks]
 		[gdscript]
-		extends Node
-
 		var crypto = Crypto.new()
-		var key = CryptoKey.new()
-		var cert = X509Certificate.new()
 
-		func _ready():
-		    # Generate new RSA key.
-		    key = crypto.generate_rsa(4096)
-		    # Generate new self-signed certificate with the given key.
-		    cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
-		    # Save key and certificate in the user folder.
-		    key.save("user://generated.key")
-		    cert.save("user://generated.crt")
-		    # Encryption
-		    var data = "Some data"
-		    var encrypted = crypto.encrypt(key, data.to_utf8_buffer())
-		    # Decryption
-		    var decrypted = crypto.decrypt(key, encrypted)
-		    # Signing
-		    var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
-		    # Verifying
-		    var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
-		    # Checks
-		    assert(verified)
-		    assert(data.to_utf8_buffer() == decrypted)
+		# Generate new RSA key.
+		var key = crypto.generate_rsa(4096)
+
+		# Generate new self-signed certificate with the given key.
+		var cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
+
+		# Save key and certificate in the user folder.
+		key.save("user://generated.key")
+		cert.save("user://generated.crt")
+
+		# Encryption
+		var data = "Some data"
+		var encrypted = crypto.encrypt(key, data.to_utf8_buffer())
+
+		# Decryption
+		var decrypted = crypto.decrypt(key, encrypted)
+
+		# Signing
+		var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
+
+		# Verifying
+		var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
+
+		# Checks
+		assert(verified)
+		assert(data.to_utf8_buffer() == decrypted)
 		[/gdscript]
 		[csharp]
 		using Godot;
 		using System.Diagnostics;
 
-		public partial class MyNode : Node
-		{
-		    private Crypto _crypto = new Crypto();
-		    private CryptoKey _key = new CryptoKey();
-		    private X509Certificate _cert = new X509Certificate();
+		Crypto crypto = new Crypto();
 
-		    public override void _Ready()
-		    {
-		        // Generate new RSA key.
-		        _key = _crypto.GenerateRsa(4096);
-		        // Generate new self-signed certificate with the given key.
-		        _cert = _crypto.GenerateSelfSignedCertificate(_key, "CN=mydomain.com,O=My Game Company,C=IT");
-		        // Save key and certificate in the user folder.
-		        _key.Save("user://generated.key");
-		        _cert.Save("user://generated.crt");
-		        // Encryption
-		        string data = "Some data";
-		        byte[] encrypted = _crypto.Encrypt(_key, data.ToUtf8Buffer());
-		        // Decryption
-		        byte[] decrypted = _crypto.Decrypt(_key, encrypted);
-		        // Signing
-		        byte[] signature = _crypto.Sign(HashingContext.HashType.Sha256, Data.Sha256Buffer(), _key);
-		        // Verifying
-		        bool verified = _crypto.Verify(HashingContext.HashType.Sha256, Data.Sha256Buffer(), signature, _key);
-		        // Checks
-		        Debug.Assert(verified);
-		        Debug.Assert(data.ToUtf8Buffer() == decrypted);
-		    }
-		}
+		// Generate new RSA key.
+		CryptoKey key = crypto.GenerateRsa(4096);
+
+		// Generate new self-signed certificate with the given key.
+		X509Certificate cert = crypto.GenerateSelfSignedCertificate(key, "CN=mydomain.com,O=My Game Company,C=IT");
+
+		// Save key and certificate in the user folder.
+		key.Save("user://generated.key");
+		cert.Save("user://generated.crt");
+
+		// Encryption
+		string data = "Some data";
+		byte[] encrypted = crypto.Encrypt(key, data.ToUtf8Buffer());
+
+		// Decryption
+		byte[] decrypted = crypto.Decrypt(key, encrypted);
+
+		// Signing
+		byte[] signature = crypto.Sign(HashingContext.HashType.Sha256, Data.Sha256Buffer(), key);
+
+		// Verifying
+		bool verified = crypto.Verify(HashingContext.HashType.Sha256, Data.Sha256Buffer(), signature, key);
+
+		// Checks
+		Debug.Assert(verified);
+		Debug.Assert(data.ToUtf8Buffer() == decrypted);
 		[/csharp]
 		[/codeblocks]
 	</description>
@@ -123,7 +124,7 @@
 			<param index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
 				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [param issuer_name]. The certificate validity will be defined by [param not_before] and [param not_after] (first valid date and last valid date). The [param issuer_name] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
-				A small example to generate an RSA key and a X509 self-signed certificate.
+				A small example to generate an RSA key and an X509 self-signed certificate.
 				[codeblocks]
 				[gdscript]
 				var crypto = Crypto.new()

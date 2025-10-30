@@ -8,9 +8,9 @@
 		[b]Performance:[/b] [BoxShape3D] is fast to check collisions against. It is faster than [CapsuleShape3D] and [CylinderShape3D], but slower than [SphereShape3D].
 	</description>
 	<tutorials>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<members>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">

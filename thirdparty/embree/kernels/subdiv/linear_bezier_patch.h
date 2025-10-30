@@ -31,7 +31,8 @@ namespace embree
           return merge(L.bounds(),R.bounds());
         }
       };
-    
+
+#if !defined(__SYCL_DEVICE_ONLY__)   
     template<>
       struct TensorLinearQuadraticBezierSurface<Vec2fa>
     {
@@ -57,6 +58,7 @@ namespace embree
         return merge(bl,br);
       }
     };
+#endif
     
     template<typename V>
       struct TensorLinearCubicBezierSurface
@@ -148,9 +150,10 @@ namespace embree
         __forceinline TensorLinearCubicBezierSurface<float> xfm(const V& dx) const {
           return TensorLinearCubicBezierSurface<float>(L.xfm(dx),R.xfm(dx));
         }
-        
-        __forceinline TensorLinearCubicBezierSurface<vfloatx> vxfm(const V& dx) const {
-          return TensorLinearCubicBezierSurface<vfloatx>(L.vxfm(dx),R.vxfm(dx));
+
+        template<int W>
+        __forceinline TensorLinearCubicBezierSurface<vfloat<W>> vxfm(const V& dx) const {
+          return TensorLinearCubicBezierSurface<vfloat<W>>(L.template vxfm<W>(dx),R.template vxfm<W>(dx));
         }
         
         __forceinline TensorLinearCubicBezierSurface<float> xfm(const V& dx, const V& p) const {
@@ -188,10 +191,19 @@ namespace embree
           new (&left ) TensorLinearCubicBezierSurface(L0,R0);
           new (&right) TensorLinearCubicBezierSurface(L1,R1);
         }
-        
+
         __forceinline TensorLinearCubicBezierSurface<Vec2vfx> vsplit_u(vboolx& valid, const BBox1f& u) const {
           valid = true; clear(valid,VSIZEX-1);
           return TensorLinearCubicBezierSurface<Vec2vfx>(L.split(u),R.split(u));
+        }
+
+        template<int W>
+        __forceinline TensorLinearCubicBezierSurface<Vec2vf<W>> vsplit_u(vbool<W>& valid, const BBox1f& u, int& i, int N) const
+        {
+          valid = true; clear(valid,W-1); 
+          auto r = TensorLinearCubicBezierSurface<Vec2vf<W>>(L.template split<W>(u,i,N),R.template split<W>(u,i,N));
+          i += W-1;
+          return r;
         }
         
         __forceinline V eval(const float u, const float v) const {
@@ -244,6 +256,8 @@ namespace embree
           return TensorLinearCubicBezierSurface(clerp(a.L,b.L,V(t)), clerp(a.R,b.R,V(t)));
         }
       };
+
+#if !defined(__SYCL_DEVICE_ONLY__)
     
     template<>
       struct TensorLinearCubicBezierSurface<Vec2fa>
@@ -332,10 +346,18 @@ namespace embree
         new (&left ) TensorLinearCubicBezierSurface(LR0);
         new (&right) TensorLinearCubicBezierSurface(LR1);
       }
-      
+
       __forceinline TensorLinearCubicBezierSurface<Vec2vfx> vsplit_u(vboolx& valid, const BBox1f& u) const {
         valid = true; clear(valid,VSIZEX-1);
         return TensorLinearCubicBezierSurface<Vec2vfx>(getL().split(u),getR().split(u));
+      }
+      
+      template<int W>
+      __forceinline TensorLinearCubicBezierSurface<Vec2vf<W>> vsplit_u(vbool<W>& valid, const BBox1f& u, int& i, int N) const {
+        valid = true; clear(valid,W-1); 
+        auto r = TensorLinearCubicBezierSurface<Vec2vf<W>>(getL().split<W>(u,i,N),getR().split<W>(u,i,N));
+        i += W-1;
+        return r;
       }
       
       __forceinline Vec2fa eval(const float u, const float v) const
@@ -395,6 +417,24 @@ namespace embree
                     << "}";
       }
     };
+
+    template<>
+    __forceinline TensorLinearCubicBezierSurface<Vec2f> TensorLinearCubicBezierSurface<Vec2fa>::vsplit_u<1>(bool& valid, const BBox1f& u, int& i, int N) const {
+      auto r = TensorLinearCubicBezierSurface<Vec2f>(getL().split1(u,i,N),getR().split1(u,i,N));
+      valid = true; i += 1;
+      return r;
+    }
+    
+#else
+
+    template<> template<>
+    __forceinline TensorLinearCubicBezierSurface<Vec2f> TensorLinearCubicBezierSurface<Vec2fa>::vsplit_u<1>(bool& valid, const BBox1f& u, int& i, int N) const {
+      auto r = TensorLinearCubicBezierSurface<Vec2f>(L.split1(u,i,N),R.split1(u,i,N));
+      valid = true; i += 1;
+      return r;
+    }
+
+#endif
 
     typedef TensorLinearCubicBezierSurface<float> TensorLinearCubicBezierSurface1f;
     typedef TensorLinearCubicBezierSurface<Vec2fa> TensorLinearCubicBezierSurface2fa;

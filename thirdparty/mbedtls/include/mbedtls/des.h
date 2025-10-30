@@ -9,29 +9,14 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  */
 #ifndef MBEDTLS_DES_H
 #define MBEDTLS_DES_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 #include "mbedtls/platform_util.h"
 
 #include <stddef.h>
@@ -42,10 +27,6 @@
 
 /** The data input has an invalid length. */
 #define MBEDTLS_ERR_DES_INVALID_INPUT_LENGTH              -0x0032
-
-/* MBEDTLS_ERR_DES_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** DES hardware accelerator failed. */
-#define MBEDTLS_ERR_DES_HW_ACCEL_FAILED                   -0x0033
 
 #define MBEDTLS_DES_KEY_SIZE    8
 
@@ -65,7 +46,7 @@ extern "C" {
  *                 instead.
  */
 typedef struct mbedtls_des_context {
-    uint32_t sk[32];            /*!<  DES subkeys       */
+    uint32_t MBEDTLS_PRIVATE(sk)[32];            /*!<  DES subkeys       */
 }
 mbedtls_des_context;
 
@@ -77,7 +58,7 @@ mbedtls_des_context;
  *                 instead.
  */
 typedef struct mbedtls_des3_context {
-    uint32_t sk[96];            /*!<  3DES subkeys      */
+    uint32_t MBEDTLS_PRIVATE(sk)[96];            /*!<  3DES subkeys      */
 }
 mbedtls_des3_context;
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JSON_H
-#define JSON_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
@@ -72,13 +71,16 @@ class JSON : public Resource {
 
 	static const char *tk_name[];
 
-	static String _make_indent(const String &p_indent, int p_size);
-	static String _stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision = false);
+	static void _add_indent(String &r_result, const String &p_indent, int p_size);
+	static void _stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision);
 	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
 	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
 	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
 	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
 	static Error _parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+
+	static Variant _from_native(const Variant &p_variant, bool p_full_objects, int p_depth);
+	static Variant _to_native(const Variant &p_json, bool p_allow_objects, int p_depth);
 
 protected:
 	static void _bind_methods();
@@ -90,25 +92,39 @@ public:
 	static String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
 	static Variant parse_string(const String &p_json_string);
 
-	inline Variant get_data() const { return data; }
+	_FORCE_INLINE_ static Variant from_native(const Variant &p_variant, bool p_full_objects = false) {
+		return _from_native(p_variant, p_full_objects, 0);
+	}
+	_FORCE_INLINE_ static Variant to_native(const Variant &p_json, bool p_allow_objects = false) {
+		return _to_native(p_json, p_allow_objects, 0);
+	}
+
 	void set_data(const Variant &p_data);
-	inline int get_error_line() const { return err_line; }
-	inline String get_error_message() const { return err_str; }
+	_FORCE_INLINE_ Variant get_data() const { return data; }
+
+	_FORCE_INLINE_ int get_error_line() const { return err_line; }
+	_FORCE_INLINE_ String get_error_message() const { return err_str; }
 };
 
 class ResourceFormatLoaderJSON : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderJSON, ResourceFormatLoader);
+
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
+
+	// Treat JSON as a text file, do not generate a `*.json.uid` file.
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
+	virtual bool has_custom_uid_support() const override { return true; }
 };
 
 class ResourceFormatSaverJSON : public ResourceFormatSaver {
-public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
-	virtual bool recognize(const Ref<Resource> &p_resource) const;
-};
+	GDSOFTCLASS(ResourceFormatSaverJSON, ResourceFormatSaver);
 
-#endif // JSON_H
+public:
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+};

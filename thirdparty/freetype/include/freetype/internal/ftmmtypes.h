@@ -5,7 +5,7 @@
  *   OpenType Variations type definitions for internal use
  *   with the multi-masters service (specification).
  *
- * Copyright (C) 2022-2023 by
+ * Copyright (C) 2022-2024 by
  * David Turner, Robert Wilhelm, Werner Lemberg, George Williams, and
  * Dominik Röttsches.
  *

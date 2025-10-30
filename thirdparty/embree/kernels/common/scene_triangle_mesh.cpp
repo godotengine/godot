@@ -35,7 +35,7 @@ namespace embree
   void TriangleMesh::setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num)
   {
     /* verify that all accesses are 4 bytes aligned */
-    if (((size_t(buffer->getPtr()) + offset) & 0x3) || (stride & 0x3)) 
+    if (((size_t(buffer->getHostPtr()) + offset) & 0x3) || (stride & 0x3))
       throw_RTCError(RTC_ERROR_INVALID_OPERATION, "data must be 4 bytes aligned");
 
     if (type == RTC_BUFFER_TYPE_VERTEX)
@@ -79,25 +79,25 @@ namespace embree
       throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "unknown buffer type");
   }
 
-  void* TriangleMesh::getBuffer(RTCBufferType type, unsigned int slot)
+  void* TriangleMesh::getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType)
   {
     if (type == RTC_BUFFER_TYPE_INDEX)
     {
       if (slot != 0)
         throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "invalid buffer slot");
-      return triangles.getPtr();
+      return triangles.getPtr(pointerType);
     }
     else if (type == RTC_BUFFER_TYPE_VERTEX)
     {
       if (slot >= vertices.size())
         throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "invalid buffer slot");
-      return vertices[slot].getPtr();
+      return vertices[slot].getPtr(pointerType);
     }
     else if (type == RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE)
     {
       if (slot >= vertexAttribs.size())
         throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "invalid buffer slot");
-      return vertexAttribs[slot].getPtr();
+      return vertexAttribs[slot].getPtr(pointerType);
     }
     else
     {
@@ -134,13 +134,15 @@ namespace embree
     Geometry::update();
   }
 
-  void TriangleMesh::commit() 
+  void TriangleMesh::commit()
   {
     /* verify that stride of all time steps are identical */
-    for (unsigned int t=0; t<numTimeSteps; t++)
+    for (unsigned int t=0; t<numTimeSteps; t++) {
       if (vertices[t].getStride() != vertices[0].getStride())
         throw_RTCError(RTC_ERROR_INVALID_OPERATION,"stride of vertex buffers have to be identical for each time step");
-
+      if (vertices[t]) vertices[t].buffer->commitIfNeeded();
+    }
+    if (triangles) triangles.buffer->commitIfNeeded();
     Geometry::commit();
   }
 
@@ -182,7 +184,29 @@ namespace embree
   void TriangleMesh::interpolate(const RTCInterpolateArguments* const args) {
     interpolate_impl<4>(args);
   }
- 
+
+  size_t TriangleMesh::getGeometryDataDeviceByteSize() const {
+    size_t byte_size = sizeof(TriangleMesh);
+    byte_size += numTimeSteps * sizeof(BufferView<Vec3fa>);
+    return 16 * ((byte_size + 15) / 16);
+  }
+
+  void TriangleMesh::convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const {
+    TriangleMesh* mesh = (TriangleMesh*)(data_host + offset);
+    std::memcpy(data_host + offset, (void*)this, sizeof(TriangleMesh));
+    offset += sizeof(TriangleMesh);
+
+    // store offset for overriding vertices pointer with device pointer after copying
+    const size_t offsetVertices = offset;
+    // copy vertices BufferViews for each time step
+    for (size_t t = 0; t < numTimeSteps; ++t) {
+      std::memcpy(data_host + offset, &(vertices[t]), sizeof(BufferView<Vec3fa>));
+      offset += sizeof(BufferView<Vec3fa>);
+    }
+    // override vertices pointer with device ptr
+    mesh->vertices.setDataPtr((BufferView<Vec3fa>*)(data_device + offsetVertices));
+  }
+
 #endif
 
   namespace isa

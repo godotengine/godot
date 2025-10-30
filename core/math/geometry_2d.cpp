@@ -30,24 +30,73 @@
 
 #include "geometry_2d.h"
 
-#include "thirdparty/misc/clipper.hpp"
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
+GODOT_GCC_WARNING_POP
 #include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
 
-#define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
+const int clipper_precision = 5; // Based on CMP_EPSILON.
+const double clipper_scale = Math::pow(10.0, clipper_precision);
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
+void Geometry2D::merge_many_polygons(const Vector<Vector<Vector2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes) {
+	using namespace Clipper2Lib;
+
+	PathsD subjects;
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		PathD path(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			const Vector2 &point = polygon[i];
+			path[i] = PointD(point.x, point.y);
+		}
+		subjects.push_back(path);
+	}
+
+	PathsD solution = Union(subjects, FillRule::NonZero);
+	solution = SimplifyPaths(solution, 0.01);
+
+	r_out_polygons.clear();
+	r_out_holes.clear();
+	for (PathsD::size_type i = 0; i < solution.size(); ++i) {
+		PathD &path = solution[i];
+
+		Vector<Point2> output_polygon;
+		output_polygon.resize(path.size());
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			output_polygon.set(j, Vector2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+		}
+		if (IsPositive(path)) {
+			r_out_polygons.push_back(output_polygon);
+		} else {
+			r_out_holes.push_back(output_polygon);
+		}
+	}
+}
+
+Vector<Vector<Vector2>> Geometry2D::decompose_many_polygons_in_convex(const Vector<Vector<Point2>> &p_polygons, const Vector<Vector<Point2>> &p_holes) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 
-	TPPLPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CCW);
+		in_poly.push_back(inp);
 	}
-	inp.SetOrientation(TPPL_ORIENTATION_CCW);
-	in_poly.push_back(inp);
+	for (const Vector<Vector2> &polygon : p_holes) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CW);
+		inp.SetHole(true);
+		in_poly.push_back(inp);
+	}
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
@@ -56,9 +105,7 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 
 	decomp.resize(out_poly.size());
 	int idx = 0;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
-
+	for (TPPLPoly &tp : out_poly) {
 		decomp.write[idx].resize(tp.GetNumPoints());
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
@@ -71,11 +118,15 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 	return decomp;
 }
 
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &p_polygon) {
+	return Geometry2D::decompose_many_polygons_in_convex({ p_polygon }, {});
+}
+
 struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;
 	int idx = 0;
-	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; };
+	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; }
 };
 
 struct _AtlasWorkRectResult {
@@ -93,7 +144,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 
-	ERR_FAIL_COND(p_rects.size() == 0);
+	ERR_FAIL_COND(p_rects.is_empty());
 	for (int i = 0; i < p_rects.size(); i++) {
 		ERR_FAIL_COND(p_rects[i].width <= 0);
 		ERR_FAIL_COND(p_rects[i].height <= 0);
@@ -177,8 +228,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2(results[i].max_h);
-		real_t w = next_power_of_2(results[i].max_w);
+		real_t h = next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
@@ -196,126 +247,126 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 }
 
 Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
-	using namespace ClipperLib;
+	using namespace Clipper2Lib;
 
-	ClipType op = ctUnion;
+	ClipType op = ClipType::Union;
 
 	switch (p_op) {
 		case OPERATION_UNION:
-			op = ctUnion;
+			op = ClipType::Union;
 			break;
 		case OPERATION_DIFFERENCE:
-			op = ctDifference;
+			op = ClipType::Difference;
 			break;
 		case OPERATION_INTERSECTION:
-			op = ctIntersection;
+			op = ClipType::Intersection;
 			break;
 		case OPERATION_XOR:
-			op = ctXor;
+			op = ClipType::Xor;
 			break;
 	}
-	Path path_a, path_b;
 
-	// Need to scale points (Clipper's requirement for robust computation).
+	PathD path_a(p_polypath_a.size());
 	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
+		path_a[i] = PointD(p_polypath_a[i].x, p_polypath_a[i].y);
 	}
+	PathD path_b(p_polypath_b.size());
 	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
+		path_b[i] = PointD(p_polypath_b[i].x, p_polypath_b[i].y);
 	}
-	Clipper clp;
-	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
-	clp.AddPath(path_b, ptClip, true); // Polylines cannot be set as clip.
 
-	Paths paths;
+	ClipperD clp(clipper_precision); // Scale points up internally to attain the desired precision.
+	clp.PreserveCollinear(false); // Remove redundant vertices.
+	if (is_a_open) {
+		clp.AddOpenSubject({ path_a });
+	} else {
+		clp.AddSubject({ path_a });
+	}
+	clp.AddClip({ path_b });
+
+	PathsD paths;
 
 	if (is_a_open) {
-		PolyTree tree; // Needed to populate polylines.
-		clp.Execute(op, tree);
-		OpenPathsFromPolyTree(tree, paths);
+		PolyTreeD tree; // Needed to populate polylines.
+		clp.Execute(op, FillRule::EvenOdd, tree, paths);
 	} else {
-		clp.Execute(op, paths); // Works on closed polygons only.
+		clp.Execute(op, FillRule::EvenOdd, paths); // Works on closed polygons only.
 	}
-	// Have to scale points down now.
+
 	Vector<Vector<Point2>> polypaths;
+	polypaths.resize(paths.size());
+	for (PathsD::size_type i = 0; i < paths.size(); i++) {
+		const PathD &path = paths[i];
 
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
 		Vector<Vector2> polypath;
-
-		const Path &scaled_path = paths[i];
-
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
+		polypath.resize(path.size());
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			polypath.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath);
+		polypaths.set(i, polypath);
 	}
 	return polypaths;
 }
 
 Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-	using namespace ClipperLib;
+	using namespace Clipper2Lib;
 
-	JoinType jt = jtSquare;
+	JoinType jt = JoinType::Square;
 
 	switch (p_join_type) {
 		case JOIN_SQUARE:
-			jt = jtSquare;
+			jt = JoinType::Square;
 			break;
 		case JOIN_ROUND:
-			jt = jtRound;
+			jt = JoinType::Round;
 			break;
 		case JOIN_MITER:
-			jt = jtMiter;
+			jt = JoinType::Miter;
 			break;
 	}
 
-	EndType et = etClosedPolygon;
+	EndType et = EndType::Polygon;
 
 	switch (p_end_type) {
 		case END_POLYGON:
-			et = etClosedPolygon;
+			et = EndType::Polygon;
 			break;
 		case END_JOINED:
-			et = etClosedLine;
+			et = EndType::Joined;
 			break;
 		case END_BUTT:
-			et = etOpenButt;
+			et = EndType::Butt;
 			break;
 		case END_SQUARE:
-			et = etOpenSquare;
+			et = EndType::Square;
 			break;
 		case END_ROUND:
-			et = etOpenRound;
+			et = EndType::Round;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25f * (real_t)SCALE_FACTOR); // Defaults from ClipperOffset.
-	Path path;
 
-	// Need to scale points (Clipper's requirement for robust computation).
+	PathD polypath(p_polypath.size());
 	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
+		polypath[i] = PointD(p_polypath[i].x, p_polypath[i].y);
 	}
-	co.AddPath(path, jt, et);
 
-	Paths paths;
-	co.Execute(paths, p_delta * (real_t)SCALE_FACTOR); // Inflate/deflate.
+	// Inflate/deflate.
+	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25 * clipper_scale);
+	// Here the points are scaled up internally and
+	// the arc_tolerance is scaled accordingly
+	// to attain the desired precision.
 
-	// Have to scale points down now.
 	Vector<Vector<Point2>> polypaths;
+	polypaths.resize(paths.size());
+	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
+		const PathD &path = paths[i];
 
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
-		Vector<Vector2> polypath;
-
-		const Path &scaled_path = paths[i];
-
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
+		Vector<Vector2> polypath2;
+		polypath2.resize(path.size());
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			polypath2.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath);
+		polypaths.set(i, polypath2);
 	}
 	return polypaths;
 }

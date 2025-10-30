@@ -32,26 +32,20 @@
 
 #include "core/math/color.h"
 #include "scene/gui/slider.h"
-#include "thirdparty/misc/ok_color.h"
+#include "scene/resources/gradient_texture.h"
 
 ColorMode::ColorMode(ColorPicker *p_color_picker) {
 	color_picker = p_color_picker;
 }
 
 String ColorModeRGB::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
-float ColorModeRGB::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
-	Color color = color_picker->get_pick_color();
-	return next_power_of_2(MAX(255, color.components[idx] * 255.0)) - 1;
-}
-
 float ColorModeRGB::get_slider_value(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider value.");
-	return color_picker->get_pick_color().components[idx] * 255;
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
+	return color_picker->color_normalized.components[idx] * 255;
 }
 
 Color ColorModeRGB::get_color() const {
@@ -63,6 +57,25 @@ Color ColorModeRGB::get_color() const {
 	return color;
 }
 
+void ColorModeRGB::_greater_value_inputted() {
+	HSlider **sliders = color_picker->sliders;
+	Color color_prev = color_picker->color;
+	for (int i = 0; i < 3; i++) {
+		if (sliders[i]->get_value() > 255) {
+			color_prev.components[i] = sliders[i]->get_value() / 255.0;
+		}
+	}
+	Color linear_color = color_prev.srgb_to_linear();
+	float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
+	Color srgb = Color(linear_color.r / multiplier, linear_color.g / multiplier, linear_color.b / multiplier, linear_color.a).linear_to_srgb();
+	sliders[0]->set_value_no_signal(srgb.r * 255);
+	sliders[1]->set_value_no_signal(srgb.g * 255);
+	sliders[2]->set_value_no_signal(srgb.b * 255);
+
+	color_picker->intensity = Math::log2(multiplier);
+	color_picker->intensity_slider->set_value_no_signal(color_picker->intensity);
+}
+
 void ColorModeRGB::slider_draw(int p_which) {
 	Vector<Vector2> pos;
 	pos.resize(4);
@@ -72,37 +85,39 @@ void ColorModeRGB::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->color_normalized;
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+	left_color = Color(
+			p_which == 0 ? 0 : color.r,
+			p_which == 1 ? 0 : color.g,
+			p_which == 2 ? 0 : color.b);
+	right_color = Color(
+			p_which == 0 ? 1 : color.r,
+			p_which == 1 ? 1 : color.g,
+			p_which == 2 ? 1 : color.b);
 
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-	} else {
-		left_color = Color(
-				p_which == 0 ? 0 : color.r,
-				p_which == 1 ? 0 : color.g,
-				p_which == 2 ? 0 : color.b);
-		right_color = Color(
-				p_which == 0 ? 1 : color.r,
-				p_which == 1 ? 1 : color.g,
-				p_which == 2 ? 1 : color.b);
+	if (rgb_texture[p_which].is_null()) {
+		rgb_texture[p_which].instantiate();
+		rgb_texture[p_which]->set_width(400);
+		rgb_texture[p_which]->set_height(6);
 	}
 
-	col.set(0, left_color);
-	col.set(1, right_color);
-	col.set(2, right_color);
-	col.set(3, left_color);
-	pos.set(0, Vector2(0, 0));
-	pos.set(1, Vector2(size.x, 0));
-	pos.set(2, Vector2(size.x, margin));
-	pos.set(3, Vector2(0, margin));
+	Ref<GradientTexture2D> gradient_texture = rgb_texture[p_which];
 
-	slider->draw_polygon(pos, col);
+	Ref<Gradient> gradient = gradient_texture->get_gradient();
+	if (gradient.is_null()) {
+		gradient.instantiate();
+		PackedFloat32Array offsets = { 0, 1 };
+		gradient->set_offsets(offsets);
+		gradient->set_interpolation_color_space(Gradient::ColorSpace::GRADIENT_COLOR_SPACE_SRGB);
+		gradient_texture->set_gradient(gradient);
+	}
+
+	PackedColorArray colors = { left_color, right_color };
+	gradient->set_colors(colors);
+
+	slider->draw_texture_rect(gradient_texture, Rect2(Vector2(), Vector2(size.x, margin)), false);
 }
 
 void ColorModeHSV::_value_changed() {
@@ -114,38 +129,43 @@ void ColorModeHSV::_value_changed() {
 	if (values[2] > 0 || values[1] != cached_saturation) {
 		cached_saturation = values[1];
 	}
+
+	// Cache real HSV values in ColorPicker.
+	color_picker->h = color_picker->sliders[0]->get_value() / 360.0;
+	color_picker->s = color_picker->sliders[1]->get_value() / 100.0;
+	color_picker->v = color_picker->sliders[2]->get_value() / 100.0;
+
+	color_picker->hsv_cached = true;
 }
 
 String ColorModeHSV::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeHSV::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
 float ColorModeHSV::get_slider_value(int idx) const {
 	switch (idx) {
 		case 0: {
-			if (color_picker->get_pick_color().get_s() > 0) {
-				return color_picker->get_pick_color().get_h() * 360.0;
+			if (color_picker->color_normalized.get_s() > 0) {
+				return color_picker->color_normalized.get_h() * 360.0;
 			} else {
 				return cached_hue;
 			}
 		}
 		case 1: {
-			if (color_picker->get_pick_color().get_v() > 0) {
-				return color_picker->get_pick_color().get_s() * 100.0;
+			if (color_picker->color_normalized.get_v() > 0) {
+				return color_picker->color_normalized.get_s() * 100.0;
 			} else {
 				return cached_saturation;
 			}
 		}
 		case 2:
-			return color_picker->get_pick_color().get_v() * 100.0;
-		case 3:
-			return Math::round(color_picker->get_pick_color().components[3] * 255.0);
+			return color_picker->color_normalized.get_v() * 100.0;
 		default:
 			ERR_FAIL_V_MSG(0, "Couldn't get slider value.");
 	}
@@ -153,8 +173,7 @@ float ColorModeHSV::get_slider_value(int idx) const {
 
 Color ColorModeHSV::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
-	Color color;
-	color.set_hsv(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
+	Color color = Color::from_hsv(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
 	return color;
 }
 
@@ -167,17 +186,10 @@ void ColorModeHSV::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->color_normalized;
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
-
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-	} else if (p_which == 0) {
+	if (p_which == 0) {
 		float v = color.get_v();
 		left_color = Color(v, v, v);
 		right_color = left_color;
@@ -209,31 +221,60 @@ void ColorModeHSV::slider_draw(int p_which) {
 	}
 }
 
-String ColorModeRAW::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+String ColorModeLinear::get_slider_label(int idx) const {
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
-float ColorModeRAW::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
+float ColorModeLinear::get_slider_max(int idx) const {
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
-float ColorModeRAW::get_slider_value(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider value.");
-	return color_picker->get_pick_color().components[idx];
+float ColorModeLinear::get_slider_value(int idx) const {
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
+	Color color = color_picker->color_normalized.srgb_to_linear();
+	return color.components[idx];
 }
 
-Color ColorModeRAW::get_color() const {
+float ColorModeLinear::get_alpha_slider_max() const {
+	return 1;
+}
+
+float ColorModeLinear::get_alpha_slider_value() const {
+	return color_picker->get_pick_color().a;
+}
+
+Color ColorModeLinear::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
 	for (int i = 0; i < 4; i++) {
 		color.components[i] = values[i];
 	}
-	return color;
+	return color.linear_to_srgb();
 }
 
-void ColorModeRAW::slider_draw(int p_which) {
+void ColorModeLinear::_greater_value_inputted() {
+	HSlider **sliders = color_picker->sliders;
+	Color color_prev = color_picker->color;
+	Color linear_color = color_prev.srgb_to_linear();
+	for (int i = 0; i < 3; i++) {
+		if (sliders[i]->get_value() > 1 + CMP_EPSILON) {
+			linear_color.components[i] = sliders[i]->get_value();
+		}
+	}
+
+	float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
+
+	sliders[0]->set_value_no_signal(linear_color.r / multiplier);
+	sliders[1]->set_value_no_signal(linear_color.g / multiplier);
+	sliders[2]->set_value_no_signal(linear_color.b / multiplier);
+
+	color_picker->intensity = Math::log2(multiplier);
+	color_picker->intensity_slider->set_value_no_signal(color_picker->intensity);
+}
+
+void ColorModeLinear::slider_draw(int p_which) {
 	Vector<Vector2> pos;
 	pos.resize(4);
 	Vector<Color> col;
@@ -242,40 +283,39 @@ void ColorModeRAW::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->color_normalized;
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
+	left_color = Color(
+			p_which == 0 ? 0 : color.r,
+			p_which == 1 ? 0 : color.g,
+			p_which == 2 ? 0 : color.b);
+	right_color = Color(
+			p_which == 0 ? 1 : color.r,
+			p_which == 1 ? 1 : color.g,
+			p_which == 2 ? 1 : color.b);
 
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-
-		col.set(0, left_color);
-		col.set(1, right_color);
-		col.set(2, right_color);
-		col.set(3, left_color);
-		pos.set(0, Vector2(0, 0));
-		pos.set(1, Vector2(size.x, 0));
-		pos.set(2, Vector2(size.x, margin));
-		pos.set(3, Vector2(0, margin));
-
-		slider->draw_polygon(pos, col);
-	}
-}
-
-bool ColorModeRAW::apply_theme() const {
-	for (int i = 0; i < 4; i++) {
-		HSlider *slider = color_picker->get_slider(i);
-		slider->remove_theme_icon_override("grabber");
-		slider->remove_theme_icon_override("grabber_highlight");
-		slider->remove_theme_style_override("slider");
-		slider->remove_theme_constant_override("grabber_offset");
+	if (rgb_texture[p_which].is_null()) {
+		rgb_texture[p_which].instantiate();
+		rgb_texture[p_which]->set_width(400);
+		rgb_texture[p_which]->set_height(6);
 	}
 
-	return true;
+	Ref<GradientTexture2D> gradient_texture = rgb_texture[p_which];
+
+	Ref<Gradient> gradient = gradient_texture->get_gradient();
+	if (gradient.is_null()) {
+		gradient.instantiate();
+		PackedFloat32Array offsets = { 0, 1 };
+		gradient->set_offsets(offsets);
+		gradient->set_interpolation_color_space(Gradient::ColorSpace::GRADIENT_COLOR_SPACE_LINEAR_SRGB);
+		gradient_texture->set_gradient(gradient);
+	}
+
+	PackedColorArray colors = { left_color, right_color };
+	gradient->set_colors(colors);
+
+	slider->draw_texture_rect(gradient_texture, Rect2(Vector2(), Vector2(size.x, margin)), false);
 }
 
 void ColorModeOKHSL::_value_changed() {
@@ -287,38 +327,43 @@ void ColorModeOKHSL::_value_changed() {
 	if (values[2] > 0 || values[1] != cached_saturation) {
 		cached_saturation = values[1];
 	}
+
+	// Cache real OKHSL values in ColorPicker.
+	color_picker->ok_hsl_h = color_picker->sliders[0]->get_value() / 360.0;
+	color_picker->ok_hsl_s = color_picker->sliders[1]->get_value() / 100.0;
+	color_picker->ok_hsl_l = color_picker->sliders[2]->get_value() / 100.0;
+
+	color_picker->okhsl_cached = true;
 }
 
 String ColorModeOKHSL::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeOKHSL::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
 float ColorModeOKHSL::get_slider_value(int idx) const {
 	switch (idx) {
 		case 0: {
-			if (color_picker->get_pick_color().get_ok_hsl_s() > 0) {
-				return color_picker->get_pick_color().get_ok_hsl_h() * 360.0;
+			if (color_picker->color_normalized.get_ok_hsl_s() > 0) {
+				return color_picker->color_normalized.get_ok_hsl_h() * 360.0;
 			} else {
 				return cached_hue;
 			}
 		}
 		case 1: {
-			if (color_picker->get_pick_color().get_ok_hsl_l() > 0) {
-				return color_picker->get_pick_color().get_ok_hsl_s() * 100.0;
+			if (color_picker->color_normalized.get_ok_hsl_l() > 0) {
+				return color_picker->color_normalized.get_ok_hsl_s() * 100.0;
 			} else {
 				return cached_saturation;
 			}
 		}
 		case 2:
-			return color_picker->get_pick_color().get_ok_hsl_l() * 100.0;
-		case 3:
-			return Math::round(color_picker->get_pick_color().components[3] * 255.0);
+			return color_picker->color_normalized.get_ok_hsl_l() * 100.0;
 		default:
 			ERR_FAIL_V_MSG(0, "Couldn't get slider value.");
 	}
@@ -326,8 +371,7 @@ float ColorModeOKHSL::get_slider_value(int idx) const {
 
 Color ColorModeOKHSL::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
-	Color color;
-	color.set_ok_hsl(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
+	Color color = Color::from_ok_hsl(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
 	return color;
 }
 
@@ -340,17 +384,16 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 	Vector<Color> col;
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->color_normalized;
+	float okhsl_l = color.get_ok_hsl_l();
+	float slider_hue = (Math::is_zero_approx(color.get_ok_hsl_s())) ? cached_hue / 360.0 : color.get_ok_hsl_h();
+	float slider_sat = (Math::is_zero_approx(okhsl_l) || Math::is_equal_approx(okhsl_l, 1)) ? cached_saturation / 100.0 : color.get_ok_hsl_s();
 
 	if (p_which == 2) { // L
 		pos.resize(6);
 		col.resize(6);
 		left_color = Color(0, 0, 0);
-		Color middle_color;
-		float slider_hue = (Math::is_zero_approx(color.get_ok_hsl_s())) ? cached_hue / 360.0 : color.get_ok_hsl_h();
-		float slider_sat = (Math::is_zero_approx(color.get_ok_hsl_l())) ? cached_saturation / 100.0 : color.get_ok_hsl_s();
-
-		middle_color.set_ok_hsl(slider_hue, slider_sat, 0.5);
+		Color middle_color = Color::from_ok_hsl(slider_hue, slider_sat, 0.5);
 		right_color.set_ok_hsl(slider_hue, slider_sat, 1);
 
 		col.set(0, left_color);
@@ -365,26 +408,13 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		pos.set(3, Vector2(size.x, margin));
 		pos.set(4, Vector2(size.x * 0.5, margin));
 		pos.set(5, Vector2(0, margin));
-	} else {
+		slider->draw_polygon(pos, col);
+	} else if (p_which == 1) { // S
 		pos.resize(4);
 		col.resize(4);
 
-		if (p_which == ColorPicker::SLIDER_COUNT) {
-			slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
-
-			left_color = color;
-			left_color.a = 0;
-			right_color = color;
-			right_color.a = 1;
-		} else if (p_which == 0) {
-			float l = color.get_ok_hsl_l();
-			left_color = Color(l, l, l);
-			right_color = left_color;
-		} else {
-			left_color.set_ok_hsl(color.get_ok_hsl_h(), 0, color.get_ok_hsl_l());
-			float s_col_hue = (Math::is_zero_approx(color.get_ok_hsl_s())) ? cached_hue / 360.0 : color.get_ok_hsl_h();
-			right_color.set_ok_hsl(s_col_hue, 1, color.get_ok_hsl_l());
-		}
+		left_color.set_ok_hsl(slider_hue, 0, okhsl_l);
+		right_color.set_ok_hsl(slider_hue, 1, okhsl_l);
 
 		col.set(0, left_color);
 		col.set(1, right_color);
@@ -394,13 +424,36 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		pos.set(1, Vector2(size.x, 0));
 		pos.set(2, Vector2(size.x, margin));
 		pos.set(3, Vector2(0, margin));
-	}
+		slider->draw_polygon(pos, col);
+	} else if (p_which == 0) { // H
+		const int precision = 7;
+		if (hue_texture.is_null()) {
+			hue_texture.instantiate();
+			hue_texture->set_width(400);
+			hue_texture->set_height(6);
+		}
+		Ref<Gradient> hue_gradient = hue_texture->get_gradient();
+		if (hue_gradient.is_null()) {
+			hue_gradient.instantiate();
+			PackedFloat32Array offsets;
+			offsets.resize(precision);
+			for (int i = 0; i < precision; i++) {
+				float h = i / float(precision - 1);
+				offsets.write[i] = h;
+			}
+			hue_gradient->set_offsets(offsets);
+			hue_gradient->set_interpolation_color_space(Gradient::ColorSpace::GRADIENT_COLOR_SPACE_OKLAB);
+			hue_texture->set_gradient(hue_gradient);
+		}
 
-	slider->draw_polygon(pos, col);
+		PackedColorArray colors;
+		colors.resize(precision);
 
-	if (p_which == 0) { // H
-		Ref<Texture2D> hue = color_picker->theme_cache.color_okhsl_hue;
-		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false, Color::from_hsv(0, 0, color.get_ok_hsl_l() * 2.0, color.get_ok_hsl_s()));
-		return;
+		for (int i = 0; i < precision; i++) {
+			float h = i / float(precision - 1);
+			colors.write[i] = Color::from_ok_hsl(h, slider_sat, okhsl_l);
+		}
+		hue_gradient->set_colors(colors);
+		slider->draw_texture_rect(hue_texture, Rect2(Vector2(), Vector2(size.x, margin)), false);
 	}
 }

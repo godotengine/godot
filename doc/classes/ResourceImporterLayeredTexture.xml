@@ -12,9 +12,9 @@
 	<members>
 		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
 			Controls how color channels should be used in the imported texture.
-			[b]sRGB Friendly:[/b], prevents the RG color format from being used, as it does not support sRGB color.
+			[b]sRGB Friendly:[/b], prevents the R and RG color formats from being used, as they do not support nonlinear sRGB encoding.
 			[b]Optimized:[/b], allows the RG color format to be used if the texture does not use the blue channel. This reduces memory usage if the texture's blue channel can be discarded (all pixels must have a blue value of [code]0[/code]).
-			[b]Normal Map (RG Channels):[/b] This forces all layers from the texture to be imported with the RG color format to reduce memory usage, with only the red and green channels preserved. This only has an effect on textures with the VRAM Compressed or Basis Universal compression modes. This mode is only available in layered textures ([Cubemap], [CubemapArray], [Texture2DArray] and [Texture3D]).
+			[b]Normal Map (RG Channels):[/b] This forces all layers from the texture to be imported with the RG color format, with only the red and green channels preserved. RGTC (Red-Green Texture Compression) compression is able to preserve its detail much better, while using the same amount of memory as a standard RGBA VRAM-compressed texture. This only has an effect on textures with the VRAM Compressed or Basis Universal compression modes. This mode is only available in layered textures ([Cubemap], [CubemapArray], [Texture2DArray] and [Texture3D]).
 		</member>
 		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
 			Controls how VRAM compression should be performed for HDR images.
@@ -39,6 +39,14 @@
 			[b]VRAM Uncompressed:[/b] Original quality, high memory usage, highest size on disk, fastest import.
 			[b]Basis Universal:[/b] Reduced quality, low memory usage, lowest size on disk, slow import. Only use for textures in 3D scenes, not for 2D elements.
 			See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#compress-mode]Compress mode[/url] in the manual for more details.
+		</member>
+		<member name="compress/rdo_quality_loss" type="float" setter="" getter="" default="0.0">
+			If greater than or equal to [code]0.01[/code], enables Rate-Distortion Optimization (RDO) to reduce file size. Higher values result in smaller file sizes but lower quality.
+			[b]Note:[/b] Enabling RDO makes encoding times significantly longer, especially when the image is large.
+			See also [member ProjectSettings.rendering/textures/basis_universal/rdo_dict_size] and [member ProjectSettings.rendering/textures/basis_universal/zstd_supercompression_level] if you want to reduce the file size further.
+		</member>
+		<member name="compress/uastc_level" type="int" setter="" getter="" default="0">
+			The UASTC encoding level. Higher values result in better quality but make encoding times longer.
 		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:

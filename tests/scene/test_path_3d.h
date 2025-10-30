@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PATH_3D_H
-#define TEST_PATH_3D_H
+#pragma once
 
 #include "scene/3d/path_3d.h"
 
@@ -40,7 +39,7 @@ namespace TestPath3D {
 TEST_CASE("[Path3D] Initialization") {
 	SUBCASE("Path should be empty right after initialization") {
 		Path3D *test_path = memnew(Path3D);
-		CHECK(test_path->get_curve() == nullptr);
+		CHECK(test_path->get_curve().is_null());
 		memdelete(test_path);
 	}
 }
@@ -80,5 +79,3 @@ TEST_CASE("[Path3D] Curve setter and getter") {
 }
 
 } // namespace TestPath3D
-
-#endif // TEST_PATH_3D_H

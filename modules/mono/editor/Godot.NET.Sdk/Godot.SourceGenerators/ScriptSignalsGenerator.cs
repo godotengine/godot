@@ -5,13 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-// TODO:
-//   Determine a proper way to emit the signal.
-//   'Emit(nameof(TheEvent))' creates a StringName every time and has the overhead of string marshaling.
-//   I haven't decided on the best option yet. Some possibilities:
-//     - Expose the generated StringName fields to the user, for use with 'Emit(...)'.
-//     - Generate a 'EmitSignalName' method for each event signal.
-
 namespace Godot.SourceGenerators
 {
     [Generator]
@@ -37,16 +30,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -112,13 +103,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();
@@ -136,7 +127,11 @@ namespace Godot.SourceGenerators
             {
                 if (!signalDelegateSymbol.Name.EndsWith(SignalDelegateSuffix))
                 {
-                    Common.ReportSignalDelegateMissingSuffix(context, signalDelegateSymbol);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.SignalDelegateMissingSuffixRule,
+                        signalDelegateSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        signalDelegateSymbol.ToDisplayString()
+                    ));
                     continue;
                 }
 
@@ -154,21 +149,32 @@ namespace Godot.SourceGenerators
                         {
                             if (parameter.RefKind != RefKind.None)
                             {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    Common.SignalParameterTypeNotSupportedRule,
+                                    parameter.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                    parameter.ToDisplayString()
+                                ));
                                 continue;
                             }
 
                             var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(parameter.Type, typeCache);
-
                             if (marshalType == null)
                             {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    Common.SignalParameterTypeNotSupportedRule,
+                                    parameter.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                    parameter.ToDisplayString()
+                                ));
                             }
                         }
 
                         if (!methodSymbol.ReturnsVoid)
                         {
-                            Common.ReportSignalDelegateSignatureMustReturnVoid(context, signalDelegateSymbol);
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                Common.SignalDelegateSignatureMustReturnVoidRule,
+                                signalDelegateSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                                signalDelegateSymbol.ToDisplayString()
+                            ));
                         }
                     }
 
@@ -185,7 +191,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
+                $"    public new class SignalName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -199,7 +205,7 @@ namespace Godot.SourceGenerators
                     .Append("' signal.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(signalName);
                 source.Append(" = \"");
                 source.Append(signalName);
@@ -212,7 +218,7 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
-                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the signal information for all the signals declared in this class.\n")
@@ -223,11 +229,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append(" GetGodotSignalList()\n    {\n");
 
                 source.Append("        var signals = new ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append("(")
                     .Append(godotSignalDelegates.Count)
                     .Append(");\n");
@@ -263,9 +269,9 @@ namespace Godot.SourceGenerators
                 source.Append(
                     $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
 
-                source.Append("    public event ")
+                source.Append($"    {signalDelegate.DelegateSymbol.GetAccessibilityKeyword()} event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
-                    .Append(" ")
+                    .Append(" @")
                     .Append(signalName)
                     .Append(" {\n")
                     .Append("        add => backing_")
@@ -275,6 +281,43 @@ namespace Godot.SourceGenerators
                     .Append(signalName)
                     .Append(" -= value;\n")
                     .Append("}\n");
+
+                // Generate EmitSignal{EventName} method to raise the event
+
+                var invokeMethodSymbol = signalDelegate.InvokeMethodData.Method;
+                int paramCount = invokeMethodSymbol.Parameters.Length;
+
+                string raiseMethodModifiers = signalDelegate.DelegateSymbol.ContainingType.IsSealed ?
+                    "private" :
+                    "protected";
+
+                source.Append($"    {raiseMethodModifiers} void EmitSignal{signalName}(");
+                for (int i = 0; i < paramCount; i++)
+                {
+                    var paramSymbol = invokeMethodSymbol.Parameters[i];
+                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} @{paramSymbol.Name}");
+                    if (i < paramCount - 1)
+                    {
+                        source.Append(", ");
+                    }
+                }
+                source.Append(")\n");
+                source.Append("    {\n");
+                source.Append($"        EmitSignal(SignalName.{signalName}");
+                foreach (var paramSymbol in invokeMethodSymbol.Parameters)
+                {
+                    // Enums must be converted to the underlying type before they can be implicitly converted to Variant
+                    if (paramSymbol.Type.TypeKind == TypeKind.Enum)
+                    {
+                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType!;
+                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
+                        continue;
+                    }
+
+                    source.Append($", @{paramSymbol.Name}");
+                }
+                source.Append(");\n");
+                source.Append("    }\n");
             }
 
             // Generate RaiseGodotClassSignalCallbacks
@@ -306,11 +349,9 @@ namespace Godot.SourceGenerators
                 source.Append(
                     "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
 
-                bool isFirstEntry = true;
                 foreach (var signal in godotSignalDelegates)
                 {
-                    GenerateHasSignalEntry(signal.Name, source, isFirstEntry);
-                    isFirstEntry = false;
+                    GenerateHasSignalEntry(signal.Name, source);
                 }
 
                 source.Append("        return base.HasGodotClassSignal(signal);\n");
@@ -342,7 +383,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        signals.Add(new(name: SignalName.")
+            source.Append("        signals.Add(new(name: SignalName.@")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -460,14 +501,11 @@ namespace Godot.SourceGenerators
 
         private static void GenerateHasSignalEntry(
             string signalName,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
-            source.Append("if (signal == SignalName.");
+            source.Append("if (signal == SignalName.@");
             source.Append(signalName);
             source.Append(") {\n           return true;\n        }\n");
         }
@@ -480,7 +518,7 @@ namespace Godot.SourceGenerators
             string signalName = signal.Name;
             var invokeMethodData = signal.InvokeMethodData;
 
-            source.Append("        if (signal == SignalName.");
+            source.Append("        if (signal == SignalName.@");
             source.Append(signalName);
             source.Append(" && args.Count == ");
             source.Append(invokeMethodData.ParamTypes.Length);

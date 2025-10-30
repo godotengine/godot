@@ -7,7 +7,7 @@
 		[Camera3D] is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the camera will register in the global viewport. In other words, a camera just provides 3D display capabilities to a [Viewport], and, without one, a scene registered in that [Viewport] (or higher viewports) can't be displayed.
 	</description>
 	<tutorials>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="clear_current">
@@ -128,7 +128,8 @@
 			<param index="1" name="z_near" type="float" />
 			<param index="2" name="z_far" type="float" />
 			<description>
-				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units. (As a hint, 2D games often use this projection, with values specified in pixels.)
+				Sets the camera projection to orthogonal mode (see [constant PROJECTION_ORTHOGONAL]), by specifying a [param size], and the [param z_near] and [param z_far] clip planes in world space units.
+				As a hint, 3D games that look 2D often use this projection, with [param size] specified in pixels.
 			</description>
 		</method>
 		<method name="set_perspective">
@@ -159,6 +160,9 @@
 		<member name="attributes" type="CameraAttributes" setter="set_attributes" getter="get_attributes">
 			The [CameraAttributes] to use for this camera.
 		</member>
+		<member name="compositor" type="Compositor" setter="set_compositor" getter="get_compositor">
+			The [Compositor] to use for this camera.
+		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 			The culling mask that describes which [member VisualInstance3D.layers] are rendered by this camera. By default, all 20 user-visible layers are rendered.
 			[b]Note:[/b] Since the [member cull_mask] allows for 32 layers to be stored in total, there are an additional 12 layers that are only used internally by the engine and aren't exposed in the editor. Setting [member cull_mask] using a script allows you to toggle those reserved layers, which can be useful for editor plugins.
@@ -170,7 +174,8 @@
 			If multiple cameras are in the scene, one will always be made current. For example, if two [Camera3D] nodes are present in the scene and only one is current, setting one camera's [member current] to [code]false[/code] will cause the other camera to be made current.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera3D.DopplerTracking" default="0">
-			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
+			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods.
+			[b]Note:[/b] The Doppler effect will only be heard on [AudioStreamPlayer3D]s if [member AudioStreamPlayer3D.doppler_tracking] is not set to [constant AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.

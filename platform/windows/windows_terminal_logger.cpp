@@ -30,9 +30,12 @@
 
 #include "windows_terminal_logger.h"
 
+#include "core/object/script_backtrace.h"
+#include "core/os/os.h"
+
 #ifdef WINDOWS_ENABLED
 
-#include <stdio.h>
+#include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -42,48 +45,44 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 		return;
 	}
 
-	const unsigned int BUFFER_SIZE = 16384;
-	char buf[BUFFER_SIZE + 1]; // +1 for the terminating character
-	int len = vsnprintf(buf, BUFFER_SIZE, p_format, p_list);
-	if (len <= 0) {
+	const int static_buffer_size = 1024;
+	char static_buf[static_buffer_size];
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buffer_size, p_format, p_list);
+	if (len >= static_buffer_size) {
+		buf = (char *)memalloc(len + 1);
+		len = vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String str_buf = String::utf8(buf, len).replace("\r\n", "\n").replace("\n", "\r\n");
+	if (len >= static_buffer_size) {
+		memfree(buf);
+	}
+	CharString cstr_buf = str_buf.utf8();
+	if (cstr_buf.length() == 0) {
 		return;
 	}
-	if ((unsigned int)len >= BUFFER_SIZE) {
-		len = BUFFER_SIZE; // Output is too big, will be truncated
-	}
-	buf[len] = 0;
 
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
-	if (wlen < 0) {
-		return;
-	}
-
-	wchar_t *wbuf = (wchar_t *)memalloc((len + 1) * sizeof(wchar_t));
-	ERR_FAIL_NULL_MSG(wbuf, "Out of memory.");
-	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
-	wbuf[wlen] = 0;
-
-	if (p_err) {
-		fwprintf(stderr, L"%ls", wbuf);
-	} else {
-		wprintf(L"%ls", wbuf);
-	}
-
-	memfree(wbuf);
+	DWORD written = 0;
+	HANDLE h = p_err ? GetStdHandle(STD_ERROR_HANDLE) : GetStdHandle(STD_OUTPUT_HANDLE);
+	WriteFile(h, cstr_buf.ptr(), cstr_buf.length(), &written, nullptr);
 
 #ifdef DEBUG_ENABLED
-	fflush(stdout);
+	FlushFileBuffers(h);
 #endif
 }
 
-void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
-		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	if (OS::get_singleton()->get_stdout_type() != OS::STD_HANDLE_CONSOLE || !hCon || hCon == INVALID_HANDLE_VALUE) {
+		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	} else {
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
@@ -92,9 +91,6 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		uint32_t basecol = 0;
 		switch (p_type) {
-			case ERR_ERROR:
-				basecol = FOREGROUND_RED;
-				break;
 			case ERR_WARNING:
 				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
 				break;
@@ -104,25 +100,16 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 			case ERR_SHADER:
 				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
 				break;
+			case ERR_ERROR:
+			default:
+				basecol = FOREGROUND_RED;
+				break;
 		}
 
 		basecol |= current_bg;
 
 		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-		switch (p_type) {
-			case ERR_ERROR:
-				logf_error("ERROR:");
-				break;
-			case ERR_WARNING:
-				logf_error("WARNING:");
-				break;
-			case ERR_SCRIPT:
-				logf_error("SCRIPT ERROR:");
-				break;
-			case ERR_SHADER:
-				logf_error("SHADER ERROR:");
-				break;
-		}
+		logf_error("%s:", error_type_string(p_type));
 
 		SetConsoleTextAttribute(hCon, basecol);
 		if (p_rationale && p_rationale[0]) {
@@ -133,25 +120,16 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		// `FOREGROUND_INTENSITY` alone results in gray text.
 		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
-		switch (p_type) {
-			case ERR_ERROR:
-				logf_error("   at: ");
-				break;
-			case ERR_WARNING:
-				logf_error("     at: ");
-				break;
-			case ERR_SCRIPT:
-				logf_error("          at: ");
-				break;
-			case ERR_SHADER:
-				logf_error("          at: ");
-				break;
+		if (p_rationale && p_rationale[0]) {
+			logf_error("%sat: (%s:%i)\n", error_type_indent(p_type), p_file, p_line);
+		} else {
+			logf_error("%sat: %s (%s:%i)\n", error_type_indent(p_type), p_function, p_file, p_line);
 		}
 
-		if (p_rationale && p_rationale[0]) {
-			logf_error("(%s:%i)\n", p_file, p_line);
-		} else {
-			logf_error("%s (%s:%i)\n", p_function, p_file, p_line);
+		for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+			if (!backtrace->is_empty()) {
+				logf_error("%s\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
+			}
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);

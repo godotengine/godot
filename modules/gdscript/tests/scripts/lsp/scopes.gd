@@ -68,16 +68,16 @@ func m():
 
 	match value:
 	#     ^^^^^ -> m:value
-		13: 
+		13:
 			print(value)
 			#     ^^^^^ -> m:value
-		[var start, _, var end]: 
+		[var start, _, var end]:
 		#    |   |         ^^^ m:match:array:end -> m:match:array:end
 		#    ^^^^^  m:match:array:start -> m:match:array:start
 			print(start + end)
 			#     |   |   ^^^ -> m:match:array:end
 			#     ^^^^^ -> m:match:array:start
-		{ "name": var name }: 
+		{ "name": var name }:
 		#             ^^^^ m:match:dict:var -> m:match:dict:var
 			print(name)
 			#     ^^^^ -> m:match:dict:var
@@ -87,10 +87,10 @@ func m():
 			#     ^^^^^^^^ -> m:match:var
 
 func m2():
-	var value = 42 
+	var value = 42
 	#   ^^^^^ m2:value -> m2:value
 
-	match value: 
+	match value:
 	#     ^^^^^ -> m2:value
 		{ "name": var name }:
 		#             ^^^^ m2:match:dict:var -> m2:match:dict:var

@@ -28,17 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INTEROP_TYPES_H
-#define INTEROP_TYPES_H
+#pragma once
 
 #include "core/math/math_defs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdbool.h>
-#include <stdint.h>
 
 // This is taken from the old GDNative, which was removed.
 
@@ -204,5 +200,3 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif // INTEROP_TYPES_H

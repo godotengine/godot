@@ -13,11 +13,14 @@
 
 #include <stdlib.h>
 
+#include "src/dec/vp8_dec.h"
 #include "src/dec/vp8i_dec.h"
 #include "src/dec/vp8li_dec.h"
 #include "src/dec/webpi_dec.h"
 #include "src/utils/utils.h"
 #include "src/webp/mux_types.h"  // ALPHA_FLAG
+#include "src/webp/decode.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // RIFF layout is:
@@ -444,8 +447,9 @@ void WebPResetDecParams(WebPDecParams* const params) {
 // "Into" decoding variants
 
 // Main flow
-static VP8StatusCode DecodeInto(const uint8_t* const data, size_t data_size,
-                                WebPDecParams* const params) {
+WEBP_NODISCARD static VP8StatusCode DecodeInto(const uint8_t* const data,
+                                               size_t data_size,
+                                               WebPDecParams* const params) {
   VP8StatusCode status;
   VP8Io io;
   WebPHeaderStructure headers;
@@ -459,7 +463,9 @@ static VP8StatusCode DecodeInto(const uint8_t* const data, size_t data_size,
   }
 
   assert(params != NULL);
-  VP8InitIo(&io);
+  if (!VP8InitIo(&io)) {
+    return VP8_STATUS_INVALID_PARAM;
+  }
   io.data = headers.data + headers.offset;
   io.data_size = headers.data_size - headers.offset;
   WebPInitCustomIo(params, &io);  // Plug the I/O functions.
@@ -523,17 +529,16 @@ static VP8StatusCode DecodeInto(const uint8_t* const data, size_t data_size,
 }
 
 // Helpers
-static uint8_t* DecodeIntoRGBABuffer(WEBP_CSP_MODE colorspace,
-                                     const uint8_t* const data,
-                                     size_t data_size,
-                                     uint8_t* const rgba,
-                                     int stride, size_t size) {
+WEBP_NODISCARD static uint8_t* DecodeIntoRGBABuffer(WEBP_CSP_MODE colorspace,
+                                                    const uint8_t* const data,
+                                                    size_t data_size,
+                                                    uint8_t* const rgba,
+                                                    int stride, size_t size) {
   WebPDecParams params;
   WebPDecBuffer buf;
-  if (rgba == NULL) {
+  if (rgba == NULL || !WebPInitDecBuffer(&buf)) {
     return NULL;
   }
-  WebPInitDecBuffer(&buf);
   WebPResetDecParams(&params);
   params.output = &buf;
   buf.colorspace    = colorspace;
@@ -578,8 +583,7 @@ uint8_t* WebPDecodeYUVInto(const uint8_t* data, size_t data_size,
                            uint8_t* v, size_t v_size, int v_stride) {
   WebPDecParams params;
   WebPDecBuffer output;
-  if (luma == NULL) return NULL;
-  WebPInitDecBuffer(&output);
+  if (luma == NULL || !WebPInitDecBuffer(&output)) return NULL;
   WebPResetDecParams(&params);
   params.output = &output;
   output.colorspace      = MODE_YUV;
@@ -601,13 +605,17 @@ uint8_t* WebPDecodeYUVInto(const uint8_t* data, size_t data_size,
 
 //------------------------------------------------------------------------------
 
-static uint8_t* Decode(WEBP_CSP_MODE mode, const uint8_t* const data,
-                       size_t data_size, int* const width, int* const height,
-                       WebPDecBuffer* const keep_info) {
+WEBP_NODISCARD static uint8_t* Decode(WEBP_CSP_MODE mode,
+                                      const uint8_t* const data,
+                                      size_t data_size, int* const width,
+                                      int* const height,
+                                      WebPDecBuffer* const keep_info) {
   WebPDecParams params;
   WebPDecBuffer output;
 
-  WebPInitDecBuffer(&output);
+  if (!WebPInitDecBuffer(&output)) {
+    return NULL;
+  }
   WebPResetDecParams(&params);
   params.output = &output;
   output.colorspace = mode;
@@ -733,7 +741,9 @@ int WebPInitDecoderConfigInternal(WebPDecoderConfig* config,
   }
   memset(config, 0, sizeof(*config));
   DefaultFeatures(&config->input);
-  WebPInitDecBuffer(&config->output);
+  if (!WebPInitDecBuffer(&config->output)) {
+    return 0;
+  }
   return 1;
 }
 
@@ -772,7 +782,9 @@ VP8StatusCode WebPDecode(const uint8_t* data, size_t data_size,
   if (WebPAvoidSlowMemory(params.output, &config->input)) {
     // decoding to slow memory: use a temporary in-mem buffer to decode into.
     WebPDecBuffer in_mem_buffer;
-    WebPInitDecBuffer(&in_mem_buffer);
+    if (!WebPInitDecBuffer(&in_mem_buffer)) {
+      return VP8_STATUS_INVALID_PARAM;
+    }
     in_mem_buffer.colorspace = config->output.colorspace;
     in_mem_buffer.width = config->input.width;
     in_mem_buffer.height = config->input.height;

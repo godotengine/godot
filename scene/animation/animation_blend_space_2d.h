@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BLEND_SPACE_2D_H
-#define ANIMATION_BLEND_SPACE_2D_H
+#pragma once
 
 #include "scene/animation/animation_tree.h"
 
@@ -65,7 +64,6 @@ protected:
 
 	StringName blend_position = "blend_position";
 	StringName closest = "closest";
-	StringName length_internal = "length_internal";
 	Vector2 max_space = Vector2(1, 1);
 	Vector2 min_space = Vector2(-1, -1);
 	Vector2 snap = Vector2(0.1, 0.1);
@@ -80,7 +78,7 @@ protected:
 	void _blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights);
 
 	bool auto_triangles = true;
-	bool trianges_dirty = false;
+	bool triangles_dirty = false;
 
 	void _update_triangles();
 	void _queue_auto_triangles();
@@ -129,7 +127,7 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);
@@ -150,5 +148,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode)
-
-#endif // ANIMATION_BLEND_SPACE_2D_H

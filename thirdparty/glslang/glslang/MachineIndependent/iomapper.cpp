@@ -85,7 +85,7 @@ public:
             addGlobalReference(base->getAccessName());
 
         if (target) {
-            TVarEntryInfo ent = {base->getId(), base, ! traverseAll};
+            TVarEntryInfo ent = {base->getId(), base, ! traverseAll, {}, {}, {}, {}, {}, {}, {}};
             ent.stage = intermediate.getStage();
             TVarLiveMap::iterator at = target->find(
                 ent.symbol->getAccessName()); // std::lower_bound(target->begin(), target->end(), ent, TVarEntryInfo::TOrderById());
@@ -124,7 +124,7 @@ public:
         else
             return;
 
-        TVarEntryInfo ent = { base->getId() };
+        TVarEntryInfo ent = { base->getId(), {}, {}, {}, {}, {}, {}, {}, {}, {} };
         // Fix a defect, when block has no instance name, we need to find its block name
         TVarLiveMap::const_iterator at = source->find(base->getAccessName());
         if (at == source->end())
@@ -866,7 +866,7 @@ int TDefaultIoResolverBase::resolveInOutLocation(EShLanguage stage, TVarEntryInf
     }
 
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
 
@@ -953,7 +953,7 @@ int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInf
         return ent.newLocation = type.getQualifier().layoutLocation;
     }
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
     // no locations on blocks of built-in variables

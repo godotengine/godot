@@ -4,12 +4,13 @@
 #pragma once
 
 #include "../common/default.h"
+#include "bezier_curve.h"
 #include "../common/scene_curves.h"
 
 /*
 
-  Implements Catmull-Rom curves with control points p0, p1, p2, p3. At
-  t=0 the curve goes through p1, with tangent (p2-p0)/3, and for t=1
+  Implements Catmul Rom curves with control points p0, p1, p2, p3. At
+  t=0 the curve goes through p1, with tangent (p2-p0)/2, and for t=1
   the curve goes through p2 with tangent (p3-p2)/2.
 
  */
@@ -99,7 +100,7 @@ namespace embree
       }
 
       __forceinline Vertex center() const {
-        return 0.25f*(v0+v1+v2+v3);
+        return 0.5f*(v0+v1);
       }
 
       __forceinline BBox<Vertex> bounds() const {
@@ -135,6 +136,12 @@ namespace embree
       {
         const Vec4<float> b = CatmullRomBasis::derivative2(t);
         return madd(b.x,v0,madd(b.y,v1,madd(b.z,v2,b.w*v3)));
+      }
+
+      __forceinline void eval(const float t, Vertex& p, Vertex& dp) const
+      {
+        p = eval(t);
+        dp = eval_du(t);
       }
       
       __forceinline void eval(const float t, Vertex& p, Vertex& dp, Vertex& ddp) const
@@ -283,8 +290,18 @@ namespace embree
       }
     };
 
+  template<typename Vertex>
+    __forceinline void convert(const CatmullRomCurveT<Vertex>& icurve, BezierCurveT<Vertex>& ocurve)
+  {
+    const Vertex v0 = icurve.v1;
+    const Vertex v1 = icurve.v1+(icurve.v2-icurve.v0)*(1.0f/6.0f);
+    const Vertex v2 = icurve.v2+(icurve.v1-icurve.v3)*(1.0f/6.0f);
+    const Vertex v3 = icurve.v2;
+    ocurve = BezierCurveT<Vertex>(v0,v1,v2,v3);
+  }
+
   template<typename CurveGeometry>
-  __forceinline CatmullRomCurveT<Vec3ff> enlargeRadiusToMinWidth(const IntersectContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const CatmullRomCurveT<Vec3ff>& curve)
+  __forceinline CatmullRomCurveT<Vec3ff> enlargeRadiusToMinWidth(const RayQueryContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const CatmullRomCurveT<Vec3ff>& curve)
   {
     return CatmullRomCurveT<Vec3ff>(enlargeRadiusToMinWidth(context,geom,ray_org,curve.v0),
                                     enlargeRadiusToMinWidth(context,geom,ray_org,curve.v1),

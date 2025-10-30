@@ -7,13 +7,8 @@
 #include "heuristic_spatial_array.h"
 #include "heuristic_openmerge_array.h"
 
-#if defined(__AVX512F__) && !defined(__AVX512VL__) // KNL
-#  define NUM_OBJECT_BINS 16
-#  define NUM_SPATIAL_BINS 16
-#else
-#  define NUM_OBJECT_BINS 32
-#  define NUM_SPATIAL_BINS 16
-#endif
+#define NUM_OBJECT_BINS 32
+#define NUM_SPATIAL_BINS 16
 
 namespace embree
 {
@@ -53,10 +48,9 @@ namespace embree
         }
 
         Settings (size_t sahBlockSize, size_t minLeafSize, size_t maxLeafSize, float travCost, float intCost, size_t singleThreadThreshold, size_t primrefarrayalloc = inf)
-        : branchingFactor(2), maxDepth(32), logBlockSize(bsr(sahBlockSize)), minLeafSize(minLeafSize), maxLeafSize(maxLeafSize),
+        : branchingFactor(2), maxDepth(32), logBlockSize(bsr(sahBlockSize)), minLeafSize(min(minLeafSize,maxLeafSize)), maxLeafSize(maxLeafSize),
           travCost(travCost), intCost(intCost), singleThreadThreshold(singleThreadThreshold), primrefarrayalloc(primrefarrayalloc)
         {
-          minLeafSize = min(minLeafSize,maxLeafSize);
         }
 
       public:

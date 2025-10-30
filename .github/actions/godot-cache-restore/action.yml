@@ -1,0 +1,39 @@
+name: Restore Godot build cache
+description: Restore Godot build cache.
+inputs:
+  cache-name:
+    description: The cache base name (job name by default).
+    default: ${{ github.job }}
+  scons-cache:
+    description: The SCons cache path.
+    default: ${{ github.workspace }}/.scons_cache/
+
+runs:
+  using: composite
+  steps:
+    - name: Restore default cache
+      uses: actions/cache/restore@v4
+      id: cache-ping
+      with:
+        path: ${{ inputs.scons-cache }}
+        key: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}|${{ github.sha }}
+        restore-keys: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}
+
+    - name: Log default cache files
+      if: steps.cache-ping.outputs.cache-matched-key && github.ref_name != github.event.repository.default_branch
+      shell: sh
+      run: find "${{ inputs.scons-cache }}" >> redundant.txt
+
+    # This is done after pulling the default cache so that PRs can integrate any potential changes
+    # from the default branch without conflicting with whatever local changes were already made.
+    - name: Restore local cache
+      uses: actions/cache/restore@v4
+      if: github.ref_name != github.event.repository.default_branch
+      with:
+        path: ${{ inputs.scons-cache }}
+        key: ${{ inputs.cache-name }}|${{ github.ref_name }}|${{ github.sha }}
+        restore-keys: ${{ inputs.cache-name }}|${{ github.ref_name }}
+
+    - name: Store unix timestamp
+      shell: sh
+      run: echo "CACHE_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV

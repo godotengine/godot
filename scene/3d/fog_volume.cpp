@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "fog_volume.h"
+
+#include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 
 ///////////////////////////
@@ -73,9 +75,7 @@ bool FogVolume::_get(const StringName &p_name, Variant &r_property) const {
 
 void FogVolume::set_size(const Vector3 &p_size) {
 	size = p_size;
-	size.x = MAX(0.0, size.x);
-	size.y = MAX(0.0, size.y);
-	size.z = MAX(0.0, size.z);
+	size = size.maxf(0);
 	RS::get_singleton()->fog_volume_set_size(_get_volume(), size);
 	update_gizmos();
 }
@@ -118,12 +118,12 @@ AABB FogVolume::get_aabb() const {
 }
 
 PackedStringArray FogVolume::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	Ref<Environment> environment = get_viewport()->find_world_3d()->get_environment();
 
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("Fog Volumes are only visible when using the Forward+ backend."));
+		warnings.push_back(RTR("Fog Volumes are only visible when using the Forward+ renderer."));
 		return warnings;
 	}
 
@@ -142,5 +142,5 @@ FogVolume::FogVolume() {
 
 FogVolume::~FogVolume() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(volume);
+	RS::get_singleton()->free_rid(volume);
 }

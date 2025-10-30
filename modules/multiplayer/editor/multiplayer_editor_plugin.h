@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIPLAYER_EDITOR_PLUGIN_H
-#define MULTIPLAYER_EDITOR_PLUGIN_H
+#pragma once
 
-#include "editor/editor_plugin.h"
-#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/debugger/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorNetworkProfiler;
 class MultiplayerEditorDebugger : public EditorDebuggerPlugin {
@@ -51,8 +50,6 @@ public:
 	virtual bool has_capture(const String &p_capture) const override;
 	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
 	virtual void setup_session(int p_session_id) override;
-
-	MultiplayerEditorDebugger() {}
 };
 
 class ReplicationEditor;
@@ -80,5 +77,3 @@ public:
 
 	MultiplayerEditorPlugin();
 };
-
-#endif // MULTIPLAYER_EDITOR_PLUGIN_H

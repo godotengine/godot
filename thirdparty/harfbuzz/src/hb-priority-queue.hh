@@ -45,15 +45,28 @@
 template <typename K>
 struct hb_priority_queue_t
 {
- private:
+ public:
   typedef hb_pair_t<K, unsigned> item_t;
+
+ private:
   hb_vector_t<item_t> heap;
 
  public:
 
+  hb_priority_queue_t () = default;
+  hb_priority_queue_t (hb_vector_t<item_t>&& other) : heap (std::move (other))
+  {
+    // Heapify the vector.
+    for (int i = (heap.length / 2) - 1; i >= 0; i--)
+      bubble_down (i);
+  }
+
   void reset () { heap.resize (0); }
 
   bool in_error () const { return heap.in_error (); }
+
+  bool alloc (unsigned size)
+  { return heap.alloc (size); }
 
 #ifndef HB_OPTIMIZE_SIZE
   HB_ALWAYS_INLINE
@@ -160,7 +173,7 @@ struct hb_priority_queue_t
     goto repeat;
   }
 
-  void swap (unsigned a, unsigned b)
+  void swap (unsigned a, unsigned b) noexcept
   {
     assert (a < heap.length);
     assert (b < heap.length);

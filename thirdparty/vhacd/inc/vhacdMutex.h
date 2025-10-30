@@ -71,9 +71,7 @@
 #include <pthread.h>
 #endif
 
-// -- GODOT start --
 #if defined(__APPLE__) || !defined(__GLIBC__)
-// -- GODOT end --
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
 

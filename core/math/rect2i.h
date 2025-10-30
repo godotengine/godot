@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2I_H
-#define RECT2I_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2i.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Rect2;
 
-struct _NO_DISCARD_ Rect2i {
+struct [[nodiscard]] Rect2i {
 	Point2i position;
 	Size2i size;
 
@@ -95,14 +95,12 @@ struct _NO_DISCARD_ Rect2i {
 			return Rect2i();
 		}
 
-		new_rect.position.x = MAX(p_rect.position.x, position.x);
-		new_rect.position.y = MAX(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.max(position);
 
 		Point2i p_rect_end = p_rect.position + p_rect.size;
 		Point2i end = position + size;
 
-		new_rect.size.x = MIN(p_rect_end.x, end.x) - new_rect.position.x;
-		new_rect.size.y = MIN(p_rect_end.y, end.y) - new_rect.position.y;
+		new_rect.size = p_rect_end.min(end) - new_rect.position;
 
 		return new_rect;
 	}
@@ -115,11 +113,9 @@ struct _NO_DISCARD_ Rect2i {
 #endif
 		Rect2i new_rect;
 
-		new_rect.position.x = MIN(p_rect.position.x, position.x);
-		new_rect.position.y = MIN(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.min(position);
 
-		new_rect.size.x = MAX(p_rect.position.x + p_rect.size.x, position.x + size.x);
-		new_rect.size.y = MAX(p_rect.position.y + p_rect.size.y, position.y + size.y);
+		new_rect.size = (p_rect.position + p_rect.size).max(position + size);
 
 		new_rect.size = new_rect.size - new_rect.position; // Make relative again.
 
@@ -148,8 +144,8 @@ struct _NO_DISCARD_ Rect2i {
 		return true;
 	}
 
-	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
@@ -217,7 +213,7 @@ struct _NO_DISCARD_ Rect2i {
 	}
 
 	_FORCE_INLINE_ Rect2i abs() const {
-		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+		return Rect2i(position + size.mini(0), size.abs());
 	}
 
 	_FORCE_INLINE_ void set_end(const Vector2i &p_end) {
@@ -228,18 +224,27 @@ struct _NO_DISCARD_ Rect2i {
 		return position + size;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	operator Rect2() const;
 
-	Rect2i() {}
-	Rect2i(int p_x, int p_y, int p_width, int p_height) :
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(position.x));
+		h = hash_murmur3_one_32(uint32_t(position.y), h);
+		h = hash_murmur3_one_32(uint32_t(size.x), h);
+		h = hash_murmur3_one_32(uint32_t(size.y), h);
+		return hash_fmix32(h);
+	}
+
+	Rect2i() = default;
+	constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :
 			position(Point2i(p_x, p_y)),
 			size(Size2i(p_width, p_height)) {
 	}
-	Rect2i(const Point2i &p_pos, const Size2i &p_size) :
+	constexpr Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
 };
 
-#endif // RECT2I_H
+template <>
+struct is_zero_constructible<Rect2i> : std::true_type {};

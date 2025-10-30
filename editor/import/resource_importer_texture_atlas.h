@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_TEXTURE_ATLAS_H
-#define RESOURCE_IMPORTER_TEXTURE_ATLAS_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
@@ -64,10 +63,8 @@ public:
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 	virtual String get_option_group_file() const override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) override;
 
-	ResourceImporterTextureAtlas();
+	virtual bool can_import_threaded() const override { return true; }
 };
-
-#endif // RESOURCE_IMPORTER_TEXTURE_ATLAS_H

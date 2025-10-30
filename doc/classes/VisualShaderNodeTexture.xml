@@ -10,13 +10,13 @@
 	</tutorials>
 	<members>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeTexture.Source" default="0">
-			Determines the source for the lookup. See [enum Source] for options.
+			Determines the source for the lookup.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The source texture, if needed for the selected [member source].
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTexture.TextureType" default="0">
-			Specifies the type of the texture if [member source] is set to [constant SOURCE_TEXTURE]. See [enum TextureType] for options.
+			Specifies the type of the texture if [member source] is set to [constant SOURCE_TEXTURE].
 		</member>
 	</members>
 	<constants>
@@ -51,7 +51,7 @@
 			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
-			Adds [code]hint_albedo[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
+			Adds [code]source_color[/code] as hint to the uniform declaration for proper conversion from nonlinear sRGB encoding to linear encoding.
 		</constant>
 		<constant name="TYPE_NORMAL_MAP" value="2" enum="TextureType">
 			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.

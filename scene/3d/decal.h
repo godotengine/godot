@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DECAL_H
-#define DECAL_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -62,7 +61,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_property) const;
@@ -114,5 +112,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Decal::DecalTexture);
-
-#endif // DECAL_H

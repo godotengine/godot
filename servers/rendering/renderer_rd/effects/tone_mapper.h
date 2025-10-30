@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TONE_MAPPER_RD_H
-#define TONE_MAPPER_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/tonemap.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 
@@ -65,8 +63,9 @@ private:
 		TONEMAP_FLAG_USE_AUTO_EXPOSURE = (1 << 2),
 		TONEMAP_FLAG_USE_COLOR_CORRECTION = (1 << 3),
 		TONEMAP_FLAG_USE_FXAA = (1 << 4),
-		TONEMAP_FLAG_USE_DEBANDING = (1 << 5),
-		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 6),
+		TONEMAP_FLAG_USE_8_BIT_DEBANDING = (1 << 5),
+		TONEMAP_FLAG_USE_10_BIT_DEBANDING = (1 << 6),
+		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 7),
 	};
 
 	struct TonemapPushConstant {
@@ -115,10 +114,10 @@ public:
 			GLOW_MODE_MIX
 		};
 
-		GlowMode glow_mode = GLOW_MODE_ADD;
-		float glow_intensity = 1.0;
+		GlowMode glow_mode = GLOW_MODE_SCREEN;
+		float glow_intensity = 0.3;
 		float glow_map_strength = 0.0f;
-		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
+		float glow_levels[7] = { 1.0, 0.8, 0.4, 0.1, 0.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;
@@ -143,7 +142,12 @@ public:
 		RID color_correction_texture;
 
 		bool use_fxaa = false;
-		bool use_debanding = false;
+		enum DebandingMode {
+			DEBANDING_MODE_DISABLED,
+			DEBANDING_MODE_8_BIT,
+			DEBANDING_MODE_10_BIT,
+		};
+		DebandingMode debanding_mode = DEBANDING_MODE_DISABLED;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
 
@@ -155,5 +159,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // TONE_MAPPER_RD_H

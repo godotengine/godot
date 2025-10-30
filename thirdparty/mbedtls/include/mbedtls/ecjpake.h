@@ -5,22 +5,11 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_ECJPAKE_H
 #define MBEDTLS_ECJPAKE_H
+#include "mbedtls/private_access.h"
 
 /*
  * J-PAKE is a password-authenticated key exchange that allows deriving a
@@ -38,11 +27,7 @@
  * The payloads are serialized in a way suitable for use in TLS, but could
  * also be use outside TLS.
  */
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/ecp.h"
 #include "mbedtls/md.h"
@@ -57,6 +42,7 @@ extern "C" {
 typedef enum {
     MBEDTLS_ECJPAKE_CLIENT = 0,         /**< Client                         */
     MBEDTLS_ECJPAKE_SERVER,             /**< Server                         */
+    MBEDTLS_ECJPAKE_NONE,               /**< Undefined                      */
 } mbedtls_ecjpake_role;
 
 #if !defined(MBEDTLS_ECJPAKE_ALT)
@@ -72,21 +58,21 @@ typedef enum {
  * description as a pair C: client name, S: server name
  */
 typedef struct mbedtls_ecjpake_context {
-    const mbedtls_md_info_t *md_info;   /**< Hash to use                    */
-    mbedtls_ecp_group grp;              /**< Elliptic curve                 */
-    mbedtls_ecjpake_role role;          /**< Are we client or server?       */
-    int point_format;                   /**< Format for point export        */
+    mbedtls_md_type_t MBEDTLS_PRIVATE(md_type);          /**< Hash to use                    */
+    mbedtls_ecp_group MBEDTLS_PRIVATE(grp);              /**< Elliptic curve                 */
+    mbedtls_ecjpake_role MBEDTLS_PRIVATE(role);          /**< Are we client or server?       */
+    int MBEDTLS_PRIVATE(point_format);                   /**< Format for point export        */
 
-    mbedtls_ecp_point Xm1;              /**< My public key 1   C: X1, S: X3 */
-    mbedtls_ecp_point Xm2;              /**< My public key 2   C: X2, S: X4 */
-    mbedtls_ecp_point Xp1;              /**< Peer public key 1 C: X3, S: X1 */
-    mbedtls_ecp_point Xp2;              /**< Peer public key 2 C: X4, S: X2 */
-    mbedtls_ecp_point Xp;               /**< Peer public key   C: Xs, S: Xc */
+    mbedtls_ecp_point MBEDTLS_PRIVATE(Xm1);              /**< My public key 1   C: X1, S: X3 */
+    mbedtls_ecp_point MBEDTLS_PRIVATE(Xm2);              /**< My public key 2   C: X2, S: X4 */
+    mbedtls_ecp_point MBEDTLS_PRIVATE(Xp1);              /**< Peer public key 1 C: X3, S: X1 */
+    mbedtls_ecp_point MBEDTLS_PRIVATE(Xp2);              /**< Peer public key 2 C: X4, S: X2 */
+    mbedtls_ecp_point MBEDTLS_PRIVATE(Xp);               /**< Peer public key   C: Xs, S: Xc */
 
-    mbedtls_mpi xm1;                    /**< My private key 1  C: x1, S: x3 */
-    mbedtls_mpi xm2;                    /**< My private key 2  C: x2, S: x4 */
+    mbedtls_mpi MBEDTLS_PRIVATE(xm1);                    /**< My private key 1  C: x1, S: x3 */
+    mbedtls_mpi MBEDTLS_PRIVATE(xm2);                    /**< My private key 2  C: x2, S: x4 */
 
-    mbedtls_mpi s;                      /**< Pre-shared secret (passphrase) */
+    mbedtls_mpi MBEDTLS_PRIVATE(s);                      /**< Pre-shared secret (passphrase) */
 } mbedtls_ecjpake_context;
 
 #else  /* MBEDTLS_ECJPAKE_ALT */
@@ -115,7 +101,7 @@ void mbedtls_ecjpake_init(mbedtls_ecjpake_context *ctx);
  * \param curve     The identifier of the elliptic curve to use,
  *                  for example #MBEDTLS_ECP_DP_SECP256R1.
  * \param secret    The pre-shared secret (passphrase). This must be
- *                  a readable buffer of length \p len Bytes. It need
+ *                  a readable not empty buffer of length \p len Bytes. It need
  *                  only be valid for the duration of this call.
  * \param len       The length of the pre-shared secret \p secret.
  *
@@ -128,6 +114,21 @@ int mbedtls_ecjpake_setup(mbedtls_ecjpake_context *ctx,
                           mbedtls_ecp_group_id curve,
                           const unsigned char *secret,
                           size_t len);
+
+/**
+ * \brief               Set the point format for future reads and writes.
+ *
+ * \param ctx           The ECJPAKE context to configure.
+ * \param point_format  The point format to use:
+ *                      #MBEDTLS_ECP_PF_UNCOMPRESSED (default)
+ *                      or #MBEDTLS_ECP_PF_COMPRESSED.
+ *
+ * \return              \c 0 if successful.
+ * \return              #MBEDTLS_ERR_ECP_BAD_INPUT_DATA if \p point_format
+ *                      is invalid.
+ */
+int mbedtls_ecjpake_set_point_format(mbedtls_ecjpake_context *ctx,
+                                     int point_format);
 
 /**
  * \brief           Check if an ECJPAKE context is ready for use.
@@ -161,7 +162,7 @@ int mbedtls_ecjpake_check(const mbedtls_ecjpake_context *ctx);
  */
 int mbedtls_ecjpake_write_round_one(mbedtls_ecjpake_context *ctx,
                                     unsigned char *buf, size_t len, size_t *olen,
-                                    int (*f_rng)(void *, unsigned char *, size_t),
+                                    mbedtls_f_rng_t *f_rng,
                                     void *p_rng);
 
 /**
@@ -202,7 +203,7 @@ int mbedtls_ecjpake_read_round_one(mbedtls_ecjpake_context *ctx,
  */
 int mbedtls_ecjpake_write_round_two(mbedtls_ecjpake_context *ctx,
                                     unsigned char *buf, size_t len, size_t *olen,
-                                    int (*f_rng)(void *, unsigned char *, size_t),
+                                    mbedtls_f_rng_t *f_rng,
                                     void *p_rng);
 
 /**
@@ -242,8 +243,31 @@ int mbedtls_ecjpake_read_round_two(mbedtls_ecjpake_context *ctx,
  */
 int mbedtls_ecjpake_derive_secret(mbedtls_ecjpake_context *ctx,
                                   unsigned char *buf, size_t len, size_t *olen,
-                                  int (*f_rng)(void *, unsigned char *, size_t),
+                                  mbedtls_f_rng_t *f_rng,
                                   void *p_rng);
+
+/**
+ * \brief           Write the shared key material to be passed to a Key
+ *                  Derivation Function as described in RFC8236.
+ *
+ * \param ctx       The ECJPAKE context to use. This must be initialized,
+ *                  set up and have performed both round one and two.
+ * \param buf       The buffer to write the derived secret to. This must
+ *                  be a writable buffer of length \p len Bytes.
+ * \param len       The length of \p buf in Bytes.
+ * \param olen      The address at which to store the total number of bytes
+ *                  written to \p buf. This must not be \c NULL.
+ * \param f_rng     The RNG function to use. This must not be \c NULL.
+ * \param p_rng     The RNG parameter to be passed to \p f_rng. This
+ *                  may be \c NULL if \p f_rng doesn't use a context.
+ *
+ * \return          \c 0 if successful.
+ * \return          A negative error code on failure.
+ */
+int mbedtls_ecjpake_write_shared_key(mbedtls_ecjpake_context *ctx,
+                                     unsigned char *buf, size_t len, size_t *olen,
+                                     mbedtls_f_rng_t *f_rng,
+                                     void *p_rng);
 
 /**
  * \brief           This clears an ECJPAKE context and frees any

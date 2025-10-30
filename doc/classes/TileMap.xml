@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileMap" inherits="Node2D" deprecated="Use multiple [TileMapLayer] nodes instead. To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with the node selected, click the toolbox icon in the top-right corner and choose &apos;Extract TileMap layers as individual TileMapLayer nodes&apos;." keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
 	<description>
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles which are used to create grid-based maps. A TileMap may have several layers, layouting tiles on top of each other.
-		For performance reasons, all TileMap updates are batched at the end of a frame. Notably, this means that scene tiles from a [TileSetScenesCollectionSource] may be initialized after their parent.
+		For performance reasons, all TileMap updates are batched at the end of a frame. Notably, this means that scene tiles from a [TileSetScenesCollectionSource] may be initialized after their parent. This is only queued when inside the scene tree.
 		To force an update earlier on, call [method update_internals].
+		[b]Note:[/b] For performance and compatibility reasons, the coordinates serialized by [TileMap] are limited to 16-bit signed integers, i.e. the range for X and Y coordinates is from [code]-32768[/code] to [code]32767[/code]. When saving tile data, tiles outside this range are wrapped.
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
-		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
-		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+		<link title="2D Dynamic TileMap Layers Demo">https://godotengine.org/asset-library/asset/2713</link>
 	</tutorials>
 	<methods>
 		<method name="_tile_data_runtime_update" qualifiers="virtual">
@@ -76,11 +78,11 @@
 				Clears cells that do not exist in the tileset.
 			</description>
 		</method>
-		<method name="force_update" is_deprecated="true">
+		<method name="force_update" deprecated="Use [method notify_runtime_tile_data_update] and/or [method update_internals] instead.">
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
-				[i]Deprecated.[/i] See [method notify_runtime_tile_data_update] and [method update_internals].
+				Forces the TileMap and the layer [param layer] to update.
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -89,7 +91,8 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
-				Returns the tile alternative ID of the cell on layer [param layer] at [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile alternative ID of the cell on layer [param layer] at [param coords].
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -99,7 +102,8 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
-				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. Returns [code]Vector2i(-1, -1)[/code] if the cell does not exist.
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw atlas coordinate identifier. See [method TileSet.map_tile_proxy].
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -110,7 +114,7 @@
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile source ID of the cell on layer [param layer] at coordinates [param coords]. Returns [code]-1[/code] if the cell does not exist.
-				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw source identifier. See [method TileSet.map_tile_proxy].
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -122,16 +126,16 @@
 			<description>
 				Returns the [TileData] object associated with the given cell, or [code]null[/code] if the cell does not exist or is not a [TileSetAtlasSource].
 				If [param layer] is negative, the layers are accessed from the last one.
-				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 				[codeblock]
 				func get_clicked_tile_power():
-				    var clicked_cell = tile_map.local_to_map(tile_map.get_local_mouse_position())
-				    var data = tile_map.get_cell_tile_data(0, clicked_cell)
-				    if data:
-				        return data.get_custom_data("power")
-				    else:
-				        return 0
+					var clicked_cell = tile_map.local_to_map(tile_map.get_local_mouse_position())
+					var data = tile_map.get_cell_tile_data(0, clicked_cell)
+					if data:
+						return data.get_custom_data("power")
+					else:
+						return 0
 				[/codeblock]
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies. See [method TileSet.map_tile_proxy].
 			</description>
 		</method>
 		<method name="get_coords_for_body_rid">
@@ -168,7 +172,7 @@
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns the [NavigationServer2D] navigation map [RID] currently assigned to the specified TileMap [param layer].
+				Returns the [RID] of the [NavigationServer2D] navigation map assigned to the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
 				If [param layer] is negative, the layers are accessed from the last one.
@@ -196,11 +200,11 @@
 				Returns the number of layers in the TileMap.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const" is_deprecated="true">
+		<method name="get_navigation_map" qualifiers="const" deprecated="Use [method get_layer_navigation_map] instead.">
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				See [method get_layer_navigation_map].
+				Returns the [RID] of the [NavigationServer2D] navigation map assigned to the specified TileMap layer [param layer].
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
@@ -252,6 +256,33 @@
 			<return type="Rect2i" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
+			</description>
+		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is transposed. The result is valid only for atlas sources.
 			</description>
 		</method>
 		<method name="is_layer_enabled" qualifiers="const">
@@ -351,7 +382,7 @@
 			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
 				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
-				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [param ignore_empty_terrains] is [code]true[/code], empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				If [param layer] is negative, the layers are accessed from the last one.
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
@@ -365,7 +396,7 @@
 			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
 				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
-				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [param ignore_empty_terrains] is [code]true[/code], empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				If [param layer] is negative, the layers are accessed from the last one.
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
@@ -375,7 +406,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc.).
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -410,7 +441,7 @@
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
+				Assigns [param map] as a [NavigationServer2D] navigation map for the specified TileMap layer [param layer].
 				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
 				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
 				If [param layer] is negative, the layers are accessed from the last one.
@@ -445,12 +476,12 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
-		<method name="set_navigation_map" is_deprecated="true">
+		<method name="set_navigation_map" deprecated="Use [method set_layer_navigation_map] instead.">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				See [method set_layer_navigation_map].
+				Assigns [param map] as a [NavigationServer2D] navigation map for the specified TileMap layer [param layer].
 			</description>
 		</method>
 		<method name="set_pattern">
@@ -484,12 +515,12 @@
 			Show or hide the TileMap's navigation meshes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
-			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quandrant size groups together [code]16 * 16 = 256[/code] tiles.
-			The quadrant size does not apply on Y-sorted layers, as tiles are be grouped by Y position instead in that case.
+			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
+			The quadrant size does not apply on Y-sorted layers, as tiles are grouped by Y position instead in that case.
 			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the TileMap's local coordinate system.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
-			The assigned [TileSet].
+			The [TileSet] used by this [TileMap]. The textures, collisions, and additional behavior of all available tiles are stored here.
 		</member>
 	</members>
 	<signals>

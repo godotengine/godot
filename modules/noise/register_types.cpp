@@ -40,7 +40,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #endif
 
 void initialize_noise_module(ModuleInitializationLevel p_level) {

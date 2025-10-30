@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedTexture" inherits="Texture2D" is_deprecated="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimatedTexture" inherits="Texture2D" deprecated="This class does not work properly in current versions and may be removed in the future. There is currently no equivalent workaround." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Proxy texture for simple frame-based animations.
 	</brief_description>
@@ -9,7 +9,6 @@
 		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
 		[b]Note:[/b] AnimatedTexture doesn't support using [AtlasTexture]s. Each frame needs to be a separate [Texture2D].
 		[b]Warning:[/b] The current implementation is not efficient for the modern renderers.
-		[i]Deprecated.[/i] This class is deprecated, and might be removed in a future release.
 	</description>
 	<tutorials>
 	</tutorials>

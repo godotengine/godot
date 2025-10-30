@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "audio_effect_reverb.h"
-#include "servers/audio_server.h"
+
+#include "servers/audio/audio_server.h"
+
 void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	for (int i = 0; i < 2; i++) {
 		Reverb &r = reverb[i];
@@ -51,20 +53,20 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 		int to_mix = MIN(todo, Reverb::INPUT_BUFFER_MAX_SIZE);
 
 		for (int j = 0; j < to_mix; j++) {
-			tmp_src[j] = p_src_frames[offset + j].l;
+			tmp_src[j] = p_src_frames[offset + j].left;
 		}
 
 		reverb[0].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].l = tmp_dst[j];
-			tmp_src[j] = p_src_frames[offset + j].r;
+			p_dst_frames[offset + j].left = tmp_dst[j];
+			tmp_src[j] = p_src_frames[offset + j].right;
 		}
 
 		reverb[1].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].r = tmp_dst[j];
+			p_dst_frames[offset + j].right = tmp_dst[j];
 		}
 
 		offset += to_mix;

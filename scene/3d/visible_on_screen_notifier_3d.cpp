@@ -30,15 +30,13 @@
 
 #include "visible_on_screen_notifier_3d.h"
 
-#include "scene/scene_string_names.h"
-
 void VisibleOnScreenNotifier3D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
 
 	on_screen = true;
-	emit_signal(SceneStringNames::get_singleton()->screen_entered);
+	emit_signal(SceneStringName(screen_entered));
 	_screen_enter();
 }
 void VisibleOnScreenNotifier3D::_visibility_exit() {
@@ -47,7 +45,7 @@ void VisibleOnScreenNotifier3D::_visibility_exit() {
 	}
 
 	on_screen = false;
-	emit_signal(SceneStringNames::get_singleton()->screen_exited);
+	emit_signal(SceneStringName(screen_exited));
 	_screen_exit();
 }
 
@@ -79,16 +77,6 @@ void VisibleOnScreenNotifier3D::_notification(int p_what) {
 	}
 }
 
-PackedStringArray VisibleOnScreenNotifier3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("VisibleOnScreenNotifier3D nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-	}
-
-	return warnings;
-}
-
 void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
@@ -110,7 +98,7 @@ VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
 	RID base_old = get_base();
 	set_base(RID());
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(base_old);
+	RS::get_singleton()->free_rid(base_old);
 }
 
 //////////////////////////////////////
@@ -138,6 +126,10 @@ void VisibleOnScreenEnabler3D::set_enable_node_path(NodePath p_path) {
 		return;
 	}
 	enable_node_path = p_path;
+	if (enable_node_path.is_empty()) {
+		node_id = ObjectID();
+		return;
+	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		node_id = ObjectID();
 		Node *node = get_node(enable_node_path);
@@ -152,7 +144,7 @@ NodePath VisibleOnScreenEnabler3D::get_enable_node_path() {
 }
 
 void VisibleOnScreenEnabler3D::_update_enable_mode(bool p_enable) {
-	Node *node = static_cast<Node *>(ObjectDB::get_instance(node_id));
+	Node *node = ObjectDB::get_instance<Node>(node_id);
 	if (node) {
 		if (p_enable) {
 			switch (enable_mode) {
@@ -177,8 +169,11 @@ void VisibleOnScreenEnabler3D::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				return;
 			}
-
 			node_id = ObjectID();
+			if (enable_node_path.is_empty()) {
+				return;
+			}
+
 			Node *node = get_node(enable_node_path);
 			if (node) {
 				node_id = node->get_instance_id();

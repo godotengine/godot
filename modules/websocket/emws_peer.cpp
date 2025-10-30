@@ -37,7 +37,8 @@
 void EMWSPeer::_esws_on_connect(void *p_obj, char *p_proto) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
 	peer->ready_state = STATE_OPEN;
-	peer->selected_protocol.parse_utf8(p_proto);
+	peer->selected_protocol.clear();
+	peer->selected_protocol.append_utf8(p_proto);
 }
 
 void EMWSPeer::_esws_on_message(void *p_obj, const uint8_t *p_data, int p_data_size, int p_is_string) {
@@ -54,20 +55,24 @@ void EMWSPeer::_esws_on_error(void *p_obj) {
 void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int p_was_clean) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
 	peer->close_code = p_code;
-	peer->close_reason.parse_utf8(p_reason);
+	peer->close_reason.clear();
+	peer->close_reason.append_utf8(p_reason);
 	peer->ready_state = STATE_CLOSED;
 }
 
-Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_options) {
+Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls_options) {
+	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(ready_state != STATE_CLOSED, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
+
 	_clear();
 
 	String host;
 	String path;
 	String scheme;
+	String fragment;
 	int port = 0;
-	Error err = p_url.parse_url(scheme, host, port, path);
+	Error err = p_url.parse_url(scheme, host, port, path, fragment);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
 
 	if (scheme.is_empty()) {
@@ -90,7 +95,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_option
 	requested_url = scheme + host;
 
 	if (port && ((scheme == "ws://" && port != 80) || (scheme == "wss://" && port != 443))) {
-		requested_url += ":" + String::num(port);
+		requested_url += ":" + String::num_int64(port);
 	}
 
 	if (!path.is_empty()) {
@@ -101,13 +106,13 @@ Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_option
 	if (peer_sock == -1) {
 		return FAILED;
 	}
-	in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+	in_buffer.resize(nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 	packet_buffer.resize(inbound_buffer_size);
 	ready_state = STATE_CONNECTING;
 	return OK;
 }
 
-Error EMWSPeer::accept_stream(Ref<StreamPeer> p_stream) {
+Error EMWSPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	WARN_PRINT_ONCE("Acting as WebSocket server is not supported in Web platforms.");
 	return ERR_UNAVAILABLE;
 }
@@ -174,7 +179,7 @@ void EMWSPeer::_clear() {
 	packet_buffer.clear();
 }
 
-void EMWSPeer::close(int p_code, String p_reason) {
+void EMWSPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		if (peer_sock != -1) {
 			godot_js_websocket_destroy(peer_sock);

@@ -28,11 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_application.h"
+#import "godot_application.h"
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
+#import "godot_application_delegate.h"
+#import "os_macos.h"
+
+GodotApplication *GodotApp = nil;
+
+@interface GodotApplication ()
+- (void)forceUnbundledWindowActivationHackStep1;
+- (void)forceUnbundledWindowActivationHackStep2;
+- (void)forceUnbundledWindowActivationHackStep3;
+@end
 
 @implementation GodotApplication
+
+- (GodotApplication *)init {
+	self = [super init];
+
+	GodotApp = self;
+
+	return self;
+}
+
+- (GodotApplicationDelegate *)godotDelegate {
+	return (GodotApplicationDelegate *)self.delegate;
+}
+
+- (void)activateApplication {
+	[NSApp activateIgnoringOtherApps:YES];
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	const char *bundled_id = getenv("__CFBundleIdentifier");
+	NSString *nsbundleid_env = [NSString stringWithUTF8String:(bundled_id != nullptr) ? bundled_id : ""];
+	NSString *nsbundleid = [[NSBundle mainBundle] bundleIdentifier];
+	if (nsappname == nil || isatty(STDOUT_FILENO) || isatty(STDIN_FILENO) || isatty(STDERR_FILENO) || ![nsbundleid isEqualToString:nsbundleid_env]) {
+#ifdef TOOLS_ENABLED
+		if (!OS_MacOS::is_debugger_attached()) {
+#else
+		{
+#endif
+			// If the executable is started from terminal or is not bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
+			[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
+		}
+	}
+}
 
 - (void)mediaKeyEvent:(int)key state:(BOOL)state repeat:(BOOL)repeat {
 	Key keycode = Key::NONE;
@@ -81,7 +121,7 @@
 		} break;
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && keycode != Key::NONE) {
 		DisplayServerMacOS::KeyEvent ke;
 
@@ -100,7 +140,7 @@
 }
 
 - (void)sendEvent:(NSEvent *)event {
-	if ([event type] == NSSystemDefined && [event subtype] == 8) {
+	if ([event type] == NSEventTypeSystemDefined && [event subtype] == 8) {
 		int keyCode = (([event data1] & 0xFFFF0000) >> 16);
 		int keyFlags = ([event data1] & 0x0000FFFF);
 		int keyState = (((keyFlags & 0xFF00) >> 8)) == 0xA;
@@ -109,7 +149,7 @@
 		[self mediaKeyEvent:keyCode state:keyState repeat:keyRepeat];
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		if ([event type] == NSEventTypeLeftMouseDown || [event type] == NSEventTypeRightMouseDown || [event type] == NSEventTypeOtherMouseDown) {
 			if (ds->mouse_process_popups()) {
@@ -127,6 +167,30 @@
 	} else {
 		[super sendEvent:event];
 	}
+}
+
+- (void)forceUnbundledWindowActivationHackStep1 {
+	// Step 1: Switch focus to macOS SystemUIServer process.
+	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
+	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.systemuiserver"]) {
+		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+		break;
+	}
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2)
+			   withObject:nil
+			   afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep2 {
+	// Step 2: Register app as foreground process.
+	ProcessSerialNumber psn = { 0, kCurrentProcess };
+	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep3 {
+	// Step 3: Switch focus back to app window.
+	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 
 @end

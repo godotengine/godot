@@ -6,12 +6,11 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id$
 
  ********************************************************************/
 #if !defined(_encint_H)
@@ -726,7 +725,7 @@ struct th_enc_ctx{
     These are DCT domain quantizers, and so are scaled by an additional factor
      of 4 from the pixel domain.*/
   ogg_int64_t              log_qavg[2][64];
-  /*The "average" quantizer futher partitioned by color plane.
+  /*The "average" quantizer further partitioned by color plane.
     This is used to parameterize mode decision.
     These are DCT domain quantizers, and so are scaled by an additional factor
      of 4 from the pixel domain.*/

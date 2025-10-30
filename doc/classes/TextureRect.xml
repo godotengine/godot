@@ -7,12 +7,11 @@
 		A control that displays a texture, for example an icon inside a GUI. The texture's placement can be controlled with the [member stretch_mode] property. It can scale, tile, or stay centered inside its bounding rectangle.
 	</description>
 	<tutorials>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<members>
-		<member name="expand_mode" type="int" setter="set_expand_mode" getter="get_expand_mode" enum="TextureRect.ExpandMode" default="0" is_experimental="true">
-			Defines how minimum size is determined based on the texture's size. See [enum ExpandMode] for options.
-			[b]Note:[/b] Using [constant EXPAND_FIT_WIDTH], [constant EXPAND_FIT_WIDTH_PROPORTIONAL], [constant EXPAND_FIT_HEIGHT] or [constant EXPAND_FIT_HEIGHT_PROPORTIONAL] may result in unstable behavior in some containers. This functionality is being re-evaluated and will change in the future.
+		<member name="expand_mode" type="int" setter="set_expand_mode" getter="get_expand_mode" enum="TextureRect.ExpandMode" default="0" experimental="Using [constant EXPAND_FIT_WIDTH], [constant EXPAND_FIT_WIDTH_PROPORTIONAL], [constant EXPAND_FIT_HEIGHT], or [constant EXPAND_FIT_HEIGHT_PROPORTIONAL] may result in unstable behavior in some [Container] controls. This behavior may be re-evaluated and changed in the future.">
+			Defines how minimum size is determined based on the texture's size.
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
@@ -22,7 +21,7 @@
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureRect.StretchMode" default="0">
-			Controls the texture's behavior when resizing the node's bounding rectangle. See [enum StretchMode].
+			Controls the texture's behavior when resizing the node's bounding rectangle.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The node's [Texture2D] resource.

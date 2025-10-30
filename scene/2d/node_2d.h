@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_2D_H
-#define NODE_2D_H
+#pragma once
 
 #include "scene/main/canvas_item.h"
 
@@ -56,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_2D;
+
 #ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
@@ -117,7 +118,5 @@ public:
 
 	Transform2D get_transform() const override;
 
-	Node2D() {}
+	Node2D();
 };
-
-#endif // NODE_2D_H

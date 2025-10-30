@@ -18,6 +18,7 @@ namespace embree
 
     /*! default matrix constructor */
     __forceinline LinearSpace2           ( ) {}
+
     __forceinline LinearSpace2           ( const LinearSpace2& other ) { vx = other.vx; vy = other.vy; }
     __forceinline LinearSpace2& operator=( const LinearSpace2& other ) { vx = other.vx; vy = other.vy; return *this; }
 

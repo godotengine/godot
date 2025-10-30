@@ -8,6 +8,8 @@ using System.ComponentModel;
 namespace Godot;
 
 #pragma warning disable CS1734 // XML comment on 'X' has a paramref tag for 'Y', but there is no parameter by that name.
+// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
+#pragma warning disable IDE0040 // Add accessibility modifiers.
 
 partial class AnimationNode
 {
@@ -66,7 +68,7 @@ partial class AnimationTree
 
 partial class CodeEdit
 {
-    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant}, int)"/>
+    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Variant, int)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void AddCodeCompletionOption(CodeCompletionKind type, string displayText, string insertText, Nullable<Color> textColor, Resource icon, Nullable<Variant> value)
     {

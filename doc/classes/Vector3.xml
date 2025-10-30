@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 3D vector using floating point coordinates.
+		A 3D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
@@ -14,7 +14,7 @@
 		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
 		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
 		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<constructors>
@@ -86,7 +86,8 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns the vector "bounced off" from a plane defined by the given normal.
+				Returns the vector "bounced off" from a plane defined by the given normal [param n].
+				[b]Note:[/b] [method bounce] performs the operation that most engines and frameworks call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="ceil" qualifiers="const">
@@ -103,11 +104,20 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="with" type="Vector3" />
 			<description>
 				Returns the cross product of this vector and [param with].
+				This returns a vector perpendicular to both this and [param with], which would be the normal vector of the plane defined by the two vectors. As there are two such vectors, in opposite directions, this method returns the vector defined by a right-handed coordinate system. If the two vectors are parallel this returns an empty vector, making it useful for testing if two vectors are parallel.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
@@ -161,7 +171,7 @@
 			<param index="0" name="with" type="Vector3" />
 			<description>
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
-				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
@@ -204,7 +214,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -217,7 +227,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<param index="1" name="weight" type="float" />
@@ -225,11 +235,18 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector3" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [param length].
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -238,10 +255,31 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with), maxf(y, with), maxf(z, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with.x), minf(y, with.y), minf(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with), minf(y, with), minf(z, with))[/code].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -255,7 +293,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -299,14 +337,16 @@
 			<return type="Vector3" />
 			<param index="0" name="b" type="Vector3" />
 			<description>
-				Returns the result of projecting the vector onto the given vector [param b].
+				Returns a new vector resulting from projecting this vector onto the given vector [param b]. The resulting new vector is parallel to [param b]. See also [method slide].
+				[b]Note:[/b] If the vector [param b] is a zero vector, the components of the resulting new vector will be [constant @GDScript.NAN].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns the result of reflecting the vector from a plane defined by the given normal [param n].
+				Returns the result of reflecting the vector through a plane defined by the given normal vector [param n].
+				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] returns the result of the vector reflected by the given plane. The reflection thus passes through the given normal. While in Godot the reflection passes through the plane and can be thought of as bouncing off the normal. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -337,7 +377,7 @@
 				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [param axis].
 			</description>
 		</method>
-		<method name="slerp" qualifiers="const">
+		<method name="slerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<param index="1" name="weight" type="float" />
@@ -350,7 +390,8 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns a new vector slid along a plane defined by the given normal.
+				Returns a new vector resulting from sliding this vector along a plane with normal [param n]. The resulting new vector is perpendicular to [param n], and is equivalent to this vector minus its projection on [param n]. See also [method project].
+				[b]Note:[/b] The vector [param n] must be normalized. See also [method normalized].
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
@@ -358,6 +399,13 @@
 			<param index="0" name="step" type="Vector3" />
 			<description>
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
@@ -373,13 +421,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Z" value="2">
+		<constant name="AXIS_Z" value="2" enum="Axis">
 			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector3(0, 0, 0)">
@@ -470,7 +518,7 @@
 			<description>
 				Multiplies each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints "(30, 80, 150)"
+				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints (30.0, 80.0, 150.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -494,7 +542,7 @@
 			<description>
 				Adds each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) + Vector3(3, 4, 5)) # Prints "(13, 24, 35)"
+				print(Vector3(10, 20, 30) + Vector3(3, 4, 5)) # Prints (13.0, 24.0, 35.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -504,7 +552,7 @@
 			<description>
 				Subtracts each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints "(7, 16, 25)"
+				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints (7.0, 16.0, 25.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -514,7 +562,7 @@
 			<description>
 				Divides each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) / Vector3(2, 5, 3)) # Prints "(5, 4, 10)"
+				print(Vector3(10, 20, 30) / Vector3(2, 5, 3)) # Prints (5.0, 4.0, 10.0)
 				[/codeblock]
 			</description>
 		</operator>

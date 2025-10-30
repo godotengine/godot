@@ -4,13 +4,19 @@
 		A control used for visual representation of a percentage.
 	</brief_description>
 	<description>
-		A control used for visual representation of a percentage. Shows fill percentage from right to left.
+		A control used for visual representation of a percentage. Shows the fill percentage in the center. Can also be used to show indeterminate progress. For more fill modes, use [TextureProgressBar] instead.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="editor_preview_indeterminate" type="bool" setter="set_editor_preview_indeterminate" getter="is_editor_preview_indeterminate_enabled">
+			If [code]false[/code], the [member indeterminate] animation will be paused in the editor.
+		</member>
 		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" default="0">
 			The fill direction. See [enum FillMode] for possible values.
+		</member>
+		<member name="indeterminate" type="bool" setter="set_indeterminate" getter="is_indeterminate" default="false">
+			When set to [code]true[/code], the progress bar indicates that something is happening with an animation, but does not show the fill percentage or value.
 		</member>
 		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true">
 			If [code]true[/code], the fill percentage is displayed on the bar.
@@ -34,7 +40,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			The color of the text.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [ProgressBar].
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

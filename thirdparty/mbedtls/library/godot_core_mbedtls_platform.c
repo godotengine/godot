@@ -15,4 +15,3 @@ void mbedtls_platform_zeroize(void *buf, size_t len) {
     memset_func( buf, 0, len );
 }
 #endif
-

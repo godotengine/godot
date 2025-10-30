@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from platform_visionos_builders import generate_bundle
+
+from platform_methods import combine_libs_apple_embedded
+
+Import("env")
+
+visionos_lib = [
+    "display_layer_visionos.mm",
+    "display_server_visionos.mm",
+    "godot_view_visionos.mm",
+    "main_visionos.mm",
+    "os_visionos.mm",
+]
+
+env_visionos = env.Clone()
+visionos_lib = env_visionos.add_library("visionos", visionos_lib)
+
+# Enable module support
+env_visionos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+combine_command = env_visionos.Command(
+    "#bin/libgodot" + env_visionos["LIBSUFFIX"], [visionos_lib] + env_visionos["LIBS"], combine_libs_apple_embedded
+)
+
+if env["generate_bundle"]:
+    env.AlwaysBuild(env.CommandNoCache("generate_bundle", combine_command, env.Run(generate_bundle)))

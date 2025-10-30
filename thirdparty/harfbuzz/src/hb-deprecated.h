@@ -56,7 +56,7 @@ HB_BEGIN_DECLS
 /**
  * HB_SCRIPT_CANADIAN_ABORIGINAL:
  *
- * Use #HB_SCRIPT_CANADIAN_SYLLABICS instead:
+ * Use #HB_SCRIPT_CANADIAN_SYLLABICS instead.
  *
  * Deprecated: 0.9.20
  */
@@ -276,6 +276,48 @@ typedef void (*hb_font_get_glyph_shape_func_t) (hb_font_t *font, void *font_data
 						void *user_data);
 
 /**
+ * hb_font_draw_glyph_func_t:
+ * @font: #hb_font_t to work upon
+ * @font_data: @font user data pointer
+ * @glyph: The glyph ID to query
+ * @draw_funcs: The draw functions to send the shape data to
+ * @draw_data: The data accompanying the draw functions
+ * @user_data: User data pointer passed by the caller
+ *
+ * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
+ *
+ * Since: 7.0.0
+ * Deprecated: 11.2.0: Use hb_font_draw_glyph_func_or_fail_t instead.
+ **/
+typedef void (*hb_font_draw_glyph_func_t) (hb_font_t *font, void *font_data,
+                                           hb_codepoint_t glyph,
+                                           hb_draw_funcs_t *draw_funcs, void *draw_data,
+                                           void *user_data);
+
+/**
+ * hb_font_paint_glyph_func_t:
+ * @font: #hb_font_t to work upon
+ * @font_data: @font user data pointer
+ * @glyph: The glyph ID to query
+ * @paint_funcs: The paint functions to use
+ * @paint_data: The data accompanying the paint functions
+ * @palette_index: The color palette to use
+ * @foreground: The foreground color
+ * @user_data: User data pointer passed by the caller
+ *
+ * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
+ *
+ * Since: 7.0.0
+ * Deprecated: 11.2.0: Use hb_font_paint_glyph_or_fail_func_t instead.
+ */
+typedef hb_bool_t (*hb_font_paint_glyph_func_t) (hb_font_t *font, void *font_data,
+						 hb_codepoint_t glyph,
+						 hb_paint_funcs_t *paint_funcs, void *paint_data,
+						 unsigned int palette_index,
+						 hb_color_t foreground,
+						 void *user_data);
+
+/**
  * hb_font_funcs_set_glyph_shape_func:
  * @ffuncs: A font-function structure
  * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
@@ -288,18 +330,63 @@ typedef void (*hb_font_get_glyph_shape_func_t) (hb_font_t *font, void *font_data
  * Since: 4.0.0
  * Deprecated: 7.0.0: Use hb_font_funcs_set_draw_glyph_func() instead
  **/
-HB_DEPRECATED_FOR (hb_font_funcs_set_draw_glyph_func)
+HB_DEPRECATED_FOR (hb_font_funcs_set_draw_glyph_or_fail_func)
 HB_EXTERN void
 hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t *ffuncs,
 				    hb_font_get_glyph_shape_func_t func,
 				    void *user_data, hb_destroy_func_t destroy);
 
-HB_DEPRECATED_FOR (hb_font_draw_glyph)
+/**
+ * hb_font_funcs_set_draw_glyph_func:
+ * @ffuncs: A font-function structure
+ * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is not needed anymore
+ *
+ * Sets the implementation function for #hb_font_draw_glyph_func_t.
+ *
+ * Since: 7.0.0
+ * Deprecated: 11.2.0: Use hb_font_funcs_set_draw_glyph_or_fail_func instead.
+ **/
+HB_DEPRECATED_FOR (hb_font_funcs_set_draw_glyph_or_fail_func)
+HB_EXTERN void
+hb_font_funcs_set_draw_glyph_func (hb_font_funcs_t *ffuncs,
+                                   hb_font_draw_glyph_func_t func,
+                                   void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_font_funcs_set_paint_glyph_func:
+ * @ffuncs: A font-function structure
+ * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): The function to call when @user_data is no longer needed
+ *
+ * Sets the implementation function for #hb_font_paint_glyph_func_t.
+ *
+ * Since: 7.0.0
+ * Deprecated: 11.2.0: Use hb_font_funcs_set_paint_glyph_or_fail_func() instead.
+ */
+HB_DEPRECATED_FOR (hb_font_funcs_set_paint_glyph_or_fail_func)
+HB_EXTERN void
+hb_font_funcs_set_paint_glyph_func (hb_font_funcs_t *ffuncs,
+                                    hb_font_paint_glyph_func_t func,
+                                    void *user_data, hb_destroy_func_t destroy);
+
+HB_DEPRECATED_FOR (hb_font_draw_glyph_or_fail)
 HB_EXTERN void
 hb_font_get_glyph_shape (hb_font_t *font,
 			 hb_codepoint_t glyph,
 			 hb_draw_funcs_t *dfuncs, void *draw_data);
 
+
+/**
+ * HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION:
+ *
+ * Use #HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION instead.
+ *
+ * Deprecated: 8.3.0
+ */
+#define HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION
 
 #endif
 

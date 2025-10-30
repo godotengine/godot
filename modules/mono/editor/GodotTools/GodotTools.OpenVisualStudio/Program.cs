@@ -53,6 +53,12 @@ namespace GodotTools.OpenVisualStudio
                 {
                     // Launch of VS 2022 failed, fallback to 2019
                     dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
+
+                    if (dte == null)
+                    {
+                        Console.Error.WriteLine("Visual Studio not found");
+                        return 1;
+                    }
                 }
 
                 dte.UserControl = true;
@@ -137,12 +143,12 @@ namespace GodotTools.OpenVisualStudio
             return 0;
         }
 
-        private static DTE TryVisualStudioLaunch(string version)
+        private static DTE? TryVisualStudioLaunch(string version)
         {
             try
             {
                 var visualStudioDteType = Type.GetTypeFromProgID(version, throwOnError: true);
-                var dte = (DTE)Activator.CreateInstance(visualStudioDteType);
+                var dte = (DTE?)Activator.CreateInstance(visualStudioDteType!);
 
                 return dte;
             }
@@ -152,7 +158,7 @@ namespace GodotTools.OpenVisualStudio
             }
         }
 
-        private static DTE FindInstanceEditingSolution(string solutionPath)
+        private static DTE? FindInstanceEditingSolution(string solutionPath)
         {
             if (GetRunningObjectTable(0, out IRunningObjectTable pprot) != 0)
                 return null;
@@ -204,7 +210,7 @@ namespace GodotTools.OpenVisualStudio
             return null;
         }
 
-        static string NormalizePath(string path)
+        private static string NormalizePath(string path)
         {
             return new Uri(Path.GetFullPath(path)).LocalPath
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -218,7 +224,7 @@ namespace GodotTools.OpenVisualStudio
             // Class containing the IOleMessageFilter
             // thread error-handling functions
 
-            private static IOleMessageFilter _oldFilter;
+            private static IOleMessageFilter? _oldFilter;
 
             // Start the filter
             public static void Register()
@@ -268,7 +274,7 @@ namespace GodotTools.OpenVisualStudio
 
             // Implement the IOleMessageFilter interface
             [DllImport("ole32.dll")]
-            private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter, out IOleMessageFilter oldFilter);
+            private static extern int CoRegisterMessageFilter(IOleMessageFilter? newFilter, out IOleMessageFilter? oldFilter);
         }
 
         [ComImport(), Guid("00000016-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

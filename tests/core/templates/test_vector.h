@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VECTOR_H
-#define TEST_VECTOR_H
+#pragma once
 
 #include "core/templates/vector.h"
 
@@ -213,6 +212,154 @@ TEST_CASE("[Vector] Get, set") {
 	ERR_PRINT_ON;
 
 	CHECK(vector.get(4) == 4);
+}
+
+TEST_CASE("[Vector] To byte array (variant call)") {
+	// PackedInt32Array.
+	{
+		PackedInt32Array vector[] = { { 0, -1, 2008 }, {} };
+		PackedByteArray out[] = { { /* 0 */ 0x00, 0x00, 0x00, 0x00, /* -1 */ 0xFF, 0xFF, 0xFF, 0xFF, /* 2008 */ 0xD8, 0x07, 0x00, 0x00 }, {} };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedInt64Array.
+	{
+		PackedInt64Array vector[] = { { 0, -1, 2008 }, {} };
+		PackedByteArray out[] = { { /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* -1 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* 2008 */ 0xD8, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, {} };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedFloat32Array.
+	{
+		PackedFloat32Array vector[] = { { 0.0, -1.0, 200e24 }, {} };
+		PackedByteArray out[] = { { /* 0.0 */ 0x00, 0x00, 0x00, 0x00, /* -1.0 */ 0x00, 0x00, 0x80, 0xBF, /* 200e24 */ 0xA6, 0x6F, 0x25, 0x6B }, {} };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+	// PackedFloat64Array.
+	{
+		PackedFloat64Array vector[] = { { 0.0, -1.0, 200e24 }, {} };
+		PackedByteArray out[] = { { /* 0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* -1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF, /* 200e24 */ 0x35, 0x03, 0x32, 0xB7, 0xF4, 0xAD, 0x64, 0x45 }, {} };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedStringArray.
+	{
+		PackedStringArray vector[] = { { "test", "string" }, {}, { "", "test" } };
+		PackedByteArray out[] = { { /* test */ 0x74, 0x65, 0x73, 0x74, /* null */ 0x00, /* string */ 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, /* null */ 0x00 }, {}, { /* null */ 0x00, /* test */ 0x74, 0x65, 0x73, 0x74, /* null */ 0x00 } };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedVector2Array.
+	{
+		PackedVector2Array vector[] = { { Vector2(), Vector2(1, -1) }, {} };
+#ifdef REAL_T_IS_DOUBLE
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF }, {} };
+#else
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
+#endif
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedVector3Array.
+	{
+		PackedVector3Array vector[] = { { Vector3(), Vector3(1, 1, -1) }, {} };
+#ifdef REAL_T_IS_DOUBLE
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* Z=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, /* Y=1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, /* Z=-1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF }, {} };
+#else
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Z=0.0 */ 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Z=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
+#endif
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedColorArray.
+	{
+		PackedColorArray vector[] = { { Color(), Color(1, 1, 1) }, {} };
+		PackedByteArray out[] = { { /* R=0.0 */ 0x00, 0x00, 0x00, 0x00, /* G=0.0 */ 0x00, 0x00, 0x00, 0x00, /* B=0.0 */ 0x00, 0x00, 0x00, 0x00, /* A=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* R=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* G=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* B=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* A=1.0 */ 0x00, 0x00, 0x80, 0x3F }, {} };
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
+
+	// PackedVector4Array.
+	{
+		PackedVector4Array vector[] = { { Vector4(), Vector4(1, -1, 1, -1) }, {} };
+#ifdef REAL_T_IS_DOUBLE
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* Z 0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* W=0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF, /* Z=1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, /* W=-1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF }, {} };
+#else
+		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Z=0.0 */ 0x00, 0x00, 0x00, 0x00, /* W 0.0 */ 0x00, 0x00, 0x00, 0x00, /* X 1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x80, 0xBF, /* Z=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* W=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
+#endif
+
+		for (size_t i = 0; i < std_size(vector); i++) {
+			Callable::CallError err;
+			Variant v_ret;
+			Variant v_vector = vector[i];
+			v_vector.callp("to_byte_array", nullptr, 0, v_ret, err);
+			CHECK(v_ret.get_type() == Variant::PACKED_BYTE_ARRAY);
+			CHECK(v_ret.operator PackedByteArray() == out[i]);
+		}
+	}
 }
 
 TEST_CASE("[Vector] To byte array") {
@@ -532,6 +679,29 @@ TEST_CASE("[Vector] Operators") {
 	CHECK(vector != vector_other);
 }
 
-} // namespace TestVector
+struct CyclicVectorHolder {
+	Vector<CyclicVectorHolder> *vector = nullptr;
+	bool is_destructing = false;
 
-#endif // TEST_VECTOR_H
+	~CyclicVectorHolder() {
+		if (is_destructing) {
+			// The vector must exist and not expose its backing array at this point.
+			CHECK_NE(vector, nullptr);
+			CHECK_EQ(vector->ptr(), nullptr);
+		}
+	}
+};
+
+TEST_CASE("[Vector] Cyclic Reference") {
+	// Create a stack-space vector.
+	Vector<CyclicVectorHolder> vector;
+	// Add a new (empty) element.
+	vector.resize(1);
+	// Expose the vector to its element through CyclicVectorHolder.
+	// This is questionable behavior, but should still behave graciously.
+	vector.ptrw()[0] = CyclicVectorHolder{ &vector };
+	vector.ptrw()[0].is_destructing = true;
+	// The vector goes out of scope and destructs, calling CyclicVectorHolder's destructor.
+}
+
+} // namespace TestVector

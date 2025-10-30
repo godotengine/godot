@@ -9,40 +9,40 @@ partial class MixedReadOnlyWriteOnly
     /// </summary>
     public new class PropertyName : global::Godot.GodotObject.PropertyName {
         /// <summary>
-        /// Cached name for the 'readonly_auto_property' property.
+        /// Cached name for the 'ReadOnlyAutoProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName readonly_auto_property = "readonly_auto_property";
+        public new static readonly global::Godot.StringName @ReadOnlyAutoProperty = "ReadOnlyAutoProperty";
         /// <summary>
-        /// Cached name for the 'readonly_property' property.
+        /// Cached name for the 'ReadOnlyProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName readonly_property = "readonly_property";
+        public new static readonly global::Godot.StringName @ReadOnlyProperty = "ReadOnlyProperty";
         /// <summary>
-        /// Cached name for the 'initonly_auto_property' property.
+        /// Cached name for the 'InitOnlyAutoProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName initonly_auto_property = "initonly_auto_property";
+        public new static readonly global::Godot.StringName @InitOnlyAutoProperty = "InitOnlyAutoProperty";
         /// <summary>
-        /// Cached name for the 'writeonly_property' property.
+        /// Cached name for the 'WriteOnlyProperty' property.
         /// </summary>
-        public new static readonly global::Godot.StringName writeonly_property = "writeonly_property";
+        public new static readonly global::Godot.StringName @WriteOnlyProperty = "WriteOnlyProperty";
         /// <summary>
-        /// Cached name for the 'readonly_field' field.
+        /// Cached name for the 'ReadOnlyField' field.
         /// </summary>
-        public new static readonly global::Godot.StringName readonly_field = "readonly_field";
+        public new static readonly global::Godot.StringName @ReadOnlyField = "ReadOnlyField";
         /// <summary>
-        /// Cached name for the 'writeonly_backing_field' field.
+        /// Cached name for the '_writeOnlyBackingField' field.
         /// </summary>
-        public new static readonly global::Godot.StringName writeonly_backing_field = "writeonly_backing_field";
+        public new static readonly global::Godot.StringName @_writeOnlyBackingField = "_writeOnlyBackingField";
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
     {
-        if (name == PropertyName.writeonly_property) {
-            this.writeonly_property = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+        if (name == PropertyName.@WriteOnlyProperty) {
+            this.@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
-        else if (name == PropertyName.writeonly_backing_field) {
-            this.writeonly_backing_field = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+        if (name == PropertyName.@_writeOnlyBackingField) {
+            this.@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
         return base.SetGodotClassPropertyValue(name, value);
@@ -51,24 +51,24 @@ partial class MixedReadOnlyWriteOnly
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
     {
-        if (name == PropertyName.readonly_auto_property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.readonly_auto_property);
+        if (name == PropertyName.@ReadOnlyAutoProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.readonly_property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.readonly_property);
+        if (name == PropertyName.@ReadOnlyProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyProperty);
             return true;
         }
-        else if (name == PropertyName.initonly_auto_property) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.initonly_auto_property);
+        if (name == PropertyName.@InitOnlyAutoProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@InitOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.readonly_field) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.readonly_field);
+        if (name == PropertyName.@ReadOnlyField) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyField);
             return true;
         }
-        else if (name == PropertyName.writeonly_backing_field) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.writeonly_backing_field);
+        if (name == PropertyName.@_writeOnlyBackingField) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@_writeOnlyBackingField);
             return true;
         }
         return base.GetGodotClassPropertyValue(name, out value);
@@ -82,12 +82,12 @@ partial class MixedReadOnlyWriteOnly
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
     {
         var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.readonly_field, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.readonly_auto_property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.readonly_property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.initonly_auto_property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.writeonly_backing_field, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.writeonly_property, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@ReadOnlyField, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@ReadOnlyAutoProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@ReadOnlyProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@InitOnlyAutoProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.@_writeOnlyBackingField, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.@WriteOnlyProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         return properties;
     }
 #pragma warning restore CS0109

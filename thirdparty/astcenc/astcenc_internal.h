@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2024 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -29,6 +29,7 @@
 	#include <cstdio>
 #endif
 #include <cstdlib>
+#include <limits>
 
 #include "astcenc.h"
 #include "astcenc_mathlib.h"
@@ -79,7 +80,7 @@ static constexpr unsigned int BLOCK_MAX_PARTITIONS { 4 };
 /** @brief The number of partitionings, per partition count, suported by the ASTC format. */
 static constexpr unsigned int BLOCK_MAX_PARTITIONINGS { 1024 };
 
-/** @brief The maximum number of weights used during partition selection for texel clustering. */
+/** @brief The maximum number of texels used during partition selection for texel clustering. */
 static constexpr uint8_t BLOCK_MAX_KMEANS_TEXELS { 64 };
 
 /** @brief The maximum number of weights a block can support. */
@@ -119,11 +120,9 @@ static constexpr unsigned int WEIGHTS_MAX_DECIMATION_MODES { 87 };
 static constexpr float ERROR_CALC_DEFAULT { 1e30f };
 
 /**
- * @brief The minimum texel count for a block to use the one partition fast path.
- *
- * This setting skips 4x4 and 5x4 block sizes.
+ * @brief The minimum tuning setting threshold for the one partition fast path.
  */
-static constexpr unsigned int TUNE_MIN_TEXELS_MODE0_FASTPATH { 24 };
+static constexpr float TUNE_MIN_SEARCH_MODE0 { 0.85f };
 
 /**
  * @brief The maximum number of candidate encodings tested for each encoding mode.
@@ -137,7 +136,7 @@ static constexpr unsigned int TUNE_MAX_TRIAL_CANDIDATES { 8 };
  *
  * This can be dynamically reduced by the compression quality preset.
  */
-static constexpr unsigned int TUNE_MAX_PARTITIONING_CANDIDATES { 32 };
+static constexpr unsigned int TUNE_MAX_PARTITIONING_CANDIDATES { 8 };
 
 /**
  * @brief The maximum quant level using full angular endpoint search method.
@@ -327,10 +326,10 @@ struct partition_info
 	uint8_t partition_texel_count[BLOCK_MAX_PARTITIONS];
 
 	/** @brief The partition of each texel in the block. */
-	uint8_t partition_of_texel[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t partition_of_texel[BLOCK_MAX_TEXELS];
 
 	/** @brief The list of texels in each partition. */
-	uint8_t texels_of_partition[BLOCK_MAX_PARTITIONS][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texels_of_partition[BLOCK_MAX_PARTITIONS][BLOCK_MAX_TEXELS];
 };
 
 /**
@@ -368,40 +367,40 @@ struct decimation_info
 	 * @brief The number of weights that contribute to each texel.
 	 * Value is between 1 and 4.
 	 */
-	uint8_t texel_weight_count[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weight_count[BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The weight index of the N weights that are interpolated for each texel.
 	 * Stored transposed to improve vectorization.
 	 */
-	uint8_t texel_weights_tr[4][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weights_tr[4][BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The bilinear contribution of the N weights that are interpolated for each texel.
 	 * Value is between 0 and 16, stored transposed to improve vectorization.
 	 */
-	uint8_t texel_weight_contribs_int_tr[4][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weight_contribs_int_tr[4][BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The bilinear contribution of the N weights that are interpolated for each texel.
 	 * Value is between 0 and 1, stored transposed to improve vectorization.
 	 */
-	alignas(ASTCENC_VECALIGN) float texel_weight_contribs_float_tr[4][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float texel_weight_contribs_float_tr[4][BLOCK_MAX_TEXELS];
 
 	/** @brief The number of texels that each stored weight contributes to. */
-	uint8_t weight_texel_count[BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weight_texel_count[BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief The list of texels that use a specific weight index.
 	 * Stored transposed to improve vectorization.
 	 */
-	uint8_t weight_texels_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weight_texels_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief The bilinear contribution to the N texels that use each weight.
 	 * Value is between 0 and 1, stored transposed to improve vectorization.
 	 */
-	alignas(ASTCENC_VECALIGN) float weights_texel_contribs_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS float weights_texel_contribs_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief The bilinear contribution to the Nth texel that uses each weight.
@@ -581,7 +580,7 @@ struct block_size_descriptor
 	decimation_mode decimation_modes[WEIGHTS_MAX_DECIMATION_MODES];
 
 	/** @brief The active decimation tables, stored in low indices. */
-	alignas(ASTCENC_VECALIGN) decimation_info decimation_tables[WEIGHTS_MAX_DECIMATION_MODES];
+	ASTCENC_ALIGNAS decimation_info decimation_tables[WEIGHTS_MAX_DECIMATION_MODES];
 
 	/** @brief The packed block mode array index, or @c BLOCK_BAD_BLOCK_MODE if not active. */
 	uint16_t block_mode_packed_index[WEIGHTS_MAX_BLOCK_MODES];
@@ -733,7 +732,11 @@ struct block_size_descriptor
  *
  * The @c data_[rgba] fields store the image data in an encoded SoA float form designed for easy
  * vectorization. Input data is converted to float and stored as values between 0 and 65535. LDR
- * data is stored as direct UNORM data, HDR data is stored as LNS data.
+ * data is stored as direct UNORM data, HDR data is stored as LNS data. They are allocated SIMD
+ * elements over-size to allow vectorized stores of unaligned and partial SIMD lanes (e.g. in a
+ * 6x6x6 block the final row write will read elements 210-217 (vec8) or 214-217 (vec4), which is
+ * two elements above the last real data element). The overspill values are never written to memory,
+ * and would be benign, but the padding avoids hitting undefined behavior.
  *
  * The @c rgb_lns and @c alpha_lns fields that assigned a per-texel use of HDR are only used during
  * decompression. The current compressor will always use HDR endpoint formats when in HDR mode.
@@ -741,16 +744,16 @@ struct block_size_descriptor
 struct image_block
 {
 	/** @brief The input (compress) or output (decompress) data for the red color component. */
-	alignas(ASTCENC_VECALIGN) float data_r[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_r[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the green color component. */
-	alignas(ASTCENC_VECALIGN) float data_g[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_g[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the blue color component. */
-	alignas(ASTCENC_VECALIGN) float data_b[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_b[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the alpha color component. */
-	alignas(ASTCENC_VECALIGN) float data_a[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_a[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The number of texels in the block. */
 	uint8_t texel_count;
@@ -772,6 +775,9 @@ struct image_block
 
 	/** @brief Is this grayscale block where R == G == B for all texels? */
 	bool grayscale;
+
+	/** @brief Is the eventual decode using decode_unorm8 rounding? */
+	bool decode_unorm8;
 
 	/** @brief Set to 1 if a texel is using HDR RGB endpoints (decompression only). */
 	uint8_t rgb_lns[BLOCK_MAX_TEXELS];
@@ -899,10 +905,10 @@ struct endpoints_and_weights
 	endpoints ep;
 
 	/** @brief The ideal weight for each texel; may be undecimated or decimated. */
-	alignas(ASTCENC_VECALIGN) float weights[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float weights[BLOCK_MAX_TEXELS];
 
 	/** @brief The ideal weight error scaling for each texel; may be undecimated or decimated. */
-	alignas(ASTCENC_VECALIGN) float weight_error_scale[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float weight_error_scale[BLOCK_MAX_TEXELS];
 };
 
 /**
@@ -932,7 +938,7 @@ struct encoding_choice_errors
 /**
  * @brief Preallocated working buffers, allocated per thread during context creation.
  */
-struct alignas(ASTCENC_VECALIGN) compression_working_buffers
+struct ASTCENC_ALIGNAS compression_working_buffers
 {
 	/** @brief Ideal endpoints and weights for plane 1. */
 	endpoints_and_weights ei1;
@@ -948,17 +954,17 @@ struct alignas(ASTCENC_VECALIGN) compression_working_buffers
 	 *
 	 * For two planes, second plane starts at @c WEIGHTS_PLANE2_OFFSET offsets.
 	 */
-	alignas(ASTCENC_VECALIGN) float dec_weights_ideal[WEIGHTS_MAX_DECIMATION_MODES * BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS float dec_weights_ideal[WEIGHTS_MAX_DECIMATION_MODES * BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief Decimated quantized weight values in the unquantized 0-64 range.
 	 *
 	 * For two planes, second plane starts at @c WEIGHTS_PLANE2_OFFSET offsets.
 	 */
-	uint8_t dec_weights_uquant[WEIGHTS_MAX_BLOCK_MODES * BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t dec_weights_uquant[WEIGHTS_MAX_BLOCK_MODES * BLOCK_MAX_WEIGHTS];
 
 	/** @brief Error of the best encoding combination for each block mode. */
-	alignas(ASTCENC_VECALIGN) float errors_of_best_combination[WEIGHTS_MAX_BLOCK_MODES];
+	ASTCENC_ALIGNAS float errors_of_best_combination[WEIGHTS_MAX_BLOCK_MODES];
 
 	/** @brief The best color quant for each block mode. */
 	uint8_t best_quant_levels[WEIGHTS_MAX_BLOCK_MODES];
@@ -1025,13 +1031,13 @@ struct dt_init_working_buffers
 struct quant_and_transfer_table
 {
 	/** @brief The unscrambled unquantized value. */
-	int8_t quant_to_unquant[32];
+	uint8_t quant_to_unquant[32];
 
 	/** @brief The scrambling order: scrambled_quant = map[unscrambled_quant]. */
-	int8_t scramble_map[32];
+	uint8_t scramble_map[32];
 
 	/** @brief The unscrambling order: unscrambled_unquant = map[scrambled_quant]. */
-	int8_t unscramble_and_unquant_map[32];
+	uint8_t unscramble_and_unquant_map[32];
 
 	/**
 	 * @brief A table of previous-and-next weights, indexed by the current unquantized value.
@@ -1060,7 +1066,7 @@ static constexpr uint8_t SYM_BTYPE_NONCONST { 3 };
  * @brief A symbolic representation of a compressed block.
  *
  * The symbolic representation stores the unpacked content of a single
- * @c physical_compressed_block, in a form which is much easier to access for
+ * physical compressed block, in a form which is much easier to access for
  * the rest of the compressor code.
  */
 struct symbolic_compressed_block
@@ -1109,7 +1115,7 @@ struct symbolic_compressed_block
 	 *
 	 * If dual plane, the second plane starts at @c weights[WEIGHTS_PLANE2_OFFSET].
 	 */
-	uint8_t weights[BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weights[BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief Get the weight quantization used by this block mode.
@@ -1121,18 +1127,6 @@ struct symbolic_compressed_block
 		return this->quant_mode;
 	}
 };
-
-/**
- * @brief A physical representation of a compressed block.
- *
- * The physical representation stores the raw bytes of the format in memory.
- */
-struct physical_compressed_block
-{
-	/** @brief The ASTC encoded data for a single block. */
-	uint8_t data[16];
-};
-
 
 /**
  * @brief Parameter structure for @c compute_pixel_region_variance().
@@ -1578,6 +1572,27 @@ unsigned int find_best_partition_candidates(
 ============================================================================ */
 
 /**
+ * @brief Get a vector mask indicating lanes decompressing into a UNORM8 value.
+ *
+ * @param decode_mode   The color profile for LDR_SRGB settings.
+ * @param blk           The image block for output image bitness settings.
+ *
+ * @return The component mask vector.
+ */
+static inline vmask4 get_u8_component_mask(
+	astcenc_profile decode_mode,
+	const image_block& blk
+) {
+	// Decode mode or sRGB forces writing to unorm8 output value
+	if (blk.decode_unorm8 || decode_mode == ASTCENC_PRF_LDR_SRGB)
+	{
+		return vmask4(true);
+	}
+
+	return vmask4(false);
+}
+
+/**
  * @brief Setup computation of regional averages in an image.
  *
  * This must be done by only a single thread per image, before any thread calls
@@ -1830,7 +1845,7 @@ uint8_t pack_color_endpoints(
  *
  * Endpoints must be unscrambled and converted into the 0-255 range before calling this functions.
  *
- * @param      decode_mode   The decode mode (LDR, HDR).
+ * @param      decode_mode   The decode mode (LDR, HDR, etc).
  * @param      format        The color endpoint mode used.
  * @param      input         The raw array of encoded input integers. The length of this array
  *                           depends on @c format; it can be safely assumed to be large enough.
@@ -1845,6 +1860,34 @@ void unpack_color_endpoints(
 	const uint8_t* input,
 	bool& rgb_hdr,
 	bool& alpha_hdr,
+	vint4& output0,
+	vint4& output1);
+
+/**
+ * @brief Unpack an LDR RGBA color that uses delta encoding.
+ *
+ * @param      input0    The packed endpoint 0 color.
+ * @param      input1    The packed endpoint 1 color deltas.
+ * @param[out] output0   The unpacked endpoint 0 color.
+ * @param[out] output1   The unpacked endpoint 1 color.
+ */
+void rgba_delta_unpack(
+	vint4 input0,
+	vint4 input1,
+	vint4& output0,
+	vint4& output1);
+
+/**
+ * @brief Unpack an LDR RGBA color that uses direct encoding.
+ *
+ * @param      input0    The packed endpoint 0 color.
+ * @param      input1    The packed endpoint 1 color.
+ * @param[out] output0   The unpacked endpoint 0 color.
+ * @param[out] output1   The unpacked endpoint 1 color.
+ */
+void rgba_unpack(
+	vint4 input0,
+	vint4 input1,
 	vint4& output0,
 	vint4& output1);
 
@@ -2007,7 +2050,7 @@ void compute_angular_endpoints_2planes(
 void compress_block(
 	const astcenc_contexti& ctx,
 	const image_block& blk,
-	physical_compressed_block& pcb,
+	uint8_t pcb[16],
 	compression_working_buffers& tmpbuf);
 
 /**
@@ -2100,12 +2143,12 @@ float compute_symbolic_block_difference_1plane_1partition(
  *
  * @param      bsd   The block size information.
  * @param      scb   The symbolic representation.
- * @param[out] pcb   The binary encoded data.
+ * @param[out] pcb   The physical compressed block output.
  */
 void symbolic_to_physical(
 	const block_size_descriptor& bsd,
 	const symbolic_compressed_block& scb,
-	physical_compressed_block& pcb);
+	uint8_t pcb[16]);
 
 /**
  * @brief Convert a binary physical encoding into a symbolic representation.
@@ -2114,12 +2157,12 @@ void symbolic_to_physical(
  * flagged as an error block if the encoding is invalid.
  *
  * @param      bsd   The block size information.
- * @param      pcb   The binary encoded data.
+ * @param      pcb   The physical compresesd block input.
  * @param[out] scb   The output symbolic representation.
  */
 void physical_to_symbolic(
 	const block_size_descriptor& bsd,
-	const physical_compressed_block& pcb,
+	const uint8_t pcb[16],
 	symbolic_compressed_block& scb);
 
 /* ============================================================================
@@ -2128,10 +2171,11 @@ Platform-specific functions.
 /**
  * @brief Allocate an aligned memory buffer.
  *
- * Allocated memory must be freed by aligned_free;
+ * Allocated memory must be freed by aligned_free.
  *
  * @param size    The desired buffer size.
- * @param align   The desired buffer alignment; must be 2^N.
+ * @param align   The desired buffer alignment; must be 2^N, may be increased
+ *                by the implementation to a minimum allowable alignment.
  *
  * @return The memory buffer pointer or nullptr on allocation failure.
  */
@@ -2141,10 +2185,14 @@ T* aligned_malloc(size_t size, size_t align)
 	void* ptr;
 	int error = 0;
 
+	// Don't allow this to under-align a type
+	size_t min_align = astc::max(alignof(T), sizeof(void*));
+	size_t real_align = astc::max(min_align, align);
+
 #if defined(_WIN32)
-	ptr = _aligned_malloc(size, align);
+	ptr = _aligned_malloc(size, real_align);
 #else
-	error = posix_memalign(&ptr, align, size);
+	error = posix_memalign(&ptr, real_align, size);
 #endif
 
 	if (error || (!ptr))
@@ -2164,9 +2212,9 @@ template<typename T>
 void aligned_free(T* ptr)
 {
 #if defined(_WIN32)
-	_aligned_free(reinterpret_cast<void*>(ptr));
+	_aligned_free(ptr);
 #else
-	free(reinterpret_cast<void*>(ptr));
+	free(ptr);
 #endif
 }
 

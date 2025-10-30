@@ -1,5 +1,5 @@
 // basisu_resampler_filters.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,18 @@ namespace basisu
 
 	extern const resample_filter g_resample_filters[];
 	extern const int g_num_resample_filters;
+		
+	const float BASISU_BOX_FILTER_SUPPORT = 0.5f;
+	float box_filter(float t); /* pulse/Fourier window */
+
+	const float BASISU_TENT_FILTER_SUPPORT = 1.0f;
+	float tent_filter(float t); /* box (*) box, bilinear/triangle */
+
+	const float BASISU_GAUSSIAN_FILTER_SUPPORT = 1.25f;
+	float gaussian_filter(float t); // with blackman window
+
+	const float BASISU_BELL_FILTER_SUPPORT = 1.5f;
+	float bell_filter(float t); /* box (*) box (*) box */
 
 	int find_resample_filter(const char *pName);
 

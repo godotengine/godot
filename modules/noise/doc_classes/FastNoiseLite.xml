@@ -11,13 +11,13 @@
 	</tutorials>
 	<members>
 		<member name="cellular_distance_function" type="int" setter="set_cellular_distance_function" getter="get_cellular_distance_function" enum="FastNoiseLite.CellularDistanceFunction" default="0">
-			Determines how the distance to the nearest/second-nearest point is computed. See [enum CellularDistanceFunction] for options.
+			Determines how the distance to the nearest/second-nearest point is computed.
 		</member>
 		<member name="cellular_jitter" type="float" setter="set_cellular_jitter" getter="get_cellular_jitter" default="1.0">
 			Maximum distance a point can move off of its grid position. Set to [code]0[/code] for an even grid.
 		</member>
 		<member name="cellular_return_type" type="int" setter="set_cellular_return_type" getter="get_cellular_return_type" enum="FastNoiseLite.CellularReturnType" default="1">
-			Return type from cellular noise calculations. See [enum CellularReturnType].
+			Return type from cellular noise calculations.
 		</member>
 		<member name="domain_warp_amplitude" type="float" setter="set_domain_warp_amplitude" getter="get_domain_warp_amplitude" default="30.0">
 			Sets the maximum warp distance from the origin.
@@ -30,19 +30,19 @@
 			A low value places more emphasis on the lower frequency base layers, while a high value puts more emphasis on the higher frequency layers.
 		</member>
 		<member name="domain_warp_fractal_lacunarity" type="float" setter="set_domain_warp_fractal_lacunarity" getter="get_domain_warp_fractal_lacunarity" default="6.0">
-			Octave lacunarity of the fractal noise which warps the space. Increasing this value results in higher octaves producing noise with finer details and a rougher appearance.
+			The change in frequency between octaves, also known as "lacunarity", of the fractal noise which warps the space. Increasing this value results in higher octaves, producing noise with finer details and a rougher appearance.
 		</member>
 		<member name="domain_warp_fractal_octaves" type="int" setter="set_domain_warp_fractal_octaves" getter="get_domain_warp_fractal_octaves" default="5">
 			The number of noise layers that are sampled to get the final value for the fractal noise which warps the space.
 		</member>
 		<member name="domain_warp_fractal_type" type="int" setter="set_domain_warp_fractal_type" getter="get_domain_warp_fractal_type" enum="FastNoiseLite.DomainWarpFractalType" default="1">
-			The method for combining octaves into a fractal which is used to warp the space. See [enum DomainWarpFractalType].
+			The method for combining octaves into a fractal which is used to warp the space.
 		</member>
 		<member name="domain_warp_frequency" type="float" setter="set_domain_warp_frequency" getter="get_domain_warp_frequency" default="0.05">
 			Frequency of the noise which warps the space. Low frequency results in smooth noise while high frequency results in rougher, more granular noise.
 		</member>
 		<member name="domain_warp_type" type="int" setter="set_domain_warp_type" getter="get_domain_warp_type" enum="FastNoiseLite.DomainWarpType" default="0">
-			Sets the warp algorithm. See [enum DomainWarpType].
+			The warp algorithm.
 		</member>
 		<member name="fractal_gain" type="float" setter="set_fractal_gain" getter="get_fractal_gain" default="0.5">
 			Determines the strength of each subsequent layer of noise in fractal noise.
@@ -58,7 +58,7 @@
 			Sets the strength of the fractal ping pong type.
 		</member>
 		<member name="fractal_type" type="int" setter="set_fractal_type" getter="get_fractal_type" enum="FastNoiseLite.FractalType" default="1">
-			The method for combining octaves into a fractal. See [enum FractalType].
+			The method for combining octaves into a fractal.
 		</member>
 		<member name="fractal_weighted_strength" type="float" setter="set_fractal_weighted_strength" getter="get_fractal_weighted_strength" default="0.0">
 			Higher weighting means higher octaves have less impact if lower octaves have a large impact.
@@ -67,7 +67,7 @@
 			The frequency for all noise types. Low frequency results in smooth noise while high frequency results in rougher, more granular noise.
 		</member>
 		<member name="noise_type" type="int" setter="set_noise_type" getter="get_noise_type" enum="FastNoiseLite.NoiseType" default="1">
-			The noise algorithm used. See [enum NoiseType].
+			The noise algorithm used.
 		</member>
 		<member name="offset" type="Vector3" setter="set_offset" getter="get_offset" default="Vector3(0, 0, 0)">
 			Translate the noise input coordinates by the given [Vector3].
@@ -81,7 +81,7 @@
 			A lattice of points are assigned random values then interpolated based on neighboring values.
 		</constant>
 		<constant name="TYPE_VALUE_CUBIC" value="4" enum="NoiseType">
-			Similar to Value noise, but slower. Has more variance in peaks and valleys.
+			Similar to value noise ([constant TYPE_VALUE]), but slower. Has more variance in peaks and valleys.
 			Cubic noise can be used to avoid certain artifacts when using value noise to create a bumpmap. In general, you should always use this mode if the value noise is being used for a heightmap or bumpmap.
 		</constant>
 		<constant name="TYPE_PERLIN" value="3" enum="NoiseType">
@@ -91,10 +91,10 @@
 			Cellular includes both Worley noise and Voronoi diagrams which creates various regions of the same value.
 		</constant>
 		<constant name="TYPE_SIMPLEX" value="0" enum="NoiseType">
-			As opposed to [constant TYPE_PERLIN], gradients exist in a simplex lattice rather than a grid lattice, avoiding directional artifacts.
+			As opposed to [constant TYPE_PERLIN], gradients exist in a simplex lattice rather than a grid lattice, avoiding directional artifacts. Internally uses FastNoiseLite's OpenSimplex2 noise type.
 		</constant>
 		<constant name="TYPE_SIMPLEX_SMOOTH" value="1" enum="NoiseType">
-			Modified, higher quality version of [constant TYPE_SIMPLEX], but slower.
+			Modified, higher quality version of [constant TYPE_SIMPLEX], but slower. Internally uses FastNoiseLite's OpenSimplex2S noise type.
 		</constant>
 		<constant name="FRACTAL_NONE" value="0" enum="FractalType">
 			No fractal noise.
@@ -118,7 +118,7 @@
 			Manhattan distance (taxicab metric) to the nearest point.
 		</constant>
 		<constant name="DISTANCE_HYBRID" value="3" enum="CellularDistanceFunction">
-			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries
+			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries.
 		</constant>
 		<constant name="RETURN_CELL_VALUE" value="0" enum="CellularReturnType">
 			The cellular distance function will return the same value for all points within a cell.

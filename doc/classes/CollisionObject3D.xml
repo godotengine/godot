@@ -14,11 +14,11 @@
 			<return type="void" />
 			<param index="0" name="camera" type="Camera3D" />
 			<param index="1" name="event" type="InputEvent" />
-			<param index="2" name="position" type="Vector3" />
+			<param index="2" name="event_position" type="Vector3" />
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Receives unhandled [InputEvent]s. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				Receives unhandled [InputEvent]s. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
 				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
@@ -194,7 +194,7 @@
 			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
 		</member>
 		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="CollisionObject3D.DisableMode" default="0">
-			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED].
 		</member>
 		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" default="false">
 			If [code]true[/code], the [CollisionObject3D] will continue to receive input events as the mouse is dragged across its shapes.
@@ -207,11 +207,11 @@
 		<signal name="input_event">
 			<param index="0" name="camera" type="Node" />
 			<param index="1" name="event" type="InputEvent" />
-			<param index="2" name="position" type="Vector3" />
+			<param index="2" name="event_position" type="Vector3" />
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Emitted when the object receives an unhandled [InputEvent]. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+				Emitted when the object receives an unhandled [InputEvent]. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

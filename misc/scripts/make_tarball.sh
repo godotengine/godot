@@ -54,7 +54,7 @@ echo "    $(dirname $CURDIR)/$NAME.tar.gz"
 
 git archive $HEAD --prefix=$NAME/ -o $TMPDIR/$NAME.tar
 
-# Adding custom .git/HEAD to tarball so that we can generate VERSION_HASH.
+# Adding custom .git/HEAD to tarball so that we can generate GODOT_VERSION_HASH.
 cd $TMPDIR
 mkdir -p $NAME/.git
 echo $HEAD > $NAME/.git/HEAD

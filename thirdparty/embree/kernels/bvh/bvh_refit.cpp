@@ -11,6 +11,9 @@
 #include "../geometry/quadv.h"
 #include "../geometry/object.h"
 #include "../geometry/instance.h"
+#include "../geometry/instance_array.h"
+
+#include "../../common/algorithms/parallel_for.h"
 
 namespace embree
 {
@@ -82,7 +85,7 @@ namespace embree
     template<int N>
     BBox3fa BVHNRefitter<N>::refit_toplevel(NodeRef& ref,
                                             size_t &subtrees,
-											const BBox3fa *const subTreeBounds,
+                                            const BBox3fa *const subTreeBounds,
                                             const size_t depth)
     {
       if (depth >= MAX_SUB_TREE_EXTRACTION_DEPTH) 
@@ -236,12 +239,20 @@ namespace embree
 #if defined(EMBREE_GEOMETRY_INSTANCE)
     Builder* BVH4InstanceMeshBuilderSAH (void* bvh, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode);
     Builder* BVH4InstanceMeshRefitSAH (void* accel, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) { return new BVHNRefitT<4,Instance,InstancePrimitive>((BVH4*)accel,BVH4InstanceMeshBuilderSAH(accel,mesh,gtype,geomID,mode),mesh,mode); }
-
 #if  defined(__AVX__)
     Builder* BVH8InstanceMeshBuilderSAH (void* bvh, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode);
     Builder* BVH8InstanceMeshRefitSAH (void* accel, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) { return new BVHNRefitT<8,Instance,InstancePrimitive>((BVH8*)accel,BVH8InstanceMeshBuilderSAH(accel,mesh,gtype,geomID,mode),mesh,mode); }
 #endif
 #endif
 
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+    Builder* BVH4InstanceArrayMeshBuilderSAH (void* bvh, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode);
+    Builder* BVH4InstanceArrayMeshRefitSAH (void* accel, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) { return new BVHNRefitT<4,InstanceArray,InstanceArrayPrimitive>((BVH4*)accel,BVH4InstanceArrayMeshBuilderSAH(accel,mesh,gtype,geomID,mode),mesh,mode); }
+
+#if  defined(__AVX__)
+    Builder* BVH8InstanceArrayMeshBuilderSAH (void* bvh, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode);
+    Builder* BVH8InstanceArrayMeshRefitSAH (void* accel, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) { return new BVHNRefitT<8,InstanceArray,InstanceArrayPrimitive>((BVH8*)accel,BVH8InstanceArrayMeshBuilderSAH(accel,mesh,gtype,geomID,mode),mesh,mode); }
+#endif
+#endif
   }
 }

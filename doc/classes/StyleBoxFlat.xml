@@ -5,15 +5,14 @@
 	</brief_description>
 	<description>
 		By configuring various properties of this style box, you can achieve many common looks without the need of a texture. This includes optionally rounded borders, antialiasing, shadows, and skew.
-		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system.
-		[b]Example:[/b]
-		[codeblock]
+		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system:
+		[codeblock lang=text]
 		height = 30
 		corner_radius_top_left = 50
 		corner_radius_bottom_left = 100
 		[/codeblock]
 		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
-		[codeblock]
+		[codeblock lang=text]
 		corner_radius_top_left: 10
 		corner_radius_bottom_left: 20
 		[/codeblock]
@@ -38,7 +37,7 @@
 			<return type="int" />
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<description>
-				Returns the given [param corner]'s radius. See [enum Corner] for possible values.
+				Returns the given [param corner]'s radius.
 			</description>
 		</method>
 		<method name="get_expand_margin" qualifiers="const">
@@ -68,7 +67,7 @@
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<param index="1" name="radius" type="int" />
 			<description>
-				Sets the corner radius to [param radius] pixels for the given [param corner]. See [enum Corner] for possible values.
+				Sets the corner radius to [param radius] pixels for the given [param corner].
 			</description>
 		</method>
 		<method name="set_corner_radius_all">

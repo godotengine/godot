@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_HTTP_CLIENT_H
-#define TEST_HTTP_CLIENT_H
+#pragma once
 
 #include "core/io/http_client.h"
 
 #include "tests/test_macros.h"
 
+#include "modules/modules_enabled.gen.h"
+
 namespace TestHTTPClient {
 
 TEST_CASE("[HTTPClient] Instantiation") {
 	Ref<HTTPClient> client = HTTPClient::create();
-	CHECK_MESSAGE(client != nullptr, "A HTTP Client created should not be a null pointer");
+	CHECK_MESSAGE(client.is_valid(), "A HTTP Client created should not be a null pointer");
 }
 
 TEST_CASE("[HTTPClient] query_string_from_dict") {
@@ -57,10 +58,7 @@ TEST_CASE("[HTTPClient] query_string_from_dict") {
 	Dictionary dict2;
 	dict2["key1"] = "value";
 	dict2["key2"] = 123;
-	Array values;
-	values.push_back(1);
-	values.push_back(2);
-	values.push_back(3);
+	Array values = { 1, 2, 3 };
 	dict2["key3"] = values;
 	dict2["key4"] = Variant();
 	String multiple_keys = client->query_string_from_dict(dict2);
@@ -90,6 +88,7 @@ TEST_CASE("[HTTPClient] verify_headers") {
 	ERR_PRINT_ON;
 }
 
+#if defined(MODULE_MBEDTLS_ENABLED) || defined(WEB_ENABLED)
 TEST_CASE("[HTTPClient] connect_to_host") {
 	Ref<HTTPClient> client = HTTPClient::create();
 	String host = "https://www.example.com";
@@ -100,7 +99,6 @@ TEST_CASE("[HTTPClient] connect_to_host") {
 	Error err = client->connect_to_host(host, port, tls_options);
 	CHECK_MESSAGE(err == OK, "Expected OK for successful connection");
 }
+#endif // MODULE_MBEDTLS_ENABLED || WEB_ENABLED
 
 } // namespace TestHTTPClient
-
-#endif // TEST_HTTP_CLIENT_H

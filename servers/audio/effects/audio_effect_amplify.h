@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_EFFECT_AMPLIFY_H
-#define AUDIO_EFFECT_AMPLIFY_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -60,7 +59,8 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	AudioEffectAmplify();
 };
-
-#endif // AUDIO_EFFECT_AMPLIFY_H

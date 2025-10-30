@@ -28,14 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RANDOM_PCG_H
-#define RANDOM_PCG_H
+#pragma once
 
-#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
 
 #include "thirdparty/misc/pcg.h"
-
-#include <math.h>
 
 #if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
@@ -47,17 +44,10 @@ static int __bsr_clz32(uint32_t x) {
 	return 31 - index;
 }
 #define CLZ32(x) __bsr_clz32(x)
-#else
 #endif
 
-#if defined(__GNUC__)
-#define LDEXP(s, e) __builtin_ldexp(s, e)
-#define LDEXPF(s, e) __builtin_ldexpf(s, e)
-#else
-#include <math.h>
-#define LDEXP(s, e) ldexp(s, e)
-#define LDEXPF(s, e) ldexp(s, e)
-#endif
+template <typename T>
+class Vector;
 
 class RandomPCG {
 	pcg32_random_t pcg;
@@ -87,6 +77,8 @@ public:
 		return pcg32_boundedrand_r(&pcg, bounds);
 	}
 
+	int64_t rand_weighted(const Vector<float> &p_weights);
+
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
 	// These functions sample the output of rand() as the fraction part of an infinite binary number,
 	// with some tricks applied to reduce ops and branching:
@@ -106,7 +98,7 @@ public:
 			return 0;
 		}
 		uint64_t significand = (((uint64_t)rand()) << 32) | rand() | 0x8000000000000001U;
-		return LDEXP((double)significand, -64 - CLZ32(proto_exp_offset));
+		return std::ldexp((double)significand, -64 - CLZ32(proto_exp_offset));
 #else
 #pragma message("RandomPCG::randd - intrinsic clz is not available, falling back to bit truncation")
 		return (double)(((((uint64_t)rand()) << 32) | rand()) & 0x1FFFFFFFFFFFFFU) / (double)0x1FFFFFFFFFFFFFU;
@@ -118,7 +110,7 @@ public:
 		if (unlikely(proto_exp_offset == 0)) {
 			return 0;
 		}
-		return LDEXPF((float)(rand() | 0x80000001), -32 - CLZ32(proto_exp_offset));
+		return std::ldexp((float)(rand() | 0x80000001), -32 - CLZ32(proto_exp_offset));
 #else
 #pragma message("RandomPCG::randf - intrinsic clz is not available, falling back to bit truncation")
 		return (float)(rand() & 0xFFFFFF) / (float)0xFFFFFF;
@@ -130,19 +122,17 @@ public:
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (std::cos(Math::TAU * randd()) * std::sqrt(-2.0 * std::log(temp))); // Box-Muller transform.
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
 		float temp = randf();
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (std::cos((float)Math::TAU * randf()) * std::sqrt(-2.0 * std::log(temp))); // Box-Muller transform.
 	}
 
 	double random(double p_from, double p_to);
 	float random(float p_from, float p_to);
 	int random(int p_from, int p_to);
 };
-
-#endif // RANDOM_PCG_H

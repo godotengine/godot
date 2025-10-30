@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		The default use of [AcceptDialog] is to allow it to only be accepted or closed, with the same result. However, the [signal confirmed] and [signal canceled] signals allow to make the two actions different, and the [method add_button] method allows to add custom buttons and actions.
+		[b]Note:[/b] [AcceptDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +16,8 @@
 			<param index="1" name="right" type="bool" default="false" />
 			<param index="2" name="action" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with label [param text] and a custom [param action] to the dialog and returns the created button. [param action] will be passed to the [signal custom_action] signal when pressed.
+				Adds a button with label [param text] and a custom [param action] to the dialog and returns the created button.
+				If [param action] is not empty, pressing the button will emit the [signal custom_action] signal with the specified action string.
 				If [code]true[/code], [param right] will place the button to the right of any sibling buttons.
 				You can use [method remove_button] method to remove a button created with this method from the dialog.
 			</description>
@@ -44,14 +46,14 @@
 		</method>
 		<method name="register_text_enter">
 			<return type="void" />
-			<param index="0" name="line_edit" type="Control" />
+			<param index="0" name="line_edit" type="LineEdit" />
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
 		<method name="remove_button">
 			<return type="void" />
-			<param index="0" name="button" type="Control" />
+			<param index="0" name="button" type="Button" />
 			<description>
 				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal canceled] signals.
 			</description>
@@ -62,7 +64,7 @@
 			Sets autowrapping for the text in the dialog.
 		</member>
 		<member name="dialog_close_on_escape" type="bool" setter="set_close_on_escape" getter="get_close_on_escape" default="true">
-			If [code]true[/code], the dialog will be hidden when the escape key ([constant KEY_ESCAPE]) is pressed.
+			If [code]true[/code], the dialog will be hidden when the [code]ui_close_dialog[/code] action is pressed (by default, this action is bound to [kbd]Escape[/kbd], or [kbd]Cmd + W[/kbd] on macOS).
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" default="true">
 			If [code]true[/code], the dialog is hidden when the OK button is pressed. You can set it to [code]false[/code] if you want to do e.g. input validation when receiving the [signal confirmed] signal, and handle hiding the dialog in your own logic.
@@ -73,8 +75,10 @@
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" overrides="Window" default="true" />
 		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" overrides="Window" default="true" />
-		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" default="&quot;OK&quot;">
-			The text displayed by the OK button (see [method get_ok_button]).
+		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" default="&quot;&quot;">
+			The text displayed by the OK button (see [method get_ok_button]). If empty, a default text will be used.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Alert!&quot;" />
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" overrides="Window" default="true" />
@@ -95,11 +99,17 @@
 		<signal name="custom_action">
 			<param index="0" name="action" type="StringName" />
 			<description>
-				Emitted when a custom button is pressed. See [method add_button].
+				Emitted when a custom button with an action is pressed. See [method add_button].
 			</description>
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="buttons_min_height" data_type="constant" type="int" default="0">
+			The minimum height of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
+		<theme_item name="buttons_min_width" data_type="constant" type="int" default="0">
+			The minimum width of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
 		<theme_item name="buttons_separation" data_type="constant" type="int" default="10">
 			The size of the vertical space between the dialog's content and the button row.
 		</theme_item>

@@ -39,14 +39,12 @@ struct SinglePos
                   const SrcLookup* src,
                   Iterator glyph_val_iter_pairs,
                   const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
-                  bool all_axes_pinned)
+                  unsigned newFormat)
   {
     if (unlikely (!c->extend_min (u.format))) return;
     unsigned format = 2;
-    ValueFormat new_format = src->get_value_format ();
-
-    if (all_axes_pinned)
-      new_format = new_format.drop_device_table_flags ();
+    ValueFormat new_format;
+    new_format = newFormat;
 
     if (glyph_val_iter_pairs)
       format = get_format (glyph_val_iter_pairs);
@@ -89,8 +87,8 @@ SinglePos_serialize (hb_serialize_context_t *c,
                      const SrcLookup *src,
                      Iterator it,
                      const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
-                     bool all_axes_pinned)
-{ c->start_embed<SinglePos> ()->serialize (c, src, it, layout_variation_idx_delta_map, all_axes_pinned); }
+                     unsigned new_format)
+{ c->start_embed<SinglePos> ()->serialize (c, src, it, layout_variation_idx_delta_map, new_format); }
 
 
 }

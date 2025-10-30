@@ -47,7 +47,7 @@
 			<description>
 				Registers a top level path to which profiles can be bound. For instance [code]/user/hand/left[/code] refers to the bind point for the player's left hand. Extensions can register additional top level paths, for instance a haptic vest extension might register [code]/user/body/vest[/code].
 				[param display_name] is the name shown to the user. [param openxr_path] is the top level path being registered. [param openxr_extension_name] is optional and ensures the top level path is only used if the specified extension is available/enabled.
-				When a top level path ends up being bound by OpenXR, a [XRPositionalTracker] is instantiated to manage the state of the device.
+				When a top level path ends up being bound by OpenXR, an [XRPositionalTracker] is instantiated to manage the state of the device.
 			</description>
 		</method>
 	</methods>

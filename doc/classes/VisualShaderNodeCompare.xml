@@ -13,10 +13,10 @@
 			Extra condition which is applied if [member type] is set to [constant CTYPE_VECTOR_3D].
 		</member>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeCompare.Function" default="0">
-			A comparison function. See [enum Function] for options.
+			A comparison function.
 		</member>
 		<member name="type" type="int" setter="set_comparison_type" getter="get_comparison_type" enum="VisualShaderNodeCompare.ComparisonType" default="0">
-			The type to be used in the comparison. See [enum ComparisonType] for options.
+			The type to be used in the comparison.
 		</member>
 	</members>
 	<constants>
@@ -69,10 +69,10 @@
 			Represents the size of the [enum Function] enum.
 		</constant>
 		<constant name="COND_ALL" value="0" enum="Condition">
-			The result will be true if all of component in vector satisfy the comparison condition.
+			The result will be [code]true[/code] if all components in the vector satisfy the comparison condition.
 		</constant>
 		<constant name="COND_ANY" value="1" enum="Condition">
-			The result will be true if any of component in vector satisfy the comparison condition.
+			The result will be [code]true[/code] if any component in the vector satisfies the comparison condition.
 		</constant>
 		<constant name="COND_MAX" value="2" enum="Condition">
 			Represents the size of the [enum Condition] enum.

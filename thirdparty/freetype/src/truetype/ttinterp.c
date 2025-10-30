@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -5270,11 +5270,11 @@
     FT_UShort        refp;
     FT_F26Dot6       dx, dy;
 
-    FT_Short         contour, bounds;
+    FT_UShort        contour, bounds;
     FT_UShort        start, limit, i;
 
 
-    contour = (FT_Short)args[0];
+    contour = (FT_UShort)args[0];
     bounds  = ( exc->GS.gep2 == 0 ) ? 1 : exc->zp2.n_contours;
 
     if ( BOUNDS( contour, bounds ) )
@@ -5290,15 +5290,13 @@
     if ( contour == 0 )
       start = 0;
     else
-      start = (FT_UShort)( exc->zp2.contours[contour - 1] + 1 -
-                           exc->zp2.first_point );
+      start = exc->zp2.contours[contour - 1] + 1 - exc->zp2.first_point;
 
     /* we use the number of points if in the twilight zone */
     if ( exc->GS.gep2 == 0 )
       limit = exc->zp2.n_points;
     else
-      limit = (FT_UShort)( exc->zp2.contours[contour] -
-                           exc->zp2.first_point + 1 );
+      limit = exc->zp2.contours[contour] + 1 - exc->zp2.first_point;
 
     for ( i = start; i < limit; i++ )
     {
@@ -5341,9 +5339,9 @@
     /*      Normal zone's `n_points' includes phantoms, so must    */
     /*      use end of last contour.                               */
     if ( exc->GS.gep2 == 0 )
-      limit = (FT_UShort)exc->zp2.n_points;
+      limit = exc->zp2.n_points;
     else if ( exc->GS.gep2 == 1 && exc->zp2.n_contours > 0 )
-      limit = (FT_UShort)( exc->zp2.contours[exc->zp2.n_contours - 1] + 1 );
+      limit = exc->zp2.contours[exc->zp2.n_contours - 1] + 1;
     else
       limit = 0;
 

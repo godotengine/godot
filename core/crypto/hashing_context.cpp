@@ -47,7 +47,7 @@ Error HashingContext::start(HashType p_type) {
 	return ERR_UNAVAILABLE;
 }
 
-Error HashingContext::update(PackedByteArray p_chunk) {
+Error HashingContext::update(const PackedByteArray &p_chunk) {
 	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);

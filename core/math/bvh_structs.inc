@@ -1,4 +1,3 @@
-
 public:
 struct ItemRef {
 	uint32_t tnode_id; // -1 is invalid
@@ -173,13 +172,13 @@ PooledList<TLeaf, uint32_t, true> _leaves;
 // we can maintain an un-ordered list of which references are active,
 // in order to do a slow incremental optimize of the tree over each frame.
 // This will work best if dynamic objects and static objects are in a different tree.
-LocalVector<uint32_t, uint32_t, true> _active_refs;
+LocalVector<uint32_t> _active_refs;
 uint32_t _current_active_ref = 0;
 
 // instead of translating directly to the userdata output,
 // we keep an intermediate list of hits as reference IDs, which can be used
 // for pairing collision detection
-LocalVector<uint32_t, uint32_t, true> _cull_hits;
+LocalVector<uint32_t> _cull_hits;
 
 // We can now have a user definable number of trees.
 // This allows using e.g. a non-pairable and pairable tree,

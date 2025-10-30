@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RANDOM_NUMBER_GENERATOR_H
-#define RANDOM_NUMBER_GENERATOR_H
+#pragma once
 
 #include "core/math/random_pcg.h"
 #include "core/object/ref_counted.h"
@@ -57,7 +56,7 @@ public:
 	_FORCE_INLINE_ real_t randfn(real_t p_mean = 0.0, real_t p_deviation = 1.0) { return randbase.randfn(p_mean, p_deviation); }
 	_FORCE_INLINE_ int randi_range(int p_from, int p_to) { return randbase.random(p_from, p_to); }
 
+	_FORCE_INLINE_ int64_t rand_weighted(const Vector<float> &p_weights) { return randbase.rand_weighted(p_weights); }
+
 	RandomNumberGenerator() { randbase.randomize(); }
 };
-
-#endif // RANDOM_NUMBER_GENERATOR_H

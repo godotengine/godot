@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector using floating point coordinates.
+		A 4D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
@@ -62,6 +62,14 @@
 			<param index="1" name="max" type="Vector4" />
 			<description>
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
@@ -155,7 +163,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -168,12 +176,19 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />
 			<param index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z), maxf(w, with.w))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -182,16 +197,37 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with), maxf(y, with), maxf(z, with), maxf(w, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with.x), minf(y, with.y), minf(z, with.z), minf(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_W].
 			</description>
 		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with), minf(y, with), minf(z, with), minf(w, with))[/code].
+			</description>
+		</method>
 		<method name="normalized" qualifiers="const">
 			<return type="Vector4" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -228,6 +264,13 @@
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="w" type="float" setter="" getter="" default="0.0">
@@ -244,16 +287,16 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Z" value="2">
+		<constant name="AXIS_Z" value="2" enum="Axis">
 			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_W" value="3">
+		<constant name="AXIS_W" value="3" enum="Axis">
 			Enumerated value for the W axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector4(0, 0, 0, 0)">
@@ -290,7 +333,7 @@
 			<description>
 				Multiplies each component of the [Vector4] by the components of the given [Vector4].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) * Vector4(3, 4, 5, 6)) # Prints "(30, 80, 150, 240)"
+				print(Vector4(10, 20, 30, 40) * Vector4(3, 4, 5, 6)) # Prints (30.0, 80.0, 150.0, 240.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -300,7 +343,7 @@
 			<description>
 				Multiplies each component of the [Vector4] by the given [float].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) * 2) # Prints "(20, 40, 60, 80)"
+				print(Vector4(10, 20, 30, 40) * 2) # Prints (20.0, 40.0, 60.0, 80.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -317,7 +360,7 @@
 			<description>
 				Adds each component of the [Vector4] by the components of the given [Vector4].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) + Vector4(3, 4, 5, 6)) # Prints "(13, 24, 35, 46)"
+				print(Vector4(10, 20, 30, 40) + Vector4(3, 4, 5, 6)) # Prints (13.0, 24.0, 35.0, 46.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -327,7 +370,7 @@
 			<description>
 				Subtracts each component of the [Vector4] by the components of the given [Vector4].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) - Vector4(3, 4, 5, 6)) # Prints "(7, 16, 25, 34)"
+				print(Vector4(10, 20, 30, 40) - Vector4(3, 4, 5, 6)) # Prints (7.0, 16.0, 25.0, 34.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -337,7 +380,7 @@
 			<description>
 				Divides each component of the [Vector4] by the components of the given [Vector4].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) / Vector4(2, 5, 3, 4)) # Prints "(5, 4, 10, 10)"
+				print(Vector4(10, 20, 30, 40) / Vector4(2, 5, 3, 4)) # Prints (5.0, 4.0, 10.0, 10.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -347,7 +390,7 @@
 			<description>
 				Divides each component of the [Vector4] by the given [float].
 				[codeblock]
-				print(Vector4(10, 20, 30, 40) / 2 # Prints "(5, 10, 15, 20)"
+				print(Vector4(10, 20, 30, 40) / 2) # Prints (5.0, 10.0, 15.0, 20.0)
 				[/codeblock]
 			</description>
 		</operator>

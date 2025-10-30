@@ -10,8 +10,6 @@
 
 namespace embree
 {
-  static const size_t MAX_INTERNAL_STREAM_SIZE = 32;
-
   /* Ray structure for K rays */
   template<int K>
   struct RayK
@@ -97,16 +95,24 @@ namespace embree
       : RayK<K>(org, dir, tnear, tfar, time, mask, id, flags),
         geomID(RTC_INVALID_GEOMETRY_ID) 
     {
-      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
         instID[l] = RTC_INVALID_GEOMETRY_ID;
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        instPrimID[l] = RTC_INVALID_GEOMETRY_ID;
+#endif
+      }
     }
 
     __forceinline RayHitK(const RayK<K>& ray)
       : RayK<K>(ray),
         geomID(RTC_INVALID_GEOMETRY_ID) 
     {
-      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
         instID[l] = RTC_INVALID_GEOMETRY_ID;
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        instPrimID[l] = RTC_INVALID_GEOMETRY_ID;
+#endif
+      }
     }
 
     __forceinline RayHitK<K>& operator =(const RayK<K>& ray)
@@ -121,8 +127,12 @@ namespace embree
       flags  = ray.flags;
 
       geomID = RTC_INVALID_GEOMETRY_ID;
-      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
         instID[l] = RTC_INVALID_GEOMETRY_ID;
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        instPrimID[l] = RTC_INVALID_GEOMETRY_ID;
+#endif
+      }
 
       return *this;
     }
@@ -133,7 +143,7 @@ namespace embree
       vbool<K> valid = valid0 & geomID != vuint<K>(RTC_INVALID_GEOMETRY_ID);
       const vbool<K> vt = (abs(tfar) <= vfloat<K>(FLT_LARGE)) | (tfar == vfloat<K>(neg_inf));
       const vbool<K> vu = (abs(u) <= vfloat<K>(FLT_LARGE));
-      const vbool<K> vv = (abs(u) <= vfloat<K>(FLT_LARGE));
+      const vbool<K> vv = (abs(v) <= vfloat<K>(FLT_LARGE));
       const vbool<K> vnx = abs(Ng.x) <= vfloat<K>(FLT_LARGE);
       const vbool<K> vny = abs(Ng.y) <= vfloat<K>(FLT_LARGE);
       const vbool<K> vnz = abs(Ng.z) <= vfloat<K>(FLT_LARGE);
@@ -159,7 +169,10 @@ namespace embree
     vuint<K> primID; // primitive ID
     vuint<K> geomID; // geometry ID
     vuint<K> instID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance ID
-  };
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    vuint<K> instPrimID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance prim ID
+#endif
+};
 
   /* Specialization for a single ray */
   template<>
@@ -176,6 +189,11 @@ namespace embree
     /* Calculates if this is a valid ray that does not cause issues during traversal */
     __forceinline bool valid() const {
       return all(le_mask(abs(Vec3fa(org)), Vec3fa(FLT_LARGE)) & le_mask(abs(Vec3fa(dir)), Vec3fa(FLT_LARGE))) && abs(tnear()) <= float(inf) && abs(tfar) <= float(inf);
+    }
+
+    /* checks if occlusion ray is done */
+    __forceinline bool occluded() const {
+      return tfar < 0.0f;
     }
 
     /* Ray data */
@@ -251,6 +269,9 @@ namespace embree
     unsigned int primID; // primitive ID
     unsigned int geomID; // geometry ID
     unsigned int instID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance ID
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    unsigned int instPrimID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance primitive ID
+#endif
   };
 
   /* Converts ray packet to single rays */
@@ -293,6 +314,9 @@ namespace embree
     ray.primID = primID[i]; ray.geomID = geomID[i]; 
 
     instance_id_stack::copy_VU<K>(instID, ray.instID, i);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    instance_id_stack::copy_VU<K>(instPrimID, ray.instPrimID, i);
+#endif
   }
 
   /* Converts single rays to ray packet */
@@ -332,6 +356,9 @@ namespace embree
     primID[i] = ray.primID; geomID[i] = ray.geomID;
 
     instance_id_stack::copy_UV<K>(ray.instID, instID, i);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    instance_id_stack::copy_UV<K>(ray.instPrimID, instPrimID, i);
+#endif
   }
 
   /* copies a ray packet element into another element*/
@@ -354,6 +381,9 @@ namespace embree
     primID[dest] = primID[source]; geomID[dest] = geomID[source];  
 
     instance_id_stack::copy_VV<K>(instID, instID, source, dest);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    instance_id_stack::copy_VV<K>(instPrimID, instPrimID, source, dest);
+#endif
   }
 
   /* Shortcuts */
@@ -361,12 +391,14 @@ namespace embree
   typedef RayK<4>  Ray4;
   typedef RayK<8>  Ray8;
   typedef RayK<16> Ray16;
+  typedef RayK<VSIZEX> Rayx;
   struct RayN;
 
   typedef RayHitK<1>  RayHit;
   typedef RayHitK<4>  RayHit4;
   typedef RayHitK<8>  RayHit8;
   typedef RayHitK<16> RayHit16;
+  typedef RayHitK<VSIZEX> RayHitx;
   struct RayHitN;
 
   template<int K, bool intersect>
@@ -428,6 +460,13 @@ namespace embree
     {
       cout << " " << ray.instID[l];
     }
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    cout << "  instPrimID =";
+    for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+    {
+      cout << " " << ray.instPrimID[l];
+    }
+#endif
     cout << embree_endl;
     return cout << "}";
   }
@@ -464,6 +503,9 @@ namespace embree
     __forceinline unsigned int* primID(size_t offset = 0) { return (unsigned int*)&ptr[17*4*N+offset]; };   // primitive ID
     __forceinline unsigned int* geomID(size_t offset = 0) { return (unsigned int*)&ptr[18*4*N+offset]; };   // geometry ID
     __forceinline unsigned int* instID(size_t level, size_t offset = 0) { return (unsigned int*)&ptr[19*4*N+level*4*N+offset]; };   // instance ID
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    __forceinline unsigned int* instPrimID(size_t level, size_t offset = 0) { return (unsigned int*)&ptr[19*4*N+RTC_MAX_INSTANCE_LEVEL_COUNT*4*N+level*4*N+offset]; };   // instance primitive ID
+#endif
 
     __forceinline Ray getRayByOffset(size_t offset)
     {
@@ -578,9 +620,16 @@ namespace embree
               geomID(offset)[k] = ray.geomID[k];
 
               instID(0, offset)[k] = ray.instID[0][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+              instPrimID(0, offset)[k] = ray.instPrimID[0][k];
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-              for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l)
+              for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l) {
                 instID(l, offset)[k] = ray.instID[l][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+                instPrimID(l, offset)[k] = ray.instPrimID[l][k];
+#endif
+              }
 #endif
             }
           }
@@ -592,9 +641,16 @@ namespace embree
           vuint<K>::storeu(valid, geomID(offset), ray.geomID);
 
           vuint<K>::storeu(valid, instID(0, offset), ray.instID[0]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          vuint<K>::storeu(valid, instPrimID(0, offset), ray.instPrimID[0]);
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l)
+          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l) {
             vuint<K>::storeu(valid, instID(l, offset), ray.instID[l]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            vuint<K>::storeu(valid, instPrimID(l, offset), ray.instPrimID[l]);
+#endif
+          }
 #endif
         }
       }
@@ -698,9 +754,16 @@ namespace embree
         vuint<K>::template scatter<1>(valid, geomID(), offset, ray.geomID);
 
         vuint<K>::template scatter<1>(valid, instID(0), offset, ray.instID[0]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        vuint<K>::template scatter<1>(valid, instPrimID(0), offset, ray.instPrimID[0]);
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-        for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l)
+        for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l) {
           vuint<K>::template scatter<1>(valid, instID(l), offset, ray.instID[l]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          vuint<K>::template scatter<1>(valid, instPrimID(l), offset, ray.instPrimID[l]);
+#endif
+        }
 #endif
 #else
         size_t valid_bits = movemask(valid);
@@ -720,9 +783,16 @@ namespace embree
           *geomID(ofs) = ray.geomID[k];
 
           *instID(0, ofs) = ray.instID[0][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          *instPrimID(0, ofs) = ray.instPrimID[0][k];
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l)
+          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l) {
             *instID(l, ofs) = ray.instID[l][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            *instPrimID(l, ofs) = ray.instPrimID[l][k];
+#endif
+          }
 #endif
         }
 #endif
@@ -792,8 +862,12 @@ namespace embree
       primID = (unsigned int*)&t.primID;
       geomID = (unsigned int*)&t.geomID;
 
-      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
         instID[l] = (unsigned int*)&t.instID[l];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        instPrimID[l] = (unsigned int*)&t.instPrimID[l];
+#endif
+      }
     }
 
     __forceinline Ray getRayByOffset(size_t offset)
@@ -859,9 +933,16 @@ namespace embree
 
         if (likely(instID[0])) {
           *(unsigned int* __restrict__)((char*)instID[0] + offset) = ray.instID[0];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          *(unsigned int* __restrict__)((char*)instPrimID[0] + offset) = ray.instPrimID[0];
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID; ++l)
+          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID; ++l) {
             *(unsigned int* __restrict__)((char*)instID[l] + offset) = ray.instID[l];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            *(unsigned int* __restrict__)((char*)instPrimID[l] + offset) = ray.instPrimID[l];
+#endif
+          }
 #endif
         }
       }
@@ -892,9 +973,16 @@ namespace embree
 
         if (likely(instID[0])) {
           vuint<K>::storeu(valid, (unsigned int* __restrict__)((char*)instID[0] + offset), ray.instID[0]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          vuint<K>::storeu(valid, (unsigned int* __restrict__)((char*)instPrimID[0] + offset), ray.instPrimID[0]);
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l)
+          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l) {
             vuint<K>::storeu(valid, (unsigned int* __restrict__)((char*)instID[l] + offset), ray.instID[l]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            vuint<K>::storeu(valid, (unsigned int* __restrict__)((char*)instPrimID[l] + offset), ray.instPrimID[l]);
+#endif
+          }
 #endif
         }
       }
@@ -1008,9 +1096,16 @@ namespace embree
 
         if (likely(instID[0])) {
           vuint<K>::template scatter<1>(valid, (unsigned int*)instID[0], offset, ray.instID[0]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          vuint<K>::template scatter<1>(valid, (unsigned int*)instPrimID[0], offset, ray.instPrimID[0]);
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l)
+          for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l) {
             vuint<K>::template scatter<1>(valid, (unsigned int*)instID[l], offset, ray.instID[l]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            vuint<K>::template scatter<1>(valid, (unsigned int*)instPrimID[l], offset, ray.instPrimID[l]);
+#endif
+          }
 #endif
         }
 #else
@@ -1032,9 +1127,16 @@ namespace embree
 
           if (likely(instID[0])) {
             *(unsigned int* __restrict__)((char*)instID[0] + ofs) = ray.instID[0][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+            *(unsigned int* __restrict__)((char*)instPrimID[0] + ofs) = ray.instPrimID[0][k];
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-            for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l)
+            for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && ray.instID[l-1][k] != RTC_INVALID_GEOMETRY_ID; ++l) {
               *(unsigned int* __restrict__)((char*)instID[l] + ofs) = ray.instID[l][k];
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+              *(unsigned int* __restrict__)((char*)instPrimID[l] + ofs) = ray.instPrimID[l][k];
+#endif
+            }
 #endif
           }
         }
@@ -1091,7 +1193,10 @@ namespace embree
 
     unsigned int* __restrict__ primID; // primitive ID
     unsigned int* __restrict__ geomID; // geometry ID
-    unsigned int* __restrict__ instID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance ID (optional)
+    unsigned int* __restrict__ instID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance ID
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    unsigned int* __restrict__ instPrimID[RTC_MAX_INSTANCE_LEVEL_COUNT]; // instance primitive ID (optional)
+#endif
   };
 
 
@@ -1134,9 +1239,16 @@ namespace embree
         vuint<K>::template scatter<1>(valid, (unsigned int*)&((RayHit*)ptr)->geomID, offset, ray.geomID);
 
         vuint<K>::template scatter<1>(valid, (unsigned int*)&((RayHit*)ptr)->instID[0], offset, ray.instID[0]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        vuint<K>::template scatter<1>(valid, (unsigned int*)&((RayHit*)ptr)->instPrimID[0], offset, ray.instPrimID[0]);
+#endif
 #if (RTC_MAX_INSTANCE_LEVEL_COUNT > 1)
-        for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l)
+        for (unsigned l = 1; l < RTC_MAX_INSTANCE_LEVEL_COUNT && any(valid & (ray.instID[l-1] != RTC_INVALID_GEOMETRY_ID)); ++l) {
           vuint<K>::template scatter<1>(valid, (unsigned int*)&((RayHit*)ptr)->instID[l], offset, ray.instID[l]);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          vuint<K>::template scatter<1>(valid, (unsigned int*)&((RayHit*)ptr)->instPrimID[l], offset, ray.instPrimID[l]);
+#endif
+        }
 #endif
 #else
         size_t valid_bits = movemask(valid);
@@ -1154,6 +1266,9 @@ namespace embree
           ray_k->geomID = ray.geomID[k];
 
           instance_id_stack::copy_VU<K>(ray.instID, ray_k->instID, k);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          instance_id_stack::copy_VU<K>(ray.instPrimID, ray_k->instPrimID, k);
+#endif
         }
 #endif
       }
@@ -1183,7 +1298,7 @@ namespace embree
 
     Ray* __restrict__ ptr;
   };
-
+  
   template<>
   __forceinline Ray4 RayStreamAOS::getRayByOffset<4>(const vint4& offset)
   {
@@ -1219,7 +1334,7 @@ namespace embree
 
     return ray;
   }
-
+  
 #if defined(__AVX__)
   template<>
   __forceinline Ray8 RayStreamAOS::getRayByOffset<8>(const vint8& offset)
@@ -1358,6 +1473,9 @@ namespace embree
           ray_k->primID = ray.primID[k];
           ray_k->geomID = ray.geomID[k];
           instance_id_stack::copy_VU<K>(ray.instID, ray_k->instID, k);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+          instance_id_stack::copy_VU<K>(ray.instPrimID, ray_k->instPrimID, k);
+#endif
         }
       }
     }
@@ -1383,7 +1501,7 @@ namespace embree
 
     Ray** __restrict__ ptr;
   };
-
+  
   template<>
   __forceinline Ray4 RayStreamAOP::getRayByIndex<4>(const vint4& index)
   {
@@ -1419,7 +1537,7 @@ namespace embree
 
     return ray;
   }
-
+  
 #if defined(__AVX__)
   template<>
   __forceinline Ray8 RayStreamAOP::getRayByIndex<8>(const vint8& index)

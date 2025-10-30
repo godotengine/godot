@@ -40,15 +40,15 @@
 				Valid [param options] are:
 				[codeblock]
 				{
-				    "negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. "data_channel_received" will not be called.
-				    "id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
+					"negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. "data_channel_received" will not be called.
+					"id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
 
-				    # Only one of maxRetransmits and maxPacketLifeTime can be specified, not both. They make the channel unreliable (but also better at real time).
-				    "maxRetransmits": 1, # Specify the maximum number of attempt the peer will make to retransmits packets if they are not acknowledged.
-				    "maxPacketLifeTime": 100, # Specify the maximum amount of time before giving up retransmitions of unacknowledged packets (in milliseconds).
-				    "ordered": true, # When in unreliable mode (i.e. either "maxRetransmits" or "maxPacketLifetime" is set), "ordered" (true by default) specify if packet ordering is to be enforced.
+					# Only one of maxRetransmits and maxPacketLifeTime can be specified, not both. They make the channel unreliable (but also better at real time).
+					"maxRetransmits": 1, # Specify the maximum number of attempt the peer will make to retransmits packets if they are not acknowledged.
+					"maxPacketLifeTime": 100, # Specify the maximum amount of time before giving up retransmitions of unacknowledged packets (in milliseconds).
+					"ordered": true, # When in unreliable mode (i.e. either "maxRetransmits" or "maxPacketLifetime" is set), "ordered" (true by default) specify if packet ordering is to be enforced.
 
-				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
+					"protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
 				[/codeblock]
 				[b]Note:[/b] You must keep a reference to channels created this way, or it will be closed.
@@ -64,7 +64,7 @@
 		<method name="get_connection_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.ConnectionState" />
 			<description>
-				Returns the connection state. See [enum ConnectionState].
+				Returns the connection state.
 			</description>
 		</method>
 		<method name="get_gathering_state" qualifiers="const">
@@ -87,16 +87,16 @@
 				Valid [param configuration] options are:
 				[codeblock]
 				{
-				    "iceServers": [
-				        {
-				            "urls": [ "stun:stun.example.com:3478" ], # One or more STUN servers.
-				        },
-				        {
-				            "urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
-				            "username": "a_username", # Optional username for the TURN server.
-				            "credential": "a_password", # Optional password for the TURN server.
-				        }
-				    ]
+					"iceServers": [
+						{
+							"urls": [ "stun:stun.example.com:3478" ], # One or more STUN servers.
+						},
+						{
+							"urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
+							"username": "a_username", # Optional username for the TURN server.
+							"credential": "a_password", # Optional password for the TURN server.
+						}
+					]
 				}
 				[/codeblock]
 			</description>

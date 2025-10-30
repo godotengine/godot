@@ -85,7 +85,7 @@ namespace embree
     typedef BVHNodeRecord<NodeRef>     NodeRecord;
     typedef BVHNodeRecordMB<NodeRef>   NodeRecordMB;
     typedef BVHNodeRecordMB4D<NodeRef> NodeRecordMB4D;
-    
+
   public:
     
     /*! BVHN default constructor. */

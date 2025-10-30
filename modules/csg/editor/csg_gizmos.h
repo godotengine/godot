@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_GIZMOS_H
-#define CSG_GIZMOS_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../csg_shape.h"
 
-#include "editor/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#include "scene/gui/control.h"
 
+class AcceptDialog;
 class Gizmo3DHelper;
+class MenuButton;
 
 class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
@@ -59,16 +59,44 @@ public:
 	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) override;
 
 	CSGShape3DGizmoPlugin();
-	~CSGShape3DGizmoPlugin();
+};
+
+class CSGShapeEditor : public Control {
+	GDCLASS(CSGShapeEditor, Control);
+
+	enum Menu {
+		MENU_OPTION_BAKE_MESH_INSTANCE,
+		MENU_OPTION_BAKE_COLLISION_SHAPE,
+	};
+
+	CSGShape3D *node = nullptr;
+	MenuButton *options = nullptr;
+	AcceptDialog *err_dialog = nullptr;
+
+	void _menu_option(int p_option);
+
+	void _create_baked_mesh_instance();
+	void _create_baked_collision_shape();
+
+protected:
+	void _node_removed(Node *p_node);
+
+	void _notification(int p_what);
+
+public:
+	void edit(CSGShape3D *p_csg_shape);
+	CSGShapeEditor();
 };
 
 class EditorPluginCSG : public EditorPlugin {
 	GDCLASS(EditorPluginCSG, EditorPlugin);
 
+	CSGShapeEditor *csg_shape_editor = nullptr;
+
 public:
+	virtual String get_plugin_name() const override { return "CSGShape3D"; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+
 	EditorPluginCSG();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // CSG_GIZMOS_H

@@ -4,7 +4,7 @@
 		Abstract base class for all 2D physics joints.
 	</brief_description>
 	<description>
-		Abstract base class for all joints in 2D physics. 2D joints bind together two physics bodies and apply a constraint.
+		Abstract base class for all joints in 2D physics. 2D joints bind together two physics bodies ([member node_a] and [member node_b]) and apply a constraint.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,7 +12,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the joint's [RID].
+				Returns the joint's internal [RID] from the [PhysicsServer2D].
 			</description>
 		</method>
 	</methods>
@@ -22,13 +22,13 @@
 			When set to [code]0[/code], the default value from [member ProjectSettings.physics/2d/solver/default_constraint_bias] is used.
 		</member>
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
-			If [code]true[/code], [member node_a] and [member node_b] can not collide.
+			If [code]true[/code], the two bodies bound together do not collide with each other.
 		</member>
 		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
-			The first body attached to the joint. Must derive from [PhysicsBody2D].
+			Path to the first body (A) attached to the joint. The node must inherit [PhysicsBody2D].
 		</member>
 		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b" default="NodePath(&quot;&quot;)">
-			The second body attached to the joint. Must derive from [PhysicsBody2D].
+			Path to the second body (B) attached to the joint. The node must inherit [PhysicsBody2D].
 		</member>
 	</members>
 </class>

@@ -30,6 +30,8 @@
 
 #include "audio_effect_capture.h"
 
+#include "servers/audio/audio_server.h"
+
 bool AudioEffectCapture::can_get_buffer(int p_frames) const {
 	return buffer.data_left() >= p_frames;
 }
@@ -49,7 +51,7 @@ PackedVector2Array AudioEffectCapture::get_buffer(int p_frames) {
 	streaming_data.resize(p_frames);
 	buffer.read(streaming_data.ptrw(), p_frames);
 	for (int32_t i = 0; i < p_frames; i++) {
-		ret.write[i] = Vector2(streaming_data[i].l, streaming_data[i].r);
+		ret.write[i] = Vector2(streaming_data[i].left, streaming_data[i].right);
 	}
 	return ret;
 }
@@ -77,7 +79,7 @@ Ref<AudioEffectInstance> AudioEffectCapture::instantiate() {
 	if (!buffer_initialized) {
 		float target_buffer_size = AudioServer::get_singleton()->get_mix_rate() * buffer_length_seconds;
 		ERR_FAIL_COND_V(target_buffer_size <= 0 || target_buffer_size >= (1 << 27), Ref<AudioEffectInstance>());
-		buffer.resize(nearest_shift((int)target_buffer_size));
+		buffer.resize(nearest_shift((uint32_t)target_buffer_size));
 		buffer_initialized = true;
 	}
 

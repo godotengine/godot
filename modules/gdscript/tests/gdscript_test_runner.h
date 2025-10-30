@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TEST_RUNNER_H
-#define GDSCRIPT_TEST_RUNNER_H
+#pragma once
 
 #include "../gdscript.h"
 
@@ -62,6 +61,11 @@ public:
 		bool passed;
 	};
 
+	enum TokenizerMode {
+		TOKENIZER_TEXT,
+		TOKENIZER_BUFFER,
+	};
+
 private:
 	struct ErrorHandlerData {
 		TestResult *result = nullptr;
@@ -78,6 +82,8 @@ private:
 
 	PrintHandlerList _print_handler;
 	ErrorHandlerList _error_handler;
+
+	TokenizerMode tokenizer_mode = TOKENIZER_TEXT;
 
 	void enable_stdout();
 	void disable_stdout();
@@ -96,6 +102,9 @@ public:
 	const String get_source_relative_filepath() const { return source_file.trim_prefix(base_dir); }
 	const String &get_output_file() const { return output_file; }
 
+	void set_tokenizer_mode(TokenizerMode p_tokenizer_mode) { tokenizer_mode = p_tokenizer_mode; }
+	TokenizerMode get_tokenizer_mode() const { return tokenizer_mode; }
+
 	GDScriptTest(const String &p_source_path, const String &p_output_path, const String &p_base_dir);
 	GDScriptTest() :
 			GDScriptTest(String(), String(), String()) {} // Needed to use in Vector.
@@ -108,6 +117,7 @@ class GDScriptTestRunner {
 	bool is_generating = false;
 	bool do_init_languages = false;
 	bool print_filenames; // Whether filenames should be printed when generated/running tests
+	bool binary_tokens; // Test with buffer tokenizer.
 
 	bool make_tests();
 	bool make_tests_for_dir(const String &p_dir);
@@ -120,10 +130,8 @@ public:
 	int run_tests();
 	bool generate_outputs();
 
-	GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames = false);
+	GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames = false, bool p_use_binary_tokens = false);
 	~GDScriptTestRunner();
 };
 
 } // namespace GDScriptTests
-
-#endif // GDSCRIPT_TEST_RUNNER_H

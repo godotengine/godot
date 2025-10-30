@@ -185,15 +185,16 @@ struct ActionSubrecord
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.header.actionType)
     {
-    case 0:  return_trace (u.decompositionAction.sanitize (c));
-    case 1:  return_trace (u.unconditionalAddGlyphAction.sanitize (c));
-    case 2:  return_trace (u.conditionalAddGlyphAction.sanitize (c));
-    // case 3: return_trace (u.stretchGlyphAction.sanitize (c));
-    case 4:  return_trace (u.decompositionAction.sanitize (c));
-    case 5:  return_trace (u.decompositionAction.sanitize (c));
+    case 0: hb_barrier ();  return_trace (u.decompositionAction.sanitize (c));
+    case 1: hb_barrier ();  return_trace (u.unconditionalAddGlyphAction.sanitize (c));
+    case 2: hb_barrier ();  return_trace (u.conditionalAddGlyphAction.sanitize (c));
+    // case 3: hb_barrier (); return_trace (u.stretchGlyphAction.sanitize (c));
+    case 4: hb_barrier ();  return_trace (u.decompositionAction.sanitize (c));
+    case 5: hb_barrier ();  return_trace (u.decompositionAction.sanitize (c));
     default: return_trace (true);
     }
   }
@@ -220,6 +221,7 @@ struct PostcompensationActionChain
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     unsigned int offset = min_size;
     for (unsigned int i = 0; i < count; i++)
@@ -389,6 +391,7 @@ struct just
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));

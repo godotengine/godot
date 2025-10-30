@@ -9,22 +9,22 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_file_extensions" qualifiers="virtual const">
+		<method name="_get_file_extensions" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 				Return the file extensions supported.
 			</description>
 		</method>
-		<method name="_is_active" qualifiers="virtual const">
+		<method name="_is_active" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Return whether this importer is active.
 			</description>
 		</method>
-		<method name="_query" qualifiers="virtual const">
+		<method name="_query" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
-				Query support. Return false if import must not continue.
+				Query support. Return [code]false[/code] if import must not continue.
 			</description>
 		</method>
 	</methods>

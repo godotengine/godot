@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRPositionalTracker" inherits="XRTracker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked object.
 	</brief_description>
 	<description>
 		An instance of this object represents a device that is tracked, such as a controller or anchor point. HMDs aren't represented here as they are handled internally.
 		As controllers are turned on and the [XRInterface] detects them, instances of this object are automatically added to this list of active tracking objects accessible through the [XRServer].
-		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDExtension-based interfaces can interact with them.
+		The [XRNode3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDExtension-based interfaces can interact with them.
 	</description>
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_input" qualifiers="const">
+		<method name="get_input" qualifiers="const" deprecated="Use through [XRControllerTracker].">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
@@ -40,12 +40,12 @@
 				Marks this pose as invalid, we don't clear the last reported state but it allows users to decide if trackers need to be hidden if we lose tracking or just remain at their last known position.
 			</description>
 		</method>
-		<method name="set_input">
+		<method name="set_input" deprecated="Use through [XRControllerTracker].">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Changes the value for the given input. This method is called by a [XRInterface] implementation and should not be used directly.
+				Changes the value for the given input. This method is called by an [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 		<method name="set_pose">
@@ -56,27 +56,16 @@
 			<param index="3" name="angular_velocity" type="Vector3" />
 			<param index="4" name="tracking_confidence" type="int" enum="XRPose.TrackingConfidence" />
 			<description>
-				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
+				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by an [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="description" type="String" setter="set_tracker_desc" getter="get_tracker_desc" default="&quot;&quot;">
-			The description of this tracker.
-		</member>
 		<member name="hand" type="int" setter="set_tracker_hand" getter="get_tracker_hand" enum="XRPositionalTracker.TrackerHand" default="0">
 			Defines which hand this tracker relates to.
 		</member>
-		<member name="name" type="StringName" setter="set_tracker_name" getter="get_tracker_name" default="&amp;&quot;Unknown&quot;">
-			The unique name of this tracker. The trackers that are available differ between various XR runtimes and can often be configured by the user. Godot maintains a number of reserved names that it expects the [XRInterface] to implement if applicable:
-			- [code]left_hand[/code] identifies the controller held in the players left hand
-			- [code]right_hand[/code] identifies the controller held in the players right hand
-		</member>
 		<member name="profile" type="String" setter="set_tracker_profile" getter="get_tracker_profile" default="&quot;&quot;">
 			The profile associated with this tracker, interface dependent but will indicate the type of controller being tracked.
-		</member>
-		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
-			The type of tracker.
 		</member>
 	</members>
 	<signals>
@@ -134,6 +123,9 @@
 		</constant>
 		<constant name="TRACKER_HAND_RIGHT" value="2" enum="TrackerHand">
 			This tracker is the right hand controller.
+		</constant>
+		<constant name="TRACKER_HAND_MAX" value="3" enum="TrackerHand">
+			Represents the size of the [enum TrackerHand] enum.
 		</constant>
 	</constants>
 </class>

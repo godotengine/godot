@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirectionalLight3D" inherits="Light3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DirectionalLight3D" inherits="Light3D" keywords="sun" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Directional light from a distance, as from the Sun.
 	</brief_description>
 	<description>
-		A directional light is a type of [Light3D] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight3D transform (origin) is ignored. Only the basis is used to determine light direction.
+		A directional light is a type of [Light3D] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight.
+		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]). The position of the node is ignored; only the basis is used to determine light direction.
 	</description>
 	<tutorials>
 		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
@@ -21,7 +22,7 @@
 			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</member>
 		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="DirectionalLight3D.ShadowMode" default="2">
-			The light's shadow rendering algorithm. See [enum ShadowMode].
+			The light's shadow rendering algorithm.
 		</member>
 		<member name="directional_shadow_pancake_size" type="float" setter="set_param" getter="get_param" default="20.0">
 			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
@@ -36,7 +37,7 @@
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
 		<member name="sky_mode" type="int" setter="set_sky_mode" getter="get_sky_mode" enum="DirectionalLight3D.SkyMode" default="0">
-			Set whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene. See [enum SkyMode] for options.
+			Whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
 		</member>
 	</members>
 	<constants>

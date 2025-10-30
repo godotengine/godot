@@ -233,10 +233,7 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
    map->enable_feature (HB_TAG('c','a','l','t'), F_MANUAL_ZWJ);
    /* https://github.com/harfbuzz/harfbuzz/issues/1573 */
    if (!map->has_feature (HB_TAG('r','c','l','t')))
-   {
      map->add_gsub_pause (nullptr);
-     map->enable_feature (HB_TAG('r','c','l','t'), F_MANUAL_ZWJ);
-   }
 
    map->enable_feature (HB_TAG('l','i','g','a'), F_MANUAL_ZWJ);
    map->enable_feature (HB_TAG('c','l','i','g'), F_MANUAL_ZWJ);
@@ -263,7 +260,7 @@ struct arabic_shape_plan_t
    * mask_array[NONE] == 0. */
   hb_mask_t mask_array[ARABIC_NUM_FEATURES + 1];
 
-  hb_atomic_ptr_t<arabic_fallback_plan_t> fallback_plan;
+  mutable hb_atomic_t<arabic_fallback_plan_t *> fallback_plan;
 
   unsigned int do_fallback : 1;
   unsigned int has_stch : 1;
@@ -560,9 +557,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
       DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%u,%u,%u)",
 		 step == MEASURE ? "measuring" : "cutting", context, start, end);
-      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %d", start - context, w_total);
-      DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%d", n_fixed, w_fixed);
-      DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%d", n_repeating, w_repeating);
+      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %" PRId32, start - context, w_total);
+      DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%" PRId32, n_fixed, w_fixed);
+      DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%" PRId32, n_repeating, w_repeating);
 
       /* Number of additional times to repeat each repeating tile. */
       int n_copies = 0;
@@ -602,7 +599,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)
 	    repeat += n_copies;
 
-	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %u; j=%u",
+	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %" PRIu32 "; j=%u",
 		     repeat, info[k - 1].codepoint, j);
 	  pos[k - 1].x_advance = 0;
 	  for (unsigned int n = 0; n < repeat; n++)
@@ -657,7 +654,7 @@ postprocess_glyphs_arabic (const hb_ot_shape_plan_t *plan,
 
 /* https://www.unicode.org/reports/tr53/ */
 
-static hb_codepoint_t
+static const hb_codepoint_t
 modifier_combining_marks[] =
 {
   0x0654u, /* ARABIC HAMZA ABOVE */

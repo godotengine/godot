@@ -45,14 +45,14 @@ void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
 	}
 }
 
-Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, String p_if_name) {
+Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_multi_address.is_valid(), ERR_INVALID_PARAMETER);
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_multi_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		Error err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		Error err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
 		_sock->set_broadcasting_enabled(broadcast);
@@ -60,15 +60,15 @@ Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, String p_if
 	return _sock->join_multicast_group(p_multi_address, p_if_name);
 }
 
-Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, String p_if_name) {
+Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!_sock->is_open(), ERR_UNCONFIGURED);
 	return _sock->leave_multicast_group(p_multi_address, p_if_name);
 }
 
 String PacketPeerUDP::_get_packet_ip() const {
-	return get_packet_address();
+	return String(get_packet_address());
 }
 
 Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
@@ -105,8 +105,19 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		return ERR_UNAVAILABLE;
 	}
 
+	/* Bogus GCC warning here:
+	 * In member function 'int RingBuffer<T>::read(T*, int, bool) [with T = unsigned char]',
+	 *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:112:9,
+	 *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:99:7:
+	 * Error: ./core/ring_buffer.h:68:46: error: writing 1 byte into a region of size 0 [-Werror=stringop-overflow=]
+	 *   68 |                                 p_buf[dst++] = read[pos + i];
+	 *      |                                 ~~~~~~~~~~~~~^~~~~~~
+	 */
+	GODOT_GCC_WARNING_PUSH
+	GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignore" this for some reason.
+
 	uint32_t size = 0;
-	uint8_t ipv6[16];
+	uint8_t ipv6[16] = {};
 	rb.read(ipv6, 16, true);
 	packet_ip.set_ipv6(ipv6);
 	rb.read((uint8_t *)&packet_port, 4, true);
@@ -115,11 +126,14 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	--queue_count;
 	*r_buffer = packet_buffer;
 	r_buffer_size = size;
+
+	GODOT_GCC_WARNING_POP
+
 	return OK;
 }
 
 Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
 
 	Error err;
@@ -127,7 +141,7 @@ Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
 		_sock->set_broadcasting_enabled(broadcast);
@@ -160,7 +174,7 @@ int PacketPeerUDP::get_max_packet_size() const {
 }
 
 Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_recv_buffer_size) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
@@ -172,7 +186,7 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -180,13 +194,14 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_broadcasting_enabled(broadcast);
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		_sock->close();
 		return err;
 	}
-	rb.resize(nearest_shift(p_recv_buffer_size));
+	rb.resize(nearest_shift((uint32_t)p_recv_buffer_size));
 	return OK;
 }
 
@@ -209,7 +224,7 @@ void PacketPeerUDP::disconnect_shared_socket() {
 
 Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, int p_port) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
 
@@ -217,12 +232,13 @@ Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, int p_port) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 		_sock->set_blocking_enabled(false);
 	}
 
-	err = _sock->connect_to_host(p_host, p_port);
+	NetSocket::Address addr(p_host, p_port);
+	err = _sock->connect_to_host(addr);
 
 	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
 	// This is UDP, so connect is only used to tell the OS to which socket
@@ -260,12 +276,12 @@ void PacketPeerUDP::close() {
 }
 
 Error PacketPeerUDP::wait() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	return _sock->poll(NetSocket::POLL_TYPE_IN, -1);
 }
 
 Error PacketPeerUDP::_poll() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 
 	if (!_sock->is_open()) {
 		return FAILED;
@@ -331,9 +347,9 @@ int PacketPeerUDP::get_packet_port() const {
 }
 
 int PacketPeerUDP::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
 void PacketPeerUDP::set_dest_address(const IPAddress &p_address, int p_port) {

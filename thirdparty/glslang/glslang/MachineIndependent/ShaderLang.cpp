@@ -58,7 +58,6 @@
 #endif
 
 #include "../Include/ShHandle.h"
-#include "../../OGLCompilersDLL/InitializeDll.h"
 
 #include "preprocessor/PpContext.h"
 
@@ -634,6 +633,7 @@ bool DeduceVersionProfile(TInfoSink& infoSink, EShLanguage stage, bool versionNo
             infoSink.info.message(EPrefixError, "#version: mesh/task shaders require es profile with version 320 or above, or non-es profile with version 450 or above");
             version = profile == EEsProfile ? 320 : 450;
         }
+        break;
     default:
         break;
     }
@@ -1311,9 +1311,6 @@ bool CompileDeferred(
 //
 int ShInitialize()
 {
-    if (! InitProcess())
-        return 0;
-
     const std::lock_guard<std::mutex> lock(init_lock);
     ++NumberOfClients;
 
@@ -1333,31 +1330,22 @@ int ShInitialize()
 // objects.
 //
 
-ShHandle ShConstructCompiler(const EShLanguage language, int debugOptions)
+ShHandle ShConstructCompiler(const EShLanguage language, int /*debugOptions unused*/)
 {
-    if (!InitThread())
-        return nullptr;
-
-    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructCompiler(language, debugOptions));
+    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructCompiler(language, 0));
 
     return reinterpret_cast<void*>(base);
 }
 
-ShHandle ShConstructLinker(const EShExecutable executable, int debugOptions)
+ShHandle ShConstructLinker(const EShExecutable executable, int /*debugOptions unused*/)
 {
-    if (!InitThread())
-        return nullptr;
-
-    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructLinker(executable, debugOptions));
+    TShHandleBase* base = static_cast<TShHandleBase*>(ConstructLinker(executable, 0));
 
     return reinterpret_cast<void*>(base);
 }
 
 ShHandle ShConstructUniformMap()
 {
-    if (!InitThread())
-        return nullptr;
-
     TShHandleBase* base = static_cast<TShHandleBase*>(ConstructUniformMap());
 
     return reinterpret_cast<void*>(base);
@@ -1446,7 +1434,8 @@ int ShCompile(
     int /*debugOptions*/,
     int defaultVersion,        // use 100 for ES environment, 110 for desktop
     bool forwardCompatible,    // give errors for use of deprecated features
-    EShMessages messages       // warnings/errors/AST; things to print out
+    EShMessages messages,       // warnings/errors/AST; things to print out,
+    const char *shaderFileName // the filename
     )
 {
     // Map the generic handle to the C++ object
@@ -1462,6 +1451,9 @@ int ShCompile(
 
     compiler->infoSink.info.erase();
     compiler->infoSink.debug.erase();
+    compiler->infoSink.info.setShaderFileName(shaderFileName);
+    compiler->infoSink.debug.setShaderFileName(shaderFileName);
+
 
     TIntermediate intermediate(compiler->getLanguage());
     TShader::ForbidIncluder includer;
@@ -1871,8 +1863,6 @@ void TShader::setFlattenUniformArrays(bool flatten)     { intermediate->setFlatt
 bool TShader::parse(const TBuiltInResource* builtInResources, int defaultVersion, EProfile defaultProfile, bool forceDefaultVersionAndProfile,
                     bool forwardCompatible, EShMessages messages, Includer& includer)
 {
-    if (! InitThread())
-        return false;
     SetThreadPoolAllocator(pool);
 
     if (! preamble)
@@ -1897,8 +1887,6 @@ bool TShader::preprocess(const TBuiltInResource* builtInResources,
                          std::string* output_string,
                          Includer& includer)
 {
-    if (! InitThread())
-        return false;
     SetThreadPoolAllocator(pool);
 
     if (! preamble)

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorToaster" inherits="HBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages toast notifications within the editor.
+	</brief_description>
+	<description>
+		This object manages the functionality and display of toast notifications within the editor, ensuring timely and informative alerts are presented to users.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_toaster].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="push_toast">
+			<return type="void" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="severity" type="int" enum="EditorToaster.Severity" default="0" />
+			<param index="2" name="tooltip" type="String" default="&quot;&quot;" />
+			<description>
+				Pushes a toast notification to the editor for display.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SEVERITY_INFO" value="0" enum="Severity">
+			Toast will display with an INFO severity.
+		</constant>
+		<constant name="SEVERITY_WARNING" value="1" enum="Severity">
+			Toast will display with a WARNING severity and have a corresponding color.
+		</constant>
+		<constant name="SEVERITY_ERROR" value="2" enum="Severity">
+			Toast will display with an ERROR severity and have a corresponding color.
+		</constant>
+	</constants>
+</class>

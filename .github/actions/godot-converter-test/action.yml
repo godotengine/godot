@@ -1,11 +1,13 @@
 name: Test Godot project converter
 description: Test the Godot project converter.
+
 inputs:
   bin:
     description: The path to the Godot executable
     required: true
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Test 3-to-4 conversion
       shell: sh

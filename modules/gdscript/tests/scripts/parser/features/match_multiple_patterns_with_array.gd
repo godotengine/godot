@@ -23,4 +23,3 @@ func test():
 	bar([3])
 	bar([4])
 	bar([5])
-

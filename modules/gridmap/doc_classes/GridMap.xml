@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GridMap" inherits="Node3D" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>
@@ -12,8 +12,8 @@
 	</description>
 	<tutorials>
 		<link title="Using gridmaps">$DOCS_URL/tutorials/3d/using_gridmaps.html</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -38,7 +38,8 @@
 		<method name="get_bake_meshes">
 			<return type="Array" />
 			<description>
-				Returns an array of [ArrayMesh]es and [Transform3D] references of all bake meshes that exist within the current GridMap.
+				Returns an array of [ArrayMesh]es and [Transform3D] references of all bake meshes that exist within the current GridMap. Even indices contain [ArrayMesh]es, while odd indices contain [Transform3D]s that are always equal to [constant Transform3D.IDENTITY].
+				This method relies on the output of [method make_baked_meshes], which will be called with [code]gen_lightmap_uv[/code] set to [code]true[/code] and [code]lightmap_uv_texel_size[/code] set to [code]0.1[/code] if it hasn't been called yet.
 			</description>
 		</method>
 		<method name="get_basis_with_orthogonal_index" qualifiers="const">
@@ -86,7 +87,7 @@
 		<method name="get_meshes" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space.
+				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space. Even indices contain [Transform3D]s, while odd indices contain [Mesh]es related to the [Transform3D] in the index preceding it.
 			</description>
 		</method>
 		<method name="get_navigation_map" qualifiers="const">
@@ -128,21 +129,22 @@
 			<param index="0" name="gen_lightmap_uv" type="bool" default="false" />
 			<param index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
 			<description>
-				Bakes lightmap data for all meshes in the assigned [MeshLibrary].
+				Generates a baked mesh that represents all meshes in the assigned [MeshLibrary] for use with [LightmapGI]. If [param gen_lightmap_uv] is [code]true[/code], UV2 data will be generated for each mesh currently used in the [GridMap]. Otherwise, only meshes that already have UV2 data present will be able to use baked lightmaps. When generating UV2, [param lightmap_uv_texel_size] controls the texel density for lightmaps, with lower values resulting in more detailed lightmaps. [param lightmap_uv_texel_size] is ignored if [param gen_lightmap_uv] is [code]false[/code]. See also [method get_bake_meshes], which relies on the output of this method.
+				[b]Note:[/b] Calling this method will not actually bake lightmaps, as lightmap baking is performed using the [LightmapGI] node.
 			</description>
 		</method>
 		<method name="map_to_local" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="map_position" type="Vector3i" />
 			<description>
-				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method map_to_local].
+				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method local_to_map].
 			</description>
 		</method>
-		<method name="resource_changed" is_deprecated="true">
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				[i]Obsoleted.[/i] Use [signal Resource.changed] instead.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="set_cell_item">

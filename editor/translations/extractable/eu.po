@@ -1,0 +1,74 @@
+# Basque translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2023-11-06 00:35+0000\n"
+"Last-Translator: Pablo Mori <pablomcando2008@gmail.com>\n"
+"Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/godot/"
+"eu/>\n"
+"Language: eu\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.2-dev\n"
+
+msgid "Network"
+msgstr "Sarea"
+
+msgid "Open"
+msgstr "Ireki"
+
+msgid "Select Current Folder"
+msgstr "Hautatu uneko karpeta"
+
+msgid "Save"
+msgstr "Gorde"
+
+msgid "Select This Folder"
+msgstr "Hautatu karpeta hau"
+
+msgid "Open a File"
+msgstr "Ireki fitxategi bat"
+
+msgid "Open File(s)"
+msgstr "Ireki fitxategia(k)"
+
+msgid "Open a Directory"
+msgstr "Ireki direktorioa"
+
+msgid "Open a File or Directory"
+msgstr "Ireki fitxategia edo direktorioa"
+
+msgid "Save a File"
+msgstr "Gorde fitxategia"
+
+msgid "Go to previous folder."
+msgstr "Joan aurreko karpetara."
+
+msgid "Go to next folder."
+msgstr "Joan hurrengo karpetara."
+
+msgid "Go to parent folder."
+msgstr "Joan guraso karpetara."
+
+msgid "Refresh files."
+msgstr "Eguneratu fitxategiak."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Txandakatu ezkutuko fitxategien ikusgaitasuna."
+
+msgid "Directories & Files:"
+msgstr "Direktorioak eta fitxategiak:"
+
+msgid "File:"
+msgstr "Fitxategia:"
+
+msgid "Undo"
+msgstr "Desegin"
+
+msgid "Redo"
+msgstr "Berregin"

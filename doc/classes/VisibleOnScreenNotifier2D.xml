@@ -4,12 +4,12 @@
 		A rectangular region of 2D space that detects whether it is visible on screen.
 	</brief_description>
 	<description>
-		[VisibleOnScreenEnabler2D] represents a rectangular region of 2D space. When any part of this region becomes visible on screen or in a viewport, it will emit a [signal screen_entered] signal, and likewise it will emit a [signal screen_exited] signal when no part of it remains visible.
+		[VisibleOnScreenNotifier2D] represents a rectangular region of 2D space. When any part of this region becomes visible on screen or in a viewport, it will emit a [signal screen_entered] signal, and likewise it will emit a [signal screen_exited] signal when no part of it remains visible.
 		If you want a node to be enabled automatically when this region is visible on screen, use [VisibleOnScreenEnabler2D].
 		[b]Note:[/b] [VisibleOnScreenNotifier2D] uses the render culling code to determine whether it's visible on screen, so it won't function unless [member CanvasItem.visible] is set to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
@@ -23,6 +23,9 @@
 	<members>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-10, -10, 20, 20)">
 			The VisibleOnScreenNotifier2D's bounding rectangle.
+		</member>
+		<member name="show_rect" type="bool" setter="set_show_rect" getter="is_showing_rect" default="true">
+			If [code]true[/code], shows the rectangle area of [member rect] in the editor with a translucent magenta fill. Unlike changing the visibility of the VisibleOnScreenNotifier2D, this does not affect the screen culling detection.
 		</member>
 	</members>
 	<signals>

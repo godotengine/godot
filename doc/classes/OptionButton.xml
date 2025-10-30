@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptionButton" inherits="Button" keywords="select, dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
 	<description>
 		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
+		[b]Note:[/b] The IDs used for items are limited to signed 32-bit integers, not the full 64 bits of [int]. These have a range of [code]-2^31[/code] to [code]2^31 - 1[/code], that is, [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
@@ -19,6 +19,7 @@
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
 				Adds an item, with a [param texture] icon, text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
+				[b]Note:[/b] The item will be selected if there are no other items.
 			</description>
 		</method>
 		<method name="add_item">
@@ -27,6 +28,7 @@
 			<param index="1" name="id" type="int" default="-1" />
 			<description>
 				Adds an item, with text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
+				[b]Note:[/b] The item will be selected if there are no other items.
 			</description>
 		</method>
 		<method name="add_separator">
@@ -40,6 +42,13 @@
 			<return type="void" />
 			<description>
 				Clears all the items in the [OptionButton].
+			</description>
+		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the auto translate mode of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -151,6 +160,15 @@
 			<param index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item at index [param idx].
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [OptionButton] itself.
 			</description>
 		</method>
 		<method name="set_item_disabled">

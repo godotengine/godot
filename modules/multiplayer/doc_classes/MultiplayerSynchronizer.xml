@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerSynchronizer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="MultiplayerSynchronizer" inherits="Node" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Synchronizes properties from the multiplayer authority to the remote peers.
 	</brief_description>
@@ -53,7 +53,7 @@
 	</methods>
 	<members>
 		<member name="delta_interval" type="float" setter="set_delta_interval" getter="get_delta_interval" default="0.0">
-			Time interval between delta synchronizations. When set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
+			Time interval between delta synchronizations. Used when the replication is set to [constant SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE]. If set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
 		</member>
 		<member name="public_visibility" type="bool" setter="set_visibility_public" getter="is_visibility_public" default="true">
 			Whether synchronization should be visible to all peers by default. See [method set_visibility_for] and [method add_visibility_filter] for ways of configuring fine-grained visibility options.
@@ -62,14 +62,14 @@
 			Resource containing which properties to synchronize.
 		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
-			Time interval between synchronizations. When set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
+			Time interval between synchronizations. Used when the replication is set to [constant SceneReplicationConfig.REPLICATION_MODE_ALWAYS]. If set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
 		</member>
 		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
 			Node path that replicated properties are relative to.
 			If [member root_path] was spawned by a [MultiplayerSpawner], the node will be also be spawned and despawned based on this synchronizer visibility options.
 		</member>
 		<member name="visibility_update_mode" type="int" setter="set_visibility_update_mode" getter="get_visibility_update_mode" enum="MultiplayerSynchronizer.VisibilityUpdateMode" default="0">
-			Specifies when visibility filters are updated (see [enum VisibilityUpdateMode] for options).
+			Specifies when visibility filters are updated.
 		</member>
 	</members>
 	<signals>

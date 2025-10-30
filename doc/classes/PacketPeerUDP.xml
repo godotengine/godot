@@ -4,7 +4,32 @@
 		UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
+		UDP packet peer. Can be used to send and receive raw UDP packets as well as [Variant]s.
+		[b]Example:[/b] Send a packet:
+		[codeblock]
+		var peer = PacketPeerUDP.new()
+
+		# Optionally, you can select the local port used to send the packet.
+		peer.bind(4444)
+
+		peer.set_dest_address("1.1.1.1", 4433)
+		peer.put_packet("hello".to_utf8_buffer())
+		[/codeblock]
+		[b]Example:[/b] Listen for packets:
+		[codeblock]
+		var peer
+
+		func _ready():
+			peer = PacketPeerUDP.new()
+			peer.bind(4433)
+
+
+		func _process(_delta):
+			if peer.get_available_packet_count() &gt; 0:
+				var array_bytes = peer.get_packet()
+				var packet_string = array_bytes.get_string_from_ascii()
+				print("Received message: ", packet_string)
+		[/codeblock]
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
@@ -19,7 +44,7 @@
 				Binds this [PacketPeerUDP] to the specified [param port] and [param bind_address] with a buffer size [param recv_buf_size], allowing it to receive incoming packets.
 				If [param bind_address] is set to [code]"*"[/code] (default), the peer will be bound on all available addresses (both IPv4 and IPv6).
 				If [param bind_address] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will be bound to all available addresses matching that IP type.
-				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only be bound to the interface with that addresses (or fail if no interface with the given address exists).
+				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc.), the peer will only be bound to the interface with that address (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="close">
@@ -116,12 +141,12 @@
 
 				# Client
 				while socket.wait() == OK:
-				    var data = socket.get_packet().get_string_from_ascii()
-				    if data == "Time to stop":
-				        return
+					var data = socket.get_packet().get_string_from_ascii()
+					if data == "Time to stop":
+						return
 				[/gdscript]
 				[csharp]
-				var socket = new PacketPeerUDP();
+				var socket = new PacketPeerUdp();
 				// Server
 				socket.SetDestAddress("127.0.0.1", 789);
 				socket.PutPacket("Time to stop".ToAsciiBuffer());
@@ -129,11 +154,11 @@
 				// Client
 				while (socket.Wait() == OK)
 				{
-				    string data = socket.GetPacket().GetStringFromASCII();
-				    if (data == "Time to stop")
-				    {
-				        return;
-				    }
+					string data = socket.GetPacket().GetStringFromASCII();
+					if (data == "Time to stop")
+					{
+						return;
+					}
 				}
 				[/csharp]
 				[/codeblocks]

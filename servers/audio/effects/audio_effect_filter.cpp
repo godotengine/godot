@@ -29,12 +29,12 @@
 /**************************************************************************/
 
 #include "audio_effect_filter.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 template <int S>
 void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	for (int i = 0; i < p_frame_count; i++) {
-		float f = p_src_frames[i].l;
+		float f = p_src_frames[i].left;
 		filter_process[0][0].process_one(f);
 		if constexpr (S > 1) {
 			filter_process[0][1].process_one(f);
@@ -46,11 +46,11 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 			filter_process[0][3].process_one(f);
 		}
 
-		p_dst_frames[i].l = f;
+		p_dst_frames[i].left = f;
 	}
 
 	for (int i = 0; i < p_frame_count; i++) {
-		float f = p_src_frames[i].r;
+		float f = p_src_frames[i].right;
 		filter_process[1][0].process_one(f);
 		if constexpr (S > 1) {
 			filter_process[1][1].process_one(f);
@@ -62,7 +62,7 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 			filter_process[1][3].process_one(f);
 		}
 
-		p_dst_frames[i].r = f;
+		p_dst_frames[i].right = f;
 	}
 }
 

@@ -28,22 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_WEB_H
-#define OS_WEB_H
+#pragma once
 
 #include "audio_driver_web.h"
+#include "webmidi_driver.h"
 
 #include "godot_js.h"
 
 #include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <emscripten/html5.h>
 
 class OS_Web : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 	List<AudioDriverWeb *> audio_drivers;
+
+	MIDIDriverWebMidi midi_driver;
 
 	bool idb_is_syncing = false;
 	bool idb_available = false;
@@ -53,6 +55,7 @@ class OS_Web : public OS_Unix {
 	WASM_EXPORT static void main_loop_callback();
 
 	WASM_EXPORT static void file_access_close_callback(const String &p_file, int p_flags);
+	WASM_EXPORT static void dir_access_remove_callback(const String &p_file);
 	WASM_EXPORT static void fs_sync_callback();
 	WASM_EXPORT static void update_pwa_state_callback();
 
@@ -80,38 +83,38 @@ public:
 	bool main_loop_iterate();
 
 	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
 	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
 	bool is_process_running(const ProcessID &p_pid) const override;
+	int get_process_exit_code(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	String get_unique_id() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override;
 
 	String get_executable_path() const override;
-	Error shell_open(String p_uri) override;
+	Error shell_open(const String &p_uri) override;
 	String get_name() const override;
 
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override;
+	void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
-	void vibrate_handheld(int p_duration_ms) override;
+	void vibrate_handheld(int p_duration_ms, float p_amplitude) override;
 
 	String get_cache_path() const override;
 	String get_config_path() const override;
 	String get_data_path() const override;
-	String get_user_data_dir() const override;
+	String get_user_data_dir(const String &p_user_dir) const override;
 
 	bool is_userfs_persistent() const override;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
 	void resume_audio();
 
 	OS_Web();
 };
-
-#endif // OS_WEB_H

@@ -36,11 +36,11 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const float _degToRadConstF = (float)0.0174532925199432957692369077M;
-        private const double _degToRadConstD = (double)0.0174532925199432957692369077M;
+        private const float DegToRadConstF = (float)0.0174532925199432957692369077M;
+        private const double DegToRadConstD = (double)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const float _radToDegConstF = (float)57.295779513082320876798154814M;
-        private const double _radToDegConstD = (double)57.295779513082320876798154814M;
+        private const float RadToDegConstF = (float)57.295779513082320876798154814M;
+        private const double RadToDegConstD = (double)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
@@ -760,7 +760,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static float DegToRad(float deg)
         {
-            return deg * _degToRadConstF;
+            return deg * DegToRadConstF;
         }
 
         /// <summary>
@@ -770,7 +770,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static double DegToRad(double deg)
         {
-            return deg * _degToRadConstD;
+            return deg * DegToRadConstD;
         }
 
         /// <summary>
@@ -957,10 +957,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            float tolerance = _epsilonF * Math.Abs(a);
-            if (tolerance < _epsilonF)
+            float tolerance = EpsilonF * Math.Abs(a);
+            if (tolerance < EpsilonF)
             {
-                tolerance = _epsilonF;
+                tolerance = EpsilonF;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -981,10 +981,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            double tolerance = _epsilonD * Math.Abs(a);
-            if (tolerance < _epsilonD)
+            double tolerance = EpsilonD * Math.Abs(a);
+            if (tolerance < EpsilonD)
             {
-                tolerance = _epsilonD;
+                tolerance = EpsilonD;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -1069,7 +1069,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(float s)
         {
-            return Math.Abs(s) < _epsilonF;
+            return Math.Abs(s) < EpsilonF;
         }
 
         /// <summary>
@@ -1084,7 +1084,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(double s)
         {
-            return Math.Abs(s) < _epsilonD;
+            return Math.Abs(s) < EpsilonD;
         }
 
         /// <summary>
@@ -1412,7 +1412,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RadToDeg(float rad)
         {
-            return rad * _radToDegConstF;
+            return rad * RadToDegConstF;
         }
 
         /// <summary>
@@ -1423,7 +1423,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double RadToDeg(double rad)
         {
-            return rad * _radToDegConstD;
+            return rad * RadToDegConstD;
         }
 
         /// <summary>
@@ -1665,8 +1665,8 @@ namespace Godot
         /// <returns>The position of the first non-zero digit.</returns>
         public static int StepDecimals(double step)
         {
-            double[] sd = new double[]
-            {
+            ReadOnlySpan<double> sd =
+            [
                 0.9999,
                 0.09999,
                 0.009999,
@@ -1676,7 +1676,7 @@ namespace Godot
                 0.0000009999,
                 0.00000009999,
                 0.000000009999,
-            };
+            ];
             double abs = Math.Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)

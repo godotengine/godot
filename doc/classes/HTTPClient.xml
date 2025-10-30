@@ -7,12 +7,12 @@
 		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases.
 		See the [HTTPRequest] node for a higher-level alternative.
 		[b]Note:[/b] This client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
-		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports Transport Layer Security (TLS), including server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
+		An [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports Transport Layer Security (TLS), including server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
 		For more information on HTTP, see [url=https://developer.mozilla.org/en-US/docs/Web/HTTP]MDN's documentation on HTTP[/url] (or read [url=https://tools.ietf.org/html/rfc2616]RFC 2616[/url] to get it straight from the source).
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Note:[/b] It's recommended to use transport encryption (TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
 		[b]Note:[/b] When performing HTTP requests from a project exported to Web, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
-		[b]Note:[/b] TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
+		[b]Note:[/b] TLS support is currently limited to TLSv1.2 and TLSv1.3. Attempting to connect to a server that only supports older (insecure) TLS versions will return an error.
 		[b]Warning:[/b] TLS certificate revocation and certificate pinning are currently not supported. Revoked certificates are accepted as long as they are otherwise valid. If this is a concern, you may want to use automatically managed certificates with a short validity period.
 	</description>
 	<tutorials>
@@ -59,12 +59,11 @@
 		<method name="get_response_headers_as_dictionary">
 			<return type="Dictionary" />
 			<description>
-				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-				[b]Example:[/b]
+				Returns all response headers as a [Dictionary]. Each entry is composed by the header name, and a [String] containing the values separated by [code]"; "[/code]. The casing is kept the same as the headers were received.
 				[codeblock]
 				{
-				    "content-length": 12,
-				    "Content-Type": "application/json; charset=UTF-8",
+					"content-length": 12,
+					"Content-Type": "application/json; charset=UTF-8",
 				}
 				[/codeblock]
 			</description>
@@ -100,7 +99,7 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblocks]
 				[gdscript]
-				var fields = {"username": "user", "password": "pass"}
+				var fields = { "username": "user", "password": "pass" }
 				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "username=user&amp;password=pass"
 				[/gdscript]
@@ -113,16 +112,16 @@
 				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblocks]
 				[gdscript]
-				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
+				var fields = { "single": 123, "not_valued": null, "multiple": [22, 33, 44] }
 				var query_string = http_client.query_string_from_dict(fields)
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary
 				{
-				    { "single", 123 },
-				    { "notValued", default },
-				    { "multiple", new Godot.Collections.Array { 22, 33, 44 } },
+					{ "single", 123 },
+					{ "notValued", default },
+					{ "multiple", new Godot.Collections.Array { 22, 33, 44 } },
 				};
 				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
@@ -143,22 +142,22 @@
 			<param index="2" name="headers" type="PackedStringArray" />
 			<param index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
-				Sends a request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
-				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
+				Sends an HTTP request to the connected host with the given [param method].
+				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				[param headers] are HTTP request headers.
 				To create a POST request with query strings to push to the server, do:
 				[codeblocks]
 				[gdscript]
-				var fields = {"username" : "user", "password" : "pass"}
+				var fields = { "username": "user", "password": "pass" }
 				var query_string = http_client.query_string_from_dict(fields)
 				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
 				var result = http_client.request(http_client.METHOD_POST, "/index.php", headers, query_string)
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
-				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
-				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
+				string queryString = new HttpClient().QueryStringFromDict(fields);
+				string[] headers = ["Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}"];
+				var result = new HttpClient().Request(HttpClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The [param body] parameter is ignored if [param method] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
@@ -171,9 +170,9 @@
 			<param index="2" name="headers" type="PackedStringArray" />
 			<param index="3" name="body" type="PackedByteArray" />
 			<description>
-				Sends a raw request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
-				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
+				Sends a raw HTTP request to the connected host with the given [param method].
+				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				[param headers] are HTTP request headers.
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>
@@ -278,7 +277,11 @@
 			HTTP status code [code]102 Processing[/code] (WebDAV). Indicates that the server has received and is processing the request, but no response is available yet.
 		</constant>
 		<constant name="RESPONSE_OK" value="200" enum="ResponseCode">
-			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request. GET: The resource has been fetched and is transmitted in the message body. HEAD: The entity headers are in the message body. POST: The resource describing the result of the action is transmitted in the message body. TRACE: The message body contains the request message as received by the server.
+			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request:
+			- [constant METHOD_GET]: The resource has been fetched and is transmitted in the message body.
+			- [constant METHOD_HEAD]: The entity headers are in the message body.
+			- [constant METHOD_POST]: The resource describing the result of the action is transmitted in the message body.
+			- [constant METHOD_TRACE]: The message body contains the request message as received by the server.
 		</constant>
 		<constant name="RESPONSE_CREATED" value="201" enum="ResponseCode">
 			HTTP status code [code]201 Created[/code]. The request has succeeded and a new resource has been created as a result of it. This is typically the response sent after a PUT request.
@@ -322,11 +325,11 @@
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
 			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
-		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" is_deprecated="true">
-			[i]Deprecated.[/i] HTTP status code [code]305 Use Proxy[/code].
+		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]305 Use Proxy[/code].
 		</constant>
-		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" is_deprecated="true">
-			[i]Deprecated.[/i] HTTP status code [code]306 Switch Proxy[/code].
+		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]306 Switch Proxy[/code].
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.

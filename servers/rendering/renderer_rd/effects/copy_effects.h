@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COPY_EFFECTS_RD_H
-#define COPY_EFFECTS_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy_to_fb.glsl.gen.h"
@@ -45,7 +45,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 
@@ -139,7 +139,7 @@ private:
 		int32_t section[4];
 		int32_t target[2];
 		uint32_t flags;
-		uint32_t pad;
+		float luminance_multiplier;
 		// Glow.
 		float glow_strength;
 		float glow_bloom;
@@ -162,7 +162,7 @@ private:
 		CopyPushConstant push_constant;
 		CopyShaderRD shader;
 		RID shader_version;
-		RID pipelines[COPY_MODE_MAX];
+		PipelineDeferredRD pipelines[COPY_MODE_MAX];
 
 	} copy;
 
@@ -191,6 +191,7 @@ private:
 		COPY_TO_FB_FLAG_ALPHA_TO_ONE = (1 << 5),
 		COPY_TO_FB_FLAG_LINEAR = (1 << 6),
 		COPY_TO_FB_FLAG_NORMAL = (1 << 7),
+		COPY_TO_FB_FLAG_USE_SRC_SECTION = (1 << 8),
 	};
 
 	struct CopyToFbPushConstant {
@@ -216,7 +217,6 @@ private:
 		float z_far;
 		float z_near;
 		float texel_size[2];
-		float screen_rect[4];
 	};
 
 	struct CopyToDP {
@@ -238,7 +238,7 @@ private:
 		CubemapDownsamplerShaderRD compute_shader;
 		CubemapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} cubemap_downsampler;
 
@@ -260,7 +260,7 @@ private:
 		CubemapFilterShaderRD compute_shader;
 		CubemapFilterRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipelines[FILTER_MODE_MAX];
+		PipelineDeferredRD compute_pipelines[FILTER_MODE_MAX];
 		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
 
 		RID uniform_set;
@@ -284,7 +284,7 @@ private:
 		CubemapRoughnessShaderRD compute_shader;
 		CubemapRoughnessRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} roughness;
 
@@ -329,7 +329,7 @@ public:
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
-	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false);
+	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false, bool p_srgb = false, RID p_secondary = RID(), bool p_multiview = false, bool alpha_to_one = false, bool p_linear = false, bool p_normal = false, const Rect2 &p_src_rect = Rect2());
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void copy_to_drawlist(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_source_rd_texture, bool p_linear = false);
 	void copy_raster(RID p_source_texture, RID p_dest_framebuffer);
@@ -358,5 +358,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // COPY_EFFECTS_RD_H

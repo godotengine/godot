@@ -1,5 +1,6 @@
 /*
 ** Copyright (c) 2014-2020 The Khronos Group Inc.
+** Copyright (C) 2022-2024 Arm Limited.
 ** Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,8 +54,12 @@ static const char* const E_SPV_KHR_terminate_invocation         = "SPV_KHR_termi
 static const char* const E_SPV_KHR_workgroup_memory_explicit_layout = "SPV_KHR_workgroup_memory_explicit_layout";
 static const char* const E_SPV_KHR_subgroup_uniform_control_flow = "SPV_KHR_subgroup_uniform_control_flow";
 static const char* const E_SPV_KHR_fragment_shader_barycentric = "SPV_KHR_fragment_shader_barycentric";
+static const char* const E_SPV_KHR_quad_control                = "SPV_KHR_quad_control";
 static const char* const E_SPV_AMD_shader_early_and_late_fragment_tests = "SPV_AMD_shader_early_and_late_fragment_tests";
 static const char* const E_SPV_KHR_ray_tracing_position_fetch   = "SPV_KHR_ray_tracing_position_fetch";
 static const char* const E_SPV_KHR_cooperative_matrix           = "SPV_KHR_cooperative_matrix";
+static const char* const E_SPV_KHR_maximal_reconvergence        = "SPV_KHR_maximal_reconvergence";
+static const char* const E_SPV_KHR_subgroup_rotate              = "SPV_KHR_subgroup_rotate";
+static const char* const E_SPV_KHR_expect_assume                = "SPV_KHR_expect_assume";
 
 #endif  // #ifndef GLSLextKHR_H
