@@ -73,6 +73,7 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("use_msan", "Use LLVM/GCC compiler memory sanitizer (MSAN))", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
+        BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
         BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
@@ -382,6 +383,14 @@ def configure(env):
             env["pulseaudio"] = False
             print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
+    if env["dbus"]:
+        if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
+            env.ParseConfig("pkg-config dbus-1 --cflags --libs")
+            env.Append(CPPDEFINES=["DBUS_ENABLED"])
+        else:
+            print("Warning: D-Bus development libraries not found. SDL won't use D-Bus.")
+            env["dbus"] = False
+
     if env["speechd"]:
         if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
             env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
@@ -391,7 +400,6 @@ def configure(env):
             print("Warning: Speech Dispatcher development libraries not found. Disabling Text-to-Speech support.")
 
     if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
@@ -401,6 +409,18 @@ def configure(env):
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
         env["udev"] = False  # Linux specific
+
+    if env["sdl"]:
+        if env["builtin_sdl"]:
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
+            env.ParseConfig("pkg-config sdl3 --cflags --libs")
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        else:
+            print_warning(
+                "SDL3 development libraries not found, and `builtin_sdl` was explicitly disabled. Disabling SDL input driver support."
+            )
+            env["sdl"] = False
 
     # Linkflags below this line should typically stay the last ones
     if not env["builtin_zlib"]:
