@@ -97,6 +97,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MODELVIEW_NORMAL_MATRIX"] = ShaderLanguage::TYPE_MAT3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["CLIP_SPACE_FAR"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["MAIN_CAM_INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["NODE_POSITION_WORLD"] = constt(ShaderLanguage::TYPE_VEC3);
@@ -159,6 +160,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["EYE_OFFSET"] = constt(ShaderLanguage::TYPE_VEC3);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["CLIP_SPACE_FAR"] = constt(ShaderLanguage::TYPE_FLOAT);
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["MODEL_NORMAL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT3);
@@ -202,6 +204,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["DIFFUSE_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SPECULAR_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["CLIP_SPACE_FAR"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].can_discard = true;
