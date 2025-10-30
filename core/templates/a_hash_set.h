@@ -432,7 +432,7 @@ public:
 		this->_capacity_mask = next_power_of_2(this->_capacity_mask) - 1;
 	}
 	AHashSet() {
-			this->_capacity_mask = (RAHT_INITIAL_CAPACITY - 1);
+		this->_capacity_mask = (RAHT_INITIAL_CAPACITY - 1);
 	}
 
 	AHashSet(std::initializer_list<TKey> p_init) {
