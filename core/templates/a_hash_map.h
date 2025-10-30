@@ -80,15 +80,15 @@ template <typename TKey, typename TValue,
 		typename Comparator = HashMapComparatorDefault<TKey>>
 class AHashMap final : RawAHashTable<TKey, Hasher, Comparator> {
 protected:
-	_FORCE_INLINE_ const TKey &_get_key(uint32_t idx) const override {
+	const TKey &_get_key(uint32_t idx) const override {
 		return _elements[idx].key;
 	}
 
-	_FORCE_INLINE_ void _resize_elements(uint32_t p_new_capacity) override {
+	void _resize_elements(uint32_t p_new_capacity) override {
 		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * p_new_capacity));
 	}
 
-	_FORCE_INLINE_ bool _is_elements_valid() const override {
+	bool _is_elements_valid() const override {
 		return _elements != nullptr;
 	}
 
