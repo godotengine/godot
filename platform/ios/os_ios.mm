@@ -50,13 +50,9 @@
 #include <sys/sysctl.h>
 
 #if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/godot_vulkan.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #import <QuartzCore/CAMetalLayer.h>
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
 #endif
 
 // Initialization order between compilation units is not guaranteed,

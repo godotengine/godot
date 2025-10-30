@@ -41,8 +41,8 @@ typedef struct {
    examples/enough.c found in the zlib distribution.  The arguments to that
    program are the number of symbols, the initial root table size, and the
    maximum bit length of a code.  "enough 286 9 15" for literal/length codes
-   returns returns 852, and "enough 30 6 15" for distance codes returns 592.
-   The initial root table size (9 or 6) is found in the fifth argument of the
+   returns 852, and "enough 30 6 15" for distance codes returns 592. The
+   initial root table size (9 or 6) is found in the fifth argument of the
    inflate_table() calls in inflate.c and infback.c.  If the root table size is
    changed, then these maximum sizes would be need to be recalculated and
    updated. */
@@ -57,6 +57,6 @@ typedef enum {
     DISTS
 } codetype;
 
-int ZLIB_INTERNAL inflate_table OF((codetype type, unsigned short FAR *lens,
-                             unsigned codes, code FAR * FAR *table,
-                             unsigned FAR *bits, unsigned short FAR *work));
+int ZLIB_INTERNAL inflate_table(codetype type, unsigned short FAR *lens,
+                                unsigned codes, code FAR * FAR *table,
+                                unsigned FAR *bits, unsigned short FAR *work);

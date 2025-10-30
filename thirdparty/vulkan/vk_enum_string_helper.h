@@ -36,12 +36,10 @@
 #pragma warning( disable : 4065 )
 #endif
 
+#ifdef __cplusplus
 #include <string>
-#ifdef USE_VOLK
-    #include <volk.h>
-#else
-    #include <vulkan/vulkan.h>
 #endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 
 static inline const char* string_VkResult(VkResult input_value)

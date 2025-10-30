@@ -44,11 +44,7 @@
 #endif
 #include "vk_mem_alloc.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 class VulkanContext;
 

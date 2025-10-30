@@ -30,11 +30,8 @@
 
 #ifdef VULKAN_ENABLED
 #include "vulkan_context_macos.h"
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+
+#include "drivers/vulkan/godot_vulkan.h"
 
 const char *VulkanContextMacOS::_get_platform_surface_extension() const {
 	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;

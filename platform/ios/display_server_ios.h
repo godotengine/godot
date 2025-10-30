@@ -40,12 +40,8 @@
 
 #include "vulkan_context_ios.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
+#endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"

@@ -259,8 +259,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-2019, The PNG Reference Library Authors.
- 2018-2019, Cosmin Truta.
+Copyright: 1995-2024, The PNG Reference Library Authors.
+ 2018-2024, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
@@ -478,7 +478,7 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2022, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/

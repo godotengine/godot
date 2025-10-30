@@ -1,17 +1,16 @@
 diff --git a/thirdparty/vulkan/vk_enum_string_helper.h b/thirdparty/vulkan/vk_enum_string_helper.h
-index 65b3322c07..e8c61aaf15 100644
+index 005cc21ea8..16f1adc605 100644
 --- a/thirdparty/vulkan/vk_enum_string_helper.h
 +++ b/thirdparty/vulkan/vk_enum_string_helper.h
-@@ -37,7 +37,11 @@
+@@ -36,8 +36,10 @@
+ #pragma warning( disable : 4065 )
  #endif
  
++#ifdef __cplusplus
  #include <string>
 -#include <vulkan/vulkan.h>
-+#ifdef USE_VOLK
-+    #include <volk.h>
-+#else
-+    #include <vulkan/vulkan.h>
 +#endif
++#include "drivers/vulkan/godot_vulkan.h"
  
  
  static inline const char* string_VkResult(VkResult input_value)

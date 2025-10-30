@@ -2336,6 +2336,10 @@ void Image::initialize_data(const char **p_xpm) {
 			} break;
 			case READING_PIXELS: {
 				int y = line - colormap_size - 1;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wstringop-overflow=0"
+#endif
 				for (int x = 0; x < size_width; x++) {
 					char pixelstr[6] = { 0, 0, 0, 0, 0, 0 };
 					for (int i = 0; i < pixelchars; i++) {
@@ -2350,6 +2354,9 @@ void Image::initialize_data(const char **p_xpm) {
 					}
 					_put_pixelb(x, y, pixel_size, data_write, pixel);
 				}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 				if (y == (size_height - 1)) {
 					status = DONE;
