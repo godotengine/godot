@@ -35,12 +35,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.DocumentsContract
 import android.util.Log
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import org.godotengine.godot.GodotLib
-import org.godotengine.godot.io.file.MediaStoreData
+import java.io.File
 
 /**
  * Utility class for managing file selection and file picker activities.
@@ -51,7 +52,6 @@ import org.godotengine.godot.io.file.MediaStoreData
 internal class FilePicker {
 	companion object {
 		private const val FILE_PICKER_REQUEST = 1000
-		private const val FILE_SAVE_REQUEST = 1001
 		private val TAG = FilePicker::class.java.simpleName
 
 		// Constants for fileMode values
@@ -69,48 +69,49 @@ internal class FilePicker {
 		 * @param resultCode The result code returned by the activity.
 		 * @param data The intent data containing the selected file(s) or directory.
 		 */
-		@RequiresApi(Build.VERSION_CODES.Q)
 		fun handleActivityResult(context: Context, requestCode: Int, resultCode: Int, data: Intent?) {
-			if (requestCode == FILE_PICKER_REQUEST || requestCode == FILE_SAVE_REQUEST) {
+			if (requestCode == FILE_PICKER_REQUEST) {
 				if (resultCode == Activity.RESULT_CANCELED) {
 					Log.d(TAG, "File picker canceled")
 					GodotLib.filePickerCallback(false, emptyArray())
 					return
 				}
 				if (resultCode == Activity.RESULT_OK) {
-					val selectedPaths: MutableList<String> = mutableListOf()
-					// Handle multiple file selection.
+					val selectedFiles: MutableList<String> = mutableListOf()
 					val clipData = data?.clipData
+
 					if (clipData != null) {
+						// Handle multiple file selection.
 						for (i in 0 until clipData.itemCount) {
 							val uri = clipData.getItemAt(i).uri
 							uri?.let {
-								val filepath = MediaStoreData.getFilePathFromUri(context, uri)
-								if (filepath != null) {
-									selectedPaths.add(filepath)
-								} else {
-									Log.d(TAG, "null filepath URI: $it")
+								try {
+									context.contentResolver.takePersistableUriPermission(
+										it,
+										Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+									)
+								} catch (e: SecurityException) {
+									Log.d(TAG, "Unable to persist URI: $it", e)
 								}
+								selectedFiles.add(it.toString())
 							}
 						}
 					} else {
 						val uri: Uri? = data?.data
 						uri?.let {
-							val filepath = MediaStoreData.getFilePathFromUri(context, uri)
-							if (filepath != null) {
-								selectedPaths.add(filepath)
-							} else {
-								Log.d(TAG, "null filepath URI: $it")
+							try {
+								context.contentResolver.takePersistableUriPermission(
+									it,
+									Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+								)
+							} catch (e: SecurityException) {
+								Log.w(TAG, "Unable to persist URI: $it", e)
 							}
-
-							if (requestCode == FILE_SAVE_REQUEST) {
-								DocumentsContract.deleteDocument(context.contentResolver, it)
-							}
+							selectedFiles.add(it.toString())
 						}
 					}
-
-					if (selectedPaths.isNotEmpty()) {
-						GodotLib.filePickerCallback(true, selectedPaths.toTypedArray())
+					if (selectedFiles.isNotEmpty()) {
+						GodotLib.filePickerCallback(true, selectedFiles.toTypedArray())
 					} else {
 						GodotLib.filePickerCallback(false, emptyArray())
 					}
@@ -129,15 +130,14 @@ internal class FilePicker {
 		 * @param fileMode The mode to operate in, specifying open, save, or directory select.
 		 * @param filters Array of MIME types to filter file selection.
 		 */
-		@RequiresApi(Build.VERSION_CODES.Q)
 		fun showFilePicker(context: Context, activity: Activity?, currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
 			val intent = when (fileMode) {
 				FILE_MODE_OPEN_DIR -> Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 				FILE_MODE_SAVE_FILE -> Intent(Intent.ACTION_CREATE_DOCUMENT)
 				else -> Intent(Intent.ACTION_OPEN_DOCUMENT)
 			}
-			val initialDirectory = MediaStoreData.getUriFromDirectoryPath(context, currentDirectory)
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && initialDirectory != null) {
+			val initialDirectory = getUriFromDirectoryPath(context, currentDirectory)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && initialDirectory != null) {
 				intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialDirectory)
 			} else {
 				Log.d(TAG, "Error cannot set initial directory")
@@ -157,11 +157,7 @@ internal class FilePicker {
 				intent.addCategory(Intent.CATEGORY_OPENABLE)
 			}
 			intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-			if (fileMode == FILE_MODE_SAVE_FILE) {
-				activity?.startActivityForResult(intent, FILE_SAVE_REQUEST)
-			} else {
-				activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
-			}
+			activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
 		}
 
 		/**
@@ -200,6 +196,38 @@ internal class FilePicker {
 			}
 			// Fallback to a generic MIME type if the input is neither a valid extension nor MIME type.
 			return "application/octet-stream"
+		}
+
+		private fun getUriFromDirectoryPath(context: Context, directoryPath: String): Uri? {
+			if (directoryPath.startsWith("content://")) {
+				return directoryPath.toUri()
+			}
+			if (!directoryExists(directoryPath)) {
+				return null
+			}
+
+			val externalStorageRoot = Environment.getExternalStorageDirectory().absolutePath
+			if (directoryPath.startsWith(externalStorageRoot)) {
+				val relativePath = directoryPath.replaceFirst(externalStorageRoot, "").trim('/')
+				val uri = Uri.Builder()
+					.scheme("content")
+					.authority("com.android.externalstorage.documents")
+					.appendPath("document")
+					.appendPath("primary:$relativePath")
+					.build()
+				return uri
+			}
+			return null
+		}
+
+		private fun directoryExists(path: String): Boolean {
+			return try {
+				val file = File(path)
+				file.isDirectory && file.exists()
+			} catch (e: SecurityException) {
+				Log.d(TAG, "Failed to check directoryExists: $path", e)
+				false
+			}
 		}
 	}
 }
