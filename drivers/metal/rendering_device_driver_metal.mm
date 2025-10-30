@@ -65,6 +65,10 @@
 #import <os/signpost.h>
 #include <algorithm>
 
+#ifndef MTLGPUAddress
+typedef uint64_t MTLGPUAddress;
+#endif
+
 #pragma mark - Logging
 
 extern os_log_t LOG_DRIVER;
