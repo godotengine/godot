@@ -244,6 +244,12 @@ void OpenXRCompositionLayer::_clear_composition_layer() {
 	}
 }
 
+void OpenXRCompositionLayer::_viewport_size_changed() {
+	if (layer_viewport && openxr_session_running && composition_layer_extension && is_natively_supported() && is_visible() && is_inside_tree()) {
+		composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+	}
+}
+
 void OpenXRCompositionLayer::_on_openxr_session_begun() {
 	openxr_session_running = true;
 	if (_should_register()) {
@@ -298,12 +304,18 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 		ERR_FAIL_COND_MSG(p_viewport != nullptr, RTR("Cannot set SubViewport on an OpenXR composition layer when using an Android surface."));
 	}
 
+	if (layer_viewport) {
+		layer_viewport->disconnect("size_changed", callable_mp(this, &OpenXRCompositionLayer::_viewport_size_changed));
+	}
+
 	layer_viewport = p_viewport;
 	if (_should_register()) {
 		_setup_composition_layer();
 	}
 
 	if (layer_viewport) {
+		layer_viewport->connect("size_changed", callable_mp(this, &OpenXRCompositionLayer::_viewport_size_changed));
+
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
 		if (update_mode == SubViewport::UPDATE_WHEN_VISIBLE || update_mode == SubViewport::UPDATE_WHEN_PARENT_VISIBLE) {
 			WARN_PRINT_ONCE("OpenXR composition layers cannot use SubViewports with UPDATE_WHEN_VISIBLE or UPDATE_WHEN_PARENT_VISIBLE. Switching to UPDATE_ALWAYS.");
