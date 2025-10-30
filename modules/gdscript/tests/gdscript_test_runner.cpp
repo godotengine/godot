@@ -76,7 +76,7 @@ void init_autoloads() {
 			// Cache the scene reference before loading it (for cyclic references)
 			Ref<PackedScene> scn;
 			scn.instantiate();
-			scn->set_path(info.path);
+			scn->set_path(ResourceUID::ensure_path(info.path));
 			scn->reload_from_file();
 			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
