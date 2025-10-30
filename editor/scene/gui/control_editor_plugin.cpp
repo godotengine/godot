@@ -37,8 +37,10 @@
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
@@ -493,18 +495,17 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 }
 
 void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
-	// If this Control doesn't currently have a type variation, we want to prompt
-	// the user for one.
 	current_control = p_control;
 	if (current_control->get_theme_type_variation() == "") {
+		// If this Control doesn't currently have a type variation, we want to prompt
+		// the user for one.
 		create_new_variation_line_edit->set_text("");
 		create_new_variation_dialog->reset_size();
 		create_new_variation_dialog->popup_centered();
 		create_new_variation_line_edit->grab_focus();
-	}
-	// If it *does* have a type variation, we want to push these changes to it
-	// instead.
-	else {
+	} else {
+		// If it *does* have a type variation, we want to push these changes to it
+		// instead.
 		current_control->create_variation_from_overrides("");
 	}
 }
