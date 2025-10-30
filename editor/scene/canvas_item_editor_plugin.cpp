@@ -4245,7 +4245,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
-	const Color key_auto_color = EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
+	const Color key_auto_color = EditorThemeManager::is_dark_icon_and_font() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
@@ -5439,12 +5439,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_adjust_new_node_position));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
