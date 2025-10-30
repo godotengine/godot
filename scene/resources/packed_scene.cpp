@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
@@ -500,6 +501,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						E.value->setup_local_to_scene(); // Setup may be required for the resource to work properly.
 					}
 				}
+
+				node->notification(Object::NOTIFICATION_EXPORT_ASSIGNED);
 			}
 
 			//name

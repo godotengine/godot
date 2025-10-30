@@ -275,5 +275,23 @@ namespace Godot.Bridge
                 ExceptionUtils.LogException(e);
             }
         }
+
+        [UnmanagedCallersOnly]
+        internal static void ValidateExports(IntPtr godotObjectGCHandle)
+        {
+            try
+            {
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    return;
+
+                godotObject.ValidateExportedProperties();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+            }
+        }
     }
 }

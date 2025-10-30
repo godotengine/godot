@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "scene/property_utils.h"
 
@@ -1436,7 +1437,9 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 		*r_error = err;
 	}
 	if (err == OK) {
-		return loader.get_resource();
+		Ref<Resource> resource = loader.get_resource();
+		resource->notification(NOTIFICATION_EXPORT_ASSIGNED);
+		return resource;
 	} else {
 		return Ref<Resource>();
 	}

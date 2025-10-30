@@ -40,6 +40,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
         public delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_SerializeState;
         public delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_DeserializeState;
+        public delegate* unmanaged<IntPtr, void> CSharpInstanceBridge_ValidateExports;
         public delegate* unmanaged<IntPtr, void> GCHandleBridge_FreeGCHandle;
         public delegate* unmanaged<IntPtr, godot_bool> GCHandleBridge_GCHandleIsTargetCollectible;
         public delegate* unmanaged<void*, void> DebuggingUtils_GetCurrentStackInfo;
@@ -84,6 +85,7 @@ namespace Godot.Bridge
                 CSharpInstanceBridge_HasMethodUnknownParams = &CSharpInstanceBridge.HasMethodUnknownParams,
                 CSharpInstanceBridge_SerializeState = &CSharpInstanceBridge.SerializeState,
                 CSharpInstanceBridge_DeserializeState = &CSharpInstanceBridge.DeserializeState,
+                CSharpInstanceBridge_ValidateExports = &CSharpInstanceBridge.ValidateExports,
                 GCHandleBridge_FreeGCHandle = &GCHandleBridge.FreeGCHandle,
                 GCHandleBridge_GCHandleIsTargetCollectible = &GCHandleBridge.GCHandleIsTargetCollectible,
                 DebuggingUtils_GetCurrentStackInfo = &DebuggingUtils.GetCurrentStackInfo,

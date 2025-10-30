@@ -241,43 +241,32 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning restore CS0109\n");
 
+            // Generate ValidateExportedProperties
+
+            if (exportedNonNullableGodotTypes is { Count: > 0 })
+            {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    protected override void ValidateExportedProperties()\n    {\n");
+                source.Append("        base.ValidateExportedProperties();\n");
+
+                GenerateNullChecksForValidation(source, exportedNonNullableGodotTypes);
+
+                source.Append("    }\n");
+            }
+
             // Generate InvokeGodotClassMethod
 
-            if (godotClassMethods.Length > 0 || exportedNonNullableGodotTypes is { Count: > 0 })
+            if (godotClassMethods.Length > 0)
             {
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
 
-                bool hasNotifictaionMethod = false;
                 foreach (var method in godotClassMethods)
                 {
-                    if (method.Method.Name == "_Notification")
-                    {
-                        hasNotifictaionMethod = true;
-                    }
-                    GenerateMethodInvoker(method, source, exportedNonNullableGodotTypes);
-                }
-
-                if (!hasNotifictaionMethod)
-                {
-                    // If there is no _Notification method, we still need to generate null checks
-                    // for exported non-nullable Godot types in case of NOTIFICATION_SCENE_INSTANTIATED
-                    if (exportedNonNullableGodotTypes is { Count: > 0 })
-                    {
-                        source.Append("        if (method == MethodName._Notification && args.Count == 1) {\n");
-                        source.Append("            if (");
-                        source.AppendNativeVariantToManagedExpr("args[0]",
-                            context.Compilation.GetSpecialType(SpecialType.System_Int32),
-                            MarshalType.Int32);
-                        source.Append(" == (int)global::Godot.Node.NotificationSceneInstantiated) {\n");
-
-                        GenerateNullChecksForNotification(source, exportedNonNullableGodotTypes);
-
-                        source.Append("            }\n");
-                        source.Append("        }\n");
-                    }
+                    GenerateMethodInvoker(method, source);
                 }
 
                 source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
@@ -482,14 +471,14 @@ namespace Godot.SourceGenerators
             source.Append(") {\n           return true;\n        }\n");
         }
 
-        private static void GenerateNullChecksForNotification(
+        private static void GenerateNullChecksForValidation(
             StringBuilder source,
             List<(string Name, ITypeSymbol Type)> exportedNonNullableGodotTypes
         )
         {
             foreach (var (memberName, memberType) in exportedNonNullableGodotTypes)
             {
-                source.Append("                if (this.");
+                source.Append("        if (this.");
                 source.Append(memberName);
                 source.Append(" == null) throw new global::System.NullReferenceException(\"The exported property/field '");
                 source.Append(memberName);
@@ -501,8 +490,7 @@ namespace Godot.SourceGenerators
 
         private static void GenerateMethodInvoker(
             GodotMethodData method,
-            StringBuilder source,
-            List<(string Name, ITypeSymbol Type)>? exportedNonNullableGodotTypes = null
+            StringBuilder source
         )
         {
             string methodName = method.Method.Name;
@@ -512,21 +500,6 @@ namespace Godot.SourceGenerators
             source.Append(" && args.Count == ");
             source.Append(method.ParamTypes.Length);
             source.Append(") {\n");
-
-            // Generate null checks for _Notification with NOTIFICATION_SCENE_INSTANTIATED
-            if (methodName == "_Notification" &&
-                method.ParamTypes.Length == 1 &&
-                exportedNonNullableGodotTypes is { Count: > 0 })
-            {
-                source.Append("            if (");
-                source.AppendNativeVariantToManagedExpr("args[0]",
-                    method.ParamTypeSymbols[0], method.ParamTypes[0]);
-                source.Append(" == (int)global::Godot.Node.NotificationSceneInstantiated) {\n");
-
-                GenerateNullChecksForNotification(source, exportedNonNullableGodotTypes);
-
-                source.Append("            }\n");
-            }
 
             if (method.RetType != null)
                 source.Append("            var callRet = ");
