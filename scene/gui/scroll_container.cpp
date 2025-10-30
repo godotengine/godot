@@ -360,6 +360,45 @@ void ScrollContainer::_reposition_children() {
 		size.x -= v_scroll->get_minimum_size().x;
 	}
 
+	float viewport_w = size.x;
+	float viewport_h = size.y;
+
+	float total_content_w = 0.0f;
+	float total_content_h = 0.0f;
+	for (int ci = 0; ci < get_child_count(); ci++) {
+		Control *cc = as_sortable_control(get_child(ci));
+		if (!cc || cc == h_scroll || cc == v_scroll || cc == focus_panel) {
+			continue;
+		}
+		Size2 ms = cc->get_combined_minimum_size();
+		float child_w = ms.x;
+		float child_h = ms.y;
+		if (cc->get_h_size_flags().has_flag(SIZE_EXPAND)) {
+			child_w = MAX(viewport_w, ms.x);
+		}
+		if (cc->get_v_size_flags().has_flag(SIZE_EXPAND)) {
+			child_h = MAX(viewport_h, ms.y);
+		}
+		total_content_w = MAX(total_content_w, child_w);
+		total_content_h += child_h;
+	}
+
+	float max_scroll_x = total_content_w > viewport_w ? (total_content_w - viewport_w) : 0.0f;
+	float max_scroll_y = total_content_h > viewport_h ? (total_content_h - viewport_h) : 0.0f;
+	float scroll_x = h_scroll ? CLAMP(h_scroll->get_value(), 0.0f, max_scroll_x) : 0.0f;
+	float scroll_y = v_scroll ? CLAMP(v_scroll->get_value(), 0.0f, max_scroll_y) : 0.0f;
+
+	float group_v_offset = 0.0f;
+	if (max_scroll_y <= 0.0f && total_content_h < viewport_h) {
+		float extra = viewport_h - total_content_h;
+		if (vertical_content_align == CONTENT_V_ALIGN_CENTER) {
+			group_v_offset = Math::floor(extra * 0.5f);
+		} else if (vertical_content_align == CONTENT_V_ALIGN_BOTTOM) {
+			group_v_offset = Math::floor(extra);
+		}
+	}
+	ofs.y += group_v_offset;
+
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -370,18 +409,44 @@ void ScrollContainer::_reposition_children() {
 		}
 		Size2 minsize = c->get_combined_minimum_size();
 
-		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
+		Rect2 r = Rect2(ofs, minsize);
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
 		}
 		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
 		}
-		r.position += ofs;
 		if (rtl && reserve_vscroll) {
 			r.position.x += v_scroll->get_minimum_size().x;
 		}
 		r.position = r.position.floor();
+
+		{
+			float content_w = r.size.width;
+			float viewport_w_local = viewport_w;
+			ContentHAlign align_h = horizontal_content_align;
+			if (is_layout_rtl()) {
+				if (align_h == CONTENT_H_ALIGN_LEFT) {
+					align_h = CONTENT_H_ALIGN_RIGHT;
+				} else if (align_h == CONTENT_H_ALIGN_RIGHT) {
+					align_h = CONTENT_H_ALIGN_LEFT;
+				}
+			}
+			if (max_scroll_x <= 0.0f && content_w < viewport_w_local) {
+				float extra = viewport_w_local - content_w;
+				if (align_h == CONTENT_H_ALIGN_CENTER) {
+					r.position.x += Math::floor(extra * 0.5f);
+				} else if (align_h == CONTENT_H_ALIGN_RIGHT) {
+					r.position.x += Math::floor(extra);
+				}
+			}
+		}
+
+		r.position.x -= scroll_x;
+		r.position.y -= scroll_y;
+
+		r.position = r.position.floor();
+
 		fit_child_in_rect(c, r);
 	}
 
@@ -752,11 +817,20 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_focus_border", "draw"), &ScrollContainer::set_draw_focus_border);
 	ClassDB::bind_method(D_METHOD("get_draw_focus_border"), &ScrollContainer::get_draw_focus_border);
 
+	ClassDB::bind_method(D_METHOD("set_horizontal_content_align", "alignment"), &ScrollContainer::set_horizontal_content_align);
+	ClassDB::bind_method(D_METHOD("get_horizontal_content_align"), &ScrollContainer::get_horizontal_content_align);
+
+	ClassDB::bind_method(D_METHOD("set_vertical_content_align", "alignment"), &ScrollContainer::set_vertical_content_align);
+	ClassDB::bind_method(D_METHOD("get_vertical_content_align"), &ScrollContainer::get_vertical_content_align);
+
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_focus_border"), "set_draw_focus_border", "get_draw_focus_border");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_content_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_horizontal_content_align", "get_horizontal_content_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_content_align", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_content_align", "get_vertical_content_align");
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
@@ -772,6 +846,14 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
+
+	BIND_ENUM_CONSTANT(CONTENT_H_ALIGN_LEFT);
+	BIND_ENUM_CONSTANT(CONTENT_H_ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(CONTENT_H_ALIGN_RIGHT);
+
+	BIND_ENUM_CONSTANT(CONTENT_V_ALIGN_TOP);
+	BIND_ENUM_CONSTANT(CONTENT_V_ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(CONTENT_V_ALIGN_BOTTOM);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, focus_style, "focus");
@@ -823,4 +905,30 @@ ScrollContainer::ScrollContainer() {
 	deadzone = GLOBAL_GET_CACHED(int, "gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
+}
+
+void ScrollContainer::set_horizontal_content_align(ContentHAlign p_align) {
+	ERR_FAIL_INDEX(p_align, CONTENT_H_ALIGN_MAX);
+	if (horizontal_content_align == p_align) {
+		return;
+	}
+	horizontal_content_align = p_align;
+	queue_sort();
+}
+
+ScrollContainer::ContentHAlign ScrollContainer::get_horizontal_content_align() const {
+	return horizontal_content_align;
+}
+
+void ScrollContainer::set_vertical_content_align(ContentVAlign p_align) {
+	ERR_FAIL_INDEX(p_align, CONTENT_V_ALIGN_MAX);
+	if (vertical_content_align == p_align) {
+		return;
+	}
+	vertical_content_align = p_align;
+	queue_sort();
+}
+
+ScrollContainer::ContentVAlign ScrollContainer::get_vertical_content_align() const {
+	return vertical_content_align;
 }

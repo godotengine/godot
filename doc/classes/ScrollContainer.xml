@@ -46,6 +46,12 @@
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
+		<member name="horizontal_content_align" type="int" setter="set_horizontal_content_align" getter="get_horizontal_content_align" enum="ScrollContainer.ContentHAlign" default="0">
+			Controls Horizontal Placement of Contents.
+			[b]Left[/b] ([constant CONTENT_H_ALIGN_LEFT]) = Horizontally Align Contents in Left [i](Default)[/i]
+			[b]Center[/b] ([constant CONTENT_H_ALIGN_CENTER]) = Horizontally Align Contents in Center
+			[b]Right[/b] ([constant CONTENT_H_ALIGN_RIGHT]) = Horizontally Align Contents in Right
+		</member>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
@@ -73,6 +79,12 @@
 		</member>
 		<member name="scroll_vertical_custom_step" type="float" setter="set_vertical_custom_step" getter="get_vertical_custom_step" default="-1.0">
 			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's vertical increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
+		</member>
+		<member name="vertical_content_align" type="int" setter="set_vertical_content_align" getter="get_vertical_content_align" enum="ScrollContainer.ContentVAlign" default="0">
+			Controls Vertical Placement of Contents.
+			[b]Top[/b] ([constant CONTENT_V_ALIGN_TOP]) = Vertically Align Contents at Top [i](Default)[/i]
+			[b]Center[/b] ([constant CONTENT_V_ALIGN_CENTER]) = Vertically Align Contents in Center
+			[b]Bottom[/b] ([constant CONTENT_V_ALIGN_BOTTOM]) = Vertically Align Contents at Bottom
 		</member>
 		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether vertical scrollbar can be used and when it should be visible.
@@ -107,6 +119,24 @@
 		</constant>
 		<constant name="SCROLL_MODE_RESERVE" value="4" enum="ScrollMode">
 			Combines [constant SCROLL_MODE_AUTO] and [constant SCROLL_MODE_SHOW_ALWAYS]. The scrollbar is only visible if necessary, but the content size is adjusted as if it was always visible. It's useful for ensuring that content size stays the same regardless if the scrollbar is visible.
+		</constant>
+		<constant name="CONTENT_H_ALIGN_LEFT" value="0" enum="ContentHAlign">
+			Left horizontal alignment of contents.
+		</constant>
+		<constant name="CONTENT_H_ALIGN_CENTER" value="1" enum="ContentHAlign">
+			Center horizontal alignment of contents.
+		</constant>
+		<constant name="CONTENT_H_ALIGN_RIGHT" value="2" enum="ContentHAlign">
+			Right horizontal alignment of contents.
+		</constant>
+		<constant name="CONTENT_V_ALIGN_TOP" value="0" enum="ContentVAlign">
+			Top vertical alignment of contents.
+		</constant>
+		<constant name="CONTENT_V_ALIGN_CENTER" value="1" enum="ContentVAlign">
+			Center vertical alignment of contents.
+		</constant>
+		<constant name="CONTENT_V_ALIGN_BOTTOM" value="2" enum="ContentVAlign">
+			Bottom vertical alignment of contents.
 		</constant>
 	</constants>
 	<theme_items>
