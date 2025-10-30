@@ -69,7 +69,7 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
-		_update_bone_list();
+		_update_bone_list(node);
 		_update_available_modes();
 		if (current_mode == MODE_MAX) {
 			_select_mode(MODE_POINTS); // Initialize when opening the first time.
@@ -200,12 +200,12 @@ void Polygon2DEditor::_sync_bones() {
 	undo_redo->create_action(TTR("Sync Bones"));
 	undo_redo->add_do_method(node, "_set_bones", new_bones);
 	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
-	undo_redo->add_do_method(this, "_update_bone_list");
-	undo_redo->add_undo_method(this, "_update_bone_list");
+	undo_redo->add_do_method(this, "_update_bone_list", node);
+	undo_redo->add_undo_method(this, "_update_bone_list", node);
 	undo_redo->commit_action();
 }
 
-void Polygon2DEditor::_update_bone_list() {
+void Polygon2DEditor::_update_bone_list(Polygon2D *p_node) {
 	NodePath selected;
 	while (bone_scroll_vb->get_child_count()) {
 		CheckBox *cb = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(0));
@@ -217,9 +217,9 @@ void Polygon2DEditor::_update_bone_list() {
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
-	for (int i = 0; i < node->get_bone_count(); i++) {
+	for (int i = 0; i < p_node->get_bone_count(); i++) {
 		CheckBox *cb = memnew(CheckBox);
-		NodePath np = node->get_bone_path(i);
+		NodePath np = p_node->get_bone_path(i);
 		String name;
 		if (np.get_name_count()) {
 			name = np.get_name(np.get_name_count() - 1);
@@ -297,7 +297,7 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			bone_paint_strength->show();
 			bone_paint_radius->show();
 			bone_paint_radius_label->show();
-			_update_bone_list();
+			_update_bone_list(node);
 			bone_paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
 		} break;
 		default:
