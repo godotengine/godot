@@ -9597,12 +9597,8 @@ Node3DEditor::Node3DEditor() {
 	snap_key_enabled = false;
 	tool_mode = TOOL_MODE_SELECT;
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	vbc->add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.

@@ -1242,7 +1242,9 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
+	const CodeEdit *ce = code_editor->get_text_editor();
+	bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, enabled);
 }
 
 void ScriptTextEditor::_on_caret_moved() {
