@@ -142,7 +142,7 @@ TEST_CASE("[SceneTree][OptionButton] Many items") {
 		m["bool"] = true;
 		m["String"] = "yes";
 		test_opt->set_item_metadata(1, m);
-		CHECK(test_opt->get_item_metadata(1) == m);
+		CHECK((Dictionary)test_opt->get_item_metadata(1) == m);
 
 		// item_tooltip.
 		test_opt->set_item_tooltip(0, "tooltip guide");

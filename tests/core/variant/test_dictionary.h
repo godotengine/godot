@@ -82,10 +82,10 @@ TEST_CASE("[Dictionary] List init") {
 		{ Vector2(), "v2" },
 	};
 	CHECK(dict.size() == 4);
-	CHECK(dict[0] == "int");
+	CHECK((String)dict[0] == "int");
 	CHECK(PackedStringArray(dict["packed_string_array"])[2] == "values");
 	CHECK(Dictionary(dict["key"])["nested"] == Variant(200));
-	CHECK(dict[Vector2()] == "v2");
+	CHECK((String)dict[Vector2()] == "v2");
 
 	TypedDictionary<double, double> tdict{
 		{ 0.0, 1.0 },

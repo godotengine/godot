@@ -2081,7 +2081,7 @@ TEST_CASE("[String] Variant validated indexed get") {
 	getter(&s, 1, &r, &oob);
 
 	CHECK_FALSE(oob);
-	CHECK_EQ(r, String("b"));
+	CHECK_EQ((String)r, String("b"));
 }
 
 TEST_CASE("[String] Variant ptr indexed get") {
@@ -2104,7 +2104,7 @@ TEST_CASE("[String] Variant indexed set") {
 
 	CHECK(valid);
 	CHECK_FALSE(oob);
-	CHECK_EQ(s, String("azcd"));
+	CHECK_EQ((String)s, String("azcd"));
 }
 
 TEST_CASE("[String] Variant validated indexed set") {
@@ -2117,7 +2117,7 @@ TEST_CASE("[String] Variant validated indexed set") {
 	setter(&s, 1, &v, &oob);
 
 	CHECK_FALSE(oob);
-	CHECK_EQ(s, String("azcd"));
+	CHECK_EQ((String)s, String("azcd"));
 }
 
 TEST_CASE("[String] Variant ptr indexed set") {

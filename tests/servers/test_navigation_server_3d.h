@@ -367,7 +367,7 @@ TEST_SUITE("[Navigation3D]") {
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 0);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 1);
-		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
+		CHECK_NE((Vector3)agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
 
 		navigation_server->free_rid(agent);
 		navigation_server->free_rid(map);

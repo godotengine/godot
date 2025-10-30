@@ -49,7 +49,7 @@ bool PropertyUtils::is_property_value_different(const Object *p_object, const Va
 		const Node *base_node = Object::cast_to<Node>(p_object);
 		const Node *target_node = Object::cast_to<Node>(p_b);
 		if (base_node && target_node) {
-			return p_a != base_node->get_path_to(target_node);
+			return (NodePath)p_a != base_node->get_path_to(target_node);
 		}
 	}
 
@@ -62,7 +62,7 @@ bool PropertyUtils::is_property_value_different(const Object *p_object, const Va
 			// Like above, but NodePaths/Nodes are inside arrays.
 			for (int i = 0; i < array1.size(); i++) {
 				const Node *target_node = Object::cast_to<Node>(array2[i]);
-				if (!target_node || array1[i] != base_node->get_path_to(target_node)) {
+				if (!target_node || (NodePath)array1[i] != base_node->get_path_to(target_node)) {
 					return true;
 				}
 			}
