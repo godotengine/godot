@@ -76,6 +76,8 @@ public:
 	int get_margin_size(Side p_side) const;
 	Size2 get_margins_size() const;
 
+	Engine::SafeAreaInsets get_adjusted_safe_area_insets(Engine::SafeAreaInsets p_insets) const;
+
 	EmbeddedProcessBase();
 	virtual ~EmbeddedProcessBase();
 };

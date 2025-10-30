@@ -256,6 +256,9 @@ static bool init_expand_to_title_found = false;
 static bool use_custom_res = true;
 static bool force_res = false;
 
+static bool has_safe_area_override = false;
+static Engine::SafeAreaInsets safe_area_override;
+
 // Debug
 
 static bool use_debug_profiler = false;
@@ -621,6 +624,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--position <X>,<Y>", "Request window position.\n");
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
+	print_help_option("--safe-area <L>,<T>,<R>,<B>", "Simulate a display safe area for testing mobile-like insets.\n");
 #ifndef _3D_DISABLED
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
@@ -1380,6 +1384,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (arg == "--safe-area") { // simulate display safe area for testing
+			if (N) {
+				String vm = N->get();
+				Vector<String> parts = vm.split(",");
+				if (parts.size() != 4) {
+					OS::get_singleton()->print("Invalid --safe-area '%s', it should be e.g. '20,10,20,10'.\n",
+							vm.utf8().get_data());
+					goto error;
+				}
+				safe_area_override = { parts[0].to_int(), parts[1].to_int(), parts[2].to_int(), parts[3].to_int() };
+				has_safe_area_override = true;
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing argument for --safe-area, aborting.\n");
+				goto error;
+			}
 		} else if (arg == "--position") { // set window position
 
 			if (N) {
@@ -2640,6 +2661,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// If the requested driver wasn't found, pick the first entry.
 		// If all else failed it would be the dummy driver (no sound).
 		audio_driver_idx = 0;
+	}
+
+	if (has_safe_area_override) {
+		Engine::get_singleton()->set_safe_area_override(safe_area_override);
 	}
 
 	if (Engine::get_singleton()->get_write_movie_path() != String()) {

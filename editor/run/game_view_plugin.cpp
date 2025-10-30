@@ -1107,7 +1107,32 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	N = r_arguments.insert_after(N, "--position");
 	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
 	N = r_arguments.insert_after(N, "--resolution");
-	r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+	N = r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+
+	Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
+	StringName resolution_name = resolution_presets.get_key_at_index(resolution_preset_index - 1);
+	Dictionary safe_areas = EditorSettings::get_singleton()->get_setting("run/resolution_presets/safe_areas");
+
+	const DisplayServer::ScreenOrientation screen_orientation = DisplayServer::ScreenOrientation(int(ProjectSettings::get_singleton()->get("display/window/handheld/orientation")));
+	switch (screen_orientation) {
+		case DisplayServer::ScreenOrientation::SCREEN_LANDSCAPE:
+			resolution_name = StringName(String(resolution_name) + ".l");
+			break;
+		case DisplayServer::ScreenOrientation::SCREEN_PORTRAIT:
+			resolution_name = StringName(String(resolution_name) + ".p");
+			break;
+	}
+	PackedInt32Array safe_area = safe_areas.get(resolution_name, PackedInt32Array());
+	if (safe_area.size() != 4) {
+		return;
+	}
+
+	Engine::SafeAreaInsets insets = { safe_area[0], safe_area[1], safe_area[2], safe_area[3] };
+	Engine::SafeAreaInsets adjusted_insets = embedded_process->get_adjusted_safe_area_insets(insets);
+
+	String sval = itos(adjusted_insets.left) + "," + itos(adjusted_insets.top) + "," + itos(adjusted_insets.right) + "," + itos(adjusted_insets.bottom);
+	N = r_arguments.insert_after(N, "--safe-area");
+	r_arguments.insert_after(N, sval);
 }
 
 void GameView::_window_close_request() {
@@ -1184,7 +1209,7 @@ void GameView::_switch_resolution_presets(int p_preset) {
 		Dictionary resolution_presets = EditorSettings::get_singleton()->get_setting("run/resolution_presets/resolutions");
 		custom_resolution = resolution_presets[resolution_presets.get_key_at_index(resolution_preset_index - 1)];
 	}
-	print_line("Custom resolution set to: " + itos(custom_resolution.x) + "x" + itos(custom_resolution.y));
+
 	_update_embed_window_size();
 }
 

@@ -141,6 +141,24 @@ Size2 EmbeddedProcessBase::get_margins_size() const {
 	return margin_top_left + margin_bottom_right;
 }
 
+Engine::SafeAreaInsets EmbeddedProcessBase::get_adjusted_safe_area_insets(Engine::SafeAreaInsets p_insets) const {
+	Engine::SafeAreaInsets adjusted_insets;
+	Rect2i control_rect = get_adjusted_embedded_window_rect(get_rect());
+	float ratio = 1.0f;
+	if (keep_aspect) {
+		ratio = MIN((float)control_rect.size.x / window_size.x, (float)control_rect.size.y / window_size.y);
+	} else {
+		ratio = (float)control_rect.size.x / window_size.x;
+	}
+
+	adjusted_insets.left = int(Math::round(float(p_insets.left) * ratio));
+	adjusted_insets.top = int(Math::round(float(p_insets.top) * ratio));
+	adjusted_insets.right = int(Math::round(float(p_insets.right) * ratio));
+	adjusted_insets.bottom = int(Math::round(float(p_insets.bottom) * ratio));
+
+	return adjusted_insets;
+}
+
 EmbeddedProcessBase::EmbeddedProcessBase() {
 	set_focus_mode(FOCUS_ALL);
 }
