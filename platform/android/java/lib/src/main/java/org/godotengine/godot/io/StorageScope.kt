@@ -30,9 +30,11 @@
 
 package org.godotengine.godot.io
 
+import android.content.ContentResolver
 import android.content.Context
 import android.os.Build
 import android.os.Environment
+import androidx.core.net.toUri
 import java.io.File
 import org.godotengine.godot.GodotLib
 
@@ -91,6 +93,11 @@ internal enum class StorageScope {
 
 			if (path.startsWith(ASSETS_PREFIX)) {
 				return ASSETS
+			}
+
+			val uri = path.toUri()
+			if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+				return APP
 			}
 
 			var pathFile = File(path)
