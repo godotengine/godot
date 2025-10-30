@@ -116,16 +116,15 @@ jvalue _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_ar
 		} break;
 		case Variant::INT: {
 			if (force_jobject) {
-				jclass bclass = jni_find_class(env, "java/lang/Integer");
-				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(I)V");
+				jclass bclass = jni_find_class(env, "java/lang/Long");
+				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(J)V");
 				jvalue val;
-				val.i = (int)(*p_arg);
+				val.j = (jlong)(*p_arg);
 				jobject obj = env->NewObjectA(bclass, ctor, &val);
 				value.l = obj;
 				env->DeleteLocalRef(bclass);
-
 			} else {
-				value.i = *p_arg;
+				value.j = (jlong)(*p_arg);
 			}
 		} break;
 		case Variant::FLOAT: {

@@ -16,6 +16,8 @@ func run_tests():
 
 	__exec_test(test_variant_conversion_safe_from_stack_overflow)
 
+	__exec_test(test_big_integers)
+
 	print("JavaClassWrapper tests finished.")
 	print("Tests started: " + str(_test_started))
 	print("Tests completed: " + str(_test_completed))
@@ -134,3 +136,9 @@ func test_variant_conversion_safe_from_stack_overflow():
 	arr.append(dict)
 	# The following line will crash with stack overflow if not handled property:
 	TestClass.testDictionary(dict)
+
+func test_big_integers():
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	assert_equal(TestClass.testArgLong(4242424242), "4242424242")
+	assert_equal(TestClass.testArgLong(-4242424242), "-4242424242")
+	assert_equal(TestClass.testDictionary({a = 4242424242, b = -4242424242}), "{a=4242424242, b=-4242424242}")
