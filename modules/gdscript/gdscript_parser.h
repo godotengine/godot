@@ -1884,7 +1884,6 @@ public:
 
 	struct RefactorRenameContext : ParsingContext {
 		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
-		GDScriptTokenizer::Token token;
 	};
 
 private:
@@ -2063,9 +2062,10 @@ private:
 	void set_last_completion_call_arg(int p_argument);
 
 	bool refactor_rename_is_cursor_between_tokens(const GDScriptTokenizer::Token &p_token_start, const GDScriptTokenizer::Token &p_token_end) const;
+	bool refactor_rename_does_node_contains_cursor(const GDScriptParser::Node *p_node) const;
 	bool refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const;
 	bool refactor_rename_was_cursor_just_parsed() const;
-	bool refactor_rename_is_current_context_more_specific() const;
+	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
 	void refactor_rename_set_context(RefactorRenameType p_type);
 
 	GDScriptTokenizer::Token advance();

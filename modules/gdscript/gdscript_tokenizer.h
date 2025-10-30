@@ -175,6 +175,7 @@ public:
 		bool can_precede_bin_op() const;
 		bool is_identifier() const;
 		bool is_node_name() const;
+		bool has_cursor() const;
 		StringName get_identifier() const { return literal; }
 
 		Token(Type p_type) {

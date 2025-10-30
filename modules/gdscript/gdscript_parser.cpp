@@ -378,6 +378,9 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 }
 
 bool GDScriptParser::refactor_rename_is_cursor_between_tokens(const GDScriptTokenizer::Token &p_token_start, const GDScriptTokenizer::Token &p_token_end) const {
+	if (!is_for_refactor_rename()) {
+		return false;
+	}
 	if (p_token_start.type == GDScriptTokenizer::Token::Type::EMPTY || p_token_end.type == GDScriptTokenizer::Token::Type::EMPTY) {
 		return false;
 	}
@@ -398,6 +401,20 @@ bool GDScriptParser::refactor_rename_is_cursor_between_tokens(const GDScriptToke
 	return true;
 }
 
+bool GDScriptParser::refactor_rename_does_node_contains_cursor(const GDScriptParser::Node *p_node) const {
+	if (!is_for_refactor_rename()) {
+		return false;
+	}
+	ERR_FAIL_NULL_V(p_node, false);
+	if (tokenizer->get_cursor_line() < p_node->start_line || tokenizer->get_cursor_line() > p_node->end_line) {
+		return false;
+	}
+	if (tokenizer->get_cursor_column() < p_node->start_column || tokenizer->get_cursor_column() > p_node->end_column) {
+		return false;
+	}
+	return true;
+}
+
 bool GDScriptParser::refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const {
 	if (!is_for_refactor_rename()) {
 		return false;
@@ -412,11 +429,37 @@ bool GDScriptParser::refactor_rename_was_cursor_just_parsed() const {
 	return previous.cursor_place != GDScriptTokenizerText::CURSOR_NONE || current.cursor_place != GDScriptTokenizerText::CURSOR_NONE;
 }
 
-bool GDScriptParser::refactor_rename_is_current_context_more_specific() const {
+bool GDScriptParser::refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const {
 	if (!is_for_refactor_rename()) {
 		return false;
 	}
-	return false;
+	ERR_FAIL_NULL_V(refactor_rename_context.node, false);
+
+	GDScriptParser::Node *other_node = refactor_rename_context.node;
+
+	// `p_node` must start after `other_node`.
+	if (p_node->start_line < other_node->start_line) {
+		return false;
+	}
+	if (p_node->start_line == other_node->start_line && p_node->start_column < other_node->start_column) {
+		return false;
+	}
+	// If `other_node` ends before `p_node` starts, `p_node` is more specific.
+	if (other_node->end_line < p_node->start_line) {
+		return true;
+	}
+	if (other_node->end_line == p_node->start_line && other_node->end_column < p_node->start_column) {
+		return true;
+	}
+	// `p_node` must end before `other_node`.
+	if (p_node->end_line > other_node->end_line) {
+		return false;
+	}
+	if (p_node->end_line == other_node->end_line && p_node->end_column > other_node->end_column) {
+		return false;
+	}
+
+	return true;
 }
 
 void GDScriptParser::refactor_rename_set_context(RefactorRenameType p_type) {
@@ -3425,7 +3468,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ArrayNode *array = alloc_node<ArrayNode>();
-	// array->token_bracket_open = previous;
+	array->token_array_bracket_open = previous;
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
 		do {
@@ -3444,10 +3487,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	}
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
-	// array->token_bracket_close = previous;
+	array->token_array_bracket_close = previous;
 	complete_extents(array);
 
-	// TODO: refactor, need to set context but only if the specificity is less than the array.
+	if (is_for_refactor_rename()) {
+		if (refactor_rename_does_node_contains_cursor(array) && refactor_rename_is_node_more_specific(array)) {
+			refactor_rename_set_context(REFACTOR_RENAME_TYPE_ARRAY);
+			refactor_rename_context.node = array;
+		}
+	}
 
 	return array;
 }
