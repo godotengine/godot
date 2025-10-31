@@ -183,7 +183,7 @@ public:
 		}
 
 		constexpr bool starts_after_or_together(const Pair<int, int> &p_other) const {
-			return start > p_other;
+			return start >= p_other;
 		}
 		constexpr bool starts_after_or_together(const CodeArea &p_other) const {
 			return starts_after_or_together(p_other.start);
@@ -240,7 +240,7 @@ public:
 		}
 
 		constexpr bool ends_before_or_together(const Pair<int, int> &p_other) const {
-			return end < p_other;
+			return end <= p_other;
 		}
 		constexpr bool ends_before_or_together(const CodeArea &p_other) const {
 			return ends_before_or_together(p_other.end);
@@ -278,7 +278,7 @@ public:
 		}
 
 		constexpr bool ends_after_or_together(const Pair<int, int> &p_other) const {
-			return end > p_other;
+			return end >= p_other;
 		}
 		constexpr bool ends_after_or_together(const CodeArea &p_other) const {
 			return ends_after_or_together(p_other.end);
