@@ -1014,6 +1014,7 @@ void GDScriptParser::parse_extends() {
 			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
 		}
 		current_class->extends_path = previous.literal;
+		current_class->extends_literal = parse_literal();
 
 		if (!match(GDScriptTokenizer::Token::PERIOD)) {
 			return;
@@ -2916,6 +2917,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		}
 	}
 
+	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
 	return identifier;
 }
 
