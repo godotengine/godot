@@ -442,6 +442,9 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.parser = this;
+	if (refactor_rename_context.node == p_node) {
+		context.token = refactor_rename_context.token;
+	}
 	context.node = p_node;
 	context.value = nullptr;
 	if (previous.has_cursor()) {
