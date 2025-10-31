@@ -411,9 +411,10 @@ bool GDScriptParser::refactor_rename_was_cursor_just_parsed() const {
 }
 
 bool GDScriptParser::refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const {
-	ERR_FAIL_NULL_V(refactor_rename_context.node, true);
-
 	GDScriptParser::Node *other_node = refactor_rename_context.node;
+	if (other_node == nullptr) {
+		return true;
+	}
 	if (other_node == p_node) {
 		return false;
 	}
