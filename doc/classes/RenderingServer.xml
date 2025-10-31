@@ -3849,6 +3849,8 @@
 			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
 			<description>
 				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The RenderingServer's [method free_rid] won't free the underlying [param rd_texture], you will want to free the [param rd_texture] using [method RenderingDevice.free_rid].
 			</description>
 		</method>
 		<method name="texture_replace">
