@@ -2576,6 +2576,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event)) {
 			_menu_option(VIEW_CENTER_TO_ORIGIN);
 		}
+		if (ED_IS_SHORTCUT("spatial_editor/focus_pointer", p_event)) {
+			_menu_option(VIEW_CENTER_TO_POINTER);
+		}
 		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
@@ -3946,6 +3949,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			cursor.pos = Vector3(0, 0, 0);
 
 		} break;
+		case VIEW_CENTER_TO_POINTER: {
+			focus_pointer();
+
+		} break;
 		case VIEW_CENTER_TO_SELECTION: {
 			focus_selection();
 
@@ -4813,6 +4820,19 @@ void Node3DEditorViewport::focus_selection() {
 	}
 
 	cursor.pos = center;
+}
+
+void Node3DEditorViewport::focus_pointer() {
+	Vector2 pointer = get_local_mouse_position();
+	Vector<_RayResult> results;
+
+	_find_items_at_pos(pointer, results, true);
+
+	if (!results.is_empty()) {
+		Vector3 world_ray = get_ray(pointer);
+		Vector3 world_pos = get_ray_pos(pointer);
+		cursor.pos = world_pos + world_ray * results[0].depth;
+	}
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
@@ -6134,6 +6154,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_display_menu->get_popup()->add_separator();
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_pointer"), VIEW_CENTER_TO_POINTER);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
@@ -9779,6 +9800,7 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTRC("Switch Perspective/Orthogonal View"), Key::KP_5);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTRC("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTRC("Focus Origin"), Key::O);
+	ED_SHORTCUT("spatial_editor/focus_pointer", TTRC("Focus Pointer"), KeyModifierMask::ALT | Key::F);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTRC("Focus Selection"), Key::F);
 	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTRC("Align Transform with View"),
 			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::KP_0),
