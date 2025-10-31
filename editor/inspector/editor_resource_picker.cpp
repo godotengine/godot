@@ -1306,12 +1306,13 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	quick_load_button = memnew(Button);
+	quick_load_button->set_theme_type_variation(SceneStringName(FlatButton));
 	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
 	add_child(quick_load_button);
 	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
-	edit_button->set_flat(false);
+	edit_button->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->set_accessibility_name(TTRC("Edit"));
