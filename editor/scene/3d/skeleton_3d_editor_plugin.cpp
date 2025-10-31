@@ -462,6 +462,7 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 	String path = String(root->get_path_to(skeleton));
 
+	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	te->make_insert_queue();
 	for (int i = 0; i < bone_len; i++) {
 		const String name = skeleton->get_bone_name(i);
