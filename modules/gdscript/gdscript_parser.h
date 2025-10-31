@@ -44,6 +44,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
@@ -293,6 +294,34 @@ public:
 #endif // TOOLS_ENABLED
 
 	struct Node {
+	protected:
+		void _get_nodes_push(Node *p_node, LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {
+			if (p_node == nullptr) {
+				return;
+			}
+			if (p_nodes.has(p_node)) {
+				return;
+			}
+			p_nodes.push_back(p_node);
+			if (p_deep) {
+				p_node->get_nodes(p_nodes, p_deep);
+			}
+		}
+
+		template <typename T>
+		void _get_nodes_push_iterable(T p_nodes_to_iterate, LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {
+			for (Node *node : p_nodes_to_iterate) {
+				if (p_nodes.has(node)) {
+					continue;
+				}
+				p_nodes.push_back(node);
+				if (p_deep) {
+					node->get_nodes(p_nodes, p_deep);
+				}
+			}
+		}
+
+	public:
 		enum Type {
 			NONE,
 			ANNOTATION,
@@ -344,10 +373,14 @@ public:
 
 		DataType datatype;
 
+		GDScriptTokenizer::CodeArea get_code_area() const { return GDScriptTokenizer::CodeArea(start_line, start_column, end_line, end_column); }
+
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
 		virtual bool is_expression() const { return false; }
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {}
 
 		virtual ~Node() {}
 	};
@@ -379,6 +412,11 @@ public:
 		bool apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class);
 		bool applies_to(uint32_t p_target_kinds) const;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(arguments, p_nodes, p_deep);
+		}
+
 		AnnotationNode() {
 			type = ANNOTATION;
 		}
@@ -386,6 +424,11 @@ public:
 
 	struct ArrayNode : public ExpressionNode {
 		Vector<ExpressionNode *> elements;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(elements, p_nodes, p_deep);
+		}
 
 		ArrayNode() {
 			type = ARRAY;
@@ -395,6 +438,12 @@ public:
 	struct AssertNode : public Node {
 		ExpressionNode *condition = nullptr;
 		ExpressionNode *message = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(message, p_nodes, p_deep);
+		}
 
 		AssertNode() {
 			type = ASSERT;
@@ -408,6 +457,13 @@ public:
 		bool infer_datatype = false;
 		bool use_conversion_assign = false;
 		int usages = 0;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push(initializer, p_nodes, p_deep);
+			_get_nodes_push(datatype_specifier, p_nodes, p_deep);
+		}
 
 		virtual ~AssignableNode() {}
 
@@ -438,6 +494,12 @@ public:
 		ExpressionNode *assigned_value = nullptr;
 		bool use_conversion_assign = false;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(assignee, p_nodes, p_deep);
+			_get_nodes_push(assigned_value, p_nodes, p_deep);
+		}
+
 		AssignmentNode() {
 			type = ASSIGNMENT;
 		}
@@ -445,6 +507,11 @@ public:
 
 	struct AwaitNode : public ExpressionNode {
 		ExpressionNode *to_await = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(to_await, p_nodes, p_deep);
+		}
 
 		AwaitNode() {
 			type = AWAIT;
@@ -480,6 +547,12 @@ public:
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(left_operand, p_nodes, p_deep);
+			_get_nodes_push(right_operand, p_nodes, p_deep);
+		}
+
 		BinaryOpNode() {
 			type = BINARY_OPERATOR;
 		}
@@ -504,6 +577,12 @@ public:
 		bool is_super = false;
 		bool is_static = false;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(callee, p_nodes, p_deep);
+			_get_nodes_push_iterable(arguments, p_nodes, p_deep);
+		}
+
 		CallNode() {
 			type = CALL;
 		}
@@ -520,6 +599,12 @@ public:
 	struct CastNode : public ExpressionNode {
 		ExpressionNode *operand = nullptr;
 		TypeNode *cast_type = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
+			_get_nodes_push(cast_type, p_nodes, p_deep);
+		}
 
 		CastNode() {
 			type = CAST;
@@ -548,6 +633,16 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes);
+			for (const Value &value : values) {
+				_get_nodes_push(value.identifier, p_nodes, p_deep);
+				_get_nodes_push(value.custom_value, p_nodes, p_deep);
+				_get_nodes_push(value.parent_enum, p_nodes, p_deep);
+			}
+		}
 
 		EnumNode() {
 			type = ENUM;
@@ -796,6 +891,16 @@ public:
 			members.push_back(Member(p_annotation_node));
 		}
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			for (const Member &member : members) {
+				_get_nodes_push(member.get_source_node(), p_nodes, p_deep);
+			}
+			_get_nodes_push(outer, p_nodes, p_deep);
+			_get_nodes_push_iterable(extends, p_nodes, p_deep);
+		}
+
 		ClassNode() {
 			type = CLASS;
 		}
@@ -818,17 +923,25 @@ public:
 	};
 
 	struct DictionaryNode : public ExpressionNode {
-		struct Pair {
+		struct DictionaryElement {
 			ExpressionNode *key = nullptr;
 			ExpressionNode *value = nullptr;
 		};
-		Vector<Pair> elements;
+		Vector<DictionaryElement> elements;
 
 		enum Style {
 			LUA_TABLE,
 			PYTHON_DICT,
 		};
 		Style style = PYTHON_DICT;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			for (const DictionaryElement &element : elements) {
+				_get_nodes_push(element.key, p_nodes, p_deep);
+				_get_nodes_push(element.value, p_nodes, p_deep);
+			}
+		}
 
 		DictionaryNode() {
 			type = DICTIONARY;
@@ -841,6 +954,14 @@ public:
 		bool use_conversion_assign = false;
 		ExpressionNode *list = nullptr;
 		SuiteNode *loop = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(variable, p_nodes, p_deep);
+			_get_nodes_push(datatype_specifier, p_nodes, p_deep);
+			_get_nodes_push(list, p_nodes, p_deep);
+			_get_nodes_push(loop, p_nodes, p_deep);
+		}
 
 		ForNode() {
 			type = FOR;
@@ -871,6 +992,14 @@ public:
 		bool resolved_body = false;
 
 		_FORCE_INLINE_ bool is_vararg() const { return rest_parameter != nullptr; }
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push_iterable(parameters, p_nodes, p_deep);
+			_get_nodes_push(return_type, p_nodes, p_deep);
+			_get_nodes_push(body, p_nodes, p_deep);
+		}
 
 		FunctionNode() {
 			type = FUNCTION;
@@ -922,6 +1051,41 @@ public:
 
 		int usages = 0; // Useful for binds/iterator variable.
 
+		Node *get_source_node() const {
+			switch (source) {
+				case FUNCTION_PARAMETER: {
+					return parameter_source;
+				} break;
+				case LOCAL_VARIABLE:
+				case MEMBER_VARIABLE:
+				case INHERITED_VARIABLE:
+				case STATIC_VARIABLE: {
+					return variable_source;
+				} break;
+				case LOCAL_CONSTANT:
+				case MEMBER_CONSTANT: {
+					return constant_source;
+				} break;
+				case LOCAL_ITERATOR:
+				case LOCAL_BIND: {
+					return bind_source;
+				} break;
+				case MEMBER_FUNCTION: {
+					return function_source;
+				} break;
+				case MEMBER_SIGNAL: {
+					return signal_source;
+				} break;
+				case MEMBER_CLASS: {
+					return get_datatype().class_type;
+				} break;
+				case UNDEFINED_SOURCE:
+				default: {
+					return nullptr;
+				}
+			}
+		}
+
 		IdentifierNode() {
 			type = IDENTIFIER;
 		}
@@ -931,6 +1095,13 @@ public:
 		ExpressionNode *condition = nullptr;
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(true_block, p_nodes, p_deep);
+			_get_nodes_push(false_block, p_nodes, p_deep);
+		}
 
 		IfNode() {
 			type = IF;
@@ -949,6 +1120,12 @@ public:
 			return function && function->identifier;
 		}
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(function, p_nodes, p_deep);
+			_get_nodes_push_iterable(captures, p_nodes, p_deep);
+		}
+
 		LambdaNode() {
 			type = LAMBDA;
 		}
@@ -956,6 +1133,8 @@ public:
 
 	struct LiteralNode : public ExpressionNode {
 		Variant value;
+
+		GDScriptTokenizer::Token token_literal;
 
 		LiteralNode() {
 			type = LITERAL;
@@ -965,6 +1144,12 @@ public:
 	struct MatchNode : public Node {
 		ExpressionNode *test = nullptr;
 		Vector<MatchBranchNode *> branches;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(test, p_nodes, p_deep);
+			_get_nodes_push_iterable(branches, p_nodes, p_deep);
+		}
 
 		MatchNode() {
 			type = MATCH;
@@ -976,6 +1161,15 @@ public:
 		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
 		SuiteNode *guard_body = nullptr;
+
+		GDScriptTokenizer::Token token_match_colon;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(patterns, p_nodes, p_deep);
+			_get_nodes_push(block, p_nodes, p_deep);
+			_get_nodes_push(guard_body, p_nodes, p_deep);
+		}
 
 		MatchBranchNode() {
 			type = MATCH_BRANCH;
@@ -1025,6 +1219,36 @@ public:
 		bool has_bind(const StringName &p_name);
 		IdentifierNode *get_bind(const StringName &p_name);
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			for (const KeyValue<StringName, IdentifierNode *> &kv : binds) {
+				_get_nodes_push(kv.value, p_nodes, p_deep);
+			}
+			switch (pattern_type) {
+				case PT_LITERAL: {
+					_get_nodes_push(literal, p_nodes, p_deep);
+				} break;
+				case PT_EXPRESSION: {
+					_get_nodes_push(expression, p_nodes, p_deep);
+				} break;
+				case PT_BIND: {
+					_get_nodes_push(bind, p_nodes, p_deep);
+				} break;
+				case PT_ARRAY: {
+					_get_nodes_push_iterable(array, p_nodes, p_deep);
+				} break;
+				case PT_DICTIONARY: {
+					for (const Pair &pair : dictionary) {
+						_get_nodes_push(pair.key, p_nodes, p_deep);
+						_get_nodes_push(pair.value_pattern, p_nodes, p_deep);
+					}
+				} break;
+				default: {
+					// Do nothing.
+				}
+			}
+		}
+
 		PatternNode() {
 			type = PATTERN;
 		}
@@ -1033,6 +1257,11 @@ public:
 		ExpressionNode *path = nullptr;
 		String resolved_path;
 		Ref<Resource> resource;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(path, p_nodes, p_deep);
+		}
 
 		PreloadNode() {
 			type = PRELOAD;
@@ -1043,6 +1272,11 @@ public:
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(return_value, p_nodes, p_deep);
+		}
+
 		ReturnNode() {
 			type = RETURN;
 		}
@@ -1051,6 +1285,11 @@ public:
 	struct SelfNode : public ExpressionNode {
 		ClassNode *current_class = nullptr;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(current_class, p_nodes, p_deep);
+		}
+
 		SelfNode() {
 			type = SELF;
 		}
@@ -1058,6 +1297,7 @@ public:
 
 	struct SignalNode : public Node {
 		IdentifierNode *identifier = nullptr;
+		ClassNode *current_class = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		MethodInfo method_info;
@@ -1066,6 +1306,12 @@ public:
 #endif // TOOLS_ENABLED
 
 		int usages = 0;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(identifier, p_nodes, p_deep);
+			_get_nodes_push_iterable(parameters, p_nodes, p_deep);
+		}
 
 		SignalNode() {
 			type = SIGNAL;
@@ -1080,6 +1326,16 @@ public:
 		};
 
 		bool is_attribute = false;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(base, p_nodes, p_deep);
+			if (is_attribute) {
+				_get_nodes_push(attribute, p_nodes, p_deep);
+			} else {
+				_get_nodes_push(index, p_nodes, p_deep);
+			}
+		}
 
 		SubscriptNode() {
 			type = SUBSCRIPT;
@@ -1113,6 +1369,27 @@ public:
 
 			DataType get_datatype() const;
 			String get_name() const;
+
+			Node *get_node() const {
+				switch (type) {
+					case CONSTANT: {
+						return constant;
+					} break;
+					case VARIABLE: {
+						return variable;
+					} break;
+					case PARAMETER: {
+						return parameter;
+					} break;
+					case FOR_VARIABLE:
+					case PATTERN_BIND: {
+						return bind;
+					} break;
+					default: {
+						return nullptr;
+					}
+				}
+			}
 
 			Local() {}
 			Local(ConstantNode *p_constant, FunctionNode *p_source_function) {
@@ -1184,6 +1461,14 @@ public:
 			locals.push_back(p_local);
 		}
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			for (const Local &local : locals) {
+				_get_nodes_push(local.get_node(), p_nodes, p_deep);
+			}
+			_get_nodes_push_iterable(statements, p_nodes, p_deep);
+		}
+
 		SuiteNode() {
 			type = SUITE;
 		}
@@ -1194,6 +1479,13 @@ public:
 		ExpressionNode *condition = nullptr;
 		ExpressionNode *true_expr = nullptr;
 		ExpressionNode *false_expr = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(true_expr, p_nodes, p_deep);
+			_get_nodes_push(false_expr, p_nodes, p_deep);
+		}
 
 		TernaryOpNode() {
 			type = TERNARY_OPERATOR;
@@ -1208,6 +1500,12 @@ public:
 			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
 		}
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push_iterable(type_chain, p_nodes, p_deep);
+			_get_nodes_push_iterable(container_types, p_nodes, p_deep);
+		}
+
 		TypeNode() {
 			type = TYPE;
 		}
@@ -1217,6 +1515,12 @@ public:
 		ExpressionNode *operand = nullptr;
 		TypeNode *test_type = nullptr;
 		DataType test_datatype;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
+			_get_nodes_push(test_type, p_nodes, p_deep);
+		}
 
 		TypeTestNode() {
 			type = TYPE_TEST;
@@ -1234,6 +1538,11 @@ public:
 		OpType operation = OP_POSITIVE;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			ExpressionNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(operand, p_nodes, p_deep);
+		}
 
 		UnaryOpNode() {
 			type = UNARY_OPERATOR;
@@ -1267,6 +1576,43 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
+		Node *get_setter() const {
+			switch (property) {
+				case PROP_INLINE: {
+					return setter;
+				} break;
+				case PROP_SETGET: {
+					return setter_pointer;
+				} break;
+				case PROP_NONE:
+				default: {
+					return nullptr;
+				}
+			}
+		}
+
+		Node *get_getter() const {
+			switch (property) {
+				case PROP_INLINE: {
+					return getter;
+				} break;
+				case PROP_SETGET: {
+					return getter_pointer;
+				} break;
+				case PROP_NONE:
+				default: {
+					return nullptr;
+				}
+			}
+		}
+
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			AssignableNode::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(get_setter(), p_nodes, p_deep);
+			_get_nodes_push(setter_parameter, p_nodes, p_deep);
+			_get_nodes_push(get_getter(), p_nodes, p_deep);
+		}
+
 		VariableNode() {
 			type = VARIABLE;
 		}
@@ -1276,9 +1622,91 @@ public:
 		ExpressionNode *condition = nullptr;
 		SuiteNode *loop = nullptr;
 
+		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const override {
+			Node::get_nodes(p_nodes, p_deep);
+			_get_nodes_push(condition, p_nodes, p_deep);
+			_get_nodes_push(loop, p_nodes, p_deep);
+		}
+
 		WhileNode() {
 			type = WHILE;
 		}
+	};
+
+	class NodeList {
+	protected:
+		LocalVector<GDScriptParser::Node *> nodes;
+		HashMap<GDScriptParser::Node *, LocalVector<GDScriptParser::Node *>> node_map;
+		HashMap<GDScriptParser::Node *, GDScriptParser::Node *> node_owners;
+
+		void _insert_entry(GDScriptParser::Node *p_node, GDScriptParser::Node *p_owner) {
+			if (p_node == p_owner) {
+				return;
+			}
+
+			if (nodes.has(p_node)) {
+				return;
+			}
+			if (node_map[p_owner].has(p_node)) {
+				return;
+			}
+			if (node_owners.has(p_node)) {
+				return;
+			}
+			nodes.push_back(p_node);
+			node_map[p_owner].push_back(p_node);
+			node_owners[p_node] = p_owner;
+
+			LocalVector<GDScriptParser::Node *> local_nodes;
+			p_node->get_nodes(local_nodes, false);
+			for (GDScriptParser::Node *node : local_nodes) {
+				_insert_entry(node, p_node);
+			}
+		}
+
+	public:
+		LocalVector<GDScriptParser::Node *>::Iterator begin() {
+			return nodes.begin();
+		}
+
+		LocalVector<GDScriptParser::Node *>::Iterator end() {
+			return nodes.end();
+		}
+
+		GDScriptParser::Node *get_head() {
+			return node_map[nullptr][0];
+		}
+
+		GDScriptParser::Node *get_owner(GDScriptParser::Node *p_node) {
+			return node_owners[p_node];
+		}
+
+		LocalVector<GDScriptParser::Node *> &get_children(GDScriptParser::Node *p_node) {
+			return node_map[p_node];
+		}
+
+		NodeList(GDScriptParser::Node *p_node) {
+			nodes.push_back(p_node);
+			node_map[nullptr].push_back(p_node);
+
+			LocalVector<GDScriptParser::Node *> _nodes;
+			p_node->get_nodes(_nodes, false);
+			for (GDScriptParser::Node *_node : _nodes) {
+				_insert_entry(_node, p_node);
+			}
+		}
+
+		~NodeList() {
+			nodes.clear();
+			node_map.clear();
+			node_owners.clear();
+		}
+	};
+
+	enum ParsingType {
+		PARSING_TYPE_STANDARD,
+		PARSING_TYPE_COMPLETION,
+		PARSING_TYPE_REFACTOR_RENAME,
 	};
 
 	enum CompletionType {
@@ -1308,13 +1736,7 @@ public:
 		COMPLETION_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
 	};
 
-	struct CompletionCall {
-		Node *call = nullptr;
-		int argument = -1;
-	};
-
-	struct CompletionContext {
-		CompletionType type = COMPLETION_NONE;
+	struct ParsingContext {
 		ClassNode *current_class = nullptr;
 		FunctionNode *current_function = nullptr;
 		SuiteNode *current_suite = nullptr;
@@ -1327,7 +1749,57 @@ public:
 		Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
+	};
+
+	struct CompletionCall {
+		Node *call = nullptr;
+		int argument = -1;
+	};
+
+	struct CompletionContext : ParsingContext {
+		CompletionType type = COMPLETION_NONE;
 		CompletionCall call;
+	};
+
+	enum RefactorRenameType {
+		REFACTOR_RENAME_TYPE_NONE,
+		REFACTOR_RENAME_TYPE_ARRAY, // Control-flow keywords (e.g. break, continue).
+		REFACTOR_RENAME_TYPE_ANNOTATION, // Annotation (following @).
+		REFACTOR_RENAME_TYPE_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
+		REFACTOR_RENAME_TYPE_ASSIGN, // Assignment based on type (e.g. enum values).
+		REFACTOR_RENAME_TYPE_ATTRIBUTE, // After id.| to look for members.
+		REFACTOR_RENAME_TYPE_ATTRIBUTE_METHOD, // After id.| to look for methods.
+		REFACTOR_RENAME_TYPE_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
+		REFACTOR_RENAME_TYPE_CALL, // Call-related refactor.
+		REFACTOR_RENAME_TYPE_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
+		REFACTOR_RENAME_TYPE_CLASS, // Class content.
+		REFACTOR_RENAME_TYPE_CONTROL_FLOW, // Control-flow keywords (e.g. break, continue).
+		REFACTOR_RENAME_TYPE_DECLARATION, // Potential declaration (var, const, func).
+		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
+		REFACTOR_RENAME_TYPE_ENUM, // Enum content.
+		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
+		REFACTOR_RENAME_TYPE_IDENTIFIER, // List available identifiers in scope.
+		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
+		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
+		REFACTOR_RENAME_TYPE_LOAD, // For load/preload.
+		REFACTOR_RENAME_TYPE_METHOD, // List available methods in scope.
+		REFACTOR_RENAME_TYPE_OVERRIDE_METHOD, // Override implementation, also for native virtuals.
+		REFACTOR_RENAME_TYPE_PARAMETER, // Function parameter.
+		REFACTOR_RENAME_TYPE_PARAMETER_INITIALIZER, // Function parameter initializer (default value).
+		REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION, // Property declaration (get, set).
+		REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION_OR_TYPE, // Property declaration (get, set) or a type hint.
+		REFACTOR_RENAME_TYPE_PROPERTY_METHOD, // Property setter or getter (list available methods).
+		REFACTOR_RENAME_TYPE_SIGNAL, // Signal.
+		REFACTOR_RENAME_TYPE_SUBSCRIPT, // Inside id[|].
+		REFACTOR_RENAME_TYPE_SUPER_METHOD, // After super.
+		REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
+		REFACTOR_RENAME_TYPE_TYPE_NAME, // Name of type (after :).
+		REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
+		REFACTOR_RENAME_TYPE_LITERAL, // Declared literal (e.g. variable name).
+	};
+
+	struct RefactorRenameContext : ParsingContext {
+		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
 	};
 
 private:
@@ -1336,13 +1808,20 @@ private:
 
 	bool _is_tool = false;
 	String script_path;
-	bool for_completion = false;
 	bool parse_body = true;
 	bool panic_mode = false;
 	bool can_break = false;
 	bool can_continue = false;
 	List<bool> multiline_stack;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
+
+	ParsingType parsing_type = PARSING_TYPE_STANDARD;
+	_FORCE_INLINE_ bool is_for_completion() const {
+		return parsing_type == PARSING_TYPE_COMPLETION;
+	}
+	_FORCE_INLINE_ bool is_for_refactor_rename() const {
+		return parsing_type == PARSING_TYPE_REFACTOR_RENAME;
+	}
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
@@ -1367,6 +1846,7 @@ private:
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
+	LocalVector<GDScriptTokenizer::Token> tokens;
 
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
@@ -1374,7 +1854,11 @@ private:
 	SuiteNode *current_suite = nullptr;
 
 	CompletionContext completion_context;
+	CompletionCall completion_call;
 	List<CompletionCall> completion_call_stack;
+
+	RefactorRenameContext refactor_rename_context;
+
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
@@ -1494,6 +1978,13 @@ private:
 	void pop_completion_call();
 	void set_last_completion_call_arg(int p_argument);
 
+	bool refactor_rename_is_cursor_between_tokens(const GDScriptTokenizer::Token &p_token_start, const GDScriptTokenizer::Token &p_token_end) const;
+	bool refactor_rename_does_node_contains_cursor(const GDScriptParser::Node *p_node) const;
+	bool refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const;
+	bool refactor_rename_was_cursor_just_parsed() const;
+	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
+	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node);
+
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
 	bool check(GDScriptTokenizer::Token::Type p_token_type) const;
@@ -1596,29 +2087,56 @@ private:
 #endif // TOOLS_ENABLED
 
 public:
-	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body = true);
+	Error parse(const String &p_source_code, const String &p_script_path, ParsingType p_type = ParsingType::PARSING_TYPE_STANDARD, bool p_parse_body = true);
 	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
-	ClassNode *get_tree() const { return head; }
-	bool is_tool() const { return _is_tool; }
+	ClassNode *get_tree() const {
+		return head;
+	}
+	bool is_tool() const {
+		return _is_tool;
+	}
 	Ref<GDScriptParserRef> get_depended_parser_for(const String &p_path);
 	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
 	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
+	static Vector2i get_cursor_sentinel_position(const String &p_source_code, int p_tab_size = 4);
+	static String remove_cursor_sentinel(const String &p_source_code);
 
-	CompletionContext get_completion_context() const { return completion_context; }
+	CompletionContext get_completion_context() const {
+		return completion_context;
+	}
+	CompletionCall get_completion_call() const {
+		return completion_call;
+	}
+
+	RefactorRenameContext get_refactor_rename_context() const {
+		return refactor_rename_context;
+	}
+
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
 
-	const List<ParserError> &get_errors() const { return errors; }
+	const List<ParserError> &get_errors() const {
+		return errors;
+	}
 	const List<String> get_dependencies() const {
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
 #ifdef DEBUG_ENABLED
-	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
-	int get_last_line_number() const { return current.end_line; }
+	const List<GDScriptWarning> &get_warnings() const {
+		return warnings;
+	}
+	const HashSet<int> &get_unsafe_lines() const {
+		return unsafe_lines;
+	}
+	int get_last_line_number() const {
+		return current.end_line;
+	}
+	const ClassNode *get_head() const {
+		return head;
+	}
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -1626,6 +2144,8 @@ public:
 
 	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
 #endif // TOOLS_ENABLED
+
+	GDScriptTokenizer::Token get_token(int p_line, int p_column) const;
 
 	GDScriptParser();
 	~GDScriptParser();
