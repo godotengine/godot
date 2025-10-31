@@ -1770,19 +1770,26 @@ public:
 		REFACTOR_RENAME_TYPE_ATTRIBUTE, // After id.| to look for members.
 		REFACTOR_RENAME_TYPE_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		REFACTOR_RENAME_TYPE_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
+		REFACTOR_RENAME_TYPE_CALL, // Call-related refactor.
 		REFACTOR_RENAME_TYPE_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
+		REFACTOR_RENAME_TYPE_CLASS, // Class content.
 		REFACTOR_RENAME_TYPE_CONTROL_FLOW, // Control-flow keywords (e.g. break, continue).
 		REFACTOR_RENAME_TYPE_DECLARATION, // Potential declaration (var, const, func).
+		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
+		REFACTOR_RENAME_TYPE_ENUM, // Enum content.
 		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
 		REFACTOR_RENAME_TYPE_IDENTIFIER, // List available identifiers in scope.
 		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
+		REFACTOR_RENAME_TYPE_LOAD, // For load/preload.
 		REFACTOR_RENAME_TYPE_METHOD, // List available methods in scope.
 		REFACTOR_RENAME_TYPE_OVERRIDE_METHOD, // Override implementation, also for native virtuals.
+		REFACTOR_RENAME_TYPE_PARAMETER, // Function parameter.
+		REFACTOR_RENAME_TYPE_PARAMETER_INITIALIZER, // Function parameter initializer (default value).
 		REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION, // Property declaration (get, set).
 		REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION_OR_TYPE, // Property declaration (get, set) or a type hint.
 		REFACTOR_RENAME_TYPE_PROPERTY_METHOD, // Property setter or getter (list available methods).
-		REFACTOR_RENAME_TYPE_RESOURCE_PATH, // For load/preload.
+		REFACTOR_RENAME_TYPE_SIGNAL, // Signal.
 		REFACTOR_RENAME_TYPE_SUBSCRIPT, // Inside id[|].
 		REFACTOR_RENAME_TYPE_SUPER_METHOD, // After super.
 		REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
@@ -1976,7 +1983,7 @@ private:
 	bool refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const;
 	bool refactor_rename_was_cursor_just_parsed() const;
 	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
-	void refactor_rename_set_context(RefactorRenameType p_type);
+	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
