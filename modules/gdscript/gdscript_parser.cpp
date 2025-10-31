@@ -1802,7 +1802,6 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	function->is_static = p_is_static;
 
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_METHOD, function);
 
 #ifdef TOOLS_ENABLED
 	// The signature is something like `(a: int, b: int = 0) -> void`.
@@ -1819,6 +1818,7 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	current_function = function;
 
 	function->identifier = parse_identifier();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, function->identifier);
 
 	SuiteNode *body = alloc_node<SuiteNode>();
 
@@ -1852,6 +1852,9 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	current_function = previous_function;
 	complete_extents(function);
+
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
+
 	return function;
 }
 

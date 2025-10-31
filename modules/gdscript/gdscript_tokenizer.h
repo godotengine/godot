@@ -488,6 +488,34 @@ public:
 
 		CodeArea get_code_area() const { return CodeArea(start_line, start_column, end_line, end_column); }
 
+		constexpr bool operator==(const Token &p_right) {
+			if (type != p_right.type) {
+				return false;
+			}
+			if (literal != p_right.literal) {
+				return false;
+			}
+			if (start_line != p_right.start_line || start_column != p_right.start_column) {
+				return false;
+			}
+			if (end_line != p_right.end_line || end_column != p_right.end_column) {
+				return false;
+			}
+			if (cursor_position != p_right.cursor_position) {
+				return false;
+			}
+			if (cursor_place != p_right.cursor_place) {
+				return false;
+			}
+			if (source != p_right.source) {
+				return false;
+			}
+			return true;
+		}
+		constexpr bool operator!=(const Token &p_right) {
+			return !operator==(p_right);
+		}
+
 		Token(Type p_type) {
 			type = p_type;
 		}
