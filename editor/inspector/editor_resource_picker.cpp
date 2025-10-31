@@ -95,7 +95,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
-			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->()));
 
 			if (!edited_resource->get_name().is_empty()) {
 				assign_button->set_text(edited_resource->get_name());
@@ -576,7 +576,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			inheritors_array.push_back(t);
 
-			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t);
 			int id = TYPE_BASE_ID + idx;
 			edit_menu->add_icon_item(icon, t, id);
 			edit_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
@@ -1557,7 +1557,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 			icon_modulate = Color(1, 0.5, 0.5, 1); // get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		}
 	} else {
-		icon = EditorNode::get_singleton()->get_object_icon(audio_stream.operator->(), "Object");
+		icon = EditorNode::get_singleton()->get_object_icon(audio_stream.operator->());
 	}
 	String text;
 	if (!audio_stream->get_name().is_empty()) {
