@@ -587,7 +587,6 @@ namespace Godot.SourceGenerators
             bool isNodeOrResource = namedType.InheritsFrom("GodotSharp", GodotClasses.Node) ||
                                     namedType.InheritsFrom("GodotSharp", "Godot.Resource");
 
-            return isNodeOrResource;
             if (isNodeOrResource)
                 return true;
 
@@ -636,6 +635,41 @@ namespace Godot.SourceGenerators
                 var semanticModel = context.GetSemanticModel(syntaxTree);
                 var root = syntaxTree.GetRoot(context.CancellationToken);
                 var node = root.FindNode(diagnostic.Location.SourceSpan);
+
+                // Check if the diagnostic is on a constructor
+                if (node is ConstructorDeclarationSyntax ctorDecl)
+                {
+                    var ctorSymbol = semanticModel.GetDeclaredSymbol(ctorDecl, context.CancellationToken);
+                    if (ctorSymbol == null)
+                        continue;
+
+                    var containingType = ctorSymbol.ContainingType;
+                    if (containingType == null || !containingType.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+                        continue;
+
+                    // Check if the containing type has any exported non-nullable Godot types
+                    // that would trigger CS8618 on the constructor
+                    bool hasExportedNonNullableMembers = containingType.GetMembers()
+                        .Where(m => m is IPropertySymbol or IFieldSymbol)
+                        .Any(m =>
+                        {
+                            ITypeSymbol? memberType = m switch
+                            {
+                                IPropertySymbol prop => prop.Type,
+                                IFieldSymbol field => field.Type,
+                                _ => null
+                            };
+
+                            return memberType != null && IsExportedNonNullableGodotType(m, memberType, context);
+                        });
+
+                    if (hasExportedNonNullableMembers)
+                    {
+                        context.ReportSuppression(Suppression.Create(_suppressionMessage, diagnostic));
+                    }
+
+                    continue;
+                }
 
                 // Try to get the member symbol (property or field)
                 ISymbol? memberSymbol = null;
@@ -717,7 +751,6 @@ namespace Godot.SourceGenerators
             bool isNodeOrResource = namedType.InheritsFrom("GodotSharp", GodotClasses.Node) ||
                                     namedType.InheritsFrom("GodotSharp", "Godot.Resource");
 
-            return isNodeOrResource;
             if (isNodeOrResource)
                 return true;
 
