@@ -588,6 +588,17 @@ namespace Godot.SourceGenerators
                                     namedType.InheritsFrom("GodotSharp", "Godot.Resource");
 
             return isNodeOrResource;
+            if (isNodeOrResource)
+                return true;
+
+            // Check if the type is Godot.Collections.Array or Dictionary (including generic variations)
+            string fullTypeName = namedType.ConstructedFrom.ToString();
+            bool isGodotCollection = fullTypeName == "Godot.Collections.Array" ||
+                                     fullTypeName == "Godot.Collections.Array<T>" ||
+                                     fullTypeName == "Godot.Collections.Dictionary" ||
+                                     fullTypeName == "Godot.Collections.Dictionary<TKey, TValue>";
+
+            return isGodotCollection;
         }
     }
 
@@ -707,6 +718,17 @@ namespace Godot.SourceGenerators
                                     namedType.InheritsFrom("GodotSharp", "Godot.Resource");
 
             return isNodeOrResource;
+            if (isNodeOrResource)
+                return true;
+
+            // Check if the type is Godot.Collections.Array or Dictionary (including generic variations)
+            string fullTypeName = namedType.ConstructedFrom.ToString();
+            bool isGodotCollection = fullTypeName == "Godot.Collections.Array" ||
+                                     fullTypeName == "Godot.Collections.Array<T>" ||
+                                     fullTypeName == "Godot.Collections.Dictionary" ||
+                                     fullTypeName == "Godot.Collections.Dictionary<TKey, TValue>";
+
+            return isGodotCollection;
         }
     }
 }
