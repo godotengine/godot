@@ -55,7 +55,6 @@
 
 #define RB_TEX_BLUR_0 SNAME("blur_0")
 #define RB_TEX_BLUR_1 SNAME("blur_1")
-#define RB_TEX_HALF_BLUR SNAME("half_blur") // only for raster!
 
 #define RB_TEX_BACK_COLOR SNAME("back_color")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
