@@ -443,7 +443,7 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	context.current_line = tokenizer->get_cursor_line();
 	context.parser = this;
 	context.node = p_node;
-	context.identifier = nullptr;
+	context.value = nullptr;
 	if (previous.has_cursor()) {
 		context.token = previous;
 	}
@@ -451,7 +451,7 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	return true;
 }
 
-bool GDScriptParser::refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_identifier) {
+bool GDScriptParser::refactor_rename_register_value(GDScriptParser::Node *p_value_node) {
 	if (!is_for_refactor_rename()) {
 		return false;
 	}
@@ -459,7 +459,10 @@ bool GDScriptParser::refactor_rename_register_identifier(GDScriptParser::Identif
 		return false;
 	}
 	ERR_FAIL_NULL_V(refactor_rename_context.node, false);
-	refactor_rename_context.identifier = p_identifier;
+	refactor_rename_context.value = p_value_node;
+	if (previous.has_cursor()) {
+		refactor_rename_context.token = previous;
+	}
 	return true;
 }
 
@@ -2855,7 +2858,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing identifier node without identifier token.");
 	}
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
-	refactor_rename_register_identifier(identifier);
+	refactor_rename_register_value(identifier);
 	complete_extents(identifier);
 
 	identifier->name = previous.get_identifier();
@@ -2913,7 +2916,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	}
 
 	LiteralNode *literal = alloc_node<LiteralNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_LITERAL, literal);
+	refactor_rename_register_value(literal);
 	literal->value = previous.literal;
 	reset_extents(literal, p_previous_operand);
 	update_extents(literal);
@@ -3268,13 +3271,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
-	// TODO: refactor take token into account.
+	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, await);
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
 		push_error(R"(Expected signal or coroutine after "await".)");
 	}
 	await->to_await = element;
 	complete_extents(await);
+	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, await);
 
 	if (current_function) { // Might be null in a getter or setter.
 		current_function->is_coroutine = true;

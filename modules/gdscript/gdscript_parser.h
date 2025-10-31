@@ -1795,12 +1795,11 @@ public:
 		REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
 		REFACTOR_RENAME_TYPE_TYPE_NAME, // Name of type (after :).
 		REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
-		REFACTOR_RENAME_TYPE_LITERAL, // Declared literal (e.g. variable name).
 	};
 
 	struct RefactorRenameContext : ParsingContext {
 		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
-		GDScriptParser::IdentifierNode *identifier = nullptr;
+		GDScriptParser::Node *value = nullptr;
 		GDScriptTokenizer::Token token;
 	};
 
@@ -1986,7 +1985,7 @@ private:
 	bool refactor_rename_was_cursor_just_parsed() const;
 	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
 	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node);
-	bool refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_node);
+	bool refactor_rename_register_value(GDScriptParser::Node *p_node);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
