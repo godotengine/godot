@@ -102,6 +102,7 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
 			return false;
 		case RESOURCE_USAGE_COPY_TO:
 		case RESOURCE_USAGE_RESOLVE_TO:
@@ -141,6 +142,10 @@ RDD::TextureLayout RenderingDeviceGraph::_usage_to_image_layout(ResourceUsage p_
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
+			// Rasterization rate does not need layout transform. It's not a texture. It's readonly in shader.
+			// Keep its layout UNDEFINED
+			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::TEXTURE_LAYOUT_GENERAL;
 		case RESOURCE_USAGE_NONE:
@@ -191,6 +196,9 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT;
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
+			// Rasterization rate does not need barrier. It's not a texture. It's readonly in shader.
+			return RDD::BarrierAccessBits(0);
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT);
 		default:

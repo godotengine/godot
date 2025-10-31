@@ -1898,6 +1898,9 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Currently no special usage is needed for rasterization rate map
+			return 0;
 		default:
 			return 0;
 	}
@@ -2719,6 +2722,8 @@ RDG::ResourceUsage RenderingDevice::_vrs_usage_from_method(VRSMethod p_method) {
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return RDG::RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ;
 		default:
 			return RDG::RESOURCE_USAGE_NONE;
 	}
@@ -2730,6 +2735,9 @@ RDD::PipelineStageBits RenderingDevice::_vrs_stages_from_method(VRSMethod p_meth
 			return RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate does not need barrier. It's not a texture. It's readonly in shader.
+			return RDD::PipelineStageBits(0);
 		default:
 			return RDD::PipelineStageBits(0);
 	}
@@ -2741,6 +2749,10 @@ RDD::TextureLayout RenderingDevice::_vrs_layout_from_method(VRSMethod p_method) 
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate does not need layout transform. It's not a texture. It's readonly in shader.
+			// Keep its layout UNDEFINED
+			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		default:
 			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 	}
@@ -2767,7 +2779,7 @@ void RenderingDevice::_vrs_detect_method() {
 			vrs_texel_size = Vector2i(32, 32).clamp(fdm_capabilities.min_texel_size, fdm_capabilities.max_texel_size);
 			break;
 		case VRS_METHOD_RASTERIZATION_RATE_MAP:
-			// Rasterization rate map is not a real texture. It's a special opaque object constains screen space distortion metadata.
+			// Rasterization rate map is not a real texture. It's a special opaque object contains screen space distortion metadata.
 			// For the sake of consistancy with other APIs, we wrap it as a texture.
 			vrs_format = DATA_FORMAT_R8_UINT;
 			vrs_texel_size = Vector2i(16, 16);
