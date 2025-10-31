@@ -4352,7 +4352,6 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 		} else {
 			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::DEFAULT);
 		}
-
 		p_state->texture_samplers.push_back(sampler);
 	}
 

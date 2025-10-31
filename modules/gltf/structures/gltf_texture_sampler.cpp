@@ -31,6 +31,20 @@
 #include "gltf_texture_sampler.h"
 
 void GLTFTextureSampler::_bind_methods() {
+	BIND_ENUM_CONSTANT(NEAREST);
+	BIND_ENUM_CONSTANT(LINEAR);
+	BIND_ENUM_CONSTANT(NEAREST_MIPMAP_NEAREST);
+	BIND_ENUM_CONSTANT(LINEAR_MIPMAP_NEAREST);
+	BIND_ENUM_CONSTANT(NEAREST_MIPMAP_LINEAR);
+	BIND_ENUM_CONSTANT(LINEAR_MIPMAP_LINEAR);
+	BIND_ENUM_CONSTANT(NEAREST_MIPMAP_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(LINEAR_MIPMAP_ANISOTROPIC);
+
+	BIND_ENUM_CONSTANT(CLAMP_TO_EDGE);
+	BIND_ENUM_CONSTANT(MIRRORED_REPEAT);
+	BIND_ENUM_CONSTANT(REPEAT);
+	BIND_ENUM_CONSTANT(DEFAULT);
+
 	ClassDB::bind_method(D_METHOD("get_mag_filter"), &GLTFTextureSampler::get_mag_filter);
 	ClassDB::bind_method(D_METHOD("set_mag_filter", "filter_mode"), &GLTFTextureSampler::set_mag_filter);
 	ClassDB::bind_method(D_METHOD("get_min_filter"), &GLTFTextureSampler::get_min_filter);
