@@ -833,6 +833,7 @@ void GDScriptParser::parse_program() {
 	head->end_column = current.end_column;
 
 	complete_extents(head);
+	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, head);
 
 #ifdef TOOLS_ENABLED
 	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer->get_comments();
@@ -931,25 +932,24 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 }
 
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
-	ClassNode *n_class = alloc_node<ClassNode>();
+	ClassNode *new_class = alloc_node<ClassNode>();
 	// TODO: Register token.
 
 	ClassNode *previous_class = current_class;
-	current_class = n_class;
-	n_class->outer = previous_class;
+	current_class = new_class;
+	new_class->outer = previous_class;
 
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the class name after "class".)")) {
-		n_class->identifier = parse_identifier();
-		refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, n_class->identifier);
+		new_class->identifier = parse_identifier();
 
-		if (n_class->outer) {
-			String fqcn = n_class->outer->fqcn;
+		if (new_class->outer) {
+			String fqcn = new_class->outer->fqcn;
 			if (fqcn.is_empty()) {
 				fqcn = GDScript::canonicalize_path(script_path);
 			}
-			n_class->fqcn = fqcn + "::" + n_class->identifier->name;
+			new_class->fqcn = fqcn + "::" + new_class->identifier->name;
 		} else {
-			n_class->fqcn = n_class->identifier->name;
+			new_class->fqcn = new_class->identifier->name;
 		}
 	}
 
@@ -963,12 +963,12 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 
 	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")) {
 		current_class = previous_class;
-		complete_extents(n_class);
-		return n_class;
+		complete_extents(new_class);
+		goto return_new_class;
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
-		if (n_class->extends_used) {
+		if (new_class->extends_used) {
 			push_error(R"(Cannot use "extends" more than once in the same class.)");
 		}
 		parse_extends();
@@ -976,23 +976,23 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	}
 
 	parse_class_body(multiline);
-	complete_extents(n_class);
+	complete_extents(new_class);
 
 	if (multiline) {
 		consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the class body.)");
 	}
 
-	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, n_class);
-
 	current_class = previous_class;
-	return n_class;
+
+return_new_class:
+	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, new_class);
+	return new_class;
 }
 
 void GDScriptParser::parse_class_name() {
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the global class name after "class_name".)")) {
 		current_class->identifier = parse_identifier();
 		current_class->fqcn = String(current_class->identifier->name);
-		refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, current_class->identifier);
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
@@ -1244,7 +1244,6 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	variable->identifier = parse_identifier();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, variable->identifier);
 
 	variable->export_info.name = variable->identifier->name;
 	variable->is_static = p_is_static;
@@ -1491,7 +1490,6 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	}
 
 	constant->identifier = parse_identifier();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, constant->identifier);
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check((GDScriptTokenizer::Token::EQUAL))) {
@@ -1532,7 +1530,6 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 
 	ParameterNode *parameter = alloc_node<ParameterNode>();
 	parameter->identifier = parse_identifier();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, parameter->identifier);
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check((GDScriptTokenizer::Token::EQUAL))) {
@@ -1567,7 +1564,6 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	}
 
 	signal->identifier = parse_identifier();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, signal->identifier);
 
 	signal->current_class = current_class;
 
@@ -1614,7 +1610,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		enum_node->identifier = parse_identifier();
-		refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, enum_node->identifier);
 		named = true;
 	}
 
@@ -1652,8 +1647,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 					push_error(vformat(R"(Name "%s" is already used as a class %s.)", item.identifier->name, current_class->get_member(item.identifier->name).get_type_name()));
 				}
 			}
-
-			refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
 
 			elements[item.identifier->name] = item.line;
 
@@ -3604,7 +3597,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
 
 			// Parenthesis open.
 			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
