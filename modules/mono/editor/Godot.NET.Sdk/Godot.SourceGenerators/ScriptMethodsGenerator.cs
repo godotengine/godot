@@ -152,7 +152,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var property in propertySymbols)
                 {
-                    if (IsExportedNonNullableGodotType(property, property.Type, context.Compilation))
+                    if (NullableUtils.IsExportedNonNullableGodotType(property, property.Type, syntaxTree => context.Compilation.GetSemanticModel(syntaxTree)))
                     {
                         exportedNonNullableGodotTypes.Add((property.Name, property.Type));
                     }
@@ -165,7 +165,7 @@ namespace Godot.SourceGenerators
 
                 foreach (var field in fieldSymbols)
                 {
-                    if (IsExportedNonNullableGodotType(field, field.Type, context.Compilation))
+                    if (NullableUtils.IsExportedNonNullableGodotType(field, field.Type, syntaxTree => context.Compilation.GetSemanticModel(syntaxTree)))
                     {
                         exportedNonNullableGodotTypes.Add((field.Name, field.Type));
                     }
@@ -478,16 +478,54 @@ namespace Godot.SourceGenerators
         {
             foreach (var (memberName, memberType) in exportedNonNullableGodotTypes)
             {
+                // Check if this is a string type
+                bool isString = memberType.SpecialType == SpecialType.System_String;
+
+                // Check if this is a StringName type
+                bool isStringName = MarshalUtils.IsStringNameType(memberType);
+
+                // Check if this is a packed array type
+                bool isPackedArray = MarshalUtils.IsPackedArrayType(memberType);
+
                 source.Append("        if (this.");
                 source.Append(memberName);
-                source.Append(" == null) throw new global::System.NullReferenceException(\"The exported property/field '");
-                source.Append(memberName);
-                source.Append("' of type '");
-                source.Append(memberType.ToDisplayString());
-                source.Append("' is null.\");\n");
+
+                if (isString)
+                {
+                    // For string, initialize with string.Empty instead of throwing
+                    source.Append(" == null) this.");
+                    source.Append(memberName);
+                    source.Append(" = string.Empty;\n");
+                }
+                else if (isStringName)
+                {
+                    // For StringName, initialize with new StringName() instead of throwing
+                    source.Append(" == null) this.");
+                    source.Append(memberName);
+                    source.Append(" = new global::Godot.StringName();\n");
+                }
+                else if (isPackedArray)
+                {
+                    // For packed arrays, initialize with Array.Empty instead of throwing
+                    source.Append(" == null) this.");
+                    source.Append(memberName);
+                    source.Append(" = global::System.Array.Empty<");
+
+                    var arrayType = (IArrayTypeSymbol)memberType;
+                    source.Append(arrayType.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    source.Append(">();\n");
+                }
+                else
+                {
+                    // For other types (Node, Resource, NodePath, Collections), throw NullReferenceException
+                    source.Append(" == null) throw new global::System.NullReferenceException(\"The exported property/field '");
+                    source.Append(memberName);
+                    source.Append("' of type '");
+                    source.Append(memberType.ToDisplayString());
+                    source.Append("' is null.\");\n");
+                }
             }
         }
-
         private static void GenerateMethodInvoker(
             GodotMethodData method,
             StringBuilder source
@@ -538,66 +576,6 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("        }\n");
-        }
-
-        private static bool IsNullableContextEnabledForSymbol(ISymbol symbol, Compilation compilation)
-        {
-            // Get the syntax reference for the symbol declaration
-            var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
-            if (syntaxReference == null)
-                return false;
-
-            var syntaxTree = syntaxReference.SyntaxTree;
-            var syntaxNode = syntaxReference.GetSyntax();
-
-            // Get the nullable context options at the declaration location
-            var semanticModel = compilation.GetSemanticModel(syntaxTree);
-            var nullableContext = semanticModel.GetNullableContext(syntaxNode.SpanStart);
-
-            // Check if nullable reference types are enabled (either as warnings or errors)
-            return (nullableContext & NullableContext.Enabled) != 0;
-        }
-
-        private static bool IsExportedNonNullableGodotType(ISymbol memberSymbol, ITypeSymbol memberType, Compilation compilation)
-        {
-            // Check if the member has the [Export] attribute
-            bool isExported = memberSymbol.GetAttributes()
-                .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
-
-            if (!isExported)
-                return false;
-
-            // Check if the type is a Godot compatible class type (Node, Resource, or derived)
-            if (memberType is not INamedTypeSymbol namedType)
-                return false;
-
-            // Check if it's a reference type and check nullable annotation
-            if (!memberType.IsReferenceType)
-                return false;
-
-            // Check if member has nullable context enabled (either via #nullable or project settings)
-            if (!IsNullableContextEnabledForSymbol(memberSymbol, compilation))
-                return false;
-
-            // If the type is nullable annotated (e.g., Node?), skip it
-            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
-                return false;
-
-            // Check if the type inherits from Node or Resource
-            bool isNodeOrResource = namedType.InheritsFrom("GodotSharp", GodotClasses.Node) ||
-                                    namedType.InheritsFrom("GodotSharp", "Godot.Resource");
-
-            if (isNodeOrResource)
-                return true;
-
-            // Check if the type is Godot.Collections.Array or Dictionary (including generic variations)
-            string fullTypeName = namedType.ConstructedFrom.ToString();
-            bool isGodotCollection = fullTypeName == "Godot.Collections.Array" ||
-                                     fullTypeName == "Godot.Collections.Array<T>" ||
-                                     fullTypeName == "Godot.Collections.Dictionary" ||
-                                     fullTypeName == "Godot.Collections.Dictionary<TKey, TValue>";
-
-            return isGodotCollection;
         }
     }
 
@@ -660,7 +638,7 @@ namespace Godot.SourceGenerators
                                 _ => null
                             };
 
-                            return memberType != null && IsExportedNonNullableGodotType(m, memberType, context);
+                            return memberType != null && NullableUtils.IsExportedNonNullableGodotType(m, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2));
                         });
 
                     if (hasExportedNonNullableMembers)
@@ -701,7 +679,7 @@ namespace Godot.SourceGenerators
                     continue;
 
                 // Check if this is an exported non-nullable Godot type
-                if (IsExportedNonNullableGodotType(memberSymbol, memberType, context))
+                if (NullableUtils.IsExportedNonNullableGodotType(memberSymbol, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2)))
                 {
                     // Check if the containing type is a Godot script class
                     var containingType = memberSymbol.ContainingType;
@@ -711,57 +689,6 @@ namespace Godot.SourceGenerators
                     }
                 }
             }
-        }
-
-        private static bool IsNullableContextEnabledForSymbol(ISymbol symbol, SuppressionAnalysisContext context)
-        {
-            var syntaxReference = symbol.DeclaringSyntaxReferences.FirstOrDefault();
-            if (syntaxReference == null)
-                return false;
-
-            var syntaxTree = syntaxReference.SyntaxTree;
-            var syntaxNode = syntaxReference.GetSyntax();
-
-            var semanticModel = context.GetSemanticModel(syntaxTree);
-            var nullableContext = semanticModel.GetNullableContext(syntaxNode.SpanStart);
-
-            return (nullableContext & NullableContext.Enabled) != 0;
-        }
-
-        private static bool IsExportedNonNullableGodotType(ISymbol memberSymbol, ITypeSymbol memberType, SuppressionAnalysisContext context)
-        {
-            bool isExported = memberSymbol.GetAttributes()
-                .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
-
-            if (!isExported)
-                return false;
-
-            if (memberType is not INamedTypeSymbol namedType)
-                return false;
-
-            if (!memberType.IsReferenceType)
-                return false;
-
-            if (!IsNullableContextEnabledForSymbol(memberSymbol, context))
-                return false;
-
-            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
-                return false;
-
-            bool isNodeOrResource = namedType.InheritsFrom("GodotSharp", GodotClasses.Node) ||
-                                    namedType.InheritsFrom("GodotSharp", "Godot.Resource");
-
-            if (isNodeOrResource)
-                return true;
-
-            // Check if the type is Godot.Collections.Array or Dictionary (including generic variations)
-            string fullTypeName = namedType.ConstructedFrom.ToString();
-            bool isGodotCollection = fullTypeName == "Godot.Collections.Array" ||
-                                     fullTypeName == "Godot.Collections.Array<T>" ||
-                                     fullTypeName == "Godot.Collections.Dictionary" ||
-                                     fullTypeName == "Godot.Collections.Dictionary<TKey, TValue>";
-
-            return isGodotCollection;
         }
     }
 }
