@@ -702,6 +702,9 @@ void Node3DEditorViewport::cancel_transform() {
 	}
 
 	collision_reposition = false;
+	collision_reposition_warning_shown = false;
+	collision_reposition_normal_applied = false;
+	collision_reposition_alignment_axis = 1;
 	finish_transform();
 	set_message(TTRC("Transform Aborted."), 3);
 }
@@ -2124,6 +2127,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						ruler_end_point->set_visible(false);
 						ruler_label->set_visible(false);
 						collision_reposition = false;
+						collision_reposition_warning_shown = false;
+						collision_reposition_normal_applied = false;
 						break;
 					}
 
@@ -2585,6 +2590,29 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event)) {
 			_menu_option(VIEW_ALIGN_ROTATION_WITH_VIEW);
 		}
+		// Surface alignment controls: while holding Alt during collision repositioning (Shift+G):
+		// - Alt+Q: Cycle through all 6 axes (+X, +Y, +Z, -X, -Y, -Z)
+		// - Alt+X: Set to +X axis (or Alt+Shift+X for -X axis)
+		// - Alt+Y: Set to +Y axis (or Alt+Shift+Y for -Y axis)
+		// - Alt+Z: Set to +Z axis (or Alt+Shift+Z for -Z axis)
+		if (collision_reposition && k->is_alt_pressed() && !k->is_ctrl_pressed()) {
+			String axis_names[6] = { "+X", "+Y", "+Z", "-X", "-Y", "-Z" };
+
+			if (k->get_keycode() == Key::Q) {
+				collision_reposition_alignment_axis = (collision_reposition_alignment_axis + 1) % 6;
+				set_message(vformat(TTR("Alignment axis: %s"), axis_names[collision_reposition_alignment_axis]), 2);
+			} else if (k->get_keycode() == Key::X) {
+				collision_reposition_alignment_axis = k->is_shift_pressed() ? 3 : 0; // Shift+X = -X, X = +X
+				set_message(vformat(TTR("Alignment axis: %s"), axis_names[collision_reposition_alignment_axis]), 2);
+			} else if (k->get_keycode() == Key::Y) {
+				collision_reposition_alignment_axis = k->is_shift_pressed() ? 4 : 1; // Shift+Y = -Y, Y = +Y
+				set_message(vformat(TTR("Alignment axis: %s"), axis_names[collision_reposition_alignment_axis]), 2);
+			} else if (k->get_keycode() == Key::Z) {
+				collision_reposition_alignment_axis = k->is_shift_pressed() ? 5 : 2; // Shift+Z = -Z, Z = +Z
+				set_message(vformat(TTR("Alignment axis: %s"), axis_names[collision_reposition_alignment_axis]), 2);
+			}
+		}
+
 		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE) {
 				return;
@@ -2645,7 +2673,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_top_selected_node_list().size() >= 1 && !collision_reposition) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -3447,20 +3475,184 @@ void Node3DEditorViewport::_notification(int p_what) {
 					}
 				} else {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-					if (selection.size() == 1) {
-						selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					if (selection.size() >= 1) {
+						if (selection.size() == 1) {
+							selected_node = Object::cast_to<Node3D>(selection.front()->get());
+						} else {
+							Node3D *active_node = spatial_editor->get_active_node();
+							if (active_node) {
+								CollisionResult collision_result = _get_instance_position_and_normal(_edit.mouse_pos, active_node);
+								Vector3 collision_pos = spatial_editor->snap_point(collision_result.position);
+
+								Transform3D active_node_original_transform = active_node->get_global_transform();
+								HashMap<Node3D *, Transform3D> relative_transforms;
+
+								for (Node *E : selection) {
+									Node3D *sp = Object::cast_to<Node3D>(E);
+									if (sp && sp != active_node) {
+										relative_transforms[sp] = active_node_original_transform.affine_inverse() * sp->get_global_transform();
+									}
+								}
+
+								bool alt_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
+								bool surface_aligned = false;
+
+								active_node->set_global_position(collision_pos);
+
+								if (alt_pressed && collision_result.has_collision) {
+									if (!collision_reposition_normal_applied) {
+										collision_reposition_original_transform = active_node->get_global_transform();
+										collision_reposition_normal_applied = true;
+									}
+
+									Transform3D transform = active_node->get_global_transform();
+
+									Vector3 target_normal = collision_result.normal.normalized();
+									Vector3 direction = (collision_reposition_alignment_axis >= 3) ? -target_normal : target_normal;
+									Vector3 up = Vector3(0, 1, 0);
+
+									if (Math::abs(direction.dot(up)) > 0.9) {
+										up = Vector3(1, 0, 0);
+									}
+
+									Basis aligned_basis = Basis::looking_at(direction, up);
+
+									// Rotate to align the correct axis with the direction
+									switch (collision_reposition_alignment_axis % 3) {
+										case 0: // X axis
+											aligned_basis = aligned_basis * Basis(Vector3(0, 1, 0), Math::PI / 2);
+											break;
+										case 1: // Y axis
+											aligned_basis = aligned_basis * Basis(Vector3(1, 0, 0), -Math::PI / 2);
+											break;
+									}
+
+									transform.basis = aligned_basis;
+									active_node->set_global_transform(transform);
+									surface_aligned = true;
+								}
+
+								if (!alt_pressed && collision_reposition_normal_applied) {
+									Transform3D transform = active_node->get_global_transform();
+									transform.basis = collision_reposition_original_transform.basis;
+									active_node->set_global_transform(transform);
+									collision_reposition_normal_applied = false;
+									collision_reposition_alignment_axis = 1;
+								}
+
+								Transform3D active_node_new_transform = active_node->get_global_transform();
+								for (Node *E : selection) {
+									Node3D *sp = Object::cast_to<Node3D>(E);
+									if (sp && sp != active_node && relative_transforms.has(sp)) {
+										Transform3D new_transform = active_node_new_transform * relative_transforms[sp];
+										sp->set_global_transform(new_transform);
+									}
+								}
+
+								if (!ruler->is_inside_tree()) {
+									double snap = EDITOR_GET("interface/inspector/default_float_step");
+									int snap_step_decimals = Math::range_step_decimals(snap);
+									Vector3 pos = active_node->get_global_position();
+									String msg = TTR("Translating:") + " (" + String::num(pos.x, snap_step_decimals) + ", " +
+											String::num(pos.y, snap_step_decimals) + ", " + String::num(pos.z, snap_step_decimals) + ")";
+									if (surface_aligned) {
+										String axis_names[6] = { "+X", "+Y", "+Z", "-X", "-Y", "-Z" };
+										msg += " " + vformat(TTR("(Aligned %s to surface)"), axis_names[collision_reposition_alignment_axis]);
+									}
+									set_message(msg);
+								}
+							}
+						}
 					}
 				}
 
 				if (selected_node) {
+					CollisionResult collision_result = _get_instance_position_and_normal(_edit.mouse_pos, selected_node);
+					selected_node->set_global_position(spatial_editor->snap_point(collision_result.position));
+
+					bool alt_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
+					bool surface_aligned = false;
+
+					if (collision_result.has_collision) {
+						if (alt_pressed) {
+							if (!collision_reposition_normal_applied) {
+								collision_reposition_original_transform = selected_node->get_global_transform();
+								collision_reposition_normal_applied = true;
+							}
+
+							Transform3D transform = collision_reposition_original_transform;
+							transform.origin = selected_node->get_global_position();
+
+							Vector3 local_align_axis;
+							switch (collision_reposition_alignment_axis) {
+								case 0:
+									local_align_axis = Vector3(1, 0, 0);
+									break; // +X
+								case 1:
+									local_align_axis = Vector3(0, 1, 0);
+									break; // +Y
+								case 2:
+									local_align_axis = Vector3(0, 0, 1);
+									break; // +Z
+								case 3:
+									local_align_axis = Vector3(-1, 0, 0);
+									break; // -X
+								case 4:
+									local_align_axis = Vector3(0, -1, 0);
+									break; // -Y
+								case 5:
+									local_align_axis = Vector3(0, 0, -1);
+									break; // -Z
+							}
+
+							Vector3 target_normal = collision_result.normal.normalized();
+
+							Vector3 direction = (collision_reposition_alignment_axis >= 3) ? -target_normal : target_normal;
+							Vector3 up = Vector3(0, 1, 0);
+
+							if (Math::abs(direction.dot(up)) > 0.9) {
+								up = Vector3(1, 0, 0);
+							}
+
+							Basis aligned_basis = Basis::looking_at(direction, up);
+
+							// Rotate to align the correct axis with the direction
+							switch (collision_reposition_alignment_axis % 3) {
+								case 0: // X axis
+									aligned_basis = aligned_basis * Basis(Vector3(0, 1, 0), Math::PI / 2);
+									break;
+								case 1: // Y axis
+									aligned_basis = aligned_basis * Basis(Vector3(1, 0, 0), -Math::PI / 2);
+									break;
+							}
+
+							transform.basis = aligned_basis;
+
+							selected_node->set_global_transform(transform);
+							surface_aligned = true;
+						}
+					}
+
+					if (!alt_pressed && collision_reposition_normal_applied) {
+						Transform3D transform = selected_node->get_global_transform();
+						transform.basis = collision_reposition_original_transform.basis;
+						selected_node->set_global_transform(transform);
+						collision_reposition_normal_applied = false;
+						collision_reposition_alignment_axis = 1;
+					}
+
 					if (!ruler->is_inside_tree()) {
 						double snap = EDITOR_GET("interface/inspector/default_float_step");
 						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(TTR("Translating:") + " (" + String::num(selected_node->get_global_position().x, snap_step_decimals) + ", " +
-								String::num(selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(selected_node->get_global_position().z, snap_step_decimals) + ")");
+						Vector3 pos = selected_node->get_global_position();
+						String msg = TTR("Translating:") + " (" + String::num(pos.x, snap_step_decimals) + ", " +
+								String::num(pos.y, snap_step_decimals) + ", " + String::num(pos.z, snap_step_decimals) + ")";
+						if (surface_aligned) {
+							String axis_names[6] = { "+X", "+Y", "+Z", "-X", "-Y", "-Z" };
+							msg += " " + vformat(TTR("(Aligned %s to surface)"), axis_names[collision_reposition_alignment_axis]);
+						}
+						set_message(msg);
 					}
-
-					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
 
 					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
 						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
@@ -4837,6 +5029,13 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 }
 
 Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D *p_node) const {
+	CollisionResult result = _get_instance_position_and_normal(p_pos, p_node);
+	return result.position;
+}
+
+Node3DEditorViewport::CollisionResult Node3DEditorViewport::_get_instance_position_and_normal(const Point2 &p_pos, Node3D *p_node) const {
+	CollisionResult result;
+
 	const float MAX_DISTANCE = 50.0;
 	const float FALLBACK_DISTANCE = 5.0;
 
@@ -4850,12 +5049,11 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-
-		Array children = first_selected_node->get_children();
-
-		if (first_selected_node) {
-			_insert_rid_recursive(first_selected_node, rids);
+		for (Node *E : selection) {
+			Node3D *selected_node = Object::cast_to<Node3D>(E);
+			if (selected_node) {
+				_insert_rid_recursive(selected_node, rids);
+			}
 		}
 	}
 
@@ -4864,12 +5062,15 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	ray_params.from = world_pos;
 	ray_params.to = world_pos + world_ray * camera->get_far();
 
-	PhysicsDirectSpaceState3D::RayResult result;
-	if (ss->intersect_ray(ray_params, result) && (preview_node->get_child_count() > 0 || !preview_node->is_inside_tree())) {
+	PhysicsDirectSpaceState3D::RayResult ray_result;
+	if (ss->intersect_ray(ray_params, ray_result) && (preview_node->get_child_count() > 0 || !preview_node->is_inside_tree())) {
+		result.has_collision = true;
+		result.normal = ray_result.normal;
+
 		// Calculate an offset for the `p_node` such that the its bounding box is on top of and touching the contact surface's plane.
 
 		// Use the Gram-Schmidt process to get an orthonormal Basis aligned with the surface normal.
-		const Vector3 bb_basis_x = result.normal;
+		const Vector3 bb_basis_x = ray_result.normal;
 		Vector3 bb_basis_y = Vector3(0, 1, 0);
 		bb_basis_y = bb_basis_y - bb_basis_y.project(bb_basis_x);
 		if (bb_basis_y.is_zero_approx()) {
@@ -4880,16 +5081,48 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		const Vector3 bb_basis_z = bb_basis_x.cross(bb_basis_y);
 		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
 
-		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
-		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
-		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
-		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `p_node`'s origin at (0, 0, 0) to the correct AABB face.
-		const float offset_distance = -p_node_bb.position.x;
+		if (p_node == nullptr) {
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			Vector3 center;
+			int valid_nodes = 0;
+			AABB combined_aabb;
+			bool first = true;
 
-		// `result_offset` is in global space.
-		const Vector3 result_offset = result.position + result.normal * offset_distance;
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (sp) {
+					center += sp->get_global_position();
+					valid_nodes++;
 
-		return result_offset;
+					AABB node_aabb = _calculate_spatial_bounds(sp, true);
+					Transform3D node_xform = sp->get_global_transform();
+					node_aabb = node_xform.xform(node_aabb);
+
+					if (first) {
+						combined_aabb = node_aabb;
+						first = false;
+					} else {
+						combined_aabb.merge_with(node_aabb);
+					}
+				}
+			}
+
+			if (valid_nodes > 0) {
+				center /= valid_nodes;
+
+				const Transform3D bb_transform = Transform3D(bb_basis, center);
+				const AABB transformed_aabb = bb_transform.affine_inverse().xform(combined_aabb);
+				const float offset_distance = -transformed_aabb.position.x;
+				result.position = ray_result.position + ray_result.normal * offset_distance;
+				return result;
+			}
+		} else {
+			const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
+			const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
+			const float offset_distance = -p_node_bb.position.x;
+			result.position = ray_result.position + ray_result.normal * offset_distance;
+			return result;
+		}
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
@@ -4899,7 +5132,9 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	Plane plane(Vector3(0, 1, 0));
 	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
 		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
-			return intersection;
+			result.position = intersection;
+			result.normal = Vector3(0, 1, 0);
+			return result;
 		}
 	}
 
@@ -4910,11 +5145,15 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
 	}
 	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
-		return intersection;
+		result.position = intersection;
+		result.normal = -world_ray.normalized();
+		return result;
 	}
 
 	// Not likely, but just in case...
-	return world_pos + world_ray * FALLBACK_DISTANCE;
+	result.position = world_pos + world_ray * FALLBACK_DISTANCE;
+	result.normal = -world_ray.normalized();
+	return result;
 }
 
 AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level, const Transform3D *p_bounds_orientation) {
@@ -5534,6 +5773,9 @@ void Node3DEditorViewport::commit_transform() {
 	undo_redo->commit_action();
 
 	collision_reposition = false;
+	collision_reposition_warning_shown = false;
+	collision_reposition_normal_applied = false;
+	collision_reposition_alignment_axis = 1;
 	finish_transform();
 	set_message("");
 }
@@ -8403,6 +8645,7 @@ void Node3DEditor::_selection_changed() {
 		}
 
 		if (sp == editor_selection->get_top_selected_node_list().back()->get()) {
+			active_node = sp;
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
