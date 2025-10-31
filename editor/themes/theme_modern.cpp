@@ -542,7 +542,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		p_theme->set_stylebox("focus", "LinkButton", p_config.base_empty_style);
 
-		p_theme->set_color(SceneStringName(font), "LinkButton", p_config.font_color);
+		p_theme->set_color(SceneStringName(font_color), "LinkButton", p_config.font_color);
 		p_theme->set_color("font_hover_color", "LinkButton", p_config.font_hover_color);
 		p_theme->set_color("font_hover_pressed_color", "LinkButton", p_config.font_hover_pressed_color);
 		p_theme->set_color("font_focus_color", "LinkButton", p_config.font_focus_color);
