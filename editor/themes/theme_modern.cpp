@@ -198,9 +198,9 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Special colors for rendering methods.
 
-		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color(0.55, 0.75, 0.39));
-		p_theme->set_color("mobile_color", EditorStringName(Editor), Color(0.45, 0.70, 0.89));
-		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color(0.86, 0.48, 0.58));
+		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color::hex(0x5d8c3fff));
+		p_theme->set_color("mobile_color", EditorStringName(Editor), Color::hex(0xa5557dff));
+		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color::hex(0x5586a4ff));
 
 		if (p_config.dark_theme) {
 			p_theme->set_color("highend_color", EditorStringName(Editor), Color(1.0, 0.0, 0.0));
