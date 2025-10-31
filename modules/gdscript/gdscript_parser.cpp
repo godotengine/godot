@@ -1765,7 +1765,6 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 
 	if (match(GDScriptTokenizer::Token::FORWARD_ARROW)) {
 		make_completion_context(COMPLETION_TYPE_NAME_OR_VOID, p_function);
-		refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, p_function);
 		p_function->return_type = parse_type(true);
 		if (p_function->return_type == nullptr) {
 			push_error(R"(Expected return type or "void" after "->".)");
@@ -1819,7 +1818,6 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	current_function = function;
 
 	function->identifier = parse_identifier();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, function->identifier);
 
 	SuiteNode *body = alloc_node<SuiteNode>();
 
@@ -1853,7 +1851,6 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	current_function = previous_function;
 	complete_extents(function);
-
 	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 
 	return function;
@@ -4002,16 +3999,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
-	refactor_rename_register(p_allow_void
-					? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
-					: REFACTOR_RENAME_TYPE_TYPE_NAME,
-			type);
 
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		if (match(GDScriptTokenizer::Token::TK_VOID)) {
 			if (p_allow_void) {
 				complete_extents(type);
 				TypeNode *void_type = type;
+				refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, void_type);
 				return void_type;
 			} else {
 				push_error(R"("void" is only allowed for a function return type.)");
@@ -4019,6 +4013,10 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		}
 		// Leave error message to the caller who knows the context.
 		complete_extents(type);
+		refactor_rename_register(p_allow_void
+						? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
+						: REFACTOR_RENAME_TYPE_TYPE_NAME,
+				type);
 		return nullptr;
 	}
 
@@ -4047,6 +4045,10 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		if (type != nullptr) {
 			complete_extents(type);
 		}
+		refactor_rename_register(p_allow_void
+						? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
+						: REFACTOR_RENAME_TYPE_TYPE_NAME,
+				type);
 		return type;
 	}
 
@@ -4065,6 +4067,10 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	}
 
 	complete_extents(type);
+	refactor_rename_register(p_allow_void
+					? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
+					: REFACTOR_RENAME_TYPE_TYPE_NAME,
+			type);
 	return type;
 }
 
