@@ -787,6 +787,7 @@ void GDScriptParser::parse_program() {
 			case GDScriptTokenizer::Token::CLASS_NAME:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
 				advance();
+				refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, current_class);
 				if (head->identifier != nullptr) {
 					push_error(R"("class_name" can only be used once.)");
 				} else {
@@ -796,6 +797,7 @@ void GDScriptParser::parse_program() {
 			case GDScriptTokenizer::Token::EXTENDS:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
 				advance();
+				refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, current_class);
 				if (head->extends_used) {
 					push_error(R"("extends" can only be used once.)");
 				} else {
@@ -811,6 +813,7 @@ void GDScriptParser::parse_program() {
 				if (current.literal.get_type() == Variant::STRING) {
 					// Allow strings in class body as multiline comments.
 					advance();
+					refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, current_class);
 					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
 						push_error("Expected newline after comment string.");
 					}
