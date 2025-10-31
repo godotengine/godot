@@ -1297,6 +1297,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	complete_extents(variable);
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, variable);
+
 	end_statement("variable declaration");
 
 	return variable;
