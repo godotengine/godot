@@ -45,7 +45,6 @@
 #include "core/variant/typed_array.h"
 
 namespace CoreBind {
-
 ////// ResourceLoader //////
 
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
@@ -88,7 +87,6 @@ PackedStringArray ResourceLoader::get_resource_paths_with_file_name_prefix(const
 PackedStringArray ResourceLoader::get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type) {
 	return ::ResourceLoader::get_resource_paths_with_file_extension(p_file_extension, p_with_godot_type);
 }
-
 
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
 	Error err = OK;
@@ -159,13 +157,11 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads", "cache_mode"), &ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
-
 	ClassDB::bind_method(D_METHOD("get_resource_paths", "with_godot_type"), &ResourceLoader::get_resource_paths);
 	ClassDB::bind_method(D_METHOD("get_resource_paths_of_type", "type_hint", "with_godot_type"), &ResourceLoader::get_resource_paths_of_type);
 	ClassDB::bind_method(D_METHOD("get_resource_paths_with_path_prefix", "path_prefix", "with_godot_type"), &ResourceLoader::get_resource_paths_with_path_prefix);
 	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_name_prefix", "file_name_prefix", "with_godot_type"), &ResourceLoader::get_resource_paths_with_file_name_prefix);
 	ClassDB::bind_method(D_METHOD("get_resource_paths_with_file_extension", "file_extension", "with_godot_type"), &ResourceLoader::get_resource_paths_with_file_extension);
-
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("add_resource_format_loader", "format_loader", "at_front"), &ResourceLoader::add_resource_format_loader, DEFVAL(false));
@@ -1575,7 +1571,6 @@ void Thread::_bind_methods() {
 }
 
 namespace Special {
-
 ////// ClassDB //////
 
 PackedStringArray ClassDB::get_class_list() const {
@@ -1906,7 +1901,6 @@ void ClassDB::_bind_methods() {
 	BIND_ENUM_CONSTANT(API_EDITOR_EXTENSION);
 	BIND_ENUM_CONSTANT(API_NONE);
 }
-
 } // namespace Special
 
 ////// Engine //////
@@ -2357,5 +2351,4 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_breakpoint", "line", "source"), &EngineDebugger::remove_breakpoint);
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
-
 } // namespace CoreBind
