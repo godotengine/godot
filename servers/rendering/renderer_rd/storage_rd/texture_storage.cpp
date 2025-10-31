@@ -3163,27 +3163,6 @@ void TextureStorage::update_decal_atlas() {
 		decal_atlas.size.height = border;
 	}
 
-	//{ // filter area light textures
-	//	RID area_light_mipmap_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), decal_atlas.texture, 0, 0);
-	//	Vector<RID> area_light_fb_texture_vec;
-	//	area_light_fb_texture_vec.push_back(area_light_mipmap_tex);
-	//	RID area_light_fb = RD::get_singleton()->framebuffer_create(area_light_fb_texture_vec);
-	//	Color clear_color(0, 0, 0, 0);
-	//	Vector<Color> cc;
-	//	cc.push_back(clear_color);
-	//	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(area_light_fb, RD::DRAW_CLEAR_ALL, cc);
-	//	for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
-	//		if (E.value.area_light_users > 0) {
-	//			// TODO: we might need an intermediate buffer if src == dst is illegal
-	//			//copy_effects->gaussian_blur(); // later
-	//			DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
-	//			Texture *src_tex = get_texture(E.key);
-	//			copy_effects->copy_to_atlas_fb(src_tex->rd_texture, area_light_fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
-	//		}
-	//	}
-	//	copy_effects->copy_to_fb_rect(area_light_mipmap_tex, area_light_fb, Rect2i(Point2i(), mm.size));
-	//}
-
 	//blit textures
 
 	RD::TextureFormat tformat;
@@ -3234,6 +3213,7 @@ void TextureStorage::update_decal_atlas() {
 				Vector<Color> cc;
 				cc.push_back(clear_color);
 
+				// Make area light MIPs
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
 
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
@@ -3245,18 +3225,20 @@ void TextureStorage::update_decal_atlas() {
 					} else {
 						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, Rect2(t->uv_rect.position.x, t->uv_rect.position.y, t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y), draw_list, false, t->panorama_to_dp_users > 0);
 					}
-					/*
+
 					if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
-						int l2 = floor(log2(MIN(t->uv_rect.size.x * decal_atlas.size.x, t->uv_rect.size.y * decal_atlas.size.y)));
+						Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
+						const int max_lods = 11;
+						int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
 						for (int j = 0; j < l2; j++) {
 							Rect2 uv_rect = t->uv_rect;
-							uv_rect.position.x += uv_rect.size.x / 3 * 2;
-							uv_rect.position.y += uv_rect.size.y - uv_rect.size.y / pow(2, j);
-							uv_rect.size = uv_rect.size / pow(2, j+1);
+							uv_rect.position.x += size.x;
+							uv_rect.position.y += size.y - size.y / pow(2, j);
+							uv_rect.size = size / pow(2, j + 1);
 							// TODO: should / could we use copy_to_fb_rect instead?
 							copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
 						}
-					}*/
+					}
 				}
 
 				RD::get_singleton()->draw_list_end();

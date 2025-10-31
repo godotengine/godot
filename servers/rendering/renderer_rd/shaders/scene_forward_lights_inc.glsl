@@ -1094,14 +1094,66 @@ vec3 fetch_ltc_diffuse_filtered_texture(vec4 texture_rect, vec3 L0, vec3 L1, vec
 		uv = vec2(dot(li, lx) / dot(lx, lx), dot(li, ly) / dot(ly, ly));
 	}
 
-	vec2 sample_pos = clamp(uv, 0.0, 1.0) * texture_rect.zw;
+	float margin = 0.25 / 4.0;
+	vec2 sample_pos = clamp(uv, 0.0 + margin, 1.0 - margin) * texture_rect.zw;
 	return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, 0.0).xyz; // todo: do we need a unique area_texture sampler?
+}
+
+vec3 fetch_ltc_lod(vec2 uv, vec4 texture_rect, float lod) {
+	// vec2 outside = abs(uv - 0.5) - 0.5;
+	// float outside_max = max(outside.x, outside.y);
+	// float outmod = smoothstep(-0.1, 0.1, outside_max) * 2.5;
+	//float blend = 10.0 * 2.5 + outmod;
+	float max_lod = 11.0;
+	float low = min(max(floor(lod), 0.0), max_lod - 1.0);
+	float high = min(max(floor(lod + 1.0), 1.0), max_lod);
+	float margin = 0.125 / 8.0;
+	vec2 sample_pos = clamp(uv * 0.75 + 0.125, 0.0 + margin, 1.0 - margin) * texture_rect.zw; // take border into account
+	vec2 sample_pos1 = sample_pos * pow(0.5, low);
+	vec2 sample_pos2 = sample_pos * pow(0.5, high);
+	vec2 off1 = vec2(step(1.0, low) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(low - 1.0, 0.0)));
+	vec2 off2 = vec2(step(1.0, high) * texture_rect.z, texture_rect.w - texture_rect.w / pow(2.0, max(high - 1.0, 0.0)));
+
+	vec4 sample_col1 = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + off1 + sample_pos1, 0.0);
+	vec4 sample_col2 = textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + off2 + sample_pos2, 0.0);
+
+	float blend = high - lod;
+	vec4 sample_col = mix(sample_col2, sample_col1, blend);
+	return sample_col.rgb * sample_col.a; // premultiply alpha channel
+}
+
+vec3 fetch_ltc_diffuse_texture(vec4 texture_rect, vec3 L[5], float roughness) {
+	vec3 lx = L[1] - L[0];
+	vec3 ly = L[3] - L[0];
+	vec3 ln = cross(lx, ly);
+
+	float d = dot(L[0], ln) / dot(ln, ln);
+	vec3 isec = d * ln;
+
+	vec3 li = isec - L[0]; // light to intersection
+	vec2 uv = vec2(dot(li, lx) / dot(lx, lx), dot(li, ly) / dot(ly, ly));
+
+	//return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, 3.0).xyz; // todo: do we need a unique area_texture sampler?
+
+	// float LTCGI_UV_BLUR_DISTANCE = 333.0; // ?
+	// float lod = d * LTCGI_UV_BLUR_DISTANCE;
+	// lod = log(lod) / log(3.0);
+	// // a rough material must never show a perfect reflection,
+	// // since our LOD0 texture is not prefiltered (and thus cannot
+	// // depict any blur correctly) - without this there is artifacting
+	// // on the border of LOD0 and LOD1
+	// lod = clamp(d, clamp(roughness * 5.75, 0.0, 1.0), 1000);
+
+	// LOD, according to Heitz:
+	float lod = abs(dot(L[0], ln)) / pow(dot(ln, ln), 0.75);
+	lod = log(2048.0 * lod) / log(3.0);
+
+	return fetch_ltc_lod(uv, texture_rect, lod);
 }
 
 vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 texture_rect, out float integral, out hvec3 tex_color) {
 	// default is white
 	tex_color = vec3(1.0);
-	
 	// construct the orthonormal basis around the normal vector
 	vec3 x, z;
 	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector
