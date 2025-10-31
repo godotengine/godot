@@ -1712,6 +1712,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 			EditorInspector::initialize_category_theme(theme_cache, this);
 			menu_icon_dirty = true;
 			_update_icon();
+			update_minimum_size();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
