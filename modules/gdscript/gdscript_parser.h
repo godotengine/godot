@@ -1779,7 +1779,6 @@ public:
 		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
 		REFACTOR_RENAME_TYPE_ENUM, // Enum content.
 		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
-		REFACTOR_RENAME_TYPE_IDENTIFIER, // List available identifiers in scope.
 		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
 		REFACTOR_RENAME_TYPE_LOAD, // For load/preload.
@@ -1801,6 +1800,8 @@ public:
 
 	struct RefactorRenameContext : ParsingContext {
 		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
+		GDScriptParser::IdentifierNode *identifier = nullptr;
+		GDScriptTokenizer::Token token;
 	};
 
 private:
@@ -1985,6 +1986,7 @@ private:
 	bool refactor_rename_was_cursor_just_parsed() const;
 	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
 	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node);
+	bool refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_node);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);

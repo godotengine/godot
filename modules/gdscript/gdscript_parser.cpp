@@ -431,10 +431,7 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	if (!is_for_refactor_rename()) {
 		return false;
 	}
-	if (!refactor_rename_does_node_contains_cursor(p_node)) {
-		return false;
-	}
-	if (!refactor_rename_is_node_more_specific(p_node)) {
+	if (!previous.has_cursor() && tokenizer->is_past_cursor()) {
 		return false;
 	}
 
@@ -446,7 +443,23 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	context.current_line = tokenizer->get_cursor_line();
 	context.parser = this;
 	context.node = p_node;
+	context.identifier = nullptr;
+	if (previous.has_cursor()) {
+		context.token = previous;
+	}
 	refactor_rename_context = context;
+	return true;
+}
+
+bool GDScriptParser::refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_identifier) {
+	if (!is_for_refactor_rename()) {
+		return false;
+	}
+	if (!previous.has_cursor()) {
+		return false;
+	}
+	ERR_FAIL_NULL_V(refactor_rename_context.node, false);
+	refactor_rename_context.identifier = p_identifier;
 	return true;
 }
 
@@ -693,6 +706,7 @@ void GDScriptParser::end_statement(const String &p_context) {
 
 void GDScriptParser::parse_program() {
 	head = alloc_node<ClassNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, head);
 	head->start_line = 1;
 	head->end_line = 1;
 	head->fqcn = GDScript::canonicalize_path(script_path);
@@ -833,7 +847,6 @@ void GDScriptParser::parse_program() {
 	head->end_column = current.end_column;
 
 	complete_extents(head);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, head);
 
 #ifdef TOOLS_ENABLED
 	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer->get_comments();
@@ -933,7 +946,7 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *new_class = alloc_node<ClassNode>();
-	// TODO: Register token.
+	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, new_class);
 
 	ClassNode *previous_class = current_class;
 	current_class = new_class;
@@ -964,7 +977,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")) {
 		current_class = previous_class;
 		complete_extents(new_class);
-		goto return_new_class;
+		return new_class;
 	}
 
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
@@ -984,8 +997,6 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 
 	current_class = previous_class;
 
-return_new_class:
-	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, new_class);
 	return new_class;
 }
 
@@ -1022,9 +1033,7 @@ void GDScriptParser::parse_extends() {
 	}
 
 	make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index);
-	if (refactor_rename_register(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class)) {
-		refactor_rename_context.current_argument = chain_index;
-	}
+	refactor_rename_context.current_argument = chain_index;
 	chain_index++;
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after "extends".)")) {
@@ -1034,9 +1043,7 @@ void GDScriptParser::parse_extends() {
 
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
 		make_completion_context(COMPLETION_INHERIT_TYPE, current_class, chain_index);
-		if (refactor_rename_register(REFACTOR_RENAME_TYPE_INHERIT_TYPE, current_class)) {
-			refactor_rename_context.current_argument = chain_index;
-		}
+		refactor_rename_context.current_argument = chain_index;
 		chain_index++;
 
 		if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected superclass name after ".".)")) {
@@ -1237,6 +1244,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
 	VariableNode *variable = alloc_node<VariableNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, variable);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
 		complete_extents(variable);
@@ -1264,7 +1272,6 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 		} else {
 			if (p_allow_property) {
 				make_completion_context(COMPLETION_PROPERTY_DECLARATION_OR_TYPE, variable);
-				refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION_OR_TYPE, variable->identifier);
 
 				if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
 					// Check if get or set.
@@ -1297,8 +1304,6 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	complete_extents(variable);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, variable);
-
 	end_statement("variable declaration");
 
 	return variable;
@@ -1313,9 +1318,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 	}
 
 	VariableNode *property = p_variable;
-
 	make_completion_context(COMPLETION_PROPERTY_DECLARATION, property);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION, property);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected "get" or "set" for property declaration.)")) {
 		complete_extents(p_variable);
@@ -1427,10 +1430,8 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 		case VariableNode::PROP_SETGET:
 			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "set")");
 			make_completion_context(COMPLETION_PROPERTY_METHOD, p_variable);
-			refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_METHOD, p_variable);
 			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected setter function name after "=".)")) {
 				p_variable->setter_pointer = parse_identifier();
-				refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_METHOD, p_variable->setter_pointer);
 			}
 			break;
 		case VariableNode::PROP_NONE:
@@ -1442,6 +1443,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 	switch (p_variable->property) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
+			refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 
 			if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 				consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after "get(".)*");
@@ -1470,10 +1472,8 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 		case VariableNode::PROP_SETGET:
 			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "get")");
 			make_completion_context(COMPLETION_PROPERTY_METHOD, p_variable);
-			refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_METHOD, p_variable);
 			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected getter function name after "=".)")) {
 				p_variable->getter_pointer = parse_identifier();
-				refactor_rename_register(REFACTOR_RENAME_TYPE_PROPERTY_METHOD, p_variable->getter_pointer);
 			}
 			break;
 		case VariableNode::PROP_NONE:
@@ -1483,6 +1483,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 
 GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, constant);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
 		complete_extents(constant);
@@ -1516,8 +1517,6 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	}
 
 	complete_extents(constant);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, constant);
-
 	end_statement("constant declaration");
 
 	return constant;
@@ -1529,6 +1528,7 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 	}
 
 	ParameterNode *parameter = alloc_node<ParameterNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_PARAMETER, parameter);
 	parameter->identifier = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
@@ -1538,7 +1538,6 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 		} else {
 			// Parse type.
 			make_completion_context(COMPLETION_TYPE_NAME, parameter);
-			refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME, parameter);
 			parameter->datatype_specifier = parse_type();
 		}
 	}
@@ -1550,13 +1549,13 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 	}
 
 	complete_extents(parameter);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_PARAMETER, parameter);
 
 	return parameter;
 }
 
 GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	SignalNode *signal = alloc_node<SignalNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
@@ -1597,8 +1596,6 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	}
 
 	complete_extents(signal);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal);
-
 	end_statement("signal declaration");
 
 	return signal;
@@ -1606,6 +1603,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 
 GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	EnumNode *enum_node = alloc_node<EnumNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node);
 	bool named = false;
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
@@ -1697,9 +1695,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" for enum.)");
 	complete_extents(enum_node);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node);
 	end_statement("enum");
-
 	return enum_node;
 }
 
@@ -1792,6 +1788,7 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 
 GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	FunctionNode *function = alloc_node<FunctionNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 	function->is_static = p_is_static;
 
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
@@ -1844,18 +1841,17 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	current_function = previous_function;
 	complete_extents(function);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 
 	return function;
 }
 
 GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_valid_targets) {
 	AnnotationNode *annotation = alloc_node<AnnotationNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION, annotation);
 
 	annotation->name = previous.literal;
 
 	make_completion_context(COMPLETION_ANNOTATION, annotation);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION, annotation);
 
 	bool valid = true;
 
@@ -1893,9 +1889,8 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		int argument_index = 0;
 		do {
 			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
-			if (refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION_ARGUMENTS, annotation)) {
-				refactor_rename_context.current_argument = argument_index;
-			}
+			refactor_rename_context.current_argument = argument_index;
+
 			set_last_completion_call_arg(argument_index);
 			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 				// Allow for trailing comma.
@@ -1913,9 +1908,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 				if (argument->type == Node::LITERAL) {
 					override_completion_context(argument, COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
 					if (refactor_rename_context.node == argument) {
-						if (refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION_ARGUMENTS, argument)) {
-							refactor_rename_context.current_argument = argument_index;
-						}
+						refactor_rename_context.current_argument = argument_index;
 					}
 				}
 			}
@@ -2331,7 +2324,6 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	ContinueNode *continue_node = alloc_node<ContinueNode>();
 	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, continue_node);
 	complete_extents(continue_node);
-	// TODO: refactor set previous as token.
 	end_statement(R"("continue")");
 	return continue_node;
 }
@@ -2818,7 +2810,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	// HACK: We can't create a context in parse_identifier since it is used in places were we don't want completion.
 	if (previous_operand != nullptr && previous_operand->type == GDScriptParser::Node::IDENTIFIER && prefix_rule == static_cast<ParseFunction>(&GDScriptParser::parse_identifier)) {
 		make_completion_context(COMPLETION_IDENTIFIER, previous_operand);
-		refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, previous_operand);
 	}
 #endif
 
@@ -2864,6 +2855,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing identifier node without identifier token.");
 	}
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
+	refactor_rename_register_identifier(identifier);
 	complete_extents(identifier);
 
 	identifier->name = previous.get_identifier();
@@ -2907,7 +2899,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		}
 	}
 
-	refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, identifier);
 	return identifier;
 }
 
@@ -2922,11 +2913,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	}
 
 	LiteralNode *literal = alloc_node<LiteralNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_LITERAL, literal);
 	literal->value = previous.literal;
 	reset_extents(literal, p_previous_operand);
 	update_extents(literal);
 	make_completion_context(COMPLETION_NONE, literal, -1);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_LITERAL, literal);
 	complete_extents(literal);
 	return literal;
 }
@@ -3201,11 +3192,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 
 	AssignmentNode *assignment = alloc_node<AssignmentNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ASSIGN, assignment);
 	reset_extents(assignment, p_previous_operand);
 	update_extents(assignment);
 
 	make_completion_context(COMPLETION_ASSIGN, assignment);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ASSIGN, assignment);
 
 	switch (previous.type) {
 		case GDScriptTokenizer::Token::EQUAL:
@@ -3261,12 +3252,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+
 #ifdef TOOLS_ENABLED
 	if (assignment->assigned_value != nullptr && assignment->assigned_value->type == GDScriptParser::Node::IDENTIFIER) {
 		override_completion_context(assignment->assigned_value, COMPLETION_ASSIGN, assignment);
-		if (refactor_rename_context.node == assignment->assigned_value) {
-			refactor_rename_register(REFACTOR_RENAME_TYPE_ASSIGN, assignment);
-		}
 	}
 #endif
 	if (assignment->assigned_value == nullptr) {
@@ -3296,6 +3285,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ArrayNode *array = alloc_node<ArrayNode>();
+	if (is_for_refactor_rename()) {
+		(void)0;
+	}
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ARRAY, array);
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
 		do {
@@ -3315,6 +3308,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
 	complete_extents(array);
+
 	refactor_rename_register(REFACTOR_RENAME_TYPE_ARRAY, array);
 
 	return array;
@@ -3322,6 +3316,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DICTIONARY, dictionary);
 	bool decided_style = false;
 	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 		do {
@@ -3448,7 +3443,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DICTIONARY, dictionary);
 
 	return dictionary;
 }
@@ -3466,6 +3460,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute);
 	reset_extents(attribute, p_previous_operand);
 	update_extents(attribute);
 
@@ -3482,7 +3477,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 		if (!is_builtin) {
 			make_completion_context(COMPLETION_ATTRIBUTE, attribute, -1);
 		}
-		refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute);
 	}
 
 	attribute->base = p_previous_operand;
@@ -3504,11 +3498,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *subscript = alloc_node<SubscriptNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_SUBSCRIPT, subscript);
 	reset_extents(subscript, p_previous_operand);
 	update_extents(subscript);
 
 	make_completion_context(COMPLETION_SUBSCRIPT, subscript);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_SUBSCRIPT, subscript);
 
 	subscript->base = p_previous_operand;
 	subscript->index = parse_expression(false);
@@ -3516,9 +3510,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 #ifdef TOOLS_ENABLED
 	if (subscript->index != nullptr && subscript->index->type == Node::LITERAL) {
 		override_completion_context(subscript->index, COMPLETION_SUBSCRIPT, subscript);
-		if (refactor_rename_context.node == subscript->index) {
-			refactor_rename_register(REFACTOR_RENAME_TYPE_SUBSCRIPT, subscript);
-		}
 	}
 #endif
 
@@ -3535,6 +3526,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	CastNode *cast = alloc_node<CastNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, cast);
 	reset_extents(cast, p_previous_operand);
 	update_extents(cast);
 
@@ -3547,8 +3539,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_pre
 		return p_previous_operand;
 	}
 
-	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, cast);
-
 	return cast;
 }
 
@@ -3557,6 +3547,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	reset_extents(call, p_previous_operand);
 
 	if (previous.type == GDScriptTokenizer::Token::SUPER) {
+		refactor_rename_register(REFACTOR_RENAME_TYPE_SUPER_METHOD, call);
+
 		// Super call.
 		call->is_super = true;
 
@@ -3585,7 +3577,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
 
 			make_completion_context(COMPLETION_SUPER_METHOD, call);
-			refactor_rename_register(REFACTOR_RENAME_TYPE_SUPER_METHOD, call);
 
 			// Identifier.
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
@@ -3606,6 +3597,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			}
 		}
 	} else {
+		refactor_rename_register(REFACTOR_RENAME_TYPE_CALL, call);
 		call->callee = p_previous_operand;
 
 		if (call->callee == nullptr) {
@@ -3613,7 +3605,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		} else if (call->callee->type == Node::IDENTIFIER) {
 			call->function_name = static_cast<IdentifierNode *>(call->callee)->name;
 			make_completion_context(COMPLETION_METHOD, call->callee);
-			refactor_rename_register(REFACTOR_RENAME_TYPE_METHOD, call->callee);
 		} else if (call->callee->type == Node::SUBSCRIPT) {
 			SubscriptNode *attribute = static_cast<SubscriptNode *>(call->callee);
 			if (attribute->is_attribute) {
@@ -3621,7 +3612,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					call->function_name = attribute->attribute->name;
 				}
 				make_completion_context(COMPLETION_ATTRIBUTE_METHOD, call->callee);
-				refactor_rename_register(REFACTOR_RENAME_TYPE_METHOD, call->callee);
 			} else {
 				// TODO: The analyzer can see if this is actually a Callable and give better error message.
 				push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
@@ -3633,7 +3623,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 	// Arguments.
 	CompletionType completion_type = COMPLETION_CALL_ARGUMENTS;
-	RefactorRenameType refactor_rename_type = REFACTOR_RENAME_TYPE_CALL_ARGUMENTS;
 	if (call->function_name == SNAME("load")) {
 		completion_type = COMPLETION_RESOURCE_PATH;
 	}
@@ -3641,9 +3630,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	int argument_index = 0;
 	do {
 		make_completion_context(completion_type, call, argument_index);
-		if (refactor_rename_register(REFACTOR_RENAME_TYPE_METHOD, call)) {
-			refactor_rename_context.current_argument = argument_index;
-		}
+		refactor_rename_context.current_argument = argument_index;
 
 		set_last_completion_call_arg(argument_index);
 		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
@@ -3659,15 +3646,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			if (argument->type == Node::LITERAL) {
 				override_completion_context(argument, completion_type, call, argument_index);
 				if (refactor_rename_context.node == argument) {
-					if (refactor_rename_register(refactor_rename_type, call)) {
-						refactor_rename_context.current_argument = argument_index;
-					}
+					refactor_rename_context.current_argument = argument_index;
 				}
 			}
 		}
 
 		completion_type = COMPLETION_CALL_ARGUMENTS;
-		refactor_rename_type = REFACTOR_RENAME_TYPE_CALL_ARGUMENTS;
 		argument_index++;
 
 		if (match(GDScriptTokenizer::Token::COMMA)) {
@@ -3682,7 +3666,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
 	complete_extents(call);
 
-	refactor_rename_register(REFACTOR_RENAME_TYPE_CALL, call);
 	return call;
 }
 
@@ -3748,9 +3731,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 		}
 
 		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument);
-		if (refactor_rename_register(REFACTOR_RENAME_TYPE_GET_NODE, get_node)) {
-			refactor_rename_context.current_argument = context_argument;
-		}
+		refactor_rename_context.current_argument = context_argument;
 		context_argument++;
 
 		if (match(GDScriptTokenizer::Token::LITERAL)) {
@@ -3809,13 +3790,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	PreloadNode *preload = alloc_node<PreloadNode>();
+	refactor_rename_register(REFACTOR_RENAME_TYPE_LOAD, preload);
 	preload->resolved_path = "<missing path>";
 
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "preload".)");
 
 	make_completion_context(COMPLETION_RESOURCE_PATH, preload);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_LOAD, preload);
 	push_completion_call(preload);
 
 	preload->path = parse_expression(false);
@@ -3990,6 +3971,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
+	refactor_rename_register(p_allow_void
+					? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
+					: REFACTOR_RENAME_TYPE_TYPE_NAME,
+			type);
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
 
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
@@ -3997,7 +3982,6 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			if (p_allow_void) {
 				complete_extents(type);
 				TypeNode *void_type = type;
-				refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, void_type);
 				return void_type;
 			} else {
 				push_error(R"("void" is only allowed for a function return type.)");
@@ -4005,10 +3989,6 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		}
 		// Leave error message to the caller who knows the context.
 		complete_extents(type);
-		refactor_rename_register(p_allow_void
-						? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
-						: REFACTOR_RENAME_TYPE_TYPE_NAME,
-				type);
 		return nullptr;
 	}
 
@@ -4037,19 +4017,13 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		if (type != nullptr) {
 			complete_extents(type);
 		}
-		refactor_rename_register(p_allow_void
-						? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
-						: REFACTOR_RENAME_TYPE_TYPE_NAME,
-				type);
 		return type;
 	}
 
 	int chain_index = 1;
 	while (match(GDScriptTokenizer::Token::PERIOD)) {
 		make_completion_context(COMPLETION_TYPE_ATTRIBUTE, type, chain_index);
-		if (refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE, type)) {
-			refactor_rename_context.current_argument = chain_index;
-		}
+		refactor_rename_context.current_argument = chain_index;
 		chain_index++;
 
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected inner type name after ".".)")) {
@@ -4059,10 +4033,6 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	}
 
 	complete_extents(type);
-	refactor_rename_register(p_allow_void
-					? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
-					: REFACTOR_RENAME_TYPE_TYPE_NAME,
-			type);
 	return type;
 }
 
