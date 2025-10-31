@@ -1414,6 +1414,9 @@ ProjectManager::ProjectManager() {
 		title_bar_logo = memnew(Button);
 		title_bar_logo->set_flat(true);
 		title_bar_logo->set_tooltip_text(TTR("About Godot"));
+		// Make these colors always white, otherwise the logo will be dark in the light color preset.
+		title_bar_logo->add_theme_color_override("icon_normal_color", Color(1, 1, 1));
+		title_bar_logo->add_theme_color_override("icon_hover_color", Color(1, 1, 1));
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
