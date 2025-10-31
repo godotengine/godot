@@ -846,6 +846,7 @@ public:
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
+		LiteralNode *extends_literal = nullptr;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
