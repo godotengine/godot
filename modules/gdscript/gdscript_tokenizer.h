@@ -327,6 +327,12 @@ public:
 		constexpr int get_end_line() const { return end.first; }
 		constexpr int get_end_column() const { return end.second; }
 
+		operator String() const {
+			return vformat("CodeArea(L%sC%s, L%sC%s)",
+					start.first, start.second,
+					end.first, end.second);
+		}
+
 		constexpr CodeArea() = default;
 		constexpr CodeArea(Pair<int, int> p_start, Pair<int, int> p_end) :
 				start(p_start), end(p_end) {
