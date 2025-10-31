@@ -2932,21 +2932,28 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += TTR("In-Handle:") + " " + String(ih) + "\n";
 					Vector2 oh = animation->bezier_track_get_key_out_handle(track, key_idx);
 					text += TTR("Out-Handle:") + " " + String(oh) + "\n";
+
+					String handle_mode;
 					int hm = animation->bezier_track_get_key_handle_mode(track, key_idx);
 					switch (hm) {
 						case Animation::HANDLE_MODE_FREE: {
-							text += TTR("Handle mode: Free\n");
+							handle_mode = TTR("Free", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_LINEAR: {
-							text += TTR("Handle mode: Linear\n");
+							handle_mode = TTR("Linear", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_BALANCED: {
-							text += TTR("Handle mode: Balanced\n");
+							handle_mode = TTR("Balanced", "Bezier Handle Mode");
 						} break;
 						case Animation::HANDLE_MODE_MIRRORED: {
-							text += TTR("Handle mode: Mirrored\n");
+							handle_mode = TTR("Mirrored", "Bezier Handle Mode");
+						} break;
+						default: {
+							// Unknown modes may occur when editing a file from a newer version of Godot.
+							handle_mode = itos(hm);
 						} break;
 					}
+					text += vformat(TTR("Handle mode: %s\n"), handle_mode);
 				} break;
 				case Animation::TYPE_AUDIO: {
 					String stream_name = "null";
@@ -5470,6 +5477,11 @@ void AnimationTrackEditor::_notification(int p_what) {
 			track_vbox->add_theme_constant_override("separation", track_separation);
 
 			function_name_toggler->add_theme_color_override("icon_pressed_color", get_theme_color("icon_disabled_color", EditorStringName(Editor)));
+
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_FREE), get_editor_theme_icon(SNAME("BezierHandlesFree")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_LINEAR), get_editor_theme_icon(SNAME("BezierHandlesLinear")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), get_editor_theme_icon(SNAME("BezierHandlesBalanced")));
+			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), get_editor_theme_icon(SNAME("BezierHandlesMirror")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -5483,6 +5495,14 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_keying();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_FREE), TTR("Free", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_LINEAR), TTR("Linear", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), TTR("Balanced", "Bezier Handle Mode"));
+			bezier_key_mode->set_item_text(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), TTR("Mirrored", "Bezier Handle Mode"));
+			bezier_key_mode->set_tooltip_text(TTR("Bezier Default Mode") + "\n" + TTR("Set the default handle mode of new bezier keys."));
 		} break;
 	}
 }
@@ -8037,17 +8057,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
 	bottom_hf->add_child(spacer);
 
-	Label *bezier_key_default_label = memnew(Label);
-	bezier_key_default_label->set_text(TTR("Bezier Default Mode:"));
-	bottom_hf->add_child(bezier_key_default_label);
-
 	bezier_key_mode = memnew(OptionButton);
-	bezier_key_mode->add_item(TTR("Free"));
-	bezier_key_mode->add_item(TTR("Linear"));
-	bezier_key_mode->add_item(TTR("Balanced"));
-	bezier_key_mode->add_item(TTR("Mirrored"));
-	bezier_key_mode->set_tooltip_text(TTR("Set the default behavior of new bezier keys."));
-	bezier_key_mode->select(2);
+	bezier_key_mode->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_FREE);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_LINEAR);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_BALANCED);
+	bezier_key_mode->add_item(String(), Animation::HANDLE_MODE_MIRRORED);
+	bezier_key_mode->select(Animation::HANDLE_MODE_BALANCED);
+	bezier_key_mode->set_accessibility_name(TTRC("Bezier Default Mode"));
 
 	bottom_hf->add_child(bezier_key_mode);
 	bottom_hf->add_child(memnew(VSeparator));
