@@ -1213,12 +1213,11 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 	{
 		// GraphEdit.
 
-		Ref<StyleBoxFlat> graph_panel_focus = p_config.base_style->duplicate();
-		graph_panel_focus->set_border_color(p_config.mono_color * Color(1, 1, 1, 0.07));
-		graph_panel_focus->set_border_width_all(Math::round(2 * EDSCALE));
+		Ref<StyleBoxFlat> ge_panel_style = p_config.base_style->duplicate();
+		ge_panel_style->set_bg_color(p_config.surface_lowest_color);
 
-		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", p_config.tree_panel_style);
-		p_theme->set_stylebox("panel_focus", "GraphEdit", graph_panel_focus);
+		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", ge_panel_style);
+		p_theme->set_stylebox("panel_focus", "GraphEdit", p_config.focus_style);
 		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
@@ -1291,7 +1290,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = gn_bg_color.lerp(p_config.tree_panel_style->get_bg_color(), 0.3);
+			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -1.0, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
