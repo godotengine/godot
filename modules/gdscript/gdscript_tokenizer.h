@@ -296,14 +296,22 @@ public:
 			return ends_after_or_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool contains(const Pair<int, int> &p_other, bool p_allow_overlap = true) const {
-			if (!p_allow_overlap) {
-				return starts_before(p_other) && ends_after(p_other);
+		constexpr bool contains(const Pair<int, int> &p_other, bool p_allow_start_overlap = true, bool p_allow_end_overlap = false) const {
+			if (p_allow_start_overlap) {
+				if (!starts_before_or_together(p_other)) {
+					return false;
+				}
+			} else if (!starts_before(p_other)) {
+				return false;
 			}
-			return starts_before_or_together(p_other) && ends_after_or_together(p_other);
+
+			if (p_allow_end_overlap) {
+				return ends_after_or_together(p_other);
+			}
+			return ends_after(p_other);
 		}
 		constexpr bool contains(const CodeArea &p_other, bool p_allow_overlap = true) const {
-			return contains(p_other.start, p_allow_overlap) && contains(p_other.end, p_allow_overlap);
+			return contains(p_other.start, p_allow_overlap, p_allow_overlap) && contains(p_other.end, p_allow_overlap, p_allow_overlap);
 		}
 		constexpr bool contains(int p_line, int p_column, bool p_allow_overlap = true) const {
 			return contains(Pair<int, int>{ p_line, p_column }, p_allow_overlap);
@@ -311,10 +319,10 @@ public:
 		constexpr bool contains(int p_start_line, int p_start_column, int p_end_line, int p_end_column, bool p_allow_overlap = true) const {
 			return contains({ { p_start_line, p_start_column }, { p_end_line, p_end_column } }, p_allow_overlap);
 		}
-		constexpr bool contains(Vector2i p_position) const {
-			return contains(Pair<int, int>{ p_position.y, p_position.x });
+		constexpr bool contains(Vector2i p_position, bool p_allow_start_overlap = true, bool p_allow_end_overlap = false) const {
+			return contains(Pair<int, int>{ p_position.y, p_position.x }, p_allow_start_overlap, p_allow_end_overlap);
 		}
-		constexpr bool contains(Vector2i p_start, Vector2i p_end) const {
+		constexpr bool contains(Vector2i p_start, Vector2i p_end, bool p_allow_overlap = true) const {
 			return contains({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
