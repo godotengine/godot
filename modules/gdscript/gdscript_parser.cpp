@@ -3975,10 +3975,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
-	refactor_rename_register(p_allow_void
-					? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID
-					: REFACTOR_RENAME_TYPE_TYPE_NAME,
-			type);
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
 
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
@@ -3986,6 +3982,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			if (p_allow_void) {
 				complete_extents(type);
 				TypeNode *void_type = type;
+				refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, type);
 				return void_type;
 			} else {
 				push_error(R"("void" is only allowed for a function return type.)");
@@ -3993,9 +3990,11 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		}
 		// Leave error message to the caller who knows the context.
 		complete_extents(type);
+		refactor_rename_register(p_allow_void ? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID : REFACTOR_RENAME_TYPE_TYPE_NAME, type);
 		return nullptr;
 	}
 
+	refactor_rename_register(p_allow_void ? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID : REFACTOR_RENAME_TYPE_TYPE_NAME, type);
 	IdentifierNode *type_element = parse_identifier();
 
 	type->type_chain.push_back(type_element);
