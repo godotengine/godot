@@ -644,6 +644,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
+
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
