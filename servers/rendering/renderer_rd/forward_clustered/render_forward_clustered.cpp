@@ -1397,6 +1397,7 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.detail = environment_get_ssao_detail(p_environment);
 	settings.horizon = environment_get_ssao_horizon(p_environment);
 	settings.sharpness = environment_get_ssao_sharpness(p_environment);
+	settings.thickness_heuristic = environment_get_ssao_thickness_heuristic(p_environment);
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	ss_effects->ssao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
@@ -3848,10 +3849,10 @@ RID RenderForwardClustered::_render_buffers_get_velocity_texture(Ref<RenderScene
 	return p_render_buffers->get_velocity_buffer(false);
 }
 
-void RenderForwardClustered::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+void RenderForwardClustered::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_quality < RS::EnvironmentSSAOQuality::ENV_SSAO_QUALITY_VERY_LOW || p_quality > RS::EnvironmentSSAOQuality::ENV_SSAO_QUALITY_ULTRA);
-	ss_effects->ssao_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
+	ss_effects->ssao_set_quality(p_quality, p_type, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
 }
 
 void RenderForwardClustered::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {

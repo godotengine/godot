@@ -206,7 +206,7 @@ public:
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	// SSAO
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_thickness_heuristic, float p_light_affect, float p_ao_channel_affect);
 	bool environment_get_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_radius(RID p_env) const;
 	float environment_get_ssao_intensity(RID p_env) const;
@@ -214,10 +214,11 @@ public:
 	float environment_get_ssao_detail(RID p_env) const;
 	float environment_get_ssao_horizon(RID p_env) const;
 	float environment_get_ssao_sharpness(RID p_env) const;
+	float environment_get_ssao_thickness_heuristic(RID p_env) const;
 	float environment_get_ssao_direct_light_affect(RID p_env) const;
 	float environment_get_ssao_ao_channel_affect(RID p_env) const;
 
-	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	// SSIL
 	void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection);

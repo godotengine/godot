@@ -117,7 +117,7 @@ public:
 	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
 
 	/* SSAO */
-	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
 
 	struct SSAORenderBuffers {
 		bool half_size = false;
@@ -134,6 +134,8 @@ public:
 		float detail = 0.5;
 		float horizon = 0.06;
 		float sharpness = 0.98;
+		// Only used for GTAO
+		float thickness_heuristic = 0.5;
 
 		Size2i full_screen_size;
 	};
@@ -164,6 +166,8 @@ private:
 	/* Settings */
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
+	RS::EnvironmentSSAOType ssao_type = RS::ENV_SSAO_TYPE_ASSAO;
+
 	bool ssao_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
@@ -326,9 +330,10 @@ private:
 	/* SSAO */
 
 	enum SSAOMode {
-		SSAO_GATHER,
-		SSAO_GATHER_BASE,
-		SSAO_GATHER_ADAPTIVE,
+		SSAO_GATHER_ASSAO,
+		SSAO_GATHER_ASSAO_BASE,
+		SSAO_GATHER_ASSAO_ADAPTIVE,
+		SSAO_GATHER_GTAO,
 		SSAO_GENERATE_IMPORTANCE_MAP,
 		SSAO_PROCESS_IMPORTANCE_MAPA,
 		SSAO_PROCESS_IMPORTANCE_MAPB,
@@ -353,7 +358,6 @@ private:
 		float NDC_to_view_mul[2];
 		float NDC_to_view_add[2];
 
-		float pad[2];
 		float half_screen_pixel_size_x025[2];
 
 		float radius;
@@ -363,8 +367,13 @@ private:
 
 		float fade_out_mul;
 		float fade_out_add;
+
+		// ASSAO-specific
 		float horizon_angle_threshold;
 		float inv_radius_near_limit;
+		// GTAO-specific
+		float thickness_heuristic;
+		float fov_scale;
 
 		uint32_t is_orthogonal;
 		float neg_inv_radius;
