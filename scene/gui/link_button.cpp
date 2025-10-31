@@ -47,6 +47,7 @@ void LinkButton::_shape() {
 	const String &lang = language.is_empty() ? _get_locale() : language;
 	text_buf->add_string(xl_text, font, font_size, lang);
 	text_buf->set_text_overrun_behavior(overrun_behavior);
+	text_buf->set_ellipsis_char(el_char);
 
 	queue_accessibility_update();
 }
@@ -85,6 +86,29 @@ void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextPar
 		_shape();
 		queue_redraw();
 	}
+}
+
+void LinkButton::set_ellipsis_char(const String &p_char) {
+	String c = p_char;
+	if (c.length() > 1) {
+		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+
+	if (el_char == c) {
+		return;
+	}
+	el_char = c;
+
+	if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		_shape();
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+String LinkButton::get_ellipsis_char() const {
+	return el_char;
 }
 
 TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override() const {
@@ -292,6 +316,8 @@ void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &LinkButton::get_text);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &LinkButton::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &LinkButton::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &LinkButton::set_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &LinkButton::get_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LinkButton::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LinkButton::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
@@ -315,6 +341,7 @@ void LinkButton::_bind_methods() {
 
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
