@@ -282,7 +282,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
 				next = dir->get_next();
 				continue;
-			} else if (next.get_extension().to_lower() == "gd") {
+			} else if (next.has_extension("gd")) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;

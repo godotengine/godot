@@ -1593,8 +1593,7 @@ bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "json") {
+	if (p_path.has_extension("json")) {
 		return "JSON";
 	}
 	return "";
