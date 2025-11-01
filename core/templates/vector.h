@@ -91,12 +91,16 @@ public:
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ USize capacity() const { return _cowdata.capacity(); }
+	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
 	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
 	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
 
+	// Removes all items from the vector, but keeps the current capacity.
 	_FORCE_INLINE_ void clear() { _cowdata.clear(); }
-	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
+	// Removes all items from the vector, and resets the capacity to 0.
+	// If this was the last reference to the underlying data, the memory is freed.
+	_FORCE_INLINE_ void reset() { _cowdata.reset(); }
 
 	_FORCE_INLINE_ T get(Size p_index) { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ const T &get(Size p_index) const { return _cowdata.get(p_index); }
