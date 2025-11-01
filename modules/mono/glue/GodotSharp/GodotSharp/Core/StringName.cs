@@ -121,7 +121,7 @@ namespace Godot
             // Add new StringName to cache
             if (stringName._weakReferenceToSelf is not null)
             {
-                _stringNameCache.TryAdd(from, stringName._weakReferenceToSelf);
+                _stringNameCache.TryAdd(stringName._asString ?? string.Empty, stringName._weakReferenceToSelf);
             }
             return stringName;
         }
