@@ -1157,7 +1157,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.45 (54346071a5f211f2c482889f2c8ee3b5ecda63ab, 2025)
+- Version: 1.45 (0091197f5c1b1f2c131f1410e99f9c95d50646be, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1171,6 +1171,8 @@ Files extracted from upstream source:
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
 - `staging/xdg-system-bell/xdg-system-bell-v1.xml`
+- `staging/pointer-warp/pointer-warp-v1.xml`
+- `staging/pointer-warp/README`
 - `unstable/idle-inhibit/README`
 - `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`
