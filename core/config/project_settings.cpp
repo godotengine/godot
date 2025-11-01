@@ -731,7 +731,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #endif
 
 	// Try to use the filesystem for files, according to OS.
-	// (Only Android -when reading from pck- and iOS use this.)
+	// (Only Android -when reading from PCK-.)
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -803,7 +803,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			found = true;
 			break;
 		}
-
+#if defined(OVERRIDE_PATH_ENABLED) || defined(TOOLS_ENABLED)
 		if (p_upwards) {
 			// Try to load settings ascending through parent directories
 			d->change_dir("..");
@@ -812,6 +812,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 			current_dir = d->get_current_dir();
 		} else {
+#else
+		{
+#endif
 			break;
 		}
 	}
@@ -829,12 +832,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+#ifdef OVERRIDE_ENABLED
 	if (err == OK && !p_ignore_override) {
-		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
-		if (!custom_settings.is_empty()) {
-			_load_settings_text(custom_settings);
+		bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+		if (!disable_override) {
+			String custom_settings = GLOBAL_GET("application/config/project_settings_override");
+			if (!custom_settings.is_empty()) {
+				_load_settings_text(custom_settings);
+			}
 		}
 	}
+#endif
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
