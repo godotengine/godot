@@ -313,18 +313,24 @@ class AnimationMarkerEdit : public Control {
 	bool _is_ui_pos_in_current_section(const Point2 &p_pos);
 
 	float insert_at_pos = 0.0f;
-	bool moving_selection_attempt = false;
-	bool moving_selection_effective = false;
-	float moving_selection_offset = 0.0f;
+	bool transform_selection_attempt = false;
+	float transform_selection_mouse_begin_x = 0.0f;
 	float moving_selection_pivot = 0.0f;
-	float moving_selection_mouse_begin_x = 0.0f;
-	float moving_selection_mouse_begin_y = 0.0f;
-	StringName select_single_attempt;
 	bool moving_selection = false;
+	bool moving_selection_effective = false;
+	bool scaling_selection = false;
+	bool scaling_selection_effective = false;
+	StringName select_single_attempt;
+	float moving_selection_offset = 0.0f;
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
 	void _move_selection_commit();
 	void _move_selection_cancel();
+	float scaling_selection_factor = 1.0f;
+	void _scale_selection_begin();
+	void _scale_selection(float p_factor);
+	void _scale_selection_commit(bool p_from_cursor);
+	void _scale_selection_cancel();
 
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_key(const StringName &p_name, bool is_single = false);
@@ -387,6 +393,8 @@ public:
 	bool is_selection_active() const { return !selection.is_empty(); }
 	bool is_moving_selection() const { return moving_selection; }
 	float get_moving_selection_offset() const { return moving_selection_offset; }
+	bool is_scaling_selection() const { return scaling_selection; }
+	float get_scaling_selection_factor() const { return scaling_selection_factor; }
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
@@ -483,12 +491,15 @@ class AnimationTrackEdit : public Control {
 
 	mutable int dropping_at = 0;
 	float insert_at_pos = 0.0f;
-	bool moving_selection_attempt = false;
-	bool moving_selection_effective = false;
-	float moving_selection_pivot = 0.0f;
-	float moving_selection_mouse_begin_x = 0.0f;
+	bool transform_selection_attempt = false;
+	bool scale_selection_attempt = false;
+	float transform_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
+	float moving_selection_pivot = 0.0f;
 	bool moving_selection = false;
+	bool moving_selection_effective = false;
+	bool scaling_selection = false;
+	bool scaling_selection_effective = false;
 
 	bool command_or_control_pressed = false;
 
@@ -750,6 +761,14 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_commit();
 	void _move_selection_cancel();
 
+	bool scaling_selection = false;
+	float scaling_selection_factor = 1.0f;
+	float scaling_selection_pivot = 0.0f;
+	void _scale_selection_begin(float p_pivot);
+	void _scale_selection(float p_factor);
+	void _scale_selection_commit();
+	void _scale_selection_cancel();
+
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
@@ -958,6 +977,7 @@ public:
 	bool is_selection_active() const;
 	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
+	bool is_scaling_selection() const;
 	bool is_snap_timeline_enabled() const;
 	bool is_snap_keys_enabled() const;
 	bool is_insert_at_current_time_enabled() const;
@@ -966,6 +986,8 @@ public:
 	bool can_add_reset_key() const;
 	void _on_filter_updated(const String &p_filter);
 	float get_moving_selection_offset() const;
+	float get_scaling_selection_factor() const;
+	float get_scaling_selection_pivot() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
@@ -974,6 +996,8 @@ public:
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;
 	float get_marker_moving_selection_offset() const;
+	bool is_marker_scaling_selection() const;
+	float get_marker_scaling_selection_factor() const;
 	bool is_function_name_pressed();
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
