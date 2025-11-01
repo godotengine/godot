@@ -2345,7 +2345,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const bool use_wifi_for_remote_debug = EDITOR_GET("export/android/use_wifi_for_remote_debug");
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	const bool use_reverse = devices[p_device - 1].api_level >= 21 && !use_wifi_for_remote_debug;
+	const bool use_reverse = !use_wifi_for_remote_debug;
 
 	if (use_reverse) {
 		p_debug_flags.set_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
@@ -2425,7 +2425,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	if (use_remote) {
 		if (use_reverse) {
-			static const char *const msg = "--- Device API >= 21; debugging over USB ---";
+			static const char *const msg = "--- Debugging over USB ---";
 			EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 			print_line(String(msg).to_upper());
 
@@ -2469,7 +2469,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				print_line("Reverse result2: " + itos(rv));
 			}
 		} else {
-			static const char *const api_version_msg = "--- Device API < 21; debugging over Wi-Fi ---";
+			static const char *const api_version_msg = "--- Debugging over Wi-Fi ---";
 			static const char *const manual_override_msg = "--- Wi-Fi remote debug enabled in project settings; debugging over Wi-Fi ---";
 
 			const char *const msg = use_wifi_for_remote_debug ? manual_override_msg : api_version_msg;
