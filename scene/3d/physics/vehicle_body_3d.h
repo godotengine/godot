@@ -178,6 +178,8 @@ public:
 
 	real_t get_skidinfo() const;
 
+	real_t get_contact_normal_force() const;
+
 	real_t get_rpm() const;
 
 	void set_engine_force(real_t p_engine_force);
