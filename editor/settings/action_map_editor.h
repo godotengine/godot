@@ -108,6 +108,7 @@ private:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _set_show_builtin_actions(bool p_show);
+	void _highlight_subsection_action(Object *p_item, const Rect2 p_rect);
 
 protected:
 	void _notification(int p_what);

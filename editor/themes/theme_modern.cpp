@@ -1923,6 +1923,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 		p_theme->set_constant("h_separation", "EditorInspectorSection", p_config.base_margin * EDSCALE);
 
+		Color prop_subsection_stylebox_color = p_config.dark_color_1.lerp(p_config.mono_color_font, p_config.dark_icon_and_font ? 0.09 : 0.16);
+		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
+
+		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
+		style_highlight_subsection->set_bg_color(prop_subsection_stylebox_color);
+		style_highlight_subsection->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		p_theme->set_stylebox("style_highlight_subsection", EditorStringName(Editor), style_highlight_subsection);
+
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("property_color", EditorStringName(Editor), p_config.dark_color_1.lerp(p_config.mono_color_font, 0.12));
