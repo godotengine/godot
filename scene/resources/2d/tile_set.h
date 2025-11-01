@@ -498,6 +498,7 @@ public:
 	void move_custom_data_layer(int p_from_index, int p_to_pos);
 	void remove_custom_data_layer(int p_index);
 	int get_custom_data_layer_by_name(String p_value) const;
+	bool validate_custom_data_layer_name(int p_layer_id, String p_value, String &p_error_message) const;
 	void set_custom_data_layer_name(int p_layer_id, String p_value);
 	bool has_custom_data_layer_by_name(const String &p_value) const;
 	String get_custom_data_layer_name(int p_layer_id) const;
@@ -560,6 +561,10 @@ public:
 
 	// Resource management
 	virtual void reset_state() override;
+
+#ifdef TOOLS_ENABLED
+	bool _is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const override;
+#endif
 
 	// Helpers.
 	static Vector2i transform_coords_layout(const Vector2i &p_coords, TileSet::TileOffsetAxis p_offset_axis, TileSet::TileLayout p_from_layout, TileSet::TileLayout p_to_layout);

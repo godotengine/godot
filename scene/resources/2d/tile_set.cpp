@@ -1107,6 +1107,19 @@ int TileSet::get_custom_data_layer_by_name(String p_value) const {
 	}
 }
 
+bool TileSet::validate_custom_data_layer_name(int p_layer_id, String p_value, String &p_error_message) const {
+	// return false (invalid) if another property has the same name.
+	if (!p_value.is_empty()) {
+		for (int other_layer_id = 0; other_layer_id < get_custom_data_layers_count(); other_layer_id++) {
+			if (other_layer_id != p_layer_id && get_custom_data_layer_name(other_layer_id) == p_value) {
+				p_error_message = vformat("There is already a custom property named %s", p_value);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 void TileSet::set_custom_data_layer_name(int p_layer_id, String p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 
@@ -3661,6 +3674,24 @@ Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool 
 }
 
 #endif // DISABLE_DEPRECATED
+
+#ifdef TOOLS_ENABLED
+bool TileSet::_is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const {
+	Vector<String> components = String(p_path).split("/", true, 2);
+
+	if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int()) {
+		// Custom data layers.
+		int index = components[0].trim_prefix("custom_data_layer_").to_int();
+		ERR_FAIL_COND_V(index < 0, false);
+		if (components[1] == "name") {
+			ERR_FAIL_COND_V(!p_value.is_string(), false);
+			return validate_custom_data_layer_name(index, p_value, p_error_message);
+		}
+	}
+
+	return true;
+}
+#endif
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
