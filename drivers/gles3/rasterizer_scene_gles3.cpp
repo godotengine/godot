@@ -72,27 +72,39 @@ uint32_t RasterizerSceneGLES3::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) | (1 << RS::INSTANCE_REFLECTION_PROBE));
 }
 
-void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) {
-	GLES3::Config *config = GLES3::Config::get_singleton();
+uint32_t RasterizerSceneGLES3::get_max_lights_total() {
+	return (uint32_t)GLES3::Config::get_singleton()->max_renderable_lights;
+}
 
+uint32_t RasterizerSceneGLES3::get_max_lights_per_mesh() {
+	return (uint32_t)GLES3::Config::get_singleton()->max_lights_per_object;
+}
+
+void RasterizerSceneGLES3::GeometryInstanceGLES3::clear_light_instances() {
 	paired_omni_light_count = 0;
 	paired_spot_light_count = 0;
 	paired_omni_lights.clear();
 	paired_spot_lights.clear();
+}
 
-	for (uint32_t i = 0; i < p_light_instance_count; i++) {
-		RS::LightType type = GLES3::LightStorage::get_singleton()->light_instance_get_type(p_light_instances[i]);
-		switch (type) {
+void RasterizerSceneGLES3::GeometryInstanceGLES3::pair_light_instance(
+		const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) {
+	if (placement_idx < GLES3::Config::get_singleton()->max_lights_per_object) {
+		switch (light_type) {
 			case RS::LIGHT_OMNI: {
-				if (paired_omni_light_count < (uint32_t)config->max_lights_per_object) {
-					paired_omni_lights.push_back(p_light_instances[i]);
-					paired_omni_light_count++;
+				if (placement_idx >= paired_omni_light_count) {
+					paired_omni_lights.push_back(p_light_instance);
+					++paired_omni_light_count;
+				} else {
+					paired_omni_lights[placement_idx] = p_light_instance;
 				}
 			} break;
 			case RS::LIGHT_SPOT: {
-				if (paired_spot_light_count < (uint32_t)config->max_lights_per_object) {
-					paired_spot_lights.push_back(p_light_instances[i]);
-					paired_spot_light_count++;
+				if (placement_idx >= paired_spot_light_count) {
+					paired_spot_lights.push_back(p_light_instance);
+					++paired_spot_light_count;
+				} else {
+					paired_spot_lights[placement_idx] = p_light_instance;
 				}
 			} break;
 			default:
