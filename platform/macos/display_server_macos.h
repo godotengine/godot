@@ -246,6 +246,7 @@ private:
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
 	void _window_update_display_id(WindowData *p_wd);
+	bool _is_max_disabled(WindowData *p_wd) const;
 
 public:
 	void menu_callback(id p_sender);
