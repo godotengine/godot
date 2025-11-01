@@ -115,13 +115,32 @@
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
-// Hints for X11 fullscreen
-struct Hints {
-	unsigned long flags = 0;
-	unsigned long functions = 0;
-	unsigned long decorations = 0;
-	long inputMode = 0;
-	unsigned long status = 0;
+struct MotifWmHints {
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long input_mode;
+	unsigned long status;
+};
+
+enum {
+	MWM_HINTS_FUNCTIONS = (1L << 0),
+	MWM_HINTS_DECORATIONS = (1L << 1),
+
+	MWM_FUNC_ALL = (1L << 0),
+	MWM_FUNC_RESIZE = (1L << 1),
+	MWM_FUNC_MOVE = (1L << 2),
+	MWM_FUNC_MINIMIZE = (1L << 3),
+	MWM_FUNC_MAXIMIZE = (1L << 4),
+	MWM_FUNC_CLOSE = (1L << 5),
+
+	MWM_DECOR_ALL = (1L << 0),
+	MWM_DECOR_BORDER = (1L << 1),
+	MWM_DECOR_RESIZEH = (1L << 2),
+	MWM_DECOR_TITLE = (1L << 3),
+	MWM_DECOR_MENU = (1L << 4),
+	MWM_DECOR_MINIMIZE = (1L << 5),
+	MWM_DECOR_MAXIMIZE = (1L << 6),
 };
 
 static String get_atom_name(Display *p_disp, Atom p_atom) {
@@ -1927,6 +1946,8 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	}
 	XChangeProperty(x11_display, wd.x11_window, XInternAtom(x11_display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)hints.ptr(), hints.size());
 
+	_update_motif_wm_hints(p_id);
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 
@@ -2426,38 +2447,36 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	XFree(xsh);
 }
 
-void DisplayServerX11::_update_actions_hints(WindowID p_window) {
+void DisplayServerX11::_update_motif_wm_hints(WindowID p_window) {
+	Atom motif_wm_hints = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	if (motif_wm_hints == None) {
+		return;
+	}
+
 	WindowData &wd = windows[p_window];
 
-	Atom prop = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
-	if (prop != None) {
-		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
-		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
-		Atom wm_act_min = XInternAtom(x11_display, "_NET_WM_ACTION_MINIMIZE", False);
-		Atom type;
-		int format;
-		unsigned long len;
-		unsigned long remaining;
-		unsigned char *data = nullptr;
-		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 1024, False, XA_ATOM, &type, &format, &len, &remaining, &data) == Success) {
-			Atom *atoms = (Atom *)data;
-			Vector<Atom> new_atoms;
-			for (uint64_t i = 0; i < len; i++) {
-				if (atoms[i] != wm_act_max_horz && atoms[i] != wm_act_max_vert && atoms[i] != wm_act_min) {
-					new_atoms.push_back(atoms[i]);
-				}
-			}
-			if (!wd.no_max_btn) {
-				new_atoms.push_back(wm_act_max_horz);
-				new_atoms.push_back(wm_act_max_vert);
-			}
-			if (!wd.no_min_btn) {
-				new_atoms.push_back(wm_act_min);
-			}
-			XChangeProperty(x11_display, wd.x11_window, prop, XA_ATOM, 32, PropModeReplace, (unsigned char *)new_atoms.ptrw(), new_atoms.size());
-			XFree(data);
+	MotifWmHints hints = {};
+	hints.flags = MWM_HINTS_DECORATIONS | MWM_HINTS_FUNCTIONS;
+
+	if (!wd.borderless) {
+		hints.decorations = MWM_DECOR_BORDER | MWM_DECOR_MENU | MWM_DECOR_TITLE;
+		hints.functions = MWM_FUNC_MOVE | MWM_FUNC_CLOSE;
+
+		if (!wd.no_min_btn) {
+			hints.decorations |= MWM_DECOR_MINIMIZE;
+			hints.functions |= MWM_FUNC_MINIMIZE;
+		}
+		if (!wd.no_max_btn) {
+			hints.decorations |= MWM_DECOR_MAXIMIZE;
+			hints.functions |= MWM_FUNC_MAXIMIZE;
+		}
+		if (!wd.resize_disabled) {
+			hints.decorations |= MWM_DECOR_RESIZEH;
+			hints.functions |= MWM_FUNC_RESIZE;
 		}
 	}
+
+	XChangeProperty(x11_display, wd.x11_window, motif_wm_hints, motif_wm_hints, 32, PropModeReplace, (unsigned char *)&hints, 5);
 }
 
 void DisplayServerX11::_update_wm_state_hints(WindowID p_window) {
@@ -2986,18 +3005,6 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (p_enabled && !window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		// remove decorations if the window is not already borderless
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		if (property != None) {
-			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		}
-	}
-
 	if (p_enabled) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		_update_size_hints(p_window);
@@ -3038,16 +3045,6 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	if (!p_enabled) {
 		// Reset the non-resizable flags if we un-set these before.
 		_update_size_hints(p_window);
-
-		// put back or remove decorations according to the last set borderless state
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = wd.borderless ? 0 : 1;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		if (property != None) {
-			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		}
 	}
 }
 
@@ -3152,13 +3149,13 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	switch (p_flag) {
 		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			wd.no_max_btn = p_enabled;
-			_update_actions_hints(p_window);
+			_update_motif_wm_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
 		case WINDOW_FLAG_MINIMIZE_DISABLED: {
 			wd.no_min_btn = p_enabled;
-			_update_actions_hints(p_window);
+			_update_motif_wm_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
@@ -3170,26 +3167,13 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 			wd.resize_disabled = p_enabled;
 			_update_size_hints(p_window);
-			_update_actions_hints(p_window);
+			_update_motif_wm_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-			Hints hints;
-			Atom property;
-			hints.flags = 2;
-			hints.decorations = p_enabled ? 0 : 1;
-			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (property != None) {
-				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-			}
-
-			// Preserve window size
-			if (!wd.embed_parent) {
-				window_set_size(window_get_size(p_window), p_window);
-			}
-
 			wd.borderless = p_enabled;
+			_update_motif_wm_hints(p_window);
 			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
@@ -3267,24 +3251,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.resize_disabled;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-			bool borderless = wd.borderless;
-			Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (prop != None) {
-				Atom type;
-				int format;
-				unsigned long len;
-				unsigned long remaining;
-				unsigned char *data = nullptr;
-				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-					if (data && (format == 32) && (len >= 5)) {
-						borderless = !(reinterpret_cast<Hints *>(data)->decorations);
-					}
-					if (data) {
-						XFree(data);
-					}
-				}
-			}
-			return borderless;
+			return wd.borderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.on_top;
@@ -5029,7 +4996,6 @@ void DisplayServerX11::process_events() {
 				XSync(x11_display, False);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
-				_update_actions_hints(window_id);
 				XFlush(x11_display);
 
 				// Set focus when menu window is started.
@@ -6560,17 +6526,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 
 		_update_context(wd);
-
-		if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
-			Hints hints;
-			Atom property;
-			hints.flags = 2;
-			hints.decorations = 0;
-			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (property != None) {
-				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-			}
-		}
 
 		if (wd.is_popup || wd.no_focus || (wd.embed_parent && !kde5_embed_workaround)) {
 			// Set Utility type to disable fade animations.
