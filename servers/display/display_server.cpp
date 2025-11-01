@@ -1929,7 +1929,19 @@ Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index)
 
 DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
+	DisplayServer *ds = server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
+
+	// `create_function` is responsible for cleaning up on failure.
+	DEV_ASSERT(r_error == OK || ds == nullptr);
+
+	// Additional safeguard against bad implementations. Don't crash the production builds.
+	if (r_error != OK && ds != nullptr) {
+		WARN_PRINT(vformat(R"(Bad implementation: DisplayServer creation function for driver "%s" returned non-null but error code %d. Instance will be deleted.)", server_create_functions[p_index].name, r_error));
+		memdelete(ds);
+		ds = nullptr;
+	}
+
+	return ds;
 }
 
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
