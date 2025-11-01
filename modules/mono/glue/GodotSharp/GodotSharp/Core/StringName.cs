@@ -18,11 +18,10 @@ namespace Godot
     {
         internal godot_string_name.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly ConcurrentDictionary<string, WeakReference<StringName>> _stringNameCache = new();
-        private string? _cacheKey;
-        private string? _stringRepresentation;
+        private static readonly ConcurrentDictionary<string, WeakReference<IDisposable>> _stringNameCache = new();
+        private readonly string _asString;
 
         ~StringName()
         {
@@ -40,9 +39,10 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
-            if (_cacheKey is not null)
+            // Remove from cache
+            if (_asString is not null && _weakReferenceToSelf is not null)
             {
-                _stringNameCache.TryRemove(_cacheKey, out _);
+                _stringNameCache.TryRemove(new(_asString, _weakReferenceToSelf));
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -58,6 +58,13 @@ namespace Godot
         {
             NativeValue = (godot_string_name.movable)nativeValueToOwn;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+
+            // Store string representation
+            NativeFuncs.godotsharp_string_name_as_string(out godot_string asNativeString, nativeValueToOwn);
+            using (asNativeString)
+            {
+                _asString = Marshaling.ConvertStringToManaged(asNativeString);
+            }
         }
 
         // Explicit name to make it very clear
@@ -69,6 +76,7 @@ namespace Godot
         /// </summary>
         public StringName()
         {
+            _asString = string.Empty;
         }
 
         /// <summary>
@@ -77,9 +85,9 @@ namespace Godot
         /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
-            _stringRepresentation = name; // StringNames can never change or simplify
+            _asString = name; // StringNames can never change or simplify
 
-            if (!string.IsNullOrEmpty(name))
+            if (name is not null)
             {
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
@@ -97,21 +105,23 @@ namespace Godot
             if (from is null)
                 return null;
 
-            while (true)
+            // Try get StringName from cache
+            if (_stringNameCache.TryGetValue(from, out WeakReference<IDisposable>? cachedStringNameWeakReference))
             {
-                WeakReference<StringName> cachedStringName = _stringNameCache.GetOrAdd(from,
-                    static (string from) => new WeakReference<StringName>(new StringName(from)
-                    {
-                        _cacheKey = from,
-                    })
-                );
-
-                if (cachedStringName.TryGetTarget(out StringName? result))
+                if (cachedStringNameWeakReference.TryGetTarget(out IDisposable? cachedStringName))
                 {
-                    return result;
+                    return (StringName)cachedStringName;
                 }
-                // It's possible to reach here if disposed in a race; try again
             }
+
+            // Create new StringName
+            var stringName = new StringName(from);
+            // Add new StringName to cache
+            if (stringName._weakReferenceToSelf is not null)
+            {
+                _stringNameCache.TryAdd(from, stringName._weakReferenceToSelf);
+            }
+            return stringName;
         }
 
         /// <summary>
@@ -133,16 +143,7 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
-            if (_stringRepresentation is not null)
-                return _stringRepresentation;
-
-            var src = (godot_string_name)NativeValue;
-            NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
-            using (dest)
-            {
-                _stringRepresentation = Marshaling.ConvertStringToManaged(dest);
-                return _stringRepresentation;
-            }
+            return _asString;
         }
 
         /// <summary>
@@ -168,6 +169,35 @@ namespace Godot
             if (other is null)
                 return false;
             return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
+        }
+
+        public static bool operator ==(StringName? left, string? right)
+        {
+            if (left is null)
+                return right is null;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(StringName? left, string? right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(string? left, StringName? right)
+        {
+            return right == left;
+        }
+
+        public static bool operator !=(string? left, StringName? right)
+        {
+            return !(right == left);
+        }
+
+        public bool Equals([NotNullWhen(true)] string? other)
+        {
+            if (other is null)
+                return false;
+            return _asString == other;
         }
 
         public static bool operator ==(StringName? left, in godot_string_name right)
