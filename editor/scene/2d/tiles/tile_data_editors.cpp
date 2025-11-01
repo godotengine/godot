@@ -527,7 +527,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		panning += pan_gesture->get_delta() * 8;
+		panning += pan_gesture->get_delta() * 5 / 30;
 		drag_last_pos = Vector2();
 		button_center_view->set_disabled(panning.is_zero_approx());
 		accept_event();
