@@ -157,6 +157,10 @@ struct [[nodiscard]] Vector2i {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	constexpr Vector2i() :
 			x(0), y(0) {}
+	constexpr Vector2i(const Vector2i &) = default;
+	constexpr Vector2i &operator=(const Vector2i &) = default;
+	constexpr explicit Vector2i(int32_t p_x_and_y) :
+			x(p_x_and_y), y(p_x_and_y) {}
 	constexpr Vector2i(int32_t p_x, int32_t p_y) :
 			x(p_x), y(p_y) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
