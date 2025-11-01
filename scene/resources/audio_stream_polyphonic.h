@@ -80,6 +80,8 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	LocalVector<Stream> streams;
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN];
 
+	Ref<AudioStreamPolyphonic> stream_polyphonic;
+
 	bool active = false;
 	uint32_t id_counter = 1;
 

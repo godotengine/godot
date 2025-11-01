@@ -80,6 +80,7 @@ class AudioStreamPlayback : public RefCounted {
 
 protected:
 	static void _bind_methods();
+	float volume_linear_smooth = 1.0;
 	PackedVector2Array _mix_audio_bind(float p_rate_scale, int p_frames);
 	GDVIRTUAL1_REQUIRED(_start, double)
 	GDVIRTUAL0_REQUIRED(_stop)
@@ -198,6 +199,11 @@ public:
 	uint64_t get_tagged_frame() const;
 	uint32_t get_tagged_frame_count() const;
 	float get_tagged_frame_offset(int p_index) const;
+
+	float volume_linear = 1.0f;
+
+	void set_volume_db(float p_volume);
+	float get_volume_db() const;
 
 	struct Parameter {
 		PropertyInfo property;

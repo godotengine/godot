@@ -97,6 +97,16 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			}
 		}
 	}
+
+	if (mp3_stream->volume_linear != 1.0f || volume_linear_smooth != 1.0f) {
+		float volume_increment = (mp3_stream->volume_linear - volume_linear_smooth) / p_frames;
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] *= volume_linear_smooth;
+			volume_linear_smooth += volume_increment;
+		}
+		volume_linear_smooth = mp3_stream->volume_linear;
+	}
+
 	return frames_mixed_this_step;
 }
 
@@ -196,6 +206,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
+	mp3s->volume_linear_smooth = mp3s->mp3_stream->volume_linear;
 
 	int errorcode = mp3dec_ex_open_buf(&mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
 
