@@ -128,8 +128,9 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource for the instance.
 		</member>
-		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
+		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;&quot;)">
 			[NodePath] to the [Skeleton3D] associated with the instance.
+			[b]Note:[/b] The default value of this property has changed in Godot 4.6. Enable [member ProjectSettings.animation/compatibility/default_parent_skeleton_in_mesh_instance_3d] if the old behavior is needed for compatibility.
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
 			The [Skin] to be used by this instance.
