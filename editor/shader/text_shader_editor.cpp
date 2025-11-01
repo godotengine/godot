@@ -364,13 +364,6 @@ void ShaderTextEditor::_load_theme_settings() {
 	// Colorize preprocessor include strings.
 	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	syntax_highlighter->add_color_region("\"", "\"", string_color, false);
-
-	if (warnings_panel) {
-		// Warnings panel.
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
-	}
-
 	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
