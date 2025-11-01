@@ -121,7 +121,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	AcceptDialog *grid_settings = nullptr;
 
 	void _sync_bones();
-	void _update_bone_list();
+	void _update_bone_list(const Polygon2D *p_for_node);
 
 	Vector<Vector2> editing_points;
 	Vector<Vector2> previous_uv;
