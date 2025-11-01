@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/message_queue.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/paged_allocator.h"
