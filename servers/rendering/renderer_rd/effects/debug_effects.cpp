@@ -102,7 +102,7 @@ void DebugEffects::_create_frustum_arrays() {
 			2, 6, 4, // FRT, NRT, NLT
 			// Bottom
 			5, 7, 1, // NLB, NRB, FLB,
-			7, 3, 1, // NRB, FRB, FLB
+			7, 3, 1 // NRB, FRB, FLB
 		};
 
 		// Create our index_array
@@ -136,7 +136,7 @@ void DebugEffects::_create_frustum_arrays() {
 			0, 4, // FLT - NLT
 			1, 5, // FLB - NLB
 			2, 6, // FRT - NRT
-			3, 7, // FRB - NRB
+			3, 7 // FRB - NRB
 		};
 
 		// Create our lines_array
