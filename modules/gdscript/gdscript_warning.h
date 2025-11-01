@@ -94,13 +94,13 @@ public:
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
-#endif
+#endif // DISABLE_DEPRECATED
 		WARNING_MAX,
 	};
 
 #ifndef DISABLE_DEPRECATED
 	static constexpr int FIRST_DEPRECATED_WARNING = PROPERTY_USED_AS_FUNCTION;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	constexpr static WarnLevel default_warning_levels[] = {
 		WARN, // UNASSIGNED_VARIABLE
@@ -152,7 +152,7 @@ public:
 		WARN, // PROPERTY_USED_AS_FUNCTION
 		WARN, // CONSTANT_USED_AS_FUNCTION
 		WARN, // FUNCTION_USED_AS_PROPERTY
-#endif
+#endif // DISABLE_DEPRECATED
 	};
 
 	static_assert(std_size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
@@ -166,7 +166,7 @@ public:
 	static int get_default_value(Code p_code);
 	static PropertyInfo get_property_info(Code p_code);
 	static String get_name_from_code(Code p_code);
-	static String get_settings_path_from_code(Code p_code);
+	static String get_setting_path_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 };
 
