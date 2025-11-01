@@ -729,11 +729,14 @@ def get_compiler_version(env):
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
-                if split[0] == "catalog_productDisplayVersion":
-                    sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                if split[0] == "catalog_productSemanticVersion":
+                    match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
+                    if match is not None:
+                        ret["major"] = int(match.group(1))
+                        ret["minor"] = int(match.group(2))
+                        ret["patch"] = int(match.group(3))
+                        # Semantic suffix (i.e. insiders+11116.177)
+                        ret["metadata2"] = match.group(4)
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
