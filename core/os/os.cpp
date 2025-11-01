@@ -780,6 +780,7 @@ void OS::benchmark_dump() {
 		Ref<FileAccess> f = FileAccess::open(benchmark_file, FileAccess::WRITE);
 		if (f.is_valid()) {
 			Dictionary benchmark_marks;
+			benchmark_marks.reserve(benchmark_marks_final.size());
 			for (const KeyValue<Pair<String, String>, double> &E : benchmark_marks_final) {
 				const String mark_key = vformat("[%s] %s", E.key.first, E.key.second);
 				benchmark_marks[mark_key] = E.value;
@@ -791,6 +792,7 @@ void OS::benchmark_dump() {
 		}
 	} else {
 		HashMap<String, String> results;
+		results.reserve(benchmark_marks_final.size());
 		for (const KeyValue<Pair<String, String>, double> &E : benchmark_marks_final) {
 			if (E.key.first == "Startup" && !results.has(E.key.first)) {
 				results.insert(E.key.first, "", true); // Hack to make sure "Startup" always comes first.

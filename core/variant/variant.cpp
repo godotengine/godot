@@ -177,6 +177,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 Variant::Type Variant::get_type_by_name(const String &p_type_name) {
 	static HashMap<String, Type> type_names;
 	if (unlikely(type_names.is_empty())) {
+		type_names.reserve(Variant::VARIANT_MAX);
 		for (int i = 0; i < VARIANT_MAX; i++) {
 			type_names[get_type_name((Type)i)] = (Type)i;
 		}

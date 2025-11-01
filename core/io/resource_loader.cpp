@@ -189,6 +189,7 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 
 Error ResourceFormatLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Dictionary deps_dict;
+	deps_dict.reserve(p_map.size());
 	for (KeyValue<String, String> E : p_map) {
 		deps_dict[E.key] = E.value;
 	}
