@@ -81,6 +81,10 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 		for (const Vector<String> &translation : translations) {
 			ERR_CONTINUE(translation.is_empty());
+			if (translation[0].is_empty()) {
+				continue;
+			}
+
 			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
 			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
 			const String &comment = (translation.size() > 3) ? translation[3] : String();
