@@ -170,28 +170,6 @@ namespace Godot
             return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
         }
 
-        public static bool operator ==(StringName? left, string? right)
-        {
-            if (left is null)
-                return right is null;
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(StringName? left, string? right)
-        {
-            return !(left == right);
-        }
-
-        public static bool operator ==(string? left, StringName? right)
-        {
-            return right == left;
-        }
-
-        public static bool operator !=(string? left, StringName? right)
-        {
-            return !(right == left);
-        }
-
         public bool Equals([NotNullWhen(true)] string? other)
         {
             if (other is null)
