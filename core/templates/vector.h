@@ -184,9 +184,15 @@ public:
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
-	Vector<T> duplicate() {
+	Vector<T> duplicate() const {
 		return *this;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	Vector<T> _duplicate_bind_compat_112290() {
+		return *this;
+	}
+#endif // DISABLE_DEPRECATED
 
 	void ordered_insert(const T &p_val) {
 		Size i;
