@@ -2789,6 +2789,8 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	if (p_iprop.is_hidden) {
 		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+		// Deprecated PROPERTY_USAGE_INTERNAL properties appear as hidden to C# and may call deprecated getter/setter functions.
+		p_output.append("\n#pragma warning disable CS0618 // Type or member is obsolete.");
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
@@ -2846,6 +2848,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	}
 
 	p_output.append(CLOSE_BLOCK_L1);
+
+	if (p_iprop.is_hidden) {
+		p_output.append("#pragma warning restore CS0618 // Type or member is obsolete.\n");
+	}
 
 	return OK;
 }
