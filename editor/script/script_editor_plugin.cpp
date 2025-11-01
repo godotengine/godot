@@ -1859,7 +1859,6 @@ void ScriptEditor::_notification(int p_what) {
 			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
-			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			EditorNode::get_singleton()->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ScriptEditor::_close_builtin_scripts_from_scene));
@@ -2458,12 +2457,8 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (!waiting_update_names) {
-		_update_members_overview();
-		_update_help_overview();
-	} else {
-		waiting_update_names = false;
-	}
+	_update_members_overview();
+	_update_help_overview();
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_update_script_colors();
@@ -3189,15 +3184,6 @@ void ScriptEditor::_update_autosave_timer() {
 	} else {
 		autosave_timer->stop();
 	}
-}
-
-void ScriptEditor::_tree_changed() {
-	if (waiting_update_names) {
-		return;
-	}
-
-	waiting_update_names = true;
-	callable_mp(this, &ScriptEditor::_update_script_names).call_deferred();
 }
 
 void ScriptEditor::_split_dragged(float) {
@@ -4236,7 +4222,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
 
 	restoring_layout = false;
-	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = true;
 	external_editor_active = false;
