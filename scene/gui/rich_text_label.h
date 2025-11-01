@@ -166,6 +166,7 @@ private:
 		Color prefix_outline_color = Color(0, 0, 0, 0);
 		float prefix_width = 0;
 		Ref<TextParagraph> text_buf;
+		Ref<TextParagraph> text_buf_disp;
 
 		RID accessibility_line_element;
 		RID accessibility_text_element;
