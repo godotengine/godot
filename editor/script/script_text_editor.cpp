@@ -53,6 +53,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/style_box_flat.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -352,6 +353,10 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 			}
 		}
 	}
+}
+
+void ScriptTextEditor::_on_mouse_exited() {
+	drag_info_label->hide();
 }
 
 void ScriptTextEditor::reload_text() {
@@ -2121,6 +2126,9 @@ void ScriptTextEditor::_notification(int p_what) {
 			inline_color_options->add_theme_font_override("font", code_font);
 			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
 		} break;
+		case NOTIFICATION_DRAG_END: {
+			drag_info_label->hide();
+		} break;
 	}
 }
 
@@ -2191,10 +2199,52 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 					String(d["type"]) == "nodes" ||
 					String(d["type"]) == "obj_property" ||
 					String(d["type"]) == "files_and_dirs")) {
+		set_drop_info_text(d);
 		return true;
 	}
 
 	return false;
+}
+
+void ScriptTextEditor::set_drop_info_text(const Dictionary &p_info) const {
+	String text;
+	String c = keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL);
+
+	static const String single_resource_text = TTR("Drag and drop to copy the file path to the script.") +
+			"\n" + vformat(TTR("Hold %s when dropping to add a const var, preloading the resource at that path."), c) +
+			"\n" + TTR("Hold Shift to switch between referencing the resource by UID/file path.") +
+			"\n" + TTR("Hold Alt when dropping to add an @export var pointing to the resource.");
+
+	static const String multiple_resources_text = TTR("Drag and drop to copy the file paths to the script.") +
+			"\n" + vformat(TTR("Hold %s when dropping to add const vars, preloading the resources at those paths."), c) +
+			"\n" + TTR("Hold Shift to switch between referencing the resources by UID/file path.") +
+			"\n" + TTR("Hold Alt when dropping to add @export vars pointing to the resources.");
+
+	static const String single_node_text = TTR("Drag and drop to copy the node path to the script.") +
+			"\n" + vformat(TTR("Hold %s when dropping to add an @onready var pointing to the node path."), c) +
+			"\n" + TTR("Hold Alt when dropping to add an @export var pointing to the node.");
+
+	static const String multiple_nodes_text = TTR("Drag and drop to copy the node paths to the script.") +
+			"\n" + vformat(TTR("Hold %s when dropping to add @onready vars pointing to the node paths."), c) +
+			"\n" + TTR("Hold Alt when dropping to add @export vars pointing to the nodes.");
+
+	String type = String(p_info["type"]);
+
+	if (type == "files" || type == "files_and_dirs") {
+		Array files = p_info["files"];
+		text = files.size() > 1 ? multiple_resources_text : single_resource_text;
+	} else if (type == "nodes") {
+		Array nodes = p_info["nodes"];
+		text = nodes.size() > 1 ? multiple_nodes_text : single_node_text;
+	} else if (type == "resource") {
+		text = single_resource_text;
+	} else if (type == "obj_property") {
+		text = TTR("Drag and drop to copy the property path to the script.");
+	}
+
+	drag_info_label->show();
+	drag_info_label->set_text(text);
+	drag_info_label->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT, Control::PRESET_MODE_MINSIZE, 20 * EDSCALE);
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
@@ -2526,6 +2576,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
+
+	drag_info_label->hide();
 }
 
 Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
@@ -3014,6 +3066,30 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
+
+	drag_info_label = memnew(Label);
+	drag_info_label->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
+	drag_info_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	drag_info_label->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
+	drag_info_label->add_theme_color_override("font_shadow_color", Color(0.17f, 0.17f, 0.17f, 1));
+	drag_info_label->add_theme_constant_override("shadow_outline_size", 2 * EDSCALE);
+	drag_info_label->add_theme_color_override("font_outline_color", Color(0.1f, 0.1f, 0.1f, 1));
+	drag_info_label->add_theme_constant_override("outline_size", 1 * EDSCALE);
+	drag_info_label->add_theme_constant_override("line_spacing", 0);
+
+	Ref<StyleBoxFlat> drag_info_sb;
+	drag_info_sb.instantiate();
+	drag_info_sb->set_bg_color(Color(0.6f, 0.6f, 0.6f, 0.35f));
+	drag_info_sb->set_border_width_all(2 * EDSCALE);
+	drag_info_sb->set_border_color(Color(0.5f, 0.5f, 0.5f, 1.f));
+	drag_info_sb->set_corner_radius_all(5 * EDSCALE);
+	drag_info_sb->set_corner_detail(5);
+	drag_info_sb->set_expand_margin_all(5);
+	drag_info_label->add_theme_style_override(CoreStringName(normal), drag_info_sb);
+
+	code_editor->get_text_editor()->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptTextEditor::_on_mouse_exited));
+	code_editor->get_text_editor()->add_child(drag_info_label);
+	drag_info_label->hide();
 
 	update_settings();
 
