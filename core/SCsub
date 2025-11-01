@@ -2,10 +2,7 @@
 from misc.utility.scons_hints import *
 
 import os
-
-import core_builders
-
-import methods
+import subprocess
 
 Import("env")
 
@@ -168,53 +165,89 @@ env.add_source_files(env.core_sources, "*.cpp")
 
 # Generate disabled classes
 env.CommandNoCache(
-    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+    "disabled_classes.gen.h",
+    ["core_builders.py", *env.disabled_classes],
+    env.Run("python ${SOURCES[0]} $TARGET disabled_classes ${SOURCES[1:]}"),
 )
 
 # Generate version info
+version_cmd = "python ${SOURCES[0]} $TARGET version_info ${SOURCES[1]}"
+if version_build := os.getenv("BUILD_NAME", ""):
+    version_cmd += " --build ${SOURCES[2]}"
+if version_status := os.getenv("GODOT_VERSION_STATUS", ""):
+    version_cmd += " --status ${SOURCES[3]}"
+if env.module_version_string:
+    version_cmd += " --module ${SOURCES[4]}"
+
 env.CommandNoCache(
     "version_generated.gen.h",
-    env.Value(methods.get_version_info(env.module_version_string)),
-    env.Run(core_builders.version_info_builder),
+    [
+        "core_builders.py",
+        "#version.py",
+        env.Value(version_build),
+        env.Value(version_status),
+        env.Value(env.module_version_string),
+    ],
+    env.Run(version_cmd),
 )
 
 # Generate version hash
+git_cmd = "python ${SOURCES[0]} $TARGET git_info"
+git_hash = ""
+git_timestamp = 0
+try:
+    git_hash = subprocess.check_output(["git", "log", "-1", "--pretty=format:%H"], encoding="utf-8")
+    git_timestamp = int(subprocess.check_output(["git", "log", "-1", "--pretty=format:%ct"], encoding="utf-8"))
+    git_cmd += " --hash ${SOURCES[1]} --timestamp ${SOURCES[2]}"
+except (subprocess.CalledProcessError, OSError):
+    # `git` not found in PATH.
+    pass
+
 gen_hash = env.CommandNoCache(
-    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
+    "version_hash.gen.cpp", ["core_builders.py", env.Value(git_hash), env.Value(git_timestamp)], env.Run(git_cmd)
 )
 env.add_source_files(env.core_sources, gen_hash)
 
 # Generate AES256 script encryption key
-encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
-if encryption_key:
+encryption_cmd = "python ${SOURCES[0]} $TARGET encryption_key"
+if encryption_key := os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY", ""):
     print(
         "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
+    encryption_cmd += " --key ${SOURCES[1]}"
+
 gen_encrypt = env.CommandNoCache(
-    "script_encryption_key.gen.cpp",
-    env.Value(encryption_key),
-    env.Run(core_builders.encryption_key_builder),
+    "script_encryption_key.gen.cpp", ["core_builders.py", env.Value(encryption_key)], env.Run(encryption_cmd)
 )
 env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
+certs_cmd = "python ${SOURCES[0]} $TARGET certs ${SOURCES[1]} ${SOURCES[2]}"
+if env["system_certs_path"]:
+    certs_cmd += " --system ${SOURCES[3]}"
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-    env.Run(core_builders.make_certs_header),
+    [
+        "core_builders.py",
+        "#thirdparty/certs/ca-certificates.crt",
+        env.Value(env["builtin_certs"]),
+        env.Value(env["system_certs_path"]),
+    ],
+    env.Run(certs_cmd),
 )
 
 # Authors
-env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
+authors_cmd = "python ${SOURCES[0]} $TARGET authors ${SOURCES[1]}"
+env.CommandNoCache("#core/authors.gen.h", ["core_builders.py", "#AUTHORS.md"], env.Run(authors_cmd))
 
 # Donors
-env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
+donors_cmd = "python ${SOURCES[0]} $TARGET donors ${SOURCES[1]}"
+env.CommandNoCache("#core/donors.gen.h", ["core_builders.py", "#DONORS.md"], env.Run(donors_cmd))
 
 # License
-env.CommandNoCache(
-    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
-)
+license_cmd = "python ${SOURCES[0]} $TARGET license ${SOURCES[1]} ${SOURCES[2]}"
+env.CommandNoCache("#core/license.gen.h", ["core_builders.py", "#LICENSE.txt", "#COPYRIGHT.txt"], env.Run(license_cmd))
 
 # Chain load SCsubs
 SConscript("os/SCsub")
