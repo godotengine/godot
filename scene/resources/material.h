@@ -132,6 +132,8 @@ public:
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
+	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const override;
+
 	ShaderMaterial();
 	~ShaderMaterial();
 };

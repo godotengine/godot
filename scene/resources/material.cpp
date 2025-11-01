@@ -550,6 +550,20 @@ bool ShaderMaterial::_can_use_render_priority() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
+Ref<Resource> ShaderMaterial::_duplicate(const DuplicateParams &p_params) const {
+	Ref<ShaderMaterial> dup;
+	dup.instantiate();
+
+	dup->set_shader(shader);
+	dup->set_next_pass(get_next_pass());
+	dup->set_render_priority(get_render_priority());
+
+	dup->param_cache = param_cache;
+	dup->remap_cache = remap_cache;
+
+	return dup;
+}
+
 Shader::Mode ShaderMaterial::get_shader_mode() const {
 	if (shader.is_valid()) {
 		return shader->get_mode();
