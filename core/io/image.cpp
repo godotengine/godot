@@ -2385,6 +2385,12 @@ void Image::set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_for
 	initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
 }
 
+#ifdef TOOLS_ENABLED
+bool Image::is_data_equel(const Ref<Image> &p_image) const {
+	return p_image.is_valid() && format == p_image->format && width == p_image->width && height == p_image->height && mipmaps == p_image->mipmaps && data == p_image->data;
+}
+#endif
+
 void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	ERR_FAIL_COND_MSG(p_width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", p_width));
 	ERR_FAIL_COND_MSG(p_height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", p_height));
