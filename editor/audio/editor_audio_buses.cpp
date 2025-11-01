@@ -1278,17 +1278,23 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 
 void EditorAudioBuses::_server_save() {
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
-	ResourceSaver::save(state, edited_path);
+	if (edited_path.is_empty()) {
+		ResourceSaver::save(state, "res://default_bus_layout.tres");
+		edited_path = ResourceUID::path_to_uid("res://default_bus_layout.tres");
+		ProjectSettings::get_singleton()->set_setting("audio/buses/default_bus_layout", edited_path);
+	} else {
+		ResourceSaver::save(state, ResourceUID::ensure_path(edited_path));
+	}
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(ResourceUID::ensure_path(edited_path));
 }
 
 void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1304,7 +1310,7 @@ void EditorAudioBuses::_new_layout() {
 void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
-	file_dialog->set_current_path(edited_path);
+	file_dialog->set_current_path(ResourceUID::ensure_path(edited_path));
 	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
@@ -1327,7 +1333,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 			return;
 		}
 	}
-	open_layout(p_string);
+	open_layout(ResourceUID::path_to_uid(p_string));
 }
 
 void EditorAudioBuses::_bind_methods() {
@@ -1339,13 +1345,13 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
-	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
+	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	Label *layout_label = memnew(Label(TTRC("Layout:")));
 	top_hb->add_child(layout_label);
 
 	file = memnew(Label);
-	const String _file_name = edited_path.get_file();
+	const String _file_name = ResourceUID::ensure_path(edited_path).get_file();
 	file->set_text(_file_name);
 	file->set_tooltip_text(_file_name);
 	file->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1421,20 +1427,19 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	const String path = ResourceUID::ensure_path(p_path);
-
 	if (!ResourceLoader::exists(path)) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" doesn't exist.)"), path));
 		return;
 	}
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" is not a valid audio bus layout.)"), path));
 		return;
 	}
 
-	edited_path = path;
-	const String _file_name = edited_path.get_file();
+	edited_path = p_path; // Use UID when available.
+	const String _file_name = path.get_file();
 	file->set_text(_file_name);
 	file->set_tooltip_text(_file_name);
 	_update_file_label_size();
