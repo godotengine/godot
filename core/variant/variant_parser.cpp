@@ -911,12 +911,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
-			if (args.size() != 4) {
-				r_err_str = "Expected 4 arguments for constructor";
+			if (args.size() != 3 and args.size() != 4) {
+				r_err_str = "Expected 3 or 4 arguments for constructor";
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Color(args[0], args[1], args[2], args[3]);
+			if (args.size() == 3) {
+				value = Color(args[0], args[1], args[2]);
+			} else {
+				value = Color(args[0], args[1], args[2], args[3]);
+			}
 		} else if (id == "NodePath") {
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_PARENTHESIS_OPEN) {
