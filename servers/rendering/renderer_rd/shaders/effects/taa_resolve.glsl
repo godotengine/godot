@@ -38,6 +38,11 @@
 #define RPC_9 0.11111111111
 #define RPC_16 0.0625
 
+// Use variance clipping as described in https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
+#define BASE_VARIANCE 1.1
+#define BASE_VARIANCE_MIN 0.75
+#define BASE_VARIANCE_MAX 1.00
+
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
 
 layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D color_buffer;
@@ -49,7 +54,7 @@ layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
-	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y
+	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y)
 	float disocclusion_scale;
 }
 params;
@@ -273,7 +278,9 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest
 	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
 	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
-	float box_size = mix(0.0f, 2.5f, smoothstep(0.02f, 0.0f, length(velocity_closest)));
+	float variance_scale = 1080.0f / params.resolution.y;
+	float variance = clamp(BASE_VARIANCE * variance_scale, BASE_VARIANCE_MIN, BASE_VARIANCE_MAX); // Variance dynamically scales based on resolution
+	float box_size = mix(0.0f, variance, smoothstep(0.02f, 0.0f, length(velocity_closest)));
 	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * box_size;
 	vec3 color_min = color_avg - dev;
 	vec3 color_max = color_avg + dev;
