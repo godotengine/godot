@@ -3741,10 +3741,10 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		auto_brace_completion_pairs["'''"] = "'''";
 		code_edit->set_auto_brace_completion_pairs(auto_brace_completion_pairs);
 		CHECK(code_edit->get_auto_brace_completion_pairs().size() == 4);
-		CHECK(code_edit->get_auto_brace_completion_pairs()["["] == "]");
-		CHECK(code_edit->get_auto_brace_completion_pairs()["'"] == "'");
-		CHECK(code_edit->get_auto_brace_completion_pairs()[";"] == "'");
-		CHECK(code_edit->get_auto_brace_completion_pairs()["'''"] == "'''");
+		CHECK((String)code_edit->get_auto_brace_completion_pairs()["["] == "]");
+		CHECK((String)code_edit->get_auto_brace_completion_pairs()["'"] == "'");
+		CHECK((String)code_edit->get_auto_brace_completion_pairs()[";"] == "'");
+		CHECK((String)code_edit->get_auto_brace_completion_pairs()["'''"] == "'''");
 
 		ERR_PRINT_OFF;
 
@@ -4081,11 +4081,11 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			/* Check data. */
 			Dictionary option = code_edit->get_code_completion_option(0);
 			CHECK((int)option["kind"] == (int)CodeEdit::CodeCompletionKind::KIND_CLASS);
-			CHECK(option["display_text"] == "item_0.");
-			CHECK(option["insert_text"] == "item_0");
-			CHECK(option["font_color"] == Color(1, 0, 0));
-			CHECK(option["icon"] == Ref<Resource>());
-			CHECK(option["default_value"] == Color(1, 0, 0));
+			CHECK((String)option["display_text"] == "item_0.");
+			CHECK((String)option["insert_text"] == "item_0");
+			CHECK((Color)option["font_color"] == Color(1, 0, 0));
+			CHECK((Ref<Resource>)option["icon"] == Ref<Resource>());
+			CHECK((Color)option["default_value"] == Color(1, 0, 0));
 
 			/* Set size for mouse input. */
 			code_edit->set_size(Size2(100, 100));

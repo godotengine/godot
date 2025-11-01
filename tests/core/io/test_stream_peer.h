@@ -186,7 +186,7 @@ TEST_CASE("[StreamPeer] Get and sets through StreamPeerBuffer") {
 		spb->put_var(value);
 		spb->seek(0);
 
-		CHECK_EQ(spb->get_var(), value);
+		CHECK_EQ((Array)spb->get_var(), value);
 	}
 }
 

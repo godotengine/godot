@@ -80,11 +80,11 @@ TEST_CASE("[VariantUtility] Type conversion") {
 
 		converted = VariantUtilityFunctions::type_convert(transform, Variant::Type::BASIS);
 		CHECK(converted.get_type() == Variant::Type::BASIS);
-		CHECK(converted == basis);
+		CHECK((Basis)converted == basis);
 
 		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::TRANSFORM3D);
 		CHECK(converted.get_type() == Variant::Type::TRANSFORM3D);
-		CHECK(converted == transform);
+		CHECK((Transform3D)converted == transform);
 
 		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::STRING);
 		CHECK(converted.get_type() == Variant::Type::STRING);
@@ -97,11 +97,11 @@ TEST_CASE("[VariantUtility] Type conversion") {
 
 		converted = VariantUtilityFunctions::type_convert(arr, Variant::Type::PACKED_FLOAT64_ARRAY);
 		CHECK(converted.get_type() == Variant::Type::PACKED_FLOAT64_ARRAY);
-		CHECK(converted == packed);
+		CHECK((PackedFloat64Array)converted == packed);
 
 		converted = VariantUtilityFunctions::type_convert(packed, Variant::Type::ARRAY);
 		CHECK(converted.get_type() == Variant::Type::ARRAY);
-		CHECK(converted == arr);
+		CHECK((Array)converted == arr);
 	}
 
 	{

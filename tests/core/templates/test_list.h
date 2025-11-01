@@ -519,13 +519,13 @@ TEST_CASE("[List] Swap front and back (values check)") {
 	Variant color = Color(0, 0, 1);
 	List<Variant>::Element *n_color = list.push_back(color);
 
-	CHECK(list.front()->get() == "Godot");
-	CHECK(list.back()->get() == Color(0, 0, 1));
+	CHECK((String)list.front()->get() == "Godot");
+	CHECK((Color)list.back()->get() == Color(0, 0, 1));
 
 	list.swap(n_str, n_color);
 
-	CHECK(list.front()->get() == Color(0, 0, 1));
-	CHECK(list.back()->get() == "Godot");
+	CHECK((Color)list.front()->get() == Color(0, 0, 1));
+	CHECK((String)list.back()->get() == "Godot");
 }
 
 TEST_CASE("[List] Swap adjacent back and front (reverse order of elements)") {

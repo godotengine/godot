@@ -205,7 +205,7 @@ TEST_CASE("[JSON] Parsing single data types") {
 			json.get_error_line() == 0,
 			"Parsing a double quoted string as JSON should parse successfully.");
 	CHECK_MESSAGE(
-			json.get_data() == "hello",
+			(String)json.get_data() == "hello",
 			"Parsing a double quoted string as JSON should return the expected value.");
 }
 
@@ -220,21 +220,21 @@ TEST_CASE("[JSON] Parsing arrays") {
 			json.get_error_line() == 0,
 			"Parsing a JSON array should parse successfully.");
 	CHECK_MESSAGE(
-			array[0] == "Hello",
+			(String)array[0] == "Hello",
 			"The parsed JSON should contain the expected values.");
 	const Array sub_array = array[3];
 	CHECK_MESSAGE(
 			sub_array.size() == 4,
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
-			sub_array[1] == "json",
+			(String)sub_array[1] == "json",
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
 			sub_array[3].hash() == Array().hash(),
 			"The parsed JSON should contain the expected values.");
 	const Array deep_array = Array(Array(array[5])[0])[0];
 	CHECK_MESSAGE(
-			deep_array[0] == "Gotcha!",
+			(String)deep_array[0] == "Gotcha!",
 			"The parsed JSON should contain the expected values.");
 }
 
@@ -245,7 +245,7 @@ TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 
 	const Dictionary dictionary = json.get_data();
 	CHECK_MESSAGE(
-			dictionary["name"] == "Godot Engine",
+			(String)dictionary["name"] == "Godot Engine",
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
 			dictionary["is_free"],
