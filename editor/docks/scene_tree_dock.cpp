@@ -2925,6 +2925,11 @@ void SceneTreeDock::_queue_update_script_button() {
 }
 
 void SceneTreeDock::_selection_changed() {
+	if (ignore_next_selection) {
+		ignore_next_selection = false;
+		return;
+	}
+
 	int selection_size = editor_selection->get_selection().size();
 	if (selection_size > 1) {
 		//automatically turn on multi-edit
@@ -3404,6 +3409,11 @@ void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
 
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
+}
+
+void SceneTreeDock::set_single_selected_no_inspect(Node *p_node) {
+	ignore_next_selection = true;
+	set_selection({ p_node });
 }
 
 void SceneTreeDock::_new_scene_from(const String &p_file) {
