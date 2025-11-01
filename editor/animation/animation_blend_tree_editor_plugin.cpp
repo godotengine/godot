@@ -41,6 +41,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
@@ -48,37 +49,35 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 
-void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
-	for (int i = 0; i < add_options.size(); i++) {
-		ERR_FAIL_COND(add_options[i].script == p_script);
-	}
-
-	AddOption ao;
-	ao.name = p_name;
-	ao.script = p_script;
-	add_options.push_back(ao);
-
-	_update_options_menu();
-}
-
-void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
-	for (int i = 0; i < add_options.size(); i++) {
-		if (add_options[i].script == p_script) {
-			add_options.remove_at(i);
-			return;
-		}
-	}
-
-	_update_options_menu();
-}
+static constexpr struct AddOption {
+	const char *name;
+	const char *type;
+	int input_port_count;
+} add_options[] = {
+	{ "Animation", "AnimationNodeAnimation", 0 },
+	{ "OneShot", "AnimationNodeOneShot", 2 },
+	{ "Add2", "AnimationNodeAdd2", 2 },
+	{ "Add3", "AnimationNodeAdd3", 3 },
+	{ "Blend2", "AnimationNodeBlend2", 2 },
+	{ "Blend3", "AnimationNodeBlend3", 3 },
+	{ "Sub2", "AnimationNodeSub2", 2 },
+	{ "TimeSeek", "AnimationNodeTimeSeek", 1 },
+	{ "TimeScale", "AnimationNodeTimeScale", 1 },
+	{ "Transition", "AnimationNodeTransition", 0 },
+	{ "BlendTree", "AnimationNodeBlendTree", 0 },
+	{ "BlendSpace1D", "AnimationNodeBlendSpace1D", 0 },
+	{ "BlendSpace2D", "AnimationNodeBlendSpace2D", 0 },
+	{ "StateMachine", "AnimationNodeStateMachine", 0 },
+};
 
 void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
 	add_node->get_popup()->clear();
 	add_node->get_popup()->reset_size();
-	for (int i = 0; i < add_options.size(); i++) {
+	for (size_t i = 0; i < std::size(add_options); i++) {
 		if (p_has_input_ports && add_options[i].input_port_count == 0) {
 			continue;
 		}
@@ -335,12 +334,11 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 	}
 }
 
-void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
+void AnimationNodeBlendTreeEditor::_add_node(int p_id) {
 	Ref<AnimationNode> anode;
-
 	String base_name;
 
-	if (p_idx == MENU_LOAD_FILE) {
+	if (p_id == MENU_LOAD_FILE) {
 		open_file->clear_filters();
 		List<String> ext_filters;
 		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", &ext_filters);
@@ -349,27 +347,20 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		}
 		open_file->popup_file_dialog();
 		return;
-	} else if (p_idx == MENU_LOAD_FILE_CONFIRM) {
+	} else if (p_id == MENU_LOAD_FILE_CONFIRM) {
 		anode = file_loaded;
 		file_loaded.unref();
 		base_name = anode->get_class();
-	} else if (p_idx == MENU_PASTE) {
+	} else if (p_id == MENU_PASTE) {
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
 		ERR_FAIL_COND(anode.is_null());
 		base_name = anode->get_class();
-	} else if (!add_options[p_idx].type.is_empty()) {
-		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
-		ERR_FAIL_NULL(an);
-		anode = Ref<AnimationNode>(an);
-		base_name = add_options[p_idx].name;
 	} else {
-		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		StringName base_type = add_options[p_idx].script->get_instance_base_type();
-		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(base_type));
+		ERR_FAIL_INDEX(p_id, (int)std::size(add_options));
+		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_id].type));
 		ERR_FAIL_NULL(an);
 		anode = Ref<AnimationNode>(an);
-		anode->set_script(add_options[p_idx].script);
-		base_name = add_options[p_idx].name;
+		base_name = add_options[p_id].name;
 	}
 
 	Ref<AnimationNodeOutput> out = anode;
@@ -1251,20 +1242,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu).bind(false));
 	add_node->set_disabled(read_only);
 
-	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
-	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot", 2));
-	add_options.push_back(AddOption("Add2", "AnimationNodeAdd2", 2));
-	add_options.push_back(AddOption("Add3", "AnimationNodeAdd3", 3));
-	add_options.push_back(AddOption("Blend2", "AnimationNodeBlend2", 2));
-	add_options.push_back(AddOption("Blend3", "AnimationNodeBlend3", 3));
-	add_options.push_back(AddOption("Sub2", "AnimationNodeSub2", 2));
-	add_options.push_back(AddOption("TimeSeek", "AnimationNodeTimeSeek", 1));
-	add_options.push_back(AddOption("TimeScale", "AnimationNodeTimeScale", 1));
-	add_options.push_back(AddOption("Transition", "AnimationNodeTransition"));
-	add_options.push_back(AddOption("BlendTree", "AnimationNodeBlendTree"));
-	add_options.push_back(AddOption("BlendSpace1D", "AnimationNodeBlendSpace1D"));
-	add_options.push_back(AddOption("BlendSpace2D", "AnimationNodeBlendSpace2D"));
-	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
 	_update_options_menu();
 
 	error_panel = memnew(PanelContainer);
