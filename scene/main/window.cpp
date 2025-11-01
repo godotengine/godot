@@ -916,7 +916,10 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
+	String display_name = DisplayServer::get_singleton()->get_name();
+	if (display_name != "Windows" && display_name != "X11") {
+		ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
+	}
 
 	visible = p_visible;
 

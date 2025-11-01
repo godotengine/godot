@@ -1736,7 +1736,6 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window cannot be deleted.");
 
 	popup_close(p_window);
 
@@ -1759,23 +1758,26 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		window_set_transient(p_window, INVALID_WINDOW_ID);
 	}
 
+	if (p_window != MAIN_WINDOW_ID) {
 #ifdef RD_ENABLED
-	if (rendering_device) {
-		rendering_device->screen_free(p_window);
-	}
+		if (rendering_device) {
+			rendering_device->screen_free(p_window);
+		}
 
-	if (rendering_context) {
-		rendering_context->window_destroy(p_window);
-	}
+		if (rendering_context) {
+			rendering_context->window_destroy(p_window);
+		}
 #endif
 #ifdef GLES3_ENABLED
-	if (gl_manager_angle) {
-		gl_manager_angle->window_destroy(p_window);
-	}
-	if (gl_manager_native) {
-		gl_manager_native->window_destroy(p_window);
-	}
+		if (gl_manager_angle) {
+			gl_manager_angle->window_destroy(p_window);
+		}
+		if (gl_manager_native) {
+			gl_manager_native->window_destroy(p_window);
+		}
 #endif
+		windows.erase(p_window);
+	}
 
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
 		wintab_WTClose(wd.wtctx);
@@ -1788,7 +1790,6 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 	DestroyWindow(wd.hWnd);
-	windows.erase(p_window);
 
 	if (last_focused_window == p_window) {
 		last_focused_window = INVALID_WINDOW_ID;
