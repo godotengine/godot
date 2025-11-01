@@ -101,7 +101,7 @@ public:
 		int forced_even_separation = 0;
 
 		Color mono_color;
-		Color mono_color_icon_and_font;
+		Color mono_color_font;
 		Color mono_color_inv;
 		Color dark_color_1;
 		Color dark_color_2;

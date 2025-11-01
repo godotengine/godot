@@ -51,7 +51,7 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// White (dark theme) or black (light theme), will be used to generate the rest of the colors
 		p_config.mono_color = p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
-		p_config.mono_color_icon_and_font = p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(0, 0, 0);
+		p_config.mono_color_font = p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(0, 0, 0);
 
 		// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
 		// Some places in the editor use 8-bit integer colors.
@@ -70,7 +70,7 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.error_color = Color(1, 0.47, 0.42);
 		if (!p_config.dark_icon_and_font) {
 			// Darken some colors to be readable on a light background.
-			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_icon_and_font, 0.35);
+			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
 			p_config.warning_color = Color(0.82, 0.56, 0.1);
 			p_config.error_color = Color(0.8, 0.22, 0.22);
 		}
@@ -99,14 +99,14 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// Font colors.
 
-		p_config.font_color = p_config.mono_color_icon_and_font.lerp(p_config.base_color, 0.25);
-		p_config.font_focus_color = p_config.mono_color_icon_and_font.lerp(p_config.base_color, 0.125);
-		p_config.font_hover_color = p_config.mono_color_icon_and_font.lerp(p_config.base_color, 0.125);
+		p_config.font_color = p_config.mono_color_font.lerp(p_config.base_color, 0.25);
+		p_config.font_focus_color = p_config.mono_color_font.lerp(p_config.base_color, 0.125);
+		p_config.font_hover_color = p_config.mono_color_font.lerp(p_config.base_color, 0.125);
 		p_config.font_pressed_color = p_config.accent_color;
 		p_config.font_hover_pressed_color = p_config.font_hover_color.lerp(p_config.accent_color, 0.74);
-		p_config.font_disabled_color = Color(p_config.mono_color_icon_and_font.r, p_config.mono_color_icon_and_font.g, p_config.mono_color_icon_and_font.b, 0.35);
-		p_config.font_readonly_color = Color(p_config.mono_color_icon_and_font.r, p_config.mono_color_icon_and_font.g, p_config.mono_color_icon_and_font.b, 0.65);
-		p_config.font_placeholder_color = Color(p_config.mono_color_icon_and_font.r, p_config.mono_color_icon_and_font.g, p_config.mono_color_icon_and_font.b, 0.5);
+		p_config.font_disabled_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.35);
+		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.65);
+		p_config.font_placeholder_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.5);
 		p_config.font_outline_color = Color(0, 0, 0, 0);
 
 		p_theme->set_color(SceneStringName(font_color), EditorStringName(Editor), p_config.font_color);
@@ -591,10 +591,10 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 			p_theme->set_color("custom_button_font_highlight", "Tree", p_config.font_hover_color);
 			p_theme->set_color(SceneStringName(font_color), "Tree", p_config.font_color);
-			p_theme->set_color("font_hovered_color", "Tree", p_config.mono_color_icon_and_font);
+			p_theme->set_color("font_hovered_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_hovered_dimmed_color", "Tree", p_config.font_color);
-			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.mono_color_icon_and_font);
-			p_theme->set_color("font_selected_color", "Tree", p_config.mono_color_icon_and_font);
+			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.mono_color_font);
+			p_theme->set_color("font_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
@@ -726,9 +726,9 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_stylebox("hovered_selected", "ItemList", style_itemlist_hover_selected);
 			p_theme->set_stylebox("hovered_selected_focus", "ItemList", style_itemlist_hover_selected);
 			p_theme->set_color(SceneStringName(font_color), "ItemList", p_config.font_color);
-			p_theme->set_color("font_hovered_color", "ItemList", p_config.mono_color_icon_and_font);
-			p_theme->set_color("font_hovered_selected_color", "ItemList", p_config.mono_color_icon_and_font);
-			p_theme->set_color("font_selected_color", "ItemList", p_config.mono_color_icon_and_font);
+			p_theme->set_color("font_hovered_color", "ItemList", p_config.mono_color_font);
+			p_theme->set_color("font_hovered_selected_color", "ItemList", p_config.mono_color_font);
+			p_theme->set_color("font_selected_color", "ItemList", p_config.mono_color_font);
 			p_theme->set_color("font_outline_color", "ItemList", p_config.font_outline_color);
 			p_theme->set_color("guide_color", "ItemList", Color(1, 1, 1, 0));
 			p_theme->set_constant("v_separation", "ItemList", p_config.forced_even_separation * EDSCALE);
@@ -880,7 +880,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_icon("clear", "LineEdit", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
 
 		p_theme->set_color(SceneStringName(font_color), "LineEdit", p_config.font_color);
-		p_theme->set_color("font_selected_color", "LineEdit", p_config.mono_color_icon_and_font);
+		p_theme->set_color("font_selected_color", "LineEdit", p_config.mono_color_font);
 		p_theme->set_color("font_uneditable_color", "LineEdit", p_config.font_readonly_color);
 		p_theme->set_color("font_placeholder_color", "LineEdit", p_config.font_placeholder_color);
 		p_theme->set_color("font_outline_color", "LineEdit", p_config.font_outline_color);
@@ -2135,7 +2135,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		const Color kbd_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 
 		p_theme->set_color("title_color", "EditorHelp", p_config.accent_color);
-		p_theme->set_color("headline_color", "EditorHelp", p_config.mono_color_icon_and_font);
+		p_theme->set_color("headline_color", "EditorHelp", p_config.mono_color_font);
 		p_theme->set_color("text_color", "EditorHelp", p_config.font_color);
 		p_theme->set_color("comment_color", "EditorHelp", p_config.font_color * Color(1, 1, 1, 0.6));
 		p_theme->set_color("symbol_color", "EditorHelp", p_config.font_color * Color(1, 1, 1, 0.6));
@@ -2144,8 +2144,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("type_color", "EditorHelp", p_config.accent_color.lerp(p_config.font_color, 0.5));
 		p_theme->set_color("override_color", "EditorHelp", p_config.warning_color);
 		p_theme->set_color("selection_color", "EditorHelp", p_config.selection_color);
-		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_icon_and_font, 0.8));
-		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_icon_and_font, 0.6));
+		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.8));
+		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.6));
 		p_theme->set_color("kbd_color", "EditorHelp", p_config.accent_color.lerp(kbd_color, 0.6));
 		p_theme->set_color("code_bg_color", "EditorHelp", p_config.dark_color_3);
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
