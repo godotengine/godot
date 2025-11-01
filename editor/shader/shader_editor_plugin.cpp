@@ -146,7 +146,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			if (edited_shaders[i].shader_inc.ptr() == shader_include) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
-				_switch_to_editor(edited_shaders[i].shader_editor);
+				_switch_to_editor(edited_shaders[i].shader_editor, true);
 				return;
 			}
 		}
@@ -162,7 +162,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			if (edited_shaders[i].shader.ptr() == shader) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
-				_switch_to_editor(edited_shaders[i].shader_editor);
+				_switch_to_editor(edited_shaders[i].shader_editor, true);
 				return;
 			}
 		}
@@ -778,7 +778,7 @@ void ShaderEditorPlugin::_update_shader_editor_zoom_factor(CodeTextEditor *p_sha
 	}
 }
 
-void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
+void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool focus) {
 	ERR_FAIL_NULL(p_editor);
 	if (file_menu->get_parent() != nullptr) {
 		file_menu->get_parent()->remove_child(file_menu);
@@ -788,6 +788,12 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	}
 	empty_menu->set_visible(false);
 	p_editor->use_menu_bar_items(file_menu, make_floating);
+	if (focus) {
+		TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(p_editor);
+		if (text_shader_editor) {
+			text_shader_editor->get_code_editor()->get_text_editor()->grab_focus();
+		}
+	}
 }
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
