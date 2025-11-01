@@ -200,6 +200,13 @@
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
+		<method name="sorted" qualifiers="const">
+			<return type="PackedFloat64Array" />
+			<description>
+				Returns a sorted copy of this array. See also [method sort].
+				[b]Note:[/b] This method creates a copy, which may have a noticeable performance cost. To perform in-place sorting instead, use [method sort].
+			</description>
+		</method>
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>

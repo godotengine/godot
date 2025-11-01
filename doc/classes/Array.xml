@@ -812,6 +812,21 @@
 				[b]Note:[/b] You should not randomize the return value of [param func], as the heapsort algorithm expects a consistent result. Randomizing the return value will result in unexpected behavior.
 			</description>
 		</method>
+		<method name="sorted" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns a sorted copy of this array. See also [method sort].
+				[b]Note:[/b] This method creates a copy, which may have a noticeable performance cost. To perform in-place sorting instead, use [method sort].
+			</description>
+		</method>
+		<method name="sorted_custom" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="func" type="Callable" />
+			<description>
+				Returns a copy of this array sorted using a custom [Callable]. See also [method sort_custom].
+				[b]Note:[/b] This method creates a copy, which may have a noticeable performance cost. To perform in-place sorting instead, use [method sort_custom].
+			</description>
+		</method>
 	</methods>
 	<operators>
 		<operator name="operator !=">
