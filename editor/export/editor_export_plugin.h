@@ -142,6 +142,7 @@ protected:
 
 	GDVIRTUAL2RC(PackedStringArray, _get_android_dependencies, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(PackedStringArray, _get_android_dependencies_maven_repos, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(PackedStringArray, _get_android_gradle_plugins, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(PackedStringArray, _get_android_libraries, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(String, _get_android_manifest_activity_element_contents, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(String, _get_android_manifest_application_element_contents, const Ref<EditorExportPlatform> &, bool);
@@ -174,6 +175,7 @@ public:
 
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual PackedStringArray get_android_gradle_plugins(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_libraries(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual String get_android_manifest_activity_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual String get_android_manifest_application_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
