@@ -165,6 +165,18 @@
 				[b]Note:[/b] [DirAccess] will not show changes made to the contents of [code]res://[/code] after calling this function.
 			</description>
 		</method>
+		<method name="load_resource_pack_from_buffer">
+			<return type="bool" />
+			<param index="0" name="pack" type="PackedByteArray" />
+			<param index="1" name="replace_files" type="bool" default="true" />
+			<param index="2" name="offset" type="int" default="0" />
+			<description>
+				Loads the contents of the .pck or .zip file specified by [param pack] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
+				[b]Note:[/b] If a file from [param pack] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [param pack] unless [param replace_files] is set to [code]false[/code].
+				[b]Note:[/b] The optional [param offset] parameter can be used to specify the offset in bytes to the start of the resource pack. This is only supported for .pck files.
+				[b]Note:[/b] [DirAccess] will not show changes made to the contents of [code]res://[/code] after calling this function.
+			</description>
+		</method>
 		<method name="localize_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
