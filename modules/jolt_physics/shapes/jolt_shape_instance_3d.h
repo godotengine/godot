@@ -67,6 +67,8 @@ class JoltShapeInstance3D {
 	JPH::ShapeRefC jolt_ref;
 	uint32_t id = next_id++;
 	bool disabled = false;
+	bool one_way_collision = false;
+	real_t one_way_collision_margin = 0.0;
 
 public:
 	JoltShapeInstance3D() = default;
@@ -94,6 +96,13 @@ public:
 
 	void enable() { disabled = false; }
 	void disable() { disabled = true; }
+
+	void set_as_one_way_collision(bool p_enabled, real_t p_margin) {
+		one_way_collision = p_enabled;
+		one_way_collision_margin = p_margin;
+	}
+	bool is_set_as_one_way_collision() const { return one_way_collision; }
+	real_t get_one_way_collision_margin() const { return one_way_collision_margin; }
 
 	bool try_build();
 };
