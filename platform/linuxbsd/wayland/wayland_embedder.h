@@ -58,6 +58,7 @@
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
+#include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/tablet.gen.h"
@@ -450,6 +451,9 @@ class WaylandEmbedder {
 		// tearing-control-v1
 		&wp_tearing_control_manager_v1_interface,
 		&wp_tearing_control_v1_interface,
+
+		// pointer-warp-v1
+		&wp_pointer_warp_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,
