@@ -691,6 +691,9 @@
 			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 		</member>
+		<member name="nonclient_area" type="Rect2i" setter="set_nonclient_area" getter="get_nonclient_area" default="Rect2i(0, 0, 0, 0)">
+			If set, defines the window's custom decoration area which will receive mouse input, even if normal input to the window is blocked (such as when it has an exclusive child opened). See also [signal nonclient_window_input].
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
@@ -801,6 +804,12 @@
 		<signal name="mouse_exited">
 			<description>
 				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
+			</description>
+		</signal>
+		<signal name="nonclient_window_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted when the mouse event is received by the custom decoration area defined by [member nonclient_area], and normal input to the window is blocked (such as when it has an exclusive child opened). [param event]'s position is in the embedder's coordinate system.
 			</description>
 		</signal>
 		<signal name="theme_changed">
