@@ -217,6 +217,13 @@
 				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 			</description>
 		</method>
+		<method name="_print_view_configuration_info" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Print additional information about an extensions view configuration if applicable and verbose output is enabled.
+			</description>
+		</method>
 		<method name="_set_android_surface_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="property_values" type="Dictionary" />
@@ -296,6 +303,21 @@
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
 				Adds additional data structures when querying OpenXR system abilities.
+			</description>
+		</method>
+		<method name="_set_view_configuration_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures when querying OpenXR view configuration.
+			</description>
+		</method>
+		<method name="_set_view_configuration_view_count" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="view_count" type="int" />
+			<description>
+				Sets the number of views for which we need to reserve data if we're using [method _set_view_configuration_and_get_next_pointer].
 			</description>
 		</method>
 		<method name="_set_view_locate_info_and_get_next_pointer" qualifiers="virtual">
