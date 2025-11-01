@@ -70,6 +70,7 @@ private:
 	Transform3D kinematic_transform;
 
 	Vector3 inertia;
+	Vector3 product_of_inertia;
 	Vector3 center_of_mass_custom;
 	Vector3 constant_force;
 	Vector3 constant_torque;
@@ -269,6 +270,9 @@ public:
 
 	Vector3 get_inertia() const { return inertia; }
 	void set_inertia(const Vector3 &p_inertia);
+
+	Vector3 get_product_of_inertia() const { return product_of_inertia; }
+	void set_product_of_inertia(const Vector3 &p_product_of_inertia);
 
 	float get_bounce() const;
 	void set_bounce(float p_bounce);

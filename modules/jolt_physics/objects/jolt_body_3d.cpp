@@ -292,6 +292,18 @@ JPH::MassProperties JoltBody3D::_calculate_mass_properties(const JPH::Shape &p_s
 		mass_properties.mInertia(1, 2) = 0;
 	}
 
+	// If using custom inertia, set products of inertia
+	if (!calculate_inertia)	{
+		mass_properties.mInertia(1, 2) = -(float)product_of_inertia.x;  // Iyz
+		mass_properties.mInertia(2, 1) = -(float)product_of_inertia.x;  // Iyz
+
+		mass_properties.mInertia(0, 2) = -(float)product_of_inertia.y;  // Ixz
+		mass_properties.mInertia(2, 0) = -(float)product_of_inertia.y;  // Ixz
+
+		mass_properties.mInertia(0, 1) = -(float)product_of_inertia.z;  // Ixy
+		mass_properties.mInertia(1, 0) = -(float)product_of_inertia.z;  // Ixy
+	}
+
 	mass_properties.mInertia(3, 3) = 1.0f;
 
 	return mass_properties;
@@ -665,6 +677,9 @@ void JoltBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Variant
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
 			set_inertia(p_value);
+		} break;
+		case PhysicsServer3D::BODY_PARAM_PROD_INERTIA: {
+			set_product_of_inertia(p_value);
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
 			set_center_of_mass_custom(p_value);
@@ -1215,6 +1230,13 @@ void JoltBody3D::set_mass(float p_mass) {
 void JoltBody3D::set_inertia(const Vector3 &p_inertia) {
 	if (p_inertia != inertia) {
 		inertia = p_inertia;
+		_update_mass_properties();
+	}
+}
+
+void JoltBody3D::set_product_of_inertia(const Vector3 &p_product_of_inertia) {
+	if (p_product_of_inertia != product_of_inertia) {
+		product_of_inertia = p_product_of_inertia;
 		_update_mass_properties();
 	}
 }
