@@ -2123,6 +2123,12 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		}
 	}
 
+	Ref<Environment> environment = get_tree()->get_root()->get_world_3d()->get_fallback_environment();
+	if (environment.is_valid() && environment->is_edited()) {
+		// Save default environment if it wasn't saved already.
+		save_default_environment();
+	}
+
 	EditorUndoRedoManager::get_singleton()->set_history_as_saved(EditorUndoRedoManager::GLOBAL_HISTORY);
 	_update_unsaved_cache();
 
@@ -2181,7 +2187,6 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
-	save_default_environment();
 	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
@@ -2405,7 +2410,6 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
-				save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
 				save_editor_layout_delayed();
@@ -2426,7 +2430,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				save_default_environment();
 				_save_scene_with_preview(p_file);
 				project_run_bar->play_custom_scene(p_file);
 			}
@@ -2437,7 +2440,6 @@ void EditorNode::_dialog_action(String p_file) {
 			ProjectSettings::get_singleton()->save();
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				save_default_environment();
 				_save_scene_with_preview(p_file);
 				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
