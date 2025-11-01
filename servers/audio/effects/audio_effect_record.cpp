@@ -93,6 +93,7 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 }
 
 void AudioEffectRecordInstance::_thread_callback(void *_instance) {
+	Thread::set_name("AudioEffectRecord");
 	AudioEffectRecordInstance *aeri = reinterpret_cast<AudioEffectRecordInstance *>(_instance);
 
 	aeri->_io_thread_process();
