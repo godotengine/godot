@@ -302,43 +302,52 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 	Image::Format format = Image::Format(f->get_32());
 
 	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP) {
-		//look for a PNG or WebP file inside
-
+		// Look for a PNG or WebP file inside.
 		int sw = w;
 		int sh = h;
+		int new_mipmaps = mipmaps;
 
-		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image>> mipmap_images;
-		uint64_t total_size = 0;
-
+		// Skip mipmaps that exceed the size limit.
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
-			uint32_t size = f->get_32();
-
-			if (p_size_limit > 0 && i < (mipmaps - 1) && (sw > p_size_limit || sh > p_size_limit)) {
-				//can't load this due to size limit
-				sw = MAX(sw >> 1, 1);
-				sh = MAX(sh >> 1, 1);
-				f->seek(f->get_position() + size);
-				continue;
+			bool is_above_limit = p_size_limit > 0 && (int)i < (int)mipmaps - 1 && (sw > p_size_limit || sh > p_size_limit);
+			if (!is_above_limit) {
+				break;
 			}
 
-			Vector<uint8_t> pv;
-			pv.resize(size);
-			{
-				uint8_t *wr = pv.ptrw();
-				f->get_buffer(wr, size);
-			}
+			// Skip this mipmap as it exceeds the size limit.
+			sw = MAX(sw >> 1, 1);
+			sh = MAX(sh >> 1, 1);
+			uint32_t src_size = f->get_32();
+			f->seek(f->get_position() + src_size);
+
+			new_mipmaps--;
+		}
+
+		// Allocate memory for the resulting image.
+		int64_t total_size = Image::get_image_data_size(sw, sh, format, new_mipmaps > 0);
+
+		Vector<uint8_t> data;
+		data.resize(total_size);
+		uint8_t *wp = data.ptrw();
+		int64_t ofs = 0;
+
+		// Load the mipmap images.
+		for (int i = 0; i < new_mipmaps + 1; i++) {
+			uint32_t src_size = f->get_32();
+
+			Vector<uint8_t> src_data;
+			src_data.resize(src_size);
+			f->get_buffer(src_data.ptrw(), src_size);
 
 			Ref<Image> img;
 			if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
-				img = Image::png_unpacker(pv);
+				img = Image::png_unpacker(src_data);
 			} else if (data_format == DATA_FORMAT_WEBP && Image::webp_unpacker) {
-				img = Image::webp_unpacker(pv);
+				img = Image::webp_unpacker(src_data);
 			}
 
-			if (img.is_null() || img->is_empty()) {
-				ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
-			}
+			ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
+
 			// If the image is compressed and its format doesn't match the desired format, return an empty reference.
 			// This is done to avoid recompressing the image on load.
 			ERR_FAIL_COND_V(img->is_compressed() && format != img->get_format(), Ref<Image>());
@@ -352,97 +361,49 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				img->convert(format);
 			}
 
-			total_size += img->get_data().size();
-
-			mipmap_images.push_back(img);
-
-			sw = MAX(sw >> 1, 1);
-			sh = MAX(sh >> 1, 1);
+			memcpy(wp + ofs, img->ptr(), img->get_data_size());
+			ofs += img->get_data_size();
 		}
 
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
-
-		Ref<Image> image;
-		image.instantiate();
-
-		if (mipmap_images.size() == 1) {
-			//only one image (which will most likely be the case anyway for this format)
-			image = mipmap_images[0];
-			return image;
-
-		} else {
-			//rarer use case, but needs to be supported
-			Vector<uint8_t> img_data;
-			img_data.resize(total_size);
-
-			{
-				uint8_t *wr = img_data.ptrw();
-
-				int ofs = 0;
-				for (int i = 0; i < mipmap_images.size(); i++) {
-					Vector<uint8_t> id = mipmap_images[i]->get_data();
-					int len = id.size();
-					const uint8_t *r = id.ptr();
-					memcpy(&wr[ofs], r, len);
-					ofs += len;
-				}
-			}
-
-			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data);
-			return image;
-		}
-
+		return Image::create_from_data(sw, sh, new_mipmaps > 0, format, data);
 	} else if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
-		int sw = w;
-		int sh = h;
 		uint32_t size = f->get_32();
-		if (p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
-			//can't load this due to size limit
-			sw = MAX(sw >> 1, 1);
-			sh = MAX(sh >> 1, 1);
+
+		if (p_size_limit > 0 && ((int)w > p_size_limit || (int)h > p_size_limit)) {
+			// Can't load this due to size limit.
 			f->seek(f->get_position() + size);
 			return Ref<Image>();
 		}
+
+		// Read the BasisU texture.
 		Vector<uint8_t> pv;
 		pv.resize(size);
-		{
-			uint8_t *wr = pv.ptrw();
-			f->get_buffer(wr, size);
-		}
-		Ref<Image> img;
-		img = Image::basis_universal_unpacker(pv);
-		if (img.is_null() || img->is_empty()) {
-			ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
-		}
-		format = img->get_format();
-		sw = MAX(sw >> 1, 1);
-		sh = MAX(sh >> 1, 1);
+		f->get_buffer(pv.ptrw(), size);
+
+		// Transcode the BasisU texture.
+		Ref<Image> img = Image::basis_universal_unpacker(pv);
+		ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
+
 		return img;
 	} else if (data_format == DATA_FORMAT_IMAGE) {
-		int size = Image::get_image_data_size(w, h, format, mipmaps ? true : false);
+		int64_t size = Image::get_image_data_size(w, h, format, mipmaps > 0);
 
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
 			int tw, th;
-			int ofs = Image::get_image_mipmap_offset_and_dimensions(w, h, format, i, tw, th);
+			int64_t ofs = Image::get_image_mipmap_offset_and_dimensions(w, h, format, i, tw, th);
 
 			if (p_size_limit > 0 && i < mipmaps && (p_size_limit > tw || p_size_limit > th)) {
-				if (ofs) {
+				if (ofs > 0) {
 					f->seek(f->get_position() + ofs);
 				}
-				continue; //oops, size limit enforced, go to next
+				continue; // Oops, size limit enforced, skip to the next mipmap.
 			}
 
 			Vector<uint8_t> data;
 			data.resize(size - ofs);
+			f->get_buffer(data.ptrw(), data.size());
 
-			{
-				uint8_t *wr = data.ptrw();
-				f->get_buffer(wr, data.size());
-			}
-
-			Ref<Image> image = Image::create_from_data(tw, th, mipmaps - i ? true : false, format, data);
-
-			return image;
+			return Image::create_from_data(tw, th, (mipmaps - i) > 0, format, data);
 		}
 	}
 
