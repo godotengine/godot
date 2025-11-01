@@ -35,6 +35,8 @@
 
 typedef uint32_t SDL_JoystickID;
 typedef struct HWND__ *HWND;
+typedef struct SDL_Joystick SDL_Joystick;
+typedef struct SDL_Gamepad SDL_Gamepad;
 
 class JoypadSDL {
 public:
@@ -50,7 +52,8 @@ public:
 	void process_events();
 
 private:
-	struct Joypad {
+	class Joypad : public Input::JoypadFeatures {
+	public:
 		bool attached = false;
 		StringName guid;
 
@@ -58,6 +61,9 @@ private:
 
 		bool supports_force_feedback = false;
 		uint64_t ff_effect_timestamp = 0;
+
+		SDL_Joystick *get_sdl_joystick() const;
+		SDL_Gamepad *get_sdl_gamepad() const;
 	};
 
 	static JoypadSDL *singleton;
