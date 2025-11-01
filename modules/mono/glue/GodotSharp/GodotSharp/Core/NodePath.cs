@@ -180,7 +180,7 @@ namespace Godot
             // Add new NodePath to cache
             if (nodePath._weakReferenceToSelf is not null)
             {
-                _nodePathCache.TryAdd(nodePath._asString ?? string.Empty, nodePath._weakReferenceToSelf);
+                _nodePathCache.TryAdd(from, nodePath._weakReferenceToSelf);
             }
             return nodePath;
         }
