@@ -159,6 +159,9 @@ struct [[nodiscard]] Vector4 {
 			x(0), y(0), z(0), w(0) {}
 	constexpr Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
+	template <typename V, std::enable_if_t<std::is_arithmetic_v<V>, int> = 0>
+	constexpr explicit Vector4(V p_v) :
+			x(p_v), y(p_v), z(p_v), w(p_v) {}
 };
 
 real_t Vector4::dot(const Vector4 &p_vec4) const {
