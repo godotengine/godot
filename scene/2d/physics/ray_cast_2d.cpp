@@ -161,6 +161,7 @@ void RayCast2D::_notification(int p_what) {
 			}
 		} break;
 
+#ifdef DEBUG_ENABLED
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
@@ -168,6 +169,7 @@ void RayCast2D::_notification(int p_what) {
 			}
 			_draw_debug_shape();
 		} break;
+#endif // DEBUG_ENABLED
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
@@ -223,6 +225,7 @@ void RayCast2D::_update_raycast_state() {
 	}
 }
 
+#ifdef DEBUG_ENABLED
 void RayCast2D::_draw_debug_shape() {
 	Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
 	if (!enabled) {
@@ -238,10 +241,12 @@ void RayCast2D::_draw_debug_shape() {
 	bool no_line = target_position.length() < line_width;
 	real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
+	RenderingServer *rs = RenderingServer::get_singleton();
+	_prepare_debug_canvas_item();
 	if (no_line) {
 		arrow_size = target_position.length();
 	} else {
-		draw_line(Vector2(), target_position - target_position.normalized() * arrow_size, draw_col, line_width);
+		rs->canvas_item_add_line(_get_debug_canvas_item(), Vector2(), target_position - target_position.normalized() * arrow_size, draw_col, line_width);
 	}
 
 	Transform2D xf;
@@ -256,8 +261,9 @@ void RayCast2D::_draw_debug_shape() {
 
 	Vector<Color> cols = { draw_col, draw_col, draw_col };
 
-	draw_primitive(pts, cols, Vector<Vector2>());
+	rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID());
 }
+#endif // DEBUG_ENABLED
 
 void RayCast2D::force_raycast_update() {
 	_update_raycast_state();
