@@ -1029,16 +1029,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 		Ref<StyleBoxFlat> grabber_style = p_config.base_style->duplicate();
-		grabber_style->set_bg_color(_get_base_color(p_config, 0.5, 0.6));
-		grabber_style->set_border_color(p_config.base_color * Color(1, 1, 1, 0));
-		grabber_style->set_border_width_all(3 * EDSCALE);
+		grabber_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.225));
 
 		Ref<StyleBoxFlat> grabber_hl_style = p_config.base_style->duplicate();
-		grabber_hl_style->set_bg_color(_get_base_color(p_config, 1.4, 0.5));
-		grabber_hl_style->set_border_color(_get_base_color(p_config) * Color(1, 1, 1, 0));
-		grabber_hl_style->set_border_width_all(2.5 * EDSCALE);
+		grabber_hl_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.5));
 
-		int scroll_margin = (p_config.enable_touch_optimizations ? 12 : 6) * EDSCALE;
+		int scroll_margin = (p_config.enable_touch_optimizations ? 10 : 3) * EDSCALE;
 
 		// HScrollBar.
 
@@ -1058,6 +1054,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_icon("decrement_highlight", "HScrollBar", empty_icon);
 		p_theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
+		p_theme->set_constant("padding_top", "HScrollBar", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("padding_bottom", "HScrollBar", p_config.base_margin * EDSCALE);
+
 		// VScrollBar.
 
 		Ref<StyleBoxEmpty> v_scroll_style = p_config.base_empty_style->duplicate();
@@ -1075,6 +1074,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_icon("decrement", "VScrollBar", empty_icon);
 		p_theme->set_icon("decrement_highlight", "VScrollBar", empty_icon);
 		p_theme->set_icon("decrement_pressed", "VScrollBar", empty_icon);
+
+		p_theme->set_constant("padding_left", "VScrollBar", p_config.base_margin * EDSCALE);
+		p_theme->set_constant("padding_right", "VScrollBar", p_config.base_margin * EDSCALE);
 
 		// Slider
 		const int background_margin = MAX(2, p_config.base_margin / 2);
