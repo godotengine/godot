@@ -988,7 +988,7 @@ GPUParticles2D::GPUParticles2D() {
 	RS::get_singleton()->particles_set_draw_pass_mesh(particles, 0, mesh);
 
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
-	set_emitting(true);
+	set_emitting(false);
 	set_one_shot(false);
 	set_seed(Math::rand());
 	set_use_fixed_seed(false);
