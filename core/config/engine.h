@@ -53,6 +53,13 @@ public:
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
+	struct SafeAreaInsets {
+		int left = 0;
+		int top = 0;
+		int right = 0;
+		int bottom = 0;
+	};
+
 private:
 	friend class Main;
 
@@ -107,6 +114,9 @@ private:
 	bool frame_server_synced = false;
 
 	bool freeze_time_scale = false;
+
+	bool has_safe_area_override = false;
+	SafeAreaInsets safe_area_override;
 
 protected:
 	void _update_time_scale();
@@ -223,6 +233,10 @@ public:
 	void set_freeze_time_scale(bool p_frozen);
 	void set_embedded_in_editor(bool p_enabled);
 	bool is_embedded_in_editor() const;
+
+	SafeAreaInsets get_safe_area_override() const;
+	void set_safe_area_override(const SafeAreaInsets &p_safe_area);
+	bool has_safe_area_override_set() const;
 
 	Engine();
 	virtual ~Engine();

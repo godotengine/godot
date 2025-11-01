@@ -430,6 +430,19 @@ bool Engine::is_embedded_in_editor() const {
 	return embedded_in_editor;
 }
 
+Engine::SafeAreaInsets Engine::get_safe_area_override() const {
+	return safe_area_override;
+}
+
+void Engine::set_safe_area_override(const SafeAreaInsets &p_safe_area) {
+	has_safe_area_override = true;
+	safe_area_override = p_safe_area;
+}
+
+bool Engine::has_safe_area_override_set() const {
+	return has_safe_area_override;
+}
+
 Engine::Engine() {
 	singleton = this;
 }

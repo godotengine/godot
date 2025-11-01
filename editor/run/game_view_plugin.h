@@ -152,6 +152,9 @@ class GameView : public VBoxContainer {
 
 	bool debug_mute_audio = false;
 
+	int resolution_preset_index = -1;
+	Vector2i custom_resolution;
+
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
@@ -168,6 +171,7 @@ class GameView : public VBoxContainer {
 	VSeparator *embedding_separator = nullptr;
 	Button *fixed_size_button = nullptr;
 	Button *keep_aspect_button = nullptr;
+	MenuButton *resolution_options_menu = nullptr;
 	Button *stretch_button = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
@@ -237,6 +241,8 @@ class GameView : public VBoxContainer {
 	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
 	void _feature_profile_changed();
+
+	void _switch_resolution_presets(int p_preset);
 
 protected:
 	void _notification(int p_what);
