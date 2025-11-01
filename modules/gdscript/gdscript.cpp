@@ -2287,6 +2287,11 @@ void GDScriptLanguage::init() {
 		GDExtensionManager::get_singleton()->connect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
 		GDExtensionManager::get_singleton()->connect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
 	}
+
+	GDScriptParser::update_project_settings();
+	if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings))) {
+		ProjectSettings::get_singleton()->connect("settings_changed", callable_mp_static(&GDScriptParser::update_project_settings));
+	}
 #endif
 
 #ifdef TESTS_ENABLED
@@ -2967,6 +2972,11 @@ GDScriptLanguage::GDScriptLanguage() {
 
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
+	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY,
+					   "debug/gdscript/warnings/exclude_addons_exceptions",
+					   PROPERTY_HINT_TYPE_STRING,
+					   vformat("%d/%d:plugin.cfg", Variant::STRING, PROPERTY_HINT_FILE)),
+			PackedStringArray());
 	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
