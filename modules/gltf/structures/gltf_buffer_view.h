@@ -90,6 +90,7 @@ public:
 	void set_vertex_attributes(bool p_attributes);
 
 	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_gltf_state) const;
+	static GLTFBufferViewIndex write_new_buffer_view_into_state(const Ref<GLTFState> &p_gltf_state, const PackedByteArray &p_input_data, const int64_t p_alignment = 1, const ArrayBufferTarget p_target = TARGET_NONE, const int64_t p_byte_stride = -1, const GLTFBufferIndex p_buffer_index = 0, const bool p_deduplicate = true);
 
 	static Ref<GLTFBufferView> from_dictionary(const Dictionary &p_dict);
 	Dictionary to_dictionary() const;
