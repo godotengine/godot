@@ -77,6 +77,9 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			if (ofs < decr_size) {
+				if (!decr_active) {
+					emit_signal(SNAME("decrement_pressed"));
+				}
 				decr_active = true;
 				scroll(-(custom_step >= 0 ? custom_step : get_step()));
 				queue_redraw();
@@ -84,6 +87,9 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (ofs > total - incr_size) {
+				if (!incr_active) {
+					emit_signal(SNAME("increment_pressed"));
+				}
 				incr_active = true;
 				scroll(custom_step >= 0 ? custom_step : get_step());
 				queue_redraw();
@@ -133,6 +139,12 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 		} else {
+			if (incr_active) {
+				emit_signal(SNAME("increment_released"));
+			}
+			if (decr_active) {
+				emit_signal(SNAME("decrement_released"));
+			}
 			incr_active = false;
 			decr_active = false;
 			drag.active = false;
@@ -639,6 +651,10 @@ void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 
 	ADD_SIGNAL(MethodInfo("scrolling"));
+	ADD_SIGNAL(MethodInfo("increment_pressed"));
+	ADD_SIGNAL(MethodInfo("increment_released"));
+	ADD_SIGNAL(MethodInfo("decrement_pressed"));
+	ADD_SIGNAL(MethodInfo("decrement_released"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_custom_step", "get_custom_step");
 
