@@ -761,12 +761,13 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		Error err;
 
 		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
-		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
+		if (err == OK) {
 #ifdef OVERRIDE_ENABLED
-			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
-			if (!disable_override) {
-				_load_settings_text(resource_path.path_join("override.cfg"));
+			if (!p_ignore_override) {
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text(resource_path.path_join("override.cfg"));
+				}
 			}
 #endif // OVERRIDE_ENABLED
 			return err;
@@ -793,7 +794,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (err == OK) {
 #ifdef OVERRIDE_ENABLED
 			if (!p_ignore_override) {
-				// Optional, we don't mind if it fails.
 				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
 				if (!disable_override) {
 					_load_settings_text(current_dir.path_join("override.cfg"));
