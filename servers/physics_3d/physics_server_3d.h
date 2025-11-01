@@ -529,7 +529,7 @@ public:
 		Vector3 motion;
 		real_t margin = 0.001;
 		int max_collisions = 1;
-		bool collide_separation_ray = false;
+		bool separation_rays_stop_motion = false;
 		HashSet<RID> exclude_bodies;
 		HashSet<ObjectID> exclude_objects;
 		bool recovery_as_collision = false;
@@ -960,8 +960,8 @@ public:
 	int get_max_collisions() const { return parameters.max_collisions; }
 	void set_max_collisions(int p_max_collisions) { parameters.max_collisions = p_max_collisions; }
 
-	bool is_collide_separation_ray_enabled() const { return parameters.collide_separation_ray; }
-	void set_collide_separation_ray_enabled(bool p_enabled) { parameters.collide_separation_ray = p_enabled; }
+	bool is_separation_rays_stop_motion_enabled() const { return parameters.separation_rays_stop_motion; }
+	void set_separation_rays_stop_motion_enabled(bool p_enabled) { parameters.separation_rays_stop_motion = p_enabled; }
 
 	TypedArray<RID> get_exclude_bodies() const;
 	void set_exclude_bodies(const TypedArray<RID> &p_exclude);
