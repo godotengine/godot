@@ -2947,7 +2947,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_texture", "viewport", "texture"), &RenderingServer::viewport_set_vrs_texture);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
-	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR1);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
@@ -3784,7 +3784,7 @@ void RenderingServer::init() {
 		String mode_hints;
 		String mode_hints_metal;
 		{
-			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.0 (Fast)", "FSR 2.2 (Slow)" };
+			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.2 (Fast)", "FSR 2.3 (Slow)" };
 			mode_hints = String(",").join(mode_hints_arr);
 
 			mode_hints_arr.push_back("MetalFX (Spatial)");
