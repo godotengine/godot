@@ -87,12 +87,16 @@ String FileAccessWindows::fix_path(const String &p_path) const {
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
 		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(r_path);
+		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).replace_first(R"(\\?\UNC\)", "\\\\").trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(r_path);
 	}
 	r_path = r_path.simplify_path();
 	r_path = r_path.replace_char('/', '\\');
-	if (!r_path.is_network_share_path() && !r_path.begins_with(R"(\\?\)")) {
-		r_path = R"(\\?\)" + r_path;
+	if (!r_path.begins_with(R"(\\?\)")) {
+		if (r_path.is_network_share_path()) {
+			r_path = R"(\\?\UNC\)" + r_path.trim_prefix("\\\\");
+		} else {
+			r_path = R"(\\?\)" + r_path;
+		}
 	}
 	return r_path;
 }
@@ -282,7 +286,7 @@ String FileAccessWindows::get_path() const {
 }
 
 String FileAccessWindows::get_path_absolute() const {
-	return path.trim_prefix(R"(\\?\)").replace_char('\\', '/');
+	return path.replace_first(R"(\\?\UNC\)", "\\\\").trim_prefix(R"(\\?\)").replace_char('\\', '/');
 }
 
 bool FileAccessWindows::is_open() const {
