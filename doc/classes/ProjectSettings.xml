@@ -2773,6 +2773,9 @@
 			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
 			[b]Note:[/b] Increasing this value can improve performance if the project renders many unique sprite textures every frame.
 		</member>
+		<member name="rendering/2d/parallax/parallax_preview_mode" type="int" setter="" getter="" default="0">
+			Controls the editor preview mode for [Parallax2D] nodes.
+		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
 			The percentage specified is added on each axis and on both sides. For example, with the default setting of 120%, the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).

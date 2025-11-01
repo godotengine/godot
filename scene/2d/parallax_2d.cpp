@@ -30,39 +30,40 @@
 
 #include "parallax_2d.h"
 
+#include "core/config/project_settings.h"
 #include "scene/main/viewport.h"
 
 void Parallax2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef TOOLS_ENABLED
+			set_preview_mode(GLOBAL_GET("rendering/2d/parallax/parallax_preview_mode"));
+			viewport_size = Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
+#endif // TOOLS_ENABLED
 			group_name = "__cameras_" + itos(get_viewport_rid().get_id());
 			add_to_group(group_name);
 			_update_repeat();
 			_update_scroll();
-		} break;
-
-		case NOTIFICATION_READY: {
 			_update_process();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			Point2 offset = scroll_offset;
-			offset += autoscroll * get_process_delta_time();
-
-			if (repeat_size.x) {
-				offset.x = Math::fposmod(offset.x, repeat_size.x);
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				_process_autoscroll();
 			}
 
-			if (repeat_size.y) {
-				offset.y = Math::fposmod(offset.y, repeat_size.y);
-			}
-
-			scroll_offset = offset;
+#ifdef TOOLS_ENABLED
+			_update_preview();
+#endif // TOOLS_ENABLED
 			_update_scroll();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			remove_from_group(group_name);
+		} break;
+
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			set_screen_offset(Vector2());
 		} break;
 	}
 }
@@ -72,6 +73,32 @@ void Parallax2D::_edit_set_position(const Point2 &p_position) {
 	// Avoids early return for grid snap compatibility
 	scroll_offset = p_position;
 	_update_scroll();
+}
+
+void Parallax2D::set_preview_mode(const int &p_mode) {
+	preview_mode = p_mode;
+
+	if (p_mode == OPTION_DISABLED) {
+		set_screen_offset(Vector2());
+	}
+
+	_update_process();
+}
+
+void Parallax2D::_update_preview() {
+	if (preview_mode == OPTION_ACCURATE) {
+		Transform2D vp_transform = get_viewport()->get_global_canvas_transform();
+		Vector2 vp_origin = vp_transform.get_origin();
+		Vector2 vp_scale = vp_transform.get_scale();
+		Vector2 vp_pos = vp_origin / vp_scale;
+		Rect2 view_rect = Rect2(-vp_pos, Vector2(get_viewport_rect().size) / vp_scale);
+		Rect2 editor_rect = Rect2(view_rect.position + view_rect.size * 0.5 - viewport_size * 0.5, viewport_size);
+		set_screen_offset(editor_rect.position);
+	} else if (preview_mode == OPTION_BASIC) {
+		Transform2D vp_transform = get_viewport()->get_global_canvas_transform();
+		Vector2 vp_viewport_pos = -vp_transform.get_origin() / vp_transform.get_scale();
+		set_screen_offset(vp_viewport_pos);
+	}
 }
 #endif // TOOLS_ENABLED
 
@@ -96,7 +123,11 @@ void Parallax2D::_camera_moved(const Transform2D &p_transform, const Point2 &p_s
 }
 
 void Parallax2D::_update_process() {
-	set_process_internal(!Engine::get_singleton()->is_editor_hint() && (repeat_size.x || repeat_size.y) && (autoscroll.x || autoscroll.y));
+	bool should_process = !Engine::get_singleton()->is_editor_hint() && (repeat_size.x || repeat_size.y) && (autoscroll.x || autoscroll.y);
+#ifdef TOOLS_ENABLED
+	should_process = should_process || (Engine::get_singleton()->is_editor_hint() && preview_mode != OPTION_DISABLED);
+#endif // TOOLS_ENABLED
+	set_process_internal(should_process);
 }
 
 void Parallax2D::_update_scroll() {
@@ -147,6 +178,21 @@ void Parallax2D::_update_repeat() {
 
 	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_size, repeat_times);
 	RenderingServer::get_singleton()->canvas_item_set_interpolated(get_canvas_item(), false);
+}
+
+void Parallax2D::_process_autoscroll() {
+	Point2 offset = scroll_offset;
+	offset += autoscroll * get_process_delta_time();
+
+	if (repeat_size.x) {
+		offset.x = Math::fposmod(offset.x, repeat_size.x);
+	}
+
+	if (repeat_size.y) {
+		offset.y = Math::fposmod(offset.y, repeat_size.y);
+	}
+
+	scroll_offset = offset;
 }
 
 void Parallax2D::set_scroll_scale(const Size2 &p_scale) {
