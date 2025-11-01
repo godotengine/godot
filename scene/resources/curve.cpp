@@ -959,11 +959,32 @@ void Curve2D::_bake() const {
 				pidx++;
 				bpw[pidx] = E.value;
 				bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, E.key);
+				if (bfw[pidx].is_zero_approx()) {
+					bfw[pidx] = bfw[pidx - 1];
+				}
 			}
 
 			pidx++;
 			bpw[pidx] = points[i + 1].position;
 			bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, 1.0);
+			if (bfw[pidx].is_zero_approx()) {
+				bfw[pidx] = bfw[pidx - 1];
+			}
+		}
+		if (bfw[0].is_zero_approx()) {
+			// Use the first non-zero forward vector when the first points overlap.
+			Vector2 first_forward = Vector2(1, 0);
+			int first_not_zero = pc;
+			for (int i = 1; i < pc; i++) {
+				if (!bfw[i].is_zero_approx()) {
+					first_not_zero = i;
+					first_forward = bfw[i];
+					break;
+				}
+			}
+			for (int i = first_not_zero - 1; i >= 0; i--) {
+				bfw[i] = first_forward;
+			}
 		}
 
 		// Recalculate the baked distances.
@@ -1015,9 +1036,9 @@ Curve2D::Interval Curve2D::_find_interval(real_t p_offset) const {
 	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, interval, "Offset out of range.");
 
 	interval.idx = idx;
-	if (idx_interval < FLT_EPSILON) {
+	if (idx_interval < CMP_EPSILON) {
 		interval.frac = 0.5; // For a very short interval, 0.5 is a reasonable choice.
-		ERR_FAIL_V_MSG(interval, "Zero length interval.");
+		return interval;
 	}
 
 	interval.frac = (p_offset - offset_begin) / idx_interval;
@@ -1750,6 +1771,9 @@ void Curve3D::_bake() const {
 					bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[0].position + points[0].in, points[0].position, E.key);
 					btw[pidx] = Math::lerp(points[i].tilt, points[0].tilt, E.key);
 				}
+				if (bfw[pidx].is_zero_approx()) {
+					bfw[pidx] = bfw[pidx - 1];
+				}
 			}
 
 			pidx++;
@@ -1761,6 +1785,24 @@ void Curve3D::_bake() const {
 				bpw[pidx] = points[0].position;
 				bfw[pidx] = _calculate_tangent(points[i].position, points[i].position + points[i].out, points[0].position + points[0].in, points[0].position, 1.0);
 				btw[pidx] = points[0].tilt;
+			}
+			if (bfw[pidx].is_zero_approx()) {
+				bfw[pidx] = bfw[pidx - 1];
+			}
+		}
+		if (bfw[0].is_zero_approx()) {
+			// Use the first non-zero forward vector when the first points overlap.
+			Vector3 first_forward = Vector3(0, 0, -1);
+			int first_not_zero = pc;
+			for (int i = 1; i < pc; i++) {
+				if (!bfw[i].is_zero_approx()) {
+					first_not_zero = i;
+					first_forward = bfw[i];
+					break;
+				}
+			}
+			for (int i = first_not_zero - 1; i >= 0; i--) {
+				bfw[i] = first_forward;
 			}
 		}
 
@@ -1896,9 +1938,9 @@ Curve3D::Interval Curve3D::_find_interval(real_t p_offset) const {
 	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, interval, "Offset out of range.");
 
 	interval.idx = idx;
-	if (idx_interval < FLT_EPSILON) {
+	if (idx_interval < CMP_EPSILON) {
 		interval.frac = 0.5; // For a very short interval, 0.5 is a reasonable choice.
-		ERR_FAIL_V_MSG(interval, "Zero length interval.");
+		return interval;
 	}
 
 	interval.frac = (p_offset - offset_begin) / idx_interval;
