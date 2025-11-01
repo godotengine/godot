@@ -112,6 +112,7 @@
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/scene/packed_scene_editor_plugin.h"
 #include "editor/scene/resource_preloader_editor_plugin.h"
+#include "editor/scene/scene_paint_editor_plugin.h"
 #include "editor/scene/sprite_frames_editor_plugin.h"
 #include "editor/scene/texture/bit_map_editor_plugin.h"
 #include "editor/scene/texture/gradient_texture_2d_editor_plugin.h"
@@ -276,6 +277,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	EditorPlugins::add_by_type<ScenePaintEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
