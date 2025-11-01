@@ -738,7 +738,8 @@ Size2 Camera2D::_get_camera_screen_size() const {
 	if (is_part_of_edited_scene()) {
 		return Size2(GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_width"), GLOBAL_GET_CACHED(real_t, "display/window/size/viewport_height"));
 	}
-	return get_viewport_rect().size;
+	ERR_FAIL_NULL_V(viewport, Size2());
+	return viewport->get_visible_rect().size;
 }
 
 void Camera2D::set_drag_horizontal_enabled(bool p_enabled) {
