@@ -1,7 +1,7 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -50,7 +50,8 @@ namespace Godot
         private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<IDisposable>> _nodePathCache = new();
-        private readonly string? _asString;
+        private readonly string? _inputString;
+        private readonly string? _outputString;
 
         ~NodePath()
         {
@@ -69,9 +70,9 @@ namespace Godot
         public void Dispose(bool disposing)
         {
             // Remove from cache
-            if (_asString is not null && _weakReferenceToSelf is not null)
+            if (_inputString is not null && _weakReferenceToSelf is not null)
             {
-                _nodePathCache.TryRemove(new(_asString, _weakReferenceToSelf));
+                _nodePathCache.TryRemove(new(_inputString, _weakReferenceToSelf));
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -88,11 +89,13 @@ namespace Godot
             NativeValue = (godot_node_path.movable)nativeValueToOwn;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            // Store string representation
+            // Store input string (string passed to constructor)
+            _inputString = null;
+            // Store output string (string outputted by ToString())
             NativeFuncs.godotsharp_node_path_as_string(out godot_string asNativeString, nativeValueToOwn);
             using (asNativeString)
             {
-                _asString = Marshaling.ConvertStringToManaged(asNativeString);
+                _outputString = Marshaling.ConvertStringToManaged(asNativeString);
             }
         }
 
@@ -105,7 +108,10 @@ namespace Godot
         /// </summary>
         public NodePath()
         {
-            _asString = string.Empty;
+            // Store input string (used to create NodePath)
+            _inputString = string.Empty;
+            // Store output string (outputted by ToString())
+            _outputString = string.Empty;
         }
 
         /// <summary>
@@ -144,13 +150,15 @@ namespace Godot
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-                // Store string representation
+                // Store input string (used to create NodePath)
+                _inputString = path;
+                // Store output string (outputted by ToString())
                 // (Must convert to native value; NodePaths can simplify)
                 var src = (godot_node_path)NativeValue;
                 NativeFuncs.godotsharp_node_path_as_string(out godot_string asNativeString, src);
                 using (asNativeString)
                 {
-                    _asString = Marshaling.ConvertStringToManaged(asNativeString);
+                    _outputString = Marshaling.ConvertStringToManaged(asNativeString);
                 }
             }
         }
@@ -201,7 +209,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="NodePath"/>.</returns>
         public override string ToString()
         {
-            return _asString ?? string.Empty;
+            return _outputString ?? string.Empty;
         }
 
         /// <summary>

@@ -1,7 +1,7 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -21,7 +21,8 @@ namespace Godot
         private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<IDisposable>> _stringNameCache = new();
-        private readonly string? _asString;
+        private readonly string? _inputString;
+        private readonly string? _outputString;
 
         ~StringName()
         {
@@ -40,9 +41,9 @@ namespace Godot
         public void Dispose(bool disposing)
         {
             // Remove from cache
-            if (_asString is not null && _weakReferenceToSelf is not null)
+            if (_inputString is not null && _weakReferenceToSelf is not null)
             {
-                _stringNameCache.TryRemove(new(_asString, _weakReferenceToSelf));
+                _stringNameCache.TryRemove(new(_inputString, _weakReferenceToSelf));
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -59,11 +60,13 @@ namespace Godot
             NativeValue = (godot_string_name.movable)nativeValueToOwn;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-            // Store string representation
+            // Store input string (string passed to constructor)
+            _inputString = null;
+            // Store output string (string outputted by ToString())
             NativeFuncs.godotsharp_string_name_as_string(out godot_string asNativeString, nativeValueToOwn);
             using (asNativeString)
             {
-                _asString = Marshaling.ConvertStringToManaged(asNativeString);
+                _outputString = Marshaling.ConvertStringToManaged(asNativeString);
             }
         }
 
@@ -76,7 +79,10 @@ namespace Godot
         /// </summary>
         public StringName()
         {
-            _asString = string.Empty;
+            // Store input string (used to create NodePath)
+            _inputString = string.Empty;
+            // Store output string (outputted by ToString())
+            _outputString = string.Empty;
         }
 
         /// <summary>
@@ -90,9 +96,11 @@ namespace Godot
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-                // Store string representation
+                // Store input string (used to create NodePath)
+                _inputString = name;
+                // Store output string (string outputted by ToString())
                 // (No need to convert native value; StringNames can never change or simplify)
-                _asString = name;
+                _outputString = name;
             }
         }
 
@@ -142,7 +150,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="StringName"/>.</returns>
         public override string ToString()
         {
-            return _asString ?? string.Empty;
+            return _outputString ?? string.Empty;
         }
 
         /// <summary>
@@ -175,9 +183,9 @@ namespace Godot
             if (other is null)
                 return false;
 
-            // Compare string representations
+            // Compare output string (string outputted by ToString())
             // (No need to convert native value; StringNames can never change or simplify)
-            return _asString == other;
+            return _outputString == other;
         }
 
         public static bool operator ==(StringName? left, in godot_string_name right)
