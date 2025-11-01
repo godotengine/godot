@@ -1054,12 +1054,13 @@
 				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
-		<method name="_format_number" qualifiers="virtual const">
+		<method name="_format_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.format_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				Converts a number from Western Arabic (0..9) to the numeral system used in the given [param language].
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="_free_rid" qualifiers="virtual required">
@@ -1163,12 +1164,13 @@
 				Converts readable feature, variation, script, or language name to OpenType tag.
 			</description>
 		</method>
-		<method name="_parse_number" qualifiers="virtual const">
+		<method name="_parse_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.parse_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Converts [param number] from the numeral systems used in [param language] to Western Arabic (0..9).
+				Converts [param number] from the numeral system used in the given [param language] to Western Arabic (0..9).
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="_parse_structured_text" qualifiers="virtual const">
@@ -1180,11 +1182,11 @@
 				Default implementation of the BiDi algorithm override function.
 			</description>
 		</method>
-		<method name="_percent_sign" qualifiers="virtual const">
+		<method name="_percent_sign" qualifiers="virtual const" deprecated="Use [method TranslationServer.get_percent_sign] instead.">
 			<return type="String" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns percent sign used in the [param language].
+				Returns percent sign used in the given [param language].
 			</description>
 		</method>
 		<method name="_reference_oversampling_level" qualifiers="virtual">
