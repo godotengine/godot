@@ -426,12 +426,12 @@ void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable)
 
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
 	ERR_FAIL_COND(p_parser.is_null());
-	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
+	EditorTranslationParser::get_singleton()->add_parser(p_parser, false);
 }
 
 void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
 	ERR_FAIL_COND(p_parser.is_null());
-	EditorTranslationParser::get_singleton()->remove_parser(p_parser, EditorTranslationParser::CUSTOM);
+	EditorTranslationParser::get_singleton()->remove_parser(p_parser, false);
 }
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority) {
