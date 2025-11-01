@@ -74,6 +74,7 @@ public:
 		PARTICLE_FLAG_ROTATE_Y,
 		PARTICLE_FLAG_DISABLE_Z,
 		PARTICLE_FLAG_DAMPING_AS_FRICTION,
+		PARTICLE_FLAG_INHERIT_EMITTER_SCALE,
 		PARTICLE_FLAG_MAX
 	};
 
@@ -142,6 +143,7 @@ private:
 			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
 		}
 	};
+	static_assert(sizeof(MaterialKey) <= 8, "MaterialKey cannot be larger than 64 bits.");
 
 	struct ShaderData {
 		RID shader;
