@@ -39,6 +39,7 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/simple_type.h"
 #include "core/variant/variant.h"
 
 template <typename T>
@@ -381,17 +382,17 @@ struct ObjectGDExtension {
 #endif
 };
 
-#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
-#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
+#define GDVIRTUAL_CALL(m_name, ...) gdvirtual_call(get_gdvirtual_##m_name(), _gdvirtual_##m_name##_ptr, ##__VA_ARGS__)
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->gdvirtual_call(std::remove_pointer_t<RemoveRefT<GetSimpleTypeT<decltype(m_obj)>>>::get_gdvirtual_##m_name(), m_obj->_gdvirtual_##m_name##_ptr, ##__VA_ARGS__)
 
 #ifdef DEBUG_ENABLED
-#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
+#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), get_gdvirtual_##m_name().get_method_info(), true, sarray(__VA_ARGS__));
 #else
 #define GDVIRTUAL_BIND(m_name, ...)
 #endif // DEBUG_ENABLED
-#define GDVIRTUAL_BIND_COMPAT(m_alias, ...) ::ClassDB::add_virtual_compatibility_method(get_class_static(), _gdvirtual_##m_alias##_get_method_info(), true, sarray(__VA_ARGS__));
-#define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
-#define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
+#define GDVIRTUAL_BIND_COMPAT(m_alias, ...) ::ClassDB::add_virtual_compatibility_method(get_class_static(), get_gdvirtual_##m_alias().get_method_info(), true, sarray(__VA_ARGS__));
+#define GDVIRTUAL_IS_OVERRIDDEN(m_name) is_gdvirtual_overridden(get_gdvirtual_##m_name(), _gdvirtual_##m_name##_ptr)
+#define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->is_gdvirtual_overridden(std::remove_pointer_t<RemoveRefT<GetSimpleTypeT<decltype(m_obj)>>>::get_gdvirtual_##m_name(), m_obj->_gdvirtual_##m_name##_ptr)
 
 /*
  * The following is an incomprehensible blob of hacks and workarounds to
@@ -565,8 +566,39 @@ public:                                              \
                                                      \
 private:
 
+inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
+
 class ClassDB;
 class ScriptInstance;
+
+template <typename T>
+struct VariantCaster;
+
+template <typename T, typename = void>
+struct PtrToArg;
+
+class GDVirtualMethodInfoBase {
+public:
+	StringName fn_name;
+	bool required;
+	bool compat;
+
+	GDVirtualMethodInfoBase(StringName p_fn_name, bool p_required, bool p_compat) :
+			fn_name(p_fn_name), required(p_required), compat(p_compat) {}
+
+	virtual ~GDVirtualMethodInfoBase() {}
+	virtual MethodInfo get_method_info() const = 0;
+};
+
+template <bool t_const, typename Ret, typename... Args>
+class GDVirtualMethodInfo : public GDVirtualMethodInfoBase {
+	using GDVirtualMethodInfoBase::GDVirtualMethodInfoBase;
+};
+
+template <typename T>
+struct type_identity {
+	typedef T type;
+};
 
 class Object {
 public:
@@ -721,7 +753,7 @@ protected:
 	}
 
 	// Used in gdvirtual.gen.inc
-	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
+	void _gdvirtual_init_method_ptr(const GDVirtualMethodInfoBase &p_method_info, void *&r_fn_ptr) const;
 
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
@@ -907,6 +939,110 @@ public:
 		Callable::CallError cerr;
 		const Variant ret = callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
 		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
+	}
+
+	bool is_gdvirtual_overridden(const GDVirtualMethodInfoBase &p_method_info, void *&ptr) const;
+
+	template <typename Ret, typename... Args>
+	bool gdvirtual_call(const GDVirtualMethodInfo<false, Ret, Args...> &p_method_info, void *&ptr, typename type_identity<Args>::type... args, typename type_identity<Ret>::type &r_ret) {
+		constexpr size_t size_safe = sizeof...(args) ? sizeof...(args) : 1;
+
+		if (script_instance && !p_method_info.compat) {
+			Callable::CallError ce;
+			Variant vargs[size_safe] = { args... };
+			const Variant *argptrs[size_safe];
+			for (uint32_t i = 0; i < sizeof...(args); i++) {
+				argptrs[i] = &vargs[i];
+			}
+			// TODO use simpler callp which just forwards to ScriptInstance
+			Variant ret = callp(p_method_info.fn_name, (const Variant **)argptrs, sizeof...(args), ce);
+			if (ce.error == Callable::CallError::CALL_OK) {
+				r_ret = VariantCaster<Ret>::cast(ret);
+				return true;
+			}
+		}
+		if (_get_extension()) {
+			if (unlikely(!ptr)) {
+				_gdvirtual_init_method_ptr(p_method_info, ptr);
+			}
+			if (ptr != reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {
+				std::tuple<typename PtrToArg<Args>::EncodeT...> argval = { (typename PtrToArg<Args>::EncodeT)args... };
+				GDExtensionConstTypePtr argptrs[size_safe];
+				std::apply([&](auto &...elems) {
+					size_t i = 0;
+					((argptrs[i++] = static_cast<void *>(&elems)), ...);
+				},
+						argval);
+				typename PtrToArg<Ret>::EncodeT ret;
+				if (_get_extension()->call_virtual_with_data) {
+					_get_extension()->call_virtual_with_data(_get_extension_instance(), &p_method_info.fn_name, ptr, reinterpret_cast<GDExtensionConstTypePtr *>(argptrs), &ret);
+					r_ret = (Ret)ret;
+				} else {
+					((GDExtensionClassCallVirtual)ptr)(_get_extension_instance(), reinterpret_cast<GDExtensionConstTypePtr *>(argptrs), &ret);
+					r_ret = (Ret)ret;
+				}
+				return true;
+			}
+		}
+		if (p_method_info.required) {
+			ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + p_method_info.fn_name + " must be overridden before calling.");
+		}
+		return false;
+	}
+
+	template <typename... Args>
+	bool gdvirtual_call(const GDVirtualMethodInfo<false, void, Args...> &p_method_info, void *&ptr, typename type_identity<Args>::type... args) {
+		constexpr size_t size_safe = sizeof...(args) ? sizeof...(args) : 1;
+
+		if (script_instance && !p_method_info.compat) {
+			Callable::CallError ce;
+			Variant vargs[size_safe] = { args... };
+			const Variant *argptrs[size_safe];
+			for (uint32_t i = 0; i < sizeof...(args); i++) {
+				argptrs[i] = &vargs[i];
+			}
+			// TODO use simpler callp which just forwards to ScriptInstance
+			callp(p_method_info.fn_name, (const Variant **)argptrs, sizeof...(args), ce);
+			if (ce.error == Callable::CallError::CALL_OK) {
+				return true;
+			}
+		}
+		if (_get_extension()) {
+			if (unlikely(!ptr)) {
+				_gdvirtual_init_method_ptr(p_method_info, ptr);
+			}
+			if (ptr != reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {
+				std::tuple<typename PtrToArg<Args>::EncodeT...> argval = { (typename PtrToArg<Args>::EncodeT)args... };
+				GDExtensionConstTypePtr argptrs[size_safe];
+				std::apply([&](auto &...elems) {
+					size_t i = 0;
+					((argptrs[i++] = static_cast<void *>(&elems)), ...);
+				},
+						argval);
+				if (_get_extension()->call_virtual_with_data) {
+					_get_extension()->call_virtual_with_data(_get_extension_instance(), &p_method_info.fn_name, ptr, reinterpret_cast<GDExtensionConstTypePtr *>(argptrs), nullptr);
+				} else {
+					((GDExtensionClassCallVirtual)ptr)(_get_extension_instance(), reinterpret_cast<GDExtensionConstTypePtr *>(argptrs), nullptr);
+				}
+				return true;
+			}
+		}
+		if (p_method_info.required) {
+			ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + p_method_info.fn_name + " must be overridden before calling.");
+		}
+		return false;
+	}
+
+	template <typename Ret, typename... Args>
+	_FORCE_INLINE_ bool gdvirtual_call(const GDVirtualMethodInfo<true, Ret, Args...> &p_method_info, void *&ptr, typename type_identity<Args>::type... args, typename type_identity<Ret>::type &r_ret) const {
+		// Implementation is the same, just use the non-const version.
+		return gdvirtual_call((GDVirtualMethodInfo<true, Ret, Args...> &)p_method_info, ptr, args..., r_ret);
+	}
+
+	template <typename... Args>
+	_FORCE_INLINE_ bool gdvirtual_call(const GDVirtualMethodInfo<true, void, Args...> &p_method_info, void *&ptr, typename type_identity<Args>::type... args) const {
+		// Implementation is the same, just use the non-const version.
+		return gdvirtual_call((GDVirtualMethodInfo<true, void, Args...> &)p_method_info, ptr, args...);
 	}
 
 	// Depending on the boolean, we call either the virtual function _notification_backward or _notification_forward.
