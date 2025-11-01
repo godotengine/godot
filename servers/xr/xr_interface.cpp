@@ -51,6 +51,9 @@ void XRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
 
+	ClassDB::bind_method(D_METHOD("is_protected_content"), &XRInterface::is_protected_content);
+	ClassDB::bind_method(D_METHOD("set_protected_content", "protected_content"), &XRInterface::set_protected_content);
+
 	ADD_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_primary", "is_primary");
 

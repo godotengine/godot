@@ -156,6 +156,13 @@
 				If handtracking is enabled and motion range is supported, sets the currently configured motion range for [param hand] to [param motion_range].
 			</description>
 		</method>
+		<method name="set_protected_content">
+			<return type="bool" />
+			<param index="0" name="protected_content" type="bool" />
+			<description>
+				If enabled, the OpenXR swapchain will be created with the [code]XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT[/code] flag, which will protect its contents from CPU access.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="display_refresh_rate" type="float" setter="set_display_refresh_rate" getter="get_display_refresh_rate" default="0.0">

@@ -836,6 +836,22 @@ PackedVector3Array OpenXRInterface::get_play_area() const {
 	return arr;
 }
 
+bool OpenXRInterface::set_protected_content(bool p_protected_content) {
+	if (openxr_api == nullptr) {
+		return false;
+	}
+
+	openxr_api->set_protected_content(p_protected_content);
+	return true;
+}
+
+bool OpenXRInterface::is_protected_content() const {
+	if (openxr_api == nullptr) {
+		return false;
+	}
+	return openxr_api->is_protected_content();
+}
+
 float OpenXRInterface::get_display_refresh_rate() const {
 	if (openxr_api == nullptr) {
 		return 0.0;

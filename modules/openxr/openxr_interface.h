@@ -151,6 +151,9 @@ public:
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 	virtual PackedVector3Array get_play_area() const override;
 
+	virtual bool set_protected_content(bool p_protected_content) override;
+	virtual bool is_protected_content() const override;
+
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
 	Array get_available_display_refresh_rates() const;
