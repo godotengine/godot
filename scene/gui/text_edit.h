@@ -645,6 +645,8 @@ private:
 		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
+
+		Ref<AudioStream> text_changed_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;

@@ -64,6 +64,9 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
 				grab.value_before_dragging = get_as_ratio();
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.drag_started_sound);
+				}
 				emit_signal(SNAME("drag_started"));
 
 				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
@@ -85,6 +88,9 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				grab.active = false;
 
 				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.drag_ended_sound);
+				}
 				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
@@ -92,10 +98,16 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
 				}
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				if (get_focus_mode_with_override() != FOCUS_NONE) {
 					grab_focus();
+				}
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.value_changed_sound);
 				}
 				set_value(get_value() - get_step());
 			}
@@ -146,6 +158,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			}
+
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
@@ -162,6 +178,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			}
+
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
@@ -172,6 +192,9 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 				set_process_internal(true);
+			}
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
 			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
@@ -185,12 +208,21 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+			}
 			set_value(get_min());
 			accept_event();
 		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(theme_cache.value_changed_sound);
+			}
 			set_value(get_max());
 			accept_event();
 		}
@@ -485,6 +517,10 @@ void Slider::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, drag_ended_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, value_changed_sound);
 }
 
 Slider::Slider(Orientation p_orientation) {

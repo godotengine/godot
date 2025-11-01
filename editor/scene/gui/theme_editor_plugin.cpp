@@ -101,6 +101,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	int font_size_amount = 0;
 	int icon_amount = 0;
 	int stylebox_amount = 0;
+	int sound_amount = 0;
 
 	tree_color_items.clear();
 	tree_constant_items.clear();
@@ -108,6 +109,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	tree_font_size_items.clear();
 	tree_icon_items.clear();
 	tree_stylebox_items.clear();
+	tree_sound_items.clear();
 
 	for (const StringName &E : types) {
 		String type_name = (String)E;
@@ -222,6 +224,14 @@ void ThemeItemImportTree::_update_items_tree() {
 
 					item_list = &tree_stylebox_items;
 					stylebox_amount += filtered_names.size();
+					break;
+
+				case Theme::DATA_TYPE_SOUND:
+					data_type_node->set_icon(0, get_theme_icon(SNAME("AudioStream"), SNAME("EditorIcons")));
+					data_type_node->set_text(0, TTR("Sounds"));
+
+					item_list = &tree_sound_items;
+					sound_amount += filtered_names.size();
 					break;
 
 				case Theme::DATA_TYPE_MAX:
@@ -340,6 +350,20 @@ void ThemeItemImportTree::_update_items_tree() {
 		select_full_styleboxes_button->set_visible(false);
 		deselect_all_styleboxes_button->set_visible(false);
 	}
+
+	if (sound_amount > 0) {
+		Array arr;
+		arr.push_back(sound_amount);
+		select_sounds_label->set_text(TTRN("1 sound", "{num} sounds", sound_amount).format(arr, "{num}"));
+		select_all_sounds_button->set_visible(true);
+		select_full_sounds_button->set_visible(true);
+		deselect_all_sounds_button->set_visible(true);
+	} else {
+		select_sounds_label->set_text(TTR("No sounds found."));
+		select_all_sounds_button->set_visible(false);
+		select_full_sounds_button->set_visible(false);
+		deselect_all_sounds_button->set_visible(false);
+	}
 }
 
 void ThemeItemImportTree::_toggle_type_items(bool p_collapse) {
@@ -455,6 +479,10 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 
 		case Theme::DATA_TYPE_STYLEBOX:
 			total_selected_items_label = total_selected_styleboxes_label;
+			break;
+
+		case Theme::DATA_TYPE_SOUND:
+			total_selected_items_label = total_selected_sounds_label;
 			break;
 
 		case Theme::DATA_TYPE_MAX:
@@ -621,6 +649,10 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_stylebox_items;
 			break;
 
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
+			break;
+
 		case Theme::DATA_TYPE_MAX:
 			return; // Can't happen, but silences warning.
 	}
@@ -674,6 +706,10 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 
 		case Theme::DATA_TYPE_STYLEBOX:
 			item_list = &tree_stylebox_items;
+			break;
+
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
 			break;
 
 		case Theme::DATA_TYPE_MAX:
@@ -731,6 +767,10 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 
 		case Theme::DATA_TYPE_STYLEBOX:
 			item_list = &tree_stylebox_items;
+			break;
+
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
 			break;
 
 		case Theme::DATA_TYPE_MAX:
@@ -809,6 +849,10 @@ void ThemeItemImportTree::_import_selected() {
 						item_value = Ref<StyleBox>();
 						break;
 
+					case Theme::DATA_TYPE_SOUND:
+						item_value = Ref<AudioStream>();
+						break;
+
 					case Theme::DATA_TYPE_MAX:
 						break; // Can't happen, but silences warning.
 				}
@@ -860,6 +904,7 @@ void ThemeItemImportTree::reset_item_tree() {
 	total_selected_font_sizes_label->hide();
 	total_selected_icons_label->hide();
 	total_selected_styleboxes_label->hide();
+	total_selected_sounds_label->hide();
 
 	_update_items_tree();
 }
@@ -914,6 +959,11 @@ void ThemeItemImportTree::_notification(int p_what) {
 			deselect_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
 			select_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
 			select_full_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
+
+			select_sounds_icon->set_texture(get_editor_theme_icon(SNAME("AudioStream")));
+			deselect_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
+			select_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
+			select_full_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
 		} break;
 	}
 }
@@ -1009,6 +1059,13 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	select_all_styleboxes_button = memnew(Button);
 	select_full_styleboxes_button = memnew(Button);
 	total_selected_styleboxes_label = memnew(Label);
+
+	select_sounds_icon = memnew(TextureRect);
+	select_sounds_label = memnew(Label);
+	deselect_all_sounds_button = memnew(Button);
+	select_all_sounds_button = memnew(Button);
+	select_full_sounds_button = memnew(Button);
+	total_selected_sounds_label = memnew(Label);
 
 	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
 		Theme::DataType dt = (Theme::DataType)i;
@@ -1108,6 +1165,20 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_all_items_tooltip = TTR("Select all visible stylebox items.");
 				select_full_items_tooltip = TTR("Select all visible stylebox items and their data.");
 				deselect_all_items_tooltip = TTR("Deselect all visible stylebox items.");
+				break;
+
+			case Theme::DATA_TYPE_SOUND:
+				select_items_icon = select_sounds_icon;
+				select_items_label = select_sounds_label;
+				deselect_all_items_button = deselect_all_sounds_button;
+				select_all_items_button = select_all_sounds_button;
+				select_full_items_button = select_full_sounds_button;
+				total_selected_items_label = total_selected_sounds_label;
+
+				items_title = TTR("sounds");
+				select_all_items_tooltip = TTR("Select all visible sound items.");
+				select_full_items_tooltip = TTR("Select all visible sound items and their data.");
+				deselect_all_items_tooltip = TTR("Deselect all visible sound items.");
 				break;
 
 			case Theme::DATA_TYPE_MAX:
@@ -1298,6 +1369,7 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_font_size->set_disabled(false);
 		edit_items_add_icon->set_disabled(false);
 		edit_items_add_stylebox->set_disabled(false);
+		edit_items_add_sound->set_disabled(false);
 
 		edit_items_remove_class->set_disabled(false);
 		edit_items_remove_custom->set_disabled(false);
@@ -1312,6 +1384,7 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_font_size->set_disabled(true);
 		edit_items_add_icon->set_disabled(true);
 		edit_items_add_stylebox->set_disabled(true);
+		edit_items_add_sound->set_disabled(true);
 
 		edit_items_remove_class->set_disabled(true);
 		edit_items_remove_custom->set_disabled(true);
@@ -1531,6 +1604,29 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 		}
 	}
 
+	{ // Audios.
+		names.clear();
+		edited_theme->get_sound_list(p_item_type, &names);
+
+		if (names.size() > 0) {
+			TreeItem *sound_root = edit_items_tree->create_item(root);
+			sound_root->set_metadata(0, Theme::DATA_TYPE_SOUND);
+			sound_root->set_icon(0, get_editor_theme_icon(SNAME("AudioStream")));
+			sound_root->set_text(0, TTR("Sounds"));
+			sound_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Audio Items"));
+
+			names.sort_custom<StringName::AlphCompare>();
+			for (const StringName &E : names) {
+				TreeItem *item = edit_items_tree->create_item(sound_root);
+				item->set_text(0, E);
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+			}
+
+			has_any_items = true;
+		}
+	}
+
 	// If some type is selected, but it doesn't seem to have any items, show a guiding message.
 	TreeItem *selected_item = edit_type_list->get_selected();
 	if (selected_item) {
@@ -1628,6 +1724,10 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, const S
 		case Theme::DATA_TYPE_CONSTANT:
 			ur->add_do_method(*edited_theme, "set_constant", p_item_name, p_item_type, 0);
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, p_item_type);
+			break;
+		case Theme::DATA_TYPE_SOUND:
+			ur->add_do_method(*edited_theme, "set_sound", p_item_name, p_item_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", p_item_name, p_item_type);
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1815,6 +1915,9 @@ void ThemeItemEditorDialog::_open_add_theme_item_dialog(int p_data_type) {
 		case Theme::DATA_TYPE_STYLEBOX:
 			edit_theme_item_dialog->set_title(TTR("Add Stylebox Item"));
 			break;
+		case Theme::DATA_TYPE_SOUND:
+			edit_theme_item_dialog->set_title(TTR("Add Sound Item"));
+			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -1850,6 +1953,9 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 			break;
 		case Theme::DATA_TYPE_STYLEBOX:
 			edit_theme_item_dialog->set_title(TTR("Rename Stylebox Item"));
+			break;
+		case Theme::DATA_TYPE_SOUND:
+			edit_theme_item_dialog->set_title(TTR("Rename Sound Item"));
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1937,6 +2043,7 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_add_font_size->set_button_icon(get_editor_theme_icon(SNAME("FontSize")));
 			edit_items_add_icon->set_button_icon(get_editor_theme_icon(SNAME("ImageTexture")));
 			edit_items_add_stylebox->set_button_icon(get_editor_theme_icon(SNAME("StyleBoxFlat")));
+			edit_items_add_sound->set_button_icon(get_editor_theme_icon(SNAME("AudioStream")));
 
 			edit_items_remove_class->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			edit_items_remove_custom->set_button_icon(get_editor_theme_icon(SNAME("ThemeRemoveCustomItems")));
@@ -2060,6 +2167,13 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_add_stylebox->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_stylebox);
 	edit_items_add_stylebox->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_STYLEBOX));
+
+	edit_items_add_sound = memnew(Button);
+	edit_items_add_sound->set_tooltip_text(TTR("Add Sound Item"));
+	edit_items_add_sound->set_flat(true);
+	edit_items_add_sound->set_disabled(true);
+	edit_items_toolbar->add_child(edit_items_add_sound);
+	edit_items_add_sound->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_SOUND));
 
 	edit_items_toolbar->add_child(memnew(VSeparator));
 
@@ -2847,6 +2961,44 @@ void ThemeTypeEditor::_update_type_items() {
 		}
 	}
 
+	// Sounds.
+	{
+		for (int i = sound_items_list->get_child_count() - 1; i >= 0; i--) {
+			Node *node = sound_items_list->get_child(i);
+			node->queue_free();
+			sound_items_list->remove_child(node);
+		}
+
+		HashMap<StringName, bool> sound_items = _get_type_items(edited_type, Theme::DATA_TYPE_SOUND, show_default);
+		for (const KeyValue<StringName, bool> &E : sound_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_SOUND, E.key, E.value);
+			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+			item_editor->set_base_type("AudioStream");
+			item_control->add_child(item_editor);
+
+			if (E.value) {
+				if (edited_theme->has_sound(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_sound(E.key, edited_type));
+				} else {
+					item_editor->set_edited_resource(Ref<Resource>());
+				}
+				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_sound_item_changed).bind(E.key));
+			} else {
+				if (ThemeDB::get_singleton()->get_default_theme()->has_sound(E.key, edited_type)) {
+					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_sound(E.key, edited_type));
+				} else {
+					item_editor->set_edited_resource(Ref<Resource>());
+				}
+				item_editor->set_editable(false);
+			}
+
+			_add_focusable(item_editor);
+			sound_items_list->add_child(item_control);
+		}
+	}
+
 	// Various type settings.
 	if (edited_type.is_empty() || ClassDB::class_exists(edited_type)) {
 		type_variation_edit->set_editable(false);
@@ -2985,6 +3137,15 @@ void ThemeTypeEditor::_add_default_type_items() {
 			}
 		}
 	}
+	{
+		names.clear();
+		ThemeDB::get_singleton()->get_default_theme()->get_sound_list(default_type, &names);
+		for (const StringName &E : names) {
+			if (!new_snapshot->has_sound(E, edited_type)) {
+				new_snapshot->set_sound(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_sound(E, edited_type));
+			}
+		}
+	}
 
 	updating = false;
 
@@ -3047,6 +3208,10 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 				ur->add_undo_method(this, "_unpin_leading_stylebox");
 			}
 		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "set_sound", item_name, edited_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", item_name, edited_type);
+		} break;
 	}
 
 	ur->commit_action();
@@ -3092,6 +3257,10 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 			if (is_stylebox_pinned(sb)) {
 				ur->add_undo_method(this, "_unpin_leading_stylebox");
 			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", p_item_name, edited_type);
 		} break;
 	}
 
@@ -3143,6 +3312,14 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 			if (is_stylebox_pinned(sb)) {
 				ur->add_do_method(this, "_unpin_leading_stylebox");
 				ur->add_undo_method(this, "_pin_leading_stylebox", p_item_name, sb);
+			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "clear_sound", p_item_name, edited_type);
+			if (edited_theme->has_sound(p_item_name, edited_type)) {
+				ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, edited_theme->get_sound(p_item_name, edited_type));
+			} else {
+				ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
 			}
 		} break;
 	}
@@ -3208,6 +3385,10 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 			if (leading_stylebox.pinned && leading_stylebox.item_name == p_item_name) {
 				leading_stylebox.item_name = new_name;
 			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "rename_sound", p_item_name, new_name, edited_type);
+			ur->add_undo_method(*edited_theme, "rename_sound", new_name, p_item_name, edited_type);
 		} break;
 	}
 
@@ -3310,6 +3491,23 @@ void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_ite
 
 	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
 	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
+
+	ur->commit_action();
+}
+
+void ThemeTypeEditor::_sound_item_changed(Ref<AudioStream> p_value, String p_item_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Sound Item in Theme"));
+
+	ur->add_do_method(*edited_theme, "set_sound", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<AudioStream>());
+	if (edited_theme->has_sound(p_item_name, edited_type)) {
+		ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, edited_theme->get_sound(p_item_name, edited_type));
+	} else {
+		ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
+	}
+
+	ur->add_do_method(this, "call_deferred", "_update_type_items");
+	ur->add_undo_method(this, "call_deferred", "_update_type_items");
 
 	ur->commit_action();
 }
@@ -3484,11 +3682,12 @@ void ThemeTypeEditor::_notification(int p_what) {
 
 			data_type_tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Color")));
 			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("MemberConstant")));
-			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("FontItem")));
+			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("Font")));
 			data_type_tabs->set_tab_icon(3, get_editor_theme_icon(SNAME("FontSize")));
 			data_type_tabs->set_tab_icon(4, get_editor_theme_icon(SNAME("ImageTexture")));
 			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("StyleBoxFlat")));
-			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("Tools")));
+			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("AudioStream")));
+			data_type_tabs->set_tab_icon(7, get_editor_theme_icon(SNAME("Tools")));
 
 			type_variation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
@@ -3539,6 +3738,7 @@ void ThemeTypeEditor::select_type(String p_type_name) {
 		edited_theme->add_font_size_type(edited_type);
 		edited_theme->add_color_type(edited_type);
 		edited_theme->add_constant_type(edited_type);
+		edited_theme->add_sound_type(edited_type);
 
 		_update_type_list();
 	}
@@ -3627,6 +3827,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	font_size_items_list = _create_item_list(Theme::DATA_TYPE_FONT_SIZE);
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
 	stylebox_items_list = _create_item_list(Theme::DATA_TYPE_STYLEBOX);
+	sound_items_list = _create_item_list(Theme::DATA_TYPE_SOUND);
 
 	VBoxContainer *type_settings_tab = memnew(VBoxContainer);
 	type_settings_tab->set_custom_minimum_size(Size2(0, 160) * EDSCALE);

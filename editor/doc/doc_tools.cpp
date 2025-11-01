@@ -724,6 +724,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							tid.type = "StyleBox";
 							tid.data_type = "style";
 							break;
+						case Theme::DATA_TYPE_SOUND:
+							tid.type = "AudioStream";
+							tid.data_type = "sound";
+							break;
 						case Theme::DATA_TYPE_MAX:
 							break; // Can't happen, but silences warning.
 					}

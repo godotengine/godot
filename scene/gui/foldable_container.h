@@ -85,6 +85,9 @@ private:
 		Ref<Texture2D> folded_arrow_mirrored;
 
 		int h_separation = 0;
+
+		Ref<AudioStream> expanded_sound;
+		Ref<AudioStream> folded_sound;
 	} theme_cache;
 
 	Ref<StyleBox> _get_title_style() const;

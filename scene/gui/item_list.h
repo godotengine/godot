@@ -177,6 +177,10 @@ protected:
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
 		Color guide_color;
+
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
+		Ref<AudioStream> item_selected_disabled_sound;
 	} theme_cache;
 
 	void _notification(int p_what);
