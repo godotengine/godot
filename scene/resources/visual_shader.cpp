@@ -4507,6 +4507,16 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 				if (!Object::cast_to<VisualShaderNodeTextureParameter>(this)) {
 					incompatible_type = true;
 				}
+			}
+			case RS::GLOBAL_VAR_TYPE_USAMPLER2D: {
+				if (!Object::cast_to<VisualShaderNodeTextureParameter>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_ISAMPLER2D: {
+				if (!Object::cast_to<VisualShaderNodeTextureParameter>(this)) {
+					incompatible_type = true;
+				}
 			} break;
 			case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 				if (!Object::cast_to<VisualShaderNodeTexture3DParameter>(this)) {
@@ -4514,6 +4524,16 @@ String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader:
 				}
 			} break;
 			case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
+				if (!Object::cast_to<VisualShaderNodeTexture2DArrayParameter>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_USAMPLER2DARRAY: {
+				if (!Object::cast_to<VisualShaderNodeTexture2DArrayParameter>(this)) {
+					incompatible_type = true;
+				}
+			} break;
+			case RS::GLOBAL_VAR_TYPE_ISAMPLER2DARRAY: {
 				if (!Object::cast_to<VisualShaderNodeTexture2DArrayParameter>(this)) {
 					incompatible_type = true;
 				}
