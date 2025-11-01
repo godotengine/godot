@@ -104,6 +104,13 @@ public:
 		GI_MODE_DYNAMIC
 	};
 
+	enum CullingMode {
+		CULLING_MODE_NORMAL,
+		CULLING_MODE_IGNORE_OCCLUSION_CULLING,
+		CULLING_MODE_IGNORE_OCCLUSION_AND_FRUSTUM_CULLING,
+		CULLING_MODE_MAX,
+	};
+
 	enum LightmapScale {
 		LIGHTMAP_SCALE_1X,
 		LIGHTMAP_SCALE_2X,
@@ -140,7 +147,10 @@ private:
 	AABB custom_aabb;
 	float lightmap_texel_scale = 1.0f;
 	GIMode gi_mode = GI_MODE_STATIC;
+	CullingMode culling_mode = CULLING_MODE_NORMAL;
+#ifndef DISABLE_DEPRECATED
 	bool ignore_occlusion_culling = false;
+#endif // DISABLE_DEPRECATED
 
 	const StringName *_instance_uniform_get_remap(const StringName &p_name) const;
 
@@ -203,8 +213,13 @@ public:
 	void set_custom_aabb(AABB p_aabb);
 	AABB get_custom_aabb() const;
 
+	void set_culling_mode(CullingMode p_mode);
+	CullingMode get_culling_mode() const;
+
+#ifndef DISABLE_DEPRECATED
 	void set_ignore_occlusion_culling(bool p_enabled);
 	bool is_ignoring_occlusion_culling();
+#endif // DISABLE_DEPRECATED
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const;
 
@@ -215,5 +230,6 @@ public:
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
+VARIANT_ENUM_CAST(GeometryInstance3D::CullingMode);
 VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
