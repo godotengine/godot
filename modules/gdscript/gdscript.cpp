@@ -123,7 +123,7 @@ GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
 	if (likely(p_script->valid) && p_script->initializer) {
 		return p_script->initializer;
 	} else {
-		GDScript *base_src = p_script->_base;
+		GDScript *base_src = p_script->base.ptr();
 		if (base_src != nullptr) {
 			return _super_constructor(base_src);
 		} else {
@@ -133,7 +133,7 @@ GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
 }
 
 void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error) {
-	GDScript *base_src = p_script->_base;
+	GDScript *base_src = p_script->base.ptr();
 	if (base_src != nullptr) {
 		_super_implicit_constructor(base_src, p_instance, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
@@ -217,8 +217,8 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	Object *owner = nullptr;
 
 	GDScript *_baseptr = this;
-	while (_baseptr->_base) {
-		_baseptr = _baseptr->_base;
+	while (_baseptr->base.ptr()) {
+		_baseptr = _baseptr->base.ptr();
 	}
 
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
@@ -258,11 +258,7 @@ bool GDScript::can_instantiate() const {
 }
 
 Ref<Script> GDScript::get_base_script() const {
-	if (_base) {
-		return Ref<GDScript>(_base);
-	} else {
-		return Ref<Script>();
-	}
+	return base;
 }
 
 StringName GDScript::get_global_name() const {
@@ -304,7 +300,7 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 			return;
 		}
 
-		current = current->_base;
+		current = current->base.ptr();
 	}
 }
 
@@ -347,7 +343,7 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 		}
 
 		props.clear();
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 }
 
@@ -407,8 +403,8 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Script is invalid!");
 
 	GDScript *top = this;
-	while (top->_base) {
-		top = top->_base;
+	while (top->base.ptr()) {
+		top = top->base.ptr();
 	}
 
 	if (top->native.is_valid()) {
@@ -599,7 +595,6 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				base_cache->inheriters_cache.clear(); // to prevent future stackoverflows
 				base_cache.unref();
 				base.unref();
-				_base = nullptr;
 				ERR_FAIL_V_MSG(false, "Cyclic inheritance in script class.");
 			}
 		}
@@ -947,7 +942,7 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 				return E->value->call(nullptr, p_args, p_argcount, r_error);
 			}
 		}
-		top = top->_base;
+		top = top->base.ptr();
 	}
 
 	//none found, regular
@@ -1005,7 +1000,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 		}
 
-		top = top->_base;
+		top = top->base.ptr();
 	}
 
 	return false;
@@ -1043,7 +1038,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 
-		top = top->_base;
+		top = top->base.ptr();
 	}
 
 	return false;
@@ -1056,7 +1051,7 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 	const GDScript *top = this;
 	while (top) {
 		classes.push_back(top);
-		top = top->_base;
+		top = top->base.ptr();
 	}
 
 	for (const List<const GDScript *>::Element *E = classes.back(); E; E = E->prev()) {
@@ -1195,7 +1190,7 @@ bool GDScript::inherits_script(const Ref<Script> &p_script) const {
 		if (s == p_script.ptr()) {
 			return true;
 		}
-		s = s->_base;
+		s = s->base.ptr();
 	}
 
 	return false;
@@ -1745,7 +1740,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	return false;
@@ -1832,7 +1827,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				}
 			}
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	return false;
@@ -1869,7 +1864,7 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 				}
 			}
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 }
 
@@ -1949,7 +1944,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 		props.clear();
 
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 }
 
@@ -1969,7 +1964,7 @@ bool GDScriptInstance::property_can_revert(const StringName &p_name) const {
 				}
 			}
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	return false;
@@ -1992,7 +1987,7 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 				}
 			}
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	return false;
@@ -2004,7 +1999,7 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
 			p_list->push_back(E.value->get_method_info());
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 }
 
@@ -2015,7 +2010,7 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 		if (E) {
 			return true;
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	return false;
@@ -2031,7 +2026,7 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 			}
 			return E->value->get_argument_count();
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	if (r_is_valid) {
@@ -2042,8 +2037,8 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 
 void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
 	// Call base class first.
-	if (p_script->_base) {
-		_call_implicit_ready_recursively(p_script->_base);
+	if (p_script->base.ptr()) {
+		_call_implicit_ready_recursively(p_script->base.ptr());
 	}
 	if (likely(p_script->valid) && p_script->implicit_ready) {
 		Callable::CallError err;
@@ -2064,7 +2059,7 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 				return E->value->call(this, p_args, p_argcount, r_error);
 			}
 		}
-		sptr = sptr->_base;
+		sptr = sptr->base.ptr();
 	}
 
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -2083,7 +2078,7 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 
 	LocalVector<GDScript *> script_stack;
 	uint32_t script_count = 0;
-	for (GDScript *sptr = script.ptr(); sptr; sptr = sptr->_base, ++script_count) {
+	for (GDScript *sptr = script.ptr(); sptr; sptr = sptr->base.ptr(), ++script_count) {
 		script_stack.push_back(sptr);
 	}
 
