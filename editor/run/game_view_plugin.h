@@ -223,7 +223,7 @@ class GameView : public VBoxContainer {
 
 	void _hide_selection_toggled(bool p_pressed);
 
-	void _debug_mute_audio_button_pressed();
+	void _debug_mute_audio_button_toggled(bool p_pressed);
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
