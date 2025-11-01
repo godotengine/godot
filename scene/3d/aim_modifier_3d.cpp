@@ -84,7 +84,7 @@ void AimModifier3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		String path = "settings/" + itos(i) + "/";
 		int rotation_usage = is_using_euler(i) ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
 
-		p_list->push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"));
+		p_list->push_back(PropertyInfo(Variant::INT, path + "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_euler"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z", rotation_usage));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "use_secondary_rotation", PROPERTY_HINT_NONE, "", rotation_usage));

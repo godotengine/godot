@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bone_constraint_3d.h                                                  */
+/*  chain_ik_3d_gizmo_plugin.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,58 +30,31 @@
 
 #pragma once
 
-#include "scene/3d/skeleton_modifier_3d.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/iterate_ik_3d.h"
 
-class BoneConstraint3D : public SkeletonModifier3D {
-	GDCLASS(BoneConstraint3D, SkeletonModifier3D);
+#include "scene/resources/surface_tool.h"
 
-public:
-	struct BoneConstraint3DSetting {
-		float amount = 1.0;
+class ChainIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(ChainIK3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-		String apply_bone_name;
-		int apply_bone = -1;
-
-		String reference_bone_name;
-		int reference_bone = -1;
+	struct SelectionMaterials {
+		Ref<StandardMaterial3D> unselected_mat;
+		Ref<ShaderMaterial> selected_mat;
 	};
-
-protected:
-	Vector<BoneConstraint3DSetting *> settings;
-
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-
-	// Define get_property_list() instead of _get_property_list()
-	// to merge child class properties into parent class array inspector.
-	void get_property_list(List<PropertyInfo> *p_list) const; // Will be called by child classes.
-
-	virtual void _validate_bone_names() override;
-	static void _bind_methods();
-
-	virtual void _process_modification(double p_delta) override;
-
-	virtual void _process_constraint(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount);
-	virtual void _validate_setting(int p_index);
+	static SelectionMaterials selection_materials;
 
 public:
-	void set_amount(int p_index, float p_amount);
-	float get_amount(int p_index) const;
+	static Ref<ArrayMesh> get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected);
+	static void draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color);
 
-	void set_apply_bone_name(int p_index, const String &p_bone_name);
-	String get_apply_bone_name(int p_index) const;
-	void set_apply_bone(int p_index, int p_bone);
-	int get_apply_bone(int p_index) const;
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
 
-	void set_reference_bone_name(int p_index, const String &p_bone_name);
-	String get_reference_bone_name(int p_index) const;
-	void set_reference_bone(int p_index, int p_bone);
-	int get_reference_bone(int p_index) const;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	void set_setting_count(int p_count);
-	int get_setting_count() const;
-
-	void clear_settings();
-
-	~BoneConstraint3D();
+	ChainIK3DGizmoPlugin();
+	~ChainIK3DGizmoPlugin();
 };
