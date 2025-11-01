@@ -68,3 +68,10 @@ GH-110433
 Validate extension JSON: Error: Field 'classes/Performance/methods/add_custom_monitor/arguments': size changed value in new API, from 3 to 4.
 
 Optional argument added. Compatibility method registered.
+
+
+GH-107920
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Timer/properties/time_left': setter
+
+Setter function added.
