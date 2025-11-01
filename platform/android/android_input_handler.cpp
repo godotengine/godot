@@ -42,7 +42,7 @@ void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_e
 			Input::get_singleton()->joy_axis(p_event.device, (JoyAxis)p_event.index, p_event.value);
 			break;
 		case JOY_EVENT_HAT:
-			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
+			Input::get_singleton()->joy_hat(p_event.device, (JoyHat)0, p_event.hat);
 			break;
 		default:
 			return;
