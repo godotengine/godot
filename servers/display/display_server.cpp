@@ -1983,7 +1983,7 @@ bool DisplayServer::is_rendering_device_supported() {
 
 	Error err;
 
-#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(MACOS_ENABLED)
 	// On some drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
 	List<String> arguments;
 	arguments.push_back("--test-rd-support");
@@ -2001,7 +2001,7 @@ bool DisplayServer::is_rendering_device_supported() {
 	} else {
 		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
 	}
-#else // WINDOWS_ENABLED
+#else // defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(MACOS_ENABLED)
 
 	RenderingContextDriver *rcd = nullptr;
 
@@ -2045,7 +2045,7 @@ bool DisplayServer::is_rendering_device_supported() {
 		rcd = nullptr;
 	}
 
-#endif // WINDOWS_ENABLED
+#endif // defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(MACOS_ENABLED)
 #endif // RD_ENABLED
 	return false;
 }
@@ -2069,7 +2069,7 @@ bool DisplayServer::can_create_rendering_device() {
 
 	Error err;
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
 	List<String> arguments;
 	arguments.push_back("--test-rd-creation");
@@ -2083,7 +2083,7 @@ bool DisplayServer::can_create_rendering_device() {
 	} else {
 		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
 	}
-#else // WINDOWS_ENABLED
+#else // defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 
 	RenderingContextDriver *rcd = nullptr;
 
@@ -2127,7 +2127,7 @@ bool DisplayServer::can_create_rendering_device() {
 		rcd = nullptr;
 	}
 
-#endif // WINDOWS_ENABLED
+#endif // defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 #endif // RD_ENABLED
 	return false;
 }

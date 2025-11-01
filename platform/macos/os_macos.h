@@ -149,6 +149,11 @@ public:
 
 	virtual void run() = 0;
 
+#ifdef TOOLS_ENABLED
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const override;
+#endif
+
 	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };
 

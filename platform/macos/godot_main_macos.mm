@@ -71,6 +71,8 @@ int main(int argc, char **argv) {
 		"--convert-3to4",
 		"--validate-conversion-3to4",
 		"--doctool",
+		"--test-rd-creation",
+		"--test-rd-support",
 	};
 
 	for (int i = 0; i < argc; i++) {

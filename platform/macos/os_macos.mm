@@ -49,6 +49,15 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#import "embedded_gl_manager.h"
+#endif
+
+#if defined(RD_ENABLED)
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#endif
+
 #include <dlfcn.h>
 #include <libproc.h>
 #import <mach-o/dyld.h>
@@ -1031,6 +1040,67 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	// for better compatibility with x86 platforms.
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
+
+#ifdef TOOLS_ENABLED
+bool OS_MacOS::_test_create_rendering_device(const String &p_display_driver) const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+		GODOT_CLANG_WARNING_POP
+	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverVulkan);
+	}
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+	return ok;
+}
+
+bool OS_MacOS::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some drivers.
+
+#ifdef GLES3_ENABLED
+	GLManagerEmbedded *gl_manager = memnew(GLManagerEmbedded);
+	if (gl_manager->initialize() != OK) {
+		memdelete(gl_manager);
+		return false;
+	}
+	CALayer *layer = [CALayer new];
+	if (gl_manager->window_create(DisplayServer::MAIN_WINDOW_ID, layer, 800, 600) != OK) {
+		memdelete(gl_manager);
+		return false;
+	}
+
+	RasterizerGLES3::make_current(true);
+#endif
+	return _test_create_rendering_device(p_display_driver);
+}
+#endif // TOOLS_ENABLED
 
 OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
 	execpath = p_execpath;
