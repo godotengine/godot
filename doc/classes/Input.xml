@@ -200,6 +200,13 @@
 				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
 			</description>
 		</method>
+		<method name="is_action_disabled">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Returns [code]true[/code] when the user has disabled the action by calling [method set_action_disabled].
+			</description>
+		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
@@ -348,6 +355,16 @@
 			<description>
 				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_action_disabled">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+				If [param disable] is [code]true[/code], the provided action will not be affected by user input.
+				[b]Note:[/b] This method does not affect simulated input via [method action_press] or [method action_release].
+				[b]Note:[/b] This method does not prevent calls to [method Node._input].
 			</description>
 		</method>
 		<method name="set_custom_mouse_cursor">
