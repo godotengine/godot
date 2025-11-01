@@ -41,6 +41,14 @@
 #include "editor/doc/editor_help.h"
 
 class BindingsGenerator {
+	static constexpr const char *api_type_names[5] = {
+		"Core",
+		"Editor",
+		"Extension",
+		"Editor Extension",
+		"None",
+	};
+
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
@@ -813,6 +821,8 @@ class BindingsGenerator {
 
 	bool _validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype);
 
+	static bool _api_type_can_reference_other(const ClassDB::APIType p_source_api_type, const ClassDB::APIType p_target_api_type);
+
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
 
@@ -832,6 +842,8 @@ class BindingsGenerator {
 
 	bool _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();
+	bool _type_can_reference_other_type(const TypeInterface &p_owner, const TypeReference &p_other_type_ref, const String &context, String &r_error_message);
+	bool _validate_object_type_interfaces();
 
 	void _populate_global_constants();
 
