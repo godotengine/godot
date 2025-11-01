@@ -1031,7 +1031,7 @@ Files extracted from upstream source:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.13 (c597365b99f27cb46e2a5ac2942da45bb73d5a55, 2025)
+- Version: 0.15.14 (da3a8bd99f6b257cfe43040ca1c692654eda6a9a, 2025)
 - License: MIT
 
 Files extracted from upstream source:
