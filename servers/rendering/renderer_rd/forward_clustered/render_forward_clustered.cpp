@@ -1843,7 +1843,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		if (p_render_data->scene_data->view_count > 1) {
 			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
 			// Try enabling here in case is_xr_enabled() returns false.
-			scene_shader.shader.enable_group(SceneShaderForwardClustered::SHADER_GROUP_MULTIVIEW);
+			RendererRD::MaterialStorage::get_singleton()->shader_template_enable_group_on_all(SceneShaderForwardClustered::SHADER_GROUP_MULTIVIEW);
 
 			// Indicate pipelines for multiview are required.
 			global_pipeline_data_required.use_multiview = true;

@@ -1532,7 +1532,12 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);
 }
 
-void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
+void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for Canvas shaders.");
+	}
+
 	//compile
 
 	code = p_code;

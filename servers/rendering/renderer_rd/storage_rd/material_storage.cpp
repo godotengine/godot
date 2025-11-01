@@ -1341,7 +1341,10 @@ MaterialStorage::~MaterialStorage() {
 }
 
 bool MaterialStorage::free(RID p_rid) {
-	if (owns_shader(p_rid)) {
+	if (owns_shader_template(p_rid)) {
+		shader_template_free(p_rid);
+		return true;
+	} else if (owns_shader(p_rid)) {
 		shader_free(p_rid);
 		return true;
 	} else if (owns_material(p_rid)) {
@@ -1971,6 +1974,224 @@ void MaterialStorage::_update_global_shader_uniforms() {
 	}
 }
 
+/* SHADER TEMPLATE API */
+
+void MaterialStorage::ShaderTemplate::cleanup() {
+	if (shader) {
+		memdelete(shader);
+		shader = nullptr;
+	}
+	initialized = false;
+}
+
+RID MaterialStorage::shader_template_allocate() {
+	return shader_template_owner.allocate_rid();
+}
+
+void MaterialStorage::shader_template_initialize(RID p_rid) {
+	ShaderTemplate shader_template;
+	shader_template.self = p_rid;
+
+	shader_template_owner.initialize_rid(p_rid, shader_template);
+}
+
+void MaterialStorage::shader_template_free(RID p_rid) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL(shader_template);
+
+	// Make sure our shaders are unreferenced.
+	while (shader_template->owners.size()) {
+		shader_set_shader_template((*shader_template->owners.begin())->self, RID());
+	}
+
+	shader_template->cleanup();
+	shader_template_owner.free(p_rid);
+}
+
+void MaterialStorage::shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) {
+	HashMap<Shader *, String> org_code;
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+
+	// Remember code for shaders that use this template and clear the shader data.
+	for (Shader *shader : shader_template->owners) {
+		if (shader->data) {
+			org_code[shader] = shader->code; // Make a copy, we're about to loose it.
+
+			// Delete the old shader data.
+			memdelete(shader->data);
+			shader->data = nullptr;
+			shader->type = SHADER_TYPE_MAX;
+		}
+	}
+
+	// Cleanup our shader template.
+	shader_template->cleanup();
+
+	// Create our new shader for this template.
+	shader_template->shader = memnew(ShaderRD);
+	if (shader_template->shader) {
+		shader_template->shader->setup(p_vertex_code.utf8().get_data(), p_fragment_code.utf8().get_data(), nullptr, p_name.utf8().get_data());
+	}
+
+	// And recompile the shaders if applicable.
+	for (Shader *shader : shader_template->owners) {
+		if (!org_code[shader].is_empty()) {
+			shader_set_code(shader->self, org_code[shader]);
+		}
+	}
+}
+
+void MaterialStorage::shader_template_set_shader(RID p_template_shader, ShaderRD *p_shader) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+
+	// Note: this should only be called for setting up our default shader template.
+	// No dependencies are managed for our default shader template.
+
+	shader_template->cleanup();
+
+	shader_template->shader = p_shader;
+}
+
+bool MaterialStorage::shader_template_is_initialized(RID p_template_shader) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, false);
+
+	return shader_template->initialized;
+}
+
+void MaterialStorage::shader_template_shader_initialize(RID p_template_shader, const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(shader_template->initialized);
+
+	shader_template->shader->initialize(p_variant_defines, p_general_defines, p_immutable_samplers, p_dynamic_buffers);
+
+	shader_template->initialized = true;
+}
+
+void MaterialStorage::shader_template_shader_initialize(RID p_template_shader, const Vector<ShaderRD::VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(shader_template->initialized);
+
+	shader_template->shader->initialize(p_variant_defines, p_general_defines, p_immutable_samplers, p_dynamic_buffers);
+
+	shader_template->initialized = true;
+}
+
+void MaterialStorage::shader_template_set_variant_enabled(RID p_template_shader, int p_variant, bool p_enabled) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(!shader_template->initialized);
+
+	shader_template->shader->set_variant_enabled(p_variant, p_enabled);
+}
+
+bool MaterialStorage::shader_template_is_variant_enabled(RID p_template_shader, int p_variant) const {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, false);
+	ERR_FAIL_NULL_V(shader_template->shader, false);
+	ERR_FAIL_COND_V(!shader_template->initialized, false);
+
+	return shader_template->shader->is_variant_enabled(p_variant);
+}
+
+void MaterialStorage::shader_template_enable_group(RID p_template_shader, int p_group) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(!shader_template->initialized);
+
+	shader_template->shader->enable_group(p_group);
+}
+
+bool MaterialStorage::shader_template_is_any_group_enabled(int p_group) {
+	LocalVector<RID> owned = shader_template_owner.get_owned_list();
+
+	for (RID &rid : owned) {
+		ShaderTemplate *shader_template = shader_template_owner.get_or_null(rid);
+		if (shader_template && shader_template->shader && shader_template->shader->is_group_enabled(p_group)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void MaterialStorage::shader_template_enable_group_on_all(int p_group) {
+	LocalVector<RID> owned = shader_template_owner.get_owned_list();
+
+	for (RID &rid : owned) {
+		shader_template_enable_group(rid, p_group);
+	}
+}
+
+RID MaterialStorage::shader_template_version_create(RID p_template_shader, bool p_embedded) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, RID());
+	ERR_FAIL_NULL_V(shader_template->shader, RID());
+	ERR_FAIL_COND_V(!shader_template->initialized, RID());
+
+	return shader_template->shader->version_create(p_embedded);
+}
+
+void MaterialStorage::shader_template_version_free(RID p_template_shader, RID p_version) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(!shader_template->initialized);
+
+	shader_template->shader->version_free(p_version);
+}
+
+void MaterialStorage::shader_template_version_set_code(RID p_template_shader, RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL(shader_template);
+	ERR_FAIL_NULL(shader_template->shader);
+	ERR_FAIL_COND(!shader_template->initialized);
+
+	return shader_template->shader->version_set_code(p_version, p_code, p_uniforms, p_vertex_globals, p_fragment_globals, p_custom_defines);
+}
+
+bool MaterialStorage::shader_template_version_is_valid(RID p_template_shader, RID p_version) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, false);
+	ERR_FAIL_NULL_V(shader_template->shader, false);
+	ERR_FAIL_COND_V(!shader_template->initialized, false);
+
+	return shader_template->shader->version_is_valid(p_version);
+}
+
+ShaderRD *MaterialStorage::shader_template_get_shader(RID p_template_shader) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, nullptr);
+
+	return shader_template->shader;
+}
+
+RID MaterialStorage::shader_template_version_get_shader(RID p_template_shader, RID p_version, int p_variant) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, RID());
+	ERR_FAIL_NULL_V(shader_template->shader, RID());
+	ERR_FAIL_COND_V(!shader_template->initialized, RID());
+
+	return shader_template->shader->version_get_shader(p_version, p_variant);
+}
+
+RS::ShaderNativeSourceCode MaterialStorage::shader_template_version_get_native_source_code(RID p_template_shader, RID p_version) {
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_template_shader);
+	ERR_FAIL_NULL_V(shader_template, RS::ShaderNativeSourceCode());
+	ERR_FAIL_NULL_V(shader_template->shader, RS::ShaderNativeSourceCode());
+	ERR_FAIL_COND_V(!shader_template->initialized, RS::ShaderNativeSourceCode());
+
+	return shader_template->shader->version_get_native_source_code(p_version);
+}
+
 /* SHADER API */
 
 RID MaterialStorage::shader_allocate() {
@@ -1979,9 +2200,11 @@ RID MaterialStorage::shader_allocate() {
 
 void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	Shader shader;
+	shader.self = p_rid;
 	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
 	shader.embedded = p_embedded;
+	shader.self = p_rid;
 
 	shader_owner.initialize_rid(p_rid, shader);
 
@@ -1996,12 +2219,15 @@ void MaterialStorage::shader_free(RID p_rid) {
 	Shader *shader = shader_owner.get_or_null(p_rid);
 	ERR_FAIL_NULL(shader);
 
-	//make material unreference this
+	// Clear our shader template.
+	shader_set_shader_template(p_rid, RID(), true);
+
+	// Make material unreference this.
 	while (shader->owners.size()) {
 		material_set_shader((*shader->owners.begin())->self, RID());
 	}
 
-	//clear data if exists
+	// Clear data if exists.
 	if (shader->data) {
 		memdelete(shader->data);
 	}
@@ -2013,6 +2239,41 @@ void MaterialStorage::shader_free(RID p_rid) {
 	}
 
 	shader_owner.free(p_rid);
+}
+
+void MaterialStorage::shader_set_shader_template(RID p_shader, RID p_shader_template, bool p_clear_code) {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+	ShaderTemplate *shader_template = shader_template_owner.get_or_null(p_shader_template);
+
+	if (shader->shader_template != shader_template) {
+		String org_code;
+
+		if (shader->data) {
+			org_code = shader->code; // Make a copy, we're about to loose it.
+			memdelete(shader->data);
+			shader->type = SHADER_TYPE_MAX;
+			shader->data = nullptr;
+		}
+
+		if (shader->shader_template) {
+			shader->shader_template->owners.erase(shader);
+		}
+		shader->shader_template = shader_template;
+		if (shader->shader_template) {
+			shader->shader_template->owners.insert(shader);
+		}
+
+		// Trigger recompile, but only if we have shader data.
+		// This should prevent a double compile as long as we set our
+		// template before we set our code!
+		// TODO we do have a problem that if the shader template gets freed
+		// before our shaders get freed during closing, we trigger a recompile
+		// with the built-in shader.
+		if (!org_code.is_empty() && !p_clear_code) {
+			shader_set_code(p_shader, org_code);
+		}
+	}
 }
 
 void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
@@ -2081,8 +2342,13 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 
 	if (shader->data) {
+		RID shader_template;
+		if (shader->shader_template) {
+			shader_template = shader->shader_template->self;
+		}
+
 		shader->data->set_path_hint(shader->path_hint);
-		shader->data->set_code(p_code);
+		shader->data->set_code(p_code, shader_template);
 	}
 
 	for (Material *E : shader->owners) {

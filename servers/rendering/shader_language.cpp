@@ -338,6 +338,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
+	{ TK_SHADER_TEMPLATE, "shader_template", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_STENCIL_MODE, "stencil_mode", CF_GLOBAL_SPACE, {}, {} },
 
@@ -1292,6 +1293,7 @@ void ShaderLanguage::clear() {
 	current_function = StringName();
 	last_name = StringName();
 	last_type = IDENTIFIER_MAX;
+	shader_template = "";
 	current_uniform_group_name = "";
 	current_uniform_subgroup_name = "";
 	current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
@@ -9205,6 +9207,23 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
+			case TK_SHADER_TEMPLATE: {
+				tk = _get_token();
+				if (tk.type == TK_STRING_CONSTANT) {
+					shader_template = tk.text;
+				} else {
+					_set_error(vformat(RTR("Unexpected token: '%s'."), get_token_text(tk)));
+					return ERR_PARSE_ERROR;
+				}
+
+				tk = _get_token();
+				if (tk.type == TK_SEMICOLON) {
+					break; //done
+				} else {
+					_set_error(vformat(RTR("Unexpected token: '%s'."), get_token_text(tk)));
+					return ERR_PARSE_ERROR;
+				}
+			} break;
 			case TK_RENDER_MODE: {
 #ifdef DEBUG_ENABLED
 				keyword_completion_context = CF_UNSPECIFIED;
@@ -11269,6 +11288,36 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	}
 
 	return String();
+}
+
+String ShaderLanguage::get_shader_template(const String &p_code) {
+	int start_pos = p_code.find("shader_template ");
+	if (start_pos == -1) {
+		// No shader template specified, this is ok.
+		return String();
+	}
+
+	start_pos += 16;
+	char32_t quote = p_code[start_pos];
+	while (quote == ' ' || quote == '\t') {
+		start_pos++;
+		quote = p_code[start_pos];
+	}
+
+	if (quote != '\'' && quote != '"') {
+		// No quotes, we don't have a string here.
+		// This will give us a compile error later on.
+		return String();
+	}
+
+	int end_pos = p_code.find_char(quote, start_pos + 1);
+	if (end_pos == -1) {
+		// No closing quote?
+		// This will give us a compile error later on.
+		return String();
+	}
+
+	return p_code.substr(start_pos + 1, end_pos - start_pos - 1);
 }
 
 bool ShaderLanguage::is_builtin_func_out_parameter(const String &p_name, int p_param) {
