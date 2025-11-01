@@ -128,7 +128,7 @@ uint64_t FileAccessMemory::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_NULL_V(p_dst, -1);
 	ERR_FAIL_NULL_V(data, -1);
 
-	uint64_t left = length - pos;
+	uint64_t left = (uint64_t)MAX((int64_t)length - (int64_t)pos, 0LL);
 	uint64_t read = MIN(p_length, left);
 
 	if (read < p_length) {
