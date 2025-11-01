@@ -30,6 +30,10 @@
 
 #pragma once
 
+// For platforms using libc++, this definition improves compile time.
+// For more information, see https://libcxx.llvm.org/DesignDocs/HeaderRemovalPolicy.html
+#define _LIBCPP_REMOVE_TRANSITIVE_INCLUDES
+
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
@@ -51,6 +55,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 #include <utility>
 
 // IWYU pragma: end_exports
