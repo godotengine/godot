@@ -1029,6 +1029,7 @@ public:
 			type = PATTERN;
 		}
 	};
+
 	struct PreloadNode : public ExpressionNode {
 		ExpressionNode *path = nullptr;
 		String resolved_path;
@@ -1399,6 +1400,8 @@ private:
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
+	HashMap<StringName, Vector<ScriptMetadata>> script_metadata;
+
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
 	enum Precedence {
@@ -1540,6 +1543,7 @@ private:
 	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool meta_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
@@ -1615,6 +1619,8 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+	const HashMap<StringName, Vector<ScriptMetadata>> get_script_metadata() const { return script_metadata; }
+
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }

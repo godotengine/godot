@@ -128,6 +128,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
+		// Metadata annotation.
+		register_annotation(MethodInfo("@meta", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)), AnnotationInfo::CLASS_LEVEL, &GDScriptParser::meta_annotation, varray(true));
 		// Warning annotations.
 		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_ignore_annotation, varray(), true);
 		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
@@ -5173,6 +5175,69 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 		}
 	}
 	function->rpc_config = rpc_config;
+	return true;
+}
+
+bool GDScriptParser::meta_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
+	ERR_FAIL_COND_V(!Variant::can_convert(p_annotation->resolved_arguments[0].get_type(), Variant::STRING_NAME), false);
+
+	Script::MetaTargetType target_type;
+	StringName target_name;
+	switch (p_target->type) {
+		case Node::CLASS: {
+			target_type = Script::MetaTargetType::META_TARGET_CLASS;
+			ClassNode *class_node = static_cast<ClassNode *>(p_target);
+			if (class_node->identifier != nullptr) {
+				target_name = class_node->identifier->name;
+			}
+		} break;
+		case Node::VARIABLE: {
+			target_type = Script::MetaTargetType::META_TARGET_VARIABLE;
+			VariableNode *variable_node = static_cast<VariableNode *>(p_target);
+			target_name = variable_node->identifier->name;
+		} break;
+		case Node::CONSTANT: {
+			target_type = Script::MetaTargetType::META_TARGET_CONSTANT;
+			ConstantNode *constant_node = static_cast<ConstantNode *>(p_target);
+			target_name = constant_node->identifier->name;
+		} break;
+		case Node::SIGNAL: {
+			target_type = Script::MetaTargetType::META_TARGET_SIGNAL;
+			SignalNode *signal_node = static_cast<SignalNode *>(p_target);
+			target_name = signal_node->identifier->name;
+		} break;
+		case Node::FUNCTION: {
+			target_type = Script::MetaTargetType::META_TARGET_FUNCTION;
+			FunctionNode *function_noade = static_cast<FunctionNode *>(p_target);
+			target_name = function_noade->identifier->name;
+		} break;
+		default:
+			ERR_FAIL_V_MSG(false, R"("@meta" annotation does not apply here.)");
+	}
+
+	// Figure out the fully qualified path of the class containing this target.
+	PackedStringArray class_path;
+	ClassNode *containing_class = p_class;
+	while (containing_class != nullptr) {
+		if (containing_class->identifier != nullptr) {
+			class_path.insert(0, containing_class->identifier->name);
+		}
+		containing_class = containing_class->outer;
+	}
+
+	StringName name = p_annotation->resolved_arguments[0];
+	Variant value = p_annotation->resolved_arguments.size() < 2 ? Variant(true) : p_annotation->resolved_arguments[1];
+	ScriptMetadata metadata;
+	metadata.name = name;
+	metadata.value = value;
+	metadata.target_name = target_name;
+	metadata.target_container = String(".").join(class_path);
+	metadata.target_type = target_type;
+	if (!script_metadata.has(name)) {
+		script_metadata.insert(name, Vector<ScriptMetadata>());
+	}
+	script_metadata[name].append(metadata);
 	return true;
 }
 
