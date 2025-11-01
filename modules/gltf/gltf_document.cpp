@@ -3836,10 +3836,6 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		bv->byte_offset = p_state->buffers[bi].size();
 
 		Vector<uint8_t> buffer;
-		Ref<ImageTexture> img_tex = p_image;
-		if (img_tex.is_valid()) {
-			p_image = img_tex->get_image();
-		}
 		// Save in various image formats. Note that if the format is "None",
 		// the state's images will be empty, so this code will not be reached.
 		if (_image_save_extension.is_valid()) {
@@ -4447,10 +4443,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
 					ao_image = ao_texture->get_image();
-					Ref<ImageTexture> img_tex = ao_image;
-					if (img_tex.is_valid()) {
-						ao_image = img_tex->get_image();
-					}
 					if (ao_image->is_compressed()) {
 						ao_image->decompress();
 					}
@@ -4463,10 +4455,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					height = roughness_texture->get_height();
 					width = roughness_texture->get_width();
 					roughness_image = roughness_texture->get_image();
-					Ref<ImageTexture> img_tex = roughness_image;
-					if (img_tex.is_valid()) {
-						roughness_image = img_tex->get_image();
-					}
 					if (roughness_image->is_compressed()) {
 						roughness_image->decompress();
 					}
@@ -4479,10 +4467,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					height = metallic_texture->get_height();
 					width = metallic_texture->get_width();
 					metallness_image = metallic_texture->get_image();
-					Ref<ImageTexture> img_tex = metallness_image;
-					if (img_tex.is_valid()) {
-						metallness_image = img_tex->get_image();
-					}
 					if (metallness_image->is_compressed()) {
 						metallness_image->decompress();
 					}
@@ -4583,10 +4567,6 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
 					if (img.is_valid()) {
-						Ref<ImageTexture> img_tex = img;
-						if (img_tex.is_valid()) {
-							img = img_tex->get_image();
-						}
 						img->decompress();
 						img->convert(Image::FORMAT_RGBA8);
 						for (int32_t y = 0; y < img->get_height(); y++) {
