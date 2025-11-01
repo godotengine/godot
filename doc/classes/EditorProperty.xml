@@ -141,6 +141,14 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="multi_selected">
+			<param index="0" name="path" type="String" />
+			<param index="1" name="focusable_idx" type="int" />
+			<param index="2" name="force_enable" type="bool" />
+			<description>
+				Emitted when multi-selected via shift click.
+			</description>
+		</signal>
 		<signal name="multiple_properties_changed">
 			<param index="0" name="properties" type="PackedStringArray" />
 			<param index="1" name="value" type="Array" />
