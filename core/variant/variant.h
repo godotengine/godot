@@ -645,6 +645,7 @@ public:
 
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash);
 
 	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
@@ -659,6 +660,7 @@ public:
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
 	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
+	static Vector<uint32_t> get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method);
 
 	void callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
