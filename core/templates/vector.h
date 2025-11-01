@@ -188,6 +188,12 @@ public:
 		return *this;
 	}
 
+#ifndef DISABLE_DEPRECATED
+	Vector<T> _duplicate_bind_compat_112290() {
+		return *this;
+	}
+#endif // DISABLE_DEPRECATED
+
 	void ordered_insert(const T &p_val) {
 		Size i;
 		for (i = 0; i < _cowdata.size(); i++) {
