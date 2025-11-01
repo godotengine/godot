@@ -495,7 +495,7 @@ void DisplayServerMacOS::_process_key_events() {
 			k.instantiate();
 
 			k->set_window_id(ke.window_id);
-			get_key_modifier_state(ke.macos_state, k);
+			get_key_modifier_state(ke.macos_state, ke.keycode, k);
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
 			k->set_keycode(ke.keycode);
@@ -511,7 +511,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
-				get_key_modifier_state(ke.macos_state, k);
+				get_key_modifier_state(ke.macos_state, ke.keycode, k);
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
 				k->set_keycode(Key::NONE);
@@ -525,7 +525,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
-				get_key_modifier_state(ke.macos_state, k);
+				get_key_modifier_state(ke.macos_state, ke.keycode, k);
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
 				k->set_keycode(ke.keycode);
@@ -628,7 +628,7 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			Ref<InputEventKey> k;
 			k.instantiate();
 
-			get_key_modifier_state([p_event modifierFlags], k);
+			get_key_modifier_state([p_event modifierFlags], Key::PERIOD, k);
 			k->set_window_id(DisplayServerMacOS::INVALID_WINDOW_ID);
 			k->set_pressed(true);
 			k->set_keycode(Key::PERIOD);
@@ -645,7 +645,7 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			Ref<InputEventKey> k;
 			k.instantiate();
 
-			get_key_modifier_state([p_event modifierFlags], k);
+			get_key_modifier_state([p_event modifierFlags], Key::TAB, k);
 			k->set_window_id(DisplayServerMacOS::INVALID_WINDOW_ID);
 			k->set_pressed(true);
 			k->set_keycode(Key::TAB);
@@ -707,11 +707,14 @@ void DisplayServerMacOS::sync_mouse_state() {
 	}
 }
 
-void DisplayServerMacOS::get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const {
+void DisplayServerMacOS::get_key_modifier_state(unsigned int p_macos_state, Key p_key, Ref<InputEventWithModifiers> r_state) const {
 	r_state->set_shift_pressed((p_macos_state & NSEventModifierFlagShift));
 	r_state->set_ctrl_pressed((p_macos_state & NSEventModifierFlagControl));
 	r_state->set_alt_pressed((p_macos_state & NSEventModifierFlagOption));
 	r_state->set_meta_pressed((p_macos_state & NSEventModifierFlagCommand));
+	if ((p_key & Key::SPECIAL) != Key::SPECIAL) {
+		r_state->set_fn_pressed((p_macos_state & NSEventModifierFlagFunction));
+	}
 }
 
 void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, NSPoint p_location_in_window) {

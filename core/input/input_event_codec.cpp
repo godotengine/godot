@@ -34,36 +34,39 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-enum class BoolShift : uint8_t {
+enum class BoolShift : uint16_t {
 	SHIFT = 0,
 	CTRL,
 	ALT,
 	META,
+	FN,
 	ECHO,
 	PRESSED,
 	DOUBLE_CLICK,
 	PEN_INVERTED,
 };
 
-// cast operator for BoolShift to uint8_t
-inline uint8_t operator<<(uint8_t a, BoolShift b) {
-	return a << static_cast<uint8_t>(b);
+// cast operator for BoolShift to uint16_t
+inline uint16_t operator<<(uint16_t a, BoolShift b) {
+	return a << static_cast<uint16_t>(b);
 }
 
-uint8_t encode_key_modifier_state(Ref<InputEventWithModifiers> p_event) {
-	uint8_t bools = 0;
-	bools |= (uint8_t)p_event->is_shift_pressed() << BoolShift::SHIFT;
-	bools |= (uint8_t)p_event->is_ctrl_pressed() << BoolShift::CTRL;
-	bools |= (uint8_t)p_event->is_alt_pressed() << BoolShift::ALT;
-	bools |= (uint8_t)p_event->is_meta_pressed() << BoolShift::META;
+uint16_t encode_key_modifier_state(Ref<InputEventWithModifiers> p_event) {
+	uint16_t bools = 0;
+	bools |= (uint16_t)p_event->is_shift_pressed() << BoolShift::SHIFT;
+	bools |= (uint16_t)p_event->is_ctrl_pressed() << BoolShift::CTRL;
+	bools |= (uint16_t)p_event->is_alt_pressed() << BoolShift::ALT;
+	bools |= (uint16_t)p_event->is_meta_pressed() << BoolShift::META;
+	bools |= (uint16_t)p_event->is_fn_pressed() << BoolShift::FN;
 	return bools;
 }
 
-void decode_key_modifier_state(uint8_t bools, Ref<InputEventWithModifiers> p_event) {
+void decode_key_modifier_state(uint16_t bools, Ref<InputEventWithModifiers> p_event) {
 	p_event->set_shift_pressed(bools & (1 << BoolShift::SHIFT));
 	p_event->set_ctrl_pressed(bools & (1 << BoolShift::CTRL));
 	p_event->set_alt_pressed(bools & (1 << BoolShift::ALT));
 	p_event->set_meta_pressed(bools & (1 << BoolShift::META));
+	p_event->set_fn_pressed(bools & (1 << BoolShift::FN));
 }
 
 int encode_vector2(const Vector2 &p_vector, uint8_t *p_data) {
@@ -81,16 +84,15 @@ const uint8_t *decode_vector2(Vector2 &r_vector, const uint8_t *p_data) {
 }
 
 void encode_input_event_key(const Ref<InputEventKey> &p_event, PackedByteArray &r_data) {
-	r_data.resize(19);
+	r_data.resize(20);
 
 	uint8_t *data = r_data.ptrw();
 	*data = (uint8_t)InputEventType::KEY;
 	data++;
-	uint8_t bools = encode_key_modifier_state(p_event);
-	bools |= (uint8_t)p_event->is_echo() << BoolShift::ECHO;
-	bools |= (uint8_t)p_event->is_pressed() << BoolShift::PRESSED;
-	*data = bools;
-	data++;
+	uint16_t bools = encode_key_modifier_state(p_event);
+	bools |= (uint16_t)p_event->is_echo() << BoolShift::ECHO;
+	bools |= (uint16_t)p_event->is_pressed() << BoolShift::PRESSED;
+	data += encode_uint16(bools, data);
 	data += encode_uint32((uint32_t)p_event->get_keycode(), data);
 	data += encode_uint32((uint32_t)p_event->get_physical_keycode(), data);
 	data += encode_uint32((uint32_t)p_event->get_key_label(), data);
@@ -107,8 +109,8 @@ Error decode_input_event_key(const PackedByteArray &p_data, Ref<InputEventKey> &
 	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::KEY);
 	data++; // Skip event type.
 
-	uint8_t bools = *data;
-	data++;
+	uint16_t bools = decode_uint16(data);
+	data += sizeof(uint16_t);
 	decode_key_modifier_state(bools, r_event);
 	r_event->set_echo(bools & (1 << BoolShift::ECHO));
 	r_event->set_pressed(bools & (1 << BoolShift::PRESSED));
@@ -133,17 +135,16 @@ Error decode_input_event_key(const PackedByteArray &p_data, Ref<InputEventKey> &
 }
 
 void encode_input_event_mouse_button(const Ref<InputEventMouseButton> &p_event, PackedByteArray &r_data) {
-	r_data.resize(12);
+	r_data.resize(13);
 
 	uint8_t *data = r_data.ptrw();
 	*data = (uint8_t)InputEventType::MOUSE_BUTTON;
 	data++;
 
-	uint8_t bools = encode_key_modifier_state(p_event);
-	bools |= (uint8_t)p_event->is_pressed() << BoolShift::PRESSED;
-	bools |= (uint8_t)p_event->is_double_click() << BoolShift::DOUBLE_CLICK;
-	*data = bools;
-	data++;
+	uint16_t bools = encode_key_modifier_state(p_event);
+	bools |= (uint16_t)p_event->is_pressed() << BoolShift::PRESSED;
+	bools |= (uint16_t)p_event->is_double_click() << BoolShift::DOUBLE_CLICK;
+	data += encode_uint16(bools, data);
 
 	*data = (uint8_t)p_event->get_button_index();
 	data++;
@@ -164,8 +165,8 @@ Error decode_input_event_mouse_button(const PackedByteArray &p_data, Ref<InputEv
 	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::MOUSE_BUTTON);
 	data++; // Skip event type.
 
-	uint8_t bools = *data;
-	data++;
+	uint16_t bools = decode_uint16(data);
+	data += sizeof(uint16_t);
 	decode_key_modifier_state(bools, r_event);
 	r_event->set_pressed(bools & (1 << BoolShift::PRESSED));
 	r_event->set_double_click(bools & (1 << BoolShift::DOUBLE_CLICK));
@@ -184,16 +185,15 @@ Error decode_input_event_mouse_button(const PackedByteArray &p_data, Ref<InputEv
 }
 
 void encode_input_event_mouse_motion(const Ref<InputEventMouseMotion> &p_event, PackedByteArray &r_data) {
-	r_data.resize(31);
+	r_data.resize(32);
 
 	uint8_t *data = r_data.ptrw();
 	*data = (uint8_t)InputEventType::MOUSE_MOTION;
 	data++;
 
-	uint8_t bools = encode_key_modifier_state(p_event);
-	bools |= (uint8_t)p_event->get_pen_inverted() << BoolShift::PEN_INVERTED;
-	*data = bools;
-	data++;
+	uint16_t bools = encode_key_modifier_state(p_event);
+	bools |= (uint16_t)p_event->get_pen_inverted() << BoolShift::PEN_INVERTED;
+	data += encode_uint16(bools, data);
 
 	// Rather than use encode_variant, we explicitly encode the Vector2,
 	// so decoding is easier. Specifically, we don't have to perform additional error
@@ -216,8 +216,8 @@ void decode_input_event_mouse_motion(const PackedByteArray &p_data, Ref<InputEve
 	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::MOUSE_MOTION);
 	data++; // Skip event type.
 
-	uint8_t bools = *data;
-	data++;
+	uint16_t bools = decode_uint16(data);
+	data += sizeof(uint16_t);
 	decode_key_modifier_state(bools, r_event);
 	r_event->set_pen_inverted(bools & (1 << BoolShift::PEN_INVERTED));
 
@@ -320,15 +320,14 @@ void decode_input_event_joypad_motion(const PackedByteArray &p_data, Ref<InputEv
 }
 
 void encode_input_event_gesture_pan(const Ref<InputEventPanGesture> &p_event, PackedByteArray &r_data) {
-	r_data.resize(18);
+	r_data.resize(19);
 
 	uint8_t *data = r_data.ptrw();
 	*data = (uint8_t)InputEventType::PAN_GESTURE;
 	data++;
 
-	uint8_t bools = encode_key_modifier_state(p_event);
-	*data = bools;
-	data++;
+	uint16_t bools = encode_key_modifier_state(p_event);
+	data += encode_uint16(bools, data);
 	data += encode_vector2(p_event->get_position(), data);
 	data += encode_vector2(p_event->get_delta(), data);
 
@@ -341,8 +340,8 @@ void decode_input_event_gesture_pan(const PackedByteArray &p_data, Ref<InputEven
 	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::PAN_GESTURE);
 	data++; // Skip event type.
 
-	uint8_t bools = *data;
-	data++;
+	uint16_t bools = decode_uint16(data);
+	data += sizeof(uint16_t);
 	decode_key_modifier_state(bools, r_event);
 
 	Vector2 pos;
@@ -357,15 +356,14 @@ void decode_input_event_gesture_pan(const PackedByteArray &p_data, Ref<InputEven
 }
 
 void encode_input_event_gesture_magnify(const Ref<InputEventMagnifyGesture> &p_event, PackedByteArray &r_data) {
-	r_data.resize(14);
+	r_data.resize(15);
 
 	uint8_t *data = r_data.ptrw();
 	*data = (uint8_t)InputEventType::MAGNIFY_GESTURE;
 	data++;
 
-	uint8_t bools = encode_key_modifier_state(p_event);
-	*data = bools;
-	data++;
+	uint16_t bools = encode_key_modifier_state(p_event);
+	data += encode_uint16(bools, data);
 	data += encode_vector2(p_event->get_position(), data);
 	data += encode_float(p_event->get_factor(), data);
 
@@ -378,8 +376,8 @@ void decode_input_event_gesture_magnify(const PackedByteArray &p_data, Ref<Input
 	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::MAGNIFY_GESTURE);
 	data++; // Skip event type.
 
-	uint8_t bools = *data;
-	data++;
+	uint16_t bools = decode_uint16(data);
+	data += sizeof(uint16_t);
 	decode_key_modifier_state(bools, r_event);
 
 	Vector2 pos;

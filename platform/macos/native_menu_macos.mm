@@ -802,8 +802,8 @@ Key NativeMenuMacOS::get_item_accelerator(const RID &p_rid, int p_idx) const {
 		if (mask & NSEventModifierFlagCommand) {
 			keycode |= KeyModifierMask::META;
 		}
-		if (mask & NSEventModifierFlagNumericPad) {
-			keycode |= KeyModifierMask::KPAD;
+		if (mask & NSEventModifierFlagFunction) {
+			keycode |= KeyModifierMask::FN;
 		}
 		return keycode;
 	}
@@ -1144,9 +1144,9 @@ void NativeMenuMacOS::set_item_accelerator(const RID &p_rid, int p_idx, Key p_ke
 			if (p_keycode == Key::NONE) {
 				[menu_item setKeyEquivalent:@""];
 			} else {
-				[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
 				String keycode = KeyMappingMacOS::keycode_get_native_string(p_keycode & KeyModifierMask::CODE_MASK);
 				[menu_item setKeyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+				[menu_item setKeyEquivalentModifierMask:KeyMappingMacOS::keycode_get_native_mask(p_keycode)];
 			}
 		}
 	}

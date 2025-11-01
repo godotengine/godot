@@ -270,11 +270,13 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 		Ref<InputEventKey> ke;
 		ke.instantiate();
 
+		Key keycode = KeyMappingMacOS::remap_key(key, mod, false);
+
 		ke->set_window_id(window_id);
 		ke->set_echo(false);
 		ke->set_pressed(true);
-		ds->get_key_modifier_state(flags, ke);
-		ke->set_keycode(KeyMappingMacOS::remap_key(key, mod, false));
+		ds->get_key_modifier_state(flags, keycode, ke);
+		ke->set_keycode(keycode);
 		ke->set_physical_keycode(KeyMappingMacOS::translate_key(key));
 		ke->set_key_label(KeyMappingMacOS::remap_key(key, mod, true));
 		ke->set_location(KeyMappingMacOS::translate_location(key));

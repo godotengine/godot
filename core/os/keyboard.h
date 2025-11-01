@@ -169,6 +169,8 @@ enum class Key {
 	JIS_EISU = SPECIAL | 0x72,
 	JIS_KANA = SPECIAL | 0x73,
 
+	FN = SPECIAL | 0x1000, // Note: never emitted as a key.
+
 	UNKNOWN = SPECIAL | 0x7FFFFF,
 
 	/* PRINTABLE LATIN 1 CODES */
@@ -255,8 +257,12 @@ enum class KeyModifierMask {
 	ALT = (1 << 26),
 	META = (1 << 27),
 	CTRL = (1 << 28),
+	FN = (1 << 29),
+//RESERVED = (1 << 30),
+#ifndef DISABLE_DEPRECATED
 	KPAD = (1 << 29),
-	GROUP_SWITCH = (1 << 30)
+	GROUP_SWITCH = (1 << 30),
+#endif
 };
 
 enum class KeyLocation {

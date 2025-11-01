@@ -118,6 +118,7 @@ class InputEventWithModifiers : public InputEventFromWindow {
 	bool alt_pressed = false;
 	bool meta_pressed = false; // "Command" on macOS, "Meta/Win" key on other platforms.
 	bool ctrl_pressed = false;
+	bool fn_pressed = false;
 
 protected:
 	static void _bind_methods();
@@ -140,6 +141,9 @@ public:
 
 	void set_meta_pressed(bool p_pressed);
 	bool is_meta_pressed() const;
+
+	void set_fn_pressed(bool p_pressed);
+	bool is_fn_pressed() const;
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 

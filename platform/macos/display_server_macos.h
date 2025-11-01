@@ -264,7 +264,7 @@ public:
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
 	void sync_mouse_state();
-	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
+	void get_key_modifier_state(unsigned int p_macos_state, Key p_key, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
 	void pop_last_key_event();

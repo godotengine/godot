@@ -223,11 +223,20 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
 }
 
+void InputEventWithModifiers::set_fn_pressed(bool p_enabled) {
+	fn_pressed = p_enabled;
+	emit_changed();
+}
+
+bool InputEventWithModifiers::is_fn_pressed() const {
+	return fn_pressed;
+}
 void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
 	set_alt_pressed(event->is_alt_pressed());
 	set_shift_pressed(event->is_shift_pressed());
 	set_ctrl_pressed(event->is_ctrl_pressed());
 	set_meta_pressed(event->is_meta_pressed());
+	set_fn_pressed(event->is_fn_pressed());
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
@@ -243,6 +252,9 @@ BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
 	}
 	if (is_meta_pressed()) {
 		mask.set_flag(KeyModifierMask::META);
+	}
+	if (is_fn_pressed()) {
+		mask.set_flag(KeyModifierMask::FN);
 	}
 	if (is_command_or_control_autoremap()) {
 		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
@@ -268,6 +280,9 @@ String InputEventWithModifiers::as_text() const {
 	}
 	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::META));
+	}
+	if (is_fn_pressed()) {
+		mod_names.push_back(find_keycode_name(Key::FN));
 	}
 
 	if (!mod_names.is_empty()) {
@@ -299,6 +314,9 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
 	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_fn_pressed", "pressed"), &InputEventWithModifiers::set_fn_pressed);
+	ClassDB::bind_method(D_METHOD("is_fn_pressed"), &InputEventWithModifiers::is_fn_pressed);
+
 	ClassDB::bind_method(D_METHOD("get_modifiers_mask"), &InputEventWithModifiers::get_modifiers_mask);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
@@ -306,6 +324,7 @@ void InputEventWithModifiers::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fn_pressed"), "set_fn_pressed", "is_fn_pressed");
 }
 
 void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
@@ -549,6 +568,9 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode, bool p_physica
 		if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
 			ie->set_meta_pressed(true);
 		}
+	}
+	if ((p_keycode & KeyModifierMask::FN) != Key::NONE) {
+		ie->set_fn_pressed(true);
 	}
 
 	return ie;
@@ -1048,6 +1070,10 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	}
 
 	if (is_meta_pressed() != motion->is_meta_pressed()) {
+		return false;
+	}
+
+	if (is_fn_pressed() != motion->is_fn_pressed()) {
 		return false;
 	}
 

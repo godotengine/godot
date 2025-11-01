@@ -166,6 +166,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::LAUNCHE               ,"LaunchE"},
 	{Key::LAUNCHF               ,"LaunchF"},
 	{Key::GLOBE                 ,"Globe"},
+	{Key::FN                 ,"Fn"},
 	{Key::KEYBOARD              ,"On-screen keyboard"},
 	{Key::JIS_EISU              ,"JIS Eisu"},
 	{Key::JIS_KANA              ,"JIS Kana"},
@@ -348,6 +349,7 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::LAUNCHE:
 		case Key::LAUNCHF:
 		case Key::GLOBE:
+		case Key::FN:
 		case Key::KEYBOARD:
 		case Key::JIS_EISU:
 		case Key::JIS_KANA:
@@ -372,6 +374,9 @@ String keycode_get_string(Key p_code) {
 	}
 	if ((p_code & KeyModifierMask::SHIFT) != Key::NONE) {
 		keycode_string.push_back(find_keycode_name(Key::SHIFT));
+	}
+	if ((p_code & KeyModifierMask::FN) != Key::NONE) {
+		keycode_string.push_back(find_keycode_name(Key::FN));
 	}
 	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios"))) {
 		keycode_string.push_back(find_keycode_name(Key::META));
@@ -429,6 +434,8 @@ Key find_keycode(const String &p_codestr) {
 			keycode |= KeyModifierMask::META;
 		} else if (code_part.nocasecmp_to(find_keycode_name(Key::ALT)) == 0) {
 			keycode |= KeyModifierMask::ALT;
+		} else if (code_part.nocasecmp_to(find_keycode_name(Key::FN)) == 0) {
+			keycode |= KeyModifierMask::FN;
 		}
 	}
 
