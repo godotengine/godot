@@ -167,6 +167,7 @@ private:
 		double lifetime = 1.0;
 		double pre_process_time = 0.0;
 		real_t request_process_time = 0.0;
+		real_t request_process_time_residual = 0.0;
 		real_t explosiveness = 0.0;
 		real_t randomness = 0.0;
 		bool restart_request = false;
@@ -445,7 +446,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override;
-	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) override;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual) override;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override;
