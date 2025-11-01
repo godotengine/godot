@@ -21,7 +21,7 @@ namespace Godot
         private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<IDisposable>> _stringNameCache = new();
-        private readonly string _asString;
+        private readonly string? _asString;
 
         ~StringName()
         {
@@ -85,12 +85,13 @@ namespace Godot
         /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
-            _asString = name; // StringNames can never change or simplify
-
             if (name is not null)
             {
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+
+                // Store string representation
+                _asString = name; // No need to convert native value; StringNames can never change or simplify
             }
         }
 
@@ -140,10 +141,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="StringName"/>.</returns>
         public override string ToString()
         {
-            if (IsEmpty)
-                return string.Empty;
-
-            return _asString;
+            return _asString ?? string.Empty;
         }
 
         /// <summary>

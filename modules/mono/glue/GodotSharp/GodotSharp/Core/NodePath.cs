@@ -47,11 +47,10 @@ namespace Godot
     {
         internal godot_node_path.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private readonly WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly ConcurrentDictionary<string, WeakReference<NodePath>> _nodePathCache = new();
-        private string? _cacheKey;
-        private string? _stringRepresentation;
+        private static readonly ConcurrentDictionary<string, WeakReference<IDisposable>> _nodePathCache = new();
+        private readonly string? _asString;
 
         ~NodePath()
         {
@@ -69,9 +68,10 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
-            if (_cacheKey is not null)
+            // Remove from cache
+            if (_asString is not null && _weakReferenceToSelf is not null)
             {
-                _nodePathCache.TryRemove(_cacheKey, out _);
+                _nodePathCache.TryRemove(new(_asString, _weakReferenceToSelf));
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -87,6 +87,13 @@ namespace Godot
         {
             NativeValue = (godot_node_path.movable)nativeValueToOwn;
             _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+
+            // Store string representation
+            NativeFuncs.godotsharp_node_path_as_string(out godot_string asNativeString, nativeValueToOwn);
+            using (asNativeString)
+            {
+                _asString = Marshaling.ConvertStringToManaged(asNativeString);
+            }
         }
 
         // Explicit name to make it very clear
@@ -98,6 +105,7 @@ namespace Godot
         /// </summary>
         public NodePath()
         {
+            _asString = string.Empty;
         }
 
         /// <summary>
@@ -131,10 +139,18 @@ namespace Godot
         /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
-            if (!string.IsNullOrEmpty(path))
+            if (path is not null)
             {
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+
+                // Store string representation
+                var src = (godot_node_path)NativeValue;
+                NativeFuncs.godotsharp_node_path_as_string(out godot_string asNativeString, src);
+                using (asNativeString)
+                {
+                    _asString = Marshaling.ConvertStringToManaged(asNativeString);
+                }
             }
         }
 
@@ -149,21 +165,23 @@ namespace Godot
             if (from is null)
                 return null;
 
-            while (true)
+            // Try get NodePath from cache
+            if (_nodePathCache.TryGetValue(from, out WeakReference<IDisposable>? cachedNodePathWeakReference))
             {
-                WeakReference<NodePath> cachedNodePath = _nodePathCache.GetOrAdd(from,
-                    static (string from) => new WeakReference<NodePath>(new NodePath(from)
-                    {
-                        _cacheKey = from,
-                    })
-                );
-
-                if (cachedNodePath.TryGetTarget(out NodePath? result))
+                if (cachedNodePathWeakReference.TryGetTarget(out IDisposable? cachedNodePath))
                 {
-                    return result;
+                    return (NodePath)cachedNodePath;
                 }
-                // It's possible to reach here if disposed in a race; try again
             }
+
+            // Create new NodePath
+            var nodePath = new NodePath(from);
+            // Add new NodePath to cache
+            if (nodePath._weakReferenceToSelf is not null)
+            {
+                _nodePathCache.TryAdd(from, nodePath._weakReferenceToSelf);
+            }
+            return nodePath;
         }
 
         /// <summary>
@@ -182,19 +200,7 @@ namespace Godot
         /// <returns>A string representation of this <see cref="NodePath"/>.</returns>
         public override string ToString()
         {
-            if (IsEmpty)
-                return string.Empty;
-
-            if (_stringRepresentation is not null)
-                return _stringRepresentation;
-
-            var src = (godot_node_path)NativeValue;
-            NativeFuncs.godotsharp_node_path_as_string(out godot_string dest, src);
-            using (dest)
-            {
-                _stringRepresentation = Marshaling.ConvertStringToManaged(dest);
-                return _stringRepresentation;
-            }
+            return _asString ?? string.Empty;
         }
 
         /// <summary>
