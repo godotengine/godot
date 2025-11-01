@@ -315,6 +315,7 @@ void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods,
 	for (const MethodInfo &mi : p_methods) {
 		TreeItem *method_item = method_tree->create_item(p_parent_item);
 		method_item->set_text(0, get_signature(mi));
+		method_item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 		method_item->set_metadata(0, mi.name);
 	}
 }
@@ -535,6 +536,9 @@ void ConnectDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
 			open_method_tree->set_button_icon(get_editor_theme_icon("Edit"));
+
+			from_signal->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+			dst_method->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 		} break;
 	}
 }
@@ -1641,6 +1645,7 @@ void ConnectionsDock::update_tree() {
 			TreeItem *signal_item = tree->create_item(section_item);
 			String signame = connect_dialog->get_signature(mi, &argnames);
 			signal_item->set_text(0, signame);
+			signal_item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 
 			if (signame == prev_selected) {
 				signal_item->select(0);
@@ -1699,6 +1704,7 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_editor_theme_icon(SNAME("Slot")));
+				connection_item->set_custom_font(0, get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
 
 				if (_is_connection_inherited(connection)) {
 					// The scene inherits this connection.
