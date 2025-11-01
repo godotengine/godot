@@ -85,7 +85,11 @@ void AnimatableBody2D::_notification(int p_what) {
 			set_notify_local_transform(false);
 		} break;
 
+		case NOTIFICATION_PARENT_TRANSFORM_CHANGED:
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (!sync_to_physics) {
+				return;
+			}
 			// Used by sync to physics, send the new transform to the physics...
 			Transform2D new_transform = get_global_transform();
 
