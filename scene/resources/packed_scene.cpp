@@ -2451,6 +2451,8 @@ void PackedScene::clear() {
 
 void PackedScene::reload_from_file() {
 	String path = get_path();
+	path = ResourceUID::ensure_path(path); //If it's a resource uid, then convert to real path.
+
 	if (!path.is_resource_file()) {
 		return;
 	}
