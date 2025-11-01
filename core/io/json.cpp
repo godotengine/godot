@@ -560,8 +560,22 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 }
 
 void JSON::set_data(const Variant &p_data) {
+	if (data == p_data) {
+		return;
+	}
 	data = p_data;
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && get_path().get_extension().nocasecmp_to("json") == 0) {
+		// Synchronize changes made in the inspector to the internal editor. Only for json files.
+		text = JSON::stringify(data, "\t", false, true);
+	} else {
+		text.clear();
+	}
+#else
 	text.clear();
+#endif
+	emit_changed();
 }
 
 Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
@@ -595,13 +609,53 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	return err;
 }
 
+#ifdef TOOLS_ENABLED
+Error JSON::copy_from(const Ref<Resource> &p_resource) {
+	Ref<JSON> json = p_resource;
+	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
+	if (get_class() != json->get_class()) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	_block_emit_changed();
+
+	reset_state(); // May want to reset state.
+
+	List<PropertyInfo> pi;
+	json->get_property_list(&pi);
+
+	for (const PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		if (E.name == "resource_path") {
+			continue; // Do not change path.
+		}
+
+		set(E.name, json->get(E.name));
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() && get_path().get_extension().nocasecmp_to("json") == 0) {
+		text = json->text; // Prevent text inconsistencies.
+	}
+
+	_unblock_emit_changed();
+
+	return OK;
+}
+#endif // TOOLS_ENABLED
+
 Error JSON::parse(const String &p_json_string, bool p_keep_text) {
+	Variant prev_data = data;
 	Error err = _parse_string(p_json_string, data, err_str, err_line);
 	if (err == Error::OK) {
 		err_line = 0;
 	}
 	if (p_keep_text) {
 		text = p_json_string;
+	}
+	if (prev_data != data) {
+		emit_changed();
 	}
 	return err;
 }
