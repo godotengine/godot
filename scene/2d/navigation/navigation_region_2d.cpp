@@ -158,7 +158,7 @@ void NavigationRegion2D::_notification(int p_what) {
 			_region_enter_navigation_map();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			set_physics_process_internal(true);
 		} break;
 
@@ -375,7 +375,7 @@ bool NavigationRegion2D::_get(const StringName &p_name, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 
 NavigationRegion2D::NavigationRegion2D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_hide_clip_children(true);
 
 	region = NavigationServer2D::get_singleton()->region_create();
