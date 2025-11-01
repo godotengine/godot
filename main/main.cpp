@@ -4751,6 +4751,32 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
+
+		PhysicsServer2D::get_singleton()->sync();
+		PhysicsServer2D::get_singleton()->flush_queries();
+
+		if (OS::get_singleton()->get_main_loop()->late_physics_process(physics_step * time_scale)) {
+#ifndef _3D_DISABLED
+			PhysicsServer3D::get_singleton()->end_sync();
+#endif // _3D_DISABLED
+			PhysicsServer2D::get_singleton()->end_sync();
+
+			Engine::get_singleton()->_in_physics = false;
+			exit = true;
+			break;
+		}
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->end_sync();
+#endif // _3D_DISABLED
+		PhysicsServer2D::get_singleton()->end_sync();
+
+		message_queue->flush();
+
 		OS::get_singleton()->get_main_loop()->iteration_end();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
