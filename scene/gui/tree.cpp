@@ -2008,7 +2008,8 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	for (int i = 0; i < columns.size(); i++) {
 		height = MAX(height, p_item->get_minimum_size(i).y);
 	}
-	int item_min_height = MAX(theme_cache.font->get_height(theme_cache.font_size), p_item->get_custom_minimum_height());
+	int font_height = cache.font_height != -1 ? cache.font_height : theme_cache.font->get_height(theme_cache.font_size);
+	int item_min_height = MAX(font_height, p_item->get_custom_minimum_height());
 	if (height < item_min_height) {
 		height = item_min_height;
 	}
@@ -5024,7 +5025,8 @@ void Tree::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			v_scroll->set_custom_step(theme_cache.font->get_height(theme_cache.font_size));
+			int font_height = cache.font_height != -1 ? cache.font_height : theme_cache.font->get_height(theme_cache.font_size);
+			v_scroll->set_custom_step(font_height);
 
 			update_scrollbars();
 			RID ci = get_canvas_item();
@@ -5120,6 +5122,7 @@ void Tree::_notification(int p_what) {
 }
 
 void Tree::_update_all() {
+	cache.font_height = theme_cache.font->get_height(theme_cache.font_size);
 	for (int i = 0; i < columns.size(); i++) {
 		update_column(i);
 	}
