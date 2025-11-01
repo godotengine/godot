@@ -610,6 +610,29 @@ namespace Godot.Collections
         }
 
         /// <summary>
+        /// Adds the elements of the specified collection to the end of this <see cref="Array"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
+        /// <param name="span">The span of <see cref="Variant"/> items to add.</param>
+        public void AddRange<[MustBeVariant] T>(ReadOnlySpan<T> span)
+        {
+            ThrowIfReadOnly();
+            if (span.Length == 0)
+            {
+                return;
+            }
+
+            int oldCount = Count;
+            Resize(Count + span.Length);
+            foreach (ref readonly T item in span)
+            {
+                this[oldCount++] = Variant.From(item);
+            }
+        }
+
+        /// <summary>
         /// Finds the index of an existing value using binary search.
         /// If the value is not present in the array, it returns the bitwise
         /// complement of the insertion index that maintains sorting order.
@@ -1678,6 +1701,31 @@ namespace Godot.Collections
             foreach (var item in collection)
             {
                 Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Adds the elements of the specified span to the end of this <see cref="Array{T}"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
+        /// <param name="span">The span of <see cref="Variant"/> items to add.</param>
+        public void AddRange(ReadOnlySpan<T> span)
+        {
+            ThrowIfReadOnly();
+
+            if (span.Length == 0)
+            {
+                return;
+            }
+
+            int oldCount = Count;
+            Resize(Count + span.Length);
+
+            foreach (ref readonly T item in span)
+            {
+                this[oldCount++] = item;
             }
         }
 
