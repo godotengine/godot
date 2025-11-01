@@ -1,0 +1,21 @@
+[gd_resource type="ORMMaterial3D" load_steps=5 format=3 uid="uid://cy5w7agfa85hq"]
+
+[ext_resource type="Texture2D" uid="uid://nc8nd6w5ed6x" path="res://polyhaven/textures/stone_tile_wall_diff_1k.jpg" id="1_1a4e0"]
+[ext_resource type="Texture2D" uid="uid://dh1n5he71p1s4" path="res://polyhaven/textures/stone_tile_wall_disp_1k.jpg" id="2_k7iu0"]
+[ext_resource type="Texture2D" uid="uid://b3s5tyjuo3dm3" path="res://polyhaven/textures/stone_tile_wall_nor_gl_1k.jpg" id="3_ivhe1"]
+[ext_resource type="Texture2D" uid="uid://dfaluoxkvbtfl" path="res://polyhaven/textures/stone_tile_wall_arm_1k.jpg" id="4_ddlbs"]
+
+[resource]
+albedo_texture = ExtResource("1_1a4e0")
+orm_texture = ExtResource("4_ddlbs")
+normal_enabled = true
+normal_texture = ExtResource("3_ivhe1")
+ao_enabled = true
+ao_light_affect = 1.0
+heightmap_enabled = true
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+heightmap_texture = ExtResource("2_k7iu0")
+uv1_scale = Vector3(4, 4, 4)
+texture_filter = 5

@@ -1,0 +1,18 @@
+# Blender 4.4.3 MTL File: 'food_apple_01_1k.blend'
+# www.blender.org
+
+newmtl food_apple_01
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+Pm 0.000000
+Ps 0.000000
+Pc 0.000000
+Pcr 0.030000
+aniso 0.000000
+anisor 0.000000
+map_Kd textures/food_apple_01_diff_1k.jpg
+map_Pr textures/food_apple_01_rough_1k.jpg
+map_Bump -bm 1.000000 textures/food_apple_01_nor_gl_1k.exr
