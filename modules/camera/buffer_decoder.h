@@ -46,9 +46,11 @@ protected:
 	Ref<Image> image;
 	int width = 0;
 	int height = 0;
+	bool flip_vertical = false;
 
 public:
 	virtual void decode(StreamingBuffer p_buffer) = 0;
+	virtual void set_flip_vertical(bool p_flip) { flip_vertical = p_flip; }
 
 	BufferDecoder(CameraFeed *p_camera_feed);
 	virtual ~BufferDecoder() {}
@@ -96,10 +98,23 @@ public:
 class CopyBufferDecoder : public BufferDecoder {
 private:
 	Vector<uint8_t> image_data;
-	bool rgba = false;
+	Image::Format format;
+	bool convert_bgr;
 
 public:
-	CopyBufferDecoder(CameraFeed *p_camera_feed, bool p_rgba);
+	struct CopyFormat {
+		int stride;
+		Image::Format format;
+		bool convert_bgr;
+	};
+	static inline constexpr const CopyFormat la = { 2, Image::FORMAT_LA8, false };
+	static inline constexpr const CopyFormat rgb = { 3, Image::FORMAT_RGB8, false };
+	static inline constexpr const CopyFormat rgba = { 4, Image::FORMAT_RGBA8, false };
+	// Windows RGB24 uses BGR byte order. See:
+	// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
+	static inline constexpr const CopyFormat bgr = { 3, Image::FORMAT_RGB8, true };
+
+	CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_format);
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
 
@@ -109,5 +124,23 @@ private:
 
 public:
 	JpegBufferDecoder(CameraFeed *p_camera_feed);
+	virtual void decode(StreamingBuffer p_buffer) override;
+};
+
+class Nv12BufferDecoder : public BufferDecoder {
+private:
+	Ref<Image> image_y;
+	Ref<Image> image_uv;
+	Vector<uint8_t> data_y;
+	Vector<uint8_t> data_uv;
+
+public:
+	Nv12BufferDecoder(CameraFeed *p_camera_feed);
+	virtual void decode(StreamingBuffer p_buffer) override;
+};
+
+class NullBufferDecoder : public BufferDecoder {
+public:
+	NullBufferDecoder(CameraFeed *p_camera_feed);
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
