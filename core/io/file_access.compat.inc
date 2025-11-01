@@ -30,6 +30,8 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "core/object/class_db.h"
+
 Ref<FileAccess> FileAccess::_open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 	return open_encrypted(p_path, p_mode_flags, p_key, Vector<uint8_t>());
 }
