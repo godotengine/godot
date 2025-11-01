@@ -335,6 +335,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		is_new = true;
 	}
 
+	EditorNode::get_singleton()->update_resource_count(p_node);
+
 	if (!(p_force || I->value.dirty)) {
 		// Nothing to do.
 		return;
@@ -897,7 +899,6 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node != get_scene_node() && !get_scene_node()->is_ancestor_of(p_node)) {
 		return;
 	}
-
 	node_cache.remove(p_node);
 	_update_if_clean();
 }
@@ -968,7 +969,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -1225,7 +1225,6 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 void SceneTreeEditor::_reset() {
 	// Stop any waiting change to tooltip.
 	update_node_tooltip_delay->stop();
-
 	tree->clear();
 	node_cache.clear();
 }
@@ -2473,6 +2472,9 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 	HashMap<Node *, CachedNode>::Iterator I = cache.find(p_node);
 	if (I) {
+		if (editor->is_scene_tree_dock) {
+			EditorNode::get_singleton()->update_resource_count(I->key, true);
+		}
 		if (p_recursive) {
 			int cc = p_node->get_child_count(false);
 
