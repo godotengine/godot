@@ -51,11 +51,11 @@ class LocalizationEditor : public VBoxContainer {
 	Tree *translation_remap = nullptr;
 	Tree *translation_remap_options = nullptr;
 
-	Tree *translation_pot_list = nullptr;
-	CheckBox *translation_pot_add_builtin = nullptr;
-	EditorFileDialog *pot_file_open_dialog = nullptr;
-	EditorFileDialog *pot_generate_dialog = nullptr;
-	Button *pot_generate_button = nullptr;
+	Tree *template_source_list = nullptr;
+	CheckBox *template_add_builtin = nullptr;
+	EditorFileDialog *template_source_open_dialog = nullptr;
+	EditorFileDialog *template_generate_dialog = nullptr;
+	Button *template_generate_button = nullptr;
 
 	bool updating_translations = false;
 	String localization_changed;
@@ -79,13 +79,13 @@ class LocalizationEditor : public VBoxContainer {
 	void _translation_res_option_popup(bool p_arrow_clicked);
 	void _translation_res_option_selected(const String &p_locale);
 
-	void _pot_add(const PackedStringArray &p_paths);
-	void _pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
-	void _pot_file_open();
-	void _pot_generate_open();
-	void _pot_add_builtin_toggled();
-	void _pot_generate(const String &p_file);
-	void _update_pot_file_extensions();
+	void _template_source_add(const PackedStringArray &p_paths);
+	void _template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
+	void _template_source_file_open();
+	void _template_generate_open();
+	void _template_add_builtin_toggled();
+	void _template_generate(const String &p_file);
+	void _update_template_source_file_extensions();
 
 	void _filesystem_files_moved(const String &p_old_file, const String &p_new_file);
 	void _filesystem_file_removed(const String &p_file);
