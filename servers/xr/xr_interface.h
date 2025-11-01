@@ -167,6 +167,12 @@ public:
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
 	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
 
+	/** protected content **/
+	// If enabled, protect content from CPU access. This returns false if the feature is not available.
+	virtual bool set_protected_content(bool p_protected_content) { return false; }
+	// Returns true if the content is being protected from CPU access.
+	virtual bool is_protected_content() const { return false; }
+
 	XRInterface();
 	~XRInterface();
 };

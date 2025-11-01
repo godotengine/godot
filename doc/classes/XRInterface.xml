@@ -114,6 +114,12 @@
 				Returns [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
+		<method name="is_protected_content" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the content is being protected from CPU access.
+			</description>
+		</method>
 		<method name="set_environment_blend_mode">
 			<return type="bool" />
 			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
@@ -142,6 +148,13 @@
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
 				[b]Note:[/b] Changing this after the interface has already been initialized can be jarring for the player, so it's recommended to recenter on the HMD with [method XRServer.center_on_hmd] (if switching to [constant XRInterface.XR_PLAY_AREA_STAGE]) or make the switch during a scene change.
+			</description>
+		</method>
+		<method name="set_protected_content">
+			<return type="bool" />
+			<param index="0" name="protected_content" type="bool" />
+			<description>
+				If enabled, protect content from CPU access. This returns false if the feature is not available.
 			</description>
 		</method>
 		<method name="start_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
