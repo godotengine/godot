@@ -72,6 +72,11 @@ public:
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
+	PackedStringArray get_resource_paths(const bool &p_with_godot_type);
+	PackedStringArray get_resource_paths_of_type(const String &p_type_hint, const bool &p_with_godot_type);
+	PackedStringArray get_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type);
+	PackedStringArray get_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type);
+	PackedStringArray get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type);
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);

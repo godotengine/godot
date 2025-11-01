@@ -872,6 +872,87 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	}
 }
 
+void ResourceCache::get_cached_resource_paths(const bool &p_with_godot_type, PackedStringArray *p_paths) {
+	MutexLock mutex_lock(lock);
+
+	if (p_with_godot_type) {
+		for (const auto &elem : resources) {
+			GDType type = elem.value->get_gdtype();
+			p_paths->push_back("" + type.get_name() + "|" + elem.key);
+		}
+		return;
+	}
+
+	for (const auto &elem : resources) {
+		p_paths->push_back(elem.key);
+	}
+}
+
+void ResourceCache::get_cached_resource_paths_of_type(const bool &p_with_godot_type, const String &p_type_hint, PackedStringArray *p_paths) {
+	MutexLock mutex_lock(lock);
+
+	for (const auto &elem : resources) {
+		String path = elem.key;
+		String type_name = ResourceLoader::get_resource_type(path);
+		GDType type = elem.value->get_gdtype();
+		//String type_name = type.get_name();
+		if (type_name == p_type_hint) {
+			if (p_with_godot_type) {
+				p_paths->push_back("" + type_name + "|" + path);
+				continue;
+			}
+			p_paths->push_back(path);
+		}
+	}
+}
+
+void ResourceCache::get_cached_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths) {
+	MutexLock mutex_lock(lock);
+
+	for (const auto &elem : resources) {
+		String path = elem.key;
+		if (path.begins_with(p_path_prefix)) {
+			if (p_with_godot_type) {
+				p_paths->push_back("" + ResourceLoader::get_resource_type(path) + "|" + path);
+				continue;
+			}
+			p_paths->push_back(path);
+		}
+	}
+}
+
+void ResourceCache::get_cached_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths) {
+	MutexLock mutex_lock(lock);
+
+	for (const auto &elem : resources) {
+		String path = elem.key;
+		String file_name = path.get_file();
+		if (file_name.begins_with(p_file_name_prefix)) {
+			if (p_with_godot_type) {
+				p_paths->push_back("" + ResourceLoader::get_resource_type(path) + "|" + path);
+				continue;
+			}
+			p_paths->push_back(path);
+		}
+	}
+}
+
+void ResourceCache::get_cached_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type, PackedStringArray *p_paths) {
+	MutexLock mutex_lock(lock);
+
+	for (const auto &elem : resources) {
+		String path = elem.key;
+		String file_extension = path.get_extension();
+		if (file_extension == p_file_extension) {
+			if (p_with_godot_type) {
+				p_paths->push_back("" + ResourceLoader::get_resource_type(path) + "|" + path);
+				continue;
+			}
+			p_paths->push_back(path);
+		}
+	}
+}
+
 int ResourceCache::get_cached_resource_count() {
 	MutexLock mutex_lock(lock);
 	return resources.size();

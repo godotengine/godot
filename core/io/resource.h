@@ -210,6 +210,11 @@ class ResourceCache {
 public:
 	static bool has(const String &p_path);
 	static Ref<Resource> get_ref(const String &p_path);
+	static void get_cached_resource_paths(const bool &p_with_godot_type, PackedStringArray *p_paths);
+	static void get_cached_resource_paths_of_type(const bool &p_with_godot_type, const String &p_type_hint, PackedStringArray *p_paths);
+	static void get_cached_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths);
+	static void get_cached_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths);
+	static void get_cached_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type, PackedStringArray *p_paths);
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };

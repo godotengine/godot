@@ -63,6 +63,55 @@
 				Returns the list of recognized extensions for a resource type.
 			</description>
 		</method>
+		<method name="get_resource_paths">
+			<return type="PackedStringArray" />
+			<param index="0" name="with_godot_type" type="bool" />
+			<description>
+				Returns a list of all cached resource paths.
+				[b]Any resource assigned via @export variables or loaded using load() in code is cached internally[/b]
+				If called with_godot_type=true, then the underlying Godot Type gets used as a prefix to the return value (e.g: "Image|res://icon.svg")
+			</description>
+		</method>
+		<method name="get_resource_paths_of_type">
+			<return type="PackedStringArray" />
+			<param index="0" name="type_hint" type="String" />
+			<param index="1" name="with_godot_type" type="bool" />
+			<description>
+				Returns a list of all cached resource paths where the resource matches the given type_hint (e.g: Image, Texture2D, AudioStreamWAV, AudioStreamMP3, JSON, ...)
+				[b]Any resource assigned via @export variables or loaded using load() in code is cached internally[/b]
+				If called with_godot_type=true, then the underlying Godot Type gets used as a prefix to the return value (e.g: "Image|res://icon.svg")
+			</description>
+		</method>
+		<method name="get_resource_paths_with_file_extension">
+			<return type="PackedStringArray" />
+			<param index="0" name="file_extension" type="String" />
+			<param index="1" name="with_godot_type" type="bool" />
+			<description>
+				Returns a list of all cached resource paths where the file extension matches the provided one (e.g: "res", "tres", "mp3", "wav", "png", "jpeg", "json", ...)
+				[b]Any resource assigned via @export variables or loaded using load() in code is cached internally[/b]
+				If called with_godot_type=true, then the underlying Godot Type gets used as a prefix to the return value (e.g: "Image|res://icon.svg")
+			</description>
+		</method>
+		<method name="get_resource_paths_with_file_name_prefix">
+			<return type="PackedStringArray" />
+			<param index="0" name="file_name_prefix" type="String" />
+			<param index="1" name="with_godot_type" type="bool" />
+			<description>
+				Returns a list of all cached resource paths where the file name begins with a provided file_name_prefix (e.g: "SFX_", "IMG_", "MAT_", "ENV_", "MODEL_", "LEVEL_", ...)
+				[b]Any resource assigned via @export variables or loaded using load() in code is cached internally[/b]
+				If called with_godot_type=true, then the underlying Godot Type gets used as a prefix to the return value (e.g: "Image|res://icon.svg")
+			</description>
+		</method>
+		<method name="get_resource_paths_with_path_prefix">
+			<return type="PackedStringArray" />
+			<param index="0" name="path_prefix" type="String" />
+			<param index="1" name="with_godot_type" type="bool" />
+			<description>
+				Returns a list of all cached resource paths where the path begins with the provided path_prefix (e.g: "res://", "user://", "C:/", ...)
+				[b]Any resource assigned via @export variables or loaded using load() in code is cached internally[/b]
+				If called with_godot_type=true, then the underlying Godot Type gets used as a prefix to the return value (e.g: "Image|res://icon.svg")
+			</description>
+		</method>
 		<method name="get_resource_uid">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
