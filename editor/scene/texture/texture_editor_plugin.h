@@ -57,6 +57,7 @@ private:
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
 	Label *metadata_label = nullptr;
+	Button *popout_button = nullptr;
 
 	static inline Ref<ShaderMaterial> texture_material;
 
@@ -70,13 +71,15 @@ protected:
 	void _update_texture_display_ratio();
 
 	void on_selected_channels_changed();
+	void on_popout_pressed();
+	void on_popout_closed(AcceptDialog *p_dialog);
 
 public:
 	static void init_shaders();
 	static void finish_shaders();
 
 	TextureRect *get_texture_display();
-	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata);
+	TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout);
 };
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
