@@ -33,6 +33,9 @@
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/mesh.h"
 
+static bool sprite_sharing_enabled = false;
+static HashMap<SpriteMeshKey, SpriteBase3D *, SpriteMeshKey> shared_sprites;
+
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
 		return color_accum;
@@ -63,6 +66,64 @@ void SpriteBase3D::_propagate_color_changed() {
 	for (SpriteBase3D *&E : children) {
 		E->_propagate_color_changed();
 	}
+}
+
+void SpriteBase3D::_start_sharing_sprite() {
+	shared_sprites.insert(last_sprite_mesh_key, this);
+	sharing_own_mesh = true;
+}
+
+void SpriteBase3D::_stop_sharing_sprite() {
+	shared_sprites.erase(last_sprite_mesh_key);
+	sharing_own_mesh = false;
+	if (!users.is_empty()) {
+		// Select a successor and make every other user use that successor's mesh instead.
+		SpriteBase3D *successor = nullptr;
+		int i = 0;
+		for (; i < users.size(); i++) {
+			// There may be sprites that have changed the sprite they're using earlier this frame, so we have to filter them out.
+			if (users[i] && users[i]->using_sprite == this) {
+				successor = users[i];
+				successor->_start_sharing_sprite();
+				// Copy mesh data to successor. Need to store data in vertex and attribute buffer and not just update the RenderingServer mesh directly so they can be copied again later.
+				// memcpy is used directly because buffer sizes are guaranteed to be identical across all SpriteBase3Ds.
+				memcpy(successor->vertex_buffer.ptrw(), vertex_buffer.ptr(), vertex_buffer.size());
+				memcpy(successor->attribute_buffer.ptrw(), attribute_buffer.ptr(), attribute_buffer.size());
+				RS::get_singleton()->mesh_surface_update_vertex_region(successor->mesh, 0, 0, successor->vertex_buffer);
+				RS::get_singleton()->mesh_surface_update_attribute_region(successor->mesh, 0, 0, successor->attribute_buffer);
+				RS::get_singleton()->mesh_set_custom_aabb(successor->mesh, aabb);
+				successor->using_sprite = nullptr;
+				successor->set_base(successor->mesh);
+				successor->set_aabb(aabb);
+				i++; // Skip the successor for the next for-loop.
+				break;
+			}
+		}
+		// Propagate the change to remaining users that haven't changed their using_sprite.
+		// Note: This works even if the same user is registered twice. Very rare but can still happen.
+		for (; i < users.size(); i++) {
+			if (users[i] && users[i]->using_sprite == this) {
+				users[i]->_start_using_sprite(successor);
+			}
+		}
+		// Now every user has moved on, we can clear the users list.
+		users.clear();
+	}
+}
+
+void SpriteBase3D::_start_using_sprite(SpriteBase3D *p_using_sprite) {
+	using_sprite = p_using_sprite;
+	using_sprite_user_index = using_sprite->users.size();
+	set_base(using_sprite->mesh);
+	set_aabb(using_sprite->aabb);
+	using_sprite->users.push_back(this);
+	// We don't need to remove this sprite from the previous shared sprite's users list,
+	// as setting using_sprite means they will be detected and filtered out later.
+}
+
+void SpriteBase3D::_stop_using_sprite() {
+	using_sprite->users.write[using_sprite_user_index] = nullptr;
+	using_sprite = nullptr;
 }
 
 void SpriteBase3D::_notification(int p_what) {
@@ -222,6 +283,87 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		uint8_t(CLAMP(color.a * 255.0, 0.0, 255.0))
 	};
 
+	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
+	if (get_draw_flag(FLAG_TRANSPARENT)) {
+		if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
+		} else {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
+		}
+	}
+
+	RID shader_rid;
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
+
+	if (last_shader != shader_rid) {
+		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
+		last_shader = shader_rid;
+	}
+	if (last_texture != p_texture->get_rid()) {
+		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
+		last_texture = p_texture->get_rid();
+	}
+	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
+	}
+
+	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
+
+	if (sprite_sharing_enabled) {
+		SpriteMeshKey sprite_mesh_key;
+		sprite_mesh_key.final_rect = final_rect;
+		sprite_mesh_key.final_src_rect = final_src_rect;
+		sprite_mesh_key.v_color = *(uint32_t *)v_color;
+		sprite_mesh_key.v_normal = v_normal;
+		sprite_mesh_key.shader = last_shader;
+		sprite_mesh_key.texture = last_texture;
+		sprite_mesh_key.px_size = px_size;
+		sprite_mesh_key.render_priority = render_priority;
+		sprite_mesh_key.axis = axis;
+		sprite_mesh_key.hflip = hflip;
+		sprite_mesh_key.vflip = vflip;
+		sprite_mesh_key.alpha_cut_disabled = get_alpha_cut_mode() == ALPHA_CUT_DISABLED;
+		sprite_mesh_key.alpha_antialiasing_edge = alpha_antialiasing_edge;
+		sprite_mesh_key.alpha_hash_scale = alpha_hash_scale;
+		sprite_mesh_key.alpha_scissor_threshold = alpha_scissor_threshold;
+		if (sharing_own_mesh) {
+			if (last_sprite_mesh_key != sprite_mesh_key) {
+				// Sprite mesh data changed.
+				_stop_sharing_sprite();
+			} else {
+				// Sprite mesh data unchanged.
+				return;
+			}
+		}
+		// Try to see if there's any sprite whose mesh can be used instead.
+		SpriteBase3D **sprite_ptr = shared_sprites.getptr(sprite_mesh_key);
+		last_sprite_mesh_key = sprite_mesh_key;
+		if (sprite_ptr) {
+			if (*sprite_ptr != using_sprite) {
+				// Found new sprite that can be reused.
+				_start_using_sprite(*sprite_ptr);
+				return;
+			} else {
+				// Keep using same sprite.
+				return;
+			}
+		}
+		// Otherwise, setup mesh data and register this sprite's mesh for sharing.
+		_start_sharing_sprite();
+		if (using_sprite) {
+			// This sprite may have been sharing another sprite's mesh before, so we need to stop that here.
+			_stop_using_sprite();
+		}
+	}
+
 	for (int i = 0; i < 4; i++) {
 		Vector3 vtx;
 		vtx[x_axis] = vertices[i][0];
@@ -265,46 +407,13 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 			break;
 	}
 
-	RID mesh_new = get_mesh();
+	RID mesh_new = mesh;
+	set_base(mesh_new);
 	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
 	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
 
 	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
 	set_aabb(aabb_new);
-
-	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
-	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
-	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
-
-	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
-	if (get_draw_flag(FLAG_TRANSPARENT)) {
-		if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
-		} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
-		} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
-		} else {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
-		}
-	}
-
-	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
-
-	if (last_shader != shader_rid) {
-		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
-		last_shader = shader_rid;
-	}
-	if (last_texture != p_texture->get_rid()) {
-		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
-		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
-		last_texture = p_texture->get_rid();
-	}
-	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
-		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
-		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
-	}
 }
 
 void SpriteBase3D::set_centered(bool p_center) {
@@ -698,6 +807,13 @@ void SpriteBase3D::_bind_methods() {
 }
 
 SpriteBase3D::SpriteBase3D() {
+	static bool static_initialized = false;
+	if (!static_initialized) {
+		static_initialized = true;
+		// Auto-instancing isn't supported in the compatibility renderer.
+		sprite_sharing_enabled = RS::get_singleton()->get_current_rendering_method() != "gl_compatibility";
+	}
+
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 	}
@@ -775,6 +891,14 @@ SpriteBase3D::~SpriteBase3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free_rid(mesh);
 	RenderingServer::get_singleton()->free_rid(material);
+
+	if (sprite_sharing_enabled && sharing_own_mesh) {
+		_stop_sharing_sprite();
+	}
+
+	if (using_sprite) {
+		_stop_using_sprite();
+	}
 }
 
 ///////////////////////////////////////////
