@@ -58,7 +58,7 @@
 			<param index="1" name="case_sensitive" type="bool" default="true" />
 			<description>
 				Returns [code]true[/code] if the file exists in the loaded zip archive.
-				Must be called after [method open].
+				Must be called after [method open] or [method open_buffer].
 			</description>
 		</method>
 		<method name="get_compression_level">
@@ -73,7 +73,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns the list of names of all files in the loaded archive.
-				Must be called after [method open].
+				Must be called after [method open] or [method open_buffer].
 			</description>
 		</method>
 		<method name="open">
@@ -83,13 +83,20 @@
 				Opens the zip archive at the given [param path] and reads its file index.
 			</description>
 		</method>
+		<method name="open_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Opens the zip archive in the raw [param buffer] and reads its file index.
+			</description>
+		</method>
 		<method name="read_file">
 			<return type="PackedByteArray" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="case_sensitive" type="bool" default="true" />
 			<description>
 				Loads the whole content of a file in the loaded zip archive into memory and returns it.
-				Must be called after [method open].
+				Must be called after [method open] or [method open_buffer].
 			</description>
 		</method>
 	</methods>
