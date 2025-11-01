@@ -1895,6 +1895,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
+	text_editor->set_line_numbers_min_digits(3);
 
 	text_editor->set_virtual_keyboard_show_on_focus(false);
 	text_editor->set_draw_line_numbers(true);

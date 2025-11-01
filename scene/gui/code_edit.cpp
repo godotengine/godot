@@ -1511,6 +1511,26 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 	return line_number_padding == "0";
 }
 
+void CodeEdit::set_line_numbers_min_digits(int p_count) {
+	if (line_numbers_min_digits == p_count) {
+		return;
+	}
+	line_numbers_min_digits = p_count;
+
+	int digits = MAX(line_numbers_min_digits, std::log10(get_line_count()) + 1);
+	if (digits == line_number_digits) {
+		return;
+	}
+	line_number_digits = digits;
+	_clear_line_number_text_cache();
+	_update_line_number_gutter_width();
+	queue_redraw();
+}
+
+int CodeEdit::get_line_numbers_min_digits() const {
+	return line_numbers_min_digits;
+}
+
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	if (!Rect2(Vector2(0, 0), get_size()).intersects(p_region)) {
 		return;
@@ -2800,6 +2820,8 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_draw_line_numbers_enabled"), &CodeEdit::is_draw_line_numbers_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enable"), &CodeEdit::set_line_numbers_zero_padded);
 	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &CodeEdit::is_line_numbers_zero_padded);
+	ClassDB::bind_method(D_METHOD("set_line_numbers_min_digits", "count"), &CodeEdit::set_line_numbers_min_digits);
+	ClassDB::bind_method(D_METHOD("get_line_numbers_min_digits"), &CodeEdit::get_line_numbers_min_digits);
 
 	/* Fold Gutter */
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
@@ -2944,6 +2966,7 @@ void CodeEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gutters_line_numbers_min_digits", PROPERTY_HINT_RANGE, "1,5,1"), "set_line_numbers_min_digits", "get_line_numbers_min_digits");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
@@ -3823,7 +3846,7 @@ void CodeEdit::_text_changed() {
 	}
 
 	int lc = get_line_count();
-	int new_line_number_digits = std::log10(lc) + 1;
+	int new_line_number_digits = MAX(line_numbers_min_digits, std::log10(lc) + 1);
 	if (line_number_digits != new_line_number_digits) {
 		_clear_line_number_text_cache();
 	}
