@@ -141,6 +141,8 @@ private:
 
 	String validate_filter_wildcard(const String &p_expression) const;
 
+	bool _extensions_dirty = true;
+
 	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit = nullptr;
 
