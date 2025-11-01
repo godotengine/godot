@@ -51,6 +51,7 @@
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
 constexpr int MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION = 20;
+constexpr int MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION_SQUARED = MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION * MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
 constexpr int MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES = 5;
 constexpr int GRID_MINOR_STEPS_PER_MAJOR_LINE = 10;
 constexpr int GRID_MINOR_STEPS_PER_MAJOR_DOT = 5;
@@ -1340,7 +1341,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 		minimap->queue_redraw();
 		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 
-		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to_point / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
+		connecting_valid = just_disconnected || click_pos.distance_squared_to(connecting_to_point / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION_SQUARED;
 
 		if (connecting_valid) {
 			Vector2 mpos = mm->get_position() / zoom;

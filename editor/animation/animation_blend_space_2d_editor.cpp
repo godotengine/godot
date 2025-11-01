@@ -173,7 +173,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		_update_tool_erase();
 
 		for (int i = 0; i < points.size(); i++) {
-			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
+			if (points[i].distance_squared_to(mb->get_position()) < (10.0f * EDSCALE) * (10.0f * EDSCALE)) {
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
@@ -226,7 +226,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				continue;
 			}
 
-			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
+			if (points[i].distance_squared_to(mb->get_position()) < (10.0f * EDSCALE) * (10.0f * EDSCALE)) {
 				making_triangle.push_back(i);
 				if (making_triangle.size() == 3) {
 					//add triangle!
