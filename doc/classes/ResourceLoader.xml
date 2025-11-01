@@ -113,6 +113,7 @@
 			<description>
 				Returns the resource loaded by [method load_threaded_request].
 				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading. However, it's recommended to use [method load_threaded_get_status] to known when the load has actually completed.
+				[b]Note:[/b] The returned Resource remains in memory as long as it has at least one active reference. You do not need to manage freeing its memory manually.
 			</description>
 		</method>
 		<method name="load_threaded_get_status">
