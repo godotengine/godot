@@ -111,6 +111,8 @@ void NoiseTexture3D::_set_texture_data(const TypedArray<Image> &p_data) {
 		} else {
 			texture = RS::get_singleton()->texture_3d_create(data[0]->get_format(), data[0]->get_width(), data[0]->get_height(), data.size(), false, data);
 		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
+
 		format = data[0]->get_format();
 	}
 	emit_changed();
