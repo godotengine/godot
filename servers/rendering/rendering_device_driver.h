@@ -617,6 +617,7 @@ public:
 		LocalVector<AttachmentReference> input_references;
 		LocalVector<AttachmentReference> color_references;
 		AttachmentReference depth_stencil_reference;
+		AttachmentReference depth_resolve_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
 		AttachmentReference fragment_shading_rate_reference;

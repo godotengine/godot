@@ -137,6 +137,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
+	bool framebuffer_depth_resolve = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	bool device_memory_report_support = false;
 #endif
