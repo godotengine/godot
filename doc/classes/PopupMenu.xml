@@ -245,6 +245,13 @@
 				Returns the auto translate mode of the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_font" qualifiers="const">
+			<return type="Font" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Gets the [Font] of the item at the given [param index], or returns [code]null[/code] if the font has not been set.
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="index" type="int" />
@@ -493,6 +500,15 @@
 			<param index="1" name="disabled" type="bool" />
 			<description>
 				Enables/disables the item at the given [param index]. When it is disabled, it can't be selected and its action can't be invoked.
+			</description>
+		</method>
+		<method name="set_item_font">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="font" type="Font" />
+			<description>
+				Sets the [Font] of the item at the given [param index]. To clear the font setting, set the font to [code]null[/code].
+				[b]Note:[/b] Loading fonts can consume a lot of memory, and will continue taking up memory until the [PopupMenu] is freed. To minimize memory use, try setting fonts at [signal Window.about_to_popup], and reset them to [code]null[/code] at [signal Popup.popup_hide].
 			</description>
 		</method>
 		<method name="set_item_icon">
