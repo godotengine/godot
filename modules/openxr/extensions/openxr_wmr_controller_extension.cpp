@@ -40,7 +40,7 @@ HashMap<String, bool *> OpenXRWMRControllerExtension::get_requested_extensions()
 	request_extensions[XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME] = &available[WMR_SAMSUNG_ODESSY];
 	request_extensions[XR_MSFT_HAND_INTERACTION_EXTENSION_NAME] = &available[WMR_HAND_INTERACTION];
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRWMRControllerExtension::is_available(WMRControllers p_type) {

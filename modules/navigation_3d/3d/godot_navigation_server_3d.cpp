@@ -333,7 +333,7 @@ TypedArray<RID> GodotNavigationServer3D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap3D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle3D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle3D *> obstacles = LocalVector<NavObstacle3D *>(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
@@ -1296,7 +1296,7 @@ COMMAND_1(free_rid, RID, p_object) {
 		ERR_FAIL_NULL(parser);
 
 		generator_parsers.erase(parser);
-		NavMeshGenerator3D::get_singleton()->set_generator_parsers(generator_parsers);
+		NavMeshGenerator3D::get_singleton()->set_generator_parsers(LocalVector<NavMeshGeometryParser3D *>(generator_parsers));
 		geometry_parser_owner.free(parser->self);
 
 	} else {
@@ -1435,7 +1435,7 @@ void GodotNavigationServer3D::physics_process(double p_delta_time) {
 void GodotNavigationServer3D::init() {
 	navmesh_generator_3d = memnew(NavMeshGenerator3D);
 	RWLockRead read_lock(geometry_parser_rwlock);
-	navmesh_generator_3d->set_generator_parsers(generator_parsers);
+	navmesh_generator_3d->set_generator_parsers(LocalVector<NavMeshGeometryParser3D *>(generator_parsers));
 }
 
 void GodotNavigationServer3D::finish() {
@@ -1466,7 +1466,7 @@ RID GodotNavigationServer3D::source_geometry_parser_create() {
 	parser->self = rid;
 
 	generator_parsers.push_back(parser);
-	NavMeshGenerator3D::get_singleton()->set_generator_parsers(generator_parsers);
+	NavMeshGenerator3D::get_singleton()->set_generator_parsers(LocalVector<NavMeshGeometryParser3D *>(generator_parsers));
 	return rid;
 }
 

@@ -270,7 +270,7 @@ HashSet<Ref<Translation>> TranslationDomain::get_potential_translations(const St
 			res.insert(E);
 		}
 	}
-	return res;
+	return HashSet<Ref<Translation>>(res);
 }
 
 Ref<Translation> TranslationDomain::get_translation_object(const String &p_locale) const {

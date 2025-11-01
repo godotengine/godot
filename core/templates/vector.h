@@ -72,7 +72,7 @@ private:
 public:
 	// Must take a copy instead of a reference (see GH-31736).
 	_FORCE_INLINE_ bool push_back(T p_elem) { return _cowdata.push_back(p_elem); }
-	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
+	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(T(p_elem)); } //alias
 	void fill(T p_elem);
 
 	void remove_at(Size p_index) { _cowdata.remove_at(p_index); }

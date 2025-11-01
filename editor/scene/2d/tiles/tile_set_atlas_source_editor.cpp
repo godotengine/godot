@@ -1599,7 +1599,7 @@ HashMap<Vector2i, List<const PropertyInfo *>> TileSetAtlasSourceEditor::_group_p
 			}
 		}
 	}
-	return per_tile;
+	return HashMap<Vector2i, List<const PropertyInfo *>>(per_tile);
 }
 
 void TileSetAtlasSourceEditor::_menu_option(int p_option) {
