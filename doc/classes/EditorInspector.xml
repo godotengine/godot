@@ -14,12 +14,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="collapse_all_folding">
+			<return type="void" />
+			<description>
+				Collapse all foldable groups.
+			</description>
+		</method>
 		<method name="edit">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
 				Shows the properties of the given [param object] in this inspector for editing. To clear the inspector, call this method with [code]null[/code].
 				[b]Note:[/b] If you want to edit an object in the editor's main inspector, use the [code]edit_*[/code] methods in [EditorInterface] instead.
+			</description>
+		</method>
+		<method name="expand_all_folding">
+			<return type="void" />
+			<description>
+				Expand all foldable groups.
+			</description>
+		</method>
+		<method name="expand_revertable">
+			<return type="void" />
+			<description>
+				Expand all foldable groups that have revertable properties in them.
 			</description>
 		</method>
 		<method name="get_edited_object">
@@ -45,6 +63,64 @@
 			<param index="6" name="wide" type="bool" default="false" />
 			<description>
 				Creates a property editor that can be used by plugin UI to edit the specified property of an [param object].
+			</description>
+		</method>
+		<method name="set_autoclear">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Sets whether checkable properties, such as theme overrides, should have their value cleared/reverted when unchecked.
+			</description>
+		</method>
+		<method name="set_filter">
+			<return type="void" />
+			<param index="0" name="line_edit" type="LineEdit" />
+			<description>
+				Assigns a [LineEdit] control to use as the filter input, which will cause the inspector to update when [signal LineEdit.text_changed] is emitted.
+			</description>
+		</method>
+		<method name="set_hide_metadata">
+			<return type="void" />
+			<param index="0" name="hide" type="bool" />
+			<description>
+				Sets whether to hide the controls that deal with adding metadata properties to the object being edited by the inspector.
+			</description>
+		</method>
+		<method name="set_hide_script">
+			<return type="void" />
+			<param index="0" name="hide" type="bool" />
+			<description>
+				Sets whether to hide the controls that deal with assigning a script to the object being edited by the inspector.
+			</description>
+		</method>
+		<method name="set_show_categories">
+			<return type="void" />
+			<param index="0" name="show_standard" type="bool" />
+			<param index="1" name="show_custom" type="bool" />
+			<description>
+				Sets whether to show categories. [param show_standard] will show the standard class categories. [param show_custom] will show custom categories, like the ones added with [constant PROPERTY_USAGE_CATEGORY] or [annotation @GDScript.@export_category].
+			</description>
+		</method>
+		<method name="set_use_doc_hints">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Sets whether to show documentation tooltips.
+			</description>
+		</method>
+		<method name="set_use_filter">
+			<return type="void" />
+			<param index="0" name="use_filter" type="bool" />
+			<description>
+				Sets whether to use the filter text provided by the filter input assigned by [method set_filter].
+			</description>
+		</method>
+		<method name="set_use_folding">
+			<return type="void" />
+			<param index="0" name="use_folding" type="bool" />
+			<param index="1" name="update_tree" type="bool" default="true" />
+			<description>
+				Sets whether to allow folding any foldable groups.
 			</description>
 		</method>
 	</methods>
@@ -97,7 +173,7 @@
 			<param index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a boolean property is toggled in the inspector.
-				[b]Note:[/b] This signal is never emitted if the internal [code]autoclear[/code] property enabled. Since this property is always enabled in the editor inspector, this signal is never emitted by the editor itself.
+				[b]Note:[/b] This signal is never emitted if the [code]autoclear[/code] property (set using [method set_autoclear]) is enabled. Since this property is always enabled in the editor inspector, this signal is never emitted by the editor itself.
 			</description>
 		</signal>
 		<signal name="resource_selected">
