@@ -7,49 +7,25 @@ from pathlib import Path
 import methods
 
 Import("env")
-
 env_d3d12_rdd = env.Clone()
 
-thirdparty_obj = []
-
-
-# DirectX Headers (must take precedence over Windows SDK's).
-
-env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
-env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
-
-
-# Direct3D 12 Memory Allocator.
-
-env.Append(CPPPATH=["#thirdparty/d3d12ma"])
-env_d3d12_rdd.Append(CPPPATH=["#thirdparty/d3d12ma"])
-
-
 # Agility SDK.
-
 if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
     env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
     if env["agility_sdk_multiarch"]:
         env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
 
-
 # PIX.
-
 if env["use_pix"]:
     env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
     env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
 
-
 # Direct composition.
-
 if "dcomp" in env.get("supported", []):
     env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
     env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
 
-
 # Mesa (SPIR-V to DXIL functionality).
-
 mesa_libs = env["mesa_libs"]
 if env.msvc and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
     mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-msvc"
@@ -137,6 +113,7 @@ extra_defines += [
     ("PACKAGE_BUGREPORT", '\\"https://gitlab.freedesktop.org/mesa/mesa/-/issues\\"'),
     "PIPE_SUBSYSTEM_WINDOWS_USER",
     ("_Static_assert", "static_assert"),
+    "HAVE_STRUCT_TIMESPEC",
 ]
 
 if env.msvc:
@@ -150,11 +127,11 @@ if env.msvc:
         "_ALLOW_KEYWORD_MACROS",
         ("_HAS_EXCEPTIONS", 0),
         "NOMINMAX",
-        "HAVE_STRUCT_TIMESPEC",
     ]
 else:
     extra_defines += [
-        "HAVE_STRUCT_TIMESPEC",
+        # Match current version used by MinGW. MSVC and Direct3D 12 headers use 500.
+        ("__REQUIRED_RPCNDR_H_VERSION__", 475),
     ]
     if methods.using_gcc(env) and methods.get_compiler_version(env)["major"] < 13:
         # `region` & `endregion` not recognized as valid pragmas.
@@ -166,11 +143,22 @@ env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
 # For the same reason as above, the defines must be the same as in the 3rd-party code itself.
 env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
 
+# Thirdparty.
+thirdparty_obj = []
 
-# Add all.
+env_thirdparty = env_d3d12_rdd.Clone()
+env_thirdparty.disable_warnings()
 
+env_thirdparty.Prepend(
+    CPPPATH=[
+        "#thirdparty/directx_headers/include/directx",
+        "#thirdparty/directx_headers/include/dxguids",
+        "#thirdparty/d3d12ma",
+    ]
+)
+
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/d3d12ma/D3D12MemAlloc.cpp")
 env.drivers_sources += thirdparty_obj
-
 
 # Godot source files.
 
