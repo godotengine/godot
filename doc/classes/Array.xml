@@ -729,7 +729,7 @@
 			<return type="void" />
 			<description>
 				Shuffles all elements of the array in a random order.
-				[b]Note:[/b] Like many similar functions in the engine (such as [method @GlobalScope.randi] or [method pick_random]), this method uses a common, global random seed. To get a predictable outcome from this method, see [method @GlobalScope.seed].
+				[b]Note:[/b] Like many similar functions in the engine (such as [method @GlobalScope.randi] or [method pick_random]), this method uses a common, global random seed. If you want to shuffle using a non-global random number generator, use [method RandomNumberGenerator.shuffle_array].
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
