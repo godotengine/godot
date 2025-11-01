@@ -1,6 +1,11 @@
 name: 🍏 iOS Builds
 on:
   workflow_call:
+    inputs:
+      event:
+        description: Name of the caller's `github.event_name`.
+        required: true
+        type: string
 
 # Global Settings
 env:
