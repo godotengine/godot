@@ -372,7 +372,7 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 
 Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	ERR_FAIL_COND_V(replication_config.is_null(), FAILED);
-	const List<NodePath> props = replication_config->get_watch_properties();
+	const List<NodePath> &props = replication_config->get_watch_properties();
 	if (props.size() != watchers.size()) {
 		watchers.resize(props.size());
 	}
@@ -436,7 +436,7 @@ List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint
 List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes) {
 	List<NodePath> out;
 	ERR_FAIL_COND_V(replication_config.is_null(), out);
-	const List<NodePath> watch_props = replication_config->get_watch_properties();
+	const List<NodePath> &watch_props = replication_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
 		if ((p_indexes & (1ULL << idx++)) == 0) {
