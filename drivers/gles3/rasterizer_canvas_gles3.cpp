@@ -429,9 +429,9 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					if (!material_screen_texture_cached) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
-						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
+						backbuffer_gen_mipmaps = md->shader_data->screen_texture_filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP;
 					} else if (!material_screen_texture_mipmaps_cached) {
-						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
+						backbuffer_gen_mipmaps = md->shader_data->screen_texture_filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP;
 					}
 				}
 
