@@ -3331,6 +3331,7 @@ void Tree::_text_editor_popup_modal_close() {
 	}
 
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
+		emit_signal(SNAME("item_deselected"));
 		return; // ESC pressed, app focus lost, or forced close from code.
 	}
 
@@ -6674,6 +6675,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_clicked", PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
+	ADD_SIGNAL(MethodInfo("item_deselected"));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_ROW);
