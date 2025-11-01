@@ -129,7 +129,7 @@ void NetSocketUnix::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_i
 	}
 }
 
-NetSocket *NetSocketUnix::_create_func() {
+Ref<NetSocket> NetSocketUnix::_create_func() {
 	return memnew(NetSocketUnix);
 }
 
@@ -795,7 +795,7 @@ Ref<NetSocket> NetSocketUnix::_inet_accept(IPAddress &r_ip, uint16_t &r_port) {
 
 	_set_ip_port(&their_addr, &r_ip, &r_port);
 
-	NetSocketUnix *ns = memnew(NetSocketUnix);
+	Ref<NetSocketUnix> ns = memnew(NetSocketUnix);
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);
@@ -812,7 +812,7 @@ Ref<NetSocket> NetSocketUnix::_unix_accept() {
 		return Ref<NetSocket>();
 	}
 
-	NetSocketUnix *ret = memnew(NetSocketUnix);
+	Ref<NetSocketUnix> ret = memnew(NetSocketUnix);
 	ret->_sock = fd;
 	ret->_family = _family;
 	ret->_unix_path = _unix_path;

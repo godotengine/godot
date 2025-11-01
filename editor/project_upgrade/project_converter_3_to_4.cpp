@@ -132,16 +132,16 @@ public:
 	RegEx keyword_csharp_mastersync = RegEx("\\[MasterSync(Attribute)?(\\(\\))?\\]");
 
 	// Colors.
-	LocalVector<RegEx *> color_regexes;
+	LocalVector<Ref<RegEx>> color_regexes;
 	LocalVector<String> color_renamed;
 
 	RegEx color_hexadecimal_short_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{1})([a-fA-F0-9]{3})\\b");
 	RegEx color_hexadecimal_full_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{2})([a-fA-F0-9]{6})\\b");
 
 	// Classes.
-	LocalVector<RegEx *> class_tscn_regexes;
-	LocalVector<RegEx *> class_gd_regexes;
-	LocalVector<RegEx *> class_shader_regexes;
+	LocalVector<Ref<RegEx>> class_tscn_regexes;
+	LocalVector<Ref<RegEx>> class_gd_regexes;
+	LocalVector<Ref<RegEx>> class_shader_regexes;
 
 	// Keycode.
 	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
@@ -158,7 +158,7 @@ public:
 	// Animation suffixes.
 	RegEx animation_suffix = RegEx("([\"'])([a-zA-Z0-9_-]+)(-(?:loop|cycle))([\"'])");
 
-	LocalVector<RegEx *> class_regexes;
+	LocalVector<Ref<RegEx>> class_regexes;
 
 	RegEx class_temp_tscn = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
 	RegEx class_temp_gd = RegEx("\\bTEMP_RENAMED_CLASS.gd\\b");
@@ -169,19 +169,19 @@ public:
 	LocalVector<String> class_temp_shader_renames;
 
 	// Common.
-	LocalVector<RegEx *> enum_regexes;
-	LocalVector<RegEx *> gdscript_function_regexes;
-	LocalVector<RegEx *> project_settings_regexes;
-	LocalVector<RegEx *> project_godot_regexes;
-	LocalVector<RegEx *> input_map_regexes;
-	LocalVector<RegEx *> gdscript_properties_regexes;
-	LocalVector<RegEx *> gdscript_signals_regexes;
-	LocalVector<RegEx *> shaders_regexes;
-	LocalVector<RegEx *> builtin_types_regexes;
-	LocalVector<RegEx *> theme_override_regexes;
-	LocalVector<RegEx *> csharp_function_regexes;
-	LocalVector<RegEx *> csharp_properties_regexes;
-	LocalVector<RegEx *> csharp_signal_regexes;
+	LocalVector<Ref<RegEx>> enum_regexes;
+	LocalVector<Ref<RegEx>> gdscript_function_regexes;
+	LocalVector<Ref<RegEx>> project_settings_regexes;
+	LocalVector<Ref<RegEx>> project_godot_regexes;
+	LocalVector<Ref<RegEx>> input_map_regexes;
+	LocalVector<Ref<RegEx>> gdscript_properties_regexes;
+	LocalVector<Ref<RegEx>> gdscript_signals_regexes;
+	LocalVector<Ref<RegEx>> shaders_regexes;
+	LocalVector<Ref<RegEx>> builtin_types_regexes;
+	LocalVector<Ref<RegEx>> theme_override_regexes;
+	LocalVector<Ref<RegEx>> csharp_function_regexes;
+	LocalVector<Ref<RegEx>> csharp_properties_regexes;
+	LocalVector<Ref<RegEx>> csharp_signal_regexes;
 
 	RegExContainer() {
 		// Common.
@@ -261,56 +261,6 @@ public:
 				class_temp_gd_renames.push_back(class_name + ".gd");
 				class_temp_shader_renames.push_back(class_name + ".shader");
 			}
-		}
-	}
-	~RegExContainer() {
-		for (RegEx *regex : color_regexes) {
-			memdelete(regex);
-		}
-		for (unsigned int i = 0; i < class_tscn_regexes.size(); i++) {
-			memdelete(class_tscn_regexes[i]);
-			memdelete(class_gd_regexes[i]);
-			memdelete(class_shader_regexes[i]);
-			memdelete(class_regexes[i]);
-		}
-		for (RegEx *regex : enum_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_function_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : project_settings_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : project_godot_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : input_map_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_properties_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : gdscript_signals_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : shaders_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : builtin_types_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : theme_override_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_function_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_properties_regexes) {
-			memdelete(regex);
-		}
-		for (RegEx *regex : csharp_signal_regexes) {
-			memdelete(regex);
 		}
 	}
 };
@@ -770,7 +720,7 @@ bool ProjectConverter3To4::test_conversion_with_regex(const String &name, const 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what) {
+bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<Ref<RegEx>> &regex_cache, const String &what) {
 	Vector<SourceLine> got = split_lines(name);
 
 	rename_common(array, regex_cache, got);
@@ -2910,7 +2860,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lin
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceLine> &source_lines) {
+void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<SourceLine> &source_lines) {
 	for (SourceLine &source_line : source_lines) {
 		if (source_line.is_comment) {
 			continue;
@@ -2927,7 +2877,7 @@ void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Reg
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines) {
+Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<String> &lines) {
 	Vector<String> found_renames;
 
 	int current_line = 1;
