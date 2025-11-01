@@ -65,6 +65,7 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+// This returns paths like "res://.godot/imported".
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
