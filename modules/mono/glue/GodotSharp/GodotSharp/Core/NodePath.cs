@@ -145,6 +145,7 @@ namespace Godot
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
                 // Store string representation
+                // (Must convert to native value; NodePaths can simplify)
                 var src = (godot_node_path)NativeValue;
                 NativeFuncs.godotsharp_node_path_as_string(out godot_string asNativeString, src);
                 using (asNativeString)
@@ -359,6 +360,42 @@ namespace Godot
             var self = (godot_node_path)NativeValue;
             var otherNative = (godot_node_path)other.NativeValue;
             return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
+        }
+        public static bool operator ==(NodePath? left, string? right)
+        {
+            if (left is null)
+                return right is null;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NodePath? left, string? right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(string? left, NodePath? right)
+        {
+            return right == left;
+        }
+
+        public static bool operator !=(string? left, NodePath? right)
+        {
+            return !(right == left);
+        }
+
+        public bool Equals([NotNullWhen(true)] string? other)
+        {
+            if (other is null)
+                return false;
+
+            // Compare native node paths
+            // (Must convert to native value; NodePaths can simplify)
+            var asNativeNodePath = (godot_node_path)NativeValue;
+            var otherAsNativeNodePath = NativeFuncs.godotsharp_node_path_new_from_string(other);
+            using (otherAsNativeNodePath)
+            {
+                return NativeFuncs.godotsharp_node_path_equals(asNativeNodePath, otherAsNativeNodePath).ToBool();
+            }
         }
 
         public override bool Equals([NotNullWhen(true)] object? obj)

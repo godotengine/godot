@@ -91,7 +91,8 @@ namespace Godot
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
                 // Store string representation
-                _asString = name; // No need to convert native value; StringNames can never change or simplify
+                // (No need to convert native value; StringNames can never change or simplify)
+                _asString = name;
             }
         }
 
@@ -195,6 +196,9 @@ namespace Godot
         {
             if (other is null)
                 return false;
+
+            // Compare string representations
+            // (No need to convert native value; StringNames can never change or simplify)
             return _asString == other;
         }
 
