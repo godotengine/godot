@@ -51,7 +51,9 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 String EditorSpinSlider::get_text_value() const {
-	return TS->format_number(editing_integer ? itos(get_value()) : rtos(get_value()));
+	return TS->format_number(editing_integer
+					? itos(get_value())
+					: String::num(get_value(), Math::range_step_decimals(get_step())));
 }
 
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
