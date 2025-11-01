@@ -547,7 +547,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 		memcpy(src_data.ptrw() + prev_size, ktxTexture_GetData(ktx_texture) + offset, mip_size);
 	}
 
-	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, format, src_data));
+	Ref<Image> img = memnew(Image(width, height, true, format, src_data, mipmaps - 1));
 	if (srgb) {
 		img->srgb_to_linear();
 	}
