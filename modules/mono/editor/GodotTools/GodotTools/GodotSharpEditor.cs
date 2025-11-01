@@ -692,6 +692,11 @@ namespace GodotTools
 
                 RiderPathManager.InitializeIfNeeded(editor);
             }
+
+            if (changedSettings.Contains("interface/theme/preset"))
+            {
+                UpdateTheme();
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -720,6 +725,15 @@ namespace GodotTools
             }
 
             base.Dispose(disposing);
+        }
+
+        private void UpdateTheme()
+        {
+            // Nodes will be null until _Ready is called.
+            if (_toolBarBuildButton == null)
+                return;
+
+            _toolBarBuildButton.Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons");
         }
 
         public void OnBeforeSerialize()
