@@ -450,20 +450,9 @@ bool DisplayServerWayland::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
-// NOTE: This is hacked together (and not guaranteed to work in the first place)
-// as for some reason the there's no proper way to ask the compositor to warp
-// the pointer, although, at the time of writing, there's a proposal for a
-// proper protocol for this. See:
-// https://gitlab.freedesktop.org/wayland/wayland-protocols/-/issues/158
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	MutexLock mutex_lock(wayland_thread.mutex);
-
-	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
-
-	wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
-	wayland_thread.pointer_set_hint(p_to);
-
-	wayland_thread.pointer_set_constraint(old_constraint);
+	wayland_thread.pointer_warp(p_to);
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {

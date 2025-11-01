@@ -69,6 +69,7 @@ generated_sources = [
     generate_from_xml(
         "xdg_toplevel_icon", "#thirdparty/wayland-protocols/staging/xdg-toplevel-icon/xdg-toplevel-icon-v1.xml"
     ),
+    generate_from_xml("pointer_warp", "#thirdparty/wayland-protocols/staging/pointer-warp/pointer-warp-v1.xml"),
     # Unstable protocols
     generate_from_xml(
         "idle_inhibit", "#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml"
