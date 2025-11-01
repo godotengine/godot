@@ -491,6 +491,8 @@ Error NetSocketUnix::_unix_connect_to_host(const CharString &p_path) {
 	if (::connect(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		NetError err = _get_socket_error();
 		switch (err) {
+			case ERR_NET_IS_CONNECTED:
+				return OK;
 			case ERR_NET_ADDRESS_INVALID_OR_UNAVAILABLE:
 				return ERR_INVALID_PARAMETER;
 			// Still waiting to connect, try again in a while.
