@@ -34,24 +34,12 @@
 
 #include <cstdlib>
 
-void *operator new(size_t p_size, const char *p_description) {
-	return Memory::alloc_static(p_size, false);
-}
-
-void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
-	return p_allocfunc(p_size);
-}
-
 #ifdef _MSC_VER
-void operator delete(void *p_mem, const char *p_description) {
+void operator delete(void *p_mem, DefaultAllocator p_allocator) {
 	CRASH_NOW_MSG("Call to placement delete should not happen.");
 }
 
 void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
-	CRASH_NOW_MSG("Call to placement delete should not happen.");
-}
-
-void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description) {
 	CRASH_NOW_MSG("Call to placement delete should not happen.");
 }
 #endif
