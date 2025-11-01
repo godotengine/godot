@@ -315,7 +315,7 @@ public:
 		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
-		Vector<Pair<int, int>> last_matches = { { -1, -1 } }; // This value correspond to an impossible match
+		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
 		int location = LOCATION_OTHER;
 		String theme_color_name;
 
