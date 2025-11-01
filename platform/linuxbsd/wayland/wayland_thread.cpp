@@ -31,6 +31,8 @@
 #include "wayland_thread.h"
 
 #include "core/config/engine.h"
+#include "wayland-egl-core.h"
+#include "wayland/protocol/pointer_warp.gen.h"
 
 #ifdef WAYLAND_ENABLED
 
@@ -659,6 +661,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, wp_pointer_warp_v1_interface.name) == 0) {
+		registry->wp_pointer_warp = (struct wp_pointer_warp_v1 *)wl_registry_bind(wl_registry, name, &wp_pointer_warp_v1_interface, 1);
+		registry->wp_pointer_warp_name = name;
+		return;
+	}
+
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
@@ -1019,6 +1027,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 			zwp_text_input_v3_destroy(ss->wp_text_input);
 			ss->wp_text_input = nullptr;
 		}
+
+		return;
+	}
+
+	if (name == registry->wp_pointer_warp_name) {
+		if (registry->wp_pointer_warp) {
+			wp_pointer_warp_v1_destroy(registry->wp_pointer_warp);
+			registry->wp_pointer_warp = nullptr;
+		}
+
+		registry->wp_pointer_warp_name = 0;
 
 		return;
 	}
@@ -3374,6 +3393,15 @@ void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
 	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
 }
 
+void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
+	if (registry.wp_pointer_warp == nullptr) {
+		return;
+	}
+
+	struct wl_surface *surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
+	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
+}
+
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
@@ -4400,6 +4428,31 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 }
 
+void WaylandThread::pointer_warp(const Point2i &p_to) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	if (!ss) {
+		return;
+	}
+
+	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
+
+	int hint_x = 0;
+	int hint_y = 0;
+
+	if (ws) {
+		// NOTE: It looks like it's not really recommended to convert from
+		// "godot-space" to "wayland-space" and in general I received mixed feelings
+		// discussing about this. I'm not really sure about the maths behind this but,
+		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
+		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
+		hint_x = std::round(p_to.x / window_state_get_scale_factor(ws));
+		hint_y = std::round(p_to.y / window_state_get_scale_factor(ws));
+	}
+
+	if (ss) {
+		seat_state_warp_pointer(ss, hint_x, hint_y);
+	}
+}
 WaylandThread::PointerConstraint WaylandThread::pointer_get_constraint() const {
 	return pointer_constraint;
 }

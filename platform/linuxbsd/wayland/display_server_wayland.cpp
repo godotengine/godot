@@ -457,12 +457,12 @@ bool DisplayServerWayland::mouse_is_mode_override_enabled() const {
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
+	// WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
+	wayland_thread.pointer_warp(p_to);
+	// wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
+	// wayland_thread.pointer_set_hint(p_to);
 
-	wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
-	wayland_thread.pointer_set_hint(p_to);
-
-	wayland_thread.pointer_set_constraint(old_constraint);
+	// wayland_thread.pointer_set_constraint(old_constraint);
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
