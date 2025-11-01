@@ -176,29 +176,48 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 
 	ERR_FAIL_COND_V_MSG(adapters.is_empty(), ERR_CANT_CREATE, "Adapters enumeration reported zero accessible devices.");
 
-	// Fill the device descriptions with the adapters.
-	driver_devices.resize(adapters.size());
-	for (uint32_t i = 0; i < adapters.size(); ++i) {
-		DXGI_ADAPTER_DESC1 desc = {};
-		adapters[i]->GetDesc1(&desc);
-
-		Device &device = driver_devices[i];
-		device.name = desc.Description;
-		device.vendor = desc.VendorId;
-		device.workarounds = Workarounds();
-
-		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-			device.type = DEVICE_TYPE_CPU;
-		} else {
-			const bool has_dedicated_vram = desc.DedicatedVideoMemory > 0;
-			device.type = has_dedicated_vram ? DEVICE_TYPE_DISCRETE_GPU : DEVICE_TYPE_INTEGRATED_GPU;
-		}
+	D3D_FEATURE_LEVEL requested_feature_level = D3D_FEATURE_LEVEL_11_0;
+	if (D3D12Hooks::get_singleton() != nullptr) {
+		requested_feature_level = D3D12Hooks::get_singleton()->get_feature_level();
 	}
 
-	// Release all created adapters.
+	PFN_D3D12_CREATE_DEVICE d3d_D3D12CreateDevice = nullptr;
+	if (device_factory == nullptr) {
+		d3d_D3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)(void *)GetProcAddress(lib_d3d12, "D3D12CreateDevice");
+		ERR_FAIL_NULL_V(d3d_D3D12CreateDevice, ERR_CANT_CREATE);
+	}
+
+	HRESULT create_res;
 	for (uint32_t i = 0; i < adapters.size(); ++i) {
+		if (device_factory) {
+			create_res = device_factory->CreateDevice(adapter, requested_feature_level, __uuidof(ID3D12Device), nullptr);
+		} else {
+			create_res = d3d_D3D12CreateDevice(adapter, requested_feature_level, __uuidof(ID3D12Device), nullptr);
+		}
+
+		if (SUCCEEDED(create_res)) {
+			DXGI_ADAPTER_DESC1 desc = {};
+			adapters[i]->GetDesc1(&desc);
+
+			Device device;
+			device.name = desc.Description;
+			device.vendor = desc.VendorId;
+			device.workarounds = Workarounds();
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+				device.type = DEVICE_TYPE_CPU;
+			} else {
+				const bool has_dedicated_vram = desc.DedicatedVideoMemory > 0;
+				device.type = has_dedicated_vram ? DEVICE_TYPE_DISCRETE_GPU : DEVICE_TYPE_INTEGRATED_GPU;
+			}
+			driver_devices.push_back(device);
+		}
+
+		// Release all created adapters.
 		adapters[i]->Release();
 	}
+
+	ERR_FAIL_COND_V_MSG(driver_devices.is_empty(), ERR_CANT_CREATE, "No D3D12-compatible GPU driver found. Your system may not support Direct3D 12, or your GPU drivers are outdated.");
 
 	ComPtr<IDXGIFactory5> factory_5;
 	dxgi_factory.As(&factory_5);
