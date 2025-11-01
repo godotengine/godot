@@ -412,10 +412,20 @@
 				Emitted when the value of [member show_rest_only] changes.
 			</description>
 		</signal>
+		<signal name="skeleton_rendered">
+			<description>
+				Emitted when the skins are rendered and modified poses are restored in the update process.
+			</description>
+		</signal>
 		<signal name="skeleton_updated">
 			<description>
 				Emitted when the final pose has been calculated will be applied to the skin in the update process.
 				This means that all [SkeletonModifier3D] processing is complete. In order to detect the completion of the processing of each [SkeletonModifier3D], use [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</signal>
+		<signal name="skin_changed">
+			<description>
+				Emitted when the new skin is bound or bound skins are changed.
 			</description>
 		</signal>
 	</signals>

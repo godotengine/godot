@@ -69,10 +69,7 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			al = get_animation_library(StringName());
 		}
 		al->add_animation(which, anim);
-	} else if (name.begins_with("libraries")) {
-#else
-	if (name.begins_with("libraries")) {
-#endif // DISABLE_DEPRECATED
+	} else if (name == "libraries") {
 		Dictionary d = p_value;
 		while (animation_libraries.size()) {
 			remove_animation_library(animation_libraries[0].name);
@@ -82,10 +79,28 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 			add_animation_library(kv.key, lib);
 		}
 		emit_signal(SNAME("animation_libraries_updated"));
-
+	} else if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
 	} else {
 		return false;
 	}
+#else
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			remove_animation_library(which);
+		}
+		add_animation_library(which, p_value);
+		emit_signal(SNAME("animation_libraries_updated"));
+	} else {
+		return false;
+	}
+#endif // DISABLE_DEPRECATED
 
 	return true;
 }
@@ -93,12 +108,13 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name.begins_with("libraries")) {
-		Dictionary d;
-		for (const AnimationLibraryData &lib : animation_libraries) {
-			d[lib.name] = lib.library;
+	if (name.begins_with("libraries/")) {
+		String which = name.get_slicec('/', 1);
+		if (has_animation_library(which)) {
+			r_ret = get_animation_library(which);
+		} else {
+			return false;
 		}
-		r_ret = d;
 	} else {
 		return false;
 	}
@@ -111,7 +127,10 @@ uint32_t AnimationMixer::_get_libraries_property_usage() const {
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary", _get_libraries_property_usage()));
+	for (uint32_t i = 0; i < animation_libraries.size(); i++) {
+		const String path = vformat("libraries/%s", animation_libraries[i].name);
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, "AnimationLibrary", _get_libraries_property_usage()));
+	}
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
@@ -1406,7 +1425,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, end, &rot[1]);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+								root_motion_cache.rot = Animation::slerp_with_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = start;
 							}
 						} else {
@@ -1418,7 +1437,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 								a->try_rotation_track_interpolate(i, start, &rot[1]);
 								rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-								root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+								root_motion_cache.rot = Animation::slerp_with_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 								prev_time = end;
 							}
 						}
@@ -1429,7 +1448,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						rot[0] = post_process_key_value(a, i, rot[0], t->object_id, t->bone_idx);
 						a->try_rotation_track_interpolate(i, time, &rot[1]);
 						rot[1] = post_process_key_value(a, i, rot[1], t->object_id, t->bone_idx);
-						root_motion_cache.rot = (root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+						root_motion_cache.rot = Animation::slerp_with_rest(root_motion_cache.rot, rot[1], blend, rot[0]);
 						prev_time = !backward ? start : end;
 					}
 					{
@@ -1439,7 +1458,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							continue;
 						}
 						rot = post_process_key_value(a, i, rot, t->object_id, t->bone_idx);
-						t->rot = (t->rot * Quaternion().slerp(t->init_rot.inverse() * rot, blend)).normalized();
+						t->rot = Animation::slerp_with_rest(t->rot, rot, blend, t->init_rot);
 					}
 #endif // _3D_DISABLED
 				} break;
@@ -1585,21 +1604,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						// Special case for angle interpolation.
 						if (t->is_using_angle) {
 							// For blending consistency, it prevents rotation of more than 180 degrees from init_value.
-							// This is the same as for Quaternion blends.
-							float rot_a = t->value;
-							float rot_b = value;
-							float rot_init = t->init_value;
-							rot_a = Math::fposmod(rot_a, (float)Math::TAU);
-							rot_b = Math::fposmod(rot_b, (float)Math::TAU);
-							rot_init = Math::fposmod(rot_init, (float)Math::TAU);
-							if (rot_init < Math::PI) {
-								rot_a = rot_a > rot_init + Math::PI ? rot_a - Math::TAU : rot_a;
-								rot_b = rot_b > rot_init + Math::PI ? rot_b - Math::TAU : rot_b;
-							} else {
-								rot_a = rot_a < rot_init - Math::PI ? rot_a + Math::TAU : rot_a;
-								rot_b = rot_b < rot_init - Math::PI ? rot_b + Math::TAU : rot_b;
-							}
-							t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math::TAU);
+							// This is the same with Quaternion blending.
+							t->value = Animation::slerp_with_rest((double)t->value, (double)value, blend, (double)t->init_value);
 						} else {
 							value = Animation::cast_to_blendwise(value);
 							if (t->init_value.is_array()) {
