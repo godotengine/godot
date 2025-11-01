@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-      <!-- override the PlatformToolset, which is set in the godot.vcxproj-->
-      <!-- Unknown matches to a set of conservative rules for the code analysis-->
-    <PlatformToolset>Unknown</PlatformToolset>
     <LocalDebuggerCommand Condition="'$(LocalDebuggerCommand)' == ''">$(NMakeOutput)</LocalDebuggerCommand>
+
+    <!-- Possible values: V143, Clang_Mac, Clang_Linux, llvm, Clang, ClangCL, MSFS, Unknown-->
+    <!-- Select toolset based on target GodotPlatform. Switches Cpp dialect -->
+    <PlatformToolset Condition="'$(GodotPlatform)'=='windows'">v143</PlatformToolset>
+    <PlatformToolset Condition="'$(GodotPlatform)'=='macos' or '$(GodotPlatform)'=='ios'">Clang_Mac</PlatformToolset>
+    <PlatformToolset Condition="'$(GodotPlatform)'=='linux'">Clang_Linux</PlatformToolset>
+    <PlatformToolset Condition="'$(GodotPlatform)'=='android'">Clang_Linux</PlatformToolset>
+    <PlatformToolset Condition="'$(GodotPlatform)'=='web'">Clang_Linux</PlatformToolset>
+    <!-- Fallback -->
+    <PlatformToolset Condition="'$(PlatformToolset)'==''">Unknown</PlatformToolset>
+
   </PropertyGroup>
   <!-- Build/Rebuild/Clean targets for NMake are defined in MSVC, so we need to provide them, when using MSBuild without MSVC targets -->
   <Target Name="Build">
