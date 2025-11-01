@@ -5281,6 +5281,11 @@ void AnimationTrackEditor::_update_step_spinbox() {
 	_update_snap_unit();
 }
 
+void AnimationTrackEditor::_store_snap_states() {
+	EditorSettings::get_singleton()->set_project_metadata("animation_track_editor", "snap_timeline", snap_timeline->is_pressed());
+	EditorSettings::get_singleton()->set_project_metadata("animation_track_editor", "snap_keys", snap_keys->is_pressed());
+}
+
 void AnimationTrackEditor::_update_fps_compat_mode(bool p_enabled) {
 	_update_snap_unit();
 }
@@ -7997,19 +8002,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	snap_timeline = memnew(Button);
 	snap_timeline->set_flat(true);
-	bottom_hf->add_child(snap_timeline);
 	snap_timeline->set_disabled(true);
 	snap_timeline->set_toggle_mode(true);
-	snap_timeline->set_pressed(false);
 	snap_timeline->set_tooltip_text(TTR("Apply snapping to timeline cursor."));
+	snap_timeline->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_timeline", false));
+	bottom_hf->add_child(snap_timeline);
+	snap_timeline->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	snap_keys = memnew(Button);
 	snap_keys->set_flat(true);
-	bottom_hf->add_child(snap_keys);
 	snap_keys->set_disabled(true);
 	snap_keys->set_toggle_mode(true);
-	snap_keys->set_pressed(true);
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
+	snap_keys->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_keys", true));
+	bottom_hf->add_child(snap_keys);
+	snap_keys->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	fps_compat = memnew(Button);
 	fps_compat->set_flat(true);
