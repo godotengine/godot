@@ -662,8 +662,8 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, wp_pointer_warp_v1_interface.name) == 0) {
-		registry->wp_pointer_warp= (struct wp_pointer_warp_v1 *)wl_registry_bind(wl_registry, name, &wp_pointer_warp_v1_interface, 1);
-		registry->wp_pointer_warp_name= name;
+		registry->wp_pointer_warp = (struct wp_pointer_warp_v1 *)wl_registry_bind(wl_registry, name, &wp_pointer_warp_v1_interface, 1);
+		registry->wp_pointer_warp_name = name;
 		return;
 	}
 
@@ -3397,6 +3397,7 @@ void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
 	if (registry.wp_pointer_warp == nullptr) {
 		return;
 	}
+
 	struct wl_surface *surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
 	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
 }
