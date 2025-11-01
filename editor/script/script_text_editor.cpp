@@ -2045,6 +2045,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_EMOJI_AND_SYMBOL: {
 			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
 		} break;
+		case EDIT_JOIN_LINE: {
+			code_editor->get_text_editor()->join_lines();
+		} break;
 		default: {
 			if (p_op >= EditorContextMenuPlugin::BASE_ID) {
 				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_op, tx);
@@ -2905,6 +2908,7 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/join_line"), EDIT_JOIN_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTRC("Line"), sub_menu);
@@ -3115,6 +3119,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/move_up", TTRC("Move Up"), KeyModifierMask::ALT | Key::UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTRC("Move Down"), KeyModifierMask::ALT | Key::DOWN);
 	ED_SHORTCUT("script_text_editor/delete_line", TTRC("Delete Line"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K);
+	ED_SHORTCUT("script_text_editor/join_line", TTRC("Join Line"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::J);
 
 	// Leave these at zero, same can be accomplished with tab/shift-tab, including selection.
 	// The next/previous in history shortcut in this case makes a lot more sense.
