@@ -30,7 +30,7 @@
 
 #include "shader_baker_export_plugin_platform_d3d12.h"
 
-#include "drivers/d3d12/rendering_shader_container_d3d12.h"
+#include "drivers/d3d12/rendering_shader_container_d3d12.h" // validator: ignore // FIXME: Legacy include.
 
 #include <windows.h>
 

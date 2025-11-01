@@ -37,7 +37,7 @@
 
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 // This is used only to obtain node paths for user-friendly physics interpolation warnings.
-#include "scene/main/node.h"
+#include "scene/main/node.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 /* HALTON SEQUENCE */

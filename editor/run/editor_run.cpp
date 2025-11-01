@@ -36,7 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/settings/editor_settings.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/display/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {

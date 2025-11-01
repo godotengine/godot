@@ -37,7 +37,7 @@
 #include "scene/resources/packed_scene.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
+#include "editor/editor_node.h" // validator: ignore // FIXME: Legacy include.
 #endif // TOOLS_ENABLED
 
 bool PropertyUtils::is_property_value_different(const Object *p_object, const Variant &p_a, const Variant &p_b) {

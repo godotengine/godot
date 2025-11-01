@@ -37,7 +37,7 @@
 #include "lipo.h"
 #include "macho.h"
 
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 
 #include <ctime>
 

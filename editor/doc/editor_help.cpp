@@ -53,17 +53,17 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 
-#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+#include "modules/modules_enabled.gen.h" // For gdscript, mono. // validator: ignore // FIXME: Legacy include.
 
 // For syntax highlighting.
 #ifdef MODULE_GDSCRIPT_ENABLED
-#include "modules/gdscript/editor/gdscript_highlighter.h"
-#include "modules/gdscript/gdscript.h"
+#include "modules/gdscript/editor/gdscript_highlighter.h" // validator: ignore // FIXME: Legacy include.
+#include "modules/gdscript/gdscript.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 // For syntax highlighting.
 #ifdef MODULE_MONO_ENABLED
-#include "modules/mono/csharp_script.h"
+#include "modules/mono/csharp_script.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 #define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"

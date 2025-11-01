@@ -37,7 +37,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/static_body_3d.h"

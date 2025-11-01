@@ -43,9 +43,9 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/modules_enabled.gen.h" // For regex. // validator: ignore // FIXME: Legacy include.
 #ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 RichTextLabel::ItemCustomFX::ItemCustomFX() {

@@ -42,10 +42,10 @@
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
-#include "modules/modules_enabled.gen.h" // For mono.
-#include "modules/svg/image_loader_svg.h"
+#include "modules/modules_enabled.gen.h" // For mono. // validator: ignore // FIXME: Legacy include.
+#include "modules/svg/image_loader_svg.h" // validator: ignore // FIXME: Legacy include.
 
 void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.

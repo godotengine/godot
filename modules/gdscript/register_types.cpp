@@ -63,7 +63,7 @@
 #endif // TOOLS_ENABLED
 
 #ifdef TESTS_ENABLED
-#include "tests/test_macros.h"
+#include "tests/test_macros.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 GDScriptLanguage *script_language_gd = nullptr;

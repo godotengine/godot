@@ -39,7 +39,7 @@
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 #include "core/config/project_settings.h"
-#include "scene/main/node.h"
+#include "scene/main/node.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 static ErrorHandlerList *error_handler_list = nullptr;

@@ -38,7 +38,7 @@
 #include "scene/3d/xr/xr_nodes.h"
 #include "scene/main/viewport.h"
 
-#include "platform/android/api/java_class_wrapper.h"
+#include "platform/android/api/java_class_wrapper.h" // validator: ignore // FIXME: Legacy include.
 
 Vector<OpenXRCompositionLayer *> OpenXRCompositionLayer::composition_layer_nodes;
 

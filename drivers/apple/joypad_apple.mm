@@ -34,7 +34,7 @@
 #import <os/log.h>
 
 #include "core/config/project_settings.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
 class API_AVAILABLE(macos(11), ios(14.0), tvos(14.0)) RumbleMotor {
 	CHHapticEngine *engine;

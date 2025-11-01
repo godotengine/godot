@@ -37,7 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/main_loop.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>

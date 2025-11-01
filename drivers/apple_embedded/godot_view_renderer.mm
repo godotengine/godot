@@ -35,7 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/audio/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>

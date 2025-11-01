@@ -36,9 +36,9 @@
 #include "scene/resources/bit_map.h"
 #include "scene/resources/placeholder_textures.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For svg. // validator: ignore // FIXME: Legacy include.
 #ifdef MODULE_SVG_ENABLED
-#include "modules/svg/image_loader_svg.h"
+#include "modules/svg/image_loader_svg.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 Mutex DPITexture::mutex;

@@ -35,7 +35,7 @@
 #include "core/math/random_pcg.h"
 #include "core/os/os.h"
 #include "core/variant/container_type_validate.h"
-#include "scene/main/node.h" //only so casting works
+#include "scene/main/node.h" //only so casting works // validator: ignore // FIXME: Legacy include.
 
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {

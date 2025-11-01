@@ -52,7 +52,7 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "main/performance.h"
+#include "main/performance.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/button.h"

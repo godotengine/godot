@@ -40,7 +40,7 @@
 #include "scene/resources/surface_tool.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
+#include "editor/editor_node.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 RID Occluder3D::get_rid() const {

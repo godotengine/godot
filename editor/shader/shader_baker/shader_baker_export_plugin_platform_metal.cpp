@@ -30,7 +30,7 @@
 
 #include "shader_baker_export_plugin_platform_metal.h"
 
-#include "drivers/metal/rendering_shader_container_metal.h"
+#include "drivers/metal/rendering_shader_container_metal.h" // validator: ignore // FIXME: Legacy include.
 
 RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformMetal::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) {
 	const String &os_name = p_platform->get_os_name();

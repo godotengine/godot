@@ -30,9 +30,9 @@
 
 #include "rendering_device_binds.h"
 
-#include "modules/modules_enabled.gen.h" // For glslang.
+#include "modules/modules_enabled.gen.h" // For glslang. // validator: ignore // FIXME: Legacy include.
 #ifdef MODULE_GLSLANG_ENABLED
-#include "modules/glslang/shader_compile.h"
+#include "modules/glslang/shader_compile.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 #include "shader_include_db.h"

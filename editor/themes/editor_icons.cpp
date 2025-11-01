@@ -37,7 +37,7 @@
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/svg/image_loader_svg.h"
+#include "modules/svg/image_loader_svg.h" // validator: ignore // FIXME: Legacy include.
 
 void editor_configure_icons(bool p_dark_icon_and_font) {
 	if (p_dark_icon_and_font) {

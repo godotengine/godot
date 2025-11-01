@@ -51,7 +51,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"

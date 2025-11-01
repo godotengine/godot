@@ -15,6 +15,11 @@ AttributeMacros:
   - _NO_INLINE_
 BreakConstructorInitializers: AfterColon
 ColumnLimit: 0
+CommentPragmas: |
+  (?x)^(
+    IWYU pragma:
+    validator:
+  )
 ConstructorInitializerIndentWidth: 8
 ContinuationIndentWidth: 8
 Cpp11BracedListStyle: false

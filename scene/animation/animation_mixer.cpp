@@ -49,7 +49,7 @@
 #endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_undo_redo_manager.h"
+#include "editor/editor_undo_redo_manager.h" // validator: ignore // FIXME: Legacy include.
 #endif // TOOLS_ENABLED
 
 bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {

@@ -40,7 +40,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/gui/line_edit.h"
 
 #ifdef WINDOWS_ENABLED

@@ -41,7 +41,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
