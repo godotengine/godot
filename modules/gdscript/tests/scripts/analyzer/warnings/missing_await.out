@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 7: (MISSING_AWAIT) "await" keyword might be desired because the expression is a coroutine.

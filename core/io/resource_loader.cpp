@@ -43,7 +43,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -61,8 +61,6 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 		return ret;
 	}
 
-	String extension = p_path.get_extension();
-
 	List<String> extensions;
 	if (p_for_type.is_empty()) {
 		get_recognized_extensions(&extensions);
@@ -71,7 +69,8 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	}
 
 	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+		const String ext = !E.begins_with(".") ? "." + E : E;
+		if (p_path.right(ext.length()).nocasecmp_to(ext) == 0) {
 			return true;
 		}
 	}
@@ -175,7 +174,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+	return Ref<Resource>();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -297,7 +296,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
 		bool is_remapped_load = original_path == parent_task_path;
 		if (E && !is_remapped_load) {
-			E->value.sub_tasks.insert(p_original_path);
+			E->value.sub_tasks.insert(original_path);
 		}
 	}
 	load_paths_stack.push_back(original_path);
@@ -330,7 +329,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_path.get_extension()).is_valid()) {
+		if (ResourceFormatImporter::get_singleton()->get_importer_by_file(p_path).is_valid()) {
 			// The format is known to the editor, but the file hasn't been imported
 			// (otherwise, ResourceFormatImporter would have been found as a suitable loader).
 			found = true;
@@ -340,8 +339,8 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 #endif
-	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
-			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
+
+	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(), vformat("Failed loading resource: %s.", p_path));
 
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
@@ -349,14 +348,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 	}
 #endif
 
 	if (r_error) {
 		*r_error = ERR_FILE_UNRECOGNIZED;
 	}
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 }
 
 // This implementation must allow re-entrancy for a task that started awaiting in a deeper stack frame.
@@ -566,6 +565,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user) {
 	String local_path = _validate_local_path(p_path);
+	ERR_FAIL_COND_V(local_path.is_empty(), Ref<ResourceLoader::LoadToken>());
 
 	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 
@@ -1068,20 +1068,6 @@ void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_f
 	--loader_count;
 }
 
-int ResourceLoader::get_import_order(const String &p_path) {
-	String local_path = _path_remap(_validate_local_path(p_path));
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-
-		return loader[i]->get_import_order(p_path);
-	}
-
-	return 0;
-}
-
 String ResourceLoader::get_import_group_file(const String &p_path) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
@@ -1201,21 +1187,6 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ResourceUID::INVALID_ID;
 }
 
-bool ResourceLoader::has_custom_uid_support(const String &p_path) {
-	String local_path = _validate_local_path(p_path);
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-		if (loader[i]->has_custom_uid_support()) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
 	if (FileAccess::exists(local_path + ".uid")) {
@@ -1269,50 +1240,47 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") &&
+				!FileAccess::exists(new_path + ".remap") &&
+				!FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}
 	}
 
-	if (path_remaps.has(new_path)) {
-		new_path = path_remaps[new_path];
-	} else {
-		// Try file remap.
-		// Usually, there's no remap file and FileAccess::exists() is faster than FileAccess::open().
-		new_path = ResourceUID::ensure_path(new_path);
-		if (FileAccess::exists(new_path + ".remap")) {
-			Error err;
-			Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
-			if (f.is_valid()) {
-				VariantParser::StreamFile stream;
-				stream.f = f;
+	// Usually, there's no remap file and FileAccess::exists() is faster than FileAccess::open().
+	new_path = ResourceUID::ensure_path(new_path);
+	if (FileAccess::exists(new_path + ".remap")) {
+		Error err;
+		Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
+		if (f.is_valid()) {
+			VariantParser::StreamFile stream;
+			stream.f = f;
 
-				String assign;
-				Variant value;
-				VariantParser::Tag next_tag;
+			String assign;
+			Variant value;
+			VariantParser::Tag next_tag;
 
-				int lines = 0;
-				String error_text;
-				while (true) {
-					assign = Variant();
-					next_tag.fields.clear();
-					next_tag.name = String();
+			int lines = 0;
+			String error_text;
+			while (true) {
+				assign = Variant();
+				next_tag.fields.clear();
+				next_tag.name = String();
 
-					err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
-					if (err == ERR_FILE_EOF) {
-						break;
-					} else if (err != OK) {
-						ERR_PRINT(vformat("Parse error: %s.remap:%d error: %s.", p_path, lines, error_text));
-						break;
-					}
+				err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+				if (err == ERR_FILE_EOF) {
+					break;
+				} else if (err != OK) {
+					ERR_PRINT(vformat("Parse error: %s.remap:%d error: %s.", p_path, lines, error_text));
+					break;
+				}
 
-					if (assign == "path") {
-						new_path = value;
-						break;
-					} else if (next_tag.name != "remap") {
-						break;
-					}
+				if (assign == "path") {
+					new_path = value;
+					break;
+				} else if (next_tag.name != "remap") {
+					break;
 				}
 			}
 		}
@@ -1420,25 +1388,6 @@ void ResourceLoader::clear_thread_load_tasks() {
 	cleaning_tasks = false;
 }
 
-void ResourceLoader::load_path_remaps() {
-	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths")) {
-		return;
-	}
-
-	Vector<String> remaps = GLOBAL_GET("path_remap/remapped_paths");
-	int rc = remaps.size();
-	ERR_FAIL_COND(rc & 1); //must be even
-	const String *r = remaps.ptr();
-
-	for (int i = 0; i < rc; i += 2) {
-		path_remaps[r[i]] = r[i + 1];
-	}
-}
-
-void ResourceLoader::clear_path_remaps() {
-	path_remaps.clear();
-}
-
 void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 	_loaded_callback = p_callback;
 }
@@ -1487,8 +1436,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
@@ -1603,6 +1552,5 @@ HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;
 
 SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
-HashMap<String, String> ResourceLoader::path_remaps;
 
 ResourceLoaderImport ResourceLoader::import = nullptr;

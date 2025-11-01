@@ -60,10 +60,7 @@ TEST_CASE("[Shortcut] Setting and getting an event should result in the same eve
 	// Cast to InputEvent so the internal code recognizes the objects.
 	Ref<InputEvent> e1 = k1;
 	Ref<InputEvent> e2 = k2;
-
-	Array input_array;
-	input_array.append(e1);
-	input_array.append(e2);
+	Array input_array = { e1, e2 };
 
 	Shortcut s;
 	s.set_events(input_array);
@@ -131,8 +128,7 @@ TEST_CASE("[Shortcut] 'matches_event' should correctly match the same event") {
 	Ref<InputEvent> e_different = different;
 	Ref<InputEvent> e_copy = copy;
 
-	Array a;
-	a.append(e_original);
+	Array a = { e_original };
 	Shortcut s;
 	s.set_events(a);
 
@@ -154,9 +150,7 @@ TEST_CASE("[Shortcut] 'get_as_text' text representation should be correct") {
 	different->set_keycode(Key::ESCAPE);
 
 	Ref<InputEvent> key_event1 = same;
-
-	Array a;
-	a.append(key_event1);
+	Array a = { key_event1 };
 	Shortcut s;
 	s.set_events(a);
 
@@ -175,17 +169,14 @@ TEST_CASE("[Shortcut] Event validity should be correctly checked.") {
 	Ref<InputEvent> valid_event = valid;
 	Ref<InputEvent> invalid_event = invalid;
 
-	Array a;
-	a.append(invalid_event);
-	a.append(valid_event);
+	Array a = { invalid_event, valid_event };
 
 	Shortcut s;
 	s.set_events(a);
 
 	CHECK(s.has_valid_event() == true);
 
-	Array b;
-	b.append(invalid_event);
+	Array b = { invalid_event };
 
 	Shortcut shortcut_with_invalid_event;
 	shortcut_with_invalid_event.set_events(b);
@@ -213,13 +204,8 @@ TEST_CASE("[Shortcut] Equal arrays should be recognized as such.") {
 	Array same_as_same;
 	same_as_same.append(key_event1);
 
-	Array different1;
-	different1.append(key_event2);
-
-	Array different2;
-	different2.append(key_event1);
-	different2.append(key_event2);
-
+	Array different1 = { key_event2 };
+	Array different2 = { key_event1, key_event2 };
 	Array different3;
 
 	Shortcut s;

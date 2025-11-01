@@ -4,7 +4,11 @@ on:
 
 # Global Settings
 env:
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    tests=no
+    swappy=yes
 
 jobs:
   build-android:
@@ -18,20 +22,19 @@ jobs:
           - name: Editor (target=editor)
             cache-name: android-editor
             target: editor
-            tests: false
-            sconsflags: arch=arm64 production=yes swappy=yes
+            scons-flags: >-
+              arch=arm64
+              production=yes
 
-          - name: Template arm32 (target=template_release, arch=arm32)
+          - name: Template arm32 (target=template_debug, arch=arm32)
             cache-name: android-template-arm32
-            target: template_release
-            tests: false
-            sconsflags: arch=arm32 swappy=yes
+            target: template_debug
+            scons-flags: arch=arm32
 
-          - name: Template arm64 (target=template_release, arch=arm64)
+          - name: Template arm64 (target=template_debug, arch=arm64)
             cache-name: android-template-arm64
-            target: template_release
-            tests: false
-            sconsflags: arch=arm64 swappy=yes
+            target: template_debug
+            scons-flags: arch=arm64
 
     steps:
       - name: Checkout
@@ -68,10 +71,9 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: android
           target: ${{ matrix.target }}
-          tests: ${{ matrix.tests }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -80,7 +82,7 @@ jobs:
         continue-on-error: true
 
       - name: Generate Godot templates
-        if: matrix.target == 'template_release'
+        if: matrix.target == 'template_debug'
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates

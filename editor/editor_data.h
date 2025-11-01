@@ -146,7 +146,7 @@ private:
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
-	HashMap<String, Ref<Texture>> _script_icon_cache;
+	HashMap<String, Ref<Texture2D>> _script_icon_cache;
 
 	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
@@ -219,6 +219,7 @@ public:
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
@@ -286,10 +287,9 @@ class EditorSelection : public Object {
 
 	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
-	List<Node *> selected_node_list;
+	List<Node *> top_selected_node_list;
 
 	void _update_node_list();
-	TypedArray<Node> _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:
@@ -314,13 +314,15 @@ public:
 	void update();
 	void clear();
 
-	// Returns all the selected nodes.
-	TypedArray<Node> get_selected_nodes();
 	// Returns only the top level selected nodes.
 	// That is, if the selection includes some node and a child of that node, only the parent is returned.
-	const List<Node *> &get_selected_node_list();
+	const List<Node *> &get_top_selected_node_list();
+	// Same as get_top_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_top_selected_nodes();
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
+	// Same as get_full_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_selected_nodes();
 	// Returns the map of selected objects and their metadata.
 	HashMap<Node *, Object *> &get_selection() { return selection; }
 

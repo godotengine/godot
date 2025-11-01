@@ -50,6 +50,9 @@ public:
 	/// Vector with all zeros
 	static JPH_INLINE DVec3		sZero();
 
+	/// Vector with all ones
+	static JPH_INLINE DVec3		sOne();
+
 	/// Vectors with the principal axis
 	static JPH_INLINE DVec3		sAxisX()										{ return DVec3(1, 0, 0); }
 	static JPH_INLINE DVec3		sAxisY()										{ return DVec3(0, 1, 0); }

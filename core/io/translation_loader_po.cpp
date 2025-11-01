@@ -31,7 +31,7 @@
 #include "translation_loader_po.h"
 
 #include "core/io/file_access.h"
-#include "core/string/translation_po.h"
+#include "core/string/translation.h"
 
 Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_error) {
 	if (r_error) {
@@ -39,7 +39,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	}
 
 	const String path = f->get_path();
-	Ref<TranslationPO> translation = Ref<TranslationPO>(memnew(TranslationPO));
+	Ref<Translation> translation;
+	translation.instantiate();
 	String config;
 
 	uint32_t magic = f->get_32();
@@ -76,14 +77,17 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				bool is_plural = false;
 				for (uint32_t j = 0; j < str_len + 1; j++) {
 					if (data[j] == 0x04) {
-						msg_context.parse_utf8((const char *)data.ptr(), j);
+						msg_context.clear();
+						msg_context.append_utf8((const char *)data.ptr(), j);
 						str_start = j + 1;
 					}
 					if (data[j] == 0x00) {
 						if (is_plural) {
-							msg_id_plural.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id_plural.clear();
+							msg_id_plural.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 						} else {
-							msg_id.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id.clear();
+							msg_id.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 							is_plural = true;
 						}
 						str_start = j + 1;
@@ -109,7 +113,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					int p_start = config.find("Plural-Forms");
 					if (p_start != -1) {
 						int p_end = config.find_char('\n', p_start);
-						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
+						translation->set_plural_rules_override(config.substr(p_start, p_end - p_start));
 					}
 				} else {
 					uint32_t str_start = 0;
@@ -225,8 +229,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					int p_start = config.find("Plural-Forms");
 					if (p_start != -1) {
 						int p_end = config.find_char('\n', p_start);
-						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
-						plural_forms = translation->get_plural_forms();
+						translation->set_plural_rules_override(config.substr(p_start, p_end - p_start));
+						plural_forms = translation->get_nplurals();
 					}
 				}
 
@@ -364,7 +368,7 @@ bool TranslationLoaderPO::handles_type(const String &p_type) const {
 }
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "po" || p_path.get_extension().to_lower() == "mo") {
+	if (p_path.has_extension("po") || p_path.has_extension("mo")) {
 		return "Translation";
 	}
 	return "";

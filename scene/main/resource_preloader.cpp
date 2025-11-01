@@ -67,10 +67,7 @@ Array ResourcePreloader::_get_resources() const {
 		i++;
 	}
 
-	Array res;
-	res.push_back(names);
-	res.push_back(arr);
-	return res;
+	return Array{ names, arr };
 }
 
 void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resource> &p_resource) {

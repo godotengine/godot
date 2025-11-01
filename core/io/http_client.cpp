@@ -70,10 +70,9 @@ Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<St
 
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
-	Array keys = p_dict.keys();
-	for (int i = 0; i < keys.size(); ++i) {
-		String encoded_key = String(keys[i]).uri_encode();
-		const Variant &value = p_dict[keys[i]];
+	for (const KeyValue<Variant, Variant> &kv : p_dict) {
+		String encoded_key = String(kv.key).uri_encode();
+		const Variant &value = kv.value;
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values

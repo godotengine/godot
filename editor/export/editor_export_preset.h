@@ -70,7 +70,6 @@ private:
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
-	bool advanced_options_enabled = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;
@@ -125,13 +124,14 @@ public:
 	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
 	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
 
+	Variant get_project_setting(const StringName &p_name);
+
 	void set_name(const String &p_name);
 	String get_name() const;
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
 
-	void set_advanced_options_enabled(bool p_enabled);
 	bool are_advanced_options_enabled() const;
 
 	void set_dedicated_server(bool p_enable);

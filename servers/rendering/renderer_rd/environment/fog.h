@@ -35,6 +35,7 @@
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
@@ -47,6 +48,10 @@ namespace RendererRD {
 class Fog : public RendererFog {
 private:
 	static Fog *singleton;
+
+	static int _get_fog_shader_group();
+	static int _get_fog_variant();
+	static int _get_fog_process_variant(int p_idx);
 
 	/* FOG VOLUMES */
 
@@ -73,6 +78,13 @@ private:
 
 	/* Volumetric Fog */
 	struct VolumetricFogShader {
+		enum ShaderGroup {
+			SHADER_GROUP_BASE,
+			SHADER_GROUP_NO_ATOMICS,
+			SHADER_GROUP_VULKAN_MEMORY_MODEL,
+			SHADER_GROUP_VULKAN_MEMORY_MODEL_NO_ATOMICS,
+		};
+
 		enum FogSet {
 			FOG_SET_BASE,
 			FOG_SET_UNIFORMS,
@@ -178,7 +190,7 @@ private:
 		VolumetricFogProcessShaderRD process_shader;
 
 		RID process_shader_version;
-		RID process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
+		PipelineDeferredRD process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
 
 	} volumetric_fog;
 
@@ -188,7 +200,7 @@ private:
 		bool valid = false;
 		RID version;
 
-		RID pipeline;
+		PipelineDeferredRD pipeline;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
@@ -202,6 +214,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}
 		virtual ~FogShaderData();
@@ -314,6 +327,9 @@ public:
 		RID sky_uniform_set;
 
 		int last_shadow_filter = -1;
+
+		// If the device doesn't support image atomics, use storage buffers instead.
+		RD::UniformType atomic_type = RD::UNIFORM_TYPE_IMAGE;
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override {}

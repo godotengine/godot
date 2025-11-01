@@ -34,8 +34,6 @@ IPAddress::operator Variant() const {
 	return operator String();
 }*/
 
-#include <string.h>
-
 IPAddress::operator String() const {
 	if (wildcard) {
 		return "*";

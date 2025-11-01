@@ -70,7 +70,7 @@
 			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
-			The mix target channels, as one of the [enum MixTarget] constants. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
+			The mix target channels. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.

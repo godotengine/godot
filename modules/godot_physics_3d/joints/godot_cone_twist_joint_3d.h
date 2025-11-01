@@ -79,7 +79,7 @@ public:
 	real_t m_biasFactor = 0.3;
 	real_t m_relaxationFactor = 1.0;
 
-	real_t m_swingSpan1 = Math_TAU / 8.0;
+	real_t m_swingSpan1 = Math::TAU / 8.0;
 	real_t m_swingSpan2 = 0.0;
 	real_t m_twistSpan = 0.0;
 

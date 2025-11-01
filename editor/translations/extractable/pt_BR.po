@@ -27,25 +27,15 @@ msgstr "Escolha uma cor na tela."
 msgid "Pick a color from the application window."
 msgstr "Escolha uma cor na janela do aplicativo."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplica cor\n"
-"RMB: Remove predefinição"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplica cor"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Insira um código hexadecimal (\"#ff0000\") ou uma cor nomeada (\"vermelho\")."
+
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Clear"
+msgstr "Limpar"
 
 msgid "Select a picker shape."
 msgstr "Selecione a forma do seletor."
@@ -74,9 +64,6 @@ msgstr "Abrir"
 
 msgid "Select Current Folder"
 msgstr "Selecionar a Pasta Atual"
-
-msgid "Save"
-msgstr "Salvar"
 
 msgid "Select This Folder"
 msgstr "Selecionar Esta Pasta"
@@ -117,11 +104,11 @@ msgstr "Caminho:"
 msgid "Refresh files."
 msgstr "Atualizar arquivos."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Alternar a visibilidade de arquivos ocultos."
-
 msgid "Directories & Files:"
 msgstr "Diretórios & Arquivos:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Alternar a visibilidade de arquivos ocultos."
 
 msgid "File:"
 msgstr "Arquivo:"
@@ -221,9 +208,6 @@ msgstr "Colar"
 
 msgid "Select All"
 msgstr "Selecionar Tudo"
-
-msgid "Clear"
-msgstr "Limpar"
 
 msgid "Undo"
 msgstr "Desfazer"

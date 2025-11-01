@@ -64,6 +64,16 @@ void EditorVersionButton::_notification(int p_what) {
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			set_text(_get_version_string(format));
 		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			String build_date;
+			if (GODOT_VERSION_TIMESTAMP > 0) {
+				build_date = Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC";
+			} else {
+				build_date = TTR("(unknown)");
+			}
+			set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
+		} break;
 	}
 }
 
@@ -74,12 +84,4 @@ void EditorVersionButton::pressed() {
 EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
 	format = p_format;
 	set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-
-	String build_date;
-	if (GODOT_VERSION_TIMESTAMP > 0) {
-		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC";
-	} else {
-		build_date = TTR("(unknown)");
-	}
-	set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 }

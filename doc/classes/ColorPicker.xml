@@ -62,7 +62,7 @@
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
-			The currently selected color mode. See [enum ColorModeType].
+			The currently selected color mode.
 		</member>
 		<member name="color_modes_visible" type="bool" setter="set_modes_visible" getter="are_modes_visible" default="true">
 			If [code]true[/code], the color mode buttons are visible.
@@ -73,11 +73,14 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
+		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
+			If [code]true[/code], shows an intensity slider. The intensity is applied as follows: convert the color to linear encoding, multiply it by [code]2 ** intensity[/code], and then convert it back to nonlinear sRGB encoding.
+		</member>
 		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
 			If [code]true[/code], the hex color code input field is visible.
 		</member>
 		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
-			The shape of the color space view. See [enum PickerShapeType].
+			The shape of the color space view.
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
 			If [code]true[/code], the Swatches and Recent Colors presets are visible.
@@ -111,13 +114,15 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RGB" value="0" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders.
+			Allows editing the color with Red/Green/Blue sliders in sRGB color space.
 		</constant>
 		<constant name="MODE_HSV" value="1" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Value sliders.
 		</constant>
-		<constant name="MODE_RAW" value="2" enum="ColorModeType">
-			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		<constant name="MODE_RAW" value="2" enum="ColorModeType" deprecated="This is replaced by [constant MODE_LINEAR].">
+		</constant>
+		<constant name="MODE_LINEAR" value="2" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue sliders in linear color space.
 		</constant>
 		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Lightness sliders.
@@ -138,6 +143,12 @@
 		</constant>
 		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
 			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
+		</constant>
+		<constant name="SHAPE_OK_HS_RECTANGLE" value="5" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant lightness.
+		</constant>
+		<constant name="SHAPE_OK_HL_RECTANGLE" value="6" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant saturation.
 		</constant>
 	</constants>
 	<theme_items>
@@ -170,6 +181,9 @@
 		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
+		</theme_item>
+		<theme_item name="color_script" data_type="icon" type="Texture2D">
+			The icon for the button that switches color text to hexadecimal.
 		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.

@@ -108,6 +108,5 @@ public:
 
 	Rect2 get_bounds();
 
-	NavigationMeshSourceGeometryData2D() {}
 	~NavigationMeshSourceGeometryData2D() { clear(); }
 };

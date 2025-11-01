@@ -195,6 +195,8 @@
 // CameraFeedMacOS - Subclass for camera feeds in macOS
 
 class CameraFeedMacOS : public CameraFeed {
+	GDSOFTCLASS(CameraFeedMacOS, CameraFeed);
+
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
@@ -206,8 +208,8 @@ public:
 
 	void set_device(AVCaptureDevice *p_device);
 
-	bool activate_feed();
-	void deactivate_feed();
+	bool activate_feed() override;
+	void deactivate_feed() override;
 };
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {
@@ -307,17 +309,21 @@ MyDeviceNotifications *device_notifications = nil;
 // CameraMacOS - Subclass for our camera server on macOS
 
 void CameraMacOS::update_feeds() {
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
-	AVCaptureDeviceDiscoverySession *session;
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
-	// Avoid deprecated warning if the minimum SDK is 14.0.
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
-#else
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSArray<AVCaptureDevice *> *devices = nullptr;
+#if defined(__x86_64__)
+	if (@available(macOS 10.15, *)) {
 #endif
-	NSArray<AVCaptureDevice *> *devices = session.devices;
-#else
-	NSArray<AVCaptureDevice *> *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+		AVCaptureDeviceDiscoverySession *session;
+		if (@available(macOS 14.0, *)) {
+			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeContinuityCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+		} else {
+			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+		}
+		devices = session.devices;
+#if defined(__x86_64__)
+	} else {
+		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+	}
 #endif
 
 	// remove devices that are gone..
@@ -357,6 +363,7 @@ void CameraMacOS::update_feeds() {
 			add_feed(newfeed);
 		};
 	};
+	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {

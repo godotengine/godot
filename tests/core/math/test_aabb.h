@@ -461,7 +461,7 @@ TEST_CASE("[AABB] Expanding") {
 
 TEST_CASE("[AABB] Finite number checks") {
 	constexpr Vector3 x(0, 1, 2);
-	const Vector3 infinite(NAN, NAN, NAN);
+	constexpr Vector3 infinite(Math::NaN, Math::NaN, Math::NaN);
 
 	CHECK_MESSAGE(
 			AABB(x, x).is_finite(),

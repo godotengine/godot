@@ -43,14 +43,11 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
-
-const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
-
-ProjectSettings *ProjectSettings::singleton = nullptr;
 
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
@@ -87,6 +84,11 @@ const PackedStringArray ProjectSettings::get_required_features() {
 // Returns the features supported by this build of Godot. Includes all required features.
 const PackedStringArray ProjectSettings::_get_supported_features() {
 	PackedStringArray features = get_required_features();
+
+#ifdef LIBGODOT_ENABLED
+	features.append("LibGodot");
+#endif
+
 #ifdef MODULE_MONO_ENABLED
 	features.append("C#");
 #endif
@@ -173,7 +175,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 	if (dir->change_dir(path) == OK) {
 		String cwd = dir->get_current_dir();
-		cwd = cwd.replace("\\", "/");
+		cwd = cwd.replace_char('\\', '/');
 
 		// Ensure that we end with a '/'.
 		// This is important to ensure that we do not wrongly localize the resource path
@@ -236,18 +238,18 @@ void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
 
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	props[p_name].ignore_value_in_docs = p_ignore;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), false, vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	return props[p_name].ignore_value_in_docs;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
@@ -284,7 +286,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
@@ -300,6 +302,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
 			}
+
+			_version++;
 			_queue_changed();
 			return true;
 		}
@@ -328,7 +332,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().split("/")[1];
+			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -345,6 +349,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
+	_version++;
 	_queue_changed();
 	return true;
 }
@@ -359,14 +364,14 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
-Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
+Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
 	_THREAD_SAFE_METHOD_
 
 	StringName name = p_name;
 	if (feature_overrides.has(name)) {
 		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
 		for (uint32_t i = 0; i < overrides.size(); i++) {
-			if (OS::get_singleton()->has_feature(overrides[i].first)) { // Custom features are checked in OS.has_feature() already. No need to check twice.
+			if (p_features.has(String(overrides[i].first).to_lower())) {
 				if (props.has(overrides[i].second)) {
 					name = overrides[i].second;
 					break;
@@ -376,10 +381,37 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 	}
 
 	if (!props.has(name)) {
-		WARN_PRINT(vformat("Property not found: '%s'.", String(name)));
+		WARN_PRINT("Property not found: " + String(name));
 		return Variant();
 	}
 	return props[name].variant;
+}
+
+Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
+	_THREAD_SAFE_METHOD_
+
+	const LocalVector<Pair<StringName, StringName>> *overrides = feature_overrides.getptr(p_name);
+	if (overrides) {
+		for (uint32_t i = 0; i < overrides->size(); i++) {
+			if (!OS::get_singleton()->has_feature((*overrides)[i].first)) {
+				continue;
+			}
+
+			// Custom features are checked in OS.has_feature() already. No need to check twice.
+			const RBMap<StringName, VariantContainer>::Element *override_prop = props.find((*overrides)[i].second);
+			if (override_prop) {
+				return override_prop->get().variant;
+			}
+		}
+	}
+
+	const RBMap<StringName, VariantContainer>::Element *prop = props.find(p_name);
+	if (!prop) {
+		WARN_PRINT(vformat("Property not found: '%s'.", p_name));
+		return Variant();
+	}
+
+	return prop->get().variant;
 }
 
 struct _VCSort {
@@ -395,6 +427,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
+	HashMap<String, LocalVector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -435,23 +468,60 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
-		vclist.insert(vc);
+
+		int dot = vc.name.rfind_char('.');
+		if (dot != -1) {
+			StringName n = vc.name.substr(0, dot);
+			if (props.has(n)) {
+				// Property is an override.
+				setting_overrides[n].push_back(vc);
+			} else {
+				vclist.insert(vc);
+			}
+		} else {
+			vclist.insert(vc);
+		}
 	}
 
-	for (const _VCSort &E : vclist) {
-		String prop_info_name = E.name;
-		int dot = prop_info_name.find_char('.');
-		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
-			prop_info_name = prop_info_name.substr(0, dot);
+	for (const _VCSort &base : vclist) {
+		if (custom_prop_info.has(base.name)) {
+			PropertyInfo pi = custom_prop_info[base.name];
+			pi.name = base.name;
+			pi.usage = base.flags;
+			p_list->push_back(pi);
+#ifdef TOOLS_ENABLED
+		} else if (base.name.begins_with(EDITOR_SETTING_OVERRIDE_PREFIX)) {
+			PropertyInfo info(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags);
+
+			const PropertyInfo *pi = editor_settings_info.getptr(base.name.trim_prefix(EDITOR_SETTING_OVERRIDE_PREFIX));
+			if (pi) {
+				info.usage = pi->usage;
+				info.hint = pi->hint;
+				info.hint_string = pi->hint_string;
+			}
+			p_list->push_back(info);
+#endif
+		} else {
+			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
 		}
 
-		if (custom_prop_info.has(prop_info_name)) {
-			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E.name;
-			pi.usage = E.flags;
-			p_list->push_back(pi);
-		} else {
-			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
+		if (setting_overrides.has(base.name)) {
+			for (const _VCSort &over : setting_overrides.get(base.name)) {
+				if (custom_prop_info.has(over.name)) {
+					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else if (custom_prop_info.has(base.name)) {
+					// Fallback to base property info.
+					PropertyInfo pi = custom_prop_info[base.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else {
+					p_list->push_back(PropertyInfo(over.type, over.name, PROPERTY_HINT_NONE, "", over.flags));
+				}
+			}
 		}
 	}
 }
@@ -531,6 +601,12 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				E.value.variant = action;
 			}
 		}
+	} else if (p_from_version <= 6) {
+		// Check if we still have legacy boot splash (removed in 4.6), map it to new project setting, then remove legacy setting.
+		if (has_setting("application/boot_splash/fullsize")) {
+			set_setting("application/boot_splash/stretch_mode", RenderingServer::map_scaling_option_to_stretch_mode(get_setting("application/boot_splash/fullsize")));
+			set_setting("application/boot_splash/fullsize", Variant());
+		}
 	}
 #endif // DISABLE_DEPRECATED
 }
@@ -550,6 +626,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
  *    o PCK with the same basename as the binary in the current working directory.
  *      Same as above for the two possible PCK file names.
+ *  - On Android, look for 'assets.sparsepck' and try loading it, if it doesn't work,
+ *    proceed to the next step.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
@@ -564,7 +642,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
-		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
+		resource_path = OS::get_singleton()->get_resource_dir().replace_char('\\', '/');
 		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
@@ -577,11 +655,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			}
 		}
+#endif // OVERRIDE_ENABLED
 		return err;
 	}
 
@@ -627,25 +710,40 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 			if (err == OK && !p_ignore_override) {
 				// Load overrides from the PCK and the executable location.
 				// Optional, we don't mind if either fails.
-				_load_settings_text("res://override.cfg");
-				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text("res://override.cfg");
+					_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				}
 			}
+#endif // OVERRIDE_ENABLED
 			return err;
 		}
 	}
+
+#ifdef ANDROID_ENABLED
+	// Attempt to load sparse PCK assets.
+	_load_resource_pack("res://assets.sparsepck", false, 0, true);
+#endif
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifdef OVERRIDE_ENABLED
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text("res://override.cfg");
+			}
 		}
+#endif // OVERRIDE_ENABLED
 		return err;
 	}
 
@@ -665,11 +763,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(resource_path.path_join("override.cfg"));
+#ifdef OVERRIDE_ENABLED
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(resource_path.path_join("override.cfg"));
+			}
+#endif // OVERRIDE_ENABLED
 			return err;
 		}
 	}
-#endif
+#endif // MACOS_ENABLED
 
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
@@ -685,11 +788,18 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	while (true) {
 		// Set the resource path early so things can be resolved when loading.
 		resource_path = current_dir;
-		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
+		resource_path = resource_path.replace_char('\\', '/'); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
-		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.path_join("override.cfg"));
+		if (err == OK) {
+#ifdef OVERRIDE_ENABLED
+			if (!p_ignore_override) {
+				// Optional, we don't mind if it fails.
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text(current_dir.path_join("override.cfg"));
+				}
+			}
+#endif // OVERRIDE_ENABLED
 			found = true;
 			break;
 		}
@@ -767,11 +877,10 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	for (uint32_t i = 0; i < count; i++) {
 		uint32_t slen = f->get_32();
 		CharString cs;
-		cs.resize(slen + 1);
+		cs.resize_uninitialized(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
-		String key;
-		key.parse_utf8(cs.ptr(), slen);
+		String key = String::utf8(cs.ptr(), slen);
 
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
@@ -1177,8 +1286,12 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 }
 
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
-	ERR_FAIL_COND(!p_info.has("name"));
-	ERR_FAIL_COND(!p_info.has("type"));
+	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
+	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");
+
+	if (p_info.has("usage")) {
+		WARN_PRINT("\"usage\" is not supported in add_property_info().");
+	}
 
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
@@ -1215,7 +1328,7 @@ bool ProjectSettings::is_project_loaded() const {
 }
 
 bool ProjectSettings::_property_can_revert(const StringName &p_name) const {
-	return props.has(p_name);
+	return props.has(p_name) && !String(p_name).begins_with(EDITOR_SETTING_OVERRIDE_PREFIX);
 }
 
 bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
@@ -1365,8 +1478,7 @@ void ProjectSettings::load_scene_groups_cache() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_scene_groups_cache_path()) == OK) {
-		List<String> scene_paths;
-		cf->get_sections(&scene_paths);
+		Vector<String> scene_paths = cf->get_sections();
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;
@@ -1402,12 +1514,25 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 }
 #endif
 
+void ProjectSettings::set_editor_setting_override(const String &p_setting, const Variant &p_value) {
+	set_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting, p_value);
+}
+
+bool ProjectSettings::has_editor_setting_override(const String &p_setting) const {
+	return has_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
+
+Variant ProjectSettings::get_editor_setting_override(const String &p_setting) const {
+	return get_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
+
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
 	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
+	ClassDB::bind_method(D_METHOD("get_setting_with_override_and_custom_features", "name", "features"), &ProjectSettings::get_setting_with_override_and_custom_features);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
@@ -1434,8 +1559,8 @@ void ProjectSettings::_add_builtin_input_map() {
 			Array events;
 
 			// Convert list of input events into array
-			for (List<Ref<InputEvent>>::Element *I = E.value.front(); I; I = I->next()) {
-				events.push_back(I->get());
+			for (const Ref<InputEvent> &event : E.value) {
+				events.push_back(event);
 			}
 
 			Dictionary action;
@@ -1483,10 +1608,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
+	GLOBAL_DEF("application/config/disable_project_settings_override", false);
 
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
 	GLOBAL_DEF("application/config/quit_on_go_back", true);
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
 
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
@@ -1510,6 +1639,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/extend_to_title", false);
 	GLOBAL_DEF("display/window/size/no_focus", false);
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
+	GLOBAL_DEF("display/window/size/minimize_disabled", false);
+	GLOBAL_DEF("display/window/size/maximize_disabled", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
@@ -1517,6 +1648,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
+#ifndef DISABLE_DEPRECATED
+	GLOBAL_DEF_RST("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", false);
+#endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
@@ -1544,8 +1678,13 @@ ProjectSettings::ProjectSettings() {
 #else
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Unsafe (deprecated),Safe,Separate");
 #endif
+
+#ifndef PHYSICS_2D_DISABLED
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
+#endif // PHYSICS_3D_DISABLED
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
@@ -1578,7 +1717,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
 #endif
 
+	GLOBAL_DEF("gui/common/drag_threshold", 10);
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Control Supports Keyboard Input,Always"), 1);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
@@ -1602,7 +1743,7 @@ ProjectSettings::ProjectSettings() {
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_slider"), 613);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1614,6 +1755,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
@@ -1621,6 +1763,28 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
+
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+	GLOBAL_DEF("navigation/world/region_use_async_iterations", true);
+
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
+
+	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
+
+	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+#ifndef NAVIGATION_2D_DISABLED
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/2d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_edge_merge_errors", true);
+	GLOBAL_DEF("navigation/3d/warnings/navmesh_cell_size_mismatch", true);
+#endif // NAVIGATION_3D_DISABLED
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

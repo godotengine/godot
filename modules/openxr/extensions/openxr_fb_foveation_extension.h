@@ -35,11 +35,6 @@
 // Other Android based devices are implementing this as well, see:
 // https://github.khronos.org/OpenXR-Inventory/extension_support.html#XR_FB_foveation
 
-// Note: Currently we only support this for OpenGL.
-// This extension works on enabling foveated rendering on the swapchain.
-// Vulkan does not render 3D content directly to the swapchain image
-// hence this extension can't be used.
-
 #include "../openxr_api.h"
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
@@ -81,6 +76,7 @@ private:
 	String rendering_driver;
 	bool fb_foveation_ext = false;
 	bool fb_foveation_configuration_ext = false;
+	bool fb_foveation_vulkan_ext = false;
 
 	// Configuration
 	XrFoveationLevelFB foveation_level = XR_FOVEATION_LEVEL_NONE_FB;

@@ -82,6 +82,11 @@ Vec4 Vec4::sReplicate(float inV)
 #endif
 }
 
+Vec4 Vec4::sOne()
+{
+	return sReplicate(1.0f);
+}
+
 Vec4 Vec4::sNaN()
 {
 	return sReplicate(numeric_limits<float>::quiet_NaN());
@@ -161,6 +166,11 @@ Vec4 Vec4::sMax(Vec4Arg inV1, Vec4Arg inV2)
 				max(inV1.mF32[2], inV2.mF32[2]),
 				max(inV1.mF32[3], inV2.mF32[3]));
 #endif
+}
+
+Vec4 Vec4::sClamp(Vec4Arg inV, Vec4Arg inMin, Vec4Arg inMax)
+{
+	return sMax(sMin(inV, inMax), inMin);
 }
 
 UVec4 Vec4::sEquals(Vec4Arg inV1, Vec4Arg inV2)
@@ -357,6 +367,11 @@ bool Vec4::operator == (Vec4Arg inV2) const
 bool Vec4::IsClose(Vec4Arg inV2, float inMaxDistSq) const
 {
 	return (inV2 - *this).LengthSq() <= inMaxDistSq;
+}
+
+bool Vec4::IsNearZero(float inMaxDistSq) const
+{
+	return LengthSq() <= inMaxDistSq;
 }
 
 bool Vec4::IsNormalized(float inTolerance) const
@@ -599,6 +614,70 @@ Vec4 Vec4::SplatW() const
 #endif
 }
 
+Vec3 Vec4::SplatX3() const
+{
+#if defined(JPH_USE_SSE)
+	return _mm_shuffle_ps(mValue, mValue, _MM_SHUFFLE(0, 0, 0, 0));
+#elif defined(JPH_USE_NEON)
+	return vdupq_laneq_f32(mValue, 0);
+#else
+	return Vec3(mF32[0], mF32[0], mF32[0]);
+#endif
+}
+
+Vec3 Vec4::SplatY3() const
+{
+#if defined(JPH_USE_SSE)
+	return _mm_shuffle_ps(mValue, mValue, _MM_SHUFFLE(1, 1, 1, 1));
+#elif defined(JPH_USE_NEON)
+	return vdupq_laneq_f32(mValue, 1);
+#else
+	return Vec3(mF32[1], mF32[1], mF32[1]);
+#endif
+}
+
+Vec3 Vec4::SplatZ3() const
+{
+#if defined(JPH_USE_SSE)
+	return _mm_shuffle_ps(mValue, mValue, _MM_SHUFFLE(2, 2, 2, 2));
+#elif defined(JPH_USE_NEON)
+	return vdupq_laneq_f32(mValue, 2);
+#else
+	return Vec3(mF32[2], mF32[2], mF32[2]);
+#endif
+}
+
+Vec3 Vec4::SplatW3() const
+{
+#if defined(JPH_USE_SSE)
+	return _mm_shuffle_ps(mValue, mValue, _MM_SHUFFLE(3, 3, 3, 3));
+#elif defined(JPH_USE_NEON)
+	return vdupq_laneq_f32(mValue, 3);
+#else
+	return Vec3(mF32[3], mF32[3], mF32[3]);
+#endif
+}
+
+int Vec4::GetLowestComponentIndex() const
+{
+	// Get the minimum value in all 4 components
+	Vec4 value = Vec4::sMin(*this, Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>());
+	value = Vec4::sMin(value, value.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>());
+
+	// Compare with the original vector to find which component is equal to the minimum value
+	return CountTrailingZeros(Vec4::sEquals(*this, value).GetTrues());
+}
+
+int Vec4::GetHighestComponentIndex() const
+{
+	// Get the maximum value in all 4 components
+	Vec4 value = Vec4::sMax(*this, Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>());
+	value = Vec4::sMax(value, value.Swizzle<SWIZZLE_Z, SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y>());
+
+	// Compare with the original vector to find which component is equal to the maximum value
+	return CountTrailingZeros(Vec4::sEquals(*this, value).GetTrues());
+}
+
 Vec4 Vec4::Abs() const
 {
 #if defined(JPH_USE_AVX512)
@@ -614,7 +693,7 @@ Vec4 Vec4::Abs() const
 
 Vec4 Vec4::Reciprocal() const
 {
-	return sReplicate(1.0f) / mValue;
+	return sOne() / mValue;
 }
 
 Vec4 Vec4::DotV(Vec4Arg inV2) const
@@ -700,6 +779,16 @@ Vec4 Vec4::GetSign() const
 				std::signbit(mF32[2])? -1.0f : 1.0f,
 				std::signbit(mF32[3])? -1.0f : 1.0f);
 #endif
+}
+
+template <int X, int Y, int Z, int W>
+JPH_INLINE Vec4 Vec4::FlipSign() const
+{
+	static_assert(X == 1 || X == -1, "X must be 1 or -1");
+	static_assert(Y == 1 || Y == -1, "Y must be 1 or -1");
+	static_assert(Z == 1 || Z == -1, "Z must be 1 or -1");
+	static_assert(W == 1 || W == -1, "W must be 1 or -1");
+	return Vec4::sXor(*this, Vec4(X > 0? 0.0f : -0.0f, Y > 0? 0.0f : -0.0f, Z > 0? 0.0f : -0.0f, W > 0? 0.0f : -0.0f));
 }
 
 Vec4 Vec4::Normalized() const
@@ -805,7 +894,7 @@ void Vec4::SinCos(Vec4 &outSin, Vec4 &outCos) const
 
 	// Taylor expansion:
 	// Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! + x^8/8! + ... = (((x2/8!- 1/6!) * x2 + 1/4!) * x2 - 1/2!) * x2 + 1
-	Vec4 taylor_cos = ((2.443315711809948e-5f * x2 - Vec4::sReplicate(1.388731625493765e-3f)) * x2 + Vec4::sReplicate(4.166664568298827e-2f)) * x2 * x2 - 0.5f * x2 + Vec4::sReplicate(1.0f);
+	Vec4 taylor_cos = ((2.443315711809948e-5f * x2 - Vec4::sReplicate(1.388731625493765e-3f)) * x2 + Vec4::sReplicate(4.166664568298827e-2f)) * x2 * x2 - 0.5f * x2 + Vec4::sOne();
 	// Sin(x) = x - x^3/3! + x^5/5! - x^7/7! + ... = ((-x2/7! + 1/5!) * x2 - 1/3!) * x2 * x + x
 	Vec4 taylor_sin = ((-1.9515295891e-4f * x2 + Vec4::sReplicate(8.3321608736e-3f)) * x2 - Vec4::sReplicate(1.6666654611e-1f)) * x2 * x + x;
 
@@ -880,14 +969,14 @@ Vec4 Vec4::ASin() const
 	Vec4 a = Vec4::sXor(*this, asin_sign.ReinterpretAsFloat());
 
 	// ASin is not defined outside the range [-1, 1] but it often happens that a value is slightly above 1 so we just clamp here
-	a = Vec4::sMin(a, Vec4::sReplicate(1.0f));
+	a = Vec4::sMin(a, Vec4::sOne());
 
 	// When |x| <= 0.5 we use the asin approximation as is
 	Vec4 z1 = a * a;
 	Vec4 x1 = a;
 
 	// When |x| > 0.5 we use the identity asin(x) = PI / 2 - 2 * asin(sqrt((1 - x) / 2))
-	Vec4 z2 = 0.5f * (Vec4::sReplicate(1.0f) - a);
+	Vec4 z2 = 0.5f * (Vec4::sOne() - a);
 	Vec4 x2 = z2.Sqrt();
 
 	// Select which of the two situations we have
@@ -923,7 +1012,7 @@ Vec4 Vec4::ATan() const
 
 	// If x > Tan(PI / 8)
 	UVec4 greater1 = Vec4::sGreater(x, Vec4::sReplicate(0.4142135623730950f));
-	Vec4 x1 = (x - Vec4::sReplicate(1.0f)) / (x + Vec4::sReplicate(1.0f));
+	Vec4 x1 = (x - Vec4::sOne()) / (x + Vec4::sOne());
 
 	// If x > Tan(3 * PI / 8)
 	UVec4 greater2 = Vec4::sGreater(x, Vec4::sReplicate(2.414213562373095f));
@@ -976,6 +1065,84 @@ Vec4 Vec4::sATan2(Vec4Arg inY, Vec4Arg inX)
 	atan -= Vec4::sAnd(x_sign.ArithmeticShiftRight<31>().ReinterpretAsFloat(), Vec4::sReplicate(JPH_PI));
 	atan = Vec4::sXor(atan, UVec4::sXor(x_sign, y_sign).ReinterpretAsFloat());
 	return atan;
+}
+
+uint32 Vec4::CompressUnitVector() const
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 9;
+	constexpr uint cMask = (1 << cNumBits) - 1;
+
+	// Store sign bit
+	Vec4 v = *this;
+	uint32 max_element = v.Abs().GetHighestComponentIndex();
+	uint32 value = 0;
+	if (v[max_element] < 0.0f)
+	{
+		value = 0x80000000u;
+		v = -v;
+	}
+
+	// Store highest component
+	value |= max_element << 29;
+
+	// Store the other three components in a compressed format
+	UVec4 compressed = Vec4::sClamp((v + Vec4::sReplicate(cOneOverSqrt2)) * (float(cMask) / (2.0f * cOneOverSqrt2)) + Vec4::sReplicate(0.5f), Vec4::sZero(), Vec4::sReplicate(cMask)).ToInt();
+	switch (max_element)
+	{
+	case 0:
+		compressed = compressed.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_W, SWIZZLE_UNUSED>();
+		break;
+
+	case 1:
+		compressed = compressed.Swizzle<SWIZZLE_X, SWIZZLE_Z, SWIZZLE_W, SWIZZLE_UNUSED>();
+		break;
+
+	case 2:
+		compressed = compressed.Swizzle<SWIZZLE_X, SWIZZLE_Y, SWIZZLE_W, SWIZZLE_UNUSED>();
+		break;
+	}
+
+	value |= compressed.GetX();
+	value |= compressed.GetY() << cNumBits;
+	value |= compressed.GetZ() << 2 * cNumBits;
+	return value;
+}
+
+Vec4 Vec4::sDecompressUnitVector(uint32 inValue)
+{
+	constexpr float cOneOverSqrt2 = 0.70710678f;
+	constexpr uint cNumBits = 9;
+	constexpr uint cMask = (1u << cNumBits) - 1;
+
+	// Restore three components
+	Vec4 v = Vec4(UVec4(inValue & cMask, (inValue >> cNumBits) & cMask, (inValue >> (2 * cNumBits)) & cMask, 0).ToFloat()) * (2.0f * cOneOverSqrt2 / float(cMask)) - Vec4(cOneOverSqrt2, cOneOverSqrt2, cOneOverSqrt2, 0.0f);
+	JPH_ASSERT(v.GetW() == 0.0f);
+
+	// Restore the highest component
+	v.SetW(sqrt(max(1.0f - v.LengthSq(), 0.0f)));
+
+	// Extract sign
+	if ((inValue & 0x80000000u) != 0)
+		v = -v;
+
+	// Swizzle the components in place
+	switch ((inValue >> 29) & 3)
+	{
+	case 0:
+		v = v.Swizzle<SWIZZLE_W, SWIZZLE_X, SWIZZLE_Y, SWIZZLE_Z>();
+		break;
+
+	case 1:
+		v = v.Swizzle<SWIZZLE_X, SWIZZLE_W, SWIZZLE_Y, SWIZZLE_Z>();
+		break;
+
+	case 2:
+		v = v.Swizzle<SWIZZLE_X, SWIZZLE_Y, SWIZZLE_W, SWIZZLE_Z>();
+		break;
+	}
+
+	return v;
 }
 
 JPH_NAMESPACE_END

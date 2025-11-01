@@ -39,7 +39,7 @@
 #include "objects/jolt_area_3d.h"
 #include "objects/jolt_body_3d.h"
 #include "objects/jolt_soft_body_3d.h"
-#include "servers/physics_server_3d_wrap_mt.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 #include "shapes/jolt_box_shape_3d.h"
 #include "shapes/jolt_capsule_shape_3d.h"
 #include "shapes/jolt_concave_polygon_shape_3d.h"
@@ -286,6 +286,34 @@ void JoltPhysicsServer3D::area_set_space(RID p_area, RID p_space) {
 	}
 
 	area->set_space(space);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_vertex_impulse(p_point_index, p_impulse);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_vertex_force(p_point_index, p_force);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_central_impulse(p_impulse);
+}
+
+void JoltPhysicsServer3D::soft_body_apply_central_force(RID p_body, const Vector3 &p_force) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_central_force(p_force);
 }
 
 RID JoltPhysicsServer3D::area_get_space(RID p_area) const {
@@ -1126,6 +1154,20 @@ real_t JoltPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	return (real_t)body->get_stiffness_coefficient();
 }
 
+void JoltPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_shrinking_factor((float)p_shrinking_factor);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_shrinking_factor(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_shrinking_factor();
+}
+
 void JoltPhysicsServer3D::soft_body_set_pressure_coefficient(RID p_body, real_t p_coefficient) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
@@ -1538,7 +1580,7 @@ bool JoltPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_join
 	return joint->is_collision_disabled();
 }
 
-void JoltPhysicsServer3D::free(RID p_rid) {
+void JoltPhysicsServer3D::free_rid(RID p_rid) {
 	if (JoltShape3D *shape = shape_owner.get_or_null(p_rid)) {
 		free_shape(shape);
 	} else if (JoltBody3D *body = body_owner.get_or_null(p_rid)) {

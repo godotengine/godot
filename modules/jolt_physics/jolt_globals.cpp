@@ -35,14 +35,14 @@
 #include "shapes/jolt_custom_ray_shape.h"
 #include "shapes/jolt_custom_user_data_shape.h"
 
-#include "core/os/memory.h"
 #include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 #include "Jolt/Jolt.h"
 
 #include "Jolt/RegisterTypes.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 
 void *jolt_alloc(size_t p_size) {
 	return Memory::alloc_static(p_size);

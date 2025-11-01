@@ -34,6 +34,8 @@
 #include "godot_plugin_config.h"
 #endif // DISABLE_DEPRECATED
 
+#include "gradle_export_util.h"
+
 #include "core/io/image.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
@@ -71,8 +73,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	struct APKExportData {
+		EditorExportPlatform::PackData pd;
 		zipFile apk;
 		EditorProgress *ep = nullptr;
+	};
+
+	struct FeatureInfo {
+		String name;
+		bool required;
+		String version;
 	};
 
 #ifndef DISABLE_DEPRECATED
@@ -84,6 +93,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
@@ -96,16 +106,16 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void _update_preset_status();
 #endif
 
-	String get_project_name(const String &p_name) const;
+	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
-	String get_package_name(const String &p_package) const;
+	String get_package_name(const Ref<EditorExportPreset> &p_preset, const String &p_package) const;
 
-	String get_valid_basename() const;
+	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
 
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
-	bool is_project_name_valid() const;
+	bool is_package_name_valid(const Ref<EditorExportPreset> &p_preset, const String &p_package, String *r_error = nullptr) const;
+	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
@@ -151,9 +161,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	bool _has_manage_external_storage_permission(const Vector<String> &p_permissions);
 
-	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
+	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
 	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
+
+	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
 
 	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset);
 
@@ -164,8 +176,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8);
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
-
-	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data);
 
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
@@ -181,7 +191,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
-	static bool _uses_vulkan();
+	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
+
+	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
 
 protected:
 	void _notification(int p_what);
@@ -209,6 +221,10 @@ public:
 
 	virtual int get_options_count() const override;
 
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+
+	virtual bool is_option_runnable(int p_index) const override { return p_index != 0; }
+
 	virtual String get_options_tooltip() const override;
 
 	virtual String get_option_label(int p_index) const override;
@@ -234,6 +250,8 @@ public:
 	static bool has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error);
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
+
+	String _get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
 	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
@@ -264,7 +282,7 @@ public:
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
-	EditorExportPlatformAndroid();
+	virtual void initialize() override;
 
 	~EditorExportPlatformAndroid();
 };

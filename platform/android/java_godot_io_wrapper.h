@@ -49,6 +49,7 @@ private:
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_temp_dir = 0;
 	jmethodID _get_display_cutouts = 0;
+	jmethodID _get_display_rotation = 0;
 	jmethodID _get_display_safe_area = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
@@ -90,4 +91,5 @@ public:
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
+	int get_display_rotation();
 };

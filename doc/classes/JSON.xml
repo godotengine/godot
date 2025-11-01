@@ -16,13 +16,13 @@
 		var json = JSON.new()
 		var error = json.parse(json_string)
 		if error == OK:
-		    var data_received = json.data
-		    if typeof(data_received) == TYPE_ARRAY:
-		        print(data_received) # Prints the array.
-		    else:
-		        print("Unexpected data")
+			var data_received = json.data
+			if typeof(data_received) == TYPE_ARRAY:
+				print(data_received) # Prints the array.
+			else:
+				print("Unexpected data")
 		else:
-		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
+			print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
 		[/codeblock]
 		Alternatively, you can parse strings using the static [method parse_string] method, but it doesn't handle errors.
 		[codeblock]
@@ -47,7 +47,7 @@
 				You can convert a native value to a JSON string like this:
 				[codeblock]
 				func encode_data(value, full_objects = false):
-				    return JSON.stringify(JSON.from_native(value, full_objects))
+					return JSON.stringify(JSON.from_native(value, full_objects))
 				[/codeblock]
 			</description>
 		</method>
@@ -98,6 +98,7 @@
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
 				[b]Note:[/b] If [param full_precision] is [code]true[/code], when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
 				The [param indent] parameter controls if and how something is indented; its contents will be used where there should be an indent in the output. Even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
+				[b]Warning:[/b] Non-finite numbers are not supported in JSON. Any occurrences of [constant @GDScript.INF] will be replaced with [code]1e99999[/code], and negative [constant @GDScript.INF] will be replaced with [code]-1e99999[/code], but they will be interpreted correctly as infinity by most JSON parsers. [constant @GDScript.NAN] will be replaced with [code]null[/code], and it will not be interpreted as NaN in JSON parsers. If you expect non-finite numbers, consider passing your data through [method from_native] first.
 				[b]Example output:[/b]
 				[codeblock]
 				## JSON.stringify(my_dictionary)
@@ -105,18 +106,18 @@
 
 				## JSON.stringify(my_dictionary, "\t")
 				{
-				    "name": "my_dictionary",
-				    "version": "1.0.0",
-				    "entities": [
-				        {
-				            "name": "entity_0",
-				            "value": "value_0"
-				        },
-				        {
-				            "name": "entity_1",
-				            "value": "value_1"
-				        }
-				    ]
+					"name": "my_dictionary",
+					"version": "1.0.0",
+					"entities": [
+						{
+							"name": "entity_0",
+							"value": "value_0"
+						},
+						{
+							"name": "entity_1",
+							"value": "value_1"
+						}
+					]
 				}
 
 				## JSON.stringify(my_dictionary, "...")
@@ -147,7 +148,7 @@
 				You can convert a JSON string back to a native value like this:
 				[codeblock]
 				func decode_data(string, allow_objects = false):
-				    return JSON.to_native(JSON.parse_string(string), allow_objects)
+					return JSON.to_native(JSON.parse_string(string), allow_objects)
 				[/codeblock]
 			</description>
 		</method>

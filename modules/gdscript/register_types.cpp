@@ -54,8 +54,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/export/editor_export.h"
+#include "editor/translations/editor_translation_parser.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "core/config/engine.h"
@@ -101,8 +101,7 @@ protected:
 			return;
 		}
 
-		String source;
-		source.parse_utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
+		String source = String::utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
 		GDScriptTokenizerBuffer::CompressMode compress_mode = script_mode == EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED ? GDScriptTokenizerBuffer::COMPRESS_ZSTD : GDScriptTokenizerBuffer::COMPRESS_NONE;
 		file = GDScriptTokenizerBuffer::parse_code_string(source, compress_mode);
 		if (file.is_empty()) {

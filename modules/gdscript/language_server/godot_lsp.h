@@ -238,6 +238,25 @@ struct ReferenceContext {
 	bool includeDeclaration = false;
 };
 
+struct ShowMessageParams {
+	/**
+	 * The message type. See {@link MessageType}.
+	 */
+	int type;
+
+	/**
+	 * The actual message.
+	 */
+	String message;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["type"] = type;
+		dict["message"] = message;
+		return dict;
+	}
+};
+
 struct ReferenceParams : TextDocumentPositionParams {
 	ReferenceContext context;
 };
@@ -405,6 +424,25 @@ static const int Full = 1;
 static const int Incremental = 2;
 }; // namespace TextDocumentSyncKind
 
+namespace MessageType {
+/**
+ * An error message.
+ */
+static const int Error = 1;
+/**
+ * A warning message.
+ */
+static const int Warning = 2;
+/**
+ * An information message.
+ */
+static const int Info = 3;
+/**
+ * A log message.
+ */
+static const int Log = 4;
+}; // namespace MessageType
+
 /**
  * Completion options.
  */
@@ -537,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -547,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -651,9 +687,9 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict["languageId"];
-		version = p_dict["version"];
-		text = p_dict["text"];
+		languageId = p_dict.get("languageId", "");
+		version = p_dict.get("version", 0);
+		text = p_dict.get("text", "");
 	}
 
 	Dictionary to_json() const {
@@ -667,20 +703,9 @@ struct TextDocumentItem {
 };
 
 /**
- * An event describing a change to a text document. If range and rangeLength are omitted
- * the new text is considered to be the full content of the document.
+ * An event describing a change to a text document.
  */
 struct TextDocumentContentChangeEvent {
-	/**
-	 * The range of the document that changed.
-	 */
-	Range range;
-
-	/**
-	 * The length of the range that got replaced.
-	 */
-	int rangeLength = 0;
-
 	/**
 	 * The new text of the range/document.
 	 */
@@ -688,8 +713,6 @@ struct TextDocumentContentChangeEvent {
 
 	void load(const Dictionary &p_params) {
 		text = p_params["text"];
-		rangeLength = p_params["rangeLength"];
-		range.load(p_params["range"]);
 	}
 };
 
@@ -1421,7 +1444,7 @@ struct CompletionContext {
 
 	void load(const Dictionary &p_params) {
 		triggerKind = int(p_params["triggerKind"]);
-		triggerCharacter = p_params["triggerCharacter"];
+		triggerCharacter = p_params.get("triggerCharacter", "");
 	}
 };
 
@@ -1752,7 +1775,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = true;
+	bool workspaceSymbolProvider = false;
 
 	/**
 	 * The server supports workspace folder.
@@ -1873,7 +1896,7 @@ struct GodotNativeClassInfo {
 	const DocData::ClassDoc *class_doc = nullptr;
 	const ClassDB::ClassInfo *class_info = nullptr;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		dict["name"] = name;
 		dict["inherits"] = class_doc->inherits;
@@ -1888,11 +1911,11 @@ struct GodotCapabilities {
 	 */
 	List<GodotNativeClassInfo> native_classes;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		Array classes;
-		for (List<GodotNativeClassInfo>::Element *E = native_classes.front(); E; E = E->next()) {
-			classes.push_back(E->get().to_json());
+		for (const GodotNativeClassInfo &native_class : native_classes) {
+			classes.push_back(native_class.to_json());
 		}
 		dict["native_classes"] = classes;
 		return dict;
@@ -1939,8 +1962,7 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[signal ", "`");
 			line = line.replace("[enum ", "`");
 			line = line.replace("[constant ", "`");
-			line = line.replace("[", "`");
-			line = line.replace("]", "`");
+			line = line.replace_chars("[]", '`');
 		}
 
 		if (!in_code_block && i < lines.size() - 1) {

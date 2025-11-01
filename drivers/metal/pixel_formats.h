@@ -50,8 +50,9 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#include "core/typedefs.h"
+
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 
 #import "inflection_map.h"
 #import "metal_device_properties.h"
@@ -59,6 +60,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #import <Metal/Metal.h>
+#include <iterator>
 
 #pragma mark -
 #pragma mark Metal format capabilities
@@ -407,4 +409,4 @@ protected:
 	TightLocalVector<MTLFormatDesc> _mtl_vertex_format_descs;
 };
 
-#pragma clang diagnostic pop
+GODOT_CLANG_WARNING_POP

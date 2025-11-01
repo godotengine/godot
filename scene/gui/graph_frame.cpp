@@ -208,6 +208,9 @@ void GraphFrame::_bind_methods() {
 }
 
 void GraphFrame::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "resizable") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

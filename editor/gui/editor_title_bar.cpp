@@ -80,6 +80,69 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorTitleBar::set_center_control(Control *p_center_control) {
+	center_control = p_center_control;
+}
+
+Control *EditorTitleBar::get_center_control() const {
+	return center_control;
+}
+
+void EditorTitleBar::_notification(int p_what) {
+	if (!center_control || p_what != NOTIFICATION_SORT_CHILDREN) {
+		return;
+	}
+
+	Control *prev = nullptr;
+	Control *base = nullptr;
+	Control *next = nullptr;
+
+	bool rtl = is_layout_rtl();
+
+	int start;
+	int end;
+	int delta;
+	if (rtl) {
+		start = get_child_count() - 1;
+		end = -1;
+		delta = -1;
+	} else {
+		start = 0;
+		end = get_child_count();
+		delta = +1;
+	}
+
+	for (int i = start; i != end; i += delta) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
+			continue;
+		}
+		if (base) {
+			next = c;
+			break;
+		}
+		if (c != center_control) {
+			prev = c;
+			continue;
+		}
+		base = c;
+	}
+	if (base && prev && next) {
+		Size2i title_size = get_size();
+		Size2i c_size = base->get_combined_minimum_size();
+
+		int min_offset = prev->get_position().x + prev->get_combined_minimum_size().x;
+		int max_offset = next->get_position().x + next->get_size().x - next->get_combined_minimum_size().x - c_size.x;
+
+		int offset = (title_size.width - c_size.width) / 2;
+		offset = CLAMP(offset, min_offset, max_offset);
+
+		fit_child_in_rect(prev, Rect2i(prev->get_position().x, 0, offset - prev->get_position().x, title_size.height));
+		fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
+		fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
+	}
+}
+
 void EditorTitleBar::set_can_move_window(bool p_enabled) {
 	can_move = p_enabled;
 	set_process_input(can_move);

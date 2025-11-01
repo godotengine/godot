@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/main/window.h"
 
 #include "tests/test_macros.h"
 
 namespace TestNavigationObstacle3D {
 
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[SceneTree][NavigationObstacle3D] New obstacle should have valid RID") {
 		NavigationObstacle3D *obstacle_node = memnew(NavigationObstacle3D);
 		CHECK(obstacle_node->get_rid().is_valid());

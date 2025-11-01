@@ -31,7 +31,7 @@
 #include "navigation_mesh.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
@@ -51,7 +51,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0) {
+		if (varr.is_empty() || iarr.is_empty()) {
 			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to an empty vertex or index array.");
 			continue;
 		}
@@ -398,7 +398,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		debug_mesh->clear_surfaces();
 	}
 
-	if (vertices.size() == 0) {
+	if (vertices.is_empty()) {
 		return debug_mesh;
 	}
 

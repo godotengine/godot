@@ -30,13 +30,28 @@
 
 #include "openxr_composition_layer_equirect.h"
 
+#include "../extensions/openxr_composition_layer_extension.h"
 #include "../openxr_interface.h"
 
 #include "scene/resources/mesh.h"
 
-OpenXRCompositionLayerEquirect::OpenXRCompositionLayerEquirect() :
-		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
-	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerEquirect::update_transform));
+OpenXRCompositionLayerEquirect::OpenXRCompositionLayerEquirect() {
+	if (composition_layer_extension) {
+		XrCompositionLayerEquirect2KHR openxr_composition_layer = {
+			XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, // type
+			nullptr, // next
+			0, // layerFlags
+			XR_NULL_HANDLE, // space
+			XR_EYE_VISIBILITY_BOTH, // eyeVisibility
+			{}, // subImage
+			{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
+			radius, // radius
+			central_horizontal_angle, // centralHorizontalAngle
+			upper_vertical_angle, // upperVerticalAngle
+			-lower_vertical_angle, // lowerVerticalAngle
+		};
+		composition_layer = composition_layer_extension->composition_layer_create((XrCompositionLayerBaseHeader *)&openxr_composition_layer);
+	}
 }
 
 OpenXRCompositionLayerEquirect::~OpenXRCompositionLayerEquirect() {
@@ -80,7 +95,7 @@ Ref<Mesh> OpenXRCompositionLayerEquirect::_create_fallback_mesh() {
 	float step_horizontal = central_horizontal_angle / fallback_segments;
 	float step_vertical = (upper_vertical_angle + lower_vertical_angle) / fallback_segments;
 
-	float start_horizontal_angle = Math_PI - (central_horizontal_angle / 2.0);
+	float start_horizontal_angle = Math::PI - (central_horizontal_angle / 2.0);
 
 	for (uint32_t i = 0; i < fallback_segments + 1; i++) {
 		for (uint32_t j = 0; j < fallback_segments + 1; j++) {
@@ -120,22 +135,12 @@ Ref<Mesh> OpenXRCompositionLayerEquirect::_create_fallback_mesh() {
 	return mesh;
 }
 
-void OpenXRCompositionLayerEquirect::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			update_transform();
-		} break;
-	}
-}
-
-void OpenXRCompositionLayerEquirect::update_transform() {
-	composition_layer.pose = get_openxr_pose();
-}
-
 void OpenXRCompositionLayerEquirect::set_radius(float p_radius) {
 	ERR_FAIL_COND(p_radius <= 0);
 	radius = p_radius;
-	composition_layer.radius = radius;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_equirect_radius(composition_layer, p_radius);
+	}
 	update_fallback_mesh();
 }
 
@@ -146,7 +151,9 @@ float OpenXRCompositionLayerEquirect::get_radius() const {
 void OpenXRCompositionLayerEquirect::set_central_horizontal_angle(float p_angle) {
 	ERR_FAIL_COND(p_angle <= 0);
 	central_horizontal_angle = p_angle;
-	composition_layer.centralHorizontalAngle = central_horizontal_angle;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_equirect_central_horizontal_angle(composition_layer, p_angle);
+	}
 	update_fallback_mesh();
 }
 
@@ -155,9 +162,11 @@ float OpenXRCompositionLayerEquirect::get_central_horizontal_angle() const {
 }
 
 void OpenXRCompositionLayerEquirect::set_upper_vertical_angle(float p_angle) {
-	ERR_FAIL_COND(p_angle <= 0 || p_angle > (Math_PI / 2.0));
+	ERR_FAIL_COND(p_angle <= 0 || p_angle > (Math::PI / 2.0));
 	upper_vertical_angle = p_angle;
-	composition_layer.upperVerticalAngle = p_angle;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_equirect_upper_vertical_angle(composition_layer, p_angle);
+	}
 	update_fallback_mesh();
 }
 
@@ -166,9 +175,11 @@ float OpenXRCompositionLayerEquirect::get_upper_vertical_angle() const {
 }
 
 void OpenXRCompositionLayerEquirect::set_lower_vertical_angle(float p_angle) {
-	ERR_FAIL_COND(p_angle <= 0 || p_angle > (Math_PI / 2.0));
+	ERR_FAIL_COND(p_angle <= 0 || p_angle > (Math::PI / 2.0));
 	lower_vertical_angle = p_angle;
-	composition_layer.lowerVerticalAngle = -p_angle;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_equirect_lower_vertical_angle(composition_layer, -p_angle);
+	}
 	update_fallback_mesh();
 }
 
@@ -209,7 +220,7 @@ Vector2 OpenXRCompositionLayerEquirect::intersects_ray(const Vector3 &p_origin, 
 	Vector3 intersection = p_origin + p_direction * t;
 
 	Basis correction = equirect_transform.basis.inverse();
-	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math_PI / 2.0);
+	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math::PI / 2.0);
 	Vector3 relative_point = correction.xform(intersection - equirect_transform.origin);
 
 	float horizontal_intersection_angle = Math::atan2(relative_point.z, relative_point.x);
@@ -217,7 +228,7 @@ Vector2 OpenXRCompositionLayerEquirect::intersects_ray(const Vector3 &p_origin, 
 		return Vector2(-1.0, -1.0);
 	}
 
-	float vertical_intersection_angle = Math::acos(relative_point.y / radius) - (Math_PI / 2.0);
+	float vertical_intersection_angle = Math::acos(relative_point.y / radius) - (Math::PI / 2.0);
 	if (vertical_intersection_angle < 0) {
 		if (Math::abs(vertical_intersection_angle) > upper_vertical_angle) {
 			return Vector2(-1.0, -1.0);

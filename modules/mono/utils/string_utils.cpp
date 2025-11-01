@@ -32,8 +32,8 @@
 
 #include "core/io/file_access.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 namespace {
 
@@ -159,7 +159,7 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	w[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)w, len) != OK) {
+	if (source.append_utf8((const char *)w, len) != OK) {
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 

@@ -30,15 +30,17 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
-@interface GodotWindowDelegate : NSObject <NSWindowDelegate> {
-	DisplayServer::WindowID window_id;
-}
+class DisplayServerMacOS;
+
+@interface GodotWindowDelegate : NSObject <NSWindowDelegate>
 
 - (void)setWindowID:(DisplayServer::WindowID)wid;
+
+- (instancetype)initWithDisplayServer:(DisplayServerMacOS *)p_ds;
 
 @end

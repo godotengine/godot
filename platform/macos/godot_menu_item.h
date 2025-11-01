@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -50,6 +50,7 @@ enum GlobalMenuCheckType {
 	Callable key_callback;
 	Callable hover_callback;
 	Variant meta;
+	Key accel;
 	GlobalMenuCheckType checkable_type;
 	bool checked;
 	int max_states;

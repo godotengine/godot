@@ -339,7 +339,6 @@ public:
 		Type type = NONE;
 		int start_line = 0, end_line = 0;
 		int start_column = 0, end_column = 0;
-		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
@@ -536,8 +535,8 @@ public:
 			bool resolved = false;
 			int64_t value = 0;
 			int line = 0;
-			int leftmost_column = 0;
-			int rightmost_column = 0;
+			int start_column = 0;
+			int end_column = 0;
 #ifdef TOOLS_ENABLED
 			MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -748,6 +747,7 @@ public:
 		ClassNode *outer = nullptr;
 		bool extends_used = false;
 		bool onready_used = false;
+		bool is_abstract = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
@@ -851,8 +851,10 @@ public:
 		IdentifierNode *identifier = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
+		ParameterNode *rest_parameter = nullptr;
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
+		bool is_abstract = false;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
 		Variant rpc_config;
@@ -862,10 +864,13 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 		int min_local_doc_line = 0;
+		String signature; // For autocompletion.
 #endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
 		bool resolved_body = false;
+
+		_FORCE_INLINE_ bool is_vararg() const { return rest_parameter != nullptr; }
 
 		FunctionNode() {
 			type = FUNCTION;
@@ -899,6 +904,7 @@ public:
 			MEMBER_CLASS,
 			INHERITED_VARIABLE,
 			STATIC_VARIABLE,
+			NATIVE_CLASS,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -1104,7 +1110,6 @@ public:
 
 			int start_line = 0, end_line = 0;
 			int start_column = 0, end_column = 0;
-			int leftmost_column = 0, rightmost_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1120,8 +1125,6 @@ public:
 				end_line = p_constant->end_line;
 				start_column = p_constant->start_column;
 				end_column = p_constant->end_column;
-				leftmost_column = p_constant->leftmost_column;
-				rightmost_column = p_constant->rightmost_column;
 			}
 			Local(VariableNode *p_variable, FunctionNode *p_source_function) {
 				type = VARIABLE;
@@ -1133,8 +1136,6 @@ public:
 				end_line = p_variable->end_line;
 				start_column = p_variable->start_column;
 				end_column = p_variable->end_column;
-				leftmost_column = p_variable->leftmost_column;
-				rightmost_column = p_variable->rightmost_column;
 			}
 			Local(ParameterNode *p_parameter, FunctionNode *p_source_function) {
 				type = PARAMETER;
@@ -1146,8 +1147,6 @@ public:
 				end_line = p_parameter->end_line;
 				start_column = p_parameter->start_column;
 				end_column = p_parameter->end_column;
-				leftmost_column = p_parameter->leftmost_column;
-				rightmost_column = p_parameter->rightmost_column;
 			}
 			Local(IdentifierNode *p_identifier, FunctionNode *p_source_function) {
 				type = FOR_VARIABLE;
@@ -1159,8 +1158,6 @@ public:
 				end_line = p_identifier->end_line;
 				start_column = p_identifier->start_column;
 				end_column = p_identifier->end_column;
-				leftmost_column = p_identifier->leftmost_column;
-				rightmost_column = p_identifier->rightmost_column;
 			}
 		};
 		Local empty;
@@ -1304,10 +1301,16 @@ public:
 		COMPLETION_PROPERTY_METHOD, // Property setter or getter (list available methods).
 		COMPLETION_RESOURCE_PATH, // For load/preload.
 		COMPLETION_SUBSCRIPT, // Inside id[|].
+		COMPLETION_SUPER, // super(), used for lookup.
 		COMPLETION_SUPER_METHOD, // After super.
 		COMPLETION_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
 		COMPLETION_TYPE_NAME, // Name of type (after :).
 		COMPLETION_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
+	};
+
+	struct CompletionCall {
+		Node *call = nullptr;
+		int argument = -1;
 	};
 
 	struct CompletionContext {
@@ -1316,16 +1319,15 @@ public:
 		FunctionNode *current_function = nullptr;
 		SuiteNode *current_suite = nullptr;
 		int current_line = -1;
-		int current_argument = -1;
+		union {
+			int current_argument = -1;
+			int type_chain_index;
+		};
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
 		GDScriptParser *parser = nullptr;
-	};
-
-	struct CompletionCall {
-		Node *call = nullptr;
-		int argument = -1;
+		CompletionCall call;
 	};
 
 private:
@@ -1372,9 +1374,7 @@ private:
 	SuiteNode *current_suite = nullptr;
 
 	CompletionContext completion_context;
-	CompletionCall completion_call;
 	List<CompletionCall> completion_call_stack;
-	bool passed_cursor = false;
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
@@ -1452,6 +1452,26 @@ private:
 
 		return node;
 	}
+
+	// Allocates a node for patching up the parse tree when an error occurred.
+	// Such nodes don't track their extents as they don't relate to actual tokens.
+	template <typename T>
+	T *alloc_recovery_node() {
+		T *node = memnew(T);
+		node->next = list;
+		list = node;
+
+		return node;
+	}
+
+	SuiteNode *alloc_recovery_suite() {
+		SuiteNode *suite = alloc_recovery_node<SuiteNode>();
+		suite->parent_block = current_suite;
+		suite->parent_function = current_function;
+		suite->is_in_loop = current_suite->is_in_loop;
+		return suite;
+	}
+
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
@@ -1498,7 +1518,7 @@ private:
 	EnumNode *parse_enum(bool p_is_static);
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function(bool p_is_static);
-	void parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type);
+	bool parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start);
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
@@ -1508,6 +1528,7 @@ private:
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1586,7 +1607,6 @@ public:
 	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
-	CompletionCall get_completion_call() const { return completion_call; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
 

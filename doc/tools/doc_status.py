@@ -10,14 +10,14 @@ from typing import Dict, List, Set
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
-from misc.utility.color import NO_COLOR, STDOUT_COLOR, Ansi, toggle_color
+from misc.utility.color import Ansi, force_stdout_color, is_stdout_color
 
 ################################################################################
 #                                    Config                                    #
 ################################################################################
 
 flags = {
-    "c": STDOUT_COLOR,
+    "c": is_stdout_color(),
     "b": False,
     "g": False,
     "s": False,
@@ -114,7 +114,7 @@ def validate_tag(elem: ET.Element, tag: str) -> None:
 
 
 def color(color: str, string: str) -> str:
-    if NO_COLOR:
+    if not is_stdout_color():
         return string
     color_format = "".join([str(x) for x in colors[color]])
     return f"{color_format}{string}{Ansi.RESET}"
@@ -332,8 +332,7 @@ if flags["u"]:
     table_column_names.append("Docs URL")
     table_columns.append("url")
 
-if flags["c"]:
-    toggle_color(True)
+force_stdout_color(flags["c"])
 
 ################################################################################
 #                                     Help                                     #

@@ -34,15 +34,12 @@
 #include "detect_prime_egl.h"
 
 #include "core/string/print_string.h"
-#include "core/string/ustring.h"
-
-#include <stdlib.h>
-
-#include <cstring>
+#include "core/variant/variant.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cstdlib>
 
 // To prevent shadowing warnings.
 #undef glGetString

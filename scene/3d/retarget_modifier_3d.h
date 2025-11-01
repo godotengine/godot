@@ -96,7 +96,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 	virtual void _set_active(bool p_active) override;
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;

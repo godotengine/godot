@@ -41,6 +41,10 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_set_swapchain_create_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_hand_joint_locations_and_get_next_pointer, "hand_index", "next_pointer");
 	GDVIRTUAL_BIND(_set_projection_views_and_get_next_pointer, "view_index", "next_pointer");
+	GDVIRTUAL_BIND(_set_frame_wait_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_frame_end_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_view_locate_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_reference_space_create_info_and_get_next_pointer, "reference_space_type", "next_pointer");
 	GDVIRTUAL_BIND(_get_composition_layer_count);
 	GDVIRTUAL_BIND(_get_composition_layer, "index");
 	GDVIRTUAL_BIND(_get_composition_layer_order, "index");
@@ -51,6 +55,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_on_instance_destroyed);
 	GDVIRTUAL_BIND(_on_session_created, "session");
 	GDVIRTUAL_BIND(_on_process);
+	GDVIRTUAL_BIND(_on_sync_actions);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
 	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
@@ -80,11 +85,9 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions() {
 
 	if (GDVIRTUAL_CALL(_get_requested_extensions, request_extension)) {
 		HashMap<String, bool *> result;
-		Array keys = request_extension.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(request_extension.get(key, GDExtensionPtr<bool>(nullptr)));
-			result.insert(key, value);
+		for (const KeyValue<Variant, Variant> &kv : request_extension) {
+			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(kv.value);
+			result.insert(kv.key, value);
 		}
 		return result;
 	}
@@ -152,6 +155,46 @@ void *OpenXRExtensionWrapper::set_projection_views_and_get_next_pointer(int p_vi
 	return nullptr;
 }
 
+void *OpenXRExtensionWrapper::set_reference_space_create_info_and_get_next_pointer(int p_reference_space_type, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_reference_space_create_info_and_get_next_pointer, p_reference_space_type, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapper::set_frame_wait_info_and_get_next_pointer(void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_frame_wait_info_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapper::set_frame_end_info_and_get_next_pointer(void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_frame_end_info_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapper::set_view_locate_info_and_get_next_pointer(void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_view_locate_info_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
 PackedStringArray OpenXRExtensionWrapper::get_suggested_tracker_names() {
 	PackedStringArray ret;
 
@@ -208,6 +251,10 @@ void OpenXRExtensionWrapper::on_session_created(const XrSession p_session) {
 
 void OpenXRExtensionWrapper::on_process() {
 	GDVIRTUAL_CALL(_on_process);
+}
+
+void OpenXRExtensionWrapper::on_sync_actions() {
+	GDVIRTUAL_CALL(_on_sync_actions);
 }
 
 void OpenXRExtensionWrapper::on_pre_render() {
@@ -313,13 +360,16 @@ void *OpenXRExtensionWrapper::set_android_surface_swapchain_create_info_and_get_
 }
 
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapper::_gdextension_get_openxr_api() {
-	static Ref<OpenXRAPIExtension> openxr_api_extension;
-	if (unlikely(openxr_api_extension.is_null())) {
-		openxr_api_extension.instantiate();
-	}
 	return openxr_api_extension;
 }
 
 void OpenXRExtensionWrapper::_gdextension_register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
+}
+
+OpenXRExtensionWrapper::OpenXRExtensionWrapper() {
+	openxr_api_extension.instantiate();
+}
+
+OpenXRExtensionWrapper::~OpenXRExtensionWrapper() {
 }

@@ -63,6 +63,8 @@ void SoftBodyMotionProperties::Initialize(const SoftBodyCreationSettings &inSett
 	mNumIterations = inSettings.mNumIterations;
 	mPressure = inSettings.mPressure;
 	mUpdatePosition = inSettings.mUpdatePosition;
+	mFacesDoubleSided = inSettings.mFacesDoubleSided;
+	SetVertexRadius(inSettings.mVertexRadius);
 
 	// Initialize vertices
 	mVertices.resize(inSettings.mSettings->mVertices.size());
@@ -76,6 +78,20 @@ void SoftBodyMotionProperties::Initialize(const SoftBodyCreationSettings &inSett
 		out_vertex.ResetCollision();
 		out_vertex.mInvMass = in_vertex.mInvMass;
 		mLocalBounds.Encapsulate(out_vertex.mPosition);
+	}
+
+	// Initialize rods
+	if (!inSettings.mSettings->mRodStretchShearConstraints.empty())
+	{
+		mRodStates.resize(inSettings.mSettings->mRodStretchShearConstraints.size());
+		Quat rotation_q = rotation.GetQuaternion();
+		for (Array<RodState>::size_type r = 0, s = mRodStates.size(); r < s; ++r)
+		{
+			const SoftBodySharedSettings::RodStretchShear &in_rod = inSettings.mSettings->mRodStretchShearConstraints[r];
+			RodState &out_rod = mRodStates[r];
+			out_rod.mRotation = rotation_q * in_rod.mBishop;
+			out_rod.mAngularVelocity = Vec3::sZero();
+		}
 	}
 
 	// Allocate space for skinned vertices
@@ -106,7 +122,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 	JPH_PROFILE_FUNCTION();
 
 	// Reset flag prior to collision detection
-	mNeedContactCallback = false;
+	mNeedContactCallback.store(false, memory_order_relaxed);
 
 	struct Collector : public CollideShapeBodyCollector
 	{
@@ -170,7 +186,7 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 						Array<LeafShape>	mHits;
 					};
 					LeafShapeCollector collector;
-					body.GetShape()->CollectTransformedShapes(mLocalBounds, com.GetTranslation(), com.GetQuaternion(), Vec3::sReplicate(1.0f), SubShapeIDCreator(), collector, mShapeFilter);
+					body.GetShape()->CollectTransformedShapes(mLocalBounds, com.GetTranslation(), com.GetQuaternion(), Vec3::sOne(), SubShapeIDCreator(), collector, mShapeFilter.GetFilter());
 					if (collector.mHits.empty())
 						return;
 
@@ -222,20 +238,20 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 	// Calculate local bounding box
 	AABox local_bounds = mLocalBounds;
 	local_bounds.Encapsulate(mLocalPredictedBounds);
-	local_bounds.ExpandBy(Vec3::sReplicate(mSettings->mVertexRadius));
+	local_bounds.ExpandBy(Vec3::sReplicate(mVertexRadius));
 
 	// Calculate world space bounding box
 	AABox world_bounds = local_bounds.Transformed(inContext.mCenterOfMassTransform);
 
 	// Create shape filter
-	SimShapeFilterWrapperUnion shape_filter_union(inContext.mSimShapeFilter, inContext.mBody);
-	SimShapeFilterWrapper &shape_filter = shape_filter_union.GetSimShapeFilterWrapper();
+	SimShapeFilterWrapper shape_filter(inContext.mSimShapeFilter, inContext.mBody);
 
 	Collector collector(inContext, inSystem, inBodyLockInterface, local_bounds, shape_filter, mCollidingShapes, mCollidingSensors);
 	ObjectLayer layer = inContext.mBody->GetObjectLayer();
 	DefaultBroadPhaseLayerFilter broadphase_layer_filter = inSystem.GetDefaultBroadPhaseLayerFilter(layer);
 	DefaultObjectLayerFilter object_layer_filter = inSystem.GetDefaultLayerFilter(layer);
 	inSystem.GetBroadPhaseQuery().CollideAABox(world_bounds, collector, broadphase_layer_filter, object_layer_filter);
+	mNumSensors = uint(mCollidingSensors.size()); // Workaround for TSAN false positive: store mCollidingSensors.size() in a separate variable.
 }
 
 void SoftBodyMotionProperties::DetermineCollisionPlanes(uint inVertexStart, uint inNumVertices)
@@ -269,7 +285,7 @@ void SoftBodyMotionProperties::DetermineSensorCollisions(CollidingSensor &ioSens
 
 	// We need a contact callback if one of the sensors collided
 	if (ioSensor.mHasContact)
-		mNeedContactCallback = true;
+		mNeedContactCallback.store(true, memory_order_relaxed);
 }
 
 void SoftBodyMotionProperties::ApplyPressure(const SoftBodyUpdateContext &inContext)
@@ -315,8 +331,9 @@ void SoftBodyMotionProperties::IntegratePositions(const SoftBodyUpdateContext &i
 
 	// Integrate
 	Vec3 sub_step_gravity = inContext.mGravity * dt;
-	Vec3 sub_step_impulse = GetAccumulatedForce() * dt;
+	Vec3 sub_step_impulse = GetAccumulatedForce() * dt / max(float(mVertices.size()), 1.0f);
 	for (Vertex &v : mVertices)
+	{
 		if (v.mInvMass > 0.0f)
 		{
 			// Gravity
@@ -324,17 +341,27 @@ void SoftBodyMotionProperties::IntegratePositions(const SoftBodyUpdateContext &i
 
 			// Damping
 			v.mVelocity *= linear_damping;
+		}
 
-			// Integrate
-			v.mPreviousPosition = v.mPosition;
-			v.mPosition += v.mVelocity * dt;
-		}
-		else
-		{
-			// Integrate
-			v.mPreviousPosition = v.mPosition;
-			v.mPosition += v.mVelocity * dt;
-		}
+		// Integrate
+		Vec3 position = v.mPosition;
+		v.mPreviousPosition = position;
+		v.mPosition = position + v.mVelocity * dt;
+	}
+
+	// Integrate rod orientations
+	float half_dt = 0.5f * dt;
+	for (RodState &r : mRodStates)
+	{
+		// Damping
+		r.mAngularVelocity *= linear_damping;
+
+		// Integrate
+		Quat rotation = r.mRotation;
+		Quat delta_rotation = half_dt * Quat::sMultiplyImaginary(r.mAngularVelocity, rotation);
+		r.mPreviousRotationInternal = rotation; // Overwrites mAngularVelocity
+		r.mRotation = (rotation + delta_rotation).Normalized();
+	}
 }
 
 void SoftBodyMotionProperties::ApplyDihedralBendConstraints(const SoftBodyUpdateContext &inContext, uint inStartIndex, uint inEndIndex)
@@ -573,6 +600,82 @@ void SoftBodyMotionProperties::ApplyEdgeConstraints(const SoftBodyUpdateContext 
 	}
 }
 
+void SoftBodyMotionProperties::ApplyRodStretchShearConstraints(const SoftBodyUpdateContext &inContext, uint inStartIndex, uint inEndIndex)
+{
+	JPH_PROFILE_FUNCTION();
+
+	float inv_dt_sq = 1.0f / Square(inContext.mSubStepDeltaTime);
+
+	RodState *rod_state = mRodStates.data() + inStartIndex;
+	for (const RodStretchShear *r = mSettings->mRodStretchShearConstraints.data() + inStartIndex, *r_end = mSettings->mRodStretchShearConstraints.data() + inEndIndex; r < r_end; ++r, ++rod_state)
+	{
+		// Get positions
+		Vertex &v0 = mVertices[r->mVertex[0]];
+		Vertex &v1 = mVertices[r->mVertex[1]];
+
+		// Apply stretch and shear constraint
+		// Equation 37 from "Position and Orientation Based Cosserat Rods" - Kugelstadt and Schoemer - SIGGRAPH 2016
+		float denom = v0.mInvMass + v1.mInvMass + 4.0f * r->mInvMass * Square(r->mLength) + r->mCompliance * inv_dt_sq;
+		if (denom < 1.0e-12f)
+			continue;
+		Vec3 x0 = v0.mPosition;
+		Vec3 x1 = v1.mPosition;
+		Quat rotation = rod_state->mRotation;
+		Vec3 d3 = rotation.RotateAxisZ();
+		Vec3 delta = (x1 - x0 - d3 * r->mLength) / denom;
+		v0.mPosition = x0 + v0.mInvMass * delta;
+		v1.mPosition = x1 - v1.mInvMass * delta;
+		// q * e3_bar = q * (0, 0, -1, 0) = [-qy, qx, -qw, qz]
+		Quat q_e3_bar(rotation.GetXYZW().Swizzle<SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W, SWIZZLE_Z>().FlipSign<-1, 1, -1, 1>());
+		rotation += (2.0f * r->mInvMass * r->mLength) * Quat::sMultiplyImaginary(delta, q_e3_bar);
+
+		// Renormalize
+		rod_state->mRotation = rotation.Normalized();
+	}
+}
+
+void SoftBodyMotionProperties::ApplyRodBendTwistConstraints(const SoftBodyUpdateContext &inContext, uint inStartIndex, uint inEndIndex)
+{
+	JPH_PROFILE_FUNCTION();
+
+	float inv_dt_sq = 1.0f / Square(inContext.mSubStepDeltaTime);
+
+	const Array<RodStretchShear> &rods = mSettings->mRodStretchShearConstraints;
+
+	for (const RodBendTwist *r = mSettings->mRodBendTwistConstraints.data() + inStartIndex, *r_end = mSettings->mRodBendTwistConstraints.data() + inEndIndex; r < r_end; ++r)
+	{
+		uint32 rod1_index = r->mRod[0];
+		uint32 rod2_index = r->mRod[1];
+		const RodStretchShear &rod1 = rods[rod1_index];
+		const RodStretchShear &rod2 = rods[rod2_index];
+		RodState &rod1_state = mRodStates[rod1_index];
+		RodState &rod2_state = mRodStates[rod2_index];
+
+		// Apply bend and twist constraint
+		// Equation 40 from "Position and Orientation Based Cosserat Rods" - Kugelstadt and Schoemer - SIGGRAPH 2016
+		float denom = rod1.mInvMass + rod2.mInvMass + r->mCompliance * inv_dt_sq;
+		if (denom < 1.0e-12f)
+			continue;
+		Quat rotation1 = rod1_state.mRotation;
+		Quat rotation2 = rod2_state.mRotation;
+		Quat omega = rotation1.Conjugated() * rotation2;
+		Quat omega0 = r->mOmega0;
+		Vec4 omega_min_omega0 = (omega - omega0).GetXYZW();
+		Vec4 omega_plus_omega0 = (omega + omega0).GetXYZW();
+		// Take the shortest of the two rotations
+		Quat delta_omega(Vec4::sSelect(omega_min_omega0, omega_plus_omega0, Vec4::sLess(omega_plus_omega0.DotV(omega_plus_omega0), omega_min_omega0.DotV(omega_min_omega0))));
+		delta_omega /= denom;
+		delta_omega.SetW(0.0f); // Scalar part needs to be zero because the real part of the Darboux vector doesn't vanish, see text between eq. 39 and 40.
+		Quat delta_rod2 = rod2.mInvMass * rotation1 * delta_omega;
+		rotation1 += rod1.mInvMass * rotation2 * delta_omega;
+		rotation2 -= delta_rod2;
+
+		// Renormalize
+		rod1_state.mRotation = rotation1.Normalized();
+		rod2_state.mRotation = rotation2.Normalized();
+	}
+}
+
 void SoftBodyMotionProperties::ApplyLRAConstraints(uint inStartIndex, uint inEndIndex)
 {
 	JPH_PROFILE_FUNCTION();
@@ -600,7 +703,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 
 	float dt = inContext.mSubStepDeltaTime;
 	float restitution_threshold = -2.0f * inContext.mGravity.Length() * dt;
-	float vertex_radius = mSettings->mVertexRadius;
+	float vertex_radius = mVertexRadius;
 	for (Vertex &v : mVertices)
 		if (v.mInvMass > 0.0f)
 		{
@@ -621,7 +724,7 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 					v.mHasContact = true;
 
 					// We need a contact callback if one of the vertices collided
-					mNeedContactCallback = true;
+					mNeedContactCallback.store(true, memory_order_relaxed);
 
 					// Note that we already calculated the velocity, so this does not affect the velocity (next iteration starts by setting previous position to current position)
 					CollidingShape &cs = mCollidingShapes[v.mCollidingShapeIndex];
@@ -713,6 +816,11 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 				}
 			}
 		}
+
+	// Calculate the new angular velocity for all rods
+	float two_div_dt = 2.0f / dt;
+	for (RodState &r : mRodStates)
+		r.mAngularVelocity = two_div_dt * (r.mRotation * r.mPreviousRotationInternal.Conjugated()).GetXYZ(); // Overwrites mPreviousRotationInternal
 }
 
 void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioContext, const PhysicsSettings &inPhysicsSettings)
@@ -720,7 +828,7 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 	JPH_PROFILE_FUNCTION();
 
 	// Contact callback
-	if (mNeedContactCallback && ioContext.mContactListener != nullptr)
+	if (mNeedContactCallback.load(memory_order_relaxed) && ioContext.mContactListener != nullptr)
 	{
 		// Remove non-colliding sensors from the list
 		for (int i = int(mCollidingSensors.size()) - 1; i >= 0; --i)
@@ -765,7 +873,7 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 
 	// Calculate linear/angular velocity of the body by averaging all vertices and bringing the value to world space
 	float num_vertices_divider = float(max(int(mVertices.size()), 1));
-	SetLinearVelocity(ioContext.mCenterOfMassTransform.Multiply3x3(linear_velocity / num_vertices_divider));
+	SetLinearVelocityClamped(ioContext.mCenterOfMassTransform.Multiply3x3(linear_velocity / num_vertices_divider));
 	SetAngularVelocity(ioContext.mCenterOfMassTransform.Multiply3x3(angular_velocity / num_vertices_divider));
 
 	if (mUpdatePosition)
@@ -877,7 +985,7 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineCol
 			// Process collision planes
 			uint num_vertices_to_process = min(SoftBodyUpdateContext::cVertexCollisionBatch, num_vertices - next_vertex);
 			DetermineCollisionPlanes(next_vertex, num_vertices_to_process);
-			uint vertices_processed = ioContext.mNumCollisionVerticesProcessed.fetch_add(SoftBodyUpdateContext::cVertexCollisionBatch, memory_order_release) + num_vertices_to_process;
+			uint vertices_processed = ioContext.mNumCollisionVerticesProcessed.fetch_add(SoftBodyUpdateContext::cVertexCollisionBatch, memory_order_acq_rel) + num_vertices_to_process;
 			if (vertices_processed >= num_vertices)
 			{
 				// Determine next state
@@ -896,19 +1004,18 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineCol
 SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineSensorCollisions(SoftBodyUpdateContext &ioContext)
 {
 	// Do a relaxed read to see if there are more sensors to process
-	uint num_sensors = (uint)mCollidingSensors.size();
-	if (ioContext.mNextSensorIndex.load(memory_order_relaxed) < num_sensors)
+	if (ioContext.mNextSensorIndex.load(memory_order_relaxed) < mNumSensors)
 	{
 		// Fetch next sensor to process
 		uint sensor_index = ioContext.mNextSensorIndex.fetch_add(1, memory_order_acquire);
-		if (sensor_index < num_sensors)
+		if (sensor_index < mNumSensors)
 		{
 			// Process this sensor
 			DetermineSensorCollisions(mCollidingSensors[sensor_index]);
 
 			// Determine next state
-			uint sensors_processed = ioContext.mNumSensorsProcessed.fetch_add(1, memory_order_release) + 1;
-			if (sensors_processed >= num_sensors)
+			uint sensors_processed = ioContext.mNumSensorsProcessed.fetch_add(1, memory_order_acq_rel) + 1;
+			if (sensors_processed >= mNumSensors)
 				StartFirstIteration(ioContext);
 			return EStatus::DidWork;
 		}
@@ -920,7 +1027,7 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineSen
 void SoftBodyMotionProperties::ProcessGroup(const SoftBodyUpdateContext &ioContext, uint inGroupIndex)
 {
 	// Determine start and end
-	SoftBodySharedSettings::UpdateGroup start { 0, 0, 0, 0, 0 };
+	SoftBodySharedSettings::UpdateGroup start { 0, 0, 0, 0, 0, 0, 0 };
 	const SoftBodySharedSettings::UpdateGroup &prev = inGroupIndex > 0? mSettings->mUpdateGroups[inGroupIndex - 1] : start;
 	const SoftBodySharedSettings::UpdateGroup &current = mSettings->mUpdateGroups[inGroupIndex];
 
@@ -935,6 +1042,10 @@ void SoftBodyMotionProperties::ProcessGroup(const SoftBodyUpdateContext &ioConte
 
 	// Process edges
 	ApplyEdgeConstraints(ioContext, prev.mEdgeEndIndex, current.mEdgeEndIndex);
+
+	// Process rods
+	ApplyRodStretchShearConstraints(ioContext, prev.mRodStretchShearEndIndex, current.mRodStretchShearEndIndex);
+	ApplyRodBendTwistConstraints(ioContext, prev.mRodBendTwistEndIndex, current.mRodBendTwistEndIndex);
 
 	// Process LRA constraints
 	ApplyLRAConstraints(prev.mLRAEndIndex, current.mLRAEndIndex);
@@ -961,7 +1072,7 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelApplyConstra
 				ProcessGroup(ioContext, next_group);
 
 				// Increment total number of groups processed
-				num_groups_processed = ioContext.mNumConstraintGroupsProcessed.fetch_add(1, memory_order_relaxed) + 1;
+				num_groups_processed = ioContext.mNumConstraintGroupsProcessed.fetch_add(1, memory_order_acq_rel) + 1;
 			}
 
 			if (num_groups_processed >= num_groups)
@@ -981,7 +1092,7 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelApplyConstra
 					StartNextIteration(ioContext);
 
 					// Reset group logic
-					ioContext.mNumConstraintGroupsProcessed.store(0, memory_order_relaxed);
+					ioContext.mNumConstraintGroupsProcessed.store(0, memory_order_release);
 					ioContext.mNextConstraintGroup.store(0, memory_order_release);
 				}
 				else
@@ -1002,7 +1113,7 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelApplyConstra
 
 SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelUpdate(SoftBodyUpdateContext &ioContext, const PhysicsSettings &inPhysicsSettings)
 {
-	switch (ioContext.mState.load(memory_order_relaxed))
+	switch (ioContext.mState.load(memory_order_acquire))
 	{
 	case SoftBodyUpdateContext::EState::DetermineCollisionPlanes:
 		return ParallelDetermineCollisionPlanes(ioContext);
@@ -1192,6 +1303,62 @@ void SoftBodyMotionProperties::DrawEdgeConstraints(DebugRenderer *inRenderer, RM
 		Color::sWhite);
 }
 
+void SoftBodyMotionProperties::DrawRods(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, ESoftBodyConstraintColor inConstraintColor) const
+{
+	DrawConstraints(inConstraintColor,
+		[](const SoftBodySharedSettings::UpdateGroup &inGroup) {
+			return inGroup.mRodStretchShearEndIndex;
+		},
+		[this, inRenderer, &inCenterOfMassTransform](uint inIndex, ColorArg inColor) {
+			const RodStretchShear &r = mSettings->mRodStretchShearConstraints[inIndex];
+			inRenderer->DrawLine(inCenterOfMassTransform * mVertices[r.mVertex[0]].mPosition, inCenterOfMassTransform * mVertices[r.mVertex[1]].mPosition, inColor);
+		},
+		Color::sWhite);
+}
+
+void SoftBodyMotionProperties::DrawRodStates(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, ESoftBodyConstraintColor inConstraintColor) const
+{
+	DrawConstraints(inConstraintColor,
+		[](const SoftBodySharedSettings::UpdateGroup &inGroup) {
+			return inGroup.mRodStretchShearEndIndex;
+		},
+		[this, inRenderer, &inCenterOfMassTransform](uint inIndex, ColorArg inColor) {
+			const RodState &state = mRodStates[inIndex];
+			const RodStretchShear &rod = mSettings->mRodStretchShearConstraints[inIndex];
+
+			RVec3 x0 = inCenterOfMassTransform * mVertices[rod.mVertex[0]].mPosition;
+			RVec3 x1 = inCenterOfMassTransform * mVertices[rod.mVertex[1]].mPosition;
+
+			RMat44 rod_center = inCenterOfMassTransform;
+			rod_center.SetTranslation(0.5_r * (x0 + x1));
+			inRenderer->DrawArrow(rod_center.GetTranslation(), rod_center.GetTranslation() + state.mAngularVelocity, inColor, 0.01f * rod.mLength);
+
+			RMat44 rod_frame = rod_center * RMat44::sRotation(state.mRotation);
+			inRenderer->DrawCoordinateSystem(rod_frame, 0.3f * rod.mLength);
+		},
+		Color::sOrange);
+}
+
+void SoftBodyMotionProperties::DrawRodBendTwistConstraints(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, ESoftBodyConstraintColor inConstraintColor) const
+{
+	DrawConstraints(inConstraintColor,
+		[](const SoftBodySharedSettings::UpdateGroup &inGroup) {
+			return inGroup.mRodBendTwistEndIndex;
+		},
+		[this, inRenderer, &inCenterOfMassTransform](uint inIndex, ColorArg inColor) {
+			uint r1 = mSettings->mRodBendTwistConstraints[inIndex].mRod[0];
+			uint r2 = mSettings->mRodBendTwistConstraints[inIndex].mRod[1];
+			const RodStretchShear &rod1 = mSettings->mRodStretchShearConstraints[r1];
+			const RodStretchShear &rod2 = mSettings->mRodStretchShearConstraints[r2];
+
+			RVec3 x0 = inCenterOfMassTransform * (0.4f * mVertices[rod1.mVertex[0]].mPosition + 0.6f * mVertices[rod1.mVertex[1]].mPosition);
+			RVec3 x1 = inCenterOfMassTransform * (0.6f * mVertices[rod2.mVertex[0]].mPosition + 0.4f * mVertices[rod2.mVertex[1]].mPosition);
+
+			inRenderer->DrawLine(x0, x1, inColor);
+		},
+		Color::sGreen);
+}
+
 void SoftBodyMotionProperties::DrawBendConstraints(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransform, ESoftBodyConstraintColor inConstraintColor) const
 {
 	DrawConstraints(inConstraintColor,
@@ -1279,9 +1446,14 @@ void SoftBodyMotionProperties::SaveState(StateRecorder &inStream) const
 
 	for (const Vertex &v : mVertices)
 	{
-		inStream.Write(v.mPreviousPosition);
 		inStream.Write(v.mPosition);
 		inStream.Write(v.mVelocity);
+	}
+
+	for (const RodState &r : mRodStates)
+	{
+		inStream.Write(r.mRotation);
+		inStream.Write(r.mAngularVelocity);
 	}
 
 	for (const SkinState &s : mSkinState)
@@ -1303,9 +1475,14 @@ void SoftBodyMotionProperties::RestoreState(StateRecorder &inStream)
 
 	for (Vertex &v : mVertices)
 	{
-		inStream.Read(v.mPreviousPosition);
 		inStream.Read(v.mPosition);
 		inStream.Read(v.mVelocity);
+	}
+
+	for (RodState &r : mRodStates)
+	{
+		inStream.Read(r.mRotation);
+		inStream.Read(r.mAngularVelocity);
 	}
 
 	for (SkinState &s : mSkinState)

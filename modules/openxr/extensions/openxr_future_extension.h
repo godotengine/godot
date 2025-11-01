@@ -31,7 +31,7 @@
 #pragma once
 
 /*
-	The OpenXR future extension forms the basis of OpenXRs ability to
+	The OpenXR future extension forms the basis of OpenXR's ability to
 	execute logic asynchronously.
 
 	Asynchronous functions will return a future object which can be
@@ -74,6 +74,9 @@ public:
 	ResultStatus get_status() const;
 	XrFutureEXT get_future() const;
 
+	void set_result_value(const Variant &p_result_value);
+	Variant get_result_value() const;
+
 	void cancel_future();
 
 	OpenXRFutureResult(XrFutureEXT p_future, const Callable &p_on_success);
@@ -81,6 +84,7 @@ public:
 private:
 	ResultStatus status = RESULT_RUNNING;
 	XrFutureEXT future;
+	Variant result_value;
 	Callable on_success_callback;
 
 	uint64_t _get_future() const;

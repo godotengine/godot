@@ -30,9 +30,9 @@
 
 #include "editor_performance_profiler.h"
 
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
@@ -87,6 +87,9 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 		}
 		case Performance::MONITOR_TYPE_TIME: {
 			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + TTR("ms");
+		}
+		case Performance::MONITOR_TYPE_PERCENTAGE: {
+			return TS->format_number(rtos(p_value * 100).pad_decimals(2)) + "%";
 		}
 		default: {
 			return TS->format_number(rtos(p_value));
@@ -317,7 +320,7 @@ void EditorPerformanceProfiler::reset() {
 	monitor_draw->queue_redraw();
 }
 
-void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
+void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names, const PackedInt32Array &p_types) {
 	HashMap<StringName, int> names;
 	for (int i = 0; i < p_names.size(); i++) {
 		names.insert("custom:" + p_names[i], Performance::MONITOR_MAX + i);
@@ -340,6 +343,7 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 		}
 	}
 
+	int index = 0;
 	for (const KeyValue<StringName, int> &E : names) {
 		String name = String(E.key).replace_first("custom:", "");
 		String base = "Custom";
@@ -347,7 +351,9 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		monitors.insert(E.key, Monitor(name, base, E.value, Performance::MONITOR_TYPE_QUANTITY, nullptr));
+		Performance::MonitorType type = Performance::MonitorType(p_types[index]);
+		monitors.insert(E.key, Monitor(name, base, E.value, type, nullptr));
+		index++;
 	}
 
 	_build_monitor_tree();
@@ -417,6 +423,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);
+	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

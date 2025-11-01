@@ -76,7 +76,7 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				get_parser()->clear();
 				status = PARSED;
 				String remapped_path = ResourceLoader::path_remap(path);
-				if (remapped_path.get_extension().to_lower() == "gdc") {
+				if (remapped_path.has_extension("gdc")) {
 					Vector<uint8_t> tokens = GDScriptCache::get_binary_tokens(remapped_path);
 					source_hash = hash_djb2_buffer(tokens.ptr(), tokens.size());
 					result = get_parser()->parse_binary(tokens, path);
@@ -189,7 +189,7 @@ void GDScriptCache::remove_script(const String &p_path) {
 
 	if (HashMap<String, Vector<ObjectID>>::Iterator E = singleton->abandoned_parser_map.find(p_path)) {
 		for (ObjectID parser_ref_id : E->value) {
-			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			Ref<GDScriptParserRef> parser_ref = { ObjectDB::get_instance(parser_ref_id) };
 			if (parser_ref.is_valid()) {
 				parser_ref->clear();
 			}
@@ -275,7 +275,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	source_file.write[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)source_file.ptr(), len) != OK) {
+	if (source.append_utf8((const char *)source_file.ptr(), len) != OK) {
 		ERR_FAIL_V_MSG("", "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 	return source;
@@ -313,7 +313,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
-	if (remapped_path.get_extension().to_lower() == "gdc") {
+	if (remapped_path.has_extension("gdc")) {
 		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 		if (buffer.is_empty()) {
 			r_error = ERR_FILE_CANT_READ;
@@ -364,7 +364,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	if (p_update_from_disk) {
-		if (remapped_path.get_extension().to_lower() == "gdc") {
+		if (remapped_path.has_extension("gdc")) {
 			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
@@ -460,7 +460,7 @@ void GDScriptCache::clear() {
 
 	for (const KeyValue<String, Vector<ObjectID>> &KV : singleton->abandoned_parser_map) {
 		for (ObjectID parser_ref_id : KV.value) {
-			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			Ref<GDScriptParserRef> parser_ref = { ObjectDB::get_instance(parser_ref_id) };
 			if (parser_ref.is_valid()) {
 				parser_ref->clear();
 			}

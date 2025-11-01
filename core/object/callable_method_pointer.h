@@ -40,9 +40,9 @@ class CallableCustomMethodPointerBase : public CallableCustom {
 	uint32_t *comp_ptr = nullptr;
 	uint32_t comp_size;
 	uint32_t h;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	const char *text = "";
-#endif
+#endif // DEBUG_ENABLED
 	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
 
@@ -51,14 +51,14 @@ protected:
 
 public:
 	virtual StringName get_method() const {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		return StringName(text);
 #else
 		return StringName();
-#endif
+#endif // DEBUG_ENABLED
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	void set_text(const char *p_text) {
 		text = p_text;
 	}
@@ -69,7 +69,7 @@ public:
 	virtual String get_as_text() const {
 		return String();
 	}
-#endif
+#endif // DEBUG_ENABLED
 	virtual CompareEqualFunc get_compare_equal_func() const;
 	virtual CompareLessFunc get_compare_less_func() const;
 
@@ -81,8 +81,7 @@ class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...);
+		R (T::*method)(P...);
 	} data;
 
 public:
@@ -118,29 +117,29 @@ public:
 
 template <typename T, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
-#endif
+#endif // DEBUG_ENABLED
 		void (T::*p_method)(P...)) {
 	typedef CallableCustomMethodPointer<T, void, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
 template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
-#endif
+#endif // DEBUG_ENABLED
 		R (T::*p_method)(P...)) {
 	typedef CallableCustomMethodPointer<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
@@ -151,8 +150,7 @@ class CallableCustomMethodPointerC : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...) const;
+		R (T::*method)(P...) const;
 	} data;
 
 public:
@@ -188,45 +186,44 @@ public:
 
 template <typename T, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
-#endif
+#endif // DEBUG_ENABLED
 		void (T::*p_method)(P...) const) {
 	typedef CallableCustomMethodPointerC<T, void, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
 template <typename T, typename R, typename... P>
 Callable create_custom_callable_function_pointer(T *p_instance,
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
 #endif
 		R (T::*p_method)(P...) const) {
 	typedef CallableCustomMethodPointerC<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 #define callable_mp(I, M) create_custom_callable_function_pointer(I, #M, M)
 #else
 #define callable_mp(I, M) create_custom_callable_function_pointer(I, M)
-#endif
+#endif // DEBUG_ENABLED
 
 // STATIC VERSIONS
 
 template <typename R, typename... P>
 class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
-		R(*method)
-		(P...);
+		R (*method)(P...);
 	} data;
 
 public:
@@ -260,33 +257,33 @@ public:
 
 template <typename... P>
 Callable create_custom_callable_static_function_pointer(
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
-#endif
+#endif // DEBUG_ENABLED
 		void (*p_method)(P...)) {
 	typedef CallableCustomStaticMethodPointer<void, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
 template <typename R, typename... P>
 Callable create_custom_callable_static_function_pointer(
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		const char *p_func_text,
-#endif
+#endif // DEBUG_ENABLED
 		R (*p_method)(P...)) {
 	typedef CallableCustomStaticMethodPointer<R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_method));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ccmp->set_text(p_func_text + 1); // Try to get rid of the ampersand.
-#endif
+#endif // DEBUG_ENABLED
 	return Callable(ccmp);
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 #define callable_mp_static(M) create_custom_callable_static_function_pointer(#M, M)
 #else
 #define callable_mp_static(M) create_custom_callable_static_function_pointer(M)

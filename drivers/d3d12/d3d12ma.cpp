@@ -28,37 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rendering_context_driver_d3d12.h"
+// Wrapper needed to set the required rpcndr version for MinGW compatibility.
+// Since we're compiling thirdparty code in a Godot SCons environment with
+// warnings enabled, we also need to silence them manually.
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wduplicated-branches"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wnonnull-compare"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wtautological-undefined-compare"
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wunused-but-set-variable"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wunused-private-field"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#endif
+#include "rendering_device_driver_d3d12.h" // For __REQUIRED_RPCNDR_H_VERSION__.
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4189 4505)
-#endif
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wduplicated-branches")
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wnonnull-compare")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wsign-compare")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_GCC_WARNING_IGNORE("-Wunused-function")
+GODOT_GCC_WARNING_IGNORE("-Wunused-variable")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_IGNORE("-Wtautological-undefined-compare")
+GODOT_CLANG_WARNING_IGNORE("-Wunused-but-set-variable")
+GODOT_CLANG_WARNING_IGNORE("-Wunused-function")
+GODOT_CLANG_WARNING_IGNORE("-Wunused-private-field")
+GODOT_CLANG_WARNING_IGNORE("-Wunused-variable")
+GODOT_MSVC_WARNING_PUSH
+GODOT_MSVC_WARNING_IGNORE(4189) // "Local variable is initialized but not referenced".
+GODOT_MSVC_WARNING_IGNORE(4505) // "Unreferenced local function has been removed".
 
-#include "thirdparty/d3d12ma/D3D12MemAlloc.cpp"
+#include <D3D12MemAlloc.cpp>
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+GODOT_MSVC_WARNING_POP

@@ -20,9 +20,9 @@ runs:
         restore-keys: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}
 
     - name: Log default cache files
-      if: github.ref_name != github.event.repository.default_branch
+      if: steps.cache-ping.outputs.cache-matched-key && github.ref_name != github.event.repository.default_branch
       shell: sh
-      run: test -d "${{ inputs.scons-cache }}" && find "${{ inputs.scons-cache }}" >> redundant.txt
+      run: find "${{ inputs.scons-cache }}" >> redundant.txt
 
     # This is done after pulling the default cache so that PRs can integrate any potential changes
     # from the default branch without conflicting with whatever local changes were already made.

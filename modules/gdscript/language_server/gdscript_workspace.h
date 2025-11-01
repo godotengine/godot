@@ -35,7 +35,7 @@
 #include "godot_lsp.h"
 
 #include "core/variant/variant.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 
 class GDScriptWorkspace : public RefCounted {
 	GDCLASS(GDScriptWorkspace, RefCounted);
@@ -49,6 +49,9 @@ protected:
 	void remove_cache_parser(const String &p_path);
 	bool initialized = false;
 	HashMap<StringName, LSP::DocumentSymbol> native_symbols;
+
+	// Absolute paths that are known to point to res://
+	HashSet<String> absolute_res_paths;
 
 	const LSP::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const LSP::DocumentSymbol *get_script_symbol(const String &p_path) const;
@@ -78,7 +81,7 @@ public:
 	Error parse_script(const String &p_path, const String &p_content);
 	Error parse_local_script(const String &p_path);
 
-	String get_file_path(const String &p_uri) const;
+	String get_file_path(const String &p_uri);
 	String get_file_uri(const String &p_path) const;
 
 	void publish_diagnostics(const String &p_path);
@@ -90,7 +93,7 @@ public:
 	void resolve_document_links(const String &p_uri, List<LSP::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 	Error resolve_signature(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::SignatureHelp &r_signature);
-	void did_delete_files(const Dictionary &p_params);
+	void didDeleteFiles(const Dictionary &p_params);
 	Dictionary rename(const LSP::TextDocumentPositionParams &p_doc_pos, const String &new_name);
 	bool can_rename(const LSP::TextDocumentPositionParams &p_doc_pos, LSP::DocumentSymbol &r_symbol, LSP::Range &r_range);
 	Vector<LSP::Location> find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path);

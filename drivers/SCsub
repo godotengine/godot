@@ -14,8 +14,6 @@ SConscript("windows/SCsub")
 
 # Sounds drivers
 SConscript("alsa/SCsub")
-if env["platform"] == "ios" or env["platform"] == "macos":
-    SConscript("coreaudio/SCsub")
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
@@ -26,12 +24,21 @@ if env["xaudio2"]:
         print_error("Target platform '{}' does not support the XAudio2 audio driver".format(env["platform"]))
         Exit(255)
     SConscript("xaudio2/SCsub")
+
 # Shared Apple platform drivers
-if env["platform"] in ["macos", "ios"]:
+if env["platform"] in ["macos", "ios", "visionos"]:
     SConscript("apple/SCsub")
+    SConscript("coreaudio/SCsub")
+if env["platform"] in ["ios", "visionos"]:
+    SConscript("apple_embedded/SCsub")
+
+# Accessibility
+if env["accesskit"] and env["platform"] in ["macos", "windows", "linuxbsd"]:
+    SConscript("accesskit/SCsub")
+
 # Midi drivers
 SConscript("alsamidi/SCsub")
-if env["platform"] in ["macos", "ios"]:
+if env["platform"] in ["macos"]:
     SConscript("coremidi/SCsub")
 SConscript("winmidi/SCsub")
 
@@ -52,6 +59,11 @@ if env["metal"]:
         print_error("Target platform '{}' does not support the Metal rendering driver".format(env["platform"]))
         Exit(255)
     SConscript("metal/SCsub")
+
+# Input drivers
+if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows"]:
+    # TODO: Evaluate support for Android, iOS, and Web.
+    SConscript("sdl/SCsub")
 
 # Core dependencies
 SConscript("png/SCsub")

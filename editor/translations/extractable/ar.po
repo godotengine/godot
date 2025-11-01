@@ -31,21 +31,11 @@ msgstr "اختر لونًا من الشاشة."
 msgid "Pick a color from the application window."
 msgstr "اختر لونًا من نافذة التطبيق."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"اللون: #%s\n"
-"الزر الأيسر للفأرة: تطبيق اللون\n"
-"الزر الأيمن للفأرة: إزالة اللون المعد مسبقا"
+msgid "Save"
+msgstr "حفظ"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"اللون: #%s\n"
-"الزر الأيسر للفأرة (LMB): تطبيق اللون"
+msgid "Clear"
+msgstr "مسح"
 
 msgid "Select a picker shape."
 msgstr "اختر شكل الملقاط."
@@ -74,9 +64,6 @@ msgstr "افتح"
 
 msgid "Select Current Folder"
 msgstr "تحديد المجلد الحالي"
-
-msgid "Save"
-msgstr "حفظ"
 
 msgid "Select This Folder"
 msgstr "حدد هذا المجلد"
@@ -117,11 +104,11 @@ msgstr "المسار:"
 msgid "Refresh files."
 msgstr "حَدِّث الملفات."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "إظهار/إخفاء الملفات المخفية."
-
 msgid "Directories & Files:"
 msgstr "المجلدات والملفات:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "إظهار/إخفاء الملفات المخفية."
 
 msgid "File:"
 msgstr "الملف:"
@@ -203,9 +190,6 @@ msgstr "لصق"
 
 msgid "Select All"
 msgstr "تحديد الكل"
-
-msgid "Clear"
-msgstr "مسح"
 
 msgid "Undo"
 msgstr "تراجع"

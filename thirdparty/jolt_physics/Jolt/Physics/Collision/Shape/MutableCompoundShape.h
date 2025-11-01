@@ -27,6 +27,8 @@ public:
 /// Note: If you're using MutableCompoundShape and are querying data while modifying the shape you'll have a race condition.
 /// In this case it is best to create a new MutableCompoundShape using the Clone function. You replace the shape on a body using BodyInterface::SetShape.
 /// If a query is still working on the old shape, it will have taken a reference and keep the old shape alive until the query finishes.
+///
+/// When you modify a MutableCompoundShape, beware that the SubShapeIDs of all other shapes can change. So be careful when storing SubShapeIDs.
 class JPH_EXPORT MutableCompoundShape final : public CompoundShape
 {
 public:
@@ -66,8 +68,13 @@ public:
 
 	/// Adding a new shape.
 	/// Beware this can create a race condition if you're running collision queries in parallel. See class documentation for more information.
+	/// @param inPosition The position of the new shape
+	/// @param inRotation The orientation of the new shape
+	/// @param inShape The shape to add
+	/// @param inUserData User data that will be stored with the shape and can be retrieved using GetCompoundUserData
+	/// @param inIndex Index where to insert the shape, UINT_MAX to add to the end
 	/// @return The index of the newly added shape
-	uint							AddShape(Vec3Arg inPosition, QuatArg inRotation, const Shape *inShape, uint32 inUserData = 0);
+	uint							AddShape(Vec3Arg inPosition, QuatArg inRotation, const Shape *inShape, uint32 inUserData = 0, uint inIndex = UINT_MAX);
 
 	/// Remove a shape by index.
 	/// Beware this can create a race condition if you're running collision queries in parallel. See class documentation for more information.

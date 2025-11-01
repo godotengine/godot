@@ -4,12 +4,6 @@
 
 #VERSION_DEFINES
 
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#extension GL_EXT_multiview : enable
-#endif
-#endif
-
 layout(location = 0) out vec2 uv_interp;
 
 void main() {
@@ -38,31 +32,22 @@ void main() {
 #VERSION_DEFINES
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
 #endif //USE_MULTIVIEW
 
 layout(location = 0) in vec2 uv_interp;
 
-#ifdef SUBPASS
-layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#elif defined(USE_MULTIVIEW)
-layout(set = 0, binding = 0) uniform sampler2DArray source_color;
+#ifdef USE_MULTIVIEW
+#define SAMPLER_FORMAT sampler2DArray
 #else
-layout(set = 0, binding = 0) uniform sampler2D source_color;
+#define SAMPLER_FORMAT sampler2D
 #endif
 
+layout(set = 0, binding = 0) uniform SAMPLER_FORMAT source_color;
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
-#ifdef USE_MULTIVIEW
-layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
-#else
-layout(set = 2, binding = 0) uniform sampler2D source_glow;
-#endif
-layout(set = 2, binding = 1) uniform sampler2D glow_map;
+layout(set = 2, binding = 0) uniform SAMPLER_FORMAT source_glow;
+layout(set = 2, binding = 1) uniform sampler2D glow_map; // TODO needs multiview support
 
 #ifdef USE_1D_LUT
 layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
@@ -75,7 +60,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_AUTO_EXPOSURE (1 << 2)
 #define FLAG_USE_COLOR_CORRECTION (1 << 3)
 #define FLAG_USE_FXAA (1 << 4)
-#define FLAG_USE_DEBANDING (1 << 5)
+#define FLAG_USE_8_BIT_DEBANDING (1 << 5)
 #define FLAG_CONVERT_TO_SRGB (1 << 6)
 
 layout(push_constant, std430) uniform Params {
@@ -101,111 +86,6 @@ layout(push_constant, std430) uniform Params {
 params;
 
 layout(location = 0) out vec4 frag_color;
-
-#ifdef USE_GLOW_FILTER_BICUBIC
-// w0, w1, w2, and w3 are the four cubic B-spline basis functions
-float w0(float a) {
-	return (1.0f / 6.0f) * (a * (a * (-a + 3.0f) - 3.0f) + 1.0f);
-}
-
-float w1(float a) {
-	return (1.0f / 6.0f) * (a * a * (3.0f * a - 6.0f) + 4.0f);
-}
-
-float w2(float a) {
-	return (1.0f / 6.0f) * (a * (a * (-3.0f * a + 3.0f) + 3.0f) + 1.0f);
-}
-
-float w3(float a) {
-	return (1.0f / 6.0f) * (a * a * a);
-}
-
-// g0 and g1 are the two amplitude functions
-float g0(float a) {
-	return w0(a) + w1(a);
-}
-
-float g1(float a) {
-	return w2(a) + w3(a);
-}
-
-// h0 and h1 are the two offset functions
-float h0(float a) {
-	return -1.0f + w1(a) / (w0(a) + w1(a));
-}
-
-float h1(float a) {
-	return 1.0f + w3(a) / (w2(a) + w3(a));
-}
-
-#ifdef USE_MULTIVIEW
-vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
-	float lod = float(p_lod);
-	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
-	vec2 pixel_size = vec2(1.0f) / tex_size;
-
-	uv = uv * tex_size + vec2(0.5f);
-
-	vec2 iuv = floor(uv);
-	vec2 fuv = fract(uv);
-
-	float g0x = g0(fuv.x);
-	float g1x = g1(fuv.x);
-	float h0x = h0(fuv.x);
-	float h1x = h1(fuv.x);
-	float h0y = h0(fuv.y);
-	float h1y = h1(fuv.y);
-
-	vec3 p0 = vec3((vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p1 = vec3((vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p2 = vec3((vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p3 = vec3((vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
-
-	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
-}
-
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#else // USE_MULTIVIEW
-
-vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
-	float lod = float(p_lod);
-	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
-	vec2 pixel_size = vec2(1.0f) / tex_size;
-
-	uv = uv * tex_size + vec2(0.5f);
-
-	vec2 iuv = floor(uv);
-	vec2 fuv = fract(uv);
-
-	float g0x = g0(fuv.x);
-	float g1x = g1(fuv.x);
-	float h0x = h0(fuv.x);
-	float h1x = h1(fuv.x);
-	float h0y = h0(fuv.y);
-	float h1y = h1(fuv.y);
-
-	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
-	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
-
-	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
-}
-
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#endif // !USE_MULTIVIEW
-
-#else // USE_GLOW_FILTER_BICUBIC
-
-#ifdef USE_MULTIVIEW
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
-#else // USE_MULTIVIEW
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
-#endif // !USE_MULTIVIEW
-
-#endif // !USE_GLOW_FILTER_BICUBIC
 
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float white) {
@@ -338,10 +218,13 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	//if going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
+vec3 srgb_to_linear(vec3 color) {
+	const vec3 a = vec3(0.055f);
+	return mix(pow((color.rgb + a) * (1.0f / (vec3(1.0f) + a)), vec3(2.4f)), color.rgb * (1.0f / 12.92f), lessThan(color.rgb, vec3(0.04045f)));
 }
 
 #define TONEMAPPER_LINEAR 0
@@ -366,11 +249,113 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	}
 }
 
+#ifdef USE_GLOW_FILTER_BICUBIC
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0f / 6.0f) * (a * (a * (-a + 3.0f) - 3.0f) + 1.0f);
+}
+
+float w1(float a) {
+	return (1.0f / 6.0f) * (a * a * (3.0f * a - 6.0f) + 4.0f);
+}
+
+float w2(float a) {
+	return (1.0f / 6.0f) * (a * (a * (-3.0f * a + 3.0f) + 3.0f) + 1.0f);
+}
+
+float w3(float a) {
+	return (1.0f / 6.0f) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0f + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0f + w3(a) / (w2(a) + w3(a));
+}
+
 #ifdef USE_MULTIVIEW
-vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
-#else
-vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-#endif // defined(USE_MULTIVIEW)
+vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
+	float lod = float(p_lod);
+	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
+	vec2 pixel_size = vec2(1.0f) / tex_size;
+
+	uv = uv * tex_size + vec2(0.5f);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec3 p0 = vec3((vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p1 = vec3((vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p2 = vec3((vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p3 = vec3((vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+}
+
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#else // USE_MULTIVIEW
+
+vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
+	float lod = float(p_lod);
+	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
+	vec2 pixel_size = vec2(1.0f) / tex_size;
+
+	uv = uv * tex_size + vec2(0.5f);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
+
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+}
+
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#endif // !USE_MULTIVIEW
+
+#else // USE_GLOW_FILTER_BICUBIC
+
+#ifdef USE_MULTIVIEW
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
+#else // USE_MULTIVIEW
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
+#endif // !USE_MULTIVIEW
+
+#endif // !USE_GLOW_FILTER_BICUBIC
+
+vec3 gather_glow(SAMPLER_FORMAT tex, vec2 uv) { // sample all selected glow levels
+
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {
@@ -401,6 +386,8 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
 	}
 
+	glow = glow * params.luminance_multiplier;
+
 	return glow;
 }
 
@@ -410,34 +397,48 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #define GLOW_MODE_REPLACE 3
 #define GLOW_MODE_MIX 4
 
-vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
+// Applies glow using the selected blending mode. Does not handle the mix blend mode.
+vec3 apply_glow(vec3 color, vec3 glow, float white) {
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		return max((color + glow) - (color * glow), vec3(0.0));
-	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		glow = glow * vec3(0.5f) + vec3(0.5f);
+		// Glow cannot be above 1.0 after normalizing and should be non-negative
+		// to produce expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		// We clamp to white because glow will be normalized to this range.
+		// Note: white cannot be smaller than the maximum output value.
+		glow.rgb = clamp(glow.rgb, 0.0, white);
 
-		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
-		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
-		color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
+		// Normalize to white range.
+		//glow.rgb /= white;
+		//color.rgb /= white;
+		//color.rgb = (color.rgb + glow.rgb) - (color.rgb * glow.rgb);
+		// Expand back to original range.
+		//color.rgb *= white;
+
+		// The following is a mathematically simplified version of the above.
+		color.rgb = color.rgb + glow.rgb - (color.rgb * glow.rgb / white);
+
+		return color;
+	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+		// Glow cannot be above 1.0 should be non-negative to produce
+		// expected results. It is possible that glow can be negative
+		// if negative lights were used in the scene.
+		// Note: This approach causes a discontinuity with scene values
+		// at 1.0, but because this glow should have its strongest influence
+		// anchored at 0.25 there is no way around this.
+		glow.rgb = clamp(glow.rgb, 0.0, 1.0);
+
+		color.r = color.r > 1.0 ? color.r : color.r + glow.r * ((color.r <= 0.25f ? ((16.0f * color.r - 12.0f) * color.r + 4.0f) * color.r : sqrt(color.r)) - color.r);
+		color.g = color.g > 1.0 ? color.g : color.g + glow.g * ((color.g <= 0.25f ? ((16.0f * color.g - 12.0f) * color.g + 4.0f) * color.g : sqrt(color.g)) - color.g);
+		color.b = color.b > 1.0 ? color.b : color.b + glow.b * ((color.b <= 0.25f ? ((16.0f * color.b - 12.0f) * color.b + 4.0f) * color.b : sqrt(color.b)) - color.b);
+
 		return color;
 	} else { //replace
 		return glow;
 	}
 }
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0f), color, bcs.x);
-	color = mix(vec3(0.5f), color, bcs.y);
-	color = mix(vec3(dot(vec3(1.0f), color) * 0.33333f), color, bcs.z);
-
-	return color;
-}
 #ifdef USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
@@ -451,81 +452,393 @@ vec3 apply_color_correction(vec3 color) {
 }
 #endif
 
-#ifndef SUBPASS
-vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
-	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
-	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
-	const float FXAA_SPAN_MAX = 8.0;
+// FXAA 3.11 compact, Ported from https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag
+///////////////////////////////////////////////////////////////////////////////////
+// MIT License
+//
+// Copyright (c) 2017 Simon Rodriguez
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////
 
-#ifdef USE_MULTIVIEW
-	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-#else
-	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-#endif
-	vec3 rgbM = color;
-	vec3 luma = vec3(0.299, 0.587, 0.114);
-	float lumaNW = dot(rgbNW, luma);
-	float lumaNE = dot(rgbNE, luma);
-	float lumaSW = dot(rgbSW, luma);
-	float lumaSE = dot(rgbSE, luma);
-	float lumaM = dot(rgbM, luma);
-	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
-	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+// Nvidia Original FXAA 3.11 License
+//----------------------------------------------------------------------------------
+// File:        es3-kepler\FXAA/FXAA3_11.h
+// SDK Version: v3.00
+// Email:       gameworks@nvidia.com
+// Site:        http://developer.nvidia.com/
+//
+// Copyright (c) 2014-2015, NVIDIA CORPORATION. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//  * Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//  * Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//  * Neither the name of NVIDIA CORPORATION nor the names of its
+//    contributors may be used to endorse or promote products derived
+//    from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+// OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------------
+//
+//                    NVIDIA FXAA 3.11 by TIMOTHY LOTTES
+//
+//----------------------------------------------------------------------------------
 
-	vec2 dir;
-	dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
-	dir.y = ((lumaNW + lumaSW) - (lumaNE + lumaSE));
-
-	float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *
-					(0.25 * FXAA_REDUCE_MUL),
-			FXAA_REDUCE_MIN);
-
-	float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
-	dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),
-				  max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
-						  dir * rcpDirMin)) *
-			params.pixel_size;
-
-#ifdef USE_MULTIVIEW
-	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;
-	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz) * params.luminance_multiplier;
-#else
-	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source_color, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz) * params.luminance_multiplier;
-	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz) * params.luminance_multiplier;
-#endif
-
-	float lumaB = dot(rgbB, luma);
-	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
-		return rgbA;
-	} else {
-		return rgbB;
-	}
+float QUALITY(float q) {
+	return (q < 5 ? 1.0 : (q > 5 ? (q < 10 ? 2.0 : (q < 11 ? 4.0 : 8.0)) : 1.5));
 }
-#endif // !SUBPASS
+
+float rgb2luma(vec3 rgb) {
+	return sqrt(dot(rgb, vec3(0.299, 0.587, 0.114)));
+}
+
+vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
+	const float EDGE_THRESHOLD_MIN = 0.0312;
+	const float EDGE_THRESHOLD_MAX = 0.125;
+	const int ITERATIONS = 12;
+	const float SUBPIXEL_QUALITY = 0.75;
+
+#ifdef USE_MULTIVIEW
+	float lumaUp = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaDown = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(0, -1)).xyz * exposure * params.luminance_multiplier);
+	float lumaLeft = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(-1, 0)).xyz * exposure * params.luminance_multiplier);
+	float lumaRight = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(1, 0)).xyz * exposure * params.luminance_multiplier);
+
+	float lumaCenter = rgb2luma(color);
+
+	float lumaMin = min(lumaCenter, min(min(lumaUp, lumaDown), min(lumaLeft, lumaRight)));
+	float lumaMax = max(lumaCenter, max(max(lumaUp, lumaDown), max(lumaLeft, lumaRight)));
+
+	float lumaRange = lumaMax - lumaMin;
+
+	if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)) {
+		return color;
+	}
+
+	float lumaDownLeft = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(-1, -1)).xyz * exposure * params.luminance_multiplier);
+	float lumaUpRight = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(1, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaUpLeft = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(-1, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaDownRight = rgb2luma(textureLodOffset(source_color, vec3(uv_interp, ViewIndex), 0.0, ivec2(1, -1)).xyz * exposure * params.luminance_multiplier);
+
+	float lumaDownUp = lumaDown + lumaUp;
+	float lumaLeftRight = lumaLeft + lumaRight;
+
+	float lumaLeftCorners = lumaDownLeft + lumaUpLeft;
+	float lumaDownCorners = lumaDownLeft + lumaDownRight;
+	float lumaRightCorners = lumaDownRight + lumaUpRight;
+	float lumaUpCorners = lumaUpRight + lumaUpLeft;
+
+	float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners) + abs(-2.0 * lumaCenter + lumaDownUp) * 2.0 + abs(-2.0 * lumaRight + lumaRightCorners);
+	float edgeVertical = abs(-2.0 * lumaUp + lumaUpCorners) + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0 + abs(-2.0 * lumaDown + lumaDownCorners);
+
+	bool isHorizontal = (edgeHorizontal >= edgeVertical);
+
+	float stepLength = isHorizontal ? params.pixel_size.y : params.pixel_size.x;
+
+	float luma1 = isHorizontal ? lumaDown : lumaLeft;
+	float luma2 = isHorizontal ? lumaUp : lumaRight;
+	float gradient1 = luma1 - lumaCenter;
+	float gradient2 = luma2 - lumaCenter;
+
+	bool is1Steepest = abs(gradient1) >= abs(gradient2);
+
+	float gradientScaled = 0.25 * max(abs(gradient1), abs(gradient2));
+
+	float lumaLocalAverage = 0.0;
+	if (is1Steepest) {
+		stepLength = -stepLength;
+		lumaLocalAverage = 0.5 * (luma1 + lumaCenter);
+	} else {
+		lumaLocalAverage = 0.5 * (luma2 + lumaCenter);
+	}
+
+	vec2 currentUv = uv_interp;
+	if (isHorizontal) {
+		currentUv.y += stepLength * 0.5;
+	} else {
+		currentUv.x += stepLength * 0.5;
+	}
+
+	vec2 offset = isHorizontal ? vec2(params.pixel_size.x, 0.0) : vec2(0.0, params.pixel_size.y);
+	vec3 uv1 = vec3(currentUv - offset * QUALITY(0), ViewIndex);
+	vec3 uv2 = vec3(currentUv + offset * QUALITY(0), ViewIndex);
+
+	float lumaEnd1 = rgb2luma(textureLod(source_color, uv1, 0.0).xyz * exposure * params.luminance_multiplier);
+	float lumaEnd2 = rgb2luma(textureLod(source_color, uv2, 0.0).xyz * exposure * params.luminance_multiplier);
+	lumaEnd1 -= lumaLocalAverage;
+	lumaEnd2 -= lumaLocalAverage;
+
+	bool reached1 = abs(lumaEnd1) >= gradientScaled;
+	bool reached2 = abs(lumaEnd2) >= gradientScaled;
+	bool reachedBoth = reached1 && reached2;
+
+	if (!reached1) {
+		uv1 -= vec3(offset * QUALITY(1), 0.0);
+	}
+	if (!reached2) {
+		uv2 += vec3(offset * QUALITY(1), 0.0);
+	}
+
+	if (!reachedBoth) {
+		for (int i = 2; i < ITERATIONS; i++) {
+			if (!reached1) {
+				lumaEnd1 = rgb2luma(textureLod(source_color, uv1, 0.0).xyz * exposure * params.luminance_multiplier);
+				lumaEnd1 = lumaEnd1 - lumaLocalAverage;
+			}
+			if (!reached2) {
+				lumaEnd2 = rgb2luma(textureLod(source_color, uv2, 0.0).xyz * exposure * params.luminance_multiplier);
+				lumaEnd2 = lumaEnd2 - lumaLocalAverage;
+			}
+			reached1 = abs(lumaEnd1) >= gradientScaled;
+			reached2 = abs(lumaEnd2) >= gradientScaled;
+			reachedBoth = reached1 && reached2;
+			if (!reached1) {
+				uv1 -= vec3(offset * QUALITY(i), 0.0);
+			}
+			if (!reached2) {
+				uv2 += vec3(offset * QUALITY(i), 0.0);
+			}
+			if (reachedBoth) {
+				break;
+			}
+		}
+	}
+
+	float distance1 = isHorizontal ? (uv_interp.x - uv1.x) : (uv_interp.y - uv1.y);
+	float distance2 = isHorizontal ? (uv2.x - uv_interp.x) : (uv2.y - uv_interp.y);
+
+	bool isDirection1 = distance1 < distance2;
+	float distanceFinal = min(distance1, distance2);
+
+	float edgeThickness = (distance1 + distance2);
+
+	bool isLumaCenterSmaller = lumaCenter < lumaLocalAverage;
+
+	bool correctVariation1 = (lumaEnd1 < 0.0) != isLumaCenterSmaller;
+	bool correctVariation2 = (lumaEnd2 < 0.0) != isLumaCenterSmaller;
+
+	bool correctVariation = isDirection1 ? correctVariation1 : correctVariation2;
+
+	float pixelOffset = -distanceFinal / edgeThickness + 0.5;
+
+	float finalOffset = correctVariation ? pixelOffset : 0.0;
+
+	float lumaAverage = (1.0 / 12.0) * (2.0 * (lumaDownUp + lumaLeftRight) + lumaLeftCorners + lumaRightCorners);
+
+	float subPixelOffset1 = clamp(abs(lumaAverage - lumaCenter) / lumaRange, 0.0, 1.0);
+	float subPixelOffset2 = (-2.0 * subPixelOffset1 + 3.0) * subPixelOffset1 * subPixelOffset1;
+
+	float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * SUBPIXEL_QUALITY;
+
+	finalOffset = max(finalOffset, subPixelOffsetFinal);
+
+	vec3 finalUv = vec3(uv_interp, ViewIndex);
+	if (isHorizontal) {
+		finalUv.y += finalOffset * stepLength;
+	} else {
+		finalUv.x += finalOffset * stepLength;
+	}
+
+	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
+	return finalColor;
+
+#else
+	float lumaUp = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaDown = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, -1)).xyz * exposure * params.luminance_multiplier);
+	float lumaLeft = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(-1, 0)).xyz * exposure * params.luminance_multiplier);
+	float lumaRight = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(1, 0)).xyz * exposure * params.luminance_multiplier);
+
+	float lumaCenter = rgb2luma(color);
+
+	float lumaMin = min(lumaCenter, min(min(lumaUp, lumaDown), min(lumaLeft, lumaRight)));
+	float lumaMax = max(lumaCenter, max(max(lumaUp, lumaDown), max(lumaLeft, lumaRight)));
+
+	float lumaRange = lumaMax - lumaMin;
+
+	if (lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)) {
+		return color;
+	}
+
+	float lumaDownLeft = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(-1, -1)).xyz * exposure * params.luminance_multiplier);
+	float lumaUpRight = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(1, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaUpLeft = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(-1, 1)).xyz * exposure * params.luminance_multiplier);
+	float lumaDownRight = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(1, -1)).xyz * exposure * params.luminance_multiplier);
+
+	float lumaDownUp = lumaDown + lumaUp;
+	float lumaLeftRight = lumaLeft + lumaRight;
+
+	float lumaLeftCorners = lumaDownLeft + lumaUpLeft;
+	float lumaDownCorners = lumaDownLeft + lumaDownRight;
+	float lumaRightCorners = lumaDownRight + lumaUpRight;
+	float lumaUpCorners = lumaUpRight + lumaUpLeft;
+
+	float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners) + abs(-2.0 * lumaCenter + lumaDownUp) * 2.0 + abs(-2.0 * lumaRight + lumaRightCorners);
+	float edgeVertical = abs(-2.0 * lumaUp + lumaUpCorners) + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0 + abs(-2.0 * lumaDown + lumaDownCorners);
+
+	bool isHorizontal = (edgeHorizontal >= edgeVertical);
+
+	float stepLength = isHorizontal ? params.pixel_size.y : params.pixel_size.x;
+
+	float luma1 = isHorizontal ? lumaDown : lumaLeft;
+	float luma2 = isHorizontal ? lumaUp : lumaRight;
+	float gradient1 = luma1 - lumaCenter;
+	float gradient2 = luma2 - lumaCenter;
+
+	bool is1Steepest = abs(gradient1) >= abs(gradient2);
+
+	float gradientScaled = 0.25 * max(abs(gradient1), abs(gradient2));
+
+	float lumaLocalAverage = 0.0;
+	if (is1Steepest) {
+		stepLength = -stepLength;
+		lumaLocalAverage = 0.5 * (luma1 + lumaCenter);
+	} else {
+		lumaLocalAverage = 0.5 * (luma2 + lumaCenter);
+	}
+
+	vec2 currentUv = uv_interp;
+	if (isHorizontal) {
+		currentUv.y += stepLength * 0.5;
+	} else {
+		currentUv.x += stepLength * 0.5;
+	}
+
+	vec2 offset = isHorizontal ? vec2(params.pixel_size.x, 0.0) : vec2(0.0, params.pixel_size.y);
+	vec2 uv1 = currentUv - offset * QUALITY(0);
+	vec2 uv2 = currentUv + offset * QUALITY(0);
+
+	float lumaEnd1 = rgb2luma(textureLod(source_color, uv1, 0.0).xyz * exposure * params.luminance_multiplier);
+	float lumaEnd2 = rgb2luma(textureLod(source_color, uv2, 0.0).xyz * exposure * params.luminance_multiplier);
+	lumaEnd1 -= lumaLocalAverage;
+	lumaEnd2 -= lumaLocalAverage;
+
+	bool reached1 = abs(lumaEnd1) >= gradientScaled;
+	bool reached2 = abs(lumaEnd2) >= gradientScaled;
+	bool reachedBoth = reached1 && reached2;
+
+	if (!reached1) {
+		uv1 -= offset * QUALITY(1);
+	}
+	if (!reached2) {
+		uv2 += offset * QUALITY(1);
+	}
+
+	if (!reachedBoth) {
+		for (int i = 2; i < ITERATIONS; i++) {
+			if (!reached1) {
+				lumaEnd1 = rgb2luma(textureLod(source_color, uv1, 0.0).xyz * exposure * params.luminance_multiplier);
+				lumaEnd1 = lumaEnd1 - lumaLocalAverage;
+			}
+			if (!reached2) {
+				lumaEnd2 = rgb2luma(textureLod(source_color, uv2, 0.0).xyz * exposure * params.luminance_multiplier);
+				lumaEnd2 = lumaEnd2 - lumaLocalAverage;
+			}
+			reached1 = abs(lumaEnd1) >= gradientScaled;
+			reached2 = abs(lumaEnd2) >= gradientScaled;
+			reachedBoth = reached1 && reached2;
+			if (!reached1) {
+				uv1 -= offset * QUALITY(i);
+			}
+			if (!reached2) {
+				uv2 += offset * QUALITY(i);
+			}
+			if (reachedBoth) {
+				break;
+			}
+		}
+	}
+
+	float distance1 = isHorizontal ? (uv_interp.x - uv1.x) : (uv_interp.y - uv1.y);
+	float distance2 = isHorizontal ? (uv2.x - uv_interp.x) : (uv2.y - uv_interp.y);
+
+	bool isDirection1 = distance1 < distance2;
+	float distanceFinal = min(distance1, distance2);
+
+	float edgeThickness = (distance1 + distance2);
+
+	bool isLumaCenterSmaller = lumaCenter < lumaLocalAverage;
+
+	bool correctVariation1 = (lumaEnd1 < 0.0) != isLumaCenterSmaller;
+	bool correctVariation2 = (lumaEnd2 < 0.0) != isLumaCenterSmaller;
+
+	bool correctVariation = isDirection1 ? correctVariation1 : correctVariation2;
+
+	float pixelOffset = -distanceFinal / edgeThickness + 0.5;
+
+	float finalOffset = correctVariation ? pixelOffset : 0.0;
+
+	float lumaAverage = (1.0 / 12.0) * (2.0 * (lumaDownUp + lumaLeftRight) + lumaLeftCorners + lumaRightCorners);
+
+	float subPixelOffset1 = clamp(abs(lumaAverage - lumaCenter) / lumaRange, 0.0, 1.0);
+	float subPixelOffset2 = (-2.0 * subPixelOffset1 + 3.0) * subPixelOffset1 * subPixelOffset1;
+
+	float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * SUBPIXEL_QUALITY;
+
+	finalOffset = max(finalOffset, subPixelOffsetFinal);
+
+	vec2 finalUv = uv_interp;
+	if (isHorizontal) {
+		finalUv.y += finalOffset * stepLength;
+	} else {
+		finalUv.x += finalOffset * stepLength;
+	}
+
+	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
+	return finalColor;
+
+#endif
+}
 
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
-vec3 screen_space_dither(vec2 frag_coord) {
+// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+// as the final step before quantization from floating point to integer values.
+vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	// Removed the time component to avoid passing time into this shader.
 	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
 	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
 
 	// Subtract 0.5 to avoid slightly brightening the whole viewport.
-	return (dither.rgb - 0.5) / 255.0;
+	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+	return (dither.rgb - 0.5) / bit_alignment_diviser;
 }
 
 void main() {
-#ifdef SUBPASS
-	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
-	vec4 color = subpassLoad(input_color);
-#elif defined(USE_MULTIVIEW)
+#ifdef USE_MULTIVIEW
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
 	vec4 color = textureLod(source_color, uv_interp, 0.0f);
@@ -536,67 +849,96 @@ void main() {
 
 	float exposure = params.exposure;
 
-#ifndef SUBPASS
 	if (bool(params.flags & FLAG_USE_AUTO_EXPOSURE)) {
 		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_scale);
 	}
-#endif
 
 	color.rgb *= exposure;
 
-	// Early Tonemap & SRGB Conversion
-#ifndef SUBPASS
+	// Single-pass FXAA and pre-tonemap glow.
 	if (bool(params.flags & FLAG_USE_FXAA)) {
 		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_SOFTLIGHT) {
+		vec3 glow = gather_glow(source_glow, uv_interp);
+		if (params.glow_mode == GLOW_MODE_MIX) {
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb = mix(color.rgb, glow, params.glow_intensity);
+		} else {
+			glow = glow * params.glow_intensity;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
-		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
-#endif
+
+	// Tonemap to lower dynamic range.
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-	}
-#ifndef SUBPASS
-	// Glow
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+	// Post-tonemap glow.
+
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+		// Apply soft light after tonemapping to mitigate the issue of discontinuity
+		// at 1.0 and higher. This makes the issue only appear with HDR output that
+		// can exceed a 1.0 output value.
+		vec3 glow = gather_glow(source_glow, uv_interp);
+		glow = glow * params.glow_intensity;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 		}
-
-		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
-			glow = linear_to_srgb(glow);
-		}
-
-		color.rgb = apply_glow(color.rgb, glow);
+		color.rgb = apply_glow(color.rgb, glow, params.white);
 	}
-#endif
 
-	// Additional effects
+	// Additional effects.
 
 	if (bool(params.flags & FLAG_USE_BCS)) {
-		color.rgb = apply_bcs(color.rgb, params.bcs);
+		// Apply brightness:
+		// Apply to relative luminance. This ensures that the hue and saturation of
+		// colors is not affected by the adjustment, but requires the multiplication
+		// to be performed on linear-encoded values.
+		color.rgb = color.rgb * params.bcs.x;
+
+		color.rgb = linear_to_srgb(color.rgb);
+
+		// Apply contrast:
+		// By applying contrast to RGB values that are perceptually uniform (nonlinear),
+		// the darkest values are not hard-clipped as badly, which produces a
+		// higher quality contrast adjustment and maintains compatibility with
+		// existing projects.
+		color.rgb = mix(vec3(0.5), color.rgb, params.bcs.y);
+
+		// Apply saturation:
+		// By applying saturation adjustment to nonlinear sRGB-encoded values with
+		// even weights the preceived brightness of blues are affected, but this
+		// maintains compatibility with existing projects.
+		color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, params.bcs.z);
+
+		if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
+			color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+			color.rgb = apply_color_correction(color.rgb);
+			// When using color correction and  FLAG_CONVERT_TO_SRGB is false, there
+			// is no need to convert back to linear because the color correction
+			// texture sampling does this for us.
+		} else if (!bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+			color.rgb = srgb_to_linear(color.rgb);
+		}
+	} else if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		color.rgb = linear_to_srgb(color.rgb);
 	}
 
-	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
-		color.rgb = apply_color_correction(color.rgb);
-	}
+	// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
+	// Otherwise, we're adding noise to an already-quantized image.
 
-	if (bool(params.flags & FLAG_USE_DEBANDING)) {
-		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
-		// Otherwise, we're adding noise to an already-quantized image.
-		color.rgb += screen_space_dither(gl_FragCoord.xy);
+	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+		// Divide by 255 to align to 8-bit quantization.
+		color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
 	}
 
 	frag_color = color;

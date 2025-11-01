@@ -425,7 +425,7 @@
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
-			Sets the clipping behavior when the text exceeds an item's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
+			The clipping behavior when the text exceeds an item's bounding rectangle.
 		</member>
 		<member name="wraparound_items" type="bool" setter="set_wraparound_items" getter="has_wraparound_items" default="true">
 			If [code]true[/code], the control will automatically move items into a new row to fit its content. See also [HFlowContainer] for this behavior.

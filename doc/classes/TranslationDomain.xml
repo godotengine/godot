@@ -23,6 +23,12 @@
 				Removes all translations.
 			</description>
 		</method>
+		<method name="get_locale_override" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the locale override of the domain. Returns an empty string if locale override is disabled.
+			</description>
+		</method>
 		<method name="get_translation_object" qualifiers="const">
 			<return type="Translation" />
 			<param index="0" name="locale" type="String" />
@@ -42,6 +48,15 @@
 			<param index="0" name="translation" type="Translation" />
 			<description>
 				Removes the given translation.
+			</description>
+		</method>
+		<method name="set_locale_override">
+			<return type="void" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Sets the locale override of the domain.
+				If [param locale] is an empty string, locale override is disabled. Otherwise, [param locale] will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				[b]Note:[/b] Calling this method does not automatically update texts in the scene tree. Please propagate the [constant MainLoop.NOTIFICATION_TRANSLATION_CHANGED] signal manually.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
@@ -65,6 +80,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]true[/code], translation is enabled. Otherwise, [method translate] and [method translate_plural] will return the input message unchanged regardless of the current locale.
+		</member>
 		<member name="pseudolocalization_accents_enabled" type="bool" setter="set_pseudolocalization_accents_enabled" getter="is_pseudolocalization_accents_enabled" default="true">
 			Replace all characters with their accented variants during pseudolocalization.
 			[b]Note:[/b] Updating this property does not automatically update texts in the scene tree. Please propagate the [constant MainLoop.NOTIFICATION_TRANSLATION_CHANGED] notification manually after you have finished modifying pseudolocalization related options.

@@ -37,8 +37,8 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 #include <sys/stat.h>
 
@@ -85,9 +85,10 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	int menu_options = 0;
 
 	void _fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist);
-	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary);
+	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon);
 	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
+	Error _export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path);
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	void _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true, bool p_set_id = false);
 	void _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, const String &p_helper_ent_path, bool p_should_error_on_non_code = true);
@@ -162,12 +163,12 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformMacOS();
+	virtual void initialize() override;
 };

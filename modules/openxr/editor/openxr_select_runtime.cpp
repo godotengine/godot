@@ -32,7 +32,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 void OpenXRSelectRuntime::_update_items() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -54,10 +54,9 @@ void OpenXRSelectRuntime::_update_items() {
 	set_item_metadata(index, "");
 	index++;
 
-	Array keys = runtimes.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		String path = runtimes[key];
+	for (const KeyValue<Variant, Variant> &kv : runtimes) {
+		const String &key = kv.key;
+		const String &path = kv.value;
 		String adj_path = path.replace("~", home_folder);
 
 		if (da->file_exists(adj_path)) {

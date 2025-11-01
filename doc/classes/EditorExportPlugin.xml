@@ -30,7 +30,7 @@
 				[b]Note:[/b] [method _customize_scene] will only be called for scenes that have been modified since the last export.
 			</description>
 		</method>
-		<method name="_customize_resource" qualifiers="virtual">
+		<method name="_customize_resource" qualifiers="virtual required">
 			<return type="Resource" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
@@ -47,7 +47,7 @@
 				- [CompressedTexture3D]
 			</description>
 		</method>
-		<method name="_customize_scene" qualifiers="virtual">
+		<method name="_customize_scene" qualifiers="virtual required">
 			<return type="Node" />
 			<param index="0" name="scene" type="Node" />
 			<param index="1" name="path" type="String" />
@@ -152,7 +152,7 @@
 				[b]Note:[/b] Only supported on Android and requires [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] to be enabled.
 			</description>
 		</method>
-		<method name="_get_customization_configuration_hash" qualifiers="virtual const">
+		<method name="_get_customization_configuration_hash" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
@@ -172,7 +172,6 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<param index="1" name="option" type="String" />
 			<description>
-				[b]Optional.[/b]
 				Validates [param option] and returns the visibility for the specified [param platform]. The default implementation returns [code]true[/code] for all options.
 			</description>
 		</method>
@@ -203,24 +202,24 @@
 				Return a [Dictionary] of override values for export options, that will be used instead of user-provided values. Overridden options will be hidden from the user interface.
 				[codeblock]
 				class MyExportPlugin extends EditorExportPlugin:
-				    func _get_name() -&gt; String:
-				        return "MyExportPlugin"
+					func _get_name() -&gt; String:
+						return "MyExportPlugin"
 
-				    func _supports_platform(platform) -&gt; bool:
-				        if platform is EditorExportPlatformPC:
-				            # Run on all desktop platforms including Windows, MacOS and Linux.
-				            return true
-				        return false
+					func _supports_platform(platform) -&gt; bool:
+						if platform is EditorExportPlatformPC:
+							# Run on all desktop platforms including Windows, MacOS and Linux.
+							return true
+						return false
 
-				    func _get_export_options_overrides(platform) -&gt; Dictionary:
-				        # Override "Embed PCK" to always be enabled.
-				        return {
-				            "binary_format/embed_pck": true,
-				        }
+					func _get_export_options_overrides(platform) -&gt; Dictionary:
+						# Override "Embed PCK" to always be enabled.
+						return {
+							"binary_format/embed_pck": true,
+						}
 				[/codeblock]
 			</description>
 		</method>
-		<method name="_get_name" qualifiers="virtual const">
+		<method name="_get_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Return the name identifier of this plugin (for future identification by the exporter). The plugins are sorted by name before exporting.
@@ -231,7 +230,7 @@
 			<return type="bool" />
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<description>
-				Return [code]true[/code], if the result of [method _get_export_options] has changed and the export options of preset corresponding to [param platform] should be updated.
+				Return [code]true[/code] if the result of [method _get_export_options] has changed and the export options of the preset corresponding to [param platform] should be updated.
 			</description>
 		</method>
 		<method name="_supports_platform" qualifiers="virtual const">
@@ -239,6 +238,67 @@
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<description>
 				Return [code]true[/code] if the plugin supports the given [param platform].
+			</description>
+		</method>
+		<method name="_update_android_prebuilt_manifest" qualifiers="virtual const">
+			<return type="PackedByteArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="manifest_data" type="PackedByteArray" />
+			<description>
+				Provide access to the Android prebuilt manifest and allows the plugin to modify it if needed.
+				Implementers of this virtual method should take the binary manifest data from [param manifest_data], copy it, modify it, and then return it with the modifications.
+				If no modifications are needed, then an empty [PackedByteArray] should be returned.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_bundle_file">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds an Apple embedded platform bundle file from the given [param path] to the exported project.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_cpp_code">
+			<return type="void" />
+			<param index="0" name="code" type="String" />
+			<description>
+				Adds C++ code to the Apple embedded platform export. The final code is created from the code appended by each active export plugin.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_embedded_framework">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a dynamic library (*.dylib, *.framework) to the Linking Phase in the Apple embedded platform's Xcode project and embeds it into the resulting binary.
+				[b]Note:[/b] For static libraries (*.a), this works in the same way as [method add_apple_embedded_platform_framework].
+				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_framework">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a static library (*.a) or a dynamic library (*.dylib, *.framework) to the Linking Phase to the Apple embedded platform's Xcode project.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_linker_flags">
+			<return type="void" />
+			<param index="0" name="flags" type="String" />
+			<description>
+				Adds linker flags for the Apple embedded platform export.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_plist_content">
+			<return type="void" />
+			<param index="0" name="plist_content" type="String" />
+			<description>
+				Adds additional fields to the Apple embedded platform's project Info.plist file.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_project_static_lib">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Adds a static library from the given [param path] to the Apple embedded platform project.
 			</description>
 		</method>
 		<method name="add_file">
@@ -252,55 +312,55 @@
 				[param file] will not be imported, so consider using [method _customize_resource] to remap imported resources.
 			</description>
 		</method>
-		<method name="add_ios_bundle_file">
+		<method name="add_ios_bundle_file" deprecated="Use [method add_apple_embedded_platform_bundle_file] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds an iOS bundle file from the given [param path] to the exported project.
 			</description>
 		</method>
-		<method name="add_ios_cpp_code">
+		<method name="add_ios_cpp_code" deprecated="Use [method add_apple_embedded_platform_cpp_code] instead.">
 			<return type="void" />
 			<param index="0" name="code" type="String" />
 			<description>
-				Adds a C++ code to the iOS export. The final code is created from the code appended by each active export plugin.
+				Adds C++ code to the iOS export. The final code is created from the code appended by each active export plugin.
 			</description>
 		</method>
-		<method name="add_ios_embedded_framework">
+		<method name="add_ios_embedded_framework" deprecated="Use [method add_apple_embedded_platform_embedded_framework] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [method add_ios_framework].
+				[b]Note:[/b] For static libraries (*.a), this works the in same way as [method add_apple_embedded_platform_framework].
 				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
-		<method name="add_ios_framework">
+		<method name="add_ios_framework" deprecated="Use [method add_apple_embedded_platform_framework] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project.
+				Adds a static library (*.a) or a dynamic library (*.dylib, *.framework) to the Linking Phase to the iOS Xcode project.
 			</description>
 		</method>
-		<method name="add_ios_linker_flags">
+		<method name="add_ios_linker_flags" deprecated="Use [method add_apple_embedded_platform_linker_flags] instead.">
 			<return type="void" />
 			<param index="0" name="flags" type="String" />
 			<description>
 				Adds linker flags for the iOS export.
 			</description>
 		</method>
-		<method name="add_ios_plist_content">
+		<method name="add_ios_plist_content" deprecated="Use [method add_apple_embedded_platform_plist_content] instead.">
 			<return type="void" />
 			<param index="0" name="plist_content" type="String" />
 			<description>
-				Adds content for iOS Property List files.
+				Adds additional fields to the iOS project Info.plist file.
 			</description>
 		</method>
-		<method name="add_ios_project_static_lib">
+		<method name="add_ios_project_static_lib" deprecated="Use [method add_apple_embedded_platform_project_static_lib] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds a static lib from the given [param path] to the iOS project.
+				Adds a static library from the given [param path] to the iOS project.
 			</description>
 		</method>
 		<method name="add_macos_plugin_file">

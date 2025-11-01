@@ -33,21 +33,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
-
-#ifdef TOOLS_ENABLED
-#include "main/main.h"
-#endif
-
-Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
-
-HashMap<String, String> TranslationServer::language_map;
-HashMap<String, String> TranslationServer::script_map;
-HashMap<String, String> TranslationServer::locale_rename_map;
-HashMap<String, String> TranslationServer::country_name_map;
-HashMap<String, String> TranslationServer::variant_map;
-HashMap<String, String> TranslationServer::country_rename_map;
 
 void TranslationServer::init_locale_info() {
 	// Init locale info.
@@ -117,6 +105,18 @@ void TranslationServer::init_locale_info() {
 		}
 		idx++;
 	}
+
+	// Init plural rules.
+	plural_rules_map.clear();
+	idx = 0;
+	while (plural_rules[idx][0] != nullptr) {
+		const Vector<String> rule_locs = String(plural_rules[idx][0]).split(" ");
+		const String rule = String(plural_rules[idx][1]);
+		for (const String &l : rule_locs) {
+			plural_rules_map[l] = rule;
+		}
+		idx++;
+	}
 }
 
 TranslationServer::Locale::operator String() const {
@@ -135,7 +135,7 @@ TranslationServer::Locale::operator String() const {
 
 TranslationServer::Locale::Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults) {
 	// Replaces '-' with '_' for macOS style locales.
-	String univ_locale = p_locale.replace("-", "_");
+	String univ_locale = p_locale.replace_char('-', '_');
 
 	// Extract locale elements.
 	Vector<String> locale_elements = univ_locale.get_slicec('@', 0).split("_");
@@ -309,6 +309,26 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	return name;
 }
 
+String TranslationServer::get_plural_rules(const String &p_locale) const {
+	const String *rule = plural_rules_map.getptr(p_locale);
+	if (rule) {
+		return *rule;
+	}
+
+	Locale l = Locale(*this, p_locale, false);
+	if (!l.country.is_empty()) {
+		rule = plural_rules_map.getptr(l.language + "_" + l.country);
+		if (rule) {
+			return *rule;
+		}
+	}
+	rule = plural_rules_map.getptr(l.language);
+	if (rule) {
+		return *rule;
+	}
+	return String();
+}
+
 Vector<String> TranslationServer::get_all_languages() const {
 	Vector<String> languages;
 
@@ -381,6 +401,10 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+void TranslationServer::set_fallback_locale(const String &p_locale) {
+	fallback = p_locale;
+}
+
 String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
@@ -406,44 +430,11 @@ void TranslationServer::clear() {
 }
 
 StringName TranslationServer::translate(const StringName &p_message, const StringName &p_context) const {
-	if (!enabled) {
-		return p_message;
-	}
-
 	return main_domain->translate(p_message, p_context);
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (!enabled) {
-		if (p_n == 1) {
-			return p_message;
-		}
-		return p_message_plural;
-	}
-
 	return main_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
-}
-
-bool TranslationServer::_load_translations(const String &p_from) {
-	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		const Vector<String> &translation_names = GLOBAL_GET(p_from);
-
-		int tcount = translation_names.size();
-
-		if (tcount) {
-			const String *r = translation_names.ptr();
-
-			for (int i = 0; i < tcount; i++) {
-				Ref<Translation> tr = ResourceLoader::load(r[i]);
-				if (tr.is_valid()) {
-					add_translation(tr);
-				}
-			}
-		}
-		return true;
-	}
-
-	return false;
 }
 
 bool TranslationServer::has_domain(const StringName &p_domain) const {
@@ -503,11 +494,10 @@ void TranslationServer::setup() {
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.is_empty()) {
-			return "en";
+		if (editor_domain->has_translation_for_locale(locale)) {
+			return locale;
 		}
-		return locales[0];
+		return "en";
 	} else {
 #else
 	{
@@ -519,26 +509,6 @@ String TranslationServer::get_tool_locale() {
 		}
 		return t->get_locale();
 	}
-}
-
-StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
-	return editor_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	return editor_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
-}
-
-StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
-	return property_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::doc_translate(const StringName &p_message, const StringName &p_context) const {
-	return doc_domain->translate(p_message, p_context);
-}
-
-StringName TranslationServer::doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	return doc_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -617,6 +587,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_country_name", "country"), &TranslationServer::get_country_name);
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
+	ClassDB::bind_method(D_METHOD("get_plural_rules", "locale"), &TranslationServer::get_plural_rules);
 
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(StringName()));
@@ -641,19 +612,29 @@ void TranslationServer::_bind_methods() {
 }
 
 void TranslationServer::load_translations() {
-	_load_translations("internationalization/locale/translations"); //all
-	_load_translations("internationalization/locale/translations_" + locale.substr(0, 2));
-
-	if (locale.substr(0, 2) != locale) {
-		_load_translations("internationalization/locale/translations_" + locale);
+	const String prop = "internationalization/locale/translations";
+	if (!ProjectSettings::get_singleton()->has_setting(prop)) {
+		return;
+	}
+	const Vector<String> &translations = GLOBAL_GET(prop);
+	for (const String &path : translations) {
+		Ref<Translation> tr = ResourceLoader::load(path);
+		if (tr.is_valid()) {
+			add_translation(tr);
+		}
 	}
 }
 
 TranslationServer::TranslationServer() {
 	singleton = this;
+
 	main_domain.instantiate();
+
+#ifdef TOOLS_ENABLED
 	editor_domain = get_or_add_domain("godot.editor");
 	property_domain = get_or_add_domain("godot.properties");
 	doc_domain = get_or_add_domain("godot.documentation");
+#endif // TOOLS_ENABLED
+
 	init_locale_info();
 }

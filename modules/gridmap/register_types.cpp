@@ -43,7 +43,9 @@
 void initialize_gridmap_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(GridMap);
+#ifndef NAVIGATION_3D_DISABLED
 		GridMap::navmesh_parse_init();
+#endif // NAVIGATION_3D_DISABLED
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {

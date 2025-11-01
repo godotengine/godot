@@ -103,7 +103,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {
 		}
 	}
 
-	JPH::HeightFieldShapeSettings shape_settings(heights_rev.ptr(), JPH::Vec3(offset_x, 0, offset_y), JPH::Vec3::sReplicate(1.0f), (JPH::uint32)width);
+	JPH::HeightFieldShapeSettings shape_settings(heights_rev.ptr(), JPH::Vec3(offset_x, 0, offset_y), JPH::Vec3::sOne(), (JPH::uint32)width);
 
 	shape_settings.mBitsPerSample = shape_settings.CalculateBitsPerSampleForError(0.0f);
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::active_edge_threshold_cos;

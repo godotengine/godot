@@ -32,8 +32,7 @@
 
 #include "core/templates/safe_refcount.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
 
 void *operator new(size_t p_size, const char *p_description) {
 	return Memory::alloc_static(p_size, false);
@@ -58,11 +57,9 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 #endif
 
 #ifdef DEBUG_ENABLED
-SafeNumeric<uint64_t> Memory::mem_usage;
-SafeNumeric<uint64_t> Memory::max_usage;
+static SafeNumeric<uint64_t> _current_mem_usage;
+static SafeNumeric<uint64_t> _max_mem_usage;
 #endif
-
-SafeNumeric<uint64_t> Memory::alloc_count;
 
 void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 	DEV_ASSERT(is_power_of_2(p_alignment));
@@ -96,6 +93,7 @@ void Memory::free_aligned_static(void *p_memory) {
 	free(p);
 }
 
+template <bool p_ensure_zero>
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
@@ -103,11 +101,14 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	void *mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+	void *mem;
+	if constexpr (p_ensure_zero) {
+		mem = calloc(1, p_bytes + (prepad ? DATA_OFFSET : 0));
+	} else {
+		mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+	}
 
 	ERR_FAIL_NULL_V(mem, nullptr);
-
-	alloc_count.increment();
 
 	if (prepad) {
 		uint8_t *s8 = (uint8_t *)mem;
@@ -116,14 +117,17 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 		*s = p_bytes;
 
 #ifdef DEBUG_ENABLED
-		uint64_t new_mem_usage = mem_usage.add(p_bytes);
-		max_usage.exchange_if_greater(new_mem_usage);
+		uint64_t new_mem_usage = _current_mem_usage.add(p_bytes);
+		_max_mem_usage.exchange_if_greater(new_mem_usage);
 #endif
 		return s8 + DATA_OFFSET;
 	} else {
 		return mem;
 	}
 }
+
+template void *Memory::alloc_static<true>(size_t p_bytes, bool p_pad_align);
+template void *Memory::alloc_static<false>(size_t p_bytes, bool p_pad_align);
 
 void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 	if (p_memory == nullptr) {
@@ -144,10 +148,10 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 
 #ifdef DEBUG_ENABLED
 		if (p_bytes > *s) {
-			uint64_t new_mem_usage = mem_usage.add(p_bytes - *s);
-			max_usage.exchange_if_greater(new_mem_usage);
+			uint64_t new_mem_usage = _current_mem_usage.add(p_bytes - *s);
+			_max_mem_usage.exchange_if_greater(new_mem_usage);
 		} else {
-			mem_usage.sub(*s - p_bytes);
+			_current_mem_usage.sub(*s - p_bytes);
 		}
 #endif
 
@@ -186,14 +190,12 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	alloc_count.decrement();
-
 	if (prepad) {
 		mem -= DATA_OFFSET;
 
 #ifdef DEBUG_ENABLED
 		uint64_t *s = (uint64_t *)(mem + SIZE_OFFSET);
-		mem_usage.sub(*s);
+		_current_mem_usage.sub(*s);
 #endif
 
 		free(mem);
@@ -208,7 +210,7 @@ uint64_t Memory::get_mem_available() {
 
 uint64_t Memory::get_mem_usage() {
 #ifdef DEBUG_ENABLED
-	return mem_usage.get();
+	return _current_mem_usage.get();
 #else
 	return 0;
 #endif
@@ -216,7 +218,7 @@ uint64_t Memory::get_mem_usage() {
 
 uint64_t Memory::get_mem_max_usage() {
 #ifdef DEBUG_ENABLED
-	return max_usage.get();
+	return _max_mem_usage.get();
 #else
 	return 0;
 #endif

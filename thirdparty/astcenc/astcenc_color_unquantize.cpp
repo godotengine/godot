@@ -925,15 +925,8 @@ void unpack_color_endpoints(
 			alpha_hdr = false;
 		}
 
-		vmask4 mask(true, true, true, false);
-
-		vint4 output0rgb = lsl<8>(output0) | vint4(0x80);
-		vint4 output0a = output0 * 257;
-		output0 = select(output0a, output0rgb, mask);
-
-		vint4 output1rgb = lsl<8>(output1) | vint4(0x80);
-		vint4 output1a = output1 * 257;
-		output1 = select(output1a, output1rgb, mask);
+		output0 = lsl<8>(output0) | vint4(0x80);
+		output1 = lsl<8>(output1) | vint4(0x80);
 	}
 	// An HDR profile decode, but may be using linear LDR endpoints
 	// Linear LDR 8-bit endpoints are expanded to 16-bit by replication

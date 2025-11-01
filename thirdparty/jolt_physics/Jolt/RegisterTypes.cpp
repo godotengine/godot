@@ -45,6 +45,10 @@ JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, PathConstraintPath)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, PathConstraintPathHermite)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, VehicleConstraintSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, WheeledVehicleControllerSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, WheelSettingsWV)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, TrackedVehicleControllerSettings)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, WheelSettingsTV)
+JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, MotorcycleControllerSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, RackAndPinionConstraintSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, GearConstraintSettings)
 JPH_DECLARE_RTTI_WITH_NAMESPACE_FOR_FACTORY(JPH_EXPORT, JPH, PulleyConstraintSettings)
@@ -70,6 +74,10 @@ void RegisterTypesInternal(uint64 inVersionID)
 	{
 		Trace("Version mismatch, make sure you compile the client code with the same Jolt version and compiler definitions!");
 		uint64 mismatch = JPH_VERSION_ID ^ inVersionID;
+		if (mismatch & 0xffffff)
+			Trace("Client reported version %d.%d.%d, library version is %d.%d.%d.",
+				(inVersionID >> 16) & 0xff, (inVersionID >> 8) & 0xff, inVersionID & 0xff,
+				JPH_VERSION_MAJOR, JPH_VERSION_MINOR, JPH_VERSION_PATCH);
 		auto check_bit = [mismatch](int inBit, const char *inLabel) { if (mismatch & (uint64(1) << (inBit + 23))) Trace("Mismatching define %s.", inLabel); };
 		check_bit(1, "JPH_DOUBLE_PRECISION");
 		check_bit(2, "JPH_CROSS_PLATFORM_DETERMINISTIC");
@@ -156,6 +164,10 @@ void RegisterTypesInternal(uint64 inVersionID)
 		JPH_RTTI(PathConstraintSettings),
 		JPH_RTTI(VehicleConstraintSettings),
 		JPH_RTTI(WheeledVehicleControllerSettings),
+		JPH_RTTI(WheelSettingsWV),
+		JPH_RTTI(TrackedVehicleControllerSettings),
+		JPH_RTTI(WheelSettingsTV),
+		JPH_RTTI(MotorcycleControllerSettings),
 		JPH_RTTI(PathConstraintPath),
 		JPH_RTTI(PathConstraintPathHermite),
 		JPH_RTTI(RackAndPinionConstraintSettings),

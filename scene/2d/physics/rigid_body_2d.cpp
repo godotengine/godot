@@ -498,6 +498,7 @@ bool RigidBody2D::is_sleeping() const {
 }
 
 void RigidBody2D::set_max_contacts_reported(int p_amount) {
+	ERR_FAIL_INDEX_MSG(p_amount, MAX_CONTACTS_REPORTED_2D_MAX, "Max contacts reported allocates memory (about 100 bytes each), and therefore must not be set too high.");
 	max_contacts_reported = p_amount;
 	PhysicsServer2D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
@@ -789,6 +790,9 @@ void RigidBody2D::_bind_methods() {
 }
 
 void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

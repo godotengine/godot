@@ -32,16 +32,20 @@
 
 #include "tile_set.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
 	return get_navigation_polygon(p_layer_id, false, false, false);
 }
+#endif // NAVIGATION_2D_DISABLED
 
 Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
 	return get_occluder_polygon(p_layer_id, 0, false, false, false);
 }
 
 void TileData::_bind_compatibility_methods() {
+#ifndef NAVIGATION_2D_DISABLED
 	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
+#endif // NAVIGATION_2D_DISABLED
 	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
 }
 

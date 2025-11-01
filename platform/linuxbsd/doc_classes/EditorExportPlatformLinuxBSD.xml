@@ -11,7 +11,7 @@
 	<members>
 		<member name="binary_format/architecture" type="String" setter="" getter="">
 			Application executable architecture.
-			Supported architectures: [code]x86_32[/code], [code]x86_64[/code], [code]arm64[/code], [code]arm32[/code], [code]rv64[/code], [code]ppc64[/code], [code]ppc32[/code], and [code]loongarch64[/code].
+			Supported architectures: [code]x86_32[/code], [code]x86_64[/code], [code]arm64[/code], [code]arm32[/code], [code]rv64[/code], [code]ppc64[/code], and [code]loongarch64[/code].
 			Official export templates include [code]x86_32[/code], [code]x86_64[/code], [code]arm32[/code], and [code]arm64[/code] binaries only.
 		</member>
 		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
@@ -25,6 +25,9 @@
 		</member>
 		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
 			If [code]true[/code], a console wrapper is exported alongside the main executable, which allows running the project with enabled console output.
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
 		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.

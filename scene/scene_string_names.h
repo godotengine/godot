@@ -45,116 +45,119 @@ public:
 
 	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
 
-	const StringName resized = StaticCString::create("resized");
-	const StringName draw = StaticCString::create("draw");
-	const StringName hidden = StaticCString::create("hidden");
-	const StringName visibility_changed = StaticCString::create("visibility_changed");
+	const StringName resized = "resized";
+	const StringName draw = "draw";
+	const StringName hidden = "hidden";
+	const StringName visibility_changed = "visibility_changed";
 
-	const StringName input_event = StaticCString::create("input_event");
-	const StringName gui_input = StaticCString::create("gui_input");
-	const StringName window_input = StaticCString::create("window_input");
+	const StringName input_event = "input_event";
+	const StringName gui_input = "gui_input";
+	const StringName window_input = "window_input";
 
-	const StringName tree_entered = StaticCString::create("tree_entered");
-	const StringName tree_exiting = StaticCString::create("tree_exiting");
-	const StringName tree_exited = StaticCString::create("tree_exited");
-	const StringName ready = StaticCString::create("ready");
-	const StringName _ready = StaticCString::create("_ready");
+	const StringName tree_entered = "tree_entered";
+	const StringName tree_exiting = "tree_exiting";
+	const StringName tree_exited = "tree_exited";
+	const StringName ready = "ready";
+	const StringName _ready = "_ready";
 
-	const StringName item_rect_changed = StaticCString::create("item_rect_changed");
-	const StringName size_flags_changed = StaticCString::create("size_flags_changed");
-	const StringName minimum_size_changed = StaticCString::create("minimum_size_changed");
-	const StringName sleeping_state_changed = StaticCString::create("sleeping_state_changed");
-	const StringName node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
-	const StringName update = StaticCString::create("update");
-	const StringName updated = StaticCString::create("updated");
+	const StringName item_rect_changed = "item_rect_changed";
+	const StringName size_flags_changed = "size_flags_changed";
+	const StringName minimum_size_changed = "minimum_size_changed";
+	const StringName sleeping_state_changed = "sleeping_state_changed";
+	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";
+	const StringName update = "update";
+	const StringName updated = "updated";
 
-	const StringName line_separation = StaticCString::create("line_separation");
-	const StringName font = StaticCString::create("font");
-	const StringName font_size = StaticCString::create("font_size");
-	const StringName font_color = StaticCString::create("font_color");
+	const StringName line_separation = "line_separation";
+	const StringName paragraph_separation = "paragraph_separation";
+	const StringName font = "font";
+	const StringName font_size = "font_size";
+	const StringName font_color = "font_color";
 
-	const StringName mouse_entered = StaticCString::create("mouse_entered");
-	const StringName mouse_exited = StaticCString::create("mouse_exited");
-	const StringName mouse_shape_entered = StaticCString::create("mouse_shape_entered");
-	const StringName mouse_shape_exited = StaticCString::create("mouse_shape_exited");
-	const StringName focus_entered = StaticCString::create("focus_entered");
-	const StringName focus_exited = StaticCString::create("focus_exited");
+	const StringName mouse_entered = "mouse_entered";
+	const StringName mouse_exited = "mouse_exited";
+	const StringName mouse_shape_entered = "mouse_shape_entered";
+	const StringName mouse_shape_exited = "mouse_shape_exited";
+	const StringName focus_entered = "focus_entered";
+	const StringName focus_exited = "focus_exited";
 
-	const StringName pre_sort_children = StaticCString::create("pre_sort_children");
-	const StringName sort_children = StaticCString::create("sort_children");
+	const StringName pre_sort_children = "pre_sort_children";
+	const StringName sort_children = "sort_children";
 
-	const StringName finished = StaticCString::create("finished");
-	const StringName animation_finished = StaticCString::create("animation_finished");
-	const StringName animation_changed = StaticCString::create("animation_changed");
-	const StringName animation_started = StaticCString::create("animation_started");
-	const StringName RESET = StaticCString::create("RESET");
+	const StringName finished = "finished";
+	const StringName animation_finished = "animation_finished";
+	const StringName animation_changed = "animation_changed";
+	const StringName animation_started = "animation_started";
+	const StringName RESET = "RESET";
 
-	const StringName pose_updated = StaticCString::create("pose_updated");
-	const StringName skeleton_updated = StaticCString::create("skeleton_updated");
-	const StringName bone_enabled_changed = StaticCString::create("bone_enabled_changed");
-	const StringName show_rest_only_changed = StaticCString::create("show_rest_only_changed");
+	const StringName pose_updated = "pose_updated";
+	const StringName skeleton_updated = "skeleton_updated";
+	const StringName bone_enabled_changed = "bone_enabled_changed";
+	const StringName show_rest_only_changed = "show_rest_only_changed";
 
-	const StringName body_shape_entered = StaticCString::create("body_shape_entered");
-	const StringName body_entered = StaticCString::create("body_entered");
-	const StringName body_shape_exited = StaticCString::create("body_shape_exited");
-	const StringName body_exited = StaticCString::create("body_exited");
+	const StringName body_shape_entered = "body_shape_entered";
+	const StringName body_entered = "body_entered";
+	const StringName body_shape_exited = "body_shape_exited";
+	const StringName body_exited = "body_exited";
 
-	const StringName area_shape_entered = StaticCString::create("area_shape_entered");
-	const StringName area_shape_exited = StaticCString::create("area_shape_exited");
+	const StringName area_shape_entered = "area_shape_entered";
+	const StringName area_shape_exited = "area_shape_exited";
 
-	const StringName screen_entered = StaticCString::create("screen_entered");
-	const StringName screen_exited = StaticCString::create("screen_exited");
+	const StringName screen_entered = "screen_entered";
+	const StringName screen_exited = "screen_exited";
 
-	const StringName _spatial_editor_group = StaticCString::create("_spatial_editor_group");
-	const StringName _request_gizmo = StaticCString::create("_request_gizmo");
+	const StringName _spatial_editor_group = "_spatial_editor_group";
+	const StringName _request_gizmo = "_request_gizmo";
 
-	const StringName offset = StaticCString::create("offset");
-	const StringName rotation_mode = StaticCString::create("rotation_mode");
-	const StringName rotate = StaticCString::create("rotate");
-	const StringName h_offset = StaticCString::create("h_offset");
-	const StringName v_offset = StaticCString::create("v_offset");
+	const StringName offset = "offset";
+	const StringName rotation_mode = "rotation_mode";
+	const StringName rotate = "rotate";
+	const StringName h_offset = "h_offset";
+	const StringName v_offset = "v_offset";
 
-	const StringName area_entered = StaticCString::create("area_entered");
-	const StringName area_exited = StaticCString::create("area_exited");
+	const StringName area_entered = "area_entered";
+	const StringName area_exited = "area_exited";
 
-	const StringName frame_changed = StaticCString::create("frame_changed");
-	const StringName texture_changed = StaticCString::create("texture_changed");
+	const StringName frame_changed = "frame_changed";
+	const StringName texture_changed = "texture_changed";
 
-	const StringName autoplay = StaticCString::create("autoplay");
-	const StringName blend_times = StaticCString::create("blend_times");
-	const StringName speed = StaticCString::create("speed");
+	const StringName autoplay = "autoplay";
+	const StringName blend_times = "blend_times";
+	const StringName speed = "speed";
 
 	const NodePath path_pp = NodePath("..");
 
-	const StringName default_ = StaticCString::create("default"); // default would conflict with C++ keyword.
-	const StringName output = StaticCString::create("output");
+	const StringName default_ = "default"; // default would conflict with C++ keyword.
+	const StringName output = "output";
 
-	const StringName Master = StaticCString::create("Master"); // Audio bus name.
+	const StringName Master = "Master"; // Audio bus name.
 
-	const StringName theme_changed = StaticCString::create("theme_changed");
-	const StringName shader = StaticCString::create("shader");
-	const StringName shader_overrides_group = StaticCString::create("_shader_overrides_group_");
-	const StringName shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
+	const StringName theme_changed = "theme_changed";
+	const StringName shader = "shader";
+	const StringName shader_overrides_group = "_shader_overrides_group_";
+	const StringName shader_overrides_group_active = "_shader_overrides_group_active_";
 
-	const StringName _custom_type_script = StaticCString::create("_custom_type_script");
+	const StringName _custom_type_script = "_custom_type_script";
 
-	const StringName pressed = StaticCString::create("pressed");
-	const StringName id_pressed = StaticCString::create("id_pressed");
-	const StringName toggled = StaticCString::create("toggled");
-	const StringName hover = StaticCString::create("hover");
+	const StringName pressed = "pressed";
+	const StringName id_pressed = "id_pressed";
+	const StringName toggled = "toggled";
+	const StringName hover = "hover";
 
-	const StringName panel = StaticCString::create("panel");
-	const StringName item_selected = StaticCString::create("item_selected");
-	const StringName confirmed = StaticCString::create("confirmed");
+	const StringName panel = "panel";
+	const StringName item_selected = "item_selected";
+	const StringName confirmed = "confirmed";
 
-	const StringName text_changed = StaticCString::create("text_changed");
-	const StringName text_submitted = StaticCString::create("text_submitted");
-	const StringName value_changed = StaticCString::create("value_changed");
+	const StringName text_changed = "text_changed";
+	const StringName text_submitted = "text_submitted";
+	const StringName value_changed = "value_changed";
 
-	const StringName Start = StaticCString::create("Start");
-	const StringName End = StaticCString::create("End");
+	const StringName Start = "Start";
+	const StringName End = "End";
+	const StringName state_started = "state_started";
+	const StringName state_finished = "state_finished";
 
-	const StringName FlatButton = StaticCString::create("FlatButton");
+	const StringName FlatButton = "FlatButton";
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name

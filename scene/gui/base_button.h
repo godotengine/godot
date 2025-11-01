@@ -34,6 +34,7 @@
 #include "scene/gui/control.h"
 
 class ButtonGroup;
+class Timer;
 
 class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
@@ -86,6 +87,7 @@ protected:
 	void _notification(int p_what);
 
 	bool _was_pressed_by_mouse() const;
+	void _accessibility_action_click(const Variant &p_data);
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)

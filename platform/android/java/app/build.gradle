@@ -12,7 +12,7 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -34,6 +34,11 @@ configurations {
 }
 
 dependencies {
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:1.3.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.7.0"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:1.3.11"
+
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
@@ -90,7 +95,7 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacks:installTime"]
+    assetPacks = [":assetPackInstallTime"]
 
     namespace = 'com.godot.game'
 
@@ -101,14 +106,10 @@ android {
         }
 
         ndk {
+            debugSymbolLevel 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
-
-        manifestPlaceholders = [
-            godotEditorVersion: getGodotEditorVersion(),
-            godotRenderingMethod: getGodotRenderingMethod()
-        ]
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()
@@ -118,6 +119,8 @@ android {
         targetSdkVersion getExportTargetSdkVersion()
 
         missingDimensionStrategy 'products', 'template'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     lintOptions {
@@ -131,9 +134,11 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
         }
 
         jniLibs {
@@ -216,21 +221,26 @@ android {
     flavorDimensions 'edition'
 
     productFlavors {
-        standard {}
+        // Product flavor for the standard (no .net support) builds.
+        standard {
+            getIsDefault().set(true)
+        }
+
+        // Product flavor for the Mono (.net) builds.
         mono {}
+
+        // Product flavor used for running instrumented tests.
+        instrumented {
+            applicationIdSuffix ".instrumented"
+            versionNameSuffix "-instrumented"
+        }
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
-        }
-        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
-        release.jniLibs.srcDirs = ['libs/release']
+        main.res.srcDirs += ['res']
+        debug.jniLibs.srcDirs += ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        dev.jniLibs.srcDirs += ['libs/dev']
+        release.jniLibs.srcDirs += ['libs/release']
     }
 
     applicationVariants.all { variant ->
@@ -273,8 +283,8 @@ task copyAndRenameBinary(type: Copy) {
  * Used to validate the version of the Java SDK used for the Godot gradle builds.
  */
 task validateJavaVersion {
-    if (JavaVersion.current() != versions.javaVersion) {
-        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
+    if (!JavaVersion.current().isCompatibleWith(versions.javaVersion)) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the minimum supported Java version for Godot gradle builds.")
     }
 }
 

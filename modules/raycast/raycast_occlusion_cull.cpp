@@ -173,6 +173,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_di
 					}
 					int k = tile_i * TILE_SIZE + tile_j;
 					int tile_index = i * tile_grid_size.x + j;
+
 					mips[0][y * buffer_size.x + x] = camera_rays[tile_index].ray.tfar[k];
 				}
 			}

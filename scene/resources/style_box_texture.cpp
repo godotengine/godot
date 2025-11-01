@@ -30,6 +30,8 @@
 
 #include "style_box_texture.h"
 
+#include "servers/rendering/rendering_server.h"
+
 float StyleBoxTexture::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
 
@@ -178,7 +180,7 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Vector2 start_offset = Vector2(texture_margin[SIDE_LEFT], texture_margin[SIDE_TOP]);
 	Vector2 end_offset = Vector2(texture_margin[SIDE_RIGHT], texture_margin[SIDE_BOTTOM]);
 
-	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), start_offset, end_offset, RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate);
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_scaled_rid(), start_offset, end_offset, RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate);
 }
 
 void StyleBoxTexture::_bind_methods() {
@@ -237,7 +239,3 @@ void StyleBoxTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
-
-StyleBoxTexture::StyleBoxTexture() {}
-
-StyleBoxTexture::~StyleBoxTexture() {}

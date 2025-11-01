@@ -30,9 +30,12 @@
 
 #pragma once
 
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_scale.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_hiz.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_resolve.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ss_effects_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_blur.glsl.gen.h"
@@ -43,8 +46,9 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
+#define RB_SCOPE_SSLF SNAME("rb_sslf")
 #define RB_SCOPE_SSDS SNAME("rb_ssds")
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
@@ -59,15 +63,16 @@
 #define RB_IMPORTANCE_MAP SNAME("importance_map")
 #define RB_IMPORTANCE_PONG SNAME("importance_pong")
 
-#define RB_DEPTH_SCALED SNAME("depth_scaled")
-#define RB_NORMAL_SCALED SNAME("normal_scaled")
-#define RB_BLUR_RADIUS SNAME("blur_radius")
-#define RB_INTERMEDIATE SNAME("intermediate")
-#define RB_OUTPUT SNAME("output")
+#define RB_NORMAL_ROUGHNESS SNAME("normal_roughness")
+#define RB_HIZ SNAME("hiz")
+#define RB_SSR SNAME("ssr")
+#define RB_MIP_LEVEL SNAME("mip_level")
 
 class RenderSceneBuffersRD;
 
 namespace RendererRD {
+
+class CopyEffects;
 
 class SSEffects {
 private:
@@ -78,6 +83,11 @@ public:
 
 	SSEffects();
 	~SSEffects();
+
+	/* Last Frame */
+
+	void allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
+	void copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_render_buffers, CopyEffects &p_copy_effects);
 
 	/* SS Downsampler */
 
@@ -132,15 +142,16 @@ public:
 	void generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
 
 	/* Screen Space Reflection */
-	void ssr_set_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
+	void ssr_set_half_size(bool p_half_size);
 
 	struct SSRRenderBuffers {
 		Size2i size;
-		RenderingServer::EnvironmentSSRRoughnessQuality roughness_quality = RenderingServer::ENV_SSR_ROUGHNESS_QUALITY_DISABLED;
+		uint32_t mipmaps = 1;
+		bool half_size = false;
 	};
 
-	void ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format);
-	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, const RID *p_metallic_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Vector3 *p_eye_offsets);
+	void ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RD::DataFormat p_color_format);
+	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects);
 
 	/* subsurface scattering */
 	void sss_set_quality(RS::SubSurfaceScatteringQuality p_quality);
@@ -166,7 +177,7 @@ private:
 	float ssil_fadeout_from = 50.0;
 	float ssil_fadeout_to = 300.0;
 
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
+	bool ssr_half_size = false;
 
 	RS::SubSurfaceScatteringQuality sss_quality = RS::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
 	float sss_scale = 0.05;
@@ -210,7 +221,7 @@ private:
 
 		RID mirror_sampler;
 
-		RID pipelines[SS_EFFECTS_MAX];
+		PipelineDeferredRD pipelines[SS_EFFECTS_MAX];
 	} ss_effects;
 
 	/* SSIL */
@@ -307,7 +318,7 @@ private:
 		SsilInterleaveShaderRD interleave_shader;
 		RID interleave_shader_version;
 
-		RID pipelines[SSIL_MAX];
+		PipelineDeferredRD pipelines[SSIL_MAX];
 	} ssil;
 
 	void gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_slices, const RID *p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
@@ -401,107 +412,100 @@ private:
 		SsaoInterleaveShaderRD interleave_shader;
 		RID interleave_shader_version;
 
-		RID pipelines[SSAO_MAX];
+		PipelineDeferredRD pipelines[SSAO_MAX];
 	} ssao;
 
 	void gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
 
 	/* Screen Space Reflection */
 
-	enum SSRShaderSpecializations {
-		SSR_MULTIVIEW = 1 << 0,
-		SSR_VARIATIONS = 2,
+	enum ScreenSpaceReflectionDownsampleMode {
+		SCREEN_SPACE_REFLECTION_DOWNSAMPLE_DEFAULT,
+		SCREEN_SPACE_REFLECTION_DOWNSAMPLE_ODD_WIDTH,
+		SCREEN_SPACE_REFLECTION_DOWNSAMPLE_ODD_HEIGHT,
+		SCREEN_SPACE_REFLECTION_DOWNSAMPLE_ODD_WIDTH_AND_HEIGHT,
+		SCREEN_SPACE_REFLECTION_DOWNSAMPLE_MAX
+	};
+
+	struct ScreenSpaceReflectionDownsamplePushConstant {
+		int32_t screen_size[2];
+		int32_t pad[2];
+	};
+
+	enum ScreenSpaceReflectionHizMode {
+		SCREEN_SPACE_REFLECTION_HIZ_DEFAULT,
+		SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH,
+		SCREEN_SPACE_REFLECTION_HIZ_ODD_HEIGHT,
+		SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH_AND_HEIGHT,
+		SCREEN_SPACE_REFLECTION_HIZ_MAX
+	};
+
+	struct ScreenSpaceReflectionHizPushConstant {
+		int32_t screen_size[2];
+		int32_t pad[2];
 	};
 
 	struct ScreenSpaceReflectionSceneData {
 		float projection[2][16];
 		float inv_projection[2][16];
+		float reprojection[2][16];
 		float eye_offset[2][4];
 	};
 
-	// SSR Scale
-
-	struct ScreenSpaceReflectionScalePushConstant {
-		int32_t screen_size[2];
-		float camera_z_near;
-		float camera_z_far;
-
-		uint32_t orthogonal;
-		uint32_t filter;
-		uint32_t view_index;
-		uint32_t pad1;
-	};
-
-	struct ScreenSpaceReflectionScale {
-		ScreenSpaceReflectionScaleShaderRD shader;
-		RID shader_version;
-		RID pipelines[SSR_VARIATIONS];
-	} ssr_scale;
-
-	// SSR main
-
-	enum ScreenSpaceReflectionMode {
-		SCREEN_SPACE_REFLECTION_NORMAL,
-		SCREEN_SPACE_REFLECTION_ROUGH,
-		SCREEN_SPACE_REFLECTION_MAX,
-	};
-
 	struct ScreenSpaceReflectionPushConstant {
-		float proj_info[4]; // 16 - 16
+		int32_t screen_size[2];
+		int32_t mipmaps;
+		int32_t num_steps;
+		float distance_fade;
+		float curve_fade_in;
+		float depth_tolerance;
+		int32_t orthogonal;
+		uint32_t view_index;
+		int32_t pad[3];
+	};
 
-		int32_t screen_size[2]; //  8 - 24
-		float camera_z_near; //  4 - 28
-		float camera_z_far; //  4 - 32
+	struct ScreenSpaceReflectionFilterPushConstant {
+		int32_t screen_size[2];
+		uint32_t mip_level;
+		int32_t pad;
+	};
 
-		int32_t num_steps; //  4 - 36
-		float depth_tolerance; //  4 - 40
-		float distance_fade; //  4 - 44
-		float curve_fade_in; //  4 - 48
-
-		uint32_t orthogonal; //  4 - 52
-		float filter_mipmap_levels; //  4 - 56
-		uint32_t use_half_res; //  4 - 60
-		uint32_t view_index; //  4 - 64
-
-		// float projection[16];			// this is in our ScreenSpaceReflectionSceneData now
+	struct ScreenSpaceReflectionResolvePushConstant {
+		int32_t screen_size[2];
+		int32_t pad[2];
 	};
 
 	struct ScreenSpaceReflection {
-		ScreenSpaceReflectionShaderRD shader;
-		RID shader_version;
-		RID pipelines[SSR_VARIATIONS][SCREEN_SPACE_REFLECTION_MAX];
+		ScreenSpaceReflectionDownsampleShaderRD downsample_shader;
+		RID downsample_shader_version;
+		PipelineDeferredRD downsample_pipelines[SCREEN_SPACE_REFLECTION_DOWNSAMPLE_MAX];
 
+		ScreenSpaceReflectionHizShaderRD hiz_shader;
+		RID hiz_shader_version;
+		PipelineDeferredRD hiz_pipelines[SCREEN_SPACE_REFLECTION_HIZ_MAX];
+
+		ScreenSpaceReflectionShaderRD ssr_shader;
+		RID ssr_shader_version;
+		PipelineDeferredRD ssr_pipeline;
 		RID ubo;
+
+		ScreenSpaceReflectionFilterShaderRD filter_shader;
+		RID filter_shader_version;
+		PipelineDeferredRD filter_pipeline;
+
+		ScreenSpaceReflectionResolveShaderRD resolve_shader;
+		RID resolve_shader_version;
+		PipelineDeferredRD resolve_pipeline;
 	} ssr;
 
-	// SSR Filter
-
-	struct ScreenSpaceReflectionFilterPushConstant {
-		float proj_info[4]; // 16 - 16
-
-		uint32_t orthogonal; //  4 - 20
-		float edge_tolerance; //  4 - 24
-		int32_t increment; //  4 - 28
-		uint32_t view_index; //  4 - 32
-
-		int32_t screen_size[2]; //  8 - 40
-		uint32_t vertical; //  4 - 44
-		uint32_t steps; //  4 - 48
-	};
-
-	enum SSRReflectionMode {
-		SCREEN_SPACE_REFLECTION_FILTER_HORIZONTAL,
-		SCREEN_SPACE_REFLECTION_FILTER_VERTICAL,
-		SCREEN_SPACE_REFLECTION_FILTER_MAX,
-	};
-
-	struct ScreenSpaceReflectionFilter {
-		ScreenSpaceReflectionFilterShaderRD shader;
-		RID shader_version;
-		RID pipelines[SSR_VARIATIONS][SCREEN_SPACE_REFLECTION_FILTER_MAX];
-	} ssr_filter;
-
 	/* Subsurface scattering */
+
+	enum SSSMode {
+		SUBSURFACE_SCATTERING_MODE_LOW_QUALITY,
+		SUBSURFACE_SCATTERING_MODE_MEDIUM_QUALITY,
+		SUBSURFACE_SCATTERING_MODE_HIGH_QUALITY,
+		SUBSURFACE_SCATTERING_MODE_MAX
+	};
 
 	struct SubSurfaceScatteringPushConstant {
 		int32_t screen_size[2];
@@ -521,7 +525,7 @@ private:
 		SubSurfaceScatteringPushConstant push_constant;
 		SubsurfaceScatteringShaderRD shader;
 		RID shader_version;
-		RID pipelines[3]; //3 quality levels
+		PipelineDeferredRD pipelines[SUBSURFACE_SCATTERING_MODE_MAX];
 	} sss;
 };
 

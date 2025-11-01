@@ -30,7 +30,7 @@
 
 #include "area_3d.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
@@ -172,9 +172,9 @@ void Area3D::_initialize_wind() {
 	// Overwrite with area-specified info if available
 	if (!wind_source_path.is_empty()) {
 		Node *wind_source_node = get_node_or_null(wind_source_path);
-		ERR_FAIL_NULL_MSG(wind_source_node, "Path to wind source is invalid: '" + wind_source_path + "'.");
+		ERR_FAIL_NULL_MSG(wind_source_node, "Path to wind source is invalid: '" + String(wind_source_path) + "'.");
 		Node3D *wind_source_node3d = Object::cast_to<Node3D>(wind_source_node);
-		ERR_FAIL_NULL_MSG(wind_source_node3d, "Path to wind source does not point to a Node3D: '" + wind_source_path + "'.");
+		ERR_FAIL_NULL_MSG(wind_source_node3d, "Path to wind source does not point to a Node3D: '" + String(wind_source_path) + "'.");
 		Transform3D global_transform = wind_source_node3d->get_transform();
 		wind_direction = -global_transform.basis.get_column(Vector3::AXIS_Z).normalized();
 		wind_source = global_transform.origin;
@@ -645,6 +645,9 @@ float Area3D::get_reverb_uniformity() const {
 }
 
 void Area3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -797,7 +800,7 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled"), "set_use_reverb_bus", "is_using_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_use_reverb_bus", "is_using_reverb_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus_name", "get_reverb_bus_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");

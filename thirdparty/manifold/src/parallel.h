@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "./iters.h"
+#include "iters.h"
 #if (MANIFOLD_PAR == 1)
 #include <tbb/combinable.h>
 #include <tbb/parallel_for.h>
@@ -114,20 +114,20 @@ template <typename T, typename InputIter, typename OutputIter, typename BinOp>
 struct ScanBody {
   T sum;
   T identity;
-  BinOp &f;
+  BinOp& f;
   InputIter input;
   OutputIter output;
 
-  ScanBody(T sum, T identity, BinOp &f, InputIter input, OutputIter output)
+  ScanBody(T sum, T identity, BinOp& f, InputIter input, OutputIter output)
       : sum(sum), identity(identity), f(f), input(input), output(output) {}
-  ScanBody(ScanBody &b, tbb::split)
+  ScanBody(ScanBody& b, tbb::split)
       : sum(b.identity),
         identity(b.identity),
         f(b.f),
         input(b.input),
         output(b.output) {}
   template <typename Tag>
-  void operator()(const tbb::blocked_range<size_t> &r, Tag) {
+  void operator()(const tbb::blocked_range<size_t>& r, Tag) {
     T temp = sum;
     for (size_t i = r.begin(); i < r.end(); ++i) {
       T inputTmp = input[i];
@@ -137,23 +137,23 @@ struct ScanBody {
     sum = temp;
   }
   T get_sum() const { return sum; }
-  void reverse_join(ScanBody &a) { sum = f(a.sum, sum); }
-  void assign(ScanBody &b) { sum = b.sum; }
+  void reverse_join(ScanBody& a) { sum = f(a.sum, sum); }
+  void assign(ScanBody& b) { sum = b.sum; }
 };
 
 template <typename InputIter, typename OutputIter, typename P>
 struct CopyIfScanBody {
   size_t sum;
-  P &pred;
+  P& pred;
   InputIter input;
   OutputIter output;
 
-  CopyIfScanBody(P &pred, InputIter input, OutputIter output)
+  CopyIfScanBody(P& pred, InputIter input, OutputIter output)
       : sum(0), pred(pred), input(input), output(output) {}
-  CopyIfScanBody(CopyIfScanBody &b, tbb::split)
+  CopyIfScanBody(CopyIfScanBody& b, tbb::split)
       : sum(0), pred(b.pred), input(b.input), output(b.output) {}
   template <typename Tag>
-  void operator()(const tbb::blocked_range<size_t> &r, Tag) {
+  void operator()(const tbb::blocked_range<size_t>& r, Tag) {
     size_t temp = sum;
     for (size_t i = r.begin(); i < r.end(); ++i) {
       if (pred(i)) {
@@ -164,8 +164,8 @@ struct CopyIfScanBody {
     sum = temp;
   }
   size_t get_sum() const { return sum; }
-  void reverse_join(CopyIfScanBody &a) { sum = a.sum + sum; }
-  void assign(CopyIfScanBody &b) { sum = b.sum; }
+  void reverse_join(CopyIfScanBody& a) { sum = a.sum + sum; }
+  void assign(CopyIfScanBody& b) { sum = b.sum; }
 };
 
 template <typename N, const int K>
@@ -173,11 +173,11 @@ struct Hist {
   using SizeType = N;
   static constexpr int k = K;
   N hist[k][256] = {{0}};
-  void merge(const Hist<N, K> &other) {
+  void merge(const Hist<N, K>& other) {
     for (int i = 0; i < k; ++i)
       for (int j = 0; j < 256; ++j) hist[i][j] += other.hist[i][j];
   }
-  void prefixSum(N total, bool *canSkip) {
+  void prefixSum(N total, bool* canSkip) {
     for (int i = 0; i < k; ++i) {
       size_t count = 0;
       for (int j = 0; j < 256; ++j) {
@@ -191,8 +191,8 @@ struct Hist {
 };
 
 template <typename T, typename H>
-void histogram(T *ptr, typename H::SizeType n, H &hist) {
-  auto worker = [](T *ptr, typename H::SizeType n, H &hist) {
+void histogram(T* ptr, typename H::SizeType n, H& hist) {
+  auto worker = [](T* ptr, typename H::SizeType n, H& hist) {
     for (typename H::SizeType i = 0; i < n; ++i)
       for (int k = 0; k < hist.k; ++k)
         ++hist.hist[k][(ptr[i] >> (8 * k)) & 0xFF];
@@ -203,21 +203,21 @@ void histogram(T *ptr, typename H::SizeType n, H &hist) {
     tbb::combinable<H> store;
     tbb::parallel_for(
         tbb::blocked_range<typename H::SizeType>(0, n, kSeqThreshold),
-        [&worker, &store, ptr](const auto &r) {
+        [&worker, &store, ptr](const auto& r) {
           worker(ptr + r.begin(), r.end() - r.begin(), store.local());
         });
-    store.combine_each([&hist](const H &h) { hist.merge(h); });
+    store.combine_each([&hist](const H& h) { hist.merge(h); });
   }
 }
 
 template <typename T, typename H>
-void shuffle(T *src, T *target, typename H::SizeType n, H &hist, int k) {
+void shuffle(T* src, T* target, typename H::SizeType n, H& hist, int k) {
   for (typename H::SizeType i = 0; i < n; ++i)
     target[hist.hist[k][(src[i] >> (8 * k)) & 0xFF]++] = src[i];
 }
 
 template <typename T, typename SizeType>
-bool LSB_radix_sort(T *input, T *tmp, SizeType n) {
+bool LSB_radix_sort(T* input, T* tmp, SizeType n) {
   Hist<SizeType, sizeof(T) / sizeof(char)> hist;
   if (std::is_sorted(input, input + n)) return false;
   histogram(input, n, hist);
@@ -240,9 +240,9 @@ struct SortedRange {
   SizeType offset = 0, length = 0;
   bool inTmp = false;
 
-  SortedRange(T *input, T *tmp, SizeType offset = 0, SizeType length = 0)
+  SortedRange(T* input, T* tmp, SizeType offset = 0, SizeType length = 0)
       : input(input), tmp(tmp), offset(offset), length(length) {}
-  SortedRange(SortedRange<T, SizeType> &r, tbb::split)
+  SortedRange(SortedRange<T, SizeType>& r, tbb::split)
       : input(r.input), tmp(r.tmp) {}
   // FIXME: no idea why thread sanitizer reports data race here
 #if defined(__has_feature)
@@ -251,7 +251,7 @@ struct SortedRange {
 #endif
 #endif
   void
-  operator()(const tbb::blocked_range<SizeType> &range) {
+  operator()(const tbb::blocked_range<SizeType>& range) {
     SortedRange<T, SizeType> rhs(input, tmp, range.begin(),
                                  range.end() - range.begin());
     rhs.inTmp =
@@ -267,7 +267,7 @@ struct SortedRange {
     copy(src + offset, src + offset + length, target + offset);
     return !inTmp;
   }
-  void join(const SortedRange<T, SizeType> &rhs) {
+  void join(const SortedRange<T, SizeType>& rhs) {
     if (inTmp != rhs.inTmp) {
       if (length < rhs.length)
         inTmp = swapBuffer();
@@ -286,8 +286,8 @@ struct SortedRange {
 };
 
 template <typename T, typename SizeTy>
-void radix_sort(T *input, SizeTy n) {
-  T *aux = new T[n];
+void radix_sort(T* input, SizeTy n) {
+  T* aux = new T[n];
   SizeTy blockSize = std::max(n / tbb::this_task_arena::max_concurrency() / 4,
                               static_cast<SizeTy>(kSeqThreshold / sizeof(T)));
   SortedRange<T, SizeTy> result(input, aux);
@@ -306,7 +306,7 @@ void mergeSort(ExecutionPolicy policy, Iterator first, Iterator last,
     // apparently this prioritizes threads inside here?
     tbb::this_task_arena::isolate([&] {
       size_t length = std::distance(first, last);
-      T *tmp = new T[length];
+      T* tmp = new T[length];
       copy(policy, first, last, tmp);
       details::mergeSortRec(tmp, first, 0, length, comp);
       delete[] tmp;
@@ -376,13 +376,16 @@ void for_each(ExecutionPolicy policy, Iter first, Iter last, F f) {
                     typename std::iterator_traits<Iter>::iterator_category,
                     std::random_access_iterator_tag>,
                 "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    tbb::parallel_for(tbb::blocked_range<Iter>(first, last),
-                      [&f](const tbb::blocked_range<Iter> &range) {
-                        for (Iter i = range.begin(); i != range.end(); i++)
-                          f(*i);
-                      });
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_for(tbb::blocked_range<Iter>(first, last),
+                        [&f](const tbb::blocked_range<Iter>& range) {
+                          for (Iter i = range.begin(); i != range.end(); i++)
+                            f(*i);
+                        });
+    });
     return;
   }
 #endif
@@ -412,16 +415,19 @@ T reduce(ExecutionPolicy policy, InputIter first, InputIter last, T init,
                     typename std::iterator_traits<InputIter>::iterator_category,
                     std::random_access_iterator_tag>,
                 "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     // should we use deterministic reduce here?
-    return tbb::parallel_reduce(
-        tbb::blocked_range<InputIter>(first, last, details::kSeqThreshold),
-        init,
-        [&f](const tbb::blocked_range<InputIter> &range, T value) {
-          return std::reduce(range.begin(), range.end(), value, f);
-        },
-        f);
+    return tbb::this_task_arena::isolate([&]() {
+      return tbb::parallel_reduce(
+          tbb::blocked_range<InputIter>(first, last, details::kSeqThreshold),
+          init,
+          [&f](const tbb::blocked_range<InputIter>& range, T value) {
+            return std::reduce(range.begin(), range.end(), value, f);
+          },
+          f);
+    });
   }
 #endif
   return std::reduce(first, last, init, f);
@@ -488,21 +494,24 @@ void inclusive_scan(ExecutionPolicy policy, InputIter first, InputIter last,
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    tbb::parallel_scan(
-        tbb::blocked_range<size_t>(0, std::distance(first, last)),
-        static_cast<T>(0),
-        [&](const tbb::blocked_range<size_t> &range, T sum,
-            bool is_final_scan) {
-          T temp = sum;
-          for (size_t i = range.begin(); i < range.end(); ++i) {
-            temp = temp + first[i];
-            if (is_final_scan) d_first[i] = temp;
-          }
-          return temp;
-        },
-        std::plus<T>());
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_scan(
+          tbb::blocked_range<size_t>(0, std::distance(first, last)),
+          static_cast<T>(0),
+          [&](const tbb::blocked_range<size_t>& range, T sum,
+              bool is_final_scan) {
+            T temp = sum;
+            for (size_t i = range.begin(); i < range.end(); ++i) {
+              temp = temp + first[i];
+              if (is_final_scan) d_first[i] = temp;
+            }
+            return temp;
+          },
+          std::plus<T>());
+    });
     return;
   }
 #endif
@@ -550,12 +559,16 @@ void exclusive_scan(ExecutionPolicy policy, InputIter first, InputIter last,
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
+  (void)identity;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     details::ScanBody<T, InputIter, OutputIter, BinOp> body(init, identity, f,
                                                             first, d_first);
-    tbb::parallel_scan(
-        tbb::blocked_range<size_t>(0, std::distance(first, last)), body);
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_scan(
+          tbb::blocked_range<size_t>(0, std::distance(first, last)), body);
+    });
     return;
   }
 #endif
@@ -603,15 +616,18 @@ void transform(ExecutionPolicy policy, InputIter first, InputIter last,
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    tbb::parallel_for(tbb::blocked_range<size_t>(
-                          0, static_cast<size_t>(std::distance(first, last))),
-                      [&](const tbb::blocked_range<size_t> &range) {
-                        std::transform(first + range.begin(),
-                                       first + range.end(),
-                                       d_first + range.begin(), f);
-                      });
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_for(tbb::blocked_range<size_t>(
+                            0, static_cast<size_t>(std::distance(first, last))),
+                        [&](const tbb::blocked_range<size_t>& range) {
+                          std::transform(first + range.begin(),
+                                         first + range.end(),
+                                         d_first + range.begin(), f);
+                        });
+    });
     return;
   }
 #endif
@@ -647,15 +663,18 @@ void copy(ExecutionPolicy policy, InputIter first, InputIter last,
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    tbb::parallel_for(tbb::blocked_range<size_t>(
-                          0, static_cast<size_t>(std::distance(first, last)),
-                          details::kSeqThreshold),
-                      [&](const tbb::blocked_range<size_t> &range) {
-                        std::copy(first + range.begin(), first + range.end(),
-                                  d_first + range.begin());
-                      });
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_for(tbb::blocked_range<size_t>(
+                            0, static_cast<size_t>(std::distance(first, last)),
+                            details::kSeqThreshold),
+                        [&](const tbb::blocked_range<size_t>& range) {
+                          std::copy(first + range.begin(), first + range.end(),
+                                    d_first + range.begin());
+                        });
+    });
     return;
   }
 #endif
@@ -704,12 +723,15 @@ void fill(ExecutionPolicy policy, OutputIter first, OutputIter last, T value) {
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    tbb::parallel_for(tbb::blocked_range<OutputIter>(first, last),
-                      [&](const tbb::blocked_range<OutputIter> &range) {
-                        std::fill(range.begin(), range.end(), value);
-                      });
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_for(tbb::blocked_range<OutputIter>(first, last),
+                        [&](const tbb::blocked_range<OutputIter>& range) {
+                          std::fill(range.begin(), range.end(), value);
+                        });
+    });
     return;
   }
 #endif
@@ -727,6 +749,7 @@ void fill(OutputIter first, OutputIter last, T value) {
 template <typename InputIter, typename P>
 size_t count_if(ExecutionPolicy policy, InputIter first, InputIter last,
                 P pred) {
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     return reduce(policy, TransformIterator(first, pred),
@@ -751,18 +774,21 @@ bool all_of(ExecutionPolicy policy, InputIter first, InputIter last, P pred) {
                     typename std::iterator_traits<InputIter>::iterator_category,
                     std::random_access_iterator_tag>,
                 "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     // should we use deterministic reduce here?
-    return tbb::parallel_reduce(
-        tbb::blocked_range<InputIter>(first, last), true,
-        [&](const tbb::blocked_range<InputIter> &range, bool value) {
-          if (!value) return false;
-          for (InputIter i = range.begin(); i != range.end(); i++)
-            if (!pred(*i)) return false;
-          return true;
-        },
-        [](bool a, bool b) { return a && b; });
+    return tbb::this_task_arena::isolate([&]() {
+      return tbb::parallel_reduce(
+          tbb::blocked_range<InputIter>(first, last), true,
+          [&](const tbb::blocked_range<InputIter>& range, bool value) {
+            if (!value) return false;
+            for (InputIter i = range.begin(); i != range.end(); i++)
+              if (!pred(*i)) return false;
+            return true;
+          },
+          [](bool a, bool b) { return a && b; });
+    });
   }
 #endif
   return std::all_of(first, last, pred);
@@ -798,13 +824,16 @@ OutputIter copy_if(ExecutionPolicy policy, InputIter first, InputIter last,
           typename std::iterator_traits<OutputIter>::iterator_category,
           std::random_access_iterator_tag>,
       "You can only parallelize RandomAccessIterator.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
     auto pred2 = [&](size_t i) { return pred(first[i]); };
     details::CopyIfScanBody body(pred2, first, d_first);
-    tbb::parallel_scan(
-        tbb::blocked_range<size_t>(0, std::distance(first, last)), body);
-    return d_first + body.get_sum();
+    tbb::this_task_arena::isolate([&]() {
+      tbb::parallel_scan(
+          tbb::blocked_range<size_t>(0, std::distance(first, last)), body);
+      return d_first + body.get_sum();
+    });
   }
 #endif
   return std::copy_if(first, last, d_first, pred);
@@ -845,9 +874,10 @@ Iter remove_if(ExecutionPolicy policy, Iter first, Iter last, P pred) {
   static_assert(std::is_trivially_destructible_v<T>,
                 "Our simple implementation does not support types that are "
                 "not trivially destructable.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    T *tmp = new T[std::distance(first, last)];
+    T* tmp = new T[std::distance(first, last)];
     auto back =
         copy_if(policy, first, last, tmp, [&](T v) { return !pred(v); });
     copy(policy, tmp, back, first);
@@ -892,9 +922,10 @@ Iter remove(ExecutionPolicy policy, Iter first, Iter last, T value) {
   static_assert(std::is_trivially_destructible_v<T>,
                 "Our simple implementation does not support types that are "
                 "not trivially destructable.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par) {
-    T *tmp = new T[std::distance(first, last)];
+    T* tmp = new T[std::distance(first, last)];
     auto back =
         copy_if(policy, first, last, tmp, [&](T v) { return v != value; });
     copy(policy, tmp, back, first);
@@ -939,13 +970,14 @@ Iter unique(ExecutionPolicy policy, Iter first, Iter last) {
   static_assert(std::is_trivially_destructible_v<T>,
                 "Our simple implementation does not support types that are "
                 "not trivially destructable.");
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   if (policy == ExecutionPolicy::Par && first != last) {
     Iter newSrcStart = first;
     // cap the maximum buffer size, proved to be beneficial for unique with huge
     // array size
     constexpr size_t MAX_BUFFER_SIZE = 1 << 16;
-    T *tmp = new T[std::min(MAX_BUFFER_SIZE,
+    T* tmp = new T[std::min(MAX_BUFFER_SIZE,
                             static_cast<size_t>(std::distance(first, last)))];
     auto pred = [&](size_t i) { return tmp[i] != tmp[i + 1]; };
     do {
@@ -957,7 +989,9 @@ Iter unique(ExecutionPolicy policy, Iter first, Iter last) {
       // this is not a typo, the index i is offset by 1, so to compare an
       // element with its predecessor we need to compare i and i + 1.
       details::CopyIfScanBody body(pred, tmp + 1, first + 1);
-      tbb::parallel_scan(tbb::blocked_range<size_t>(0, length - 1), body);
+      tbb::this_task_arena::isolate([&]() {
+        tbb::parallel_scan(tbb::blocked_range<size_t>(0, length - 1), body);
+      });
       first += body.get_sum() + 1;
       newSrcStart += length;
     } while (newSrcStart != last);
@@ -992,6 +1026,7 @@ Iter unique(Iter first, Iter last) {
 template <typename Iterator,
           typename T = typename std::iterator_traits<Iterator>::value_type>
 void stable_sort(ExecutionPolicy policy, Iterator first, Iterator last) {
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   details::SortFunctor<Iterator, T>()(policy, first, last);
 #else
@@ -1023,6 +1058,7 @@ template <typename Iterator,
           typename Comp = decltype(std::less<T>())>
 void stable_sort(ExecutionPolicy policy, Iterator first, Iterator last,
                  Comp comp) {
+  (void)policy;
 #if (MANIFOLD_PAR == 1)
   details::mergeSort(policy, first, last, comp);
 #else

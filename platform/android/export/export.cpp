@@ -33,9 +33,9 @@
 #include "export_plugin.h"
 
 #include "core/os/os.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 
 String get_default_android_sdk_path();
 
@@ -59,6 +59,19 @@ void register_android_exporter() {
 
 	EDITOR_DEF_BASIC("export/android/android_sdk_path", OS::get_singleton()->has_environment("ANDROID_HOME") ? OS::get_singleton()->get_environment("ANDROID_HOME") : get_default_android_sdk_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
+
+	EDITOR_DEF_BASIC("export/android/scrcpy/path", "");
+	EDITOR_DEF_BASIC("export/android/scrcpy/virtual_display", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/no_decorations", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/local_ime", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/screen_size", "1920x1080/120");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy/screen_size", PROPERTY_HINT_PLACEHOLDER_TEXT, "WIDTHxHEIGHT/DPI"));
+
+#ifdef WINDOWS_ENABLED
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+#else
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE));
+#endif
 
 	EDITOR_DEF("export/android/force_system_user", false);
 

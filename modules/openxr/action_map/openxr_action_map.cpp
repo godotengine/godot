@@ -54,7 +54,7 @@ void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_default_action_sets"), &OpenXRActionMap::create_default_action_sets);
 }
 
-void OpenXRActionMap::set_action_sets(Array p_action_sets) {
+void OpenXRActionMap::set_action_sets(const Array &p_action_sets) {
 	action_sets.clear();
 
 	for (int i = 0; i < p_action_sets.size(); i++) {
@@ -73,7 +73,7 @@ int OpenXRActionMap::get_action_set_count() const {
 	return action_sets.size();
 }
 
-Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(String p_name) const {
+Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(const String &p_name) const {
 	for (int i = 0; i < action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = action_sets[i];
 		if (action_set->get_name() == p_name) {
@@ -90,7 +90,7 @@ Ref<OpenXRActionSet> OpenXRActionMap::get_action_set(int p_idx) const {
 	return action_sets[p_idx];
 }
 
-void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
+void OpenXRActionMap::add_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	ERR_FAIL_COND(p_action_set.is_null());
 
 	if (!action_sets.has(p_action_set)) {
@@ -99,7 +99,7 @@ void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
 	}
 }
 
-void OpenXRActionMap::remove_action_set(Ref<OpenXRActionSet> p_action_set) {
+void OpenXRActionMap::remove_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	int idx = action_sets.find(p_action_set);
 	if (idx != -1) {
 		action_sets.remove_at(idx);
@@ -120,7 +120,7 @@ void OpenXRActionMap::clear_interaction_profiles() {
 	emit_changed();
 }
 
-void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
+void OpenXRActionMap::set_interaction_profiles(const Array &p_interaction_profiles) {
 	clear_interaction_profiles();
 
 	for (const Variant &interaction_profile : p_interaction_profiles) {
@@ -137,7 +137,7 @@ int OpenXRActionMap::get_interaction_profile_count() const {
 	return interaction_profiles.size();
 }
 
-Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(String p_path) const {
+Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(const String &p_path) const {
 	for (Ref<OpenXRInteractionProfile> interaction_profile : interaction_profiles) {
 		if (interaction_profile->get_interaction_profile_path() == p_path) {
 			return interaction_profile;
@@ -153,7 +153,7 @@ Ref<OpenXRInteractionProfile> OpenXRActionMap::get_interaction_profile(int p_idx
 	return interaction_profiles[p_idx];
 }
 
-void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRActionMap::add_interaction_profile(const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	ERR_FAIL_COND(p_interaction_profile.is_null());
 
 	if (!interaction_profiles.has(p_interaction_profile)) {
@@ -169,7 +169,7 @@ void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_in
 	}
 }
 
-void OpenXRActionMap::remove_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRActionMap::remove_interaction_profile(const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	int idx = interaction_profiles.find(p_interaction_profile);
 	if (idx != -1) {
 		interaction_profiles.remove_at(idx);
@@ -227,6 +227,10 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
 			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/vive_tracker_htcx/role/left_wrist,"
+			"/user/vive_tracker_htcx/role/right_wrist,"
+			"/user/vive_tracker_htcx/role/left_ankle,"
+			"/user/vive_tracker_htcx/role/right_ankle,"
 			"/user/eyes_ext");
 	Ref<OpenXRAction> aim_pose = action_set->add_new_action("aim_pose", "Aim pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_pose = action_set->add_new_action("grip_pose", "Grip pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
@@ -246,7 +250,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist,"
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
-			"/user/vive_tracker_htcx/role/keyboard");
+			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/vive_tracker_htcx/role/left_wrist,"
+			"/user/vive_tracker_htcx/role/right_wrist,"
+			"/user/vive_tracker_htcx/role/left_ankle,"
+			"/user/vive_tracker_htcx/role/right_ankle");
 
 	// Create our interaction profiles.
 	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/simple_controller");
@@ -466,7 +474,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
 	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
 	profile->add_new_binding(trigger_touch, "/user/hand/left/input/trigger/touch,/user/hand/right/input/trigger/touch");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
+	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
 	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
 	// primary on our Focus 3 controller is our thumbstick.
 	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
@@ -508,7 +516,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist/input/grip/pose,"
 			"/user/vive_tracker_htcx/role/chest/input/grip/pose,"
 			"/user/vive_tracker_htcx/role/camera/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose");
+			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_wrist/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_wrist/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_ankle/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_ankle/input/grip/pose");
 	profile->add_new_binding(haptic,
 			// "/user/vive_tracker_htcx/role/handheld_object/output/haptic," <-- getting errors on this one.
 			"/user/vive_tracker_htcx/role/left_foot/output/haptic,"
@@ -522,7 +534,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist/output/haptic,"
 			"/user/vive_tracker_htcx/role/chest/output/haptic,"
 			"/user/vive_tracker_htcx/role/camera/output/haptic,"
-			"/user/vive_tracker_htcx/role/keyboard/output/haptic");
+			"/user/vive_tracker_htcx/role/keyboard/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_wrist/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_wrist/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_ankle/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_ankle/output/haptic");
 	add_interaction_profile(profile);
 
 	// Create our eye gaze interaction profile.
@@ -555,7 +571,7 @@ void OpenXRActionMap::create_editor_action_sets() {
 	// TODO implement
 }
 
-Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
+Ref<OpenXRAction> OpenXRActionMap::get_action(const String &p_path) const {
 	PackedStringArray paths = p_path.split("/", false);
 	ERR_FAIL_COND_V(paths.size() != 2, Ref<OpenXRAction>());
 
@@ -567,7 +583,7 @@ Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interaction_profiles) {
+void OpenXRActionMap::remove_action(const String &p_path, bool p_remove_interaction_profiles) {
 	Ref<OpenXRAction> action = get_action(p_path);
 	if (action.is_valid()) {
 		for (Ref<OpenXRInteractionProfile> interaction_profile : interaction_profiles) {
@@ -587,7 +603,7 @@ void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interacti
 	}
 }
 
-PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p_action) {
+PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> &p_action) {
 	PackedStringArray arr;
 
 	for (Ref<OpenXRInteractionProfile> ip : interaction_profiles) {

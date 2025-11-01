@@ -31,6 +31,7 @@
 #include "openxr_binding_modifier_editor.h"
 
 #include "editor/editor_string_names.h"
+#include "scene/gui/option_button.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // EditorPropertyActionSet
@@ -231,7 +232,6 @@ void OpenXRBindingModifierEditor::_bind_methods() {
 
 void OpenXRBindingModifierEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rem_binding_modifier_btn->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 		} break;
@@ -273,7 +273,7 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	main_vb->add_child(editor_inspector);
 }
 
-void OpenXRBindingModifierEditor::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier) {
+void OpenXRBindingModifierEditor::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_NULL(binding_modifier_title);
 	ERR_FAIL_NULL(editor_inspector);
 

@@ -33,8 +33,6 @@
 #include "core/math/vector3i.h"
 #include "tests/test_macros.h"
 
-#define Math_SQRT3 1.7320508075688772935274463415059
-
 namespace TestVector3i {
 
 TEST_CASE("[Vector3i] Constructor methods") {
@@ -83,7 +81,7 @@ TEST_CASE("[Vector3i] Length methods") {
 			vector1.length_squared() == 300,
 			"Vector3i length_squared should work as expected and return exact result.");
 	CHECK_MESSAGE(
-			vector1.length() == doctest::Approx(10 * Math_SQRT3),
+			vector1.length() == doctest::Approx(10 * Math::SQRT3),
 			"Vector3i length should work as expected.");
 	CHECK_MESSAGE(
 			vector2.length_squared() == 2900,

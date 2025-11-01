@@ -22,6 +22,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Toate Recunoscute"
 
+msgid "Save"
+msgstr "Salvați"
+
+msgid "Clear"
+msgstr "Curăță"
+
 msgid "Network"
 msgstr "Rețea"
 
@@ -30,9 +36,6 @@ msgstr "Deschide"
 
 msgid "Select Current Folder"
 msgstr "Selectaţi directorul curent"
-
-msgid "Save"
-msgstr "Salvați"
 
 msgid "Select This Folder"
 msgstr "Selectaţi directorul curent"
@@ -67,11 +70,11 @@ msgstr "Cale:"
 msgid "Refresh files."
 msgstr "Reîmprospătează filele."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Comutați Vizibilitatea Fișierelor Ascunse."
-
 msgid "Directories & Files:"
 msgstr "Directoare și Fişiere:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Comutați Vizibilitatea Fișierelor Ascunse."
 
 msgid "File:"
 msgstr "Fișier:"
@@ -102,6 +105,3 @@ msgstr "Copiaza"
 
 msgid "Paste"
 msgstr "Lipește"
-
-msgid "Clear"
-msgstr "Curăță"

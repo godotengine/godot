@@ -70,7 +70,7 @@ protected:
 	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
 	GDVIRTUAL1RC(bool, _exists, String)
 
-	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
+	GDVIRTUAL4RC_REQUIRED(Variant, _load, String, String, bool, int)
 
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -159,7 +159,6 @@ private:
 	static bool abort_on_missing_resource;
 	static bool create_missing_resources_if_class_unavailable;
 	static HashMap<String, Vector<String>> translation_remaps;
-	static HashMap<String, String> path_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
@@ -245,14 +244,12 @@ public:
 	static String get_resource_type(const String &p_path);
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
-	static bool has_custom_uid_support(const String &p_path);
 	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
 	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
-	static int get_import_order(const String &p_path);
 
 	static void set_is_import_thread(bool p_import_thread);
 
@@ -288,9 +285,6 @@ public:
 
 	static String path_remap(const String &p_path);
 	static String import_remap(const String &p_path);
-
-	static void load_path_remaps();
-	static void clear_path_remaps();
 
 	static void reload_translation_remaps();
 	static void load_translation_remaps();

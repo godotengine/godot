@@ -143,15 +143,6 @@ TEST_CASE("[Object] Core getters") {
 	CHECK_MESSAGE(
 			object.get_save_class() == "Object",
 			"The returned save class should match the expected value.");
-
-	List<String> inheritance_list;
-	object.get_inheritance_list_static(&inheritance_list);
-	CHECK_MESSAGE(
-			inheritance_list.size() == 1,
-			"The inheritance list should consist of Object only");
-	CHECK_MESSAGE(
-			inheritance_list.front()->get() == "Object",
-			"The inheritance list should consist of Object only");
 }
 
 TEST_CASE("[Object] Metadata") {
@@ -224,12 +215,12 @@ TEST_CASE("[Object] Construction") {
 }
 
 TEST_CASE("[Object] Script instance property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	object.set("some_name", 100, &valid);
+	object->set("some_name", 100, &valid);
 	CHECK(valid);
 	Variant actual_value;
 	CHECK_MESSAGE(
@@ -238,20 +229,22 @@ TEST_CASE("[Object] Script instance property setter") {
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the object.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	const Variant &actual_value = object.get("some_name", &valid);
+	const Variant &actual_value = object->get("some_name", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the script instance.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Built-in property setter") {
@@ -428,8 +421,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Emitting an existing signal should call the connected method") {
-		Array empty_signal_args;
-		empty_signal_args.push_back(Array());
+		Array empty_signal_args = { {} };
 
 		SIGNAL_WATCH(&object, "my_custom_signal");
 		SIGNAL_CHECK_FALSE("my_custom_signal");
@@ -465,72 +457,75 @@ TEST_CASE("[Object] Signals") {
 	}
 }
 
-class NotificationObject1 : public Object {
-	GDCLASS(NotificationObject1, Object);
+class NotificationObjectSuperclass : public Object {
+	GDCLASS(NotificationObjectSuperclass, Object);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal1 = order_global++;
-			} break;
-		}
+		order_superclass = ++order_global;
 	}
 
 public:
-	static int order_global;
-	int order_internal1 = -1;
-
-	void reset_order() {
-		order_internal1 = -1;
-		order_global = 1;
-	}
+	static inline int order_global = 0;
+	int order_superclass = -1;
 };
 
-int NotificationObject1::order_global = 1;
-
-class NotificationObject2 : public NotificationObject1 {
-	GDCLASS(NotificationObject2, NotificationObject1);
+class NotificationObjectSubclass : public NotificationObjectSuperclass {
+	GDCLASS(NotificationObjectSubclass, NotificationObjectSuperclass);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal2 = order_global++;
-			} break;
-		}
+		order_subclass = ++order_global;
 	}
 
 public:
-	int order_internal2 = -1;
-	void reset_order() {
-		NotificationObject1::reset_order();
-		order_internal2 = -1;
+	int order_subclass = -1;
+};
+
+class NotificationScriptInstance : public _MockScriptInstance {
+	void notification(int p_notification, bool p_reversed) override {
+		order_script = ++NotificationObjectSuperclass::order_global;
 	}
+
+public:
+	int order_script = -1;
 };
 
 TEST_CASE("[Object] Notification order") { // GH-52325
-	NotificationObject2 *test_notification_object = memnew(NotificationObject2);
+	NotificationObjectSubclass *object = memnew(NotificationObjectSubclass);
+
+	NotificationScriptInstance *script = memnew(NotificationScriptInstance);
+	object->set_script_instance(script);
 
 	SUBCASE("regular order") {
-		test_notification_object->notification(12345, false);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, false);
 
-		CHECK_EQ(test_notification_object->order_internal1, 1);
-		CHECK_EQ(test_notification_object->order_internal2, 2);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(object->order_superclass, 1);
+		CHECK_EQ(object->order_subclass, 2);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(script->order_script, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
 	SUBCASE("reverse order") {
-		test_notification_object->notification(12345, true);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, true);
 
-		CHECK_EQ(test_notification_object->order_internal1, 2);
-		CHECK_EQ(test_notification_object->order_internal2, 1);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(script->order_script, 1);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(object->order_subclass, 2);
+		CHECK_EQ(object->order_superclass, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
-	memdelete(test_notification_object);
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Destruction at the end of the call chain is safe") {

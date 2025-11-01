@@ -31,6 +31,7 @@
 #include "movie_writer_pngwav.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 
 uint32_t MovieWriterPNGWAV::get_audio_mix_rate() const {
 	return mix_rate;
@@ -44,7 +45,7 @@ void MovieWriterPNGWAV::get_supported_extensions(List<String> *r_extensions) con
 }
 
 bool MovieWriterPNGWAV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "png";
+	return p_path.has_extension("png");
 }
 
 String MovieWriterPNGWAV::zeros_str(uint32_t p_index) {

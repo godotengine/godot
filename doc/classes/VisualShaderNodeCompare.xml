@@ -13,10 +13,10 @@
 			Extra condition which is applied if [member type] is set to [constant CTYPE_VECTOR_3D].
 		</member>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeCompare.Function" default="0">
-			A comparison function. See [enum Function] for options.
+			A comparison function.
 		</member>
 		<member name="type" type="int" setter="set_comparison_type" getter="get_comparison_type" enum="VisualShaderNodeCompare.ComparisonType" default="0">
-			The type to be used in the comparison. See [enum ComparisonType] for options.
+			The type to be used in the comparison.
 		</member>
 	</members>
 	<constants>

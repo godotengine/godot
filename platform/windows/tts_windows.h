@@ -34,12 +34,12 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <objbase.h>
 #include <sapi.h>
-#include <wchar.h>
 #include <winnls.h>
+#include <cwchar>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

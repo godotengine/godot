@@ -195,9 +195,9 @@ void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout flo
 	float weight = 1.0;
 
 	if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduct = max(0, -hit_delta.z);
-		reduct = clamp(reduct * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduct + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
 	}
 
 	// Translate sampling_uv to last screen's coordinates

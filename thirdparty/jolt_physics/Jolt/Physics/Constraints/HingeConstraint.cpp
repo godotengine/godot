@@ -134,13 +134,32 @@ float HingeConstraint::GetCurrentAngle() const
 	return diff.GetRotationAngle(rotation1 * mLocalSpaceHingeAxis1);
 }
 
+void HingeConstraint::SetTargetOrientationBS(QuatArg inOrientation)
+{
+	// See: CalculateA1AndTheta
+	//
+	// The rotation between body 1 and 2 can be written as:
+	//
+	// q2 = q1 rh1 r0
+	//
+	// where rh1 is a rotation around local hinge axis 1, also:
+	//
+	// q2 = q1 inOrientation
+	//
+	// This means:
+	//
+	// rh1 r0 = inOrientation <=> rh1 = inOrientation * r0^-1
+	Quat rh1 = inOrientation * mInvInitialOrientation;
+	SetTargetAngle(rh1.GetRotationAngle(mLocalSpaceHingeAxis1));
+}
+
 void HingeConstraint::SetLimits(float inLimitsMin, float inLimitsMax)
 {
 	JPH_ASSERT(inLimitsMin <= 0.0f && inLimitsMin >= -JPH_PI);
 	JPH_ASSERT(inLimitsMax >= 0.0f && inLimitsMax <= JPH_PI);
 	mLimitsMin = inLimitsMin;
 	mLimitsMax = inLimitsMax;
-	mHasLimits = mLimitsMin > -JPH_PI && mLimitsMax < JPH_PI;
+	mHasLimits = mLimitsMin > -JPH_PI || mLimitsMax < JPH_PI;
 }
 
 void HingeConstraint::CalculateA1AndTheta()

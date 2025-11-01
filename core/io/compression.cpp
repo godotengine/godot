@@ -35,7 +35,6 @@
 
 #include "thirdparty/misc/fastlz.h"
 
-#include <zlib.h>
 #include <zstd.h>
 
 #ifdef BROTLI_ENABLED
@@ -48,12 +47,13 @@ static ZSTD_DCtx *current_zstd_d_ctx = nullptr;
 static bool current_zstd_long_distance_matching;
 static int current_zstd_window_log_size;
 
-int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
+int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
 			ERR_FAIL_V_MSG(-1, "Only brotli decompression is supported.");
 		} break;
 		case MODE_FASTLZ: {
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			if (p_src_size < 16) {
 				uint8_t src[16];
 				memset(&src[p_src_size], 0, 16 - p_src_size);
@@ -66,6 +66,7 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -96,22 +97,23 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 				ZSTD_CCtx_setParameter(cctx, ZSTD_c_enableLongDistanceMatching, 1);
 				ZSTD_CCtx_setParameter(cctx, ZSTD_c_windowLog, zstd_window_log_size);
 			}
-			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
-			int ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);
+			const int64_t max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
+			const size_t ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);
 			ZSTD_freeCCtx(cctx);
-			return ret;
+			return (int64_t)ret;
 		} break;
 	}
 
 	ERR_FAIL_V(-1);
 }
 
-int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
+int64_t Compression::get_max_compressed_buffer_size(int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
 			ERR_FAIL_V_MSG(-1, "Only brotli decompression is supported.");
 		} break;
 		case MODE_FASTLZ: {
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int ss = p_src_size + p_src_size * 6 / 100;
 			if (ss < 66) {
 				ss = 66;
@@ -121,6 +123,7 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
+			ERR_FAIL_COND_V_MSG(p_src_size > INT32_MAX, -1, "Cannot compress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -143,7 +146,7 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 	ERR_FAIL_V(-1);
 }
 
-int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
+int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
 #ifdef BROTLI_ENABLED
@@ -156,6 +159,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 #endif
 		} break;
 		case MODE_FASTLZ: {
+			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int ret_size = 0;
 
 			if (p_dst_max_size < 16) {
@@ -170,6 +174,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
+			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a Deflate or GZip file 2 GiB or larger. Deflate and GZip are both limited to 4 GiB, and ZLib's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -208,8 +213,8 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 				current_zstd_window_log_size = zstd_window_log_size;
 			}
 
-			int ret = ZSTD_decompressDCtx(current_zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
-			return ret;
+			size_t ret = ZSTD_decompressDCtx(current_zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
+			return (int64_t)ret;
 		} break;
 	}
 
@@ -221,7 +226,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 	This is required for compressed data whose final uncompressed size is unknown, as is the case for HTTP response bodies.
 	This is much slower however than using Compression::decompress because it may result in multiple full copies of the output buffer.
 */
-int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
+int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_dst_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	uint8_t *dst = nullptr;
 	int out_mark = 0;
 
@@ -364,10 +369,3 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 		return Z_OK;
 	}
 }
-
-int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
-int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
-int Compression::zstd_level = 3;
-bool Compression::zstd_long_distance_matching = false;
-int Compression::zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
-int Compression::gzip_chunk = 16384;

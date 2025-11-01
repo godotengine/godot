@@ -39,7 +39,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -96,7 +96,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -283,43 +283,43 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 #define REAL_MEMBER_OFFSET(type, member) \
 	{                                    \
 		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+		member,                          \
+		"float",                         \
+		sizeof(float),                   \
+		"float",                         \
+		sizeof(float),                   \
+		"double",                        \
+		sizeof(double),                  \
+		"double",                        \
+		sizeof(double),                  \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
 	{                                     \
 		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+		member,                           \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
 	{                                                                              \
 		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+		member,                                                                    \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
@@ -900,11 +900,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// classes
 		Array classes;
 
-		List<StringName> class_list;
+		LocalVector<StringName> class_list;
 
-		ClassDB::get_class_list(&class_list);
-
-		class_list.sort_custom<StringName::AlphCompare>();
+		ClassDB::get_class_list(class_list);
 
 		for (const StringName &class_name : class_list) {
 			if (!ClassDB::is_class_exposed(class_name)) {
@@ -975,14 +973,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Array values;
 					List<StringName> enum_constant_list;
 					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
-					for (List<StringName>::Element *G = enum_constant_list.front(); G; G = G->next()) {
+					for (const StringName &enum_constant : enum_constant_list) {
 						Dictionary d3;
-						d3["name"] = String(G->get());
-						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+						d3["name"] = String(enum_constant);
+						d3["value"] = ClassDB::get_integer_constant(class_name, enum_constant);
 
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-								if (constant_doc.name == G->get()) {
+								if (constant_doc.name == enum_constant) {
 									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
@@ -1343,16 +1341,16 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		for (const Variant &key : old_dict.keys()) {
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}

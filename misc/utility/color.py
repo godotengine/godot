@@ -1,86 +1,58 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 from enum import Enum
 from typing import Final
 
 # Colors are disabled in non-TTY environments such as pipes. This means if output is redirected
-# to a file, it won't contain color codes. Colors are always enabled on continuous integration.
+# to a file, it won't contain color codes. Colors are enabled by default on continuous integration.
 
 IS_CI: Final[bool] = bool(os.environ.get("CI"))
 NO_COLOR: Final[bool] = bool(os.environ.get("NO_COLOR"))
+CLICOLOR_FORCE: Final[bool] = bool(os.environ.get("CLICOLOR_FORCE"))
 STDOUT_TTY: Final[bool] = bool(sys.stdout.isatty())
 STDERR_TTY: Final[bool] = bool(sys.stderr.isatty())
 
 
-def _color_supported(stdout: bool) -> bool:
+_STDOUT_ORIGINAL: Final[bool] = False if NO_COLOR else CLICOLOR_FORCE or IS_CI or STDOUT_TTY
+_STDERR_ORIGINAL: Final[bool] = False if NO_COLOR else CLICOLOR_FORCE or IS_CI or STDERR_TTY
+_stdout_override: bool = _STDOUT_ORIGINAL
+_stderr_override: bool = _STDERR_ORIGINAL
+
+
+def is_stdout_color() -> bool:
+    return _stdout_override
+
+
+def is_stderr_color() -> bool:
+    return _stderr_override
+
+
+def force_stdout_color(value: bool) -> None:
     """
-    Validates if the current environment supports colored output. Attempts to enable ANSI escape
-    code support on Windows 10 and later.
+    Explicitly set `stdout` support for ANSI escape codes.
+    If environment overrides exist, does nothing.
     """
-    if IS_CI:
-        return True
-
-    if sys.platform != "win32":
-        return STDOUT_TTY if stdout else STDERR_TTY
-    else:
-        from ctypes import POINTER, WINFUNCTYPE, WinError, windll
-        from ctypes.wintypes import BOOL, DWORD, HANDLE
-
-        STD_HANDLE = -11 if stdout else -12
-        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
-
-        def err_handler(result, func, args):
-            if not result:
-                raise WinError()
-            return args
-
-        GetStdHandle = WINFUNCTYPE(HANDLE, DWORD)(("GetStdHandle", windll.kernel32), ((1, "nStdHandle"),))
-        GetConsoleMode = WINFUNCTYPE(BOOL, HANDLE, POINTER(DWORD))(
-            ("GetConsoleMode", windll.kernel32),
-            ((1, "hConsoleHandle"), (2, "lpMode")),
-        )
-        GetConsoleMode.errcheck = err_handler
-        SetConsoleMode = WINFUNCTYPE(BOOL, HANDLE, DWORD)(
-            ("SetConsoleMode", windll.kernel32),
-            ((1, "hConsoleHandle"), (1, "dwMode")),
-        )
-        SetConsoleMode.errcheck = err_handler
-
-        try:
-            handle = GetStdHandle(STD_HANDLE)
-            flags = GetConsoleMode(handle)
-            SetConsoleMode(handle, flags | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
-            return True
-        except OSError:
-            return False
-
-
-STDOUT_COLOR: Final[bool] = _color_supported(True)
-STDERR_COLOR: Final[bool] = _color_supported(False)
-_stdout_override: bool = STDOUT_COLOR
-_stderr_override: bool = STDERR_COLOR
-
-
-def toggle_color(stdout: bool, value: bool | None = None) -> None:
-    """
-    Explicitly toggle color codes, regardless of support.
-
-    - `stdout`: A boolean to choose the output stream. `True` for stdout, `False` for stderr.
-    - `value`: An optional boolean to explicitly set the color state instead of toggling.
-    """
-    if stdout:
+    if not NO_COLOR or not CLICOLOR_FORCE:
         global _stdout_override
-        _stdout_override = value if value is not None else not _stdout_override
-    else:
+        _stdout_override = value
+
+
+def force_stderr_color(value: bool) -> None:
+    """
+    Explicitly set `stderr` support for ANSI escape codes.
+    If environment overrides exist, does nothing.
+    """
+    if not NO_COLOR or not CLICOLOR_FORCE:
         global _stderr_override
-        _stderr_override = value if value is not None else not _stderr_override
+        _stderr_override = value
 
 
 class Ansi(Enum):
     """
-    Enum class for adding ansi codepoints directly into strings. Automatically converts values to
+    Enum class for adding ANSI codepoints directly into strings. Automatically converts values to
     strings representing their internal value.
     """
 
@@ -107,25 +79,74 @@ class Ansi(Enum):
         return self.value
 
 
+RE_ANSI = re.compile(r"\x1b\[[=\?]?[;\d]+[a-zA-Z]")
+
+
+def color_print(*values: object, sep: str | None = " ", end: str | None = "\n", flush: bool = False) -> None:
+    """Prints a colored message to `stdout`. If disabled, ANSI codes are automatically stripped."""
+    if is_stdout_color():
+        print(*values, sep=sep, end=f"{Ansi.RESET}{end}", flush=flush)
+    else:
+        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), sep="", end=end, flush=flush)
+
+
+def color_printerr(*values: object, sep: str | None = " ", end: str | None = "\n", flush: bool = False) -> None:
+    """Prints a colored message to `stderr`. If disabled, ANSI codes are automatically stripped."""
+    if is_stderr_color():
+        print(*values, sep=sep, end=f"{Ansi.RESET}{end}", flush=flush, file=sys.stderr)
+    else:
+        print(RE_ANSI.sub("", (sep or " ").join(map(str, values))), sep="", end=end, flush=flush, file=sys.stderr)
+
+
 def print_info(*values: object) -> None:
     """Prints a informational message with formatting."""
-    if _stdout_override:
-        print(f"{Ansi.GRAY}{Ansi.BOLD}INFO:{Ansi.REGULAR}", *values, Ansi.RESET)
-    else:
-        print("INFO:", *values)
+    color_print(f"{Ansi.GRAY}{Ansi.BOLD}INFO:{Ansi.REGULAR}", *values)
 
 
 def print_warning(*values: object) -> None:
     """Prints a warning message with formatting."""
-    if _stderr_override:
-        print(f"{Ansi.YELLOW}{Ansi.BOLD}WARNING:{Ansi.REGULAR}", *values, Ansi.RESET, file=sys.stderr)
-    else:
-        print("WARNING:", *values, file=sys.stderr)
+    color_printerr(f"{Ansi.YELLOW}{Ansi.BOLD}WARNING:{Ansi.REGULAR}", *values)
 
 
 def print_error(*values: object) -> None:
     """Prints an error message with formatting."""
-    if _stderr_override:
-        print(f"{Ansi.RED}{Ansi.BOLD}ERROR:{Ansi.REGULAR}", *values, Ansi.RESET, file=sys.stderr)
-    else:
-        print("ERROR:", *values, file=sys.stderr)
+    color_printerr(f"{Ansi.RED}{Ansi.BOLD}ERROR:{Ansi.REGULAR}", *values)
+
+
+if sys.platform == "win32":
+
+    def _win_color_fix():
+        """Attempts to enable ANSI escape code support on Windows 10 and later."""
+        from ctypes import POINTER, WINFUNCTYPE, WinError, windll
+        from ctypes.wintypes import BOOL, DWORD, HANDLE
+
+        STDOUT_HANDLE = -11
+        STDERR_HANDLE = -12
+        ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4
+
+        def err_handler(result, func, args):
+            if not result:
+                raise WinError()
+            return args
+
+        GetStdHandle = WINFUNCTYPE(HANDLE, DWORD)(("GetStdHandle", windll.kernel32), ((1, "nStdHandle"),))
+        GetConsoleMode = WINFUNCTYPE(BOOL, HANDLE, POINTER(DWORD))(
+            ("GetConsoleMode", windll.kernel32),
+            ((1, "hConsoleHandle"), (2, "lpMode")),
+        )
+        GetConsoleMode.errcheck = err_handler
+        SetConsoleMode = WINFUNCTYPE(BOOL, HANDLE, DWORD)(
+            ("SetConsoleMode", windll.kernel32),
+            ((1, "hConsoleHandle"), (1, "dwMode")),
+        )
+        SetConsoleMode.errcheck = err_handler
+
+        for handle_id in [STDOUT_HANDLE, STDERR_HANDLE]:
+            try:
+                handle = GetStdHandle(handle_id)
+                flags = GetConsoleMode(handle)
+                SetConsoleMode(handle, flags | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+            except OSError:
+                pass
+
+    _win_color_fix()

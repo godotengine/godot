@@ -204,7 +204,7 @@ namespace Godot
 
         public override int GetHashCode()
         {
-            return NativeValue.GetHashCode();
+            return NativeValue.DangerousSelfRef.GetHashCode();
         }
     }
 }

@@ -31,6 +31,7 @@
 #include "camera_texture.h"
 
 #include "servers/camera/camera_feed.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);
@@ -142,11 +143,16 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {}
+CameraTexture::CameraTexture() {
+	// Note: When any CameraTexture is created, we need to automatically activate monitoring
+	//       of camera feeds. This may incur a small lag spike, so it may be preferable to
+	//       enable it manually before creating the camera texture.
+	CameraServer::get_singleton()->set_monitoring_feeds(true);
+}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(_texture);
+		RenderingServer::get_singleton()->free_rid(_texture);
 	}
 }

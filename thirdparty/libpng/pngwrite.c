@@ -2333,7 +2333,7 @@ int PNGAPI
 png_image_write_to_stdio(png_imagep image, FILE *file, int convert_to_8bit,
     const void *buffer, png_int_32 row_stride, const void *colormap)
 {
-   /* Write the image to the given (FILE*). */
+   /* Write the image to the given FILE object. */
    if (image != NULL && image->version == PNG_IMAGE_VERSION)
    {
       if (file != NULL && buffer != NULL)

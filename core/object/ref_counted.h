@@ -42,6 +42,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::REF_COUNTED;
+
 	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
@@ -85,6 +87,10 @@ class Ref {
 
 	//virtual RefCounted * get_reference() const { return reference; }
 public:
+	static _FORCE_INLINE_ String get_class_static() {
+		return T::get_class_static();
+	}
+
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;
 	}
@@ -127,6 +133,15 @@ public:
 		ref(p_from);
 	}
 
+	void operator=(Ref &&p_from) {
+		if (reference == p_from.reference) {
+			return;
+		}
+		unref();
+		reference = p_from.reference;
+		p_from.reference = nullptr;
+	}
+
 	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
 		ref_pointer<false>(Object::cast_to<T>(p_from.ptr()));
@@ -157,6 +172,11 @@ public:
 
 	Ref(const Ref &p_from) {
 		this->operator=(p_from);
+	}
+
+	Ref(Ref &&p_from) {
+		reference = p_from.reference;
+		p_from.reference = nullptr;
 	}
 
 	template <typename T_Other>
@@ -195,6 +215,8 @@ public:
 	void instantiate(VarArgs... p_params) {
 		ref(memnew(T(p_params...)));
 	}
+
+	uint32_t hash() const { return HashMapHasherDefault::hash(reference); }
 
 	Ref() = default;
 
@@ -238,30 +260,7 @@ struct PtrToArg<Ref<T>> {
 };
 
 template <typename T>
-struct PtrToArg<const Ref<T> &> {
-	typedef Ref<T> EncodeT;
-
-	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-		if (p_ptr == nullptr) {
-			return Ref<T>();
-		}
-		// p_ptr points to a RefCounted object
-		return Ref<T>(*((T *const *)p_ptr));
-	}
-};
-
-template <typename T>
 struct GetTypeInfo<Ref<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
-	}
-};
-
-template <typename T>
-struct GetTypeInfo<const Ref<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
@@ -276,12 +275,11 @@ struct VariantInternalAccessor<Ref<T>> {
 	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
 
-template <typename T>
-struct VariantInternalAccessor<const Ref<T> &> {
-	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
-};
-
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).
 template <typename T>
 struct is_zero_constructible<Ref<T>> : std::true_type {};
+
+template <typename T>
+Ref<T> ObjectDB::get_ref(ObjectID p_instance_id) {
+	return Ref<T>(get_instance(p_instance_id));
+}

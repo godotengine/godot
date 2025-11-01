@@ -32,6 +32,8 @@
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_action_map_editor.h"
 
+#include "editor/themes/editor_scale.h"
+
 void OpenXRBindingModifiersDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_add_binding_modifier_editor", "binding_modifier_editor"), &OpenXRBindingModifiersDialog::_do_add_binding_modifier_editor);
 	ClassDB::bind_method(D_METHOD("_do_remove_binding_modifier_editor", "binding_modifier_editor"), &OpenXRBindingModifiersDialog::_do_remove_binding_modifier_editor);
@@ -51,7 +53,7 @@ void OpenXRBindingModifiersDialog::_notification(int p_what) {
 	}
 }
 
-OpenXRBindingModifierEditor *OpenXRBindingModifiersDialog::_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier) {
+OpenXRBindingModifierEditor *OpenXRBindingModifiersDialog::_add_binding_modifier_editor(const Ref<OpenXRBindingModifier> &p_binding_modifier) {
 	ERR_FAIL_COND_V(p_binding_modifier.is_null(), nullptr);
 
 	String class_name = p_binding_modifier->get_class();
@@ -191,7 +193,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	set_transient(true);
 
 	binding_modifier_sc = memnew(ScrollContainer);
-	binding_modifier_sc->set_custom_minimum_size(Size2(350.0, 0.0));
+	binding_modifier_sc->set_custom_minimum_size(Size2(350.0 * EDSCALE, 0.0));
 	binding_modifier_sc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	binding_modifier_sc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	binding_modifier_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
@@ -202,6 +204,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	binding_modifier_sc->add_child(binding_modifiers_vb);
 
 	binding_warning_label = memnew(Label);
+	binding_warning_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	binding_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	binding_warning_label->set_text(TTR("Note: modifiers will only be applied if supported on the host system."));
 	binding_modifiers_vb->add_child(binding_warning_label);
@@ -219,7 +222,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	add_child(create_dialog);
 }
 
-void OpenXRBindingModifiersDialog::setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile, Ref<OpenXRIPBinding> p_ip_binding) {
+void OpenXRBindingModifiersDialog::setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile, const Ref<OpenXRIPBinding> &p_ip_binding) {
 	OpenXRInteractionProfileMetadata *meta_data = OpenXRInteractionProfileMetadata::get_singleton();
 	action_map = p_action_map;
 	interaction_profile = p_interaction_profile;

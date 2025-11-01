@@ -107,6 +107,8 @@ public:
 		bool is_experimental = false;
 		String experimental_message;
 		Vector<ArgumentDoc> arguments;
+		// NOTE: Only for GDScript for now. The rest argument is not saved to the XML file.
+		ArgumentDoc rest_argument;
 		Vector<int> errors_returned;
 		String keywords;
 		bool operator<(const MethodDoc &p_method) const {
@@ -114,7 +116,7 @@ public:
 				// Must be an operator or a constructor since there is no other overloading
 				if (name.left(8) == "operator") {
 					if (arguments.size() == p_method.arguments.size()) {
-						if (arguments.size() == 0) {
+						if (arguments.is_empty()) {
 							return false;
 						}
 						return arguments[0].type < p_method.arguments[0].type;
@@ -126,7 +128,7 @@ public:
 					// - 1. Default constructor: Foo()
 					// - 2. Copy constructor: Foo(Foo)
 					// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
-					if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+					if (arguments.is_empty() || p_method.arguments.is_empty()) { // 1.
 						return arguments.size() < p_method.arguments.size();
 					}
 					if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
@@ -794,8 +796,8 @@ public:
 			if (p_dict.has("enums")) {
 				enums = p_dict["enums"];
 			}
-			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
+			for (const KeyValue<Variant, Variant> &kv : enums) {
+				doc.enums[kv.key] = EnumDoc::from_dict(kv.value);
 			}
 
 			Array properties;

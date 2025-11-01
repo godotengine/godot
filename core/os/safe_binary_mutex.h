@@ -36,10 +36,7 @@
 
 #ifdef THREADS_ENABLED
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundefined-var-template"
-#endif
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wundefined-var-template")
 
 // A very special kind of mutex, used in scenarios where these
 // requirements hold at the same time:
@@ -119,9 +116,7 @@ public:
 	// TODO: Implement a `try_temp_relock` if needed (will also need a dummy method below).
 };
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+GODOT_CLANG_WARNING_POP
 
 #else // No threads.
 

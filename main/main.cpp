@@ -67,29 +67,40 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/audio_server.h"
-#include "servers/camera_server.h"
-#include "servers/display_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/camera/camera_server.h"
+#include "servers/display/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
-#include "servers/movie_writer/movie_writer_mjpeg.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/navigation_server_3d_dummy.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text/text_server.h"
 #include "servers/text/text_server_dummy.h"
-#include "servers/text_server.h"
 
 // 2D
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_2d_dummy.h"
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_2d_dummy.h"
+#ifndef NAVIGATION_2D_DISABLED
+#include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_dummy.h"
+#endif // NAVIGATION_2D_DISABLED
 
-#ifndef _3D_DISABLED
-#include "servers/physics_server_3d.h"
-#include "servers/physics_server_3d_dummy.h"
-#include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_dummy.h"
+#endif // PHYSICS_2D_DISABLED
+
+// 3D
+#ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_dummy.h"
+#endif // NAVIGATION_3D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_dummy.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef XR_DISABLED
+#include "servers/xr/xr_server.h"
+#endif // XR_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -98,24 +109,24 @@
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/doc_data_class_path.gen.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_help.h"
+#include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_translation.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_manager.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/register_editor_types.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/translations/editor_translation.h"
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 #include "main/splash_editor.gen.h"
 #endif
 
 #ifndef DISABLE_DEPRECATED
-#include "editor/project_converter_3_to_4.h"
+#include "editor/project_upgrade/project_converter_3_to_4.h"
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
@@ -164,13 +175,17 @@ static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
 static ThemeDB *theme_db = nullptr;
+#ifndef PHYSICS_2D_DISABLED
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
+#endif // PHYSICS_3D_DISABLED
+#ifndef XR_DISABLED
 static XRServer *xr_server = nullptr;
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -186,6 +201,8 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+static bool accessibility_mode_set = false;
 static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
@@ -231,8 +248,10 @@ static int64_t init_embed_parent_window_id = 0;
 #ifdef TOOLS_ENABLED
 static bool init_display_scale_found = false;
 static int init_display_scale = 0;
+static bool init_custom_scale_found = false;
 static float init_custom_scale = 1.0;
 static bool init_expand_to_title = false;
+static bool init_expand_to_title_found = false;
 #endif
 static bool use_custom_res = true;
 static bool force_res = false;
@@ -269,6 +288,7 @@ bool profile_gpu = false;
 // Constants.
 
 static const String NULL_DISPLAY_DRIVER("headless");
+static const String EMBEDDED_DISPLAY_DRIVER("embedded");
 static const String NULL_AUDIO_DRIVER("Dummy");
 
 // The length of the longest column in the command-line help we should align to
@@ -327,7 +347,7 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 
 // FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
@@ -345,8 +365,9 @@ void initialize_physics() {
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(physics_server_3d, "Failed to initialize PhysicsServer3D.");
 	physics_server_3d->init();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer2DManager::get_singleton()->setting_property_name));
@@ -364,16 +385,19 @@ void initialize_physics() {
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(physics_server_2d, "Failed to initialize PhysicsServer2D.");
 	physics_server_2d->init();
+#endif // PHYSICS_2D_DISABLED
 }
 
 void finalize_physics() {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d->finish();
 	memdelete(physics_server_3d);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d->finish();
 	memdelete(physics_server_2d);
+#endif // PHYSICS_2D_DISABLED
 }
 
 void finalize_display() {
@@ -491,7 +515,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_copyright("(c) 2014-present Godot Engine contributors. (c) 2007-present Juan Linietsky, Ariel Manzur.");
 
 	print_help_title("Usage");
-	OS::get_singleton()->print("  %s \u001b[96m[options] [path to scene or \"project.godot\" file]\u001b[0m\n", p_binary);
+	OS::get_singleton()->print("  %s \u001b[96m[options] [path to \"project.godot\" file]\u001b[0m\n", p_binary);
 
 #if defined(TOOLS_ENABLED)
 	print_help_title("Option legend (this build = editor)");
@@ -523,24 +547,29 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--recovery-mode", "Start the editor in recovery mode, which disables features that can typically cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
-	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debug Adapter Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript Language Server Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
 	print_help_option("--quit-after <int>", "Quit after the given number of iterations. Set to 0 to disable.\n");
 	print_help_option("-l, --language <locale>", "Use a specific locale (<locale> being a two-letter code).\n");
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
+#ifdef OVERRIDE_ENABLED
+	print_help_option("--scene <path>", "Path or UID of a scene in the project that should be started.\n");
 	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
 	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
+#endif // OVERRIDE_ENABLED
 #ifdef DISABLE_DEPRECATED
 	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
 #else
 	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
-#endif
+#endif // DISABLE_DEPRECATED
+#ifdef OVERRIDE_ENABLED
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
+#endif // OVERRIDE_ENABLED
 
 	print_help_option("--audio-driver <driver>", "Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -596,6 +625,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -607,7 +637,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_ENABLED
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
-	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information (Vulkan only). This allows source-level shader debugging with RenderDoc.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
@@ -636,10 +666,12 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
+#ifdef OVERRIDE_ENABLED
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+#endif // OVERRIDE_ENABLED
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -671,10 +703,10 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("", "If incompatibilities or errors are detected, the exit code will be non-zero.\n");
 	print_help_option("--benchmark", "Benchmark the run time and print it to console.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--benchmark-file <path>", "Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+#endif // TOOLS_ENABLED
 #ifdef TESTS_ENABLED
-	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n", CLI_OPTION_AVAILABILITY_EDITOR);
-#endif
-#endif
+	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n");
+#endif // TESTS_ENABLED
 	OS::get_singleton()->print("\n");
 }
 
@@ -707,10 +739,19 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 	// From `Main::setup2()`.
 	register_early_core_singletons();
@@ -734,14 +775,16 @@ Error Main::test_setup() {
 	translation_server->load_translations();
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
-	ResourceLoader::load_path_remaps();
-
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
-	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server();
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::initialize_server();
+#endif // NAVIGATION_2D_DISABLED
 
 	register_scene_types();
 	register_driver_types();
@@ -825,8 +868,14 @@ void Main::test_cleanup() {
 
 	finalize_theme_db();
 
-	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -844,14 +893,16 @@ void Main::test_cleanup() {
 	if (tsman) {
 		memdelete(tsman);
 	}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
+#endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
 	}
@@ -1002,6 +1053,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
+	bool load_shell_env = false;
 
 	String default_renderer = "";
 	String default_renderer_mobile = "";
@@ -1057,7 +1109,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
 				arg == "--rendering-driver" ||
-				arg == "--xr-mode") {
+				arg == "--xr-mode" ||
+				arg == "-l" ||
+				arg == "--language") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -1268,6 +1322,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--single-window") { // force single window
 
 			single_window = true;
+		} else if (arg == "--accessibility") {
+			if (N) {
+				String string = N->get();
+				if (string == "auto") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+					accessibility_mode_set = true;
+				} else if (string == "always") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
+					accessibility_mode_set = true;
+				} else if (string == "disabled") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
+					accessibility_mode_set = true;
+				} else {
+					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
+					goto error;
+				}
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing accessibility mode argument, aborting.\n");
+				goto error;
+			}
 		} else if (arg == "-t" || arg == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -1343,6 +1418,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 
+		} else if (arg == "--embedded") { // Enable embedded mode.
+#ifdef MACOS_ENABLED
+			display_driver = EMBEDDED_DISPLAY_DRIVER;
+#else
+			OS::get_singleton()->print("--embedded is only supported on macOS, aborting.\n");
+			goto error;
+#endif
 		} else if (arg == "--log-file") { // write to log file
 
 			if (N) {
@@ -1365,7 +1447,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "--remote-fs") { // remote filesystem
 
 			if (N) {
@@ -1384,6 +1466,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "--render-thread") { // render thread mode
 
 			if (N) {
@@ -1584,10 +1667,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "-u" || arg == "--upwards") { // scan folders upwards
 			upwards = true;
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
+#ifdef TOOLS_ENABLED
+			wait_for_import = true;
+#endif
 		} else if (arg == "--quit-after") { // Quit after the given number of iterations
 			if (N) {
 				quit_after = N->get().to_int();
@@ -1653,7 +1741,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
-
+#ifdef OVERRIDE_ENABLED
 		} else if (arg == "--main-pack") {
 			if (N) {
 				main_pack = N->get();
@@ -1662,7 +1750,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			}
-
+#endif // OVERRIDE_ENABLED
 		} else if (arg == "-d" || arg == "--debug") {
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
@@ -1739,7 +1827,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--editor-pseudolocalization") {
 			editor_pseudolocalization = true;
 #endif // TOOLS_ENABLED
-		} else if (arg == "--profile-gpu") {
+		} else if (arg == "--gpu-profile") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
@@ -1843,6 +1931,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+#ifdef OVERRIDE_ENABLED
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
@@ -1860,6 +1949,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
+#endif // OVERRIDE_ENABLED
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
@@ -2077,7 +2167,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")) == "") {
+	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -2128,6 +2218,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.visionos", PROPERTY_HINT_ENUM, "metal"), "metal");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
@@ -2150,160 +2241,77 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
 
-		Array device_blocklist;
+		Array force_angle_list;
 
-#define BLOCK_DEVICE(m_vendor, m_name)      \
+#define FORCE_ANGLE(m_vendor, m_name)       \
 	{                                       \
 		Dictionary device;                  \
 		device["vendor"] = m_vendor;        \
 		device["name"] = m_name;            \
-		device_blocklist.push_back(device); \
+		force_angle_list.push_back(device); \
 	}
 
 		// AMD GPUs.
-		BLOCK_DEVICE("ATI", "Radeon 9"); // ATI Radeon 9000 Series
-		BLOCK_DEVICE("ATI", "Radeon X"); // ATI Radeon X500-X2000 Series
-		BLOCK_DEVICE("ATI", "Radeon HD 2"); // AMD/ATI (Mobility) Radeon HD 2xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 3"); // AMD/ATI (Mobility) Radeon HD 3xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 4"); // AMD/ATI (Mobility) Radeon HD 4xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 5"); // AMD/ATI (Mobility) Radeon HD 5xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 6"); // AMD/ATI (Mobility) Radeon HD 6xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 7"); // AMD/ATI (Mobility) Radeon HD 7xxx Series
-		BLOCK_DEVICE("ATI", "Radeon HD 8"); // AMD/ATI (Mobility) Radeon HD 8xxx Series
-		BLOCK_DEVICE("ATI", "Radeon(TM) R2 Graphics"); // APUs
-		BLOCK_DEVICE("ATI", "Radeon(TM) R3 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R4 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R5 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R6 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon(TM) R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon(TM) R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon(TM) R8 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R5 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R6 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon R7 Graphics");
-		BLOCK_DEVICE("AMD", "Radeon R8 Graphics");
-		BLOCK_DEVICE("ATI", "Radeon R5 2"); // Rx 2xx Series
-		BLOCK_DEVICE("ATI", "Radeon R7 2");
-		BLOCK_DEVICE("ATI", "Radeon R9 2");
-		BLOCK_DEVICE("ATI", "Radeon R5 M2"); // Rx M2xx Series
-		BLOCK_DEVICE("ATI", "Radeon R7 M2");
-		BLOCK_DEVICE("ATI", "Radeon R9 M2");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 Fury");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R5 3"); // Rx 3xx Series
-		BLOCK_DEVICE("AMD", "Radeon (TM) R5 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R7 3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R7 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R9 3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R5 M3"); // Rx M3xx Series
-		BLOCK_DEVICE("AMD", "Radeon (TM) R5 M3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R7 M3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R7 M3");
-		BLOCK_DEVICE("ATI", "Radeon (TM) R9 M3");
-		BLOCK_DEVICE("AMD", "Radeon (TM) R9 M3");
+		FORCE_ANGLE("ATI", "Radeon 9"); // ATI Radeon 9000 Series
+		FORCE_ANGLE("ATI", "Radeon X"); // ATI Radeon X500-X2000 Series
+		FORCE_ANGLE("ATI", "Radeon HD 2"); // AMD/ATI (Mobility) Radeon HD 2xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 3"); // AMD/ATI (Mobility) Radeon HD 3xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 4"); // AMD/ATI (Mobility) Radeon HD 4xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 5"); // AMD/ATI (Mobility) Radeon HD 5xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 6"); // AMD/ATI (Mobility) Radeon HD 6xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 7"); // AMD/ATI (Mobility) Radeon HD 7xxx Series
+		FORCE_ANGLE("ATI", "Radeon HD 8"); // AMD/ATI (Mobility) Radeon HD 8xxx Series
+		FORCE_ANGLE("ATI", "Radeon(TM) R2 Graphics"); // APUs
+		FORCE_ANGLE("ATI", "Radeon(TM) R3 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R4 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R5 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R6 Graphics");
+		FORCE_ANGLE("ATI", "Radeon(TM) R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon(TM) R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon(TM) R8 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R5 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R6 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon R7 Graphics");
+		FORCE_ANGLE("AMD", "Radeon R8 Graphics");
+		FORCE_ANGLE("ATI", "Radeon R5 2"); // Rx 2xx Series
+		FORCE_ANGLE("ATI", "Radeon R7 2");
+		FORCE_ANGLE("ATI", "Radeon R9 2");
+		FORCE_ANGLE("ATI", "Radeon R5 M2"); // Rx M2xx Series
+		FORCE_ANGLE("ATI", "Radeon R7 M2");
+		FORCE_ANGLE("ATI", "Radeon R9 M2");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 Fury");
+		FORCE_ANGLE("ATI", "Radeon (TM) R5 3"); // Rx 3xx Series
+		FORCE_ANGLE("AMD", "Radeon (TM) R5 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R7 3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R7 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R9 3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R5 M3"); // Rx M3xx Series
+		FORCE_ANGLE("AMD", "Radeon (TM) R5 M3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R7 M3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R7 M3");
+		FORCE_ANGLE("ATI", "Radeon (TM) R9 M3");
+		FORCE_ANGLE("AMD", "Radeon (TM) R9 M3");
 
-		// Intel GPUs.
-		BLOCK_DEVICE("0x8086", "0x0042"); // HD Graphics, Gen5, Clarkdale
-		BLOCK_DEVICE("0x8086", "0x0046"); // HD Graphics, Gen5, Arrandale
-		BLOCK_DEVICE("0x8086", "0x010A"); // HD Graphics, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 2000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2000");
-		BLOCK_DEVICE("0x8086", "0x0102"); // HD Graphics 2000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0116"); // HD Graphics 3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 3000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 3000");
-		BLOCK_DEVICE("0x8086", "0x0126"); // HD Graphics 3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
-		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122");
-		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
-		BLOCK_DEVICE("0x8086", "0x0152"); // HD Graphics 2500, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
-		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166");
-		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
-		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
-		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
-		BLOCK_DEVICE("0x8086", "0x0F31");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
-		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
-		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
-		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0416");
-		BLOCK_DEVICE("0x8086", "0x0426");
-		BLOCK_DEVICE("0x8086", "0x0D12");
-		BLOCK_DEVICE("0x8086", "0x0D16");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
-		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
-		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x042A");
-		BLOCK_DEVICE("0x8086", "0x0A26");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
-		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0A2A");
-		BLOCK_DEVICE("0x8086", "0x0A2B");
-		BLOCK_DEVICE("0x8086", "0x0A2E");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
-		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
-		BLOCK_DEVICE("0x8086", "0x0D26");
-		BLOCK_DEVICE("0x8086", "0x0D2A");
-		BLOCK_DEVICE("0x8086", "0x0D2B");
-		BLOCK_DEVICE("0x8086", "0x0D2E");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
-		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
-		BLOCK_DEVICE("0x8086", "0x22B1");
-		BLOCK_DEVICE("0x8086", "0x22B2");
-		BLOCK_DEVICE("0x8086", "0x22B3");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
-		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
-		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
-		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
-		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
-		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
-		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
-		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
-		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x1906");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
-		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
-		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x191B");
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
-		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
-		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
-		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
-		BLOCK_DEVICE("0x8086", "0x1927");
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
-		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
-		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
-		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
+		// Intel GPUs (Gen7-Gen9.5 devices).
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics");
+		FORCE_ANGLE("Intel", "Intel HD Graphics");
+		FORCE_ANGLE("Intel", "Intel(R) Vallyview Graphics");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		FORCE_ANGLE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Graphics 540");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 640");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 650");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics 580");
+		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics P580");
 
-#undef BLOCK_DEVICE
+#undef FORCE_ANGLE
 
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), force_angle_list);
 	}
 
 	// Start with RenderingDevice-based backends.
@@ -2328,18 +2336,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_renderer_mobile = "gl_compatibility";
 	}
 #endif
-	if (renderer_hints.is_empty()) {
-		ERR_PRINT("No renderers available.");
-	}
 
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
-				rendering_method != "gl_compatibility") {
+				rendering_method != "gl_compatibility" &&
+				rendering_method != "dummy") {
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
 
-			const Vector<String> rendering_method_hints = renderer_hints.split(",");
+			Vector<String> rendering_method_hints = renderer_hints.split(",");
+			rendering_method_hints.push_back("dummy");
 			for (int i = 0; i < rendering_method_hints.size(); i++) {
 				if (i == rendering_method_hints.size() - 1) {
 					OS::get_singleton()->print(" and ");
@@ -2352,6 +2359,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print(".\n");
 			goto error;
 		}
+	}
+	if (renderer_hints.is_empty()) {
+		renderer_hints = "dummy";
 	}
 
 	if (!rendering_driver.is_empty()) {
@@ -2403,7 +2413,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
+			if (rendering_driver == "dummy") {
+				rendering_method = "dummy";
+			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
 				rendering_method = "gl_compatibility";
 			} else {
 				rendering_method = "forward_plus";
@@ -2431,6 +2443,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("opengl3_es");
 		}
 #endif
+		if (rendering_method == "dummy") {
+			available_drivers.push_back("dummy");
+		}
 		if (available_drivers.is_empty()) {
 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
 			goto error;
@@ -2459,7 +2474,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
@@ -2467,7 +2482,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rendering_driver.is_empty()) {
-		if (rendering_method == "gl_compatibility") {
+		if (rendering_method == "dummy") {
+			rendering_driver = "dummy";
+		} else if (rendering_method == "gl_compatibility") {
 			rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
 		} else {
 			rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
@@ -2509,6 +2526,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		if (!bool(GLOBAL_GET("display/window/size/resizable"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_RESIZE_DISABLED_BIT;
+		}
+		if (bool(GLOBAL_GET("display/window/size/minimize_disabled"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED_BIT;
+		}
+		if (bool(GLOBAL_GET("display/window/size/maximize_disabled"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED_BIT;
 		}
 		if (bool(GLOBAL_GET("display/window/size/borderless"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
@@ -2558,17 +2581,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
-
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
+
+	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed.
 		OS::get_singleton()->_allow_hidpi = true;
+		load_shell_env = true;
 	}
 #endif
+	if (load_shell_env) {
+		OS::get_singleton()->load_shell_environment();
+	}
 
 	if (separate_thread_render == -1) {
 		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
@@ -2594,6 +2621,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.visionos", PROPERTY_HINT_ENUM_SUGGESTION, "default,visionOS,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
@@ -2686,7 +2714,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enabled", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_spatial_anchors", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_persistent_anchors", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_plane_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_marker_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/aruco_dict", PROPERTY_HINT_ENUM, "4x4 50 IDs,4x4 100 IDs,4x4 250 IDs,4x4 1000 IDs,5x5 50 IDs,5x5 100 IDs,5x5 250 IDs,5x5 1000 IDs,6x6 50 IDs,6x6 100 IDs,6x6 250 IDs,6x6 1000 IDs,7x7 50 IDs,7x7 100 IDs,7x7 250 IDs,7x7 1000 IDs"), "15");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 
 	// OpenXR Binding modifier settings
 	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
@@ -2822,6 +2861,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int accessibility_mode_editor = 0;
 	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
@@ -2859,6 +2899,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool tablet_found = false;
 
+					bool ac_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2873,7 +2915,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !tablet_found) {
+					while (!screen_found || !init_expand_to_title_found || !init_display_scale_found || !init_custom_scale_found || !prefer_wayland_found || !tablet_found || !ac_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2892,19 +2934,22 @@ Error Main::setup2(bool p_show_boot_logo) {
 									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
-							if (assign == "interface/editor/expand_to_title") {
+							if (!ac_found && assign == "interface/accessibility/accessibility_support") {
+								accessibility_mode_editor = value;
+								ac_found = true;
+							} else if (!init_expand_to_title_found && assign == "interface/editor/expand_to_title") {
 								init_expand_to_title = value;
-							} else if (assign == "interface/editor/display_scale") {
+								init_expand_to_title_found = true;
+							} else if (!init_display_scale_found && assign == "interface/editor/display_scale") {
 								init_display_scale = value;
 								init_display_scale_found = true;
-							} else if (assign == "interface/editor/custom_display_scale") {
+							} else if (!init_custom_scale_found && assign == "interface/editor/custom_display_scale") {
 								init_custom_scale = value;
+								init_custom_scale_found = true;
 							} else if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
-							}
-
-							if (!tablet_found && assign == "interface/editor/tablet_driver") {
+							} else if (!tablet_found && assign == "interface/editor/tablet_driver") {
 								tablet_driver_editor = value;
 								tablet_found = true;
 							}
@@ -2975,10 +3020,19 @@ Error Main::setup2(bool p_show_boot_logo) {
 		tsman->add_interface(ts);
 	}
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 	register_server_types();
 	{
@@ -3053,6 +3107,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 			// from --position and --resolution parameters.
 			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+			if (bool(GLOBAL_GET("display/window/size/transparent"))) {
+				window_flags |= DisplayServer::WINDOW_FLAG_TRANSPARENT_BIT;
+			}
 		}
 
 #ifdef TOOLS_ENABLED
@@ -3060,6 +3117,19 @@ Error Main::setup2(bool p_show_boot_logo) {
 			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
 		}
 #endif
+
+		if (!accessibility_mode_set) {
+#ifdef TOOLS_ENABLED
+			if (editor || project_manager || cmdline_tool) {
+				accessibility_mode = (DisplayServer::AccessibilityMode)accessibility_mode_editor;
+			} else {
+#else
+			{
+#endif
+				accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+			}
+		}
+		DisplayServer::accessibility_set_mode(accessibility_mode);
 
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
@@ -3101,20 +3171,22 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (tsman) {
 				memdelete(tsman);
 			}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			if (physics_server_3d_manager) {
 				memdelete(physics_server_3d_manager);
 			}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 			if (physics_server_2d_manager) {
 				memdelete(physics_server_2d_manager);
 			}
+#endif // PHYSICS_2D_DISABLED
 
 			return err;
 		}
 
 #ifdef TOOLS_ENABLED
-		if (project_manager && init_display_scale_found) {
+		if (project_manager) {
 			float ui_scale = init_custom_scale;
 			switch (init_display_scale) {
 				case 0:
@@ -3142,9 +3214,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 					break;
 			}
 			if (!(force_res || use_custom_res)) {
-				display_server->window_set_size(window_size * ui_scale, DisplayServer::MAIN_WINDOW_ID);
+				display_server->window_set_size(Size2(window_size) * ui_scale, DisplayServer::MAIN_WINDOW_ID);
 			}
-			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) { // Note: add "&& !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)" when Wayland multi-window support is merged.
+			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
 				Size2 real_size = DisplayServer::get_singleton()->window_get_size();
 				Rect2i scr_rect = display_server->screen_get_usable_rect(init_screen);
 				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServer::MAIN_WINDOW_ID);
@@ -3268,14 +3340,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 			rendering_server->set_print_gpu_profile(true);
 		}
 
-		if (Engine::get_singleton()->get_write_movie_path() != String()) {
-			movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
-			if (movie_writer == nullptr) {
-				ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
-				Engine::get_singleton()->set_write_movie_path(String());
-			}
-		}
-
 		OS::get_singleton()->benchmark_end_measure("Servers", "Rendering");
 	}
 
@@ -3395,8 +3459,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		translation_server->load_translations();
 		ResourceLoader::load_translation_remaps(); //load remaps for resources
 
-		ResourceLoader::load_path_remaps();
-
 		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
 	}
 
@@ -3476,10 +3538,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	MAIN_PRINT("Main: Load Navigation");
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
-	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server();
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::initialize_server();
+#endif // NAVIGATION_2D_DISABLED
 
 	register_scene_types();
 	register_driver_types();
@@ -3493,6 +3561,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 		GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
 
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
+
+		// We need to initialize the movie writer here in case
+		// one of the user-provided GDExtensions subclasses MovieWriter.
+		if (Engine::get_singleton()->get_write_movie_path() != String()) {
+			movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
+			if (movie_writer == nullptr) {
+				ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
+				Engine::get_singleton()->set_write_movie_path(String());
+			}
+		}
 	}
 
 	PackedStringArray extensions;
@@ -3619,7 +3697,8 @@ void Main::setup_boot_logo() {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+
+		const RenderingServer::SplashStretchMode boot_stretch_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/boot_splash/stretch_mode", PROPERTY_HINT_ENUM, "Disabled,Keep,Keep Width,Keep Height,Cover,Ignore"), 1);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		String boot_logo_path = GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String());
 
@@ -3659,7 +3738,7 @@ void Main::setup_boot_logo() {
 		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
-			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(boot_logo, boot_bg_color, boot_stretch_mode, boot_logo_filter);
 
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
@@ -3673,7 +3752,7 @@ void Main::setup_boot_logo() {
 			MAIN_PRINT("Main: ClearColor");
 			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
-			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(splash, boot_bg_color, RenderingServer::SPLASH_STRETCH_MODE_DISABLED);
 #endif
 		}
 
@@ -3692,6 +3771,10 @@ String Main::get_rendering_driver_name() {
 	return rendering_driver;
 }
 
+String Main::get_locale_override() {
+	return locale;
+}
+
 // everything the main loop needs to know about frame timings
 static MainTimerSync main_timer_sync;
 
@@ -3701,7 +3784,7 @@ static MainTimerSync main_timer_sync;
 int Main::start() {
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
 
-	ERR_FAIL_COND_V(!_start_success, false);
+	ERR_FAIL_COND_V(!_start_success, EXIT_FAILURE);
 
 	bool has_icon = false;
 	String positional_arg;
@@ -3713,7 +3796,7 @@ int Main::start() {
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
 	bool doc_tool_implicit_cwd = false;
-	BitField<DocTools::GenerateFlags> gen_flags;
+	BitField<DocTools::GenerateFlags> gen_flags = {};
 	String _export_preset;
 	Vector<String> patches;
 	bool export_debug = false;
@@ -3760,22 +3843,32 @@ int Main::start() {
 		} else if (E->get() == "--install-android-build-template") {
 			install_android_build_template = true;
 #endif // TOOLS_ENABLED
-		} else if (E->get().length() && E->get()[0] != '-' && positional_arg.is_empty()) {
+#ifdef OVERRIDE_ENABLED
+		} else if (E->get() == "--scene") {
+			E = E->next();
+			if (E) {
+				game_path = ResourceUID::ensure_path(E->get());
+			} else {
+				ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing scene path, aborting.");
+			}
+		} else if (E->get().length() && E->get()[0] != '-' && positional_arg.is_empty() && game_path.is_empty()) {
 			positional_arg = E->get();
 
-			if (E->get().ends_with(".scn") ||
-					E->get().ends_with(".tscn") ||
-					E->get().ends_with(".escn") ||
-					E->get().ends_with(".res") ||
-					E->get().ends_with(".tres")) {
+			String scene_path = ResourceUID::ensure_path(E->get());
+			if (scene_path.ends_with(".scn") ||
+					scene_path.ends_with(".tscn") ||
+					scene_path.ends_with(".escn") ||
+					scene_path.ends_with(".res") ||
+					scene_path.ends_with(".tres")) {
 				// Only consider the positional argument to be a scene path if it ends with
 				// a file extension associated with Godot scenes. This makes it possible
 				// for projects to parse command-line arguments for custom CLI arguments
 				// or other file extensions without trouble. This can be used to implement
 				// "drag-and-drop onto executable" logic, which can prove helpful
 				// for non-game applications.
-				game_path = E->get();
+				game_path = scene_path;
 			}
+#endif // OVERRIDE_ENABLED
 		}
 		// Then parameters that have an argument to the right.
 		else if (E->next()) {
@@ -3980,8 +4073,31 @@ int Main::start() {
 
 #endif // TOOLS_ENABLED
 
+#ifdef OVERRIDE_ENABLED
+	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+	if (disable_override) {
+		script = String();
+		game_path = String();
+		main_loop_type = String();
+	}
+#else
+	script = String();
+	game_path = String();
+	main_loop_type = String();
+#endif // OVERRIDE_ENABLED
+
 	if (script.is_empty() && game_path.is_empty()) {
-		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+		const String main_scene = GLOBAL_GET("application/run/main_scene");
+		if (main_scene.begins_with("uid://")) {
+			ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(main_scene);
+			if (!editor && !ResourceUID::get_singleton()->has_id(id) && !FileAccess::exists(ResourceUID::get_singleton()->get_cache_file())) {
+				OS::get_singleton()->alert("Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+				ERR_FAIL_V_MSG(EXIT_FAILURE, "Main scene's path could not be resolved from UID. Make sure the project is imported first. Aborting.");
+			}
+			game_path = ResourceUID::get_singleton()->get_id_path(id);
+		} else {
+			game_path = main_scene;
+		}
 	}
 
 #ifdef TOOLS_ENABLED
@@ -4082,16 +4198,33 @@ int Main::start() {
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
+
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_debug_navigation_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_debug_navigation_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_avoidance) {
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_debug_avoidance_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_navigation || debug_avoidance) {
+#ifndef NAVIGATION_2D_DISABLED
+			NavigationServer2D::get_singleton()->set_active(true);
+			NavigationServer2D::get_singleton()->set_debug_enabled(true);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_active(true);
 			NavigationServer3D::get_singleton()->set_debug_enabled(true);
+#endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_canvas_item_redraw) {
 			RenderingServer::get_singleton()->canvas_item_set_debug_redraw(true);
@@ -4297,8 +4430,11 @@ int Main::start() {
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
+			int drag_threshold = GLOBAL_GET("gui/common/drag_threshold");
+			sml->get_root()->set_drag_threshold(drag_threshold);
+
 			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
-			sml->get_root()->set_use_font_oversampling(font_oversampling);
+			sml->get_root()->set_use_oversampling(font_oversampling);
 
 			int texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 			int texture_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
@@ -4310,19 +4446,18 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 		if (editor) {
-			bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting(
-					"interface/editor/single_window_mode");
+			bool editor_embed_subwindows = EDITOR_GET("interface/editor/single_window_mode");
 
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+			restore_editor_window_layout = EDITOR_GET("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
 		String local_game_path;
 		if (!game_path.is_empty() && !project_manager) {
-			local_game_path = game_path.replace("\\", "/");
+			local_game_path = game_path.replace_char('\\', '/');
 
 			if (!local_game_path.begins_with("res://")) {
 				bool absolute =
@@ -4387,8 +4522,13 @@ int Main::start() {
 				sml->add_current_scene(scene);
 
 #ifdef MACOS_ENABLED
+#ifndef TOOLS_ENABLED
+				if ((FileAccess::exists(OS::get_singleton()->get_bundle_resource_dir().path_join("Assets.car")) && !OS::get_singleton()->get_bundle_icon_name().is_empty()) || (!OS::get_singleton()->get_bundle_icon_path().is_empty())) {
+					has_icon = true; // Bundle has embedded icon, do not override with project icon.
+				}
+#endif
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
-				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty() && !has_icon) {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}
@@ -4455,6 +4595,8 @@ int Main::start() {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
+	GDExtensionManager::get_singleton()->startup();
+
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
 		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
@@ -4508,10 +4650,10 @@ bool Main::iteration() {
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
-	const int physics_ticks_per_second = Engine::get_singleton()->get_physics_ticks_per_second();
+	const int physics_ticks_per_second = Engine::get_singleton()->get_user_physics_ticks_per_second();
 	const double physics_step = 1.0 / physics_ticks_per_second;
 
-	const double time_scale = Engine::get_singleton()->get_time_scale();
+	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
@@ -4522,13 +4664,15 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	uint64_t navigation_process_ticks = 0;
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 	frame += ticks_elapsed;
 
 	last_ticks = ticks;
 
-	const int max_physics_steps = Engine::get_singleton()->get_max_physics_steps_per_frame();
+	const int max_physics_steps = Engine::get_singleton()->get_user_max_physics_steps_per_frame();
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
 		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
@@ -4540,9 +4684,6 @@ bool Main::iteration() {
 #ifndef XR_DISABLED
 	XRServer::get_singleton()->_process();
 #endif // XR_DISABLED
-
-	NavigationServer2D::get_singleton()->sync();
-	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4559,41 +4700,54 @@ bool Main::iteration() {
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+#endif // PHYSICS_2D_DISABLED
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
+#endif // PHYSICS_2D_DISABLED
 
 			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
 
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+#ifndef NAVIGATION_2D_DISABLED
+		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
+#endif // NAVIGATION_3D_DISABLED
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+#endif // PHYSICS_2D_DISABLED
 
 		message_queue->flush();
 
@@ -4615,6 +4769,13 @@ bool Main::iteration() {
 		exit = true;
 	}
 	message_queue->flush();
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_3D_DISABLED
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -4640,6 +4801,8 @@ bool Main::iteration() {
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+
+	GDExtensionManager::get_singleton()->frame();
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
@@ -4706,7 +4869,10 @@ bool Main::iteration() {
 		return exit;
 	}
 
-	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	SceneTree *scene_tree = SceneTree::get_singleton();
+	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
+
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
@@ -4756,6 +4922,8 @@ void Main::cleanup(bool p_force) {
 	}
 #endif
 
+	GDExtensionManager::get_singleton()->shutdown();
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
@@ -4770,6 +4938,12 @@ void Main::cleanup(bool p_force) {
 	ResourceSaver::remove_custom_savers();
 	PropertyListHelper::clear_base_helpers();
 
+	// Remove the lock file if the engine exits successfully. Some automated processes such as
+	// --export/--import can bypass and/or finish faster than the existing check to remove the lock file.
+	if (OS::get_singleton()->get_exit_code() == EXIT_SUCCESS) {
+		OS::get_singleton()->remove_lock_file();
+	}
+
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
 
@@ -4781,7 +4955,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->_local_clipboard = "";
 
 	ResourceLoader::clear_translation_remaps();
-	ResourceLoader::clear_path_remaps();
 
 	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
@@ -4819,9 +4992,15 @@ void Main::cleanup(bool p_force) {
 
 	finalize_theme_db();
 
-	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
-	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 	finalize_physics();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -4830,11 +5009,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
@@ -4868,14 +5047,16 @@ void Main::cleanup(bool p_force) {
 	if (tsman) {
 		memdelete(tsman);
 	}
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
+#endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
 	}

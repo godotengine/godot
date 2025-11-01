@@ -99,10 +99,7 @@ void EditorObjectSelector::_show_popup() {
 	Point2 gp = get_screen_position();
 	gp.y += size.y;
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
-
-	sub_objects_menu->popup();
+	sub_objects_menu->popup(Rect2(gp, Size2(size.width, 0)));
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -190,7 +187,6 @@ void EditorObjectSelector::_id_pressed(int p_idx) {
 
 void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
@@ -212,9 +208,8 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);
+	main_mc->set_theme_type_variation("ObjectSelectorMargin");
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
@@ -226,6 +221,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
+	current_object_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_object_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

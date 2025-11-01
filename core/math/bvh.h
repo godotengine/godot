@@ -406,7 +406,7 @@ public:
 		}
 
 		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
-		if (convex_points.size() == 0) {
+		if (convex_points.is_empty()) {
 			return 0;
 		}
 
@@ -769,7 +769,7 @@ private:
 
 	// for collision pairing,
 	// maintain a list of all items moved etc on each frame / tick
-	LocalVector<BVHHandle, uint32_t, true> changed_items;
+	LocalVector<BVHHandle> changed_items;
 	uint32_t _tick = 1; // Start from 1 so items with 0 indicate never updated.
 
 	class BVHLockedFunction {

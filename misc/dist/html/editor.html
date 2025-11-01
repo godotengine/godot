@@ -674,6 +674,10 @@ function startEditor(zip) {
 		}
 	}
 
+	const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+	// We need at least 6 free threads from the pool to start the editor.
+	// At least 4 more will be reserved for the godot thread pool (3 is the bare minimum with the multithreaded variant of the servers).
+	const concurrency = clamp(navigator.hardwareConcurrency ?? 1, 12, 24);
 	const editorConfig = {
 		'unloadAfterInit': false,
 		'onProgress': function progressFunction(current, total) {
@@ -700,6 +704,8 @@ function startEditor(zip) {
 		},
 		'onExecute': Execute,
 		'persistentPaths': persistentPaths,
+		'emscriptenPoolSize': concurrency,
+		'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
 	};
 	editor = new Engine(editorConfig);
 

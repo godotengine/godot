@@ -408,7 +408,7 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	static delete(id) {
-		GodotAudio.sampleNodes.delete(id);
+		GodotAudio.deleteSampleNode(id);
 	}
 
 	/**
@@ -635,10 +635,15 @@ class SampleNode {
 		if (this._positionWorklet != null) {
 			return this._positionWorklet;
 		}
-		this._positionWorklet = new AudioWorkletNode(
-			GodotAudio.ctx,
-			'godot-position-reporting-processor'
-		);
+		if (GodotAudio.audioPositionWorkletNodes.length > 0) {
+			this._positionWorklet = GodotAudio.audioPositionWorkletNodes.pop();
+		} else {
+			this._positionWorklet = new AudioWorkletNode(
+				GodotAudio.ctx,
+				'godot-position-reporting-processor'
+			);
+		}
+		this._playbackPosition = this.offset;
 		this._positionWorklet.port.onmessage = (event) => {
 			switch (event.data['type']) {
 			case 'position':
@@ -648,6 +653,11 @@ class SampleNode {
 				// Do nothing.
 			}
 		};
+
+		const resetParameter = this._positionWorklet.parameters.get('reset');
+		resetParameter.setValueAtTime(1, GodotAudio.ctx.currentTime);
+		resetParameter.setValueAtTime(0, GodotAudio.ctx.currentTime + 1);
+
 		return this._positionWorklet;
 	}
 
@@ -678,7 +688,7 @@ class SampleNode {
 		if (this._positionWorklet) {
 			this._positionWorklet.disconnect();
 			this._positionWorklet.port.onmessage = null;
-			this._positionWorklet.port.postMessage({ type: 'ended' });
+			GodotAudio.audioPositionWorkletNodes.push(this._positionWorklet);
 			this._positionWorklet = null;
 		}
 
@@ -771,15 +781,9 @@ class SampleNode {
 			}
 
 			switch (self.getSample().loopMode) {
-			case 'disabled': {
-				const id = this.id;
+			case 'disabled':
 				self.stop();
-				if (GodotAudio.sampleFinishedCallback != null) {
-					const idCharPtr = GodotRuntime.allocString(id);
-					GodotAudio.sampleFinishedCallback(idCharPtr);
-					GodotRuntime.free(idCharPtr);
-				}
-			} break;
+				break;
 			case 'forward':
 			case 'backward':
 				self.restart();
@@ -1170,6 +1174,15 @@ const _GodotAudio = {
 		 */
 		sampleNodes: null,
 		SampleNode,
+		deleteSampleNode: (pSampleNodeId) => {
+			GodotAudio.sampleNodes.delete(pSampleNodeId);
+			if (GodotAudio.sampleFinishedCallback == null) {
+				return;
+			}
+			const sampleNodeIdPtr = GodotRuntime.allocString(pSampleNodeId);
+			GodotAudio.sampleFinishedCallback(sampleNodeIdPtr);
+			GodotRuntime.free(sampleNodeIdPtr);
+		},
 
 		// `Bus` class
 		/**
@@ -1198,6 +1211,8 @@ const _GodotAudio = {
 
 		/** @type {Promise} */
 		audioPositionWorkletPromise: null,
+		/** @type {Array<AudioWorkletNode>} */
+		audioPositionWorkletNodes: null,
 
 		/**
 		 * Converts linear volume to Db.
@@ -1224,6 +1239,7 @@ const _GodotAudio = {
 			GodotAudio.sampleNodes = new Map();
 			GodotAudio.buses = [];
 			GodotAudio.busSolo = null;
+			GodotAudio.audioPositionWorkletNodes = [];
 
 			const opts = {};
 			// If mix_rate is 0, let the browser choose.
