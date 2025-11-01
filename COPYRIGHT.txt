@@ -297,7 +297,7 @@ License: OFL-1.1
 
 Files: thirdparty/freetype/*
 Comment: The FreeType Project
-Copyright: 1996-2023, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2025, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: thirdparty/glad/*
@@ -1679,7 +1679,7 @@ License: FTL
      Discusses bugs,  as well  as engine internals,  design issues,
      specific licenses, porting, etc.
  .
-   o http://www.freetype.org
+   o https://freetype.org
  .
      Holds the current  FreeType web page, which will  allow you to
      download  our  latest  development  version  and  read  online
