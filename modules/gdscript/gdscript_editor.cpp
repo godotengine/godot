@@ -1048,9 +1048,18 @@ static void _find_global_enums(HashMap<String, ScriptLanguage::CodeCompletionOpt
 	}
 }
 
+static void _add_variant_types(HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
+	ScriptLanguage::CodeCompletionOption variant_option("Variant", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+	r_result.insert(variant_option.display, variant_option);
+}
 static void _list_available_types(bool p_inherit_only, GDScriptParser::CompletionContext &p_context, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	// Built-in Variant Types
 	_find_built_in_variants(r_result, true);
+
+	// Variant meta-type
+	if (!p_inherit_only) {
+		_add_variant_types(r_result);
+	}
 
 	LocalVector<StringName> native_types;
 	ClassDB::get_class_list(native_types);
