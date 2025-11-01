@@ -34,6 +34,9 @@ void SliderJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint3D::get_param);
 
+	ClassDB::bind_method(D_METHOD("get_applied_force"), &SliderJoint3D::get_applied_force);
+	ClassDB::bind_method(D_METHOD("get_applied_torque"), &SliderJoint3D::get_applied_torque);
+
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_limit/upper_distance", PROPERTY_HINT_RANGE, "-1024,1024,0.01,suffix:m"), "set_param", "get_param", PARAM_LINEAR_LIMIT_UPPER);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_limit/lower_distance", PROPERTY_HINT_RANGE, "-1024,1024,0.01,suffix:m"), "set_param", "get_param", PARAM_LINEAR_LIMIT_LOWER);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "linear_limit/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_LIMIT_SOFTNESS);
@@ -97,6 +100,14 @@ void SliderJoint3D::set_param(Param p_param, real_t p_value) {
 real_t SliderJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
+}
+
+float SliderJoint3D::get_applied_force() const {
+	return PhysicsServer3D::get_singleton()->slider_joint_get_applied_force(get_rid());
+}
+
+float SliderJoint3D::get_applied_torque() const {
+	return PhysicsServer3D::get_singleton()->slider_joint_get_applied_torque(get_rid());
 }
 
 void SliderJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
