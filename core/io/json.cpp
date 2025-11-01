@@ -859,9 +859,13 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 
 			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
 
+			args.resize(dict.size() * 2);
+			Array::Iterator itr = args.begin();
 			for (const KeyValue<Variant, Variant> &kv : dict) {
-				args.push_back(_from_native(kv.key, p_full_objects, p_depth + 1));
-				args.push_back(_from_native(kv.value, p_full_objects, p_depth + 1));
+				*itr = _from_native(kv.key, p_full_objects, p_depth + 1);
+				++itr;
+				*itr = _from_native(kv.value, p_full_objects, p_depth + 1);
+				++itr;
 			}
 
 			return ret;
@@ -887,8 +891,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 
 			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
 
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(_from_native(arr[i], p_full_objects, p_depth + 1));
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const Variant &V : arr) {
+				*itr = _from_native(V, p_full_objects, p_depth + 1);
+				++itr;
 			}
 
 			return ret;
@@ -898,8 +905,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedByteArray arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const uint8_t &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -908,8 +918,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedInt32Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const int32_t &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -918,8 +931,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedInt64Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const int64_t &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -928,8 +944,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedFloat32Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const float &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -938,8 +957,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedFloat64Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const double &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -948,8 +970,11 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedStringArray arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				args.push_back(arr[i]);
+			args.resize(arr.size());
+			Array::Iterator itr = args.begin();
+			for (const String &V : arr) {
+				*itr = V;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -958,10 +983,13 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedVector2Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				Vector2 v = arr[i];
-				args.push_back(v.x);
-				args.push_back(v.y);
+			args.resize(arr.size() * 2);
+			Array::Iterator itr = args.begin();
+			for (const Vector2 &V : arr) {
+				*itr = V.x;
+				++itr;
+				*itr = V.y;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -970,11 +998,15 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedVector3Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				Vector3 v = arr[i];
-				args.push_back(v.x);
-				args.push_back(v.y);
-				args.push_back(v.z);
+			args.resize(arr.size() * 3);
+			Array::Iterator itr = args.begin();
+			for (const Vector3 &V : arr) {
+				*itr = V.x;
+				++itr;
+				*itr = V.y;
+				++itr;
+				*itr = V.z;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -983,12 +1015,17 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedColorArray arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				Color v = arr[i];
-				args.push_back(v.r);
-				args.push_back(v.g);
-				args.push_back(v.b);
-				args.push_back(v.a);
+			args.resize(arr.size() * 4);
+			Array::Iterator itr = args.begin();
+			for (const Color &V : arr) {
+				*itr = V.r;
+				++itr;
+				*itr = V.g;
+				++itr;
+				*itr = V.b;
+				++itr;
+				*itr = V.a;
+				++itr;
 			}
 
 			RETURN_ARGS;
@@ -997,12 +1034,17 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			const PackedVector4Array arr = p_variant;
 
 			Array args;
-			for (int i = 0; i < arr.size(); i++) {
-				Vector4 v = arr[i];
-				args.push_back(v.x);
-				args.push_back(v.y);
-				args.push_back(v.z);
-				args.push_back(v.w);
+			args.resize(arr.size() * 4);
+			Array::Iterator itr = args.begin();
+			for (const Vector4 &V : arr) {
+				*itr = V.x;
+				++itr;
+				*itr = V.y;
+				++itr;
+				*itr = V.z;
+				++itr;
+				*itr = V.w;
+				++itr;
 			}
 
 			RETURN_ARGS;
