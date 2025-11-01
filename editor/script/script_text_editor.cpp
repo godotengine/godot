@@ -2576,30 +2576,45 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 	ERR_FAIL_COND(pending_dragged_exports.is_empty());
 
 	bool export_variable_set = false;
-	for (const DraggedExport &dragged_export : pending_dragged_exports) {
+
+	for (int i = pending_dragged_exports.size() - 1; i >= 0; i--) {
+		const DraggedExport &dragged_export = pending_dragged_exports[i];
 		Object *obj = ObjectDB::get_instance(dragged_export.obj_id);
 		if (!obj) {
 			WARN_PRINT("Object not found, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
 		ScriptInstance *si = obj->get_script_instance();
 		if (!si) {
 			WARN_PRINT("Script on " + obj->to_string() + " does not exist anymore, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
-		bool success = si->set(dragged_export.variable_name, dragged_export.value);
-		if (success) {
-			export_variable_set = true;
+		bool script_has_errors = false;
+		String scr_path = si->get_script()->get_path();
+
+		for (const ScriptLanguage::ScriptError &error : errors) {
+			if (error.path == scr_path) {
+				script_has_errors = true;
+				break;
+			}
+		}
+
+		if (!script_has_errors) {
+			bool success = si->set(dragged_export.variable_name, dragged_export.value);
+			if (success) {
+				export_variable_set = true;
+			}
+			pending_dragged_exports.remove_at(i);
 		}
 	}
 
 	if (export_variable_set) {
 		EditorInterface::get_singleton()->mark_scene_as_unsaved();
 	}
-
-	pending_dragged_exports.clear();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
