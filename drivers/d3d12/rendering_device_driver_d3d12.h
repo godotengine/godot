@@ -740,6 +740,24 @@ private:
 
 		TightLocalVector<BufferDynamicInfo const *, uint32_t> dynamic_buffers;
 
+		// Pre-computed descriptor copy batches for optimized binding.
+		// Populated once at uniform_set_create() to avoid per-frame recomputation.
+		struct DescriptorCopyBatch {
+			uint32_t binding_index = 0;
+			uint32_t src_heap_offset = 0;
+			uint32_t num_descriptors = 0;
+			uint32_t root_param_idx = UINT32_MAX;
+			bool is_dynamic = false;
+			bool is_srv_uav_ambiguous = false;
+			uint8_t dynamic_buffer_index = 0;
+		};
+		TightLocalVector<DescriptorCopyBatch> resource_copy_batches;
+		TightLocalVector<DescriptorCopyBatch> sampler_copy_batches;
+
+		// Pre-computed totals for heap space validation.
+		uint32_t total_resource_descriptors = 0;
+		uint32_t total_sampler_descriptors = 0;
+
 #ifdef DEV_ENABLED
 		// Filthy, but useful for dev.
 		struct ResourceDescInfo {
@@ -747,6 +765,12 @@ private:
 			D3D12_SRV_DIMENSION srv_dimension;
 		};
 		TightLocalVector<ResourceDescInfo> resources_desc_info;
+
+		// Performance tracking for optimization validation.
+		struct {
+			uint64_t bind_count = 0;
+			uint64_t cache_hits = 0;
+		} perf_stats;
 #endif
 	};
 

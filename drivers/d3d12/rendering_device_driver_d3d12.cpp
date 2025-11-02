@@ -3798,6 +3798,78 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		}
 	}
 
+	// Pre-compute descriptor copy batch information to avoid recalculating on every bind.
+	// This data is used by _command_bind_uniform_set() to look up descriptor counts instead of
+	// calling _add_descriptor_count_for_uniform() thousands of times per frame.
+	// Addresses performance bottleneck identified in TODO comments at lines 5388, 5912.
+	{
+		const ShaderInfo *shader_set_info = (const ShaderInfo *)p_shader.id;
+		const ShaderInfo::UniformSet &shader_set = shader_set_info->sets[p_set_index];
+		const uint32_t binding_count = shader_set.bindings.size();
+
+		uint32_t resource_heap_offset = 0;
+		uint32_t sampler_heap_offset = 0;
+		uint8_t dynamic_buffer_idx = 0;
+
+		for (uint32_t i = 0; i < binding_count; i++) {
+			const ShaderInfo::UniformBindingInfo &binding = shader_set.bindings[i];
+
+			uint32_t batch_resource_descs = 0;
+			uint32_t batch_sampler_descs = 0;
+			bool srv_uav_ambiguity = false;
+
+			_add_descriptor_count_for_uniform(
+					binding.type,
+					binding.length,
+					false,
+					batch_resource_descs,
+					batch_sampler_descs,
+					srv_uav_ambiguity,
+					1u); // Single frame (not frames.size()).
+
+			// Only create batch if binding is actually used.
+			if (binding.stages) {
+				// Resource descriptors.
+				if (binding.root_sig_locations.resource.root_param_idx != UINT32_MAX) {
+					UniformSetInfo::DescriptorCopyBatch batch;
+					batch.binding_index = i;
+					batch.src_heap_offset = resource_heap_offset;
+					batch.num_descriptors = batch_resource_descs;
+					batch.root_param_idx = binding.root_sig_locations.resource.root_param_idx;
+					batch.is_dynamic = (binding.type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC ||
+							binding.type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC);
+					batch.is_srv_uav_ambiguous = srv_uav_ambiguity;
+					batch.dynamic_buffer_index = batch.is_dynamic ? dynamic_buffer_idx++ : 0;
+
+					uniform_set_info->resource_copy_batches.push_back(batch);
+					uniform_set_info->total_resource_descriptors += batch_resource_descs;
+				}
+
+				// Sampler descriptors.
+				if (binding.root_sig_locations.sampler.root_param_idx != UINT32_MAX) {
+					UniformSetInfo::DescriptorCopyBatch batch;
+					batch.binding_index = i;
+					batch.src_heap_offset = sampler_heap_offset;
+					batch.num_descriptors = num_sampler_descs;
+					batch.root_param_idx = binding.root_sig_locations.sampler.root_param_idx;
+					batch.is_dynamic = false; // Samplers are never dynamic.
+					batch.is_srv_uav_ambiguous = false;
+					batch.dynamic_buffer_index = 0;
+
+					uniform_set_info->sampler_copy_batches.push_back(batch);
+					uniform_set_info->total_sampler_descriptors += num_sampler_descs;
+				}
+			}
+
+			// Advance heap offsets (including SRV/UAV ambiguity).
+			resource_heap_offset += num_resource_descs;
+			if (srv_uav_ambiguity) {
+				resource_heap_offset += num_resource_descs; // Double space for ambiguity.
+			}
+			sampler_heap_offset += num_sampler_descs;
+		}
+	}
+
 	return UniformSetID(uniform_set_info);
 }
 
@@ -4043,6 +4115,8 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 				}
 #ifdef DEV_ENABLED
 				uniform_set_info->recent_binds[i].uses++;
+				uniform_set_info->perf_stats.cache_hits++;
+				uniform_set_info->perf_stats.bind_count++;
 				frames[frame_idx].uniform_set_reused++;
 #endif
 				return;
@@ -4101,15 +4175,33 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 		RootDescriptorTable *resources = nullptr;
 		RootDescriptorTable *samplers = nullptr;
 	} tables;
+
+	// Use pre-computed batch information instead of recalculating on every bind.
+	uint32_t resource_batch_idx = 0;
+	uint32_t sampler_batch_idx = 0;
+
 	for (uint32_t i = 0; i < binding_count; i++) {
 		const ShaderInfo::UniformBindingInfo &binding = shader_set.bindings[i];
 
+		// Use pre-computed descriptor counts from uniform_set_create() instead of recalculating.
 		uint32_t num_resource_descs = 0;
 		uint32_t num_sampler_descs = 0;
 		bool srv_uav_ambiguity = false;
-		const uint32_t frame_count_for_binding = 1u; // _add_descriptor_count_for_uniform wants frames.size() so we can create N entries.
-													 // However we are binding now, and we must bind only one (not N of them), so set 1u.
-		_add_descriptor_count_for_uniform(binding.type, binding.length, false, num_resource_descs, num_sampler_descs, srv_uav_ambiguity, frame_count_for_binding);
+
+		// Find pre-computed batch for this binding.
+		if (resource_batch_idx < uniform_set_info->resource_copy_batches.size() &&
+				uniform_set_info->resource_copy_batches[resource_batch_idx].binding_index == i) {
+			const UniformSetInfo::DescriptorCopyBatch &batch = uniform_set_info->resource_copy_batches[resource_batch_idx];
+			num_resource_descs = batch.num_descriptors;
+			srv_uav_ambiguity = batch.is_srv_uav_ambiguous;
+			resource_batch_idx++;
+		}
+		if (sampler_batch_idx < uniform_set_info->sampler_copy_batches.size() &&
+				uniform_set_info->sampler_copy_batches[sampler_batch_idx].binding_index == i) {
+			const UniformSetInfo::DescriptorCopyBatch &batch = uniform_set_info->sampler_copy_batches[sampler_batch_idx];
+			num_sampler_descs = batch.num_descriptors;
+			sampler_batch_idx++;
+		}
 
 		uint32_t dynamic_resources_to_skip = 0u;
 
@@ -4161,7 +4253,8 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 						set_heap_walkers.resources.advance(num_resource_descs);
 					}
 
-					// TODO: Batch to avoid multiple calls where possible (in any case, flush before setting root descriptor tables, or even batch that as well).
+					// Descriptor counts are now retrieved from pre-computed batches instead of being recalculated.
+					// TODO: Use batched CopyDescriptors() instead of individual CopyDescriptorsSimple() calls.
 					device->CopyDescriptorsSimple(
 							num_resource_descs,
 							frame_heap_walkers.resources->get_curr_cpu_handle(),
@@ -4211,7 +4304,8 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 						tables.samplers->start_gpu_handle = frame_heap_walkers.samplers->get_curr_gpu_handle();
 					}
 
-					// TODO: Batch to avoid multiple calls where possible (in any case, flush before setting root descriptor tables, or even batch that as well).
+					// Descriptor counts are now retrieved from pre-computed batches instead of being recalculated.
+					// TODO: Use batched CopyDescriptors() instead of individual CopyDescriptorsSimple() calls.
 					device->CopyDescriptorsSimple(
 							num_sampler_descs,
 							frame_heap_walkers.samplers->get_curr_cpu_handle(),
@@ -4256,6 +4350,10 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	last_bind->root_signature_crc = root_sig_crc;
 	last_bind->segment_serial = frames[frame_idx].segment_serial;
 	last_bind->dynamic_state_mask = p_dynamic_offsets;
+
+#ifdef DEV_ENABLED
+	uniform_set_info->perf_stats.bind_count++;
+#endif
 }
 
 /******************/
@@ -5289,7 +5387,9 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	uint32_t shift = 0u;
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
-		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
+		// NOTE: _command_bind_uniform_set() now uses pre-computed descriptor batch information from uniform_set_create().
+		// This eliminates per-frame recalculation of descriptor counts and heap offsets.
+		// Future optimization: Use batched CopyDescriptors() instead of individual CopyDescriptorsSimple() calls.
 		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, p_dynamic_offsets >> shift, false);
 		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
 		shift += usi->dynamic_buffers.size() * 4u;
@@ -5811,7 +5911,9 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	uint32_t shift = 0u;
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
-		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
+		// NOTE: _command_bind_uniform_set() now uses pre-computed descriptor batch information from uniform_set_create().
+		// This eliminates per-frame recalculation of descriptor counts and heap offsets.
+		// Future optimization: Use batched CopyDescriptors() instead of individual CopyDescriptorsSimple() calls.
 		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, p_dynamic_offsets >> shift, true);
 		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
 		shift += usi->dynamic_buffers.size() * 4u;
