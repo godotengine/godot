@@ -1437,6 +1437,9 @@ void Node::set_name(const StringName &p_name) {
 			data.name = p_name;
 		} else {
 			data.name = StringName(validated_node_name_string);
+			WARN_PRINT(vformat(
+					R"(Node cannot be renamed to "%s" because it contains characters that are not allowed. The node was renamed to "%s" instead. The following characters are not allowed: %s)",
+					input_name_str, validated_node_name_string, String::get_invalid_node_name_characters()));
 		}
 	}
 
