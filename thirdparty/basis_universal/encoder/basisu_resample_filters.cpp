@@ -1,5 +1,5 @@
 // basisu_resampler_filters.cpp
-// Copyright (C) 2019-2021 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@
 
 namespace basisu
 {
-#define BOX_FILTER_SUPPORT (0.5f)
-	static float box_filter(float t) /* pulse/Fourier window */
+	float box_filter(float t) /* pulse/Fourier window */
 	{
 		// make_clist() calls the filter function with t inverted (pos = left, neg = right)
 		if ((t >= -0.5f) && (t < 0.5f))
@@ -29,9 +28,8 @@ namespace basisu
 		else
 			return 0.0f;
 	}
-
-#define TENT_FILTER_SUPPORT (1.0f)
-	static float tent_filter(float t) /* box (*) box, bilinear/triangle */
+		
+	float tent_filter(float t) /* box (*) box, bilinear/triangle */
 	{
 		if (t < 0.0f)
 			t = -t;
@@ -42,8 +40,7 @@ namespace basisu
 			return 0.0f;
 	}
 
-#define BELL_SUPPORT (1.5f)
-	static float bell_filter(float t) /* box (*) box (*) box */
+	float bell_filter(float t) /* box (*) box (*) box */
 	{
 		if (t < 0.0f)
 			t = -t;
@@ -201,13 +198,12 @@ namespace basisu
 			return (0.0f);
 	}
 
-#define GAUSSIAN_SUPPORT (1.25f)
-	static float gaussian_filter(float t) // with blackman window
+	float gaussian_filter(float t) // with blackman window
 	{
 		if (t < 0)
 			t = -t;
-		if (t < GAUSSIAN_SUPPORT)
-			return clean(exp(-2.0f * t * t) * sqrt(2.0f / M_PI) * blackman_exact_window(t / GAUSSIAN_SUPPORT));
+		if (t < BASISU_GAUSSIAN_FILTER_SUPPORT)
+			return clean(exp(-2.0f * t * t) * sqrt(2.0f / M_PI) * blackman_exact_window(t / BASISU_GAUSSIAN_FILTER_SUPPORT));
 		else
 			return 0.0f;
 	}
@@ -310,9 +306,9 @@ namespace basisu
 
 	const resample_filter g_resample_filters[] =
 	{
-		{ "box", box_filter, BOX_FILTER_SUPPORT }, 
-		{ "tent", tent_filter, TENT_FILTER_SUPPORT }, 
-		{ "bell", bell_filter, BELL_SUPPORT }, 
+		{ "box", box_filter, BASISU_BOX_FILTER_SUPPORT },
+		{ "tent", tent_filter, BASISU_TENT_FILTER_SUPPORT }, 
+		{ "bell", bell_filter, BASISU_BELL_FILTER_SUPPORT }, 
 		{ "b-spline", B_spline_filter, B_SPLINE_SUPPORT },
 		{ "mitchell", mitchell_filter, MITCHELL_SUPPORT }, 
 		{ "blackman", blackman_filter, BLACKMAN_SUPPORT }, 
@@ -321,7 +317,7 @@ namespace basisu
 		{ "lanczos6", lanczos6_filter, LANCZOS6_SUPPORT }, 
 		{ "lanczos12", lanczos12_filter, LANCZOS12_SUPPORT }, 
 		{ "kaiser", kaiser_filter, KAISER_SUPPORT }, 
-		{ "gaussian", gaussian_filter, GAUSSIAN_SUPPORT },
+		{ "gaussian", gaussian_filter, BASISU_GAUSSIAN_FILTER_SUPPORT },
 		{ "catmullrom", catmull_rom_filter, CATMULL_ROM_SUPPORT }, 
 		{ "quadratic_interp", quadratic_interp_filter, QUADRATIC_SUPPORT }, 
 		{ "quadratic_approx", quadratic_approx_filter, QUADRATIC_SUPPORT }, 

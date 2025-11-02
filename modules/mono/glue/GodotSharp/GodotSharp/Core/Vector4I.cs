@@ -150,6 +150,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector4I Clamp(int min, int max)
+        {
+            return new Vector4I
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max),
+                Mathf.Clamp(W, min, max)
+            );
+        }
+
+        /// <summary>
         /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
@@ -204,6 +223,78 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z), Mathf.Max(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4I Max(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z),
+                Mathf.Max(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with), Mathf.Max(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4I Max(int with)
+        {
+            return new Vector4I
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with),
+                Mathf.Max(W, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z), Mathf.Min(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4I Min(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z),
+                Mathf.Min(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Min(X, with), Mathf.Min(Y, with), Mathf.Min(Z, with), Mathf.Min(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4I Min(int with)
+        {
+            return new Vector4I
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with),
+                Mathf.Min(Z, with),
+                Mathf.Min(W, with)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -252,6 +343,36 @@ namespace Godot
         public readonly Vector4I Sign()
         {
             return new Vector4I(Mathf.Sign(X), Mathf.Sign(Y), Mathf.Sign(Z), Mathf.Sign(W));
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of the corresponding component in <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(Vector4I step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step.X),
+                (int)Mathf.Snapped((double)Y, (double)step.Y),
+                (int)Mathf.Snapped((double)Z, (double)step.Z),
+                (int)Mathf.Snapped((double)W, (double)step.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4I Snapped(int step)
+        {
+            return new Vector4I(
+                (int)Mathf.Snapped((double)X, (double)step),
+                (int)Mathf.Snapped((double)Y, (double)step),
+                (int)Mathf.Snapped((double)Z, (double)step),
+                (int)Mathf.Snapped((double)W, (double)step)
+            );
         }
 
         // Constants

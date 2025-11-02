@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -12,60 +13,67 @@ thirdparty_obj = []
 if env["builtin_libtheora"]:
     thirdparty_dir = "#thirdparty/libtheora/"
     thirdparty_sources = [
-        # "analyze.c",
-        # "apiwrapper.c",
         "bitpack.c",
-        # "collect.c",
-        # "decapiwrapper.c",
         "decinfo.c",
         "decode.c",
         "dequant.c",
-        # "encapiwrapper.c",
-        # "encfrag.c",
-        # "encinfo.c",
-        # "encode.c",
-        # "encoder_disabled.c",
-        # "enquant.c",
-        # "fdct.c",
         "fragment.c",
         "huffdec.c",
-        # "huffenc.c",
         "idct.c",
         "info.c",
         "internal.c",
-        # "mathops.c",
-        # "mcenc.c",
         "quant.c",
-        # "rate.c",
         "state.c",
-        # "tokenize.c",
     ]
 
+    if env.editor_build:
+        thirdparty_sources += [
+            "analyze.c",
+            "encfrag.c",
+            "encinfo.c",
+            "encode.c",
+            "enquant.c",
+            "fdct.c",
+            "huffenc.c",
+            "mathops.c",
+            "mcenc.c",
+            "rate.c",
+            "tokenize.c",
+        ]
+
     thirdparty_sources_x86 = [
-        # "x86/mmxencfrag.c",
-        # "x86/mmxfdct.c",
         "x86/mmxfrag.c",
         "x86/mmxidct.c",
         "x86/mmxstate.c",
-        # "x86/sse2encfrag.c",
-        # "x86/sse2fdct.c",
         "x86/sse2idct.c",
         "x86/x86cpu.c",
-        # "x86/x86enc.c",
-        # "x86/x86enquant.c"
         "x86/x86state.c",
     ]
 
+    if env.editor_build:
+        thirdparty_sources_x86 += [
+            "x86/mmxencfrag.c",
+            "x86/mmxfdct.c",
+            "x86/sse2encfrag.c",
+            "x86/sse2fdct.c",
+            "x86/x86enc.c",
+            "x86/x86enquant.c",
+        ]
+
     thirdparty_sources_x86_vc = [
-        # "x86_vc/mmxencfrag.c",
-        # "x86_vc/mmxfdct.c",
         "x86_vc/mmxfrag.c",
         "x86_vc/mmxidct.c",
         "x86_vc/mmxstate.c",
         "x86_vc/x86cpu.c",
-        # "x86_vc/x86enc.c",
         "x86_vc/x86state.c",
     ]
+
+    if env.editor_build:
+        thirdparty_sources_x86_vc += [
+            "x86_vc/mmxencfrag.c",
+            "x86_vc/mmxfdct.c",
+            "x86_vc/x86enc.c",
+        ]
 
     if env["x86_libtheora_opt_gcc"]:
         thirdparty_sources += thirdparty_sources_x86
@@ -97,6 +105,10 @@ if env["builtin_libtheora"]:
 module_obj = []
 
 env_theora.add_source_files(module_obj, "*.cpp")
+
+if env.editor_build:
+    env_theora.add_source_files(module_obj, "editor/*.cpp")
+
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

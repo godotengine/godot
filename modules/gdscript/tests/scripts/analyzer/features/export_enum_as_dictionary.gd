@@ -2,8 +2,6 @@ class_name TestExportEnumAsDictionary
 
 enum MyEnum {A, B, C}
 
-const Utils = preload("../../utils.notest.gd")
-
 @export var test_1 = MyEnum
 @export var test_2 = MyEnum.A
 @export var test_3 := MyEnum

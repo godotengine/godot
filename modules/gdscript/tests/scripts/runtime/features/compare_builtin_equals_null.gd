@@ -140,3 +140,7 @@ func test():
 	# PackedColorArray
 	value = PackedColorArray()
 	print(value == null)
+
+	# PackedVector4Array
+	value = PackedVector4Array()
+	print(value == null)

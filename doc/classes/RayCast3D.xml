@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RayCast3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A ray in 3D space, used to find the first [CollisionObject3D] it intersects.
+		A ray in 3D space, used to find the first collision object it intersects.
 	</brief_description>
 	<description>
-		A raycast represents a ray from its origin to its [member target_position] that finds the closest [CollisionObject3D] along its path, if it intersects any.
+		A raycast represents a ray from its origin to its [member target_position] that finds the closest object along its path, if it intersects any.
 		[RayCast3D] can ignore some objects by adding them to an exception list, by making its detection reporting ignore [Area3D]s ([member collide_with_areas]) or [PhysicsBody3D]s ([member collide_with_bodies]), or by configuring physics layers.
 		[RayCast3D] calculates intersection every physics frame, and it holds the result until the next physics frame. For an immediate raycast, or if you want to configure a [RayCast3D] multiple times within the same physics frame, use [method force_raycast_update].
 		To sweep over a region of 3D space, you can approximate the region with multiple [RayCast3D]s or use [ShapeCast3D].
@@ -18,7 +18,7 @@
 			<return type="void" />
 			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
-				Adds a collision exception so the ray does not report collisions with the specified [CollisionObject3D] node.
+				Adds a collision exception so the ray does not report collisions with the specified [param node].
 			</description>
 		</method>
 		<method name="add_exception_rid">
@@ -45,6 +45,7 @@
 			<return type="Object" />
 			<description>
 				Returns the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+				[b]Note:[/b] This object is not guaranteed to be a [CollisionObject3D]. For example, if the ray intersects a [CSGShape3D] or a [GridMap], the method will return a [CSGShape3D] or [GridMap] instance.
 			</description>
 		</method>
 		<method name="get_collider_rid" qualifiers="const">
@@ -111,14 +112,14 @@
 			<return type="void" />
 			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
-				Removes a collision exception so the ray does report collisions with the specified [CollisionObject3D] node.
+				Removes a collision exception so the ray can report collisions with the specified [param node].
 			</description>
 		</method>
 		<method name="remove_exception_rid">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Removes a collision exception so the ray does report collisions with the specified [RID].
+				Removes a collision exception so the ray can report collisions with the specified [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
@@ -151,7 +152,7 @@
 			If [code]true[/code], collisions will be reported.
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
-			If [code]true[/code], collisions will be ignored for this RayCast3D's immediate parent.
+			If [code]true[/code], this raycast will not report collisions with its parent node. This property only has an effect if the parent node is a [CollisionObject3D]. See also [method Node.get_parent] and [method add_exception].
 		</member>
 		<member name="hit_back_faces" type="bool" setter="set_hit_back_faces" getter="is_hit_back_faces_enabled" default="true">
 			If [code]true[/code], the ray will hit back faces with concave polygon shapes with back face enabled or heightmap shapes.
@@ -160,7 +161,7 @@
 			If [code]true[/code], the ray will detect a hit when starting inside shapes. In this case the collision normal will be [code]Vector3(0, 0, 0)[/code]. Does not affect shapes with no volume like concave polygon or heightmap.
 		</member>
 		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, -1, 0)">
-			The ray's destination point, relative to the RayCast's [code]position[/code].
+			The ray's destination point, relative to this raycast's [member Node3D.position].
 		</member>
 	</members>
 </class>

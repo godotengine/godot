@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_OPENGL_EXTENSION_H
-#define OPENXR_OPENGL_EXTENSION_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -49,9 +48,6 @@ public:
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
-	virtual void on_pre_draw_viewport(RID p_render_target) override;
-	virtual void on_post_draw_viewport(RID p_render_target) override;
-
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const override;
@@ -59,6 +55,7 @@ public:
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
+	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) override { return RID(); }
 
 private:
 	static OpenXROpenGLExtension *singleton;
@@ -67,17 +64,23 @@ private:
 	static XrGraphicsBindingOpenGLWin32KHR graphics_binding_gl;
 #elif defined(ANDROID_ENABLED)
 	static XrGraphicsBindingOpenGLESAndroidKHR graphics_binding_gl;
-#else // Linux/X11
+#elif defined(LINUXBSD_ENABLED)
+#ifdef X11_ENABLED
 	static XrGraphicsBindingOpenGLXlibKHR graphics_binding_gl;
+#endif
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
+	static XrGraphicsBindingEGLMNDX graphics_binding_egl;
+
+	bool egl_extension_enabled = false;
+#endif
+#else
+#error "OpenXR with OpenGL isn't supported on this platform"
 #endif
 
 	struct SwapchainGraphicsData {
 		bool is_multiview;
 		Vector<RID> texture_rids;
 	};
-
-	bool srgb_ext_is_available = true;
-	bool hw_linear_to_srgb_is_enabled = false;
 
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
@@ -90,5 +93,3 @@ private:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // OPENXR_OPENGL_EXTENSION_H

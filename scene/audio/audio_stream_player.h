@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_H
-#define AUDIO_STREAM_PLAYER_H
+#pragma once
 
 #include "scene/main/node.h"
+#include "servers/audio/audio_server.h"
 
 struct AudioFrame;
 class AudioStream;
@@ -79,6 +79,9 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
@@ -106,10 +109,11 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
+	AudioServer::PlaybackType get_playback_type() const;
+	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+
 	AudioStreamPlayer();
 	~AudioStreamPlayer();
 };
 
 VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
-
-#endif // AUDIO_STREAM_PLAYER_H

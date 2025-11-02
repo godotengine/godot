@@ -28,11 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DETECT_PRIME_EGL_H
-#define DETECT_PRIME_EGL_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 #ifdef EGL_ENABLED
+
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#include "thirdparty/glad/glad/gl.h"
+#else
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GL/glcorearb.h>
+
+#define GLAD_EGL_VERSION_1_5 1
+
+#ifdef EGL_EXT_platform_base
+#define GLAD_EGL_EXT_platform_base 1
+#endif
+
+#define KHRONOS_STATIC 1
+extern "C" EGLAPI EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platform, void *native_display, const EGLint *attrib_list);
+#undef KHRONOS_STATIC
+
+#endif // GLAD_ENABLED
+
+#ifndef EGL_EXT_platform_base
+#define GLAD_EGL_EXT_platform_base 0
+#endif
 
 class DetectPrimeEGL {
 private:
@@ -53,13 +76,11 @@ private:
 		{ nullptr, 0 }
 	};
 
-	static void create_context();
-
 public:
-	static int detect_prime();
+	static void create_context(EGLenum p_platform_enum);
+
+	static int detect_prime(EGLenum p_platform_enum);
 };
 
 #endif // GLES3_ENABLED
 #endif // EGL_ENABLED
-
-#endif // DETECT_PRIME_EGL_H

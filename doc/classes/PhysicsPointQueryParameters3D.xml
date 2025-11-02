@@ -20,6 +20,7 @@
 		</member>
 		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then assign it to the property again.
 		</member>
 		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
 			The position being queried for, in global coordinates.

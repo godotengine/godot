@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpringBoneCollisionCapsule3D" inherits="SpringBoneCollision3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A capsule shape collision that interacts with [SpringBoneSimulator3D].
+	</brief_description>
+	<description>
+		A capsule shape collision that interacts with [SpringBoneSimulator3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="0.5">
+			The capsule's full height, including the hemispheres.
+			[b]Note:[/b] The [member height] of a capsule must be at least twice its [member radius]. Otherwise, the capsule becomes a sphere. If the [member height] is less than twice the [member radius], the properties adjust to a valid value.
+		</member>
+		<member name="inside" type="bool" setter="set_inside" getter="is_inside" default="false">
+			If [code]true[/code], the collision acts to trap the joint within the collision.
+		</member>
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height">
+			The capsule's height, excluding the hemispheres. This is the height of the central cylindrical part in the middle of the capsule, and is the distance between the centers of the two hemispheres. This is a wrapper for [member height].
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.1">
+			The capsule's radius.
+			[b]Note:[/b] The [member radius] of a capsule cannot be greater than half of its [member height]. Otherwise, the capsule becomes a sphere. If the [member radius] is greater than half of the [member height], the properties adjust to a valid value.
+		</member>
+	</members>
+</class>

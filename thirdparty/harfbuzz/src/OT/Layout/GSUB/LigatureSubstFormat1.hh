@@ -78,15 +78,44 @@ struct LigatureSubstFormat1_2
     return lig_set.would_apply (c);
   }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct external_cache_t
+  {
+    hb_ot_layout_mapping_cache_t coverage;
+    hb_set_digest_t seconds;
+  };
+  void *external_cache_create () const
+  {
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
+    {
+      cache->coverage.clear ();
+
+      cache->seconds.init ();
+      + hb_iter (ligatureSet)
+      | hb_map (hb_add (this))
+      | hb_apply ([cache] (const LigatureSet<Types> &_) { _.collect_seconds (cache->seconds); })
+      ;
+    }
+    return cache;
+  }
+
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
+    hb_buffer_t *buffer = c->buffer;
 
-    unsigned int index = (this+coverage).get_coverage (c->buffer->cur ().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    const hb_set_digest_t *seconds = cache ? &cache->seconds : nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
+    const hb_set_digest_t *seconds = nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
 
     const auto &lig_set = this+ligatureSet[index];
-    return_trace (lig_set.apply (c));
+    return_trace (lig_set.apply (c, seconds));
   }
 
   bool serialize (hb_serialize_context_t *c,

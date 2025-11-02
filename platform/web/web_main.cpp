@@ -33,11 +33,18 @@
 #include "os_web.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
+
+#ifdef TOOLS_ENABLED
+#include "editor/web_tools_editor_plugin.h"
+#endif
 
 #include <emscripten/emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 static OS_Web *os = nullptr;
 #ifndef PROXY_TO_PTHREAD_ENABLED
@@ -98,9 +105,32 @@ void main_loop_callback() {
 	}
 }
 
+void print_web_header() {
+	// Emscripten.
+	char *emscripten_version_char = godot_js_emscripten_get_version();
+	String emscripten_version = vformat("Emscripten %s", emscripten_version_char);
+	// `free()` is used here because it's not memory that was allocated by Godot.
+	free(emscripten_version_char);
+
+	// Build features.
+	String thread_support = OS::get_singleton()->has_feature("threads")
+			? "multi-threaded"
+			: "single-threaded";
+	String extensions_support = OS::get_singleton()->has_feature("web_extensions")
+			? "GDExtension support"
+			: "no GDExtension support";
+
+	Vector<String> build_configuration = { emscripten_version, thread_support, extensions_support };
+	print_line(vformat("Build configuration: %s.", String(", ").join(build_configuration)));
+}
+
 /// When calling main, it is assumed FS is setup and synced.
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	os = new OS_Web();
+
+#ifdef TOOLS_ENABLED
+	WebToolsEditorPlugin::initialize();
+#endif
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -118,6 +148,8 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	print_web_header();
+
 	main_started = true;
 
 	// Ease up compatibility.
@@ -130,7 +162,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	if (Engine::get_singleton()->is_project_manager_hint() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
+		SceneTree::get_singleton()->get_root()->emit_signal(SNAME("files_dropped"), ps);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);

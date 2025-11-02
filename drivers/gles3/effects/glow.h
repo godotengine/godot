@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLOW_GLES3_H
-#define GLOW_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -50,7 +49,7 @@ private:
 
 	float glow_intensity = 1.0;
 	float glow_bloom = 0.0;
-	float glow_hdr_bleed_threshold = 1.0;
+	float glow_hdr_bleed_threshold = 0.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
 
@@ -85,5 +84,3 @@ public:
 } //namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // GLOW_GLES3_H

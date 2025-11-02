@@ -32,16 +32,18 @@ namespace embree
 
     /* geometry interface */
   public:
-    void setMask(unsigned mask);
-    void setNumTimeSteps (unsigned int numTimeSteps);
-    void setVertexAttributeCount (unsigned int N);
-    void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
-    void updateBuffer(RTCBufferType type, unsigned int slot);
-    void commit();
-    bool verify();
-    void interpolate(const RTCInterpolateArguments* const args);
-    void addElementsToCount (GeometryCounts & counts) const;
+    virtual void setMask(unsigned mask) override;
+    virtual void setNumTimeSteps (unsigned int numTimeSteps) override;
+    virtual void setVertexAttributeCount (unsigned int N) override;
+    virtual void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num) override;
+    virtual void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType) override;
+    virtual void updateBuffer(RTCBufferType type, unsigned int slot) override;
+    virtual void commit() override;
+    virtual bool verify() override;
+    virtual void interpolate(const RTCInterpolateArguments* const args) override;
+    virtual void addElementsToCount (GeometryCounts & counts) const override;
+    virtual size_t getGeometryDataDeviceByteSize() const override;
+    virtual void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const override;
 
     template<int N>
     void interpolate_impl(const RTCInterpolateArguments* const args)
@@ -98,12 +100,12 @@ namespace embree
     }
     
   public:
-    
+
     /*! returns number of vertices */
     __forceinline size_t numVertices() const {
       return vertices[0].size();
     }
-    
+
     /*! returns i'th triangle*/
     __forceinline const Triangle& triangle(size_t i) const {
       return triangles[i];
@@ -246,7 +248,7 @@ namespace embree
     }
 
     /*! get fast access to first vertex buffer */
-    __forceinline float * getCompactVertexArray () const {
+    __forceinline float * getCompactVertexArray () const override {
       return (float*) vertices0.getPtr();
     }
 
@@ -283,6 +285,7 @@ namespace embree
       TriangleMeshISA (Device* device)
         : TriangleMesh(device) {}
 
+#if !defined(__SYCL_DEVICE_ONLY__)
       LBBox3fa vlinearBounds(size_t primID, const BBox1f& time_range) const {
         return linearBounds(primID,time_range);
       }
@@ -344,6 +347,7 @@ namespace embree
         }
         return pinfo;
       }
+#endif
     };
   }
 

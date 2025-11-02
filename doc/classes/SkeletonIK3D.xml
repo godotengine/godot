@@ -31,7 +31,7 @@
 		<method name="get_parent_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
-				Returns the parent [Skeleton3D] Node that was present when SkeletonIK entered the [SceneTree]. Returns null if the parent node was not a [Skeleton3D] Node when SkeletonIK3D entered the [SceneTree].
+				Returns the parent [Skeleton3D] node that was present when SkeletonIK entered the scene tree. Returns [code]null[/code] if the parent node was not a [Skeleton3D] node when SkeletonIK3D entered the scene tree.
 			</description>
 		</method>
 		<method name="is_running">

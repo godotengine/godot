@@ -38,7 +38,7 @@ const GodotWebGL2 = {
 	godot_webgl2_glGetBufferSubData__sig: 'vippp',
 	godot_webgl2_glGetBufferSubData__deps: ['$GL', 'emscripten_webgl_get_current_context'],
 	godot_webgl2_glGetBufferSubData: function (target, offset, size, data) {
-		const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+		const gl_context_handle = _emscripten_webgl_get_current_context();
 		const gl = GL.getContext(gl_context_handle);
 		if (gl) {
 			gl.GLctx['getBufferSubData'](target, offset, HEAPU8, data, size);

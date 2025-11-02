@@ -16,17 +16,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.0.2\n"
 
+msgid "All Recognized"
+msgstr "Të Gjithë të Njohurat"
+
 msgid "Open"
 msgstr "Hap"
 
 msgid "Select Current Folder"
 msgstr "Zgjidh Folderin Aktual"
 
+msgid "Save"
+msgstr "Ruaj"
+
 msgid "Select This Folder"
 msgstr "Zgjidh Këtë Folder"
-
-msgid "All Recognized"
-msgstr "Të Gjithë të Njohurat"
 
 msgid "Open a File"
 msgstr "Hap një Skedar"
@@ -39,9 +42,6 @@ msgstr "Hap një Direktori"
 
 msgid "Open a File or Directory"
 msgstr "Hap një Skedar ose Direktori"
-
-msgid "Save"
-msgstr "Ruaj"
 
 msgid "Save a File"
 msgstr "Ruaj një Skedar"

@@ -2,6 +2,8 @@
  * \file psa/crypto_adjust_config_key_pair_types.h
  * \brief Adjust PSA configuration for key pair types.
  *
+ * This is an internal header. Do not include it directly.
+ *
  * See docs/proposed/psa-conditional-inclusion-c.md.
  * - Support non-basic operations in a keypair type implicitly enables basic
  *   support for that keypair type.
@@ -18,6 +20,14 @@
 
 #ifndef PSA_CRYPTO_ADJUST_KEYPAIR_TYPES_H
 #define PSA_CRYPTO_ADJUST_KEYPAIR_TYPES_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include psa/crypto_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /*****************************************************************
  * ANYTHING -> BASIC

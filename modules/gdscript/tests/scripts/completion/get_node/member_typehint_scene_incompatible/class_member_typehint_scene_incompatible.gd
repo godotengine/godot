@@ -1,6 +1,6 @@
 extends Node
 
-var test: Area2D = $A
+@onready var test: Area2D = $A
 
 func a():
     test.➡

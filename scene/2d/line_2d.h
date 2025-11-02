@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINE_2D_H
-#define LINE_2D_H
+#pragma once
 
-#include "node_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/gradient.h"
 
 class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);
@@ -55,7 +55,7 @@ public:
 		LINE_TEXTURE_STRETCH
 	};
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
@@ -146,5 +146,3 @@ private:
 VARIANT_ENUM_CAST(Line2D::LineJointMode)
 VARIANT_ENUM_CAST(Line2D::LineCapMode)
 VARIANT_ENUM_CAST(Line2D::LineTextureMode)
-
-#endif // LINE_2D_H

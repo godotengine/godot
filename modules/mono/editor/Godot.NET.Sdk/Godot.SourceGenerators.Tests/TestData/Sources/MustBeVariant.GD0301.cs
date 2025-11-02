@@ -10,7 +10,7 @@ public class MustBeVariantGD0301
         // This raises a GD0301 diagnostic error: object is not Variant (and Method<T> requires a variant generic type).
         Method<{|GD0301:object|}>();
     }
-    
+
     public void MethodCallsOk()
     {
         // All these calls are valid because they are Variant types.
@@ -66,10 +66,16 @@ public class MustBeVariantGD0301
         Method<Rid[]>();
     }
 
+    public void MethodCallDynamic()
+    {
+        dynamic self = this;
+        self.Method<object>();
+    }
+
     public void Method<[MustBeVariant] T>()
     {
     }
-    
+
     public void MustBeVariantClasses()
     {
         new ClassWithGenericVariant<bool>();
@@ -389,6 +395,11 @@ public class MustBeVariantAnnotatedMethods
     public void MethodWithWrongAttribute()
     {
     }
+
+    [NestedGenericTypeAttributeContainer.NestedGenericTypeAttribute<bool>()]
+    public void MethodWithNestedAttribute()
+    {
+    }
 }
 
 [GenericTypeAttribute<bool>()]
@@ -650,4 +661,12 @@ public class ClassNonVariantAnnotated
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
 public class GenericTypeAttribute<[MustBeVariant] T> : Attribute
 {
+}
+
+public class NestedGenericTypeAttributeContainer
+{
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class NestedGenericTypeAttribute<[MustBeVariant] T> : Attribute
+    {
+    }
 }

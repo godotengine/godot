@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_X11_H
-#define GL_MANAGER_X11_H
+#pragma once
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
@@ -134,5 +133,3 @@ public:
 };
 
 #endif // X11_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_X11_H

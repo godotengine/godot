@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ to have access to the hidden structures at all supported widths.
 
 Some of the mode-dependent macros are required at different widths for
 different parts of the pcre2test code (in particular, the included
-pcre_printint.c file). We undefine them here so that they can be re-defined for
+pcre2_printint.c file). We undefine them here so that they can be re-defined for
 multiple inclusions. Not all of these are used in pcre2test, but it's easier
 just to undefine them all. */
 
@@ -435,7 +435,7 @@ UTF-16 mode. */
   c = *eptr; \
   if ((c & 0xfc00u) == 0xd800u) GETUTF16LEN(c, eptr, len);
 
-/* Get the next UTF-816character, testing for UTF-16 mode, not advancing the
+/* Get the next UTF-16 character, testing for UTF-16 mode, not advancing the
 pointer, incrementing length if there is a low surrogate. This is called when
 we do not know if we are in UTF-16 mode. */
 
@@ -556,6 +556,11 @@ code that uses them is simpler because it assumes this. */
 /* The real general context structure. At present it holds only data for custom
 memory control. */
 
+/* WARNING: if this is ever changed, code in pcre2_substitute.c will have to be
+changed because it builds a general context "by hand" in order to avoid the
+malloc() call in pcre2_general_context)_create(). There is also code in
+pcre2_match.c that makes the same assumption. */
+
 typedef struct pcre2_real_general_context {
   pcre2_memctl memctl;
 } pcre2_real_general_context;
@@ -568,11 +573,13 @@ typedef struct pcre2_real_compile_context {
   void *stack_guard_data;
   const uint8_t *tables;
   PCRE2_SIZE max_pattern_length;
+  PCRE2_SIZE max_pattern_compiled_length;
   uint16_t bsr_convention;
   uint16_t newline_convention;
   uint32_t parens_nest_limit;
   uint32_t extra_options;
   uint32_t max_varlookbehind;
+  uint32_t optimization_flags;
 } pcre2_real_compile_context;
 
 /* The real match context structure. */
@@ -583,10 +590,13 @@ typedef struct pcre2_real_match_context {
   pcre2_jit_callback jit_callback;
   void *jit_callback_data;
 #endif
-  int    (*callout)(pcre2_callout_block *, void *);
-  void    *callout_data;
-  int    (*substitute_callout)(pcre2_substitute_callout_block *, void *);
-  void    *substitute_callout_data;
+  int        (*callout)(pcre2_callout_block *, void *);
+  void        *callout_data;
+  int        (*substitute_callout)(pcre2_substitute_callout_block *, void *);
+  void        *substitute_callout_data;
+  PCRE2_SIZE (*substitute_case_callout)(PCRE2_SPTR, PCRE2_SIZE, PCRE2_UCHAR *,
+                                        PCRE2_SIZE, int, void *);
+  void        *substitute_case_callout_data;
   PCRE2_SIZE offset_limit;
   uint32_t heap_limit;
   uint32_t match_limit;
@@ -622,6 +632,7 @@ typedef struct pcre2_real_code {
   void    *executable_jit;        /* Pointer to JIT code */
   uint8_t  start_bitmap[32];      /* Bitmap for starting code unit < 256 */
   CODE_BLOCKSIZE_TYPE blocksize;  /* Total (bytes) that was malloc-ed */
+  CODE_BLOCKSIZE_TYPE code_start; /* Byte code start offset */
   uint32_t magic_number;          /* Paranoid and endianness check */
   uint32_t compile_options;       /* Options passed to pcre2_compile() */
   uint32_t overall_options;       /* Options after processing the pattern */
@@ -640,6 +651,7 @@ typedef struct pcre2_real_code {
   uint16_t top_backref;           /* Highest numbered back reference */
   uint16_t name_entry_size;       /* Size (code units) of table entries */
   uint16_t name_count;            /* Number of name entries in the table */
+  uint32_t optimization_flags;    /* Optimizations enabled at compile time */
 } pcre2_real_code;
 
 /* The real match data structure. Define ovector as large as it can ever
@@ -715,6 +727,23 @@ typedef struct named_group {
   uint16_t     isdup;         /* TRUE if a duplicate */
 } named_group;
 
+/* Structure for caching sorted ranges. This improves the performance
+of translating META code to byte code. */
+
+typedef struct class_ranges {
+  struct class_ranges *next;       /* Next class ranges */
+  size_t char_lists_size;          /* Total size of encoded char lists */
+  size_t char_lists_start;         /* Start offset of encoded char lists */
+  uint16_t range_list_size;        /* Size of ranges array */
+  uint16_t char_lists_types;       /* The XCL_LIST header of char lists */
+  /* Followed by the list of ranges (start/end pairs) */
+} class_ranges;
+
+typedef union class_bits_storage {
+  uint8_t classbits[32];
+  uint32_t classwords[8];
+} class_bits_storage;
+
 /* Structure for passing "static" information around between the functions
 doing the compiling, so that they are thread-safe. */
 
@@ -724,14 +753,15 @@ typedef struct compile_block {
   const uint8_t *fcc;              /* Points to case-flipping table */
   const uint8_t *cbits;            /* Points to character type table */
   const uint8_t *ctypes;           /* Points to table of type maps */
-  PCRE2_SPTR start_workspace;      /* The start of working space */
-  PCRE2_SPTR start_code;           /* The start of the compiled code */
+  PCRE2_UCHAR *start_workspace;    /* The start of working space */
+  PCRE2_UCHAR *start_code;         /* The start of the compiled code */
   PCRE2_SPTR start_pattern;        /* The start of the pattern */
   PCRE2_SPTR end_pattern;          /* The end of the pattern */
   PCRE2_UCHAR *name_table;         /* The name/number table */
   PCRE2_SIZE workspace_size;       /* Size of workspace */
   PCRE2_SIZE small_ref_offset[10]; /* Offsets for \1 to \9 */
   PCRE2_SIZE erroroffset;          /* Offset of error in pattern */
+  class_bits_storage classbits;    /* Temporary store for classbits */
   uint16_t names_found;            /* Number of entries so far */
   uint16_t name_entry_size;        /* Size of each entry */
   uint16_t parens_depth;           /* Depth of nested parentheses */
@@ -749,9 +779,9 @@ typedef struct compile_block {
   uint32_t backref_map;            /* Bitmap of low back refs */
   uint32_t nltype;                 /* Newline type */
   uint32_t nllen;                  /* Newline string length */
-  uint32_t class_range_start;      /* Overall class range start */
-  uint32_t class_range_end;        /* Overall class range end */
   PCRE2_UCHAR nl[4];               /* Newline string when fixed length */
+  uint8_t class_op_used[ECLASS_NEST_LIMIT]; /* Operation used for
+                                               extended classes */
   uint32_t req_varyopt;            /* "After variable item" flag for reqbyte */
   uint32_t max_varlookbehind;      /* Limit for variable lookbehinds */
   int  max_lookbehind;             /* Maximum lookbehind encountered (characters) */
@@ -759,6 +789,11 @@ typedef struct compile_block {
   BOOL had_pruneorskip;            /* (*PRUNE) or (*SKIP) encountered */
   BOOL had_recurse;                /* Had a pattern recursion or subroutine call */
   BOOL dupnames;                   /* Duplicate names exist */
+#ifdef SUPPORT_WIDE_CHARS
+  class_ranges *cranges;           /* First class range. */
+  class_ranges *next_cranges;      /* Next class range. */
+  size_t char_lists_size;          /* Current size of character lists */
+#endif
 } compile_block;
 
 /* Structure for keeping the properties of the in-memory stack used
@@ -792,7 +827,7 @@ typedef struct heapframe {
   to RRMATCH(), but which do not need to be copied to new frames. */
 
   PCRE2_SPTR ecode;          /* The current position in the pattern */
-  PCRE2_SPTR temp_sptr[2];   /* Used for short-term PCRE_SPTR values */
+  PCRE2_SPTR temp_sptr[2];   /* Used for short-term PCRE2_SPTR values */
   PCRE2_SIZE length;         /* Used for character, string, or code lengths */
   PCRE2_SIZE back_frame;     /* Amount to subtract on RRETURN */
   PCRE2_SIZE temp_size;      /* Used for short-term PCRE2_SIZE values */
@@ -840,11 +875,10 @@ typedef struct heapframe {
   PCRE2_SIZE ovector[131072];   /* Must be last in the structure */
 } heapframe;
 
-/* This typedef is a check that the size of the heapframe structure is a
-multiple of PCRE2_SIZE. See various comments above. */
+/* Assert that the size of the heapframe structure is a multiple of PCRE2_SIZE.
+See various comments above. */
 
-typedef char check_heapframe_size[
-  ((sizeof(heapframe) % sizeof(PCRE2_SIZE)) == 0)? (+1):(-1)];
+STATIC_ASSERT((sizeof(heapframe) % sizeof(PCRE2_SIZE)) == 0, heapframe_size);
 
 /* Structure for computing the alignment of heapframe. */
 

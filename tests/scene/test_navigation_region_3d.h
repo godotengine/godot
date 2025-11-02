@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NAVIGATION_REGION_3D_H
-#define TEST_NAVIGATION_REGION_3D_H
+#pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
 
@@ -40,7 +39,7 @@
 
 namespace TestNavigationRegion3D {
 
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[SceneTree][NavigationRegion3D] New region should have valid RID") {
 		NavigationRegion3D *region_node = memnew(NavigationRegion3D);
 		CHECK(region_node->get_rid().is_valid());
@@ -80,5 +79,3 @@ TEST_SUITE("[Navigation]") {
 }
 
 } //namespace TestNavigationRegion3D
-
-#endif // TEST_NAVIGATION_REGION_3D_H

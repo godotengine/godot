@@ -29,9 +29,9 @@
 /**************************************************************************/
 
 #include "audio_rb_resampler.h"
-#include "core/math/math_funcs.h"
-#include "core/os/os.h"
-#include "servers/audio_server.h"
+
+#include "core/math/audio_frame.h"
+#include "core/os/memory.h"
 
 int AudioRBResampler::get_channel_count() const {
 	if (!rb) {
@@ -75,23 +75,37 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
-		// This will probably never be used, but added anyway
+		// Downmix to stereo. Apply -3dB to center, and sides, -6dB to rear.
+
+		// four channels - channel order: front left, front right, rear left, rear right
 		if constexpr (C == 4) {
-			float v0 = rb[(pos << 2) + 0];
-			float v1 = rb[(pos << 2) + 1];
-			float v0n = rb[(pos_next << 2) + 0];
-			float v1n = rb[(pos_next << 2) + 1];
+			float v0 = rb[(pos << 2) + 0] + rb[(pos << 2) + 2] / 2;
+			float v1 = rb[(pos << 2) + 1] + rb[(pos << 2) + 3] / 2;
+			float v0n = rb[(pos_next << 2) + 0] + rb[(pos_next << 2) + 2] / 2;
+			float v1n = rb[(pos_next << 2) + 1] + rb[(pos_next << 2) + 3] / 2;
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
+		// six channels - channel order: front left, center, front right, rear left, rear right, LFE
 		if constexpr (C == 6) {
-			float v0 = rb[(pos * 6) + 0];
-			float v1 = rb[(pos * 6) + 1];
-			float v0n = rb[(pos_next * 6) + 0];
-			float v1n = rb[(pos_next * 6) + 1];
+			float v0 = rb[(pos * 6) + 0] + rb[(pos * 6) + 1] / Math::SQRT2 + rb[(pos * 6) + 3] / 2;
+			float v1 = rb[(pos * 6) + 2] + rb[(pos * 6) + 1] / Math::SQRT2 + rb[(pos * 6) + 4] / 2;
+			float v0n = rb[(pos_next * 6) + 0] + rb[(pos_next * 6) + 1] / Math::SQRT2 + rb[(pos_next * 6) + 3] / 2;
+			float v1n = rb[(pos_next * 6) + 2] + rb[(pos_next * 6) + 1] / Math::SQRT2 + rb[(pos_next * 6) + 4] / 2;
+			v0 += (v0n - v0) * frac;
+			v1 += (v1n - v1) * frac;
+			p_dest[i] = AudioFrame(v0, v1);
+		}
 
+		// eight channels - channel order: front left, center, front right, side left, side right, rear left, rear
+		// right, LFE
+		if constexpr (C == 8) {
+			float v0 = rb[(pos << 3) + 0] + rb[(pos << 3) + 1] / Math::SQRT2 + rb[(pos << 3) + 3] / Math::SQRT2 + rb[(pos << 3) + 5] / 2;
+			float v1 = rb[(pos << 3) + 2] + rb[(pos << 3) + 1] / Math::SQRT2 + rb[(pos << 3) + 4] / Math::SQRT2 + rb[(pos << 3) + 6] / 2;
+			float v0n = rb[(pos_next << 3) + 0] + rb[(pos_next << 3) + 1] / Math::SQRT2 + rb[(pos_next << 3) + 3] / Math::SQRT2 + rb[(pos_next << 3) + 5] / 2;
+			float v1n = rb[(pos_next << 3) + 2] + rb[(pos_next << 3) + 1] / Math::SQRT2 + rb[(pos_next << 3) + 4] / Math::SQRT2 + rb[(pos_next << 3) + 6] / 2;
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
@@ -106,7 +120,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		return false;
 	}
 
-	int32_t increment = (src_mix_rate * MIX_FRAC_LEN) / target_mix_rate;
+	int32_t increment = (src_mix_rate * MIX_FRAC_LEN * playback_speed) / target_mix_rate;
 	int read_space = get_reader_space();
 	int target_todo = MIN(get_num_of_ready_frames(), p_frames);
 
@@ -124,6 +138,9 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 				break;
 			case 6:
 				src_read = _resample<6>(p_dest, target_todo, increment);
+				break;
+			case 8:
+				src_read = _resample<8>(p_dest, target_todo, increment);
 				break;
 		}
 
@@ -159,9 +176,9 @@ int AudioRBResampler::get_num_of_ready_frames() {
 }
 
 Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed) {
-	ERR_FAIL_COND_V(p_channels != 1 && p_channels != 2 && p_channels != 4 && p_channels != 6, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_channels != 1 && p_channels != 2 && p_channels != 4 && p_channels != 6 && p_channels != 8, ERR_INVALID_PARAMETER);
 
-	int desired_rb_bits = nearest_shift(MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
+	int desired_rb_bits = nearest_shift((uint32_t)MAX((p_buffer_msec / 1000.0) * p_src_mix_rate, p_minbuff_needed));
 
 	bool recreate = !rb;
 
@@ -209,6 +226,14 @@ void AudioRBResampler::clear() {
 	rb_read_pos.set(0);
 	rb_write_pos.set(0);
 	read_buf = nullptr;
+}
+
+void AudioRBResampler::set_playback_speed(double p_playback_speed) {
+	playback_speed = p_playback_speed;
+}
+
+double AudioRBResampler::get_playback_speed() const {
+	return playback_speed;
 }
 
 AudioRBResampler::AudioRBResampler() {

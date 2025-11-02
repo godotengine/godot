@@ -1,4 +1,3 @@
-
 /* powerpc_init.c - POWERPC optimised filter functions
  *
  * Copyright (c) 2018 Cosmin Truta
@@ -47,7 +46,7 @@ static int png_have_vsx(png_structp png_ptr);
 #include PNG_POWERPC_VSX_FILE
 
 #else  /* PNG_POWERPC_VSX_FILE */
-#  error "PNG_POWERPC_VSX_FILE undefined: no support for run-time POWERPC VSX checks"
+#  error PNG_POWERPC_VSX_FILE undefined: no support for run-time POWERPC VSX checks
 #endif /* PNG_POWERPC_VSX_FILE */
 #endif /* PNG_POWERPC_VSX_CHECK_SUPPORTED */
 

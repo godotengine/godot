@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_COMMAND_QUEUE_H
-#define TEST_COMMAND_QUEUE_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "core/math/random_number_generator.h"
@@ -201,10 +200,10 @@ public:
 						command_queue.push_and_sync(this, &SharedThreadState::func2, tr, f);
 						break;
 					case TEST_MSGRET_FUNC1_TRANSFORM:
-						command_queue.push_and_ret(this, &SharedThreadState::func1r, tr, &otr);
+						command_queue.push_and_ret(this, &SharedThreadState::func1r, &otr, tr);
 						break;
 					case TEST_MSGRET_FUNC2_TRANSFORM_FLOAT:
-						command_queue.push_and_ret(this, &SharedThreadState::func2r, tr, f, &otr);
+						command_queue.push_and_ret(this, &SharedThreadState::func2r, &otr, tr, f);
 						break;
 					default:
 						break;
@@ -243,6 +242,44 @@ public:
 			reader_thread.wait_to_finish();
 		}
 		writer_thread.wait_to_finish();
+	}
+
+	struct CopyMoveTestType {
+		inline static int copy_count;
+		inline static int move_count;
+		int value = 0;
+
+		CopyMoveTestType(int p_value = 0) :
+				value(p_value) {}
+
+		CopyMoveTestType(const CopyMoveTestType &p_other) :
+				value(p_other.value) {
+			copy_count++;
+		}
+
+		CopyMoveTestType(CopyMoveTestType &&p_other) :
+				value(p_other.value) {
+			move_count++;
+		}
+
+		CopyMoveTestType &operator=(const CopyMoveTestType &p_other) {
+			value = p_other.value;
+			copy_count++;
+			return *this;
+		}
+
+		CopyMoveTestType &operator=(CopyMoveTestType &&p_other) {
+			value = p_other.value;
+			move_count++;
+			return *this;
+		}
+	};
+
+	void copy_move_test_copy(CopyMoveTestType p_test_type) {
+	}
+	void copy_move_test_ref(const CopyMoveTestType &p_test_type) {
+	}
+	void copy_move_test_move(CopyMoveTestType &&p_test_type) {
 	}
 };
 
@@ -405,47 +442,80 @@ TEST_CASE("[CommandQueue] Test Queue Lapping") {
 			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
 
-TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
-	const char *COMMAND_QUEUE_SETTING = "memory/limits/command_queue/multithreading_queue_size_kb";
-	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING, 1);
+TEST_CASE("[CommandQueue] Test Parameter Passing Semantics") {
 	SharedThreadState sts;
 	sts.init_threads();
 
-	RandomNumberGenerator rng;
+	SUBCASE("Testing with lvalue") {
+		SharedThreadState::CopyMoveTestType::copy_count = 0;
+		SharedThreadState::CopyMoveTestType::move_count = 0;
 
-	rng.set_seed(1837267);
+		SharedThreadState::CopyMoveTestType lvalue(42);
 
-	int msgs_to_add = 2048;
+		SUBCASE("Pass by copy") {
+			sts.command_queue.push(&sts, &SharedThreadState::copy_move_test_copy, lvalue);
 
-	for (int i = 0; i < msgs_to_add; i++) {
-		// randi_range is inclusive, so allow any enum value except MAX.
-		sts.add_msg_to_write((SharedThreadState::TestMsgType)rng.randi_range(0, SharedThreadState::TEST_MSG_MAX - 1));
-	}
-	sts.writer_threadwork.main_start_work();
-
-	int max_loop_iters = msgs_to_add * 2;
-	int loop_iters = 0;
-	while (sts.func1_count < msgs_to_add && loop_iters < max_loop_iters) {
-		int remaining = (msgs_to_add - sts.func1_count);
-		sts.message_count_to_read = rng.randi_range(1, remaining < 128 ? remaining : 128);
-		if (loop_iters % 3 == 0) {
 			sts.message_count_to_read = -1;
+			sts.reader_threadwork.main_start_work();
+			sts.reader_threadwork.main_wait_for_done();
+
+			CHECK(SharedThreadState::CopyMoveTestType::copy_count == 1);
+			CHECK(SharedThreadState::CopyMoveTestType::move_count == 1);
 		}
-		sts.reader_threadwork.main_start_work();
-		sts.reader_threadwork.main_wait_for_done();
-		loop_iters++;
+
+		SUBCASE("Pass by reference") {
+			sts.command_queue.push(&sts, &SharedThreadState::copy_move_test_ref, lvalue);
+
+			sts.message_count_to_read = -1;
+			sts.reader_threadwork.main_start_work();
+			sts.reader_threadwork.main_wait_for_done();
+
+			CHECK(SharedThreadState::CopyMoveTestType::copy_count == 1);
+			CHECK(SharedThreadState::CopyMoveTestType::move_count == 0);
+		}
 	}
-	CHECK_MESSAGE(loop_iters < max_loop_iters,
-			"Reader needed too many iterations to read messages!");
-	sts.writer_threadwork.main_wait_for_done();
+
+	SUBCASE("Testing with rvalue") {
+		SharedThreadState::CopyMoveTestType::copy_count = 0;
+		SharedThreadState::CopyMoveTestType::move_count = 0;
+
+		SUBCASE("Pass by copy") {
+			sts.command_queue.push(&sts, &SharedThreadState::copy_move_test_copy,
+					SharedThreadState::CopyMoveTestType(43));
+
+			sts.message_count_to_read = -1;
+			sts.reader_threadwork.main_start_work();
+			sts.reader_threadwork.main_wait_for_done();
+
+			CHECK(SharedThreadState::CopyMoveTestType::copy_count == 0);
+			CHECK(SharedThreadState::CopyMoveTestType::move_count == 2);
+		}
+
+		SUBCASE("Pass by reference") {
+			sts.command_queue.push(&sts, &SharedThreadState::copy_move_test_ref,
+					SharedThreadState::CopyMoveTestType(43));
+
+			sts.message_count_to_read = -1;
+			sts.reader_threadwork.main_start_work();
+			sts.reader_threadwork.main_wait_for_done();
+
+			CHECK(SharedThreadState::CopyMoveTestType::copy_count == 0);
+			CHECK(SharedThreadState::CopyMoveTestType::move_count == 1);
+		}
+
+		SUBCASE("Pass by rvalue reference") {
+			sts.command_queue.push(&sts, &SharedThreadState::copy_move_test_move,
+					SharedThreadState::CopyMoveTestType(43));
+
+			sts.message_count_to_read = -1;
+			sts.reader_threadwork.main_start_work();
+			sts.reader_threadwork.main_wait_for_done();
+
+			CHECK(SharedThreadState::CopyMoveTestType::copy_count == 0);
+			CHECK(SharedThreadState::CopyMoveTestType::move_count == 1);
+		}
+	}
 
 	sts.destroy_threads();
-
-	CHECK_MESSAGE(sts.func1_count == msgs_to_add,
-			"Reader should have read no additional messages after join");
-	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING,
-			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
 } // namespace TestCommandQueue
-
-#endif // TEST_COMMAND_QUEUE_H

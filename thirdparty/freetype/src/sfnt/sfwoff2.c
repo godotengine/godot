@@ -4,7 +4,7 @@
  *
  *   WOFF2 format management (base).
  *
- * Copyright (C) 2019-2023 by
+ * Copyright (C) 2019-2024 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -18,6 +18,7 @@
 #include "sfwoff2.h"
 #include "woff2tags.h"
 #include <freetype/tttags.h>
+#include <freetype/internal/ftcalc.h>
 #include <freetype/internal/ftdebug.h>
 #include <freetype/internal/ftstream.h>
 
@@ -289,23 +290,15 @@
     FT_ULong  checksum     = 0;
     FT_ULong  aligned_size = size & ~3UL;
     FT_ULong  i;
-    FT_ULong  v;
+    FT_Int    shift;
 
 
     for ( i = 0; i < aligned_size; i += 4 )
-      checksum += ( (FT_ULong)buf[i    ] << 24 ) |
-                  ( (FT_ULong)buf[i + 1] << 16 ) |
-                  ( (FT_ULong)buf[i + 2] <<  8 ) |
-                  ( (FT_ULong)buf[i + 3] <<  0 );
+      checksum += FT_NEXT_ULONG( buf );
 
-    /* If size is not aligned to 4, treat as if it is padded with 0s. */
-    if ( size != aligned_size )
-    {
-      v = 0;
-      for ( i = aligned_size ; i < size; ++i )
-        v |= (FT_ULong)buf[i] << ( 24 - 8 * ( i & 3 ) );
-      checksum += v;
-    }
+    /* remaining bytes can be shifted and added one at a time */
+    for ( shift = 24; i < size; i++, shift -= 8 )
+      checksum += (FT_UInt32)FT_NEXT_BYTE( buf ) << shift;
 
     return checksum;
   }
@@ -1799,7 +1792,6 @@
 
     FT_Byte*   sfnt        = NULL;
     FT_Stream  sfnt_stream = NULL;
-    FT_Byte*   sfnt_header;
     FT_ULong   sfnt_size;
 
     FT_Byte*  uncompressed_buf = NULL;
@@ -1853,6 +1845,7 @@
     /* Miscellaneous checks. */
     if ( woff2.length != stream->size                               ||
          woff2.num_tables == 0                                      ||
+         woff2.num_tables >  0xFFFU                                 ||
          48 + woff2.num_tables * 20UL >= woff2.length               ||
          ( woff2.metaOffset == 0 && ( woff2.metaLength != 0     ||
                                       woff2.metaOrigLength != 0 ) ) ||
@@ -2143,6 +2136,13 @@
       WOFF2_TtcFont  ttc_font = woff2.ttc_fonts + face_index;
 
 
+      if ( ttc_font->num_tables == 0 || ttc_font->num_tables > 0xFFFU )
+      {
+        FT_ERROR(( "woff2_open_font: invalid WOFF2 CollectionFontEntry\n" ));
+        error = FT_THROW( Invalid_Table );
+        goto Exit;
+      }
+
       /* Create a temporary array. */
       if ( FT_QNEW_ARRAY( temp_indices,
                           ttc_font->num_tables ) )
@@ -2198,27 +2198,15 @@
          FT_NEW( sfnt_stream )        )
       goto Exit;
 
-    sfnt_header = sfnt;
-
-    WRITE_ULONG( sfnt_header, woff2.flavor );
-
-    if ( woff2.num_tables )
     {
-      FT_UInt  searchRange, entrySelector, rangeShift, x;
+      FT_Byte*  sfnt_header = sfnt;
+
+      FT_Int  entrySelector = FT_MSB( woff2.num_tables );
+      FT_Int  searchRange   = ( 1 << entrySelector ) * 16;
+      FT_Int  rangeShift    = woff2.num_tables * 16 - searchRange;
 
 
-      x             = woff2.num_tables;
-      entrySelector = 0;
-      while ( x )
-      {
-        x            >>= 1;
-        entrySelector += 1;
-      }
-      entrySelector--;
-
-      searchRange = ( 1 << entrySelector ) * 16;
-      rangeShift  = ( woff2.num_tables * 16 ) - searchRange;
-
+      WRITE_ULONG ( sfnt_header, woff2.flavor );
       WRITE_USHORT( sfnt_header, woff2.num_tables );
       WRITE_USHORT( sfnt_header, searchRange );
       WRITE_USHORT( sfnt_header, entrySelector );

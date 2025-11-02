@@ -57,9 +57,9 @@ bool SkinTool::_capture_nodes_in_skin(const Vector<Ref<GLTFNode>> &nodes, Ref<GL
 
 	if (found_joint) {
 		// Mark it if we happen to find another skins joint...
-		if (current_node->joint && p_skin->joints.find(p_node_index) < 0) {
+		if (current_node->joint && !p_skin->joints.has(p_node_index)) {
 			p_skin->joints.push_back(p_node_index);
-		} else if (p_skin->non_joints.find(p_node_index) < 0) {
+		} else if (!p_skin->non_joints.has(p_node_index)) {
 			p_skin->non_joints.push_back(p_node_index);
 		}
 	}
@@ -79,7 +79,7 @@ void SkinTool::_capture_nodes_for_multirooted_skin(Vector<Ref<GLTFNode>> &r_node
 		const SkinNodeIndex parent = r_nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
 
-		if (p_skin->joints.find(parent) >= 0) {
+		if (p_skin->joints.has(parent)) {
 			disjoint_set.create_union(parent, node_index);
 		}
 	}
@@ -109,9 +109,9 @@ void SkinTool::_capture_nodes_for_multirooted_skin(Vector<Ref<GLTFNode>> &r_node
 		while (r_nodes[current_node]->height > maxHeight) {
 			SkinNodeIndex parent = r_nodes[current_node]->parent;
 
-			if (r_nodes[parent]->joint && p_skin->joints.find(parent) < 0) {
+			if (r_nodes[parent]->joint && !p_skin->joints.has(parent)) {
 				p_skin->joints.push_back(parent);
-			} else if (p_skin->non_joints.find(parent) < 0) {
+			} else if (!p_skin->non_joints.has(parent)) {
 				p_skin->non_joints.push_back(parent);
 			}
 
@@ -138,9 +138,9 @@ void SkinTool::_capture_nodes_for_multirooted_skin(Vector<Ref<GLTFNode>> &r_node
 				const SkinNodeIndex current_node = roots[i];
 				const SkinNodeIndex parent = r_nodes[current_node]->parent;
 
-				if (r_nodes[parent]->joint && p_skin->joints.find(parent) < 0) {
+				if (r_nodes[parent]->joint && !p_skin->joints.has(parent)) {
 					p_skin->joints.push_back(parent);
-				} else if (p_skin->non_joints.find(parent) < 0) {
+				} else if (!p_skin->non_joints.has(parent)) {
 					p_skin->non_joints.push_back(parent);
 				}
 
@@ -166,7 +166,7 @@ Error SkinTool::_expand_skin(Vector<Ref<GLTFNode>> &r_nodes, Ref<GLTFSkin> p_ski
 		const SkinNodeIndex parent = r_nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
 
-		if (all_skin_nodes.find(parent) >= 0) {
+		if (all_skin_nodes.has(parent)) {
 			disjoint_set.create_union(parent, node_index);
 		}
 	}
@@ -216,7 +216,7 @@ Error SkinTool::_verify_skin(Vector<Ref<GLTFNode>> &r_nodes, Ref<GLTFSkin> p_ski
 		const SkinNodeIndex parent = r_nodes[node_index]->parent;
 		disjoint_set.insert(node_index);
 
-		if (all_skin_nodes.find(parent) >= 0) {
+		if (all_skin_nodes.has(parent)) {
 			disjoint_set.create_union(parent, node_index);
 		}
 	}
@@ -282,11 +282,23 @@ void SkinTool::_recurse_children(
 	}
 }
 
+void SkinTool::_check_if_parent_needs_to_become_joint(const Vector<Ref<GLTFNode>> &p_all_nodes, const Vector<GLTFNodeIndex> &p_skeleton_node_indices, const Ref<GLTFNode> &p_gltf_node, Vector<GLTFNodeIndex> &r_non_joint_indices) {
+	const GLTFNodeIndex parent_index = p_gltf_node->parent;
+	if (parent_index >= 0) {
+		const Ref<GLTFNode> &parent = p_all_nodes[parent_index];
+		if (!parent->joint && p_skeleton_node_indices.has(parent_index) && !r_non_joint_indices.has(parent_index)) {
+			_check_if_parent_needs_to_become_joint(p_all_nodes, p_skeleton_node_indices, parent, r_non_joint_indices);
+			r_non_joint_indices.push_back(parent_index);
+		}
+	}
+}
+
 Error SkinTool::_determine_skeletons(
 		Vector<Ref<GLTFSkin>> &skins,
 		Vector<Ref<GLTFNode>> &nodes,
 		Vector<Ref<GLTFSkeleton>> &skeletons,
-		const Vector<GLTFNodeIndex> &p_single_skeleton_roots) {
+		const Vector<GLTFNodeIndex> &p_single_skeleton_roots,
+		bool p_turn_non_joint_descendants_into_bones) {
 	if (!p_single_skeleton_roots.is_empty()) {
 		Ref<GLTFSkin> skin;
 		skin.instantiate();
@@ -365,7 +377,7 @@ Error SkinTool::_determine_skeletons(
 				for (int j = 0; j < groups.size() && i != j; ++j) {
 					const Vector<SkinNodeIndex> &group = groups[j];
 
-					if (group.find(node_i_parent) >= 0) {
+					if (group.has(node_i_parent)) {
 						const SkinNodeIndex node_j = highest_group_members[j];
 						skeleton_sets.create_union(node_i, node_j);
 					}
@@ -390,23 +402,31 @@ Error SkinTool::_determine_skeletons(
 		for (GLTFSkinIndex skin_i = 0; skin_i < skins.size(); ++skin_i) {
 			Ref<GLTFSkin> skin = skins.write[skin_i];
 
-			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
+			// If any of the skeletons nodes exist in a skin, that skin now maps to the skeleton
 			for (int i = 0; i < skeleton_nodes.size(); ++i) {
 				SkinNodeIndex skel_node_i = skeleton_nodes[i];
-				if (skin->joints.find(skel_node_i) >= 0 || skin->non_joints.find(skel_node_i) >= 0) {
+				if (skin->joints.has(skel_node_i) || skin->non_joints.has(skel_node_i)) {
 					skin->skeleton = skel_i;
 					continue;
 				}
 			}
 		}
-
+		// The nodes placed into `non_joints` will be passed to `_reparent_non_joint_skeleton_subtrees`
+		// which will add them to the skeleton and set `node->joint` to true.
 		Vector<SkinNodeIndex> non_joints;
 		for (int i = 0; i < skeleton_nodes.size(); ++i) {
 			const SkinNodeIndex node_i = skeleton_nodes[i];
-
-			if (nodes[node_i]->joint) {
+			Ref<GLTFNode> node = nodes[node_i];
+			if (node->joint) {
+				if (!p_turn_non_joint_descendants_into_bones) {
+					// If a joint node has non-joint parents, we need to make them joints as well.
+					// For example, if A/B/C/D, and A/B and D are joints, then we need to make C a joint as well.
+					// This is required to handle the "skinD" example in `Animation_Skin_09.gltf` from the glTF-Asset-Generator:
+					// https://github.com/KhronosGroup/glTF-Asset-Generator/blob/master/Output/Positive/Animation_Skin
+					_check_if_parent_needs_to_become_joint(nodes, skeleton_nodes, node, non_joints);
+				}
 				skeleton->joints.push_back(node_i);
-			} else {
+			} else if (p_turn_non_joint_descendants_into_bones) {
 				non_joints.push_back(node_i);
 			}
 		}
@@ -454,7 +474,7 @@ Error SkinTool::_reparent_non_joint_skeleton_subtrees(
 		subtree_set.insert(node_i);
 
 		const SkinNodeIndex parent_i = nodes[node_i]->parent;
-		if (parent_i >= 0 && p_non_joints.find(parent_i) >= 0 && !nodes[parent_i]->joint) {
+		if (parent_i >= 0 && p_non_joints.has(parent_i) && !nodes[parent_i]->joint) {
 			subtree_set.create_union(parent_i, node_i);
 		}
 	}
@@ -520,7 +540,7 @@ Error SkinTool::_determine_skeleton_roots(
 
 	skeleton->roots = roots;
 
-	if (roots.size() == 0) {
+	if (roots.is_empty()) {
 		return FAILED;
 	} else if (roots.size() == 1) {
 		return OK;
@@ -543,9 +563,13 @@ Error SkinTool::_create_skeletons(
 		Vector<Ref<GLTFNode>> &nodes,
 		HashMap<ObjectID, GLTFSkeletonIndex> &skeleton3d_to_gltf_skeleton,
 		Vector<Ref<GLTFSkeleton>> &skeletons,
-		HashMap<GLTFNodeIndex, Node *> &scene_nodes) {
+		HashMap<GLTFNodeIndex, Node *> &scene_nodes,
+		int p_naming_version) {
+	// This is the syntax to duplicate a Godot HashSet.
+	HashSet<String> unique_node_names(unique_names);
 	for (SkinSkeletonIndex skel_i = 0; skel_i < skeletons.size(); ++skel_i) {
 		Ref<GLTFSkeleton> gltf_skeleton = skeletons.write[skel_i];
+		HashSet<String> skel_unique_names(unique_node_names);
 
 		Skeleton3D *skeleton = memnew(Skeleton3D);
 		gltf_skeleton->godot_skeleton = skeleton;
@@ -593,7 +617,16 @@ Error SkinTool::_create_skeletons(
 				node->set_name("bone");
 			}
 
-			node->set_name(_gen_unique_bone_name(unique_names, node->get_name()));
+			if (p_naming_version < 2) {
+				node->set_name(_gen_unique_bone_name(unique_names, node->get_name()));
+			} else {
+				// Make sure the bone name is unique in the skeleton and unique compared
+				// to scene nodes, but bone names may be duplicated between skeletons.
+				// Example: Two skeletons with a "Head" bone should not have one become "Head_2".
+				const String unique_bone_name = _gen_unique_bone_name(skel_unique_names, node->get_name());
+				unique_names.insert(unique_bone_name);
+				node->set_name(unique_bone_name);
+			}
 
 			skeleton->add_bone(node->get_name());
 			Transform3D rest_transform = node->get_additional_data("GODOT_rest_transform");
@@ -601,6 +634,11 @@ Error SkinTool::_create_skeletons(
 			skeleton->set_bone_pose_position(bone_index, node->transform.origin);
 			skeleton->set_bone_pose_rotation(bone_index, node->transform.basis.get_rotation_quaternion());
 			skeleton->set_bone_pose_scale(bone_index, node->transform.basis.get_scale());
+
+			// Store bone-level GLTF extras in skeleton per bone meta.
+			if (node->has_meta("extras")) {
+				skeleton->set_bone_meta(bone_index, "extras", node->get_meta("extras"));
+			}
 
 			if (node->parent >= 0 && nodes[node->parent]->skeleton == skel_i) {
 				const int bone_parent = skeleton->find_bone(nodes[node->parent]->get_name());
@@ -805,7 +843,6 @@ Error SkinTool::_asset_parse_skins(
 
 String SkinTool::_sanitize_bone_name(const String &p_name) {
 	String bone_name = p_name;
-	bone_name = bone_name.replace(":", "_");
-	bone_name = bone_name.replace("/", "_");
+	bone_name = bone_name.replace_chars(":/", '_');
 	return bone_name;
 }

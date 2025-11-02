@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_ADAPTER_SERVER_H
-#define DEBUG_ADAPTER_SERVER_H
+#pragma once
 
-#include "debug_adapter_protocol.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/plugins/editor_plugin.h"
 
 class DebugAdapterServer : public EditorPlugin {
@@ -49,9 +48,8 @@ private:
 	void _notification(int p_what);
 
 public:
+	static int port_override;
 	DebugAdapterServer();
 	void start();
 	void stop();
 };
-
-#endif // DEBUG_ADAPTER_SERVER_H

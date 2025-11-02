@@ -11,13 +11,13 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include "src/utils/utils.h"
+
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
-#include "src/webp/decode.h"
+
+#include "src/utils/palette.h"
 #include "src/webp/encode.h"
-#include "src/webp/format_constants.h"  // for MAX_PALETTE_SIZE
-#include "src/utils/color_cache_utils.h"
-#include "src/utils/utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of
 // alloc/free etc) is printed. For debugging/tuning purpose only (it's slow,
@@ -252,65 +252,9 @@ void WebPCopyPixels(const WebPPicture* const src, WebPPicture* const dst) {
 
 //------------------------------------------------------------------------------
 
-#define COLOR_HASH_SIZE         (MAX_PALETTE_SIZE * 4)
-#define COLOR_HASH_RIGHT_SHIFT  22  // 32 - log2(COLOR_HASH_SIZE).
-
 int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
-  int i;
-  int x, y;
-  int num_colors = 0;
-  uint8_t in_use[COLOR_HASH_SIZE] = { 0 };
-  uint32_t colors[COLOR_HASH_SIZE];
-  const uint32_t* argb = pic->argb;
-  const int width = pic->width;
-  const int height = pic->height;
-  uint32_t last_pix = ~argb[0];   // so we're sure that last_pix != argb[0]
-  assert(pic != NULL);
-  assert(pic->use_argb);
-
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
-      int key;
-      if (argb[x] == last_pix) {
-        continue;
-      }
-      last_pix = argb[x];
-      key = VP8LHashPix(last_pix, COLOR_HASH_RIGHT_SHIFT);
-      while (1) {
-        if (!in_use[key]) {
-          colors[key] = last_pix;
-          in_use[key] = 1;
-          ++num_colors;
-          if (num_colors > MAX_PALETTE_SIZE) {
-            return MAX_PALETTE_SIZE + 1;  // Exact count not needed.
-          }
-          break;
-        } else if (colors[key] == last_pix) {
-          break;  // The color is already there.
-        } else {
-          // Some other color sits here, so do linear conflict resolution.
-          ++key;
-          key &= (COLOR_HASH_SIZE - 1);  // Key mask.
-        }
-      }
-    }
-    argb += pic->argb_stride;
-  }
-
-  if (palette != NULL) {  // Fill the colors into palette.
-    num_colors = 0;
-    for (i = 0; i < COLOR_HASH_SIZE; ++i) {
-      if (in_use[i]) {
-        palette[num_colors] = colors[i];
-        ++num_colors;
-      }
-    }
-  }
-  return num_colors;
+  return GetColorPalette(pic, palette);
 }
-
-#undef COLOR_HASH_SIZE
-#undef COLOR_HASH_RIGHT_SHIFT
 
 //------------------------------------------------------------------------------
 

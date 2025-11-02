@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_OBJECT_2D_H
-#define COLLISION_OBJECT_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT_2D;
+
 	enum DisableMode {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,
@@ -175,5 +176,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(CollisionObject2D::DisableMode);
-
-#endif // COLLISION_OBJECT_2D_H

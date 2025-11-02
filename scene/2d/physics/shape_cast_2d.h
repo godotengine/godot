@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHAPE_CAST_2D_H
-#define SHAPE_CAST_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "scene/resources/world_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class CollisionObject2D;
 
@@ -60,7 +59,6 @@ class ShapeCast2D : public Node2D {
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;
 
-	Array _get_collision_result() const;
 	void _shape_changed();
 
 protected:
@@ -102,6 +100,7 @@ public:
 	void force_shapecast_update();
 	bool is_colliding() const;
 
+	Array get_collision_result() const;
 	int get_collision_count() const;
 	Object *get_collider(int p_idx) const;
 	RID get_collider_rid(int p_idx) const;
@@ -122,5 +121,3 @@ public:
 
 	ShapeCast2D();
 };
-
-#endif // SHAPE_CAST_2D_H

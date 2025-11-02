@@ -2,6 +2,8 @@
  * \file mbedtls/config_adjust_legacy_from_psa.h
  * \brief Adjust PSA configuration: activate legacy implementations
  *
+ * This is an internal header. Do not include it directly.
+ *
  * When MBEDTLS_PSA_CRYPTO_CONFIG is enabled, activate legacy implementations
  * of cryptographic mechanisms as needed to fulfill the needs of the PSA
  * configuration. Generally speaking, we activate a legacy mechanism if
@@ -15,6 +17,14 @@
 
 #ifndef MBEDTLS_CONFIG_ADJUST_LEGACY_FROM_PSA_H
 #define MBEDTLS_CONFIG_ADJUST_LEGACY_FROM_PSA_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include mbedtls/config_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /* Define appropriate ACCEL macros for the p256-m driver.
  * In the future, those should be generated from the drivers JSON description.
@@ -59,7 +69,6 @@
     (defined(PSA_WANT_ECC_SECP_R1_384) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_R1_384)) || \
     (defined(PSA_WANT_ECC_SECP_R1_521) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_R1_521)) || \
     (defined(PSA_WANT_ECC_SECP_K1_192) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_192)) || \
-    (defined(PSA_WANT_ECC_SECP_K1_224) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_224)) || \
     (defined(PSA_WANT_ECC_SECP_K1_256) && !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_256))
 #define MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_CURVES
 #define MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_WEIERSTRASS_CURVES
@@ -214,17 +223,6 @@
 #define MBEDTLS_ECP_DP_SECP192K1_ENABLED
 #endif /* missing accel */
 #endif /* PSA_WANT_ECC_SECP_K1_192 */
-
-#if defined(PSA_WANT_ECC_SECP_K1_224)
-#if !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_224) || \
-    defined(MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_KEY_TYPES) || \
-    defined(MBEDTLS_PSA_ECC_ACCEL_INCOMPLETE_ALGS)
-#define MBEDTLS_PSA_BUILTIN_ECC_SECP_K1_224 1
-#define MBEDTLS_ECP_DP_SECP224K1_ENABLED
-/* https://github.com/Mbed-TLS/mbedtls/issues/3541 */
-#error "SECP224K1 is buggy via the PSA API in Mbed TLS."
-#endif /* missing accel */
-#endif /* PSA_WANT_ECC_SECP_K1_224 */
 
 #if defined(PSA_WANT_ECC_SECP_K1_256)
 #if !defined(MBEDTLS_PSA_ACCEL_ECC_SECP_K1_256) || \
@@ -498,7 +496,6 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
-#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF */
 #endif /* PSA_WANT_ALG_HKDF */
@@ -509,7 +506,6 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
-#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF_EXTRACT 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF_EXTRACT */
 #endif /* PSA_WANT_ALG_HKDF_EXTRACT */
@@ -520,7 +516,6 @@
  * The PSA implementation has its own implementation of HKDF, separate from
  * hkdf.c. No need to enable MBEDTLS_HKDF_C here.
  */
-#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
 #define MBEDTLS_PSA_BUILTIN_ALG_HKDF_EXPAND 1
 #endif /* !MBEDTLS_PSA_ACCEL_ALG_HKDF_EXPAND */
 #endif /* PSA_WANT_ALG_HKDF_EXPAND */
@@ -630,9 +625,6 @@
 #if !defined(MBEDTLS_PSA_ACCEL_ALG_PBKDF2_HMAC)
 #define MBEDTLS_PSA_BUILTIN_ALG_PBKDF2_HMAC 1
 #define PSA_HAVE_SOFT_PBKDF2_HMAC 1
-#if !defined(MBEDTLS_PSA_ACCEL_ALG_HMAC)
-#define MBEDTLS_PSA_BUILTIN_ALG_HMAC 1
-#endif /* !MBEDTLS_PSA_ACCEL_ALG_HMAC */
 #endif /* !MBEDTLS_PSA_BUILTIN_ALG_PBKDF2_HMAC */
 #endif /* PSA_WANT_ALG_PBKDF2_HMAC */
 
@@ -777,13 +769,6 @@
     defined(PSA_HAVE_SOFT_KEY_TYPE_CAMELLIA)
 #define PSA_HAVE_SOFT_BLOCK_CIPHER 1
 #endif
-
-#if defined(PSA_WANT_ALG_CBC_MAC)
-#if !defined(MBEDTLS_PSA_ACCEL_ALG_CBC_MAC)
-#error "CBC-MAC is not yet supported via the PSA API in Mbed TLS."
-#define MBEDTLS_PSA_BUILTIN_ALG_CBC_MAC 1
-#endif /* !MBEDTLS_PSA_ACCEL_ALG_CBC_MAC */
-#endif /* PSA_WANT_ALG_CBC_MAC */
 
 #if defined(PSA_WANT_ALG_CMAC)
 #if !defined(MBEDTLS_PSA_ACCEL_ALG_CMAC) || \

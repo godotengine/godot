@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/texture_rect.h"
 
 class ConfigFile;
 class EditorValidationPanel;
@@ -59,7 +56,6 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *version_edit = nullptr;
 	OptionButton *script_option_edit = nullptr;
 	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
 
 	LocalVector<Control *> plugin_edit_hidden_controls;
 
@@ -84,7 +80,4 @@ public:
 	void config(const String &p_config_path);
 
 	PluginConfigDialog();
-	~PluginConfigDialog();
 };
-
-#endif // PLUGIN_CONFIG_DIALOG_H

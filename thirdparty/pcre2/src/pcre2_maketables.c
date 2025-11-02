@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -155,10 +155,10 @@ return yield;
 PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
 pcre2_maketables_free(pcre2_general_context *gcontext, const uint8_t *tables)
 {
-  if (gcontext)
-    gcontext->memctl.free((void *)tables, gcontext->memctl.memory_data);
-  else
-    free((void *)tables);
+if (gcontext != NULL)
+  gcontext->memctl.free((void *)tables, gcontext->memctl.memory_data);
+else
+  free((void *)tables);
 }
 #endif
 

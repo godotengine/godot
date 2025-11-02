@@ -67,11 +67,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		{
 			// The custom LoadLibraryExW is used instead of open_dynamic_library
 			// to avoid loading the original PDB into the debugger.
-			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), NULL, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
+			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), nullptr, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
 
 			ERR_FAIL_NULL_V_MSG(library_ptr, ERR_FILE_CANT_OPEN, vformat("Failed to load library '%s'.", p_dll_path));
 
-			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, NULL);
+			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, nullptr);
 
 			bool has_debug = dbg_dir && dbg_dir->Type == IMAGE_DEBUG_TYPE_CODEVIEW;
 			if (has_debug) {
@@ -92,7 +92,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			DWORD Offset;
 		};
 
-		const DWORD nb10_magic = '01BN';
+		const DWORD nb10_magic = 0x3031424e; // "01BN" (little-endian)
 		struct CV_INFO_PDB20 {
 			CV_HEADER CvHeader; // CvHeader.Signature = "NB10"
 			DWORD Signature;
@@ -100,7 +100,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 			BYTE PdbFileName[1];
 		};
 
-		const DWORD rsds_magic = 'SDSR';
+		const DWORD rsds_magic = 0x53445352; // "SDSR" (little-endian)
 		struct CV_INFO_PDB70 {
 			DWORD Signature; // "RSDS"
 			BYTE Guid[16];
@@ -136,7 +136,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		}
 
 		String utf_path;
-		Error err = utf_path.parse_utf8(raw_pdb_path);
+		Error err = utf_path.append_utf8(raw_pdb_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to read PDB path from '%s'.", p_dll_path));
 
 		pdb_info.path = utf_path;
@@ -155,7 +155,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 	} else if (!FileAccess::exists(copy_pdb_path)) {
 		copy_pdb_path = dll_base_dir.path_join(copy_pdb_path.get_file());
 	}
-	ERR_FAIL_COND_V_MSG(!FileAccess::exists(copy_pdb_path), FAILED, vformat("File '%s' does not exist.", copy_pdb_path));
+	if (!FileAccess::exists(copy_pdb_path)) {
+		// The PDB file may be distributed separately on purpose, so we don't consider this an error.
+		WARN_VERBOSE(vformat("PDB file '%s' for library '%s' was not found, skipping copy/rename.", copy_pdb_path, p_dll_path));
+		return ERR_SKIP;
+	}
 
 	String new_pdb_base_name = p_dll_path.get_file().get_basename() + "_";
 
@@ -175,9 +179,8 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		if (new_expected_buffer_size > original_path_size) {
 			ERR_FAIL_COND_V_MSG(original_path_size < min_base_size + suffix_size, FAILED, vformat("The original PDB path size in bytes is too small: '%s'. Expected size: %d or more bytes, but available %d.", pdb_info.path, min_base_size + suffix_size, original_path_size));
 
-			utf8_name.resize(original_path_size - suffix_size + 1); // +1 for the \0
-			utf8_name[utf8_name.size() - 1] = '\0';
-			new_pdb_base_name.parse_utf8(utf8_name);
+			new_pdb_base_name.clear();
+			new_pdb_base_name.append_utf8(utf8_name.get_data(), original_path_size - suffix_size);
 			new_pdb_base_name[new_pdb_base_name.length() - 1] = '_'; // Restore the last '_'
 			WARN_PRINT(vformat("The original path size of '%s' in bytes was too small to fit the new name, so it was shortened to '%s%d.pdb'.", pdb_info.path, new_pdb_base_name, max_pdb_names - 1));
 		}
@@ -220,17 +223,15 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 
 		int original_path_size = pdb_info.path.utf8().length();
 		// Double-check file bounds.
-		ERR_FAIL_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
+		ERR_FAIL_UNSIGNED_INDEX_V_MSG(pdb_info.address + original_path_size, file->get_length(), FAILED, vformat("Failed to write a new PDB path. Probably '%s' has been changed.", p_dll_path));
 
 		Vector<uint8_t> u8 = new_pdb_name.to_utf8_buffer();
 		file->seek(pdb_info.address);
 		file->store_buffer(u8);
 
 		// Terminate string and fill the remaining part of the original string with the '\0'.
-		// Can be replaced by file->store_8('\0');
 		Vector<uint8_t> padding_buffer;
-		padding_buffer.resize((int64_t)original_path_size - u8.size());
-		padding_buffer.fill('\0');
+		padding_buffer.resize_initialized((int64_t)original_path_size - u8.size());
 		file->store_buffer(padding_buffer);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to write a new PDB path to '%s'.", p_dll_path));
 

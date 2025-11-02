@@ -88,6 +88,18 @@ Vector3 Vector3::snapped(const Vector3 &p_step) const {
 	return v;
 }
 
+void Vector3::snapf(real_t p_step) {
+	x = Math::snapped(x, p_step);
+	y = Math::snapped(y, p_step);
+	z = Math::snapped(z, p_step);
+}
+
+Vector3 Vector3::snappedf(real_t p_step) const {
+	Vector3 v = *this;
+	v.snapf(p_step);
+	return v;
+}
+
 Vector3 Vector3::limit_length(real_t p_len) const {
 	const real_t l = length();
 	Vector3 v = *this;
@@ -161,6 +173,10 @@ bool Vector3::is_equal_approx(const Vector3 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y) && Math::is_equal_approx(z, p_v.z);
 }
 
+bool Vector3::is_same(const Vector3 &p_v) const {
+	return Math::is_same(x, p_v.x) && Math::is_same(y, p_v.y) && Math::is_same(z, p_v.z);
+}
+
 bool Vector3::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z);
 }
@@ -170,7 +186,7 @@ bool Vector3::is_finite() const {
 }
 
 Vector3::operator String() const {
-	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ")";
+	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ", " + String::num_real(z, true) + ")";
 }
 
 Vector3::operator Vector3i() const {

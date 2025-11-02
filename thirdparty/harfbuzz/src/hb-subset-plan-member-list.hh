@@ -81,6 +81,10 @@ HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::unique_ptr<hb_set_t>>), gpo
 HB_SUBSET_PLAN_MEMBER (hb_map_t, gsub_features)
 HB_SUBSET_PLAN_MEMBER (hb_map_t, gpos_features)
 
+//active features(with duplicates) old index -> new index mapping
+HB_SUBSET_PLAN_MEMBER (hb_map_t, gsub_features_w_duplicates)
+HB_SUBSET_PLAN_MEMBER (hb_map_t, gpos_features_w_duplicates)
+
 //active feature variation records/condition index with variations
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gsub_feature_record_cond_idx_map)
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gpos_feature_record_cond_idx_map)
@@ -102,6 +106,12 @@ HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<const void*, const
 //active layers/palettes we'd like to retain
 HB_SUBSET_PLAN_MEMBER (hb_map_t, colrv1_layers)
 HB_SUBSET_PLAN_MEMBER (hb_map_t, colr_palettes)
+//colrv1 varstore retained varidx mapping
+HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, colrv1_varstore_inner_maps)
+//colrv1 retained varidx -> (new varidx, delta) mapping
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), colrv1_variation_idx_delta_map)
+//colrv1 retained new delta set index -> new varidx mapping
+HB_SUBSET_PLAN_MEMBER (hb_map_t, colrv1_new_deltaset_idx_varidx_map)
 
 //Old layout item variation index -> (New varidx, delta) mapping
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), layout_variation_idx_delta_map)
@@ -144,7 +154,7 @@ HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<hb_codepoint_t, contour_point_vec
 HB_SUBSET_PLAN_MEMBER (hb_set_t, composite_new_gids)
 
 //Old BASE item variation index -> (New varidx, 0) mapping
-HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), base_variation_idx_map)
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), base_variation_idx_map)
 
 //BASE table varstore retained varidx mapping
 HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, base_varstore_inner_maps)

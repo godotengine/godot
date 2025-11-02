@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AREA_2D_H
-#define AREA_2D_H
+#pragma once
 
 #include "core/templates/vset.h"
 #include "scene/2d/physics/collision_object_2d.h"
@@ -38,6 +37,8 @@ class Area2D : public CollisionObject2D {
 	GDCLASS(Area2D, CollisionObject2D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::AREA_2D;
+
 	enum SpaceOverride {
 		SPACE_OVERRIDE_DISABLED,
 		SPACE_OVERRIDE_COMBINE,
@@ -198,5 +199,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Area2D::SpaceOverride);
-
-#endif // AREA_2D_H

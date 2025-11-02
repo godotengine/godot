@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TTS_MACOS_H
-#define TTS_MACOS_H
+#pragma once
 
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 
@@ -67,5 +66,3 @@
 - (void)speak:(const String &)text voice:(const String &)voice volume:(int)volume pitch:(float)pitch rate:(float)rate utterance_id:(int)utterance_id interrupt:(bool)interrupt;
 - (Array)getVoices;
 @end
-
-#endif // TTS_MACOS_H

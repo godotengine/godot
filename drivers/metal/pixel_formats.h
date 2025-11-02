@@ -1,0 +1,412 @@
+/**************************************************************************/
+/*  pixel_formats.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+/**************************************************************************/
+/*                                                                        */
+/* Portions of this code were derived from MoltenVK.                      */
+/*                                                                        */
+/* Copyright (c) 2015-2023 The Brenwill Workshop Ltd.                     */
+/* (http://www.brenwill.com)                                              */
+/*                                                                        */
+/* Licensed under the Apache License, Version 2.0 (the "License");        */
+/* you may not use this file except in compliance with the License.       */
+/* You may obtain a copy of the License at                                */
+/*                                                                        */
+/*     http://www.apache.org/licenses/LICENSE-2.0                         */
+/*                                                                        */
+/* Unless required by applicable law or agreed to in writing, software    */
+/* distributed under the License is distributed on an "AS IS" BASIS,      */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or        */
+/* implied. See the License for the specific language governing           */
+/* permissions and limitations under the License.                         */
+/**************************************************************************/
+
+#include "core/typedefs.h"
+
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+
+#import "inflection_map.h"
+#import "metal_device_properties.h"
+
+#include "servers/rendering/rendering_device.h"
+
+#import <Metal/Metal.h>
+#include <iterator>
+
+#pragma mark -
+#pragma mark Metal format capabilities
+
+typedef enum : uint16_t {
+
+	kMTLFmtCapsNone = 0,
+	/*! The format can be used in a shader read operation. */
+	kMTLFmtCapsRead = (1 << 0),
+	/*! The format can be used in a shader filter operation during sampling. */
+	kMTLFmtCapsFilter = (1 << 1),
+	/*! The format can be used in a shader write operation. */
+	kMTLFmtCapsWrite = (1 << 2),
+	/*! The format can be used with atomic operations. */
+	kMTLFmtCapsAtomic = (1 << 3),
+	/*! The format can be used as a color attachment. */
+	kMTLFmtCapsColorAtt = (1 << 4),
+	/*! The format can be used as a depth-stencil attachment. */
+	kMTLFmtCapsDSAtt = (1 << 5),
+	/*! The format can be used with blend operations. */
+	kMTLFmtCapsBlend = (1 << 6),
+	/*! The format can be used as a destination for multisample antialias (MSAA) data. */
+	kMTLFmtCapsMSAA = (1 << 7),
+	/*! The format can be used as a resolve attachment. */
+	kMTLFmtCapsResolve = (1 << 8),
+	kMTLFmtCapsVertex = (1 << 9),
+
+	kMTLFmtCapsRF = (kMTLFmtCapsRead | kMTLFmtCapsFilter),
+	kMTLFmtCapsRC = (kMTLFmtCapsRead | kMTLFmtCapsColorAtt),
+	kMTLFmtCapsRCB = (kMTLFmtCapsRC | kMTLFmtCapsBlend),
+	kMTLFmtCapsRCM = (kMTLFmtCapsRC | kMTLFmtCapsMSAA),
+	kMTLFmtCapsRCMB = (kMTLFmtCapsRCM | kMTLFmtCapsBlend),
+	kMTLFmtCapsRWC = (kMTLFmtCapsRC | kMTLFmtCapsWrite),
+	kMTLFmtCapsRWCB = (kMTLFmtCapsRWC | kMTLFmtCapsBlend),
+	kMTLFmtCapsRWCM = (kMTLFmtCapsRWC | kMTLFmtCapsMSAA),
+	kMTLFmtCapsRWCMB = (kMTLFmtCapsRWCM | kMTLFmtCapsBlend),
+	kMTLFmtCapsRFCMRB = (kMTLFmtCapsRCMB | kMTLFmtCapsFilter | kMTLFmtCapsResolve),
+	kMTLFmtCapsRFWCMB = (kMTLFmtCapsRWCMB | kMTLFmtCapsFilter),
+	kMTLFmtCapsAll = (kMTLFmtCapsRFWCMB | kMTLFmtCapsResolve),
+
+	kMTLFmtCapsDRM = (kMTLFmtCapsDSAtt | kMTLFmtCapsRead | kMTLFmtCapsMSAA),
+	kMTLFmtCapsDRFM = (kMTLFmtCapsDRM | kMTLFmtCapsFilter),
+	kMTLFmtCapsDRMR = (kMTLFmtCapsDRM | kMTLFmtCapsResolve),
+	kMTLFmtCapsDRFMR = (kMTLFmtCapsDRFM | kMTLFmtCapsResolve),
+
+	kMTLFmtCapsChromaSubsampling = kMTLFmtCapsRF,
+	kMTLFmtCapsMultiPlanar = kMTLFmtCapsChromaSubsampling,
+} MTLFmtCaps;
+
+inline MTLFmtCaps operator|(MTLFmtCaps p_left, MTLFmtCaps p_right) {
+	return static_cast<MTLFmtCaps>(static_cast<uint32_t>(p_left) | p_right);
+}
+
+inline MTLFmtCaps &operator|=(MTLFmtCaps &p_left, MTLFmtCaps p_right) {
+	return (p_left = p_left | p_right);
+}
+
+#pragma mark -
+#pragma mark Metal view classes
+
+enum class MTLViewClass : uint8_t {
+	None,
+	Color8,
+	Color16,
+	Color32,
+	Color64,
+	Color128,
+	PVRTC_RGB_2BPP,
+	PVRTC_RGB_4BPP,
+	PVRTC_RGBA_2BPP,
+	PVRTC_RGBA_4BPP,
+	EAC_R11,
+	EAC_RG11,
+	EAC_RGBA8,
+	ETC2_RGB8,
+	ETC2_RGB8A1,
+	ASTC_4x4,
+	ASTC_5x4,
+	ASTC_5x5,
+	ASTC_6x5,
+	ASTC_6x6,
+	ASTC_8x5,
+	ASTC_8x6,
+	ASTC_8x8,
+	ASTC_10x5,
+	ASTC_10x6,
+	ASTC_10x8,
+	ASTC_10x10,
+	ASTC_12x10,
+	ASTC_12x12,
+	BC1_RGBA,
+	BC2_RGBA,
+	BC3_RGBA,
+	BC4_R,
+	BC5_RG,
+	BC6H_RGB,
+	BC7_RGBA,
+	Depth24_Stencil8,
+	Depth32_Stencil8,
+	BGRA10_XR,
+	BGR10_XR
+};
+
+#pragma mark -
+#pragma mark Format descriptors
+
+/** Enumerates the data type of a format. */
+enum class MTLFormatType {
+	None, /**< Format type is unknown. */
+	ColorHalf, /**< A 16-bit floating point color. */
+	ColorFloat, /**< A 32-bit floating point color. */
+	ColorInt8, /**< A signed 8-bit integer color. */
+	ColorUInt8, /**< An unsigned 8-bit integer color. */
+	ColorInt16, /**< A signed 16-bit integer color. */
+	ColorUInt16, /**< An unsigned 16-bit integer color. */
+	ColorInt32, /**< A signed 32-bit integer color. */
+	ColorUInt32, /**< An unsigned 32-bit integer color. */
+	DepthStencil, /**< A depth and stencil value. */
+	Compressed, /**< A block-compressed color. */
+};
+
+struct Extent2D {
+	uint32_t width;
+	uint32_t height;
+};
+
+struct ComponentMapping {
+	RD::TextureSwizzle r = RD::TEXTURE_SWIZZLE_IDENTITY;
+	RD::TextureSwizzle g = RD::TEXTURE_SWIZZLE_IDENTITY;
+	RD::TextureSwizzle b = RD::TEXTURE_SWIZZLE_IDENTITY;
+	RD::TextureSwizzle a = RD::TEXTURE_SWIZZLE_IDENTITY;
+};
+
+/** Describes the properties of a DataFormat, including the corresponding Metal pixel and vertex format. */
+struct DataFormatDesc {
+	RD::DataFormat dataFormat;
+	MTLPixelFormat mtlPixelFormat;
+	MTLPixelFormat mtlPixelFormatSubstitute;
+	MTLVertexFormat mtlVertexFormat;
+	MTLVertexFormat mtlVertexFormatSubstitute;
+	uint8_t chromaSubsamplingPlaneCount;
+	uint8_t chromaSubsamplingComponentBits;
+	Extent2D blockTexelSize;
+	uint32_t bytesPerBlock;
+	MTLFormatType formatType;
+	ComponentMapping componentMapping;
+	const char *name;
+	bool hasReportedSubstitution;
+
+	inline double bytesPerTexel() const { return (double)bytesPerBlock / (double)(blockTexelSize.width * blockTexelSize.height); }
+
+	inline bool isSupported() const { return (mtlPixelFormat != MTLPixelFormatInvalid || chromaSubsamplingPlaneCount > 1); }
+	inline bool isSupportedOrSubstitutable() const { return isSupported() || (mtlPixelFormatSubstitute != MTLPixelFormatInvalid); }
+
+	inline bool vertexIsSupported() const { return (mtlVertexFormat != MTLVertexFormatInvalid); }
+	inline bool vertexIsSupportedOrSubstitutable() const { return vertexIsSupported() || (mtlVertexFormatSubstitute != MTLVertexFormatInvalid); }
+
+	bool needsSwizzle() const {
+		return (componentMapping.r != RD::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.g != RD::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.b != RD::TEXTURE_SWIZZLE_IDENTITY ||
+				componentMapping.a != RD::TEXTURE_SWIZZLE_IDENTITY);
+	}
+};
+
+/** Describes the properties of a MTLPixelFormat or MTLVertexFormat. */
+struct MTLFormatDesc {
+	union {
+		MTLPixelFormat mtlPixelFormat;
+		MTLVertexFormat mtlVertexFormat;
+	};
+	RD::DataFormat dataFormat = RD::DATA_FORMAT_MAX;
+	MTLFmtCaps mtlFmtCaps;
+	MTLViewClass mtlViewClass;
+	MTLPixelFormat mtlPixelFormatLinear;
+	const char *name = nullptr;
+
+	inline bool isSupported() const { return (mtlPixelFormat != MTLPixelFormatInvalid) && (mtlFmtCaps != kMTLFmtCapsNone); }
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) PixelFormats {
+	using DataFormat = RD::DataFormat;
+
+public:
+	/** Returns whether the DataFormat is supported by the GPU bound to this instance. */
+	bool isSupported(DataFormat p_format);
+
+	/** Returns whether the DataFormat is supported by this implementation, or can be substituted by one that is. */
+	bool isSupportedOrSubstitutable(DataFormat p_format);
+
+	/** Returns whether the specified Metal MTLPixelFormat can be used as a depth format. */
+	_FORCE_INLINE_ bool isDepthFormat(MTLPixelFormat p_format) {
+		switch (p_format) {
+			case MTLPixelFormatDepth32Float:
+			case MTLPixelFormatDepth16Unorm:
+			case MTLPixelFormatDepth32Float_Stencil8:
+#if TARGET_OS_OSX
+			case MTLPixelFormatDepth24Unorm_Stencil8:
+#endif
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/** Returns whether the specified Metal MTLPixelFormat can be used as a stencil format. */
+	_FORCE_INLINE_ bool isStencilFormat(MTLPixelFormat p_format) {
+		switch (p_format) {
+			case MTLPixelFormatStencil8:
+#if TARGET_OS_OSX
+			case MTLPixelFormatDepth24Unorm_Stencil8:
+			case MTLPixelFormatX24_Stencil8:
+#endif
+			case MTLPixelFormatDepth32Float_Stencil8:
+			case MTLPixelFormatX32_Stencil8:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/** Returns whether the specified Metal MTLPixelFormat is a PVRTC format. */
+	bool isPVRTCFormat(MTLPixelFormat p_format);
+
+	/** Returns the format type corresponding to the specified Godot pixel format, */
+	MTLFormatType getFormatType(DataFormat p_format);
+
+	/** Returns the format type corresponding to the specified Metal MTLPixelFormat, */
+	MTLFormatType getFormatType(MTLPixelFormat p_format);
+
+	/**
+	 * Returns the Metal MTLPixelFormat corresponding to the specified Godot pixel
+	 * or returns MTLPixelFormatInvalid if no corresponding MTLPixelFormat exists.
+	 */
+	MTLPixelFormat getMTLPixelFormat(DataFormat p_format);
+
+	/**
+	 * Returns the DataFormat corresponding to the specified Metal MTLPixelFormat,
+	 * or returns DATA_FORMAT_MAX if no corresponding DataFormat exists.
+	 */
+	DataFormat getDataFormat(MTLPixelFormat p_format);
+
+	/**
+	 * Returns the size, in bytes, of a texel block of the specified Godot pixel.
+	 * For uncompressed formats, the returned value corresponds to the size in bytes of a single texel.
+	 */
+	uint32_t getBytesPerBlock(DataFormat p_format);
+
+	/**
+	 * Returns the size, in bytes, of a texel block of the specified Metal format.
+	 * For uncompressed formats, the returned value corresponds to the size in bytes of a single texel.
+	 */
+	uint32_t getBytesPerBlock(MTLPixelFormat p_format);
+
+	/** Returns the number of planes of the specified chroma-subsampling (YCbCr) DataFormat */
+	uint8_t getChromaSubsamplingPlaneCount(DataFormat p_format);
+
+	/** Returns the number of bits per channel of the specified chroma-subsampling (YCbCr) DataFormat */
+	uint8_t getChromaSubsamplingComponentBits(DataFormat p_format);
+
+	/**
+	 * Returns the size, in bytes, of a texel of the specified Godot format.
+	 * The returned value may be fractional for certain compressed formats.
+	 */
+	float getBytesPerTexel(DataFormat p_format);
+
+	/**
+	 * Returns the size, in bytes, of a texel of the specified Metal format.
+	 * The returned value may be fractional for certain compressed formats.
+	 */
+	float getBytesPerTexel(MTLPixelFormat p_format);
+
+	/**
+	 * Returns the size, in bytes, of a row of texels of the specified Godot pixel format.
+	 *
+	 * For compressed formats, this takes into consideration the compression block size,
+	 * and p_texels_per_row should specify the width in texels, not blocks. The result is rounded
+	 * up if p_texels_per_row is not an integer multiple of the compression block width.
+	 */
+	size_t getBytesPerRow(DataFormat p_format, uint32_t p_texels_per_row);
+
+	/**
+	 * Returns the size, in bytes, of a row of texels of the specified Metal format.
+	 *
+	 * For compressed formats, this takes into consideration the compression block size,
+	 * and texelsPerRow should specify the width in texels, not blocks. The result is rounded
+	 * up if texelsPerRow is not an integer multiple of the compression block width.
+	 */
+	size_t getBytesPerRow(MTLPixelFormat p_format, uint32_t p_texels_per_row);
+
+	/**
+	 * Returns the size, in bytes, of a texture layer of the specified Godot pixel format.
+	 *
+	 * For compressed formats, this takes into consideration the compression block size,
+	 * and p_texel_rows_per_layer should specify the height in texels, not blocks. The result is
+	 * rounded up if p_texel_rows_per_layer is not an integer multiple of the compression block height.
+	 */
+	size_t getBytesPerLayer(DataFormat p_format, size_t p_bytes_per_row, uint32_t p_texel_rows_per_layer);
+
+	/**
+	 * Returns the size, in bytes, of a texture layer of the specified Metal format.
+	 * For compressed formats, this takes into consideration the compression block size,
+	 * and p_texel_rows_per_layer should specify the height in texels, not blocks. The result is
+	 * rounded up if p_texel_rows_per_layer is not an integer multiple of the compression block height.
+	 */
+	size_t getBytesPerLayer(MTLPixelFormat p_format, size_t p_bytes_per_row, uint32_t p_texel_rows_per_layer);
+
+	/** Returns whether or not the specified Godot format requires swizzling to use with Metal. */
+	bool needsSwizzle(DataFormat p_format);
+
+	/** Returns the Metal format capabilities supported by the specified Godot format, without substitution. */
+	MTLFmtCaps getCapabilities(DataFormat p_format, bool p_extended = false);
+
+	/** Returns the Metal format capabilities supported by the specified Metal format. */
+	MTLFmtCaps getCapabilities(MTLPixelFormat p_format, bool p_extended = false);
+
+	/**
+	 * Returns the Metal MTLVertexFormat corresponding to the specified
+	 * DataFormat as used as a vertex attribute format.
+	 */
+	MTLVertexFormat getMTLVertexFormat(DataFormat p_format);
+
+#pragma mark Construction
+
+	explicit PixelFormats(id<MTLDevice> p_device, const MetalFeatures &p_feat);
+
+protected:
+	DataFormatDesc &getDataFormatDesc(DataFormat p_format);
+	DataFormatDesc &getDataFormatDesc(MTLPixelFormat p_format);
+	MTLFormatDesc &getMTLPixelFormatDesc(MTLPixelFormat p_format);
+	MTLFmtCaps &getMTLPixelFormatCapsIf(MTLPixelFormat mtlPixFmt, bool cond);
+	MTLFormatDesc &getMTLVertexFormatDesc(MTLVertexFormat p_format);
+
+	void initDataFormatCapabilities();
+	void initMTLPixelFormatCapabilities();
+	void initMTLVertexFormatCapabilities(const MetalFeatures &p_feat);
+	void modifyMTLFormatCapabilities(const MetalFeatures &p_feat);
+	void buildDFFormatMaps();
+	void addMTLPixelFormatDescImpl(MTLPixelFormat p_pix_fmt, MTLPixelFormat p_pix_fmt_linear,
+			MTLViewClass p_view_class, MTLFmtCaps p_fmt_caps, const char *p_name);
+	void addMTLVertexFormatDescImpl(MTLVertexFormat p_vert_fmt, MTLFmtCaps p_vert_caps, const char *name);
+
+	id<MTLDevice> device;
+	InflectionMap<DataFormat, DataFormatDesc, RD::DATA_FORMAT_MAX> _data_format_descs;
+	InflectionMap<uint16_t, MTLFormatDesc, MTLPixelFormatX32_Stencil8 + 2> _mtl_pixel_format_descs; // The actual last enum value is not available on iOS.
+	TightLocalVector<MTLFormatDesc> _mtl_vertex_format_descs;
+};
+
+GODOT_CLANG_WARNING_POP

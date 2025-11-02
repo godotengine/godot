@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICAL_BONE_3D_H
-#define PHYSICAL_BONE_3D_H
+#pragma once
 
-#include "scene/3d/physical_bone_simulator_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
 
 class PhysicalBoneSimulator3D;
 
@@ -84,8 +83,8 @@ public:
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
-		real_t swing_span = Math_PI * 0.25;
-		real_t twist_span = Math_PI;
+		real_t swing_span = Math::PI * 0.25;
+		real_t twist_span = Math::PI;
 		real_t bias = 0.3;
 		real_t softness = 0.8;
 		real_t relaxation = 1.;
@@ -99,8 +98,8 @@ public:
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
 		bool angular_limit_enabled = false;
-		real_t angular_limit_upper = Math_PI * 0.5;
-		real_t angular_limit_lower = -Math_PI * 0.5;
+		real_t angular_limit_upper = Math::PI * 0.5;
+		real_t angular_limit_lower = -Math::PI * 0.5;
 		real_t angular_limit_bias = 0.3;
 		real_t angular_limit_softness = 0.9;
 		real_t angular_limit_relaxation = 1.;
@@ -157,8 +156,6 @@ public:
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
 		SixDOFAxisData axis_data[3];
-
-		SixDOFJointData() {}
 	};
 
 private:
@@ -307,5 +304,3 @@ private:
 
 VARIANT_ENUM_CAST(PhysicalBone3D::JointType);
 VARIANT_ENUM_CAST(PhysicalBone3D::DampMode);
-
-#endif // PHYSICAL_BONE_3D_H

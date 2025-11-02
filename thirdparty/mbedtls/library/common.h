@@ -352,17 +352,19 @@ static inline void mbedtls_xor_no_simd(unsigned char *r,
 #endif
 
 /* Always provide a static assert macro, so it can be used unconditionally.
- * It will expand to nothing on some systems.
- * Can be used outside functions (but don't add a trailing ';' in that case:
- * the semicolon is included here to avoid triggering -Wextra-semi when
- * MBEDTLS_STATIC_ASSERT() expands to nothing).
- * Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
+ * It does nothing on systems where we don't know how to define a static assert.
+ */
+/* Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
  * defines static_assert even with -std=c99, but then complains about it.
  */
 #if defined(static_assert) && !defined(__FreeBSD__)
-#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg);
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg)
 #else
-#define MBEDTLS_STATIC_ASSERT(expr, msg)
+/* Make sure `MBEDTLS_STATIC_ASSERT(expr, msg);` is valid both inside and
+ * outside a function. We choose a struct declaration, which can be repeated
+ * any number of times and does not need a matching definition. */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)                                \
+    struct ISO_C_does_not_allow_extra_semicolon_outside_of_a_function
 #endif
 
 #if defined(__has_builtin)
@@ -431,5 +433,21 @@ static inline void mbedtls_xor_no_simd(unsigned char *r,
 #if !defined(MBEDTLS_MAYBE_UNUSED)
 #    define MBEDTLS_MAYBE_UNUSED
 #endif
+
+/* GCC >= 15 has a warning 'unterminated-string-initialization' which complains if you initialize
+ * a string into an array without space for a terminating NULL character. In some places in the
+ * codebase this behaviour is intended, so we add the macro MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING
+ * to suppress the warning in these places.
+ */
+#if defined(__has_attribute)
+#if __has_attribute(nonstring)
+#define MBEDTLS_HAS_ATTRIBUTE_NONSTRING
+#endif /* __has_attribute(nonstring) */
+#endif /* __has_attribute */
+#if defined(MBEDTLS_HAS_ATTRIBUTE_NONSTRING)
+#define MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING __attribute__((nonstring))
+#else
+#define MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING
+#endif /* MBEDTLS_HAS_ATTRIBUTE_NONSTRING */
 
 #endif /* MBEDTLS_LIBRARY_COMMON_H */

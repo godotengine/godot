@@ -4,7 +4,7 @@
  *
  *   OpenType objects manager (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -42,6 +42,8 @@
 #include <freetype/internal/psaux.h>
 #include <freetype/internal/services/svcfftl.h>
 
+#define CFF_fixedToInt( x )                          \
+          ( (FT_Short)( ( (x) + 0x8000U ) >> 16 ) )
 
   /**************************************************************************
    *
@@ -124,19 +126,20 @@
 
     count = priv->num_blue_values = cpriv->num_blue_values;
     for ( n = 0; n < count; n++ )
-      priv->blue_values[n] = (FT_Short)cpriv->blue_values[n];
+      priv->blue_values[n] = CFF_fixedToInt( cpriv->blue_values[n] );
 
     count = priv->num_other_blues = cpriv->num_other_blues;
     for ( n = 0; n < count; n++ )
-      priv->other_blues[n] = (FT_Short)cpriv->other_blues[n];
+      priv->other_blues[n] = CFF_fixedToInt( cpriv->other_blues[n] );
 
     count = priv->num_family_blues = cpriv->num_family_blues;
     for ( n = 0; n < count; n++ )
-      priv->family_blues[n] = (FT_Short)cpriv->family_blues[n];
+      priv->family_blues[n] = CFF_fixedToInt( cpriv->family_blues[n] );
 
     count = priv->num_family_other_blues = cpriv->num_family_other_blues;
     for ( n = 0; n < count; n++ )
-      priv->family_other_blues[n] = (FT_Short)cpriv->family_other_blues[n];
+      priv->family_other_blues[n] =
+        CFF_fixedToInt( cpriv->family_other_blues[n] );
 
     priv->blue_scale = cpriv->blue_scale;
     priv->blue_shift = (FT_Int)cpriv->blue_shift;
@@ -421,32 +424,23 @@
   static void
   remove_subset_prefix( FT_String*  name )
   {
-    FT_Int32  idx             = 0;
-    FT_Int32  length          = (FT_Int32)ft_strlen( name ) + 1;
-    FT_Bool   continue_search = 1;
+    FT_UInt32  i = 0, idx = 0;
 
 
-    while ( continue_search )
+    /* six ASCII uppercase letters followed by a plus sign */
+    while ( 'A' <= name[i] && name[i++] <= 'Z' &&
+            'A' <= name[i] && name[i++] <= 'Z' &&
+            'A' <= name[i] && name[i++] <= 'Z' &&
+            'A' <= name[i] && name[i++] <= 'Z' &&
+            'A' <= name[i] && name[i++] <= 'Z' &&
+            'A' <= name[i] && name[i++] <= 'Z' &&
+                              name[i++] == '+' )
     {
-      if ( length >= 7 && name[6] == '+' )
-      {
-        for ( idx = 0; idx < 6; idx++ )
-        {
-          /* ASCII uppercase letters */
-          if ( !( 'A' <= name[idx] && name[idx] <= 'Z' ) )
-            continue_search = 0;
-        }
-
-        if ( continue_search )
-        {
-          for ( idx = 7; idx < length; idx++ )
-            name[idx - 7] = name[idx];
-          length -= 7;
-        }
-      }
-      else
-        continue_search = 0;
+      idx = i;
     }
+
+    if ( idx )
+      FT_MEM_MOVE( name, name + idx, ft_strlen( name + idx ) + 1 );
   }
 
 
@@ -456,42 +450,20 @@
   remove_style( FT_String*        family_name,
                 const FT_String*  style_name )
   {
-    FT_Int32  family_name_length, style_name_length;
+    FT_String*        f = family_name + ft_strlen( family_name );
+    const FT_String*  s =  style_name + ft_strlen(  style_name );
 
 
-    family_name_length = (FT_Int32)ft_strlen( family_name );
-    style_name_length  = (FT_Int32)ft_strlen( style_name );
+    /* compare strings moving backwards */
+    while ( s > style_name )
+      if ( f == family_name || *--s != *--f )
+        return;
 
-    if ( family_name_length > style_name_length )
-    {
-      FT_Int  idx;
-
-
-      for ( idx = 1; idx <= style_name_length; idx++ )
-      {
-        if ( family_name[family_name_length - idx] !=
-             style_name[style_name_length - idx] )
-          break;
-      }
-
-      if ( idx > style_name_length )
-      {
-        /* family_name ends with style_name; remove it */
-        idx = family_name_length - style_name_length - 1;
-
-        /* also remove special characters     */
-        /* between real family name and style */
-        while ( idx > 0                     &&
-                ( family_name[idx] == '-' ||
-                  family_name[idx] == ' ' ||
-                  family_name[idx] == '_' ||
-                  family_name[idx] == '+' ) )
-          idx--;
-
-        if ( idx > 0 )
-          family_name[idx + 1] = '\0';
-      }
-    }
+    /* terminate and remove special characters */
+    do
+      *f = '\0';
+    while ( f-- > family_name                                    &&
+            ( *f == '-' || *f == ' ' || *f == '_' || *f == '+' ) );
   }
 
 
@@ -722,8 +694,7 @@
         FT_UInt  instance_index = (FT_UInt)face_index >> 16;
 
 
-        if ( FT_HAS_MULTIPLE_MASTERS( cffface ) &&
-             instance_index > 0                 )
+        if ( FT_HAS_MULTIPLE_MASTERS( cffface ) )
         {
           error = FT_Set_Named_Instance( cffface, instance_index );
           if ( error )

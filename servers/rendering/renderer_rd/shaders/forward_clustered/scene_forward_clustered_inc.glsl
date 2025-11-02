@@ -1,34 +1,24 @@
 #define M_PI 3.14159265359
+#define M_TAU 6.28318530718
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
 #define MAX_VIEWS 2
 
-#ifndef MOLTENVK_USED
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
-
-#define USE_SUBGROUPS
-#endif
-#endif // MOLTENVK_USED
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
 #include "../scene_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
 #endif
 
-#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
 #define TANGENT_USED
 #endif
 
@@ -37,8 +27,122 @@ layout(push_constant, std430) uniform DrawCall {
 	uint uv_offset;
 	uint multimesh_motion_vectors_current_offset;
 	uint multimesh_motion_vectors_previous_offset;
+#ifdef UBERSHADER
+	uint sc_packed_0;
+	uint sc_packed_1;
+	uint sc_packed_2;
+	uint uc_packed_0;
+#endif
 }
 draw_call;
+
+/* Specialization Constants */
+
+#ifdef UBERSHADER
+
+#define POLYGON_CULL_DISABLED 0
+#define POLYGON_CULL_FRONT 1
+#define POLYGON_CULL_BACK 2
+
+// Pull the constants from the draw call's push constants.
+uint sc_packed_0() {
+	return draw_call.sc_packed_0;
+}
+
+uint sc_packed_1() {
+	return draw_call.sc_packed_1;
+}
+
+uint uc_cull_mode() {
+	return (draw_call.uc_packed_0 >> 0) & 3U;
+}
+
+#else
+
+// Pull the constants from the pipeline's specialization constants.
+layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
+layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
+
+uint sc_packed_0() {
+	return pso_sc_packed_0;
+}
+
+uint sc_packed_1() {
+	return pso_sc_packed_1;
+}
+
+#endif
+
+bool sc_use_forward_gi() {
+	return ((sc_packed_0() >> 0) & 1U) != 0;
+}
+
+bool sc_use_light_projector() {
+	return ((sc_packed_0() >> 1) & 1U) != 0;
+}
+
+bool sc_use_light_soft_shadows() {
+	return ((sc_packed_0() >> 2) & 1U) != 0;
+}
+
+bool sc_use_directional_soft_shadows() {
+	return ((sc_packed_0() >> 3) & 1U) != 0;
+}
+
+bool sc_decal_use_mipmaps() {
+	return ((sc_packed_0() >> 4) & 1U) != 0;
+}
+
+bool sc_projector_use_mipmaps() {
+	return ((sc_packed_0() >> 5) & 1U) != 0;
+}
+
+bool sc_use_depth_fog() {
+	return ((sc_packed_0() >> 6) & 1U) != 0;
+}
+
+bool sc_use_lightmap_bicubic_filter() {
+	return ((sc_packed_0() >> 7) & 1U) != 0;
+}
+
+uint sc_soft_shadow_samples() {
+	return (sc_packed_0() >> 8) & 63U;
+}
+
+uint sc_penumbra_shadow_samples() {
+	return (sc_packed_0() >> 14) & 63U;
+}
+
+uint sc_directional_soft_shadow_samples() {
+	return (sc_packed_0() >> 20) & 63U;
+}
+
+uint sc_directional_penumbra_shadow_samples() {
+	return (sc_packed_0() >> 26) & 63U;
+}
+
+bool sc_multimesh() {
+	return ((sc_packed_1() >> 0) & 1U) != 0;
+}
+
+bool sc_multimesh_format_2d() {
+	return ((sc_packed_1() >> 1) & 1U) != 0;
+}
+
+bool sc_multimesh_has_color() {
+	return ((sc_packed_1() >> 2) & 1U) != 0;
+}
+
+bool sc_multimesh_has_custom_data() {
+	return ((sc_packed_1() >> 3) & 1U) != 0;
+}
+
+float sc_luminance_multiplier() {
+	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
+	return 1.0;
+}
+
+#define REFLECTION_MULTIPLIER 1.0
 
 #define SDFGI_MAX_CASCADES 8
 
@@ -57,17 +161,15 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
 #define INSTANCE_FLAGS_PARTICLES (1 << 11)
-#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO (1 << 0)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
+#define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -92,10 +194,16 @@ directional_lights;
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
+#define LIGHTMAP_SHADOWMASK_MODE_NONE 0
+#define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1
+#define LIGHTMAP_SHADOWMASK_MODE_OVERLAY 2
+#define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
+
 struct Lightmap {
 	mat3 normal_xform;
-	vec3 pad;
+	vec2 light_texture_size;
 	float exposure_normalization;
+	uint flags;
 };
 
 layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
@@ -166,6 +274,8 @@ layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAP
 
 layout(set = 0, binding = 15) uniform texture2D best_fit_normal_texture;
 
+layout(set = 0, binding = 16) uniform texture2D dfg;
+
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
@@ -207,16 +317,20 @@ implementation_data_block;
 #define implementation_data implementation_data_block.data
 
 struct InstanceData {
-	mat4 transform;
-	mat4 prev_transform;
+	mat3x4 transform;
+	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
+	mat3x4 prev_transform;
 	vec4 lightmap_uv_scale;
-	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
-	vec4 uv_scale;
+#ifdef USE_DOUBLE_PRECISION
+	vec4 model_precision;
+	vec4 prev_model_precision;
+#endif
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {
@@ -240,7 +354,7 @@ layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
@@ -325,8 +439,12 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
@@ -338,6 +456,18 @@ vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 	}
 	roughness /= (127.0 / 255.0);
 	return vec4(normalize(p_normal_roughness.xyz * 2.0 - 1.0) * 0.5 + 0.5, roughness);
+}
+
+// https://google.github.io/filament/Filament.html#toc5.3.4.7
+// Note: The roughness value is inverted
+vec3 prefiltered_dfg(float lod, float NoV) {
+	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
+}
+
+// Compute multiscatter compensation
+// https://google.github.io/filament/Filament.html#listing_energycompensationimpl
+vec3 get_energy_compensation(vec3 f0, float env) {
+	return 1.0 + f0 * (1.0 / env - 1.0);
 }
 
 /* Set 2 Skeleton & Instancing (can change per item) */

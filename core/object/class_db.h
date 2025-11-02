@@ -28,23 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CLASS_DB_H
-#define CLASS_DB_H
+#pragma once
 
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
+#include "core/os/rw_lock.h"
 #include "core/string/print_string.h"
 
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 
 #include <type_traits>
 
-#define DEFVAL(m_defval) (m_defval)
+template <typename T, typename = void>
+struct is_class_enabled;
 
-#ifdef DEBUG_METHODS_ENABLED
+template <>
+struct is_class_enabled<Object> : std::true_type {};
+
+template <typename T>
+struct is_class_enabled<T, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static constexpr bool value = is_class_enabled<typename T::super_type>::value;
+};
+
+template <typename T>
+inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
+
+#define GD_IS_CLASS_ENABLED(m_class) is_class_enabled_v<m_class>
+
+#include "core/disabled_classes.gen.h"
+
+#define DEFVAL(m_defval) (m_defval)
+#define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
+
+#ifdef DEBUG_ENABLED
 
 struct MethodDefinition {
 	StringName name;
@@ -71,13 +91,15 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 #else
 
-// When DEBUG_METHODS_ENABLED is set this will let the engine know
+// When DEBUG_ENABLED is set this will let the engine know
 // the argument names for easier debugging.
 #define D_METHOD(m_c, ...) m_c
 
-#endif
+#endif // DEBUG_ENABLED
 
 class ClassDB {
+	friend class Object;
+
 public:
 	enum APIType {
 		API_CORE,
@@ -106,17 +128,18 @@ public:
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-		HashMap<StringName, int64_t> constant_map;
+		AHashMap<StringName, int64_t> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
 			bool is_bitfield = false;
 		};
 
 		HashMap<StringName, EnumInfo> enum_map;
-		HashMap<StringName, MethodInfo> signal_map;
+		AHashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
-#ifdef DEBUG_METHODS_ENABLED
+
+#ifdef DEBUG_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		HashSet<StringName> methods_in_properties;
@@ -124,8 +147,14 @@ public:
 		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
 		HashMap<StringName, List<StringName>> linked_properties;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+		List<StringName> dependency_list;
 #endif
-		HashMap<StringName, PropertySetGet> property_setget;
+
+		AHashMap<StringName, PropertySetGet> property_setget;
+		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;
 		StringName name;
@@ -134,18 +163,47 @@ public:
 		bool reloadable = false;
 		bool is_virtual = false;
 		bool is_runtime = false;
-		Object *(*creation_func)() = nullptr;
+		// The bool argument indicates the need to postinitialize.
+		Object *(*creation_func)(bool) = nullptr;
 
 		ClassInfo() {}
 		~ClassInfo() {}
 	};
 
 	template <typename T>
-	static Object *creator() {
-		return memnew(T);
+	static Object *creator(bool p_notify_postinitialize) {
+		Object *ret = new ("") T;
+		ret->_initialize();
+		if (p_notify_postinitialize) {
+			ret->_postinitialize();
+		}
+		return ret;
 	}
 
-	static RWLock lock;
+	// We need a recursive r/w lock because there are various code paths
+	// that may in turn invoke other entry points with require locking.
+	class Locker {
+	public:
+		enum State {
+			STATE_UNLOCKED,
+			STATE_READ,
+			STATE_WRITE,
+		};
+
+	private:
+		inline static RWLock lock;
+		inline thread_local static State thread_state = STATE_UNLOCKED;
+
+	public:
+		class Lock {
+			State state = STATE_UNLOCKED;
+
+		public:
+			explicit Lock(State p_state);
+			~Lock();
+		};
+	};
+
 	static HashMap<StringName, ClassInfo> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
 	static HashMap<StringName, StringName> compat_classes;
@@ -154,16 +212,16 @@ public:
 	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
 #else
 	static MethodBind *bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount);
-#endif
+#endif // DEBUG_ENABLED
 
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class(const StringName &p_class, const StringName &p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -175,6 +233,9 @@ public:
 	};
 	static HashMap<StringName, NativeStruct> native_structs;
 
+	static Array default_array_arg;
+	static bool is_default_array_arg(const Array &p_array);
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
@@ -183,18 +244,14 @@ private:
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
 	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
 
-	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false);
+	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true);
+
+	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
 public:
-	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
-	template <typename T>
-	static void _add_class() {
-		_add_class2(T::get_class_static(), T::get_parent_class_static());
-	}
-
 	template <typename T>
 	static void register_class(bool p_virtual = false) {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -209,7 +266,7 @@ public:
 
 	template <typename T>
 	static void register_abstract_class() {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -222,7 +279,7 @@ public:
 
 	template <typename T>
 	static void register_internal_class() {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -237,7 +294,7 @@ public:
 
 	template <typename T>
 	static void register_runtime_class() {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -256,13 +313,13 @@ public:
 	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
 	template <typename T>
-	static Object *_create_ptr_func() {
-		return T::create();
+	static Object *_create_ptr_func(bool p_notify_postinitialize) {
+		return T::create(p_notify_postinitialize);
 	}
 
 	template <typename T>
 	static void register_custom_instance_class() {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -274,22 +331,26 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_class_list(List<StringName> *p_classes);
+	static void get_class_list(LocalVector<StringName> &p_classes);
 #ifdef TOOLS_ENABLED
-	static void get_extensions_class_list(List<StringName> *p_classes);
+	static void get_extensions_class_list(LocalVector<StringName> &p_classes);
+	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
-	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
+	static void get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
+	static bool get_inheritance_chain_nocheck(const StringName &p_class, Vector<StringName> &r_result);
 	static StringName get_parent_class(const StringName &p_class);
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
+	static bool is_abstract(const StringName &p_class);
 	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static Object *instantiate_no_placeholders(const StringName &p_class);
+	static Object *instantiate_without_postinitialization(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
@@ -374,7 +435,7 @@ public:
 
 	template <typename M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
 		ERR_FAIL_NULL_V(bind, nullptr);
@@ -387,7 +448,7 @@ public:
 
 	template <typename M>
 	static MethodBind *bind_compatibility_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
-		GLOBAL_LOCK_FUNCTION;
+		Locker::Lock lock(Locker::STATE_WRITE);
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
 		ERR_FAIL_NULL_V(bind, nullptr);
@@ -436,8 +497,10 @@ public:
 	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
+	static void add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
+	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
@@ -460,6 +523,12 @@ public:
 
 	static bool is_class_exposed(const StringName &p_class);
 	static bool is_class_reloadable(const StringName &p_class);
+	static bool is_class_runtime(const StringName &p_class);
+
+#ifdef TOOLS_ENABLED
+	static void add_class_dependency(const StringName &p_class, const StringName &p_dependency);
+	static void get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies);
+#endif
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);
@@ -478,72 +547,49 @@ public:
 	static void get_native_struct_list(List<StringName> *r_names);
 	static String get_native_struct_code(const StringName &p_name);
 	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
+
+	static Object *_instantiate_allow_unexposed(const StringName &p_class); // Used to create unexposed classes from GDExtension, typically for unexposed EditorPlugin.
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant), #m_constant, m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant), #m_constant, m_constant, true);
 
 #define BIND_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
 
-#ifdef DEBUG_METHODS_ENABLED
-
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
-}
-
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
-	arr.push_back(p_err);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
-	arr.push_back(p_err);
-	errarray_add_str(arr, p_args...);
-}
-
-template <typename... P>
-_FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
-	Vector<Error> arr;
-	errarray_add_str(arr, p_args...);
-	return arr;
-}
+#ifdef DEBUG_ENABLED
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
-	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, Vector<Error>{ __VA_ARGS__ });
 
 #else
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
-#endif
+#endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {         \
-		::ClassDB::register_class<m_class>(); \
+#define GDREGISTER_CLASS(m_class)                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
+		::ClassDB::register_class<m_class>();     \
 	}
 #define GDREGISTER_VIRTUAL_CLASS(m_class)         \
-	if (m_class::_class_is_enabled) {             \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                  \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-
 #define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if (m_class::_class_is_enabled) {                 \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
-
-#include "core/disabled_classes.gen.h"
-
-#endif // CLASS_DB_H

@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_OGG_VORBIS_H
-#define AUDIO_STREAM_OGG_VORBIS_H
+#pragma once
 
 #include "core/variant/variant.h"
-#include "modules/ogg/ogg_packet_sequence.h"
 #include "servers/audio/audio_stream.h"
+
+#include "modules/ogg/ogg_packet_sequence.h"
 
 #include <vorbis/codec.h>
 
@@ -75,6 +75,9 @@ class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	Ref<OggPacketSequencePlayback> vorbis_data_playback;
 	Ref<AudioStreamOggVorbis> vorbis_stream;
 
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
+
 	int _mix_frames(AudioFrame *p_buffer, int p_frames);
 	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
 
@@ -99,6 +102,11 @@ public:
 
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
+
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
 	AudioStreamPlaybackOggVorbis() {}
 	~AudioStreamPlaybackOggVorbis();
@@ -125,13 +133,15 @@ class AudioStreamOggVorbis : public AudioStream {
 	double bpm = 0;
 	int beat_count = 0;
 	int bar_beats = 4;
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
 
 public:
 	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
-	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
+	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 
@@ -147,6 +157,9 @@ public:
 	void set_bar_beats(int p_bar_beats);
 	virtual int get_bar_beats() const override;
 
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
+
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
@@ -159,8 +172,11 @@ public:
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
+	virtual bool can_be_sampled() const override {
+		return true;
+	}
+	virtual Ref<AudioSample> generate_sample() const override;
+
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();
 };
-
-#endif // AUDIO_STREAM_OGG_VORBIS_H

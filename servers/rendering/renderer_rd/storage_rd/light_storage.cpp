@@ -55,12 +55,18 @@ LightStorage::LightStorage() {
 
 		if (textures_per_stage <= 256) {
 			lightmap_textures.resize(32);
+			shadowmask_textures.resize(32);
 		} else {
 			lightmap_textures.resize(1024);
+			shadowmask_textures.resize(1024);
 		}
 
-		for (int i = 0; i < lightmap_textures.size(); i++) {
-			lightmap_textures.write[i] = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+		for (RID &lightmap_texture : lightmap_textures) {
+			lightmap_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+		}
+
+		for (RID &shadowmask_texture : shadowmask_textures) {
+			shadowmask_texture = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		}
 	}
 
@@ -72,7 +78,7 @@ LightStorage::~LightStorage() {
 	free_light_data();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
-		RD::get_singleton()->free(E.value.cubemap);
+		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
 
 	singleton = nullptr;
@@ -262,7 +268,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
@@ -283,6 +289,23 @@ void LightStorage::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled)
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+void LightStorage::light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->shadow_caster_mask = p_caster_mask;
+
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+uint32_t LightStorage::light_get_shadow_caster_mask(RID p_light) const {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, 0);
+
+	return light->shadow_caster_mask;
 }
 
 void LightStorage::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
@@ -313,6 +336,12 @@ void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMo
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+
+	if (p_mode == RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID) {
+		shadow_dual_paraboloid_used = true;
+	} else if (p_mode == RS::LIGHT_OMNI_SHADOW_CUBE) {
+		shadow_cubemaps_used = true;
+	}
 }
 
 RS::LightOmniShadowMode LightStorage::light_omni_get_shadow_mode(RID p_light) {
@@ -403,7 +432,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -510,17 +546,17 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 
 void LightStorage::free_light_data() {
 	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
+		RD::get_singleton()->free_rid(directional_light_buffer);
 		directional_light_buffer = RID();
 	}
 
 	if (omni_light_buffer.is_valid()) {
-		RD::get_singleton()->free(omni_light_buffer);
+		RD::get_singleton()->free_rid(omni_light_buffer);
 		omni_light_buffer = RID();
 	}
 
 	if (spot_light_buffer.is_valid()) {
-		RD::get_singleton()->free(spot_light_buffer);
+		RD::get_singleton()->free_rid(spot_light_buffer);
 		spot_light_buffer = RID();
 	}
 
@@ -614,7 +650,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
 					light_data.energy *= light->param[RS::LIGHT_PARAM_INTENSITY];
 				} else {
-					light_data.energy *= Math_PI;
+					light_data.energy *= Math::PI;
 				}
 
 				if (p_render_data->camera_attributes.is_valid()) {
@@ -653,12 +689,13 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					angular_diameter = 0.0;
 				}
 
+				light_data.bake_mode = light->bake_mode;
+
 				if (light_data.shadow_opacity > 0.001) {
 					RS::LightDirectionalShadowMode smode = light->directional_shadow_mode;
 
 					light_data.soft_shadow_scale = light->param[RS::LIGHT_PARAM_SHADOW_BLUR];
 					light_data.softshadow_angle = angular_diameter;
-					light_data.bake_mode = light->bake_mode;
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
@@ -685,7 +722,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
-						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] * bias_scale;
+						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_z_range[j] = light_instance->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = light_instance->shadow_transform[j].range_begin;
 						RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrices[j]);
@@ -834,14 +871,14 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 			// Convert from Luminous Power to Luminous Intensity
 			if (type == RS::LIGHT_OMNI) {
-				energy *= 1.0 / (Math_PI * 4.0);
+				energy *= 1.0 / (Math::PI * 4.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.
-				energy *= 1.0 / Math_PI;
+				energy *= 1.0 / Math::PI;
 			}
 		} else {
-			energy *= Math_PI;
+			energy *= Math::PI;
 		}
 
 		if (p_render_data->camera_attributes.is_valid()) {
@@ -1026,7 +1063,7 @@ void LightStorage::reflection_probe_free(RID p_rid) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_rid);
 	reflection_probe->dependency.deleted_notify(p_rid);
 	reflection_probe_owner.free(p_rid);
-};
+}
 
 void LightStorage::reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
@@ -1041,6 +1078,13 @@ void LightStorage::reflection_probe_set_intensity(RID p_probe, float p_intensity
 	ERR_FAIL_NULL(reflection_probe);
 
 	reflection_probe->intensity = p_intensity;
+}
+
+void LightStorage::reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->blend_distance = p_blend_distance;
 }
 
 void LightStorage::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
@@ -1132,11 +1176,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-	ERR_FAIL_COND(p_resolution < 32);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
@@ -1222,13 +1262,6 @@ float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return reflection_probe->mesh_lod_threshold;
 }
 
-int LightStorage::reflection_probe_get_resolution(RID p_probe) const {
-	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL_V(reflection_probe, 0);
-
-	return reflection_probe->resolution;
-}
-
 float LightStorage::reflection_probe_get_baked_exposure(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL_V(reflection_probe, 1.0);
@@ -1241,6 +1274,13 @@ float LightStorage::reflection_probe_get_intensity(RID p_probe) const {
 	ERR_FAIL_NULL_V(reflection_probe, 0);
 
 	return reflection_probe->intensity;
+}
+
+float LightStorage::reflection_probe_get_blend_distance(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0);
+
+	return reflection_probe->blend_distance;
 }
 
 bool LightStorage::reflection_probe_is_interior(RID p_probe) const {
@@ -1321,9 +1361,9 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 
 	if (ra->reflection.is_valid()) {
 		//clear and invalidate everything
-		RD::get_singleton()->free(ra->reflection);
+		RD::get_singleton()->free_rid(ra->reflection);
 		ra->reflection = RID();
-		RD::get_singleton()->free(ra->depth_buffer);
+		RD::get_singleton()->free_rid(ra->depth_buffer);
 		ra->depth_buffer = RID();
 		for (int i = 0; i < ra->reflections.size(); i++) {
 			ra->reflections.write[i].data.clear_reflection_data();
@@ -1442,6 +1482,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 2, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1449,16 +1492,19 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
+	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS;
+	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
+	const bool update_mode_changed = atlas->update_always != update_always && atlas->reflection.is_valid();
+	const bool real_time_mipmaps_different = update_always && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8;
+	if (update_mode_changed || real_time_mipmaps_different) {
 		// Invalidate reflection atlas, need to regenerate
-		RD::get_singleton()->free(atlas->reflection);
+		RD::get_singleton()->free_rid(atlas->reflection);
 		atlas->reflection = RID();
 
 		for (int i = 0; i < atlas->reflections.size(); i++) {
@@ -1473,31 +1519,30 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = update_always ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
-			tf.format = RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+			tf.format = get_reflection_probe_color_format();
 			tf.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 			tf.mipmaps = mipmaps;
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
-
+			tf.usage_bits = get_reflection_probe_color_usage_bits();
 			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+			tf.format = get_reflection_probe_depth_format();
 			tf.width = atlas->size;
 			tf.height = atlas->size;
-			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			tf.usage_bits = get_reflection_probe_depth_usage_bits();
 			atlas->depth_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -1508,6 +1553,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fb);
 
 		atlas->render_buffers->configure_for_reflections(Size2i(atlas->size, atlas->size));
+		atlas->update_always = update_always;
 	}
 
 	if (rpi->atlas_index == -1) {
@@ -1620,6 +1666,8 @@ RID LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int 
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, RID());
+	ERR_FAIL_COND_V_MSG(rpi->atlas_index < 0, RID(), "Reflection probe atlas index invalid. Maximum amount of reflection probes in use (" + itos(atlas->count) + ") may have been exceeded, reflections will not display properly. Consider increasing Rendering > Reflections > Reflection Atlas > Reflection Count in the Project Settings.");
+
 	return atlas->reflections[rpi->atlas_index].fbs[p_index];
 }
 
@@ -1653,7 +1701,7 @@ ClusterBuilderRD *LightStorage::reflection_probe_instance_get_cluster_builder(RI
 
 void LightStorage::free_reflection_data() {
 	if (reflection_buffer.is_valid()) {
-		RD::get_singleton()->free(reflection_buffer);
+		RD::get_singleton()->free_rid(reflection_buffer);
 		reflection_buffer = RID();
 	}
 
@@ -1689,11 +1737,12 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		if (!rpi) {
 			continue;
 		}
-
-		Transform3D transform = rpi->transform;
+		ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
+		Vector3 extents = probe->size / 2;
+		float probe_size = extents.length();
 
 		reflection_sort[reflection_count].probe_instance = rpi;
-		reflection_sort[reflection_count].depth = -p_camera_inverse_transform.xform(transform.origin).z;
+		reflection_sort[reflection_count].size = -probe_size;
 		reflection_count++;
 	}
 
@@ -1733,6 +1782,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		reflection_ubo.mask = probe->reflection_mask;
 
 		reflection_ubo.intensity = probe->intensity;
+		reflection_ubo.blend_distance = probe->blend_distance;
 		reflection_ubo.ambient_mode = probe->ambient_mode;
 
 		reflection_ubo.exterior = !probe->interior;
@@ -1761,6 +1811,22 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 	if (reflection_count) {
 		RD::get_singleton()->buffer_update(reflection_buffer, 0, reflection_count * sizeof(ReflectionData), reflections);
 	}
+}
+
+RD::DataFormat LightStorage::get_reflection_probe_color_format() {
+	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format();
+}
+
+uint32_t LightStorage::get_reflection_probe_color_usage_bits() {
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage() ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+}
+
+RD::DataFormat LightStorage::get_reflection_probe_depth_format() {
+	return RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+}
+
+uint32_t LightStorage::get_reflection_probe_depth_usage_bits() {
+	return RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 }
 
 /* LIGHTMAP API */
@@ -1813,6 +1879,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	}
 
 	t->lightmap_users.insert(p_lightmap);
+	lm->light_texture_size = Vector2i(t->width, t->height);
 
 	if (using_lightmap_array) {
 		if (lm->array_index < 0) {
@@ -1824,7 +1891,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 				}
 			}
 		}
-		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
+		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will not display properly.");
 
 		lightmap_textures.write[lm->array_index] = t->rd_texture;
 	}
@@ -1936,7 +2003,7 @@ void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point,
 		return; //nothing could be done
 	}
 
-	node = ABS(node) - 1;
+	node = Math::abs(node) - 1;
 
 	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
 	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
@@ -1961,6 +2028,64 @@ AABB LightStorage::lightmap_get_aabb(RID p_lightmap) const {
 	const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL_V(lm, AABB());
 	return lm->bounds;
+}
+
+void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	// Erase lightmap users from shadow texture.
+	if (lm->shadow_texture.is_valid()) {
+		TextureStorage::Texture *t = texture_storage->get_texture(lm->shadow_texture);
+		if (t) {
+			t->lightmap_users.erase(p_lightmap);
+		}
+	}
+
+	TextureStorage::Texture *t = texture_storage->get_texture(p_shadow);
+	lm->shadow_texture = p_shadow;
+
+	RID default_2d_array = texture_storage->texture_rd_get_default(TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+	if (!t) {
+		if (lm->array_index >= 0) {
+			shadowmask_textures.write[lm->array_index] = default_2d_array;
+			lm->array_index = -1;
+		}
+
+		return;
+	}
+
+	t->lightmap_users.insert(p_lightmap);
+
+	if (lm->array_index < 0) {
+		// Not in array, try to put in array.
+		for (int i = 0; i < shadowmask_textures.size(); i++) {
+			if (shadowmask_textures[i] == default_2d_array) {
+				lm->array_index = i;
+				break;
+			}
+		}
+	}
+
+	ERR_FAIL_COND_MSG(lm->array_index < 0, vformat("Maximum amount of shadowmasks in use (%d) has been exceeded, shadowmask will not display properly.", shadowmask_textures.size()));
+
+	shadowmask_textures.write[lm->array_index] = t->rd_texture;
+}
+
+RS::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, RS::SHADOWMASK_MODE_NONE);
+
+	return lm->shadowmask_mode;
+}
+
+void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->shadowmask_mode = p_mode;
 }
 
 /* LIGHTMAP INSTANCE */
@@ -1995,10 +2120,10 @@ void LightStorage::shadow_atlas_free(RID p_atlas) {
 void LightStorage::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
 	if (shadow_atlas->size > 0 && shadow_atlas->depth.is_null()) {
 		RD::TextureFormat tf;
-		tf.format = shadow_atlas->use_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
+		tf.format = get_shadow_atlas_depth_format(shadow_atlas->use_16_bits);
 		tf.width = shadow_atlas->size;
 		tf.height = shadow_atlas->size;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		tf.usage_bits = get_shadow_atlas_depth_usage_bits();
 
 		shadow_atlas->depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		Vector<RID> fb_tex;
@@ -2011,7 +2136,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	p_size = next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -2019,13 +2144,13 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
+		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
 		shadow_atlas->quadrants[i].shadows.clear();
-		shadow_atlas->quadrants[i].shadows.resize(int64_t(1) << int64_t(shadow_atlas->quadrants[i].subdivision));
+		shadow_atlas->quadrants[i].shadows.resize(int64_t(shadow_atlas->quadrants[i].subdivision * shadow_atlas->quadrants[i].subdivision));
 	}
 
 	//erase shadow atlas reference from lights
@@ -2048,7 +2173,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2(p_subdivision);
+	uint32_t subdiv = next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
@@ -2243,7 +2368,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(quad_size * p_coverage));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
@@ -2289,7 +2414,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		old_quadrant = (old_key >> QUADRANT_SHIFT) & 0x3;
 		old_shadow = old_key & SHADOW_INDEX_MASK;
 
-		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
+		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (tick - shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick > shadow_atlas_realloc_tolerance_msec);
 		should_redraw = shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].version != p_light_version;
 
 		if (!should_realloc) {
@@ -2383,15 +2508,23 @@ void LightStorage::shadow_atlas_update(RID p_atlas) {
 	_update_shadow_atlas(shadow_atlas);
 }
 
+RD::DataFormat LightStorage::get_shadow_atlas_depth_format(bool p_16_bits) {
+	return p_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
+}
+
+uint32_t LightStorage::get_shadow_atlas_depth_usage_bits() {
+	return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+}
+
 /* DIRECTIONAL SHADOW */
 
 void LightStorage::update_directional_shadow_atlas() {
 	if (directional_shadow.depth.is_null() && directional_shadow.size > 0) {
 		RD::TextureFormat tf;
-		tf.format = directional_shadow.use_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
+		tf.format = get_shadow_atlas_depth_format(directional_shadow.use_16_bits);
 		tf.width = directional_shadow.size;
 		tf.height = directional_shadow.size;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		tf.usage_bits = get_shadow_atlas_depth_usage_bits();
 
 		directional_shadow.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		Vector<RID> fb_tex;
@@ -2410,7 +2543,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.use_16_bits = p_16_bits;
 
 	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
+		RD::get_singleton()->free_rid(directional_shadow.depth);
 		directional_shadow.depth = RID();
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}
@@ -2447,12 +2580,12 @@ Rect2i LightStorage::get_directional_shadow_rect() {
 	return _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, directional_shadow.current_light);
 }
 
-int LightStorage::get_directional_light_shadow_size(RID p_light_intance) {
+int LightStorage::get_directional_light_shadow_size(RID p_light_instance) {
 	ERR_FAIL_COND_V(directional_shadow.light_count == 0, 0);
 
 	Rect2i r = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, 0);
 
-	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_intance);
+	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_NULL_V(light_instance, 0);
 
 	switch (light_directional_get_shadow_mode(light_instance->light)) {
@@ -2476,12 +2609,12 @@ LightStorage::ShadowCubemap *LightStorage::_get_shadow_cubemap(int p_size) {
 		ShadowCubemap sc;
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+			tf.format = get_cubemap_depth_format();
 			tf.width = p_size;
 			tf.height = p_size;
 			tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 			tf.array_layers = 6;
-			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			tf.usage_bits = get_cubemap_depth_usage_bits();
 			sc.cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 
@@ -2508,4 +2641,20 @@ RID LightStorage::get_cubemap_fb(int p_size, int p_pass) {
 	ShadowCubemap *cubemap = _get_shadow_cubemap(p_size);
 
 	return cubemap->side_fb[p_pass];
+}
+
+RD::DataFormat LightStorage::get_cubemap_depth_format() {
+	return RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+}
+
+uint32_t LightStorage::get_cubemap_depth_usage_bits() {
+	return RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+}
+
+bool LightStorage::get_shadow_cubemaps_used() const {
+	return shadow_cubemaps_used;
+}
+
+bool LightStorage::get_shadow_dual_paraboloid_used() const {
+	return shadow_dual_paraboloid_used;
 }

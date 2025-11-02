@@ -217,11 +217,17 @@ bool _try_isolating_subgraphs (const hb_vector_t<graph::overflow_record_t>& over
   unsigned maximum_to_move = hb_max ((sorted_graph.num_roots_for_space (space) / 2u), 1u);
   if (roots_to_isolate.get_population () > maximum_to_move) {
     // Only move at most half of the roots in a space at a time.
-    unsigned extra = roots_to_isolate.get_population () - maximum_to_move;
-    while (extra--) {
-      uint32_t root = HB_SET_VALUE_INVALID;
-      roots_to_isolate.previous (&root);
-      roots_to_isolate.del (root);
+    //
+    // Note: this was ported from non-stable ids to stable ids. So to retain the same behaviour
+    // with regards to which roots are removed from the set we need to remove them in the topological
+    // order, not the object id order.
+    int extra = roots_to_isolate.get_population () - maximum_to_move;
+    for (unsigned id : sorted_graph.ordering_) {
+      if (!extra) break;
+      if (roots_to_isolate.has(id)) {
+        roots_to_isolate.del(id);
+        extra--;
+      }
     }
   }
 
@@ -266,7 +272,7 @@ bool _resolve_shared_overflow(const hb_vector_t<graph::overflow_record_t>& overf
     result = sorted_graph.duplicate(&parents, r.child);
   }
 
-  if (result == (unsigned) -1) return result;
+  if (result == (unsigned) -1) return false;
 
   if (parents.get_population() > 1) {
     // If the duplicated node has more than one parent pre-emptively raise it's priority to the maximum.
@@ -283,7 +289,7 @@ bool _resolve_shared_overflow(const hb_vector_t<graph::overflow_record_t>& overf
     sorted_graph.vertices_[result].give_max_priority();
   }
 
-  return result;
+  return true;
 }
 
 static inline
@@ -302,8 +308,11 @@ bool _process_overflows (const hb_vector_t<graph::overflow_record_t>& overflows,
     {
       // The child object is shared, we may be able to eliminate the overflow
       // by duplicating it.
-      if (!_resolve_shared_overflow(overflows, i, sorted_graph)) continue;
-      return true;
+      if (_resolve_shared_overflow(overflows, i, sorted_graph))
+        return true;
+
+      // Sometimes we can't duplicate a node which looks shared because it's not actually shared
+      // (eg. all links from the same parent) in this case continue on to other resolution options.
     }
 
     if (child.is_leaf () && !priority_bumped_parents.has (r.parent))
@@ -337,9 +346,10 @@ bool _process_overflows (const hb_vector_t<graph::overflow_record_t>& overflows,
 inline bool
 hb_resolve_graph_overflows (hb_tag_t table_tag,
                             unsigned max_rounds ,
-                            bool recalculate_extensions,
+                            bool always_recalculate_extensions,
                             graph_t& sorted_graph /* IN/OUT */)
 {
+  DEBUG_MSG (SUBSET_REPACK, nullptr, "Repacking %c%c%c%c.", HB_UNTAG(table_tag));
   sorted_graph.sort_shortest_distance ();
   if (sorted_graph.in_error ())
   {
@@ -351,12 +361,12 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
   if (!will_overflow)
     return true;
 
+  bool is_gsub_or_gpos = (table_tag == HB_OT_TAG_GPOS ||  table_tag == HB_OT_TAG_GSUB);
   graph::gsubgpos_graph_context_t ext_context (table_tag, sorted_graph);
-  if ((table_tag == HB_OT_TAG_GPOS
-       ||  table_tag == HB_OT_TAG_GSUB)
-      && will_overflow)
+  if (is_gsub_or_gpos && will_overflow)
   {
-    if (recalculate_extensions)
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Applying GSUB/GPOS repacking specializations.");
+    if (always_recalculate_extensions)
     {
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Splitting subtables if needed.");
       if (!_presplit_subtables_if_needed (ext_context)) {
@@ -412,6 +422,13 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
 
   if (graph::will_overflow (sorted_graph))
   {
+    if (is_gsub_or_gpos && !always_recalculate_extensions) {
+      // If this a GSUB/GPOS table and we didn't try to extension promotion and table splitting then
+      // as a last ditch effort, re-run the repacker with it enabled.
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Failed to find a resolution. Re-running with extension promotion and table splitting enabled.");
+      return hb_resolve_graph_overflows (table_tag, max_rounds, true, sorted_graph);
+    }
+
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Offset overflow resolution failed.");
     return false;
   }

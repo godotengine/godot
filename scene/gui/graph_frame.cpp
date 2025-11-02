@@ -30,7 +30,6 @@
 
 #include "graph_frame.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/style_box_flat.h"
@@ -160,14 +159,10 @@ void GraphFrame::_resort() {
 	Point2 offset = Point2(sb_panel->get_margin(SIDE_LEFT), sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible_in_tree()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
-		if (child->is_set_as_top_level()) {
-			continue;
-		}
-
 		fit_child_in_rect(child, Rect2(offset, size));
 	}
 }
@@ -213,6 +208,9 @@ void GraphFrame::_bind_methods() {
 }
 
 void GraphFrame::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "resizable") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -264,6 +262,10 @@ int GraphFrame::get_autoshrink_margin() const {
 
 HBoxContainer *GraphFrame::get_titlebar_hbox() {
 	return titlebar_hbox;
+}
+
+Size2 GraphFrame::get_titlebar_size() const {
+	return titlebar_hbox->get_size() + theme_cache.titlebar->get_minimum_size();
 }
 
 void GraphFrame::set_drag_margin(int p_margin) {
@@ -325,8 +327,8 @@ Size2 GraphFrame::get_minimum_size() const {
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible() || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
 

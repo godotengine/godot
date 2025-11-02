@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_METHOD_H
-#define RENDERING_METHOD_H
+#pragma once
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
-#include "servers/rendering_server.h"
 
-#ifdef _3D_DISABLED
+#ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
 // it and RenderingMethod::render_camera have a parameter for XRInterface.
 #define XRInterface RefCounted
-#else // 3D enabled
+#else
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 class RenderingMethod {
 public:
@@ -89,6 +88,8 @@ public:
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
+	virtual void instance_teleport(RID p_instance) = 0;
+
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb) = 0;
 
 	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton) = 0;
@@ -115,6 +116,11 @@ public:
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
+
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
 
 	/* SKY API */
 
@@ -161,6 +167,7 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
 	virtual RID environment_get_sky(RID p_env) const = 0;
@@ -253,6 +260,7 @@ public:
 	virtual float environment_get_ssr_fade_out(RID p_env) const = 0;
 	virtual float environment_get_ssr_depth_tolerance(RID p_env) const = 0;
 
+	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	// SSAO
@@ -347,11 +355,21 @@ public:
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+	virtual void material_set_use_debanding(bool p_enable) = 0;
 
 	virtual bool free(RID p_rid) = 0;
+
+	/* Physics interpolation */
+
+	virtual void update_interpolation_tick(bool p_process = true) = 0;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
+
+	/* Event queueing */
+
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	RenderingMethod();
 	virtual ~RenderingMethod();
 };
-
-#endif // RENDERING_METHOD_H

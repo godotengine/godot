@@ -30,9 +30,9 @@
 
 #include "button.h"
 
-#include "core/string/translation.h"
+#include "scene/gui/dialogs.h"
+
 #include "scene/theme/theme_db.h"
-#include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
 	Ref<Texture2D> _icon = icon;
@@ -48,6 +48,54 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 }
 
 void Button::_queue_update_size_cache() {
+}
+
+String Button::_get_translated_text(const String &p_text) const {
+	return atr(p_text);
+}
+
+void Button::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.max_style_size = Vector2();
+	theme_cache.style_margin_left = 0;
+	theme_cache.style_margin_right = 0;
+	theme_cache.style_margin_top = 0;
+	theme_cache.style_margin_bottom = 0;
+
+	const bool rtl = is_layout_rtl();
+	if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
+		_update_style_margins(theme_cache.normal_mirrored);
+	} else {
+		_update_style_margins(theme_cache.normal);
+	}
+	if (has_theme_stylebox("hover_pressed")) {
+		if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
+			_update_style_margins(theme_cache.hover_pressed_mirrored);
+		} else {
+			_update_style_margins(theme_cache.hover_pressed);
+		}
+	}
+	if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
+		_update_style_margins(theme_cache.pressed_mirrored);
+	} else {
+		_update_style_margins(theme_cache.pressed);
+	}
+	if (rtl && has_theme_stylebox(SNAME("hover_mirrored"))) {
+		_update_style_margins(theme_cache.hover_mirrored);
+	} else {
+		_update_style_margins(theme_cache.hover);
+	}
+	if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
+		_update_style_margins(theme_cache.disabled_mirrored);
+	} else {
+		_update_style_margins(theme_cache.disabled);
+	}
+	theme_cache.max_style_size = theme_cache.max_style_size.max(Vector2(theme_cache.style_margin_left + theme_cache.style_margin_right, theme_cache.style_margin_top + theme_cache.style_margin_bottom));
+}
+
+Size2 Button::_get_largest_stylebox_size() const {
+	return theme_cache.max_style_size;
 }
 
 Ref<StyleBox> Button::_get_current_stylebox() const {
@@ -105,15 +153,34 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 
 void Button::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			const String &ac_name = get_accessibility_name();
+			if (!xl_text.is_empty() && ac_name.is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
+			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
+			}
+			AcceptDialog *dlg = Object::cast_to<AcceptDialog>(get_parent());
+			if (dlg && dlg->get_ok_button() == this) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_DEFAULT_BUTTON);
+			}
+		} break;
+
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			xl_text = atr(text);
+			xl_text = _get_translated_text(text);
 			_shape();
 
 			update_minimum_size();
+			queue_accessibility_update();
 			queue_redraw();
 		} break;
 
@@ -134,19 +201,24 @@ void Button::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			// Reshape and update size min. if text is invalidated by an external source (e.g., oversampling).
+			if (text_buf.is_valid() && !TS->shaped_text_is_ready(text_buf->get_rid())) {
+				_shape();
+
+				update_minimum_size();
+			}
+
 			const RID ci = get_canvas_item();
 			const Size2 size = get_size();
 
-			const Ref<StyleBox> style = _get_current_stylebox();
-			{ // Draws the stylebox in the current state.
-				if (!flat) {
-					style->draw(ci, Rect2(Point2(), size));
-				}
+			Ref<StyleBox> style = _get_current_stylebox();
+			// Draws the stylebox in the current state.
+			if (!flat) {
+				style->draw(ci, Rect2(Point2(), size));
+			}
 
-				if (has_focus()) {
-					Ref<StyleBox> style2 = theme_cache.focus;
-					style2->draw(ci, Rect2(Point2(), size));
-				}
+			if (has_focus(true)) {
+				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
 			Ref<Texture2D> _icon = icon;
@@ -158,10 +230,10 @@ void Button::_notification(int p_what) {
 				break;
 			}
 
-			const float style_margin_left = style->get_margin(SIDE_LEFT);
-			const float style_margin_right = style->get_margin(SIDE_RIGHT);
-			const float style_margin_top = style->get_margin(SIDE_TOP);
-			const float style_margin_bottom = style->get_margin(SIDE_BOTTOM);
+			const float style_margin_left = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_left : style->get_margin(SIDE_LEFT);
+			const float style_margin_right = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_right : style->get_margin(SIDE_RIGHT);
+			const float style_margin_top = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_top : style->get_margin(SIDE_TOP);
+			const float style_margin_bottom = (theme_cache.align_to_largest_stylebox) ? theme_cache.style_margin_bottom : style->get_margin(SIDE_BOTTOM);
 
 			Size2 drawable_size_remained = size;
 
@@ -174,7 +246,7 @@ void Button::_notification(int p_what) {
 
 			float left_internal_margin_with_h_separation = _internal_margin[SIDE_LEFT];
 			float right_internal_margin_with_h_separation = _internal_margin[SIDE_RIGHT];
-			{ // The width reserved for internal element in derived classes (and h_separation if need).
+			{ // The width reserved for internal element in derived classes (and h_separation if needed).
 
 				if (_internal_margin[SIDE_LEFT] > 0.0f) {
 					left_internal_margin_with_h_separation += h_separation;
@@ -209,7 +281,7 @@ void Button::_notification(int p_what) {
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 					// Focus colors only take precedence over normal state.
-					if (has_focus()) {
+					if (has_focus(true)) {
 						font_color = theme_cache.font_focus_color;
 						if (has_theme_color(SNAME("icon_focus_color"))) {
 							icon_modulate_color = theme_cache.icon_focus_color;
@@ -222,19 +294,12 @@ void Button::_notification(int p_what) {
 					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
-					// Edge case for CheckButton and CheckBox.
-					if (has_theme_stylebox("hover_pressed")) {
-						if (has_theme_color(SNAME("font_hover_pressed_color"))) {
-							font_color = theme_cache.font_hover_pressed_color;
-						}
-						if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
-							icon_modulate_color = theme_cache.icon_hover_pressed_color;
-						}
-
-						break;
+					font_color = theme_cache.font_hover_pressed_color;
+					if (has_theme_color(SNAME("icon_hover_pressed_color"))) {
+						icon_modulate_color = theme_cache.icon_hover_pressed_color;
 					}
-				}
-					[[fallthrough]];
+
+				} break;
 				case DRAW_PRESSED: {
 					if (has_theme_color(SNAME("font_pressed_color"))) {
 						font_color = theme_cache.font_pressed_color;
@@ -298,6 +363,7 @@ void Button::_notification(int p_what) {
 						icon_size = Size2(icon_width, icon_height);
 					}
 					icon_size = _fit_icon_size(icon_size);
+					icon_size = icon_size.round();
 				}
 
 				if (icon_size.width > 0.0f) {
@@ -336,6 +402,7 @@ void Button::_notification(int p_what) {
 							icon_ofs.y = size.y - style_margin_bottom - icon_size.height;
 						} break;
 					}
+					icon_ofs = icon_ofs.floor();
 
 					Rect2 icon_region = Rect2(icon_ofs, icon_size);
 					draw_texture_rect(_icon, icon_region, false, icon_modulate_color);
@@ -359,6 +426,9 @@ void Button::_notification(int p_what) {
 				text_buf->set_alignment(align_rtl_checked);
 
 				float text_buf_width = Math::ceil(MAX(1.0f, drawable_size_remained.width)); // The space's width filled by the text_buf.
+				if (autowrap_mode != TextServer::AUTOWRAP_OFF && !Math::is_equal_approx(text_buf_width, text_buf->get_width())) {
+					update_minimum_size();
+				}
 				text_buf->set_width(text_buf_width);
 
 				Point2 text_ofs;
@@ -409,12 +479,14 @@ Size2 Button::_fit_icon_size(const Size2 &p_size) const {
 }
 
 Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
+	// Do not include `_internal_margin`, it's already added in the `get_minimum_size` overrides.
+
 	Ref<TextParagraph> paragraph;
 	if (p_text.is_empty()) {
 		paragraph = text_buf;
 	} else {
 		paragraph.instantiate();
-		const_cast<Button *>(this)->_shape(paragraph, p_text);
+		_shape(paragraph, p_text);
 	}
 
 	Size2 minsize = paragraph->get_size();
@@ -450,10 +522,10 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		}
 	}
 
-	return _get_current_stylebox()->get_minimum_size() + minsize;
+	return (theme_cache.align_to_largest_stylebox ? _get_largest_stylebox_size() : _get_current_stylebox()->get_minimum_size()) + minsize;
 }
 
-void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
+void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) const {
 	if (p_paragraph.is_null()) {
 		p_paragraph = text_buf;
 	}
@@ -485,15 +557,17 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 		case TextServer::AUTOWRAP_OFF:
 			break;
 	}
-	autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+	autowrap_flags = autowrap_flags | autowrap_flags_trim;
 	p_paragraph->set_break_flags(autowrap_flags);
+	p_paragraph->set_line_spacing(theme_cache.line_spacing);
 
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		p_paragraph->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
 		p_paragraph->set_direction((TextServer::Direction)text_direction);
 	}
-	p_paragraph->add_string(p_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_paragraph->add_string(p_text, font, font_size, lang);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
 }
 
@@ -516,14 +590,17 @@ TextServer::OverrunBehavior Button::get_text_overrun_behavior() const {
 }
 
 void Button::set_text(const String &p_text) {
-	if (text != p_text) {
-		text = p_text;
-		xl_text = atr(text);
-		_shape();
-
-		queue_redraw();
-		update_minimum_size();
+	const String translated_text = _get_translated_text(p_text);
+	if (text == p_text && xl_text == translated_text) {
+		return;
 	}
+	text = p_text;
+	xl_text = translated_text;
+	_shape();
+
+	queue_accessibility_update();
+	queue_redraw();
+	update_minimum_size();
 }
 
 String Button::get_text() const {
@@ -543,11 +620,25 @@ TextServer::AutowrapMode Button::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
+void Button::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	if (autowrap_flags_trim != (p_flags & TextServer::BREAK_TRIM_MASK)) {
+		autowrap_flags_trim = p_flags & TextServer::BREAK_TRIM_MASK;
+		_shape();
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+BitField<TextServer::LineBreakFlag> Button::get_autowrap_trim_flags() const {
+	return autowrap_flags_trim;
+}
+
 void Button::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		_shape();
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }
@@ -560,6 +651,7 @@ void Button::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		_shape();
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }
@@ -568,7 +660,7 @@ String Button::get_language() const {
 	return language;
 }
 
-void Button::set_icon(const Ref<Texture2D> &p_icon) {
+void Button::set_button_icon(const Ref<Texture2D> &p_icon) {
 	if (icon == p_icon) {
 		return;
 	}
@@ -592,7 +684,15 @@ void Button::_texture_changed() {
 	update_minimum_size();
 }
 
-Ref<Texture2D> Button::get_icon() const {
+void Button::_update_style_margins(const Ref<StyleBox> &p_stylebox) {
+	theme_cache.max_style_size = theme_cache.max_style_size.max(p_stylebox->get_minimum_size());
+	theme_cache.style_margin_left = MAX(theme_cache.style_margin_left, p_stylebox->get_margin(SIDE_LEFT));
+	theme_cache.style_margin_right = MAX(theme_cache.style_margin_right, p_stylebox->get_margin(SIDE_RIGHT));
+	theme_cache.style_margin_top = MAX(theme_cache.style_margin_top, p_stylebox->get_margin(SIDE_TOP));
+	theme_cache.style_margin_bottom = MAX(theme_cache.style_margin_bottom, p_stylebox->get_margin(SIDE_BOTTOM));
+}
+
+Ref<Texture2D> Button::get_button_icon() const {
 	return icon;
 }
 
@@ -637,6 +737,7 @@ bool Button::get_clip_text() const {
 void Button::set_text_alignment(HorizontalAlignment p_alignment) {
 	if (alignment != p_alignment) {
 		alignment = p_alignment;
+		queue_accessibility_update();
 		queue_redraw();
 	}
 }
@@ -684,12 +785,14 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Button::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Button::get_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &Button::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &Button::get_autowrap_trim_flags);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Button::get_language);
-	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
-	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_icon);
+	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_button_icon);
+	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_button_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);
@@ -709,8 +812,9 @@ void Button::_bind_methods() {
 
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
 	ADD_GROUP("Icon Behavior", "");
@@ -757,11 +861,14 @@ void Button::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, align_to_largest_stylebox);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, line_spacing);
 }
 
 Button::Button(const String &p_text) {
 	text_buf.instantiate();
-	text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+	text_buf->set_break_flags(TextServer::BREAK_MANDATORY | autowrap_flags_trim);
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	set_text(p_text);

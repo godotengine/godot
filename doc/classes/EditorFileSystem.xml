@@ -84,6 +84,12 @@
 				Emitted if a resource is reimported.
 			</description>
 		</signal>
+		<signal name="resources_reimporting">
+			<param index="0" name="resources" type="PackedStringArray" />
+			<description>
+				Emitted before a resource is reimported.
+			</description>
+		</signal>
 		<signal name="resources_reload">
 			<param index="0" name="resources" type="PackedStringArray" />
 			<description>

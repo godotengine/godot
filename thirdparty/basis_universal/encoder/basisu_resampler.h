@@ -1,5 +1,5 @@
 // basisu_resampler.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -112,6 +112,8 @@ namespace basisu
 			Resample_Real filter_support,
 			Resample_Real filter_scale,
 			Resample_Real src_ofs);
+
+		static void free_clist(Contrib_List* p) { if (p) { free(p->p); free(p); } }
 
 	private:
 		Resampler();

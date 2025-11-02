@@ -31,7 +31,6 @@
 #include "collision_object_2d.h"
 
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
@@ -52,7 +51,7 @@ void CollisionObject2D::_notification(int p_what) {
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
 				Ref<World2D> world_ref = get_world_2d();
-				ERR_FAIL_COND(!world_ref.is_valid());
+				ERR_FAIL_COND(world_ref.is_null());
 				RID space = world_ref->get_space();
 				if (area) {
 					PhysicsServer2D::get_singleton()->area_set_space(rid, space);
@@ -296,7 +295,7 @@ uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 	ShapeData sd;
 	uint32_t id;
 
-	if (shapes.size() == 0) {
+	if (shapes.is_empty()) {
 		id = 0;
 	} else {
 		id = shapes.back()->key() + 1;
@@ -519,27 +518,27 @@ bool CollisionObject2D::is_pickable() const {
 
 void CollisionObject2D::_input_event_call(Viewport *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape) {
 	GDVIRTUAL_CALL(_input_event, p_viewport, p_input_event, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_viewport, p_input_event, p_shape);
+	emit_signal(SceneStringName(input_event), p_viewport, p_input_event, p_shape);
 }
 
 void CollisionObject2D::_mouse_enter() {
 	GDVIRTUAL_CALL(_mouse_enter);
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SceneStringName(mouse_entered));
 }
 
 void CollisionObject2D::_mouse_exit() {
 	GDVIRTUAL_CALL(_mouse_exit);
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SceneStringName(mouse_exited));
 }
 
 void CollisionObject2D::_mouse_shape_enter(int p_shape) {
 	GDVIRTUAL_CALL(_mouse_shape_enter, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_entered, p_shape);
+	emit_signal(SceneStringName(mouse_shape_entered), p_shape);
 }
 
 void CollisionObject2D::_mouse_shape_exit(int p_shape) {
 	GDVIRTUAL_CALL(_mouse_shape_exit, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->mouse_shape_exited, p_shape);
+	emit_signal(SceneStringName(mouse_shape_exited), p_shape);
 }
 
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
@@ -583,7 +582,7 @@ void CollisionObject2D::_update_pickable() {
 }
 
 PackedStringArray CollisionObject2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (shapes.is_empty()) {
 		warnings.push_back(RTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape."));
@@ -656,6 +655,8 @@ void CollisionObject2D::_bind_methods() {
 }
 
 CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_2D);
+
 	rid = p_rid;
 	area = p_area;
 	pickable = true;
@@ -673,6 +674,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 }
 
 CollisionObject2D::CollisionObject2D() {
+	_define_ancestry(AncestralClass::COLLISION_OBJECT_2D);
 	//owner=
 
 	set_notify_transform(true);
@@ -680,5 +682,5 @@ CollisionObject2D::CollisionObject2D() {
 
 CollisionObject2D::~CollisionObject2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(rid);
+	PhysicsServer2D::get_singleton()->free_rid(rid);
 }

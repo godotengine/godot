@@ -5,14 +5,14 @@ using [Gradle](https://gradle.org/) as a build system.
 
 ## Documentation
 
-- [Compiling for Android](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_android.html)
+- [Compiling for Android](https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_android.html)
   - Instructions on building this platform port from source.
 - [Exporting for Android](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_android.html)
   - Instructions on using the compiled export templates to export a project.
 
 ## Artwork license
 
-[`logo.png`](logo.png) and [`run_icon.png`](run_icon.png) are licensed under
+[`logo.svg`](export/logo.svg) and [`run_icon.svg`](export/run_icon.svg) are licensed under
 [Creative Commons Attribution 3.0 Unported](https://developer.android.com/distribute/marketing-tools/brand-guidelines#android_robot)
 per the Android logo usage guidelines:
 

@@ -30,7 +30,7 @@
 
 #include "collada.h"
 
-#include <stdio.h>
+#include "core/config/project_settings.h"
 
 //#define DEBUG_DEFAULT_ANIMATION
 //#define DEBUG_COLLADA
@@ -66,7 +66,7 @@ void Collada::Vertex::fix_unit_scale(const Collada &p_state) {
 
 static String _uri_to_id(const String &p_uri) {
 	if (p_uri.begins_with("#")) {
-		return p_uri.substr(1, p_uri.size() - 1);
+		return p_uri.substr(1);
 	} else {
 		return p_uri;
 	}
@@ -208,7 +208,6 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 
 				Vector<float> ret;
 				ret.resize(16);
-				Transform3D tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
 				ret.write[0] = interp.basis.rows[0][0];
 				ret.write[1] = interp.basis.rows[0][1];
@@ -289,7 +288,7 @@ void Collada::_parse_image(XMLParser &p_parser) {
 		String path = p_parser.get_named_attribute_value("source").strip_edges();
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().path_join(path.uri_decode()));
+			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().path_join(path.uri_file_decode()));
 		}
 	} else {
 		while (p_parser.read() == OK) {
@@ -298,7 +297,7 @@ void Collada::_parse_image(XMLParser &p_parser) {
 
 				if (name == "init_from") {
 					p_parser.read();
-					String path = p_parser.get_node_data().strip_edges().uri_decode();
+					String path = p_parser.get_node_data().strip_edges().uri_file_decode();
 
 					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
@@ -1373,7 +1372,7 @@ Collada::Node *Collada::_parse_visual_instance_camera(XMLParser &p_parser) {
 	cam->camera = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
+		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math::PI * 0.5);
 	}
 
 	if (p_parser.is_empty()) { //nothing else to parse...
@@ -1394,7 +1393,7 @@ Collada::Node *Collada::_parse_visual_instance_light(XMLParser &p_parser) {
 	cam->light = _uri_to_id(p_parser.get_named_attribute_value_safe("url"));
 
 	if (state.up_axis == Vector3::AXIS_Z) { //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math_PI * 0.5);
+		cam->post_transform.basis.rotate(Vector3(1, 0, 0), -Math::PI * 0.5);
 	}
 
 	if (p_parser.is_empty()) { //nothing else to parse...
@@ -1808,13 +1807,13 @@ void Collada::_parse_animation(XMLParser &p_parser) {
 				}
 			}
 
-			if (target.contains("/")) { //transform component
+			if (target.contains_char('/')) { //transform component
 				track.target = target.get_slicec('/', 0);
 				track.param = target.get_slicec('/', 1);
-				if (track.param.contains(".")) {
-					track.component = track.param.get_slice(".", 1).to_upper();
+				if (track.param.contains_char('.')) {
+					track.component = track.param.get_slicec('.', 1).to_upper();
 				}
-				track.param = track.param.get_slice(".", 0);
+				track.param = track.param.get_slicec('.', 0);
 				if (names.size() > 1 && track.component.is_empty()) {
 					//this is a guess because the collada spec is ambiguous here...
 					//i suppose if you have many names (outputs) you can't use a component and i should abide to that.
@@ -2023,7 +2022,7 @@ void Collada::_remove_node(VisualScene *p_vscene, Node *p_node) {
 		}
 	}
 
-	ERR_PRINT("ERROR: Not found node to remove?");
+	ERR_PRINT("Not found node to remove?");
 }
 
 void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
@@ -2347,9 +2346,9 @@ Error Collada::load(const String &p_path, int p_flags) {
 	{
 		//version
 		String version = parser.get_named_attribute_value("version");
-		state.version.major = version.get_slice(".", 0).to_int();
-		state.version.minor = version.get_slice(".", 1).to_int();
-		state.version.rev = version.get_slice(".", 2).to_int();
+		state.version.major = version.get_slicec('.', 0).to_int();
+		state.version.minor = version.get_slicec('.', 1).to_int();
+		state.version.rev = version.get_slicec('.', 2).to_int();
 		COLLADA_PRINT("Collada VERSION: " + version);
 	}
 
@@ -2378,7 +2377,4 @@ Error Collada::load(const String &p_path, int p_flags) {
 
 	_optimize();
 	return OK;
-}
-
-Collada::Collada() {
 }

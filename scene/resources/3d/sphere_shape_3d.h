@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPHERE_SHAPE_3D_H
-#define SPHERE_SHAPE_3D_H
+#pragma once
 
 #include "scene/resources/3d/shape_3d.h"
+
+class ArrayMesh;
 
 class SphereShape3D : public Shape3D {
 	GDCLASS(SphereShape3D, Shape3D);
@@ -47,9 +48,8 @@ public:
 	float get_radius() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
 
 	SphereShape3D();
 };
-
-#endif // SPHERE_SHAPE_3D_H

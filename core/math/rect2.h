@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2_H
-#define RECT2_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Rect2i;
 struct Transform2D;
 
-struct _NO_DISCARD_ Rect2 {
+struct [[nodiscard]] Rect2 {
 	Point2 position;
 	Size2 size;
 
@@ -203,10 +203,11 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	bool is_equal_approx(const Rect2 &p_rect) const;
+	bool is_same(const Rect2 &p_rect) const;
 	bool is_finite() const;
 
-	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	constexpr bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	constexpr bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
@@ -278,20 +279,22 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(position + size.min(Point2()), size.abs());
+		return Rect2(position + size.minf(0), size.abs());
 	}
 
 	_FORCE_INLINE_ Rect2 round() const {
 		return Rect2(position.round(), size.round());
 	}
 
-	Vector2 get_support(const Vector2 &p_normal) const {
-		Vector2 half_extents = size * 0.5f;
-		Vector2 ofs = position + half_extents;
-		return Vector2(
-					   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
-					   (p_normal.y > 0) ? -half_extents.y : half_extents.y) +
-				ofs;
+	Vector2 get_support(const Vector2 &p_direction) const {
+		Vector2 support = position;
+		if (p_direction.x > 0.0f) {
+			support.x += size.x;
+		}
+		if (p_direction.y > 0.0f) {
+			support.y += size.y;
+		}
+		return support;
 	}
 
 	_FORCE_INLINE_ bool intersects_filled_polygon(const Vector2 *p_points, int p_point_count) const {
@@ -356,18 +359,27 @@ struct _NO_DISCARD_ Rect2 {
 		return position + size;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	operator Rect2i() const;
 
-	Rect2() {}
-	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(position.x);
+		h = hash_murmur3_one_real(position.y, h);
+		h = hash_murmur3_one_real(size.x, h);
+		h = hash_murmur3_one_real(size.y, h);
+		return hash_fmix32(h);
+	}
+
+	Rect2() = default;
+	constexpr Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
 			position(Point2(p_x, p_y)),
 			size(Size2(p_width, p_height)) {
 	}
-	Rect2(const Point2 &p_pos, const Size2 &p_size) :
+	constexpr Rect2(const Point2 &p_pos, const Size2 &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
 };
 
-#endif // RECT2_H
+template <>
+struct is_zero_constructible<Rect2> : std::true_type {};

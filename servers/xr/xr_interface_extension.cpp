@@ -30,7 +30,6 @@
 
 #include "xr_interface_extension.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
@@ -52,6 +51,7 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
 	GDVIRTUAL_BIND(_get_vrs_texture);
+	GDVIRTUAL_BIND(_get_vrs_texture_format);
 
 	GDVIRTUAL_BIND(_process);
 	GDVIRTUAL_BIND(_pre_render);
@@ -241,6 +241,14 @@ RID XRInterfaceExtension::get_vrs_texture() {
 	} else {
 		return XRInterface::get_vrs_texture();
 	}
+}
+
+XRInterface::VRSTextureFormat XRInterfaceExtension::get_vrs_texture_format() {
+	VRSTextureFormat vrs_texture_format = XR_VRS_TEXTURE_FORMAT_UNIFIED;
+	if (GDVIRTUAL_CALL(_get_vrs_texture_format, vrs_texture_format)) {
+		return vrs_texture_format;
+	}
+	return vrs_texture_format;
 }
 
 RID XRInterfaceExtension::get_color_texture() {

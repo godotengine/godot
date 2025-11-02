@@ -181,6 +181,7 @@ void Builder::postProcessType(const Instruction& inst, Id typeId)
             else if (width == 8)
                 addCapability(CapabilityInt8);
         }
+        break;
     default:
         if (basicTypeOp == OpTypeInt) {
             if (width == 16)

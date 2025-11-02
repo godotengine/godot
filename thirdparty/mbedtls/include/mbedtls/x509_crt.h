@@ -1176,7 +1176,7 @@ void mbedtls_x509write_crt_free(mbedtls_x509write_cert *ctx);
  * \note            \p f_rng is used for the signature operation.
  */
 int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size,
-                              int (*f_rng)(void *, unsigned char *, size_t),
+                              mbedtls_f_rng_t *f_rng,
                               void *p_rng);
 
 #if defined(MBEDTLS_PEM_WRITE_C)
@@ -1194,7 +1194,7 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, s
  * \note            \p f_rng is used for the signature operation.
  */
 int mbedtls_x509write_crt_pem(mbedtls_x509write_cert *ctx, unsigned char *buf, size_t size,
-                              int (*f_rng)(void *, unsigned char *, size_t),
+                              mbedtls_f_rng_t *f_rng,
                               void *p_rng);
 #endif /* MBEDTLS_PEM_WRITE_C */
 #endif /* MBEDTLS_X509_CRT_WRITE_C */

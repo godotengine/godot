@@ -18,6 +18,7 @@
 #include "mbedtls/platform.h"
 
 #include "bignum_core.h"
+#include "bignum_core_invasive.h"
 #include "bn_mul.h"
 #include "constant_time_internal.h"
 
@@ -746,7 +747,95 @@ static void exp_mod_precompute_window(const mbedtls_mpi_uint *A,
     }
 }
 
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+void (*mbedtls_safe_codepath_hook)(void) = NULL;
+void (*mbedtls_unsafe_codepath_hook)(void) = NULL;
+#endif
+
+/*
+ * This function calculates the indices of the exponent where the exponentiation algorithm should
+ * start processing.
+ *
+ * Warning! If the parameter E_public has MBEDTLS_MPI_IS_PUBLIC as its value,
+ * this function is not constant time with respect to the exponent (parameter E).
+ */
+static inline void exp_mod_calc_first_bit_optionally_safe(const mbedtls_mpi_uint *E,
+                                                          size_t E_limbs,
+                                                          int E_public,
+                                                          size_t *E_limb_index,
+                                                          size_t *E_bit_index)
+{
+    if (E_public == MBEDTLS_MPI_IS_PUBLIC) {
+        /*
+         * Skip leading zero bits.
+         */
+        size_t E_bits = mbedtls_mpi_core_bitlen(E, E_limbs);
+        if (E_bits == 0) {
+            /*
+             * If E is 0 mbedtls_mpi_core_bitlen() returns 0. Even if that is the case, we will want
+             * to represent it as a single 0 bit and as such the bitlength will be 1.
+             */
+            E_bits = 1;
+        }
+
+        *E_limb_index = E_bits / biL;
+        *E_bit_index = E_bits % biL;
+
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        if (mbedtls_unsafe_codepath_hook != NULL) {
+            mbedtls_unsafe_codepath_hook();
+        }
+#endif
+    } else {
+        /*
+         * Here we need to be constant time with respect to E and can't do anything better than
+         * start at the first allocated bit.
+         */
+        *E_limb_index = E_limbs;
+        *E_bit_index = 0;
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        if (mbedtls_safe_codepath_hook != NULL) {
+            mbedtls_safe_codepath_hook();
+        }
+#endif
+    }
+}
+
+/*
+ * Warning! If the parameter window_public has MBEDTLS_MPI_IS_PUBLIC as its value, this function is
+ * not constant time with respect to the window parameter and consequently the exponent of the
+ * exponentiation (parameter E of mbedtls_mpi_core_exp_mod_optionally_safe).
+ */
+static inline void exp_mod_table_lookup_optionally_safe(mbedtls_mpi_uint *Wselect,
+                                                        mbedtls_mpi_uint *Wtable,
+                                                        size_t AN_limbs, size_t welem,
+                                                        mbedtls_mpi_uint window,
+                                                        int window_public)
+{
+    if (window_public == MBEDTLS_MPI_IS_PUBLIC) {
+        memcpy(Wselect, Wtable + window * AN_limbs, AN_limbs * ciL);
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        if (mbedtls_unsafe_codepath_hook != NULL) {
+            mbedtls_unsafe_codepath_hook();
+        }
+#endif
+    } else {
+        /* Select Wtable[window] without leaking window through
+         * memory access patterns. */
+        mbedtls_mpi_core_ct_uint_table_lookup(Wselect, Wtable,
+                                              AN_limbs, welem, window);
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        if (mbedtls_safe_codepath_hook != NULL) {
+            mbedtls_safe_codepath_hook();
+        }
+#endif
+    }
+}
+
 /* Exponentiation: X := A^E mod N.
+ *
+ * Warning! If the parameter E_public has MBEDTLS_MPI_IS_PUBLIC as its value,
+ * this function is not constant time with respect to the exponent (parameter E).
  *
  * A must already be in Montgomery form.
  *
@@ -758,16 +847,25 @@ static void exp_mod_precompute_window(const mbedtls_mpi_uint *A,
  * (The difference is that the body in our loop processes a single bit instead
  * of a full window.)
  */
-void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
-                              const mbedtls_mpi_uint *A,
-                              const mbedtls_mpi_uint *N,
-                              size_t AN_limbs,
-                              const mbedtls_mpi_uint *E,
-                              size_t E_limbs,
-                              const mbedtls_mpi_uint *RR,
-                              mbedtls_mpi_uint *T)
+static void mbedtls_mpi_core_exp_mod_optionally_safe(mbedtls_mpi_uint *X,
+                                                     const mbedtls_mpi_uint *A,
+                                                     const mbedtls_mpi_uint *N,
+                                                     size_t AN_limbs,
+                                                     const mbedtls_mpi_uint *E,
+                                                     size_t E_limbs,
+                                                     int E_public,
+                                                     const mbedtls_mpi_uint *RR,
+                                                     mbedtls_mpi_uint *T)
 {
-    const size_t wsize = exp_mod_get_window_size(E_limbs * biL);
+    /* We'll process the bits of E from most significant
+     * (limb_index=E_limbs-1, E_bit_index=biL-1) to least significant
+     * (limb_index=0, E_bit_index=0). */
+    size_t E_limb_index = E_limbs;
+    size_t E_bit_index = 0;
+    exp_mod_calc_first_bit_optionally_safe(E, E_limbs, E_public,
+                                           &E_limb_index, &E_bit_index);
+
+    const size_t wsize = exp_mod_get_window_size(E_limb_index * biL);
     const size_t welem = ((size_t) 1) << wsize;
 
     /* This is how we will use the temporary storage T, which must have space
@@ -786,7 +884,7 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
 
     const mbedtls_mpi_uint mm = mbedtls_mpi_core_montmul_init(N);
 
-    /* Set Wtable[i] = A^(2^i) (in Montgomery representation) */
+    /* Set Wtable[i] = A^i (in Montgomery representation) */
     exp_mod_precompute_window(A, N, AN_limbs,
                               mm, RR,
                               welem, Wtable, temp);
@@ -798,11 +896,6 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
     /* X = 1 (in Montgomery presentation) initially */
     memcpy(X, Wtable, AN_limbs * ciL);
 
-    /* We'll process the bits of E from most significant
-     * (limb_index=E_limbs-1, E_bit_index=biL-1) to least significant
-     * (limb_index=0, E_bit_index=0). */
-    size_t E_limb_index = E_limbs;
-    size_t E_bit_index = 0;
     /* At any given time, window contains window_bits bits from E.
      * window_bits can go up to wsize. */
     size_t window_bits = 0;
@@ -828,10 +921,9 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
          * when we've finished processing the exponent. */
         if (window_bits == wsize ||
             (E_bit_index == 0 && E_limb_index == 0)) {
-            /* Select Wtable[window] without leaking window through
-             * memory access patterns. */
-            mbedtls_mpi_core_ct_uint_table_lookup(Wselect, Wtable,
-                                                  AN_limbs, welem, window);
+
+            exp_mod_table_lookup_optionally_safe(Wselect, Wtable, AN_limbs, welem,
+                                                 window, E_public);
             /* Multiply X by the selected element. */
             mbedtls_mpi_core_montmul(X, X, Wselect, AN_limbs, N, AN_limbs, mm,
                                      temp);
@@ -839,6 +931,42 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
             window_bits = 0;
         }
     } while (!(E_bit_index == 0 && E_limb_index == 0));
+}
+
+void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
+                              const mbedtls_mpi_uint *A,
+                              const mbedtls_mpi_uint *N, size_t AN_limbs,
+                              const mbedtls_mpi_uint *E, size_t E_limbs,
+                              const mbedtls_mpi_uint *RR,
+                              mbedtls_mpi_uint *T)
+{
+    mbedtls_mpi_core_exp_mod_optionally_safe(X,
+                                             A,
+                                             N,
+                                             AN_limbs,
+                                             E,
+                                             E_limbs,
+                                             MBEDTLS_MPI_IS_SECRET,
+                                             RR,
+                                             T);
+}
+
+void mbedtls_mpi_core_exp_mod_unsafe(mbedtls_mpi_uint *X,
+                                     const mbedtls_mpi_uint *A,
+                                     const mbedtls_mpi_uint *N, size_t AN_limbs,
+                                     const mbedtls_mpi_uint *E, size_t E_limbs,
+                                     const mbedtls_mpi_uint *RR,
+                                     mbedtls_mpi_uint *T)
+{
+    mbedtls_mpi_core_exp_mod_optionally_safe(X,
+                                             A,
+                                             N,
+                                             AN_limbs,
+                                             E,
+                                             E_limbs,
+                                             MBEDTLS_MPI_IS_PUBLIC,
+                                             RR,
+                                             T);
 }
 
 mbedtls_mpi_uint mbedtls_mpi_core_sub_int(mbedtls_mpi_uint *X,
@@ -890,6 +1018,223 @@ void mbedtls_mpi_core_from_mont_rep(mbedtls_mpi_uint *X,
     const mbedtls_mpi_uint Rinv = 1;    /* 1/R in Mont. rep => 1 */
 
     mbedtls_mpi_core_montmul(X, A, &Rinv, 1, N, AN_limbs, mm, T);
+}
+
+/*
+ * Compute X = A - B mod N.
+ * Both A and B must be in [0, N) and so will the output.
+ */
+static void mpi_core_sub_mod(mbedtls_mpi_uint *X,
+                             const mbedtls_mpi_uint *A,
+                             const mbedtls_mpi_uint *B,
+                             const mbedtls_mpi_uint *N,
+                             size_t limbs)
+{
+    mbedtls_mpi_uint c = mbedtls_mpi_core_sub(X, A, B, limbs);
+    (void) mbedtls_mpi_core_add_if(X, N, limbs, (unsigned) c);
+}
+
+/*
+ * Divide X by 2 mod N in place, assuming N is odd.
+ * The input must be in [0, N) and so will the output.
+ */
+MBEDTLS_STATIC_TESTABLE
+void mbedtls_mpi_core_div2_mod_odd(mbedtls_mpi_uint *X,
+                                   const mbedtls_mpi_uint *N,
+                                   size_t limbs)
+{
+    /* If X is odd, add N to make it even before shifting. */
+    unsigned odd = (unsigned) X[0] & 1;
+    mbedtls_mpi_uint c = mbedtls_mpi_core_add_if(X, N, limbs, odd);
+    mbedtls_mpi_core_shift_r(X, limbs, 1);
+    X[limbs - 1] |= c << (biL - 1);
+}
+
+/*
+ * Constant-time GCD and modular inversion - odd modulus.
+ *
+ * Pre-conditions: see public documentation.
+ *
+ * See https://www.jstage.jst.go.jp/article/transinf/E106.D/9/E106.D_2022ICP0009/_pdf
+ *
+ * The paper gives two computationally equivalent algorithms: Alg 7 (readable)
+ * and Alg 8 (constant-time). We use a third version that's hopefully both:
+ *
+ *  u, v = A, N  # N is called p in the paper but doesn't have to be prime
+ *  q, r = 0, 1
+ *  repeat bits(A_limbs + N_limbs) times:
+ *      d = v - u  # t1 in Alg 7
+ *      t1 = (u and v both odd) ? u : d  # t1 in Alg 8
+ *      t2 = (u and v both odd) ? d : (u odd) ? v : u  # t2 in Alg 8
+ *      t2 >>= 1
+ *      swap = t1 > t2  # similar to s, z in Alg 8
+ *      u, v = (swap) ? t2, t1 : t1, t2
+ *
+ *      d = r - q mod N  # t2 in Alg 7
+ *      t1 = (u and v both odd) ? q : d  # t3 in Alg 8
+ *      t2 = (u and v both odd) ? d : (u odd) ? r : q  # t4 Alg 8
+ *      t2 /= 2 mod N  # see below (pre_com)
+ *      q, r = (swap) ? t2, t1 : t1, t2
+ *  return v, q  # v: GCD, see Alg 6; q: no mult by pre_com, see below
+ *
+ * The ternary operators in the above pseudo-code need to be realised in a
+ * constant-time fashion. We use conditional assign for t1, t2 and conditional
+ * swap for the final update. (Note: the similarity between branches of Alg 7
+ * are highlighted in tables 2 and 3 and the surrounding text.)
+ *
+ * Also, we re-order operations, grouping things related to the inverse, which
+ * facilitates making its computation optional, and requires fewer temporaries.
+ *
+ * The only actual change from the paper is dropping the trick with pre_com,
+ * which I think complicates things for no benefit.
+ * See the comment on the big I != NULL block below for details.
+ */
+void mbedtls_mpi_core_gcd_modinv_odd(mbedtls_mpi_uint *G,
+                                     mbedtls_mpi_uint *I,
+                                     const mbedtls_mpi_uint *A,
+                                     size_t A_limbs,
+                                     const mbedtls_mpi_uint *N,
+                                     size_t N_limbs,
+                                     mbedtls_mpi_uint *T)
+{
+    /* GCD and modinv, names common to Alg 7 and Alg 8 */
+    mbedtls_mpi_uint *u = T + 0 * N_limbs;
+    mbedtls_mpi_uint *v = G;
+
+    /* GCD and modinv, my name (t1, t2 from Alg 7) */
+    mbedtls_mpi_uint *d = T + 1 * N_limbs;
+
+    /* GCD and modinv, names from Alg 8 (note: t1, t2 from Alg 7 are d above) */
+    mbedtls_mpi_uint *t1 = T + 2 * N_limbs;
+    mbedtls_mpi_uint *t2 = T + 3 * N_limbs;
+
+    /* modinv only, names common to Alg 7 and Alg 8 */
+    mbedtls_mpi_uint *q = I;
+    mbedtls_mpi_uint *r = I != NULL ? T + 4 * N_limbs : NULL;
+
+    /*
+     * Initial values:
+     * u, v = A, N
+     * q, r = 0, 1
+     *
+     * We only write to G (aka v) after reading from inputs (A and N), which
+     * allows aliasing, except with N when I != NULL, as then we'll be operating
+     * mod N on q and r later - see the public documentation.
+     */
+    if (A_limbs > N_limbs) {
+        /* Violating this precondition should not result in memory errors. */
+        A_limbs = N_limbs;
+    }
+    memcpy(u, A, A_limbs * ciL);
+    memset((char *) u + A_limbs * ciL, 0, (N_limbs - A_limbs) * ciL);
+
+    /* Avoid possible UB with memcpy when src == dst. */
+    if (v != N) {
+        memcpy(v, N, N_limbs * ciL);
+    }
+
+    if (I != NULL) {
+        memset(q, 0, N_limbs * ciL);
+
+        memset(r, 0, N_limbs * ciL);
+        r[0] = 1;
+    }
+
+    /*
+     * At each step, out of u, v, v - u we keep one, shift another, and discard
+     * the third, then update (u, v) with the ordered result.
+     * Then we mirror those actions with q, r, r - q mod N.
+     *
+     * Loop invariants:
+     *  u <= v                  (on entry: A <= N)
+     *  GCD(u, v) == GCD(A, N)  (on entry: trivial)
+     *  v = A * q mod N         (on entry: N = A * 0 mod N)
+     *  u = A * r mod N         (on entry: A = A * 1 mod N)
+     *  q, r in [0, N)          (on entry: 0, 1)
+     *
+     * On exit:
+     *  u = 0
+     *  v = GCD(A, N) = A * q mod N
+     *  if v == 1 then 1 = A * q mod N ie q is A's inverse mod N
+     *  r = 0
+     *
+     * The exit state is a fixed point of the loop's body.
+     * Alg 7 and Alg 8 use 2 * bitlen(N) iterations but Theorem 2 (above in the
+     * paper) says bitlen(A) + bitlen(N) is actually enough.
+     */
+    for (size_t i = 0; i < (A_limbs + N_limbs) * biL; i++) {
+        /* s, z in Alg 8 - use meaningful names instead */
+        mbedtls_ct_condition_t u_odd = mbedtls_ct_bool(u[0] & 1);
+        mbedtls_ct_condition_t v_odd = mbedtls_ct_bool(v[0] & 1);
+
+        /* Other conditions that will be useful below */
+        mbedtls_ct_condition_t u_odd_v_odd = mbedtls_ct_bool_and(u_odd, v_odd);
+        mbedtls_ct_condition_t v_even = mbedtls_ct_bool_not(v_odd);
+        mbedtls_ct_condition_t u_odd_v_even = mbedtls_ct_bool_and(u_odd, v_even);
+
+        /* This is called t1 in Alg 7 (no name in Alg 8).
+         * We know that u <= v so there is no carry */
+        (void) mbedtls_mpi_core_sub(d, v, u, N_limbs);
+
+        /* t1 (the thing that's kept) can be d (default) or u (if t2 is d) */
+        memcpy(t1, d, N_limbs * ciL);
+        mbedtls_mpi_core_cond_assign(t1, u, N_limbs, u_odd_v_odd);
+
+        /* t2 (the thing that's shifted) can be u (if even), or v (if even),
+         * or d (which is even if both u and v were odd) */
+        memcpy(t2, u, N_limbs * ciL);
+        mbedtls_mpi_core_cond_assign(t2, v, N_limbs, u_odd_v_even);
+        mbedtls_mpi_core_cond_assign(t2, d, N_limbs, u_odd_v_odd);
+
+        mbedtls_mpi_core_shift_r(t2, N_limbs, 1); // t2 is even
+
+        /* Update u, v and re-order them if needed */
+        memcpy(u, t1, N_limbs * ciL);
+        memcpy(v, t2, N_limbs * ciL);
+        mbedtls_ct_condition_t swap = mbedtls_mpi_core_lt_ct(v, u, N_limbs);
+        mbedtls_mpi_core_cond_swap(u, v, N_limbs, swap);
+
+        /* Now, if modinv was requested, do the same with q, r, but:
+         * - decisions still based on u and v (their initial values);
+         * - operations are now mod N;
+         * - we re-use t1, t2 for what the paper calls t3, t4 in Alg 8.
+         *
+         * Here we slightly diverge from the paper and instead do the obvious
+         * thing that preserves the invariants involving q and r: mirror
+         * operations on u and v, ie also divide by 2 here (mod N).
+         *
+         * The paper uses a trick where it replaces division by 2 with
+         * multiplication by 2 here, and compensates in the end by multiplying
+         * by pre_com, which is probably intended as an optimisation.
+         *
+         * However I believe it's not actually an optimisation, since
+         * constant-time modular multiplication by 2 (left-shift + conditional
+         * subtract) is just as costly as constant-time modular division by 2
+         * (conditional add + right-shift). So, skip it and keep things simple.
+         */
+        if (I != NULL) {
+            /* This is called t2 in Alg 7 (no name in Alg 8). */
+            mpi_core_sub_mod(d, q, r, N, N_limbs);
+
+            /* t3 (the thing that's kept) */
+            memcpy(t1, d, N_limbs * ciL);
+            mbedtls_mpi_core_cond_assign(t1, r, N_limbs, u_odd_v_odd);
+
+            /* t4 (the thing that's shifted) */
+            memcpy(t2, r, N_limbs * ciL);
+            mbedtls_mpi_core_cond_assign(t2, q, N_limbs, u_odd_v_even);
+            mbedtls_mpi_core_cond_assign(t2, d, N_limbs, u_odd_v_odd);
+
+            mbedtls_mpi_core_div2_mod_odd(t2, N, N_limbs);
+
+            /* Update and possibly swap */
+            memcpy(r, t1, N_limbs * ciL);
+            memcpy(q, t2, N_limbs * ciL);
+            mbedtls_mpi_core_cond_swap(r, q, N_limbs, swap);
+        }
+    }
+
+    /* G and I already hold the correct values by virtue of being aliased */
 }
 
 #endif /* MBEDTLS_BIGNUM_C */

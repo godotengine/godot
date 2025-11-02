@@ -104,6 +104,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="with" type="Vector3" />
@@ -163,7 +171,7 @@
 			<param index="0" name="with" type="Vector3" />
 			<description>
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
-				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
@@ -227,11 +235,18 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector3" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [param length].
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -240,10 +255,31 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with), maxf(y, with), maxf(z, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with.x), minf(y, with.y), minf(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with), minf(y, with), minf(z, with))[/code].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -257,7 +293,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -307,10 +343,10 @@
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="direction" type="Vector3" />
+			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns the result of reflecting the vector from a plane defined by the given direction vector [param direction].
-				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] takes a normal direction which is a direction perpendicular to the plane. In Godot, you specify a direction parallel to the plane. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
+				Returns the result of reflecting the vector through a plane defined by the given normal vector [param n].
+				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] returns the result of the vector reflected by the given plane. The reflection thus passes through the given normal. While in Godot the reflection passes through the plane and can be thought of as bouncing off the normal. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -382,6 +418,13 @@
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="" default="0.0">
@@ -395,13 +438,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Z" value="2">
+		<constant name="AXIS_Z" value="2" enum="Axis">
 			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector3(0, 0, 0)">
@@ -492,7 +535,7 @@
 			<description>
 				Multiplies each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints "(30, 80, 150)"
+				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints (30.0, 80.0, 150.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -516,7 +559,7 @@
 			<description>
 				Adds each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) + Vector3(3, 4, 5)) # Prints "(13, 24, 35)"
+				print(Vector3(10, 20, 30) + Vector3(3, 4, 5)) # Prints (13.0, 24.0, 35.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -526,7 +569,7 @@
 			<description>
 				Subtracts each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints "(7, 16, 25)"
+				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints (7.0, 16.0, 25.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -536,7 +579,7 @@
 			<description>
 				Divides each component of the [Vector3] by the components of the given [Vector3].
 				[codeblock]
-				print(Vector3(10, 20, 30) / Vector3(2, 5, 3)) # Prints "(5, 4, 10)"
+				print(Vector3(10, 20, 30) / Vector3(2, 5, 3)) # Prints (5.0, 4.0, 10.0)
 				[/codeblock]
 			</description>
 		</operator>

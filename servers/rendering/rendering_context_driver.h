@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_H
-#define RENDERING_CONTEXT_DRIVER_H
+#pragma once
 
-#include "core/object/object.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class RenderingDeviceDriver;
 
@@ -52,16 +50,20 @@ public:
 	void window_destroy(DisplayServer::WindowID p_window);
 
 public:
-	enum Vendor {
-		VENDOR_UNKNOWN = 0x0,
-		VENDOR_AMD = 0x1002,
-		VENDOR_IMGTEC = 0x1010,
-		VENDOR_APPLE = 0x106B,
-		VENDOR_NVIDIA = 0x10DE,
-		VENDOR_ARM = 0x13B5,
-		VENDOR_MICROSOFT = 0x1414,
-		VENDOR_QUALCOMM = 0x5143,
-		VENDOR_INTEL = 0x8086
+	// Not an enum as these values are matched against values returned by
+	// the various drivers, which report them in uint32_t. Casting to an
+	// enum value is dangerous in this case as we don't actually know what
+	// range the driver is reporting a value in.
+	struct Vendor {
+		constexpr static uint32_t VENDOR_UNKNOWN = 0x0;
+		constexpr static uint32_t VENDOR_AMD = 0x1002;
+		constexpr static uint32_t VENDOR_IMGTEC = 0x1010;
+		constexpr static uint32_t VENDOR_APPLE = 0x106B;
+		constexpr static uint32_t VENDOR_NVIDIA = 0x10DE;
+		constexpr static uint32_t VENDOR_ARM = 0x13B5;
+		constexpr static uint32_t VENDOR_MICROSOFT = 0x1414;
+		constexpr static uint32_t VENDOR_QUALCOMM = 0x5143;
+		constexpr static uint32_t VENDOR_INTEL = 0x8086;
 	};
 
 	enum DeviceType {
@@ -73,10 +75,15 @@ public:
 		DEVICE_TYPE_MAX = 0x5
 	};
 
+	struct Workarounds {
+		bool avoid_compute_after_draw = false;
+	};
+
 	struct Device {
 		String name = "Unknown";
-		Vendor vendor = VENDOR_UNKNOWN;
+		uint32_t vendor = Vendor::VENDOR_UNKNOWN;
 		DeviceType type = DEVICE_TYPE_OTHER;
+		Workarounds workarounds;
 	};
 
 	virtual ~RenderingContextDriver();
@@ -96,6 +103,19 @@ public:
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const = 0;
 	virtual void surface_destroy(SurfaceID p_surface) = 0;
 	virtual bool is_debug_utils_enabled() const = 0;
-};
 
-#endif // RENDERING_CONTEXT_DRIVER_H
+	String get_driver_and_device_memory_report() const;
+
+	virtual const char *get_tracked_object_name(uint32_t p_type_index) const;
+	virtual uint64_t get_tracked_object_type_count() const;
+
+	virtual uint64_t get_driver_total_memory() const;
+	virtual uint64_t get_driver_allocation_count() const;
+	virtual uint64_t get_driver_memory_by_object_type(uint32_t p_type) const;
+	virtual uint64_t get_driver_allocs_by_object_type(uint32_t p_type) const;
+
+	virtual uint64_t get_device_total_memory() const;
+	virtual uint64_t get_device_allocation_count() const;
+	virtual uint64_t get_device_memory_by_object_type(uint32_t p_type) const;
+	virtual uint64_t get_device_allocs_by_object_type(uint32_t p_type) const;
+};

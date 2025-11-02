@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_STORAGE_RD_H
-#define LIGHT_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
@@ -49,7 +48,7 @@ namespace RendererRD {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
@@ -72,6 +71,7 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t shadow_caster_mask = 0xFFFFFFFF;
 		bool distance_fade = false;
 		real_t distance_fade_begin = 40.0;
 		real_t distance_fade_shadow = 50.0;
@@ -220,8 +220,8 @@ private:
 
 	struct ReflectionProbe {
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-		int resolution = 256;
 		float intensity = 1.0;
+		float blend_distance = 1.0;
 		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
 		Color ambient_color;
 		float ambient_color_energy = 1.0;
@@ -245,6 +245,7 @@ private:
 	struct ReflectionAtlas {
 		int count = 0;
 		int size = 0;
+		bool update_always = false;
 
 		RID reflection;
 		RID depth_buffer;
@@ -302,18 +303,22 @@ private:
 		uint32_t mask;
 		float ambient[3]; // ambient color,
 		float intensity;
+		float blend_distance;
 		uint32_t exterior;
 		uint32_t box_project;
 		uint32_t ambient_mode;
 		float exposure_normalization;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
 	};
 
 	struct ReflectionProbeInstanceSort {
-		float depth;
+		float size;
 		ReflectionProbeInstance *probe_instance;
 		bool operator<(const ReflectionProbeInstanceSort &p_sort) const {
-			return depth < p_sort.depth;
+			return size < p_sort.size;
 		}
 	};
 
@@ -328,10 +333,13 @@ private:
 
 	struct Lightmap {
 		RID light_texture;
+		RID shadow_texture;
+		RS::ShadowmaskMode shadowmask_mode = RS::SHADOWMASK_MODE_NONE;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 		float baked_exposure = 1.0;
+		Vector2i light_texture_size;
 		int32_t array_index = -1; //unassigned
 		PackedVector3Array points;
 		PackedColorArray point_sh;
@@ -353,6 +361,8 @@ private:
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	Vector<RID> shadowmask_textures;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -433,6 +443,11 @@ private:
 	HashMap<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
 
+	/* PIPELINE HINTS */
+
+	bool shadow_cubemaps_used = false;
+	bool shadow_dual_paraboloid_used = false;
+
 public:
 	static LightStorage *get_singleton();
 
@@ -474,6 +489,8 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) override;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override;
+	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
 
@@ -581,7 +598,7 @@ public:
 
 	/* LIGHT INSTANCE API */
 
-	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); };
+	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); }
 
 	virtual RID light_instance_create(RID p_light) override;
 	virtual void light_instance_free(RID p_light) override;
@@ -790,6 +807,16 @@ public:
 	RID get_spot_light_buffer() { return spot_light_buffer; }
 	RID get_directional_light_buffer() { return directional_light_buffer; }
 	uint32_t get_max_directional_lights() { return max_directional_lights; }
+	uint32_t get_directional_light_blend_splits(uint32_t p_directional_light_count) const {
+		uint32_t blend_splits = 0;
+		for (uint32_t i = 0; i < p_directional_light_count; i++) {
+			if (directional_lights[i].blend_splits) {
+				blend_splits |= 1U << i;
+			}
+		}
+
+		return blend_splits;
+	}
 	bool has_directional_shadows(const uint32_t p_directional_light_count) {
 		for (uint32_t i = 0; i < p_directional_light_count; i++) {
 			if (directional_lights[i].shadow_opacity > 0.001) {
@@ -802,7 +829,7 @@ public:
 
 	/* REFLECTION PROBE */
 
-	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
+	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); }
 
 	virtual RID reflection_probe_allocate() override;
 	virtual void reflection_probe_initialize(RID p_reflection_probe) override;
@@ -810,6 +837,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
@@ -835,11 +863,11 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
-	int reflection_probe_get_resolution(RID p_probe) const;
 	float reflection_probe_get_baked_exposure(RID p_probe) const;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 
 	float reflection_probe_get_intensity(RID p_probe) const;
+	float reflection_probe_get_blend_distance(RID p_probe) const;
 	bool reflection_probe_is_interior(RID p_probe) const;
 	bool reflection_probe_is_box_projection(RID p_probe) const;
 	RS::ReflectionProbeAmbientMode reflection_probe_get_ambient_mode(RID p_probe) const;
@@ -937,10 +965,14 @@ public:
 	void set_max_reflection_probes(const uint32_t p_max_reflection_probes);
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
+	static RD::DataFormat get_reflection_probe_color_format();
+	static uint32_t get_reflection_probe_color_usage_bits();
+	static RD::DataFormat get_reflection_probe_depth_format();
+	static uint32_t get_reflection_probe_depth_usage_bits();
 
 	/* LIGHTMAP */
 
-	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); }
 
 	virtual RID lightmap_allocate() override;
 	virtual void lightmap_initialize(RID p_lightmap) override;
@@ -961,6 +993,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 
 	Dependency *lightmap_get_dependency(RID p_lightmap) const;
+
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;
@@ -985,6 +1021,10 @@ public:
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
 	}
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
+	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
 		return lightmap_array_version;
@@ -1000,9 +1040,15 @@ public:
 		return lightmap_textures;
 	}
 
+	_FORCE_INLINE_ RID shadowmask_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		ERR_FAIL_NULL_V(lm, RID());
+		return lm->shadow_texture;
+	}
+
 	/* LIGHTMAP INSTANCE */
 
-	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); };
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
 
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
@@ -1022,7 +1068,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); };
+	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); }
 
 	virtual RID shadow_atlas_create() override;
 	virtual void shadow_atlas_free(RID p_atlas) override;
@@ -1074,6 +1120,8 @@ public:
 	}
 
 	virtual void shadow_atlas_update(RID p_atlas) override;
+	static RD::DataFormat get_shadow_atlas_depth_format(bool p_16_bits);
+	static uint32_t get_shadow_atlas_depth_usage_bits();
 
 	/* DIRECTIONAL SHADOW */
 
@@ -1104,8 +1152,13 @@ public:
 
 	RID get_cubemap(int p_size);
 	RID get_cubemap_fb(int p_size, int p_pass);
+	static RD::DataFormat get_cubemap_depth_format();
+	static uint32_t get_cubemap_depth_usage_bits();
+
+	/* PIPELINE HINTS */
+
+	bool get_shadow_cubemaps_used() const;
+	bool get_shadow_dual_paraboloid_used() const;
 };
 
 } // namespace RendererRD
-
-#endif // LIGHT_STORAGE_RD_H

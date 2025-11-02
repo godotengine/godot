@@ -362,7 +362,7 @@ namespace VULKAN_HPP_NAMESPACE
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc14BppSrgbBlockIMG: return 8;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc22BppSrgbBlockIMG: return 8;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc24BppSrgbBlockIMG: return 8;
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV: return 4;
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV: return 4;
       case VULKAN_HPP_NAMESPACE::Format::eA1B5G5R5UnormPack16KHR: return 2;
       case VULKAN_HPP_NAMESPACE::Format::eA8UnormKHR: return 1;
 
@@ -621,7 +621,7 @@ namespace VULKAN_HPP_NAMESPACE
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc14BppSrgbBlockIMG: return "PVRTC1_4BPP";
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc22BppSrgbBlockIMG: return "PVRTC2_2BPP";
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc24BppSrgbBlockIMG: return "PVRTC2_4BPP";
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV: return "32-bit";
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV: return "32-bit";
       case VULKAN_HPP_NAMESPACE::Format::eA1B5G5R5UnormPack16KHR: return "16-bit";
       case VULKAN_HPP_NAMESPACE::Format::eA8UnormKHR: return "8-bit alpha";
 
@@ -2005,7 +2005,7 @@ namespace VULKAN_HPP_NAMESPACE
           case 3: return 4;
           default: VULKAN_HPP_ASSERT( false ); return 0;
         }
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV:
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV:
         switch ( component )
         {
           case 0: return 16;
@@ -2283,7 +2283,7 @@ namespace VULKAN_HPP_NAMESPACE
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc14BppSrgbBlockIMG: return 4;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc22BppSrgbBlockIMG: return 4;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc24BppSrgbBlockIMG: return 4;
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV: return 2;
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV: return 2;
       case VULKAN_HPP_NAMESPACE::Format::eA1B5G5R5UnormPack16KHR: return 4;
       case VULKAN_HPP_NAMESPACE::Format::eA8UnormKHR: return 1;
 
@@ -4299,7 +4299,7 @@ namespace VULKAN_HPP_NAMESPACE
           case 3: return "A";
           default: VULKAN_HPP_ASSERT( false ); return "";
         }
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV:
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV:
         switch ( component )
         {
           case 0: return "R";
@@ -6334,11 +6334,11 @@ namespace VULKAN_HPP_NAMESPACE
           case 3: return "SRGB";
           default: VULKAN_HPP_ASSERT( false ); return "";
         }
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV:
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV:
         switch ( component )
         {
-          case 0: return "SINT";
-          case 1: return "SINT";
+          case 0: return "SFIXED5";
+          case 1: return "SFIXED5";
           default: VULKAN_HPP_ASSERT( false ); return "";
         }
       case VULKAN_HPP_NAMESPACE::Format::eA1B5G5R5UnormPack16KHR:
@@ -7657,7 +7657,7 @@ namespace VULKAN_HPP_NAMESPACE
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc14BppSrgbBlockIMG: return 1;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc22BppSrgbBlockIMG: return 1;
       case VULKAN_HPP_NAMESPACE::Format::ePvrtc24BppSrgbBlockIMG: return 1;
-      case VULKAN_HPP_NAMESPACE::Format::eR16G16S105NV: return 1;
+      case VULKAN_HPP_NAMESPACE::Format::eR16G16Sfixed5NV: return 1;
       case VULKAN_HPP_NAMESPACE::Format::eA1B5G5R5UnormPack16KHR: return 1;
       case VULKAN_HPP_NAMESPACE::Format::eA8UnormKHR: return 1;
 

@@ -296,6 +296,22 @@ public static class CustomUnsafe
         => ref *ReadOnlyRefAsPointer(in source);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector4_array* AsPointer(ref godot_packed_vector4_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector4_array* ReadOnlyRefAsPointer(in godot_packed_vector4_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector4_array AsRef(godot_packed_vector4_array* source)
+        => ref *source;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector4_array AsRef(in godot_packed_vector4_array source)
+        => ref *ReadOnlyRefAsPointer(in source);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe godot_packed_color_array* AsPointer(ref godot_packed_color_array value)
         => value.GetUnsafeAddress();
 

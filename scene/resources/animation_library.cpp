@@ -30,21 +30,18 @@
 
 #include "animation_library.h"
 
+#include "scene/scene_string_names.h"
+
 bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
-	return !(p_name.is_empty() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
+	return !(p_name.is_empty() || p_name.contains_char('/') || p_name.contains_char(':') || p_name.contains_char(',') || p_name.contains_char('['));
 }
 
 bool AnimationLibrary::is_valid_library_name(const String &p_name) {
-	return !(p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
+	return !(p_name.contains_char('/') || p_name.contains_char(':') || p_name.contains_char(',') || p_name.contains_char('['));
 }
 
 String AnimationLibrary::validate_library_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = "/:,[";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
+	return p_name.replace_chars("/:,[", '_');
 }
 
 Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
@@ -106,7 +103,7 @@ TypedArray<StringName> AnimationLibrary::_get_animation_list() const {
 }
 
 void AnimationLibrary::_animation_changed(const StringName &p_name) {
-	emit_signal(SNAME("animation_changed"), p_name);
+	emit_signal(SceneStringName(animation_changed), p_name);
 }
 
 void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {
@@ -123,15 +120,17 @@ void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const 
 	}
 }
 
+int AnimationLibrary::get_animation_list_size() const {
+	return animations.size();
+}
+
 void AnimationLibrary::_set_data(const Dictionary &p_data) {
 	for (KeyValue<StringName, Ref<Animation>> &K : animations) {
 		K.value->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
 	}
 	animations.clear();
-	List<Variant> keys;
-	p_data.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		add_animation(K, p_data[K]);
+	for (const KeyValue<Variant, Variant> &kv : p_data) {
+		add_animation(kv.key, kv.value);
 	}
 }
 
@@ -164,6 +163,7 @@ void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_animation", "name"), &AnimationLibrary::has_animation);
 	ClassDB::bind_method(D_METHOD("get_animation", "name"), &AnimationLibrary::get_animation);
 	ClassDB::bind_method(D_METHOD("get_animation_list"), &AnimationLibrary::_get_animation_list);
+	ClassDB::bind_method(D_METHOD("get_animation_list_size"), &AnimationLibrary::get_animation_list_size);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &AnimationLibrary::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &AnimationLibrary::_get_data);

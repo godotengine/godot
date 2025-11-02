@@ -30,19 +30,17 @@
 
 #ifndef DISABLE_DEPRECATED
 
-void Control::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(""));
+bool Control::_has_focus_bind_compat_110250() const {
+	return has_focus(false);
 }
 
-#endif
+void Control::_grab_focus_bind_compat_110250() {
+	return grab_focus(false);
+}
+
+void Control::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("has_focus"), &Control::_has_focus_bind_compat_110250);
+	ClassDB::bind_compatibility_method(D_METHOD("grab_focus"), &Control::_grab_focus_bind_compat_110250);
+}
+
+#endif // DISABLE_DEPRECATED

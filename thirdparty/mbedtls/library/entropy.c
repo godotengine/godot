@@ -61,6 +61,10 @@ void mbedtls_entropy_init(mbedtls_entropy_context *ctx)
 
 void mbedtls_entropy_free(mbedtls_entropy_context *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
     /* If the context was already free, don't call free() again.
      * This is important for mutexes which don't allow double-free. */
     if (ctx->accumulator_started == -1) {

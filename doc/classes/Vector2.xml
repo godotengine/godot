@@ -59,15 +59,15 @@
 			<description>
 				Returns this vector's angle with respect to the positive X axis, or [code](1, 0)[/code] vector, in radians.
 				For example, [code]Vector2.RIGHT.angle()[/code] will return zero, [code]Vector2.DOWN.angle()[/code] will return [code]PI / 2[/code] (a quarter turn, or 90 degrees), and [code]Vector2(1, -1).angle()[/code] will return [code]-PI / 4[/code] (a negative eighth turn, or -45 degrees).
+				This is equivalent to calling [method @GlobalScope.atan2] with [member y] and [member x].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle.png]Illustration of the returned angle.[/url]
-				Equivalent to the result of [method @GlobalScope.atan2] when called with the vector's [member y] and [member x] as parameters: [code]atan2(y, x)[/code].
 			</description>
 		</method>
 		<method name="angle_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle to the given vector, in radians.
+				Returns the signed angle to the given vector, in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -75,15 +75,15 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle between the line connecting the two points and the X axis, in radians.
-				[code]a.angle_to_point(b)[/code] is equivalent of doing [code](b - a).angle()[/code].
+				Returns the signed angle between the X axis and the line from this vector to point [param to], in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
+				[code]a.angle_to_point(b)[/code] is equivalent to [code](b - a).angle()[/code]. See also [method angle].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to_point.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="aspect" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
+				Returns this vector's aspect ratio, which is [member x] divided by [member y].
 			</description>
 		</method>
 		<method name="bezier_derivative" qualifiers="const">
@@ -128,6 +128,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector2" />
@@ -165,7 +173,8 @@
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to].
+				[code]a.direction_to(b)[/code] is equivalent to [code](b - a).normalized()[/code]. See also [method normalized].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
@@ -188,7 +197,7 @@
 			<param index="0" name="with" type="Vector2" />
 			<description>
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
-				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
@@ -203,12 +212,13 @@
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />
 			<description>
-				Creates a unit [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
+				Creates a [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
 				[codeblock]
-				print(Vector2.from_angle(0)) # Prints (1, 0).
-				print(Vector2(1, 0).angle()) # Prints 0, which is the angle used above.
-				print(Vector2.from_angle(PI / 2)) # Prints (0, 1).
+				print(Vector2.from_angle(0)) # Prints (1.0, 0.0)
+				print(Vector2(1, 0).angle()) # Prints 0.0, which is the angle used above.
+				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0)
 				[/codeblock]
+				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -258,11 +268,18 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [param length].
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with.x), maxf(y, with.y))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -271,10 +288,31 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with), maxf(y, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with.x), minf(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with), minf(y, with))[/code].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -288,7 +326,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -379,6 +417,13 @@
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="" default="0.0">
@@ -389,10 +434,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector2(0, 0)">
@@ -442,7 +487,7 @@
 			<description>
 				Multiplies each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) * Vector2(3, 4)) # Prints "(30, 80)"
+				print(Vector2(10, 20) * Vector2(3, 4)) # Prints (30.0, 80.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -466,7 +511,7 @@
 			<description>
 				Adds each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) + Vector2(3, 4)) # Prints "(13, 24)"
+				print(Vector2(10, 20) + Vector2(3, 4)) # Prints (13.0, 24.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -476,7 +521,7 @@
 			<description>
 				Subtracts each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) - Vector2(3, 4)) # Prints "(7, 16)"
+				print(Vector2(10, 20) - Vector2(3, 4)) # Prints (7.0, 16.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -486,7 +531,7 @@
 			<description>
 				Divides each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) / Vector2(2, 5)) # Prints "(5, 4)"
+				print(Vector2(10, 20) / Vector2(2, 5)) # Prints (5.0, 4.0)
 				[/codeblock]
 			</description>
 		</operator>

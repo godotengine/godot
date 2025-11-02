@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBSOCKET_MULTIPLAYER_PEER_H
-#define WEBSOCKET_MULTIPLAYER_PEER_H
+#pragma once
 
 #include "websocket_peer.h"
 
-#include "core/error/error_list.h"
-#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/templates/list.h"
 #include "scene/main/multiplayer_peer.h"
@@ -114,8 +111,8 @@ public:
 	/* WebSocketPeer */
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 
-	Error create_client(const String &p_url, Ref<TLSOptions> p_options);
-	Error create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options);
+	Error create_client(const String &p_url, const Ref<TLSOptions> &p_options);
+	Error create_server(int p_port, IPAddress p_bind_ip, const Ref<TLSOptions> &p_options);
 
 	void set_supported_protocols(const Vector<String> &p_protocols);
 	Vector<String> get_supported_protocols() const;
@@ -141,5 +138,3 @@ public:
 	WebSocketMultiplayerPeer();
 	~WebSocketMultiplayerPeer();
 };
-
-#endif // WEBSOCKET_MULTIPLAYER_PEER_H

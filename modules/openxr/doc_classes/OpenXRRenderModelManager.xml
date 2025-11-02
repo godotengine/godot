@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRRenderModelManager" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Helper node that will automatically manage displaying render models.
+	</brief_description>
+	<description>
+		This helper node will automatically manage displaying render models. It will create new [OpenXRRenderModel] nodes as controllers and other hand held devices are detected, and remove those nodes when they are deactivated.
+		[b]Note:[/b] If you want more control over this logic you can alternatively call [method OpenXRRenderModelExtension.render_model_get_all] to obtain a list of active render model ids and create [OpenXRRenderModel] instances for each render model id provided.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="make_local_to_pose" type="String" setter="set_make_local_to_pose" getter="get_make_local_to_pose" default="&quot;&quot;">
+			Position render models local to this pose (this will adjust the position of the render models container node).
+		</member>
+		<member name="tracker" type="int" setter="set_tracker" getter="get_tracker" enum="OpenXRRenderModelManager.RenderModelTracker" default="0">
+			Limits render models to the specified tracker. Include: 0 = All render models, 1 = Render models not related to a tracker, 2 = Render models related to the left hand tracker, 3 = Render models related to the right hand tracker.
+		</member>
+	</members>
+	<signals>
+		<signal name="render_model_added">
+			<param index="0" name="render_model" type="OpenXRRenderModel" />
+			<description>
+				Emitted when a render model node is added as a child to this node.
+			</description>
+		</signal>
+		<signal name="render_model_removed">
+			<param index="0" name="render_model" type="OpenXRRenderModel" />
+			<description>
+				Emitted when a render model child node is about to be removed from this node.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="RENDER_MODEL_TRACKER_ANY" value="0" enum="RenderModelTracker">
+			All active render models are shown regardless of what tracker they relate to.
+		</constant>
+		<constant name="RENDER_MODEL_TRACKER_NONE_SET" value="1" enum="RenderModelTracker">
+			Only active render models are shown that are not related to any tracker we manage.
+		</constant>
+		<constant name="RENDER_MODEL_TRACKER_LEFT_HAND" value="2" enum="RenderModelTracker">
+			Only active render models are shown that are related to the left hand tracker.
+		</constant>
+		<constant name="RENDER_MODEL_TRACKER_RIGHT_HAND" value="3" enum="RenderModelTracker">
+			Only active render models are shown that are related to the right hand tracker.
+		</constant>
+	</constants>
+</class>

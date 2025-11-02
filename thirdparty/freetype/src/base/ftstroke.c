@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (body).
  *
- * Copyright (C) 2002-2023 by
+ * Copyright (C) 2002-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -711,7 +711,7 @@
     {
       FT_UInt   count = border->num_points;
       FT_Byte*  read  = border->tags;
-      FT_Byte*  write = (FT_Byte*)outline->tags + outline->n_points;
+      FT_Byte*  write = outline->tags + outline->n_points;
 
 
       for ( ; count > 0; count--, read++, write++ )
@@ -727,10 +727,10 @@
 
     /* copy contours */
     {
-      FT_UInt    count = border->num_points;
-      FT_Byte*   tags  = border->tags;
-      FT_Short*  write = outline->contours + outline->n_contours;
-      FT_Short   idx   = (FT_Short)outline->n_points;
+      FT_UInt     count = border->num_points;
+      FT_Byte*    tags  = border->tags;
+      FT_UShort*  write = outline->contours + outline->n_contours;
+      FT_UShort   idx   = outline->n_points;
 
 
       for ( ; count > 0; count--, tags++, idx++ )
@@ -743,7 +743,7 @@
       }
     }
 
-    outline->n_points += (short)border->num_points;
+    outline->n_points += (FT_UShort)border->num_points;
 
     FT_ASSERT( FT_Outline_Check( outline ) == 0 );
   }
@@ -2050,7 +2050,7 @@
 
     FT_Vector*  point;
     FT_Vector*  limit;
-    char*       tags;
+    FT_Byte*    tags;
 
     FT_Error    error;
 

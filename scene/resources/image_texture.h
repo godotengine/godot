@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_TEXTURE_H
-#define IMAGE_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -82,7 +81,6 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 
-	ImageTexture();
 	~ImageTexture();
 };
 
@@ -136,6 +134,7 @@ class ImageTexture3D : public Texture3D {
 	int height = 1;
 	int depth = 1;
 	bool mipmaps = false;
+	bool images_stored = false;
 
 	TypedArray<Image> _get_images() const;
 	void _set_images(const TypedArray<Image> &p_images);
@@ -202,5 +201,3 @@ public:
 
 	virtual Ref<Resource> create_placeholder() const;
 };
-
-#endif // IMAGE_TEXTURE_H

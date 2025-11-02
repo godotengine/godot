@@ -18,6 +18,12 @@
 				Returns the number of channels allocated for communication with peer.
 			</description>
 		</method>
+		<method name="get_packet_flags" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ENet flags of the next packet in the received queue. See [code]FLAG_*[/code] constants for available packet flags. Note that not all flags are replicated from the sending peer to the receiving peer.
+			</description>
+		</method>
 		<method name="get_remote_address" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -33,14 +39,14 @@
 		<method name="get_state" qualifiers="const">
 			<return type="int" enum="ENetPacketPeer.PeerState" />
 			<description>
-				Returns the current peer state. See [enum PeerState].
+				Returns the current peer state.
 			</description>
 		</method>
 		<method name="get_statistic">
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic" />
 			<description>
-				Returns the requested [param statistic] for this peer. See [enum PeerStatistic].
+				Returns the requested [param statistic] for this peer.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
@@ -142,7 +148,7 @@
 			The peer is currently connected and ready to communicate with.
 		</constant>
 		<constant name="STATE_DISCONNECT_LATER" value="6" enum="PeerState">
-			The peer is slated to disconnect after it has no more outgoing packets to send.
+			The peer is expected to disconnect after it has no more outgoing packets to send.
 		</constant>
 		<constant name="STATE_DISCONNECTING" value="7" enum="PeerState">
 			The peer is currently disconnecting.

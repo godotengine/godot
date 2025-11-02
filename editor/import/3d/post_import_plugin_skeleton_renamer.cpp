@@ -30,7 +30,6 @@
 
 #include "post_import_plugin_skeleton_renamer.h"
 
-#include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -39,7 +38,7 @@
 
 void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/bone_renamer/rename_bones"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/bone_renamer/rename_bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/bone_renamer/unique_node/make_unique"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "retarget/bone_renamer/unique_node/skeleton_name"), "GeneralSkeleton"));
 	}
@@ -188,15 +187,15 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		// Main process of renaming bones.
 		{
 			// Apply pre-renaming result to prepared main rename map.
-			Vector<String> remove_queue;
-			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
-				if (pre_rename_map.has(E->key)) {
-					remove_queue.push_back(E->key);
+			LocalVector<String> remove_queue;
+			for (const KeyValue<String, String> &kv : main_rename_map) {
+				if (pre_rename_map.has(kv.key)) {
+					remove_queue.push_back(kv.key);
 				}
 			}
-			for (int i = 0; i < remove_queue.size(); i++) {
-				main_rename_map.insert(pre_rename_map[remove_queue[i]], main_rename_map[remove_queue[i]]);
-				main_rename_map.erase(remove_queue[i]);
+			for (const String &key : remove_queue) {
+				main_rename_map.insert(pre_rename_map[key], main_rename_map[key]);
+				main_rename_map.erase(key);
 			}
 			_internal_process(p_category, p_base_scene, p_node, p_resource, p_options, main_rename_map);
 		}
@@ -229,9 +228,9 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 									}
 								} else {
 									if (anim->track_get_path(i).get_subname_count() > 0) {
-										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node) + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + String(node->get_path_to(orig_node)) + String(":") + anim->track_get_path(i).get_concatenated_subnames());
 									} else {
-										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node));
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + String(node->get_path_to(orig_node)));
 									}
 								}
 								break;
@@ -245,7 +244,4 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 			skeleton->set_unique_name_in_owner(true);
 		}
 	}
-}
-
-PostImportPluginSkeletonRenamer::PostImportPluginSkeletonRenamer() {
 }

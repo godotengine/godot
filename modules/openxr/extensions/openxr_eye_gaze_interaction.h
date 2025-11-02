@@ -28,12 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EYE_GAZE_INTERACTION_H
-#define OPENXR_EYE_GAZE_INTERACTION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
 class OpenXREyeGazeInteractionExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXREyeGazeInteractionExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXREyeGazeInteractionExtension *get_singleton();
 
@@ -50,11 +54,15 @@ public:
 
 	virtual void on_register_metadata() override;
 
+	bool get_eye_gaze_pose(double p_dist, Vector3 &r_eye_pose);
+
 private:
 	static OpenXREyeGazeInteractionExtension *singleton;
 
 	bool available = false;
 	XrSystemEyeGazeInteractionPropertiesEXT properties;
-};
 
-#endif // OPENXR_EYE_GAZE_INTERACTION_H
+	bool init_eye_gaze_pose = false;
+	RID eye_tracker;
+	RID eye_action;
+};

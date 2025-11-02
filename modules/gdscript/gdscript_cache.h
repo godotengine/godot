@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_CACHE_H
-#define GDSCRIPT_CACHE_H
+#pragma once
 
 #include "gdscript.h"
 
 #include "core/object/ref_counted.h"
-#include "core/os/mutex.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -42,13 +41,14 @@ class GDScriptAnalyzer;
 class GDScriptParser;
 
 class GDScriptParserRef : public RefCounted {
+	GDSOFTCLASS(GDScriptParserRef, RefCounted);
+
 public:
 	enum Status {
 		EMPTY,
 		PARSED,
 		INHERITANCE_SOLVED,
 		INTERFACE_SOLVED,
-		BODY_SOLVED,
 		FULLY_SOLVED,
 	};
 
@@ -60,12 +60,14 @@ private:
 	String path;
 	uint32_t source_hash = 0;
 	bool clearing = false;
+	bool abandoned = false;
 
 	friend class GDScriptCache;
 	friend class GDScript;
 
 public:
 	Status get_status() const;
+	String get_path() const;
 	uint32_t get_source_hash() const;
 	GDScriptParser *get_parser();
 	GDScriptAnalyzer *get_analyzer();
@@ -79,10 +81,12 @@ public:
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
+	HashMap<String, Vector<ObjectID>> abandoned_parser_map;
 	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
+	HashMap<String, HashSet<String>> parser_inverse_dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;
@@ -92,7 +96,12 @@ class GDScriptCache {
 
 	bool cleared = false;
 
-	Mutex mutex;
+public:
+	static const int BINARY_MUTEX_TAG = 2;
+
+private:
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
 
 public:
 	static void move_script(const String &p_from, const String &p_to);
@@ -114,5 +123,3 @@ public:
 	GDScriptCache();
 	~GDScriptCache();
 };
-
-#endif // GDSCRIPT_CACHE_H

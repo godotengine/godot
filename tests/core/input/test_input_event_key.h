@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_INPUT_EVENT_KEY_H
-#define TEST_INPUT_EVENT_KEY_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/os/keyboard.h"
@@ -126,6 +125,17 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	none_key.set_physical_keycode(Key::ENTER);
 	CHECK(none_key.as_text() == "Ctrl+Enter (Physical)");
 
+	// Key is None WITH a physical key AND multiple modifiers, checks for correct ordering.
+	none_key.set_alt_pressed(true);
+	none_key.set_shift_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(none_key.as_text() != "Ctrl+Shift+Option+Enter (Physical)");
+	CHECK(none_key.as_text() == "Ctrl+Option+Shift+Enter (Physical)");
+#else
+	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+Enter (Physical)");
+	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+Enter (Physical)");
+#endif
+
 	InputEventKey none_key2;
 
 	// Key is None without modifiers with a physical key.
@@ -145,6 +155,17 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	key.set_ctrl_pressed(true);
 	CHECK(key.as_text() != "Space");
 	CHECK(key.as_text() == "Ctrl+Space");
+
+	// Key has keycode and multiple modifiers, checks for correct ordering.
+	key.set_alt_pressed(true);
+	key.set_shift_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(key.as_text() != "Ctrl+Shift+Option+Space");
+	CHECK(key.as_text() == "Ctrl+Option+Shift+Space");
+#else
+	CHECK(key.as_text() != "Ctrl+Shift+Alt+Space");
+	CHECK(key.as_text() == "Ctrl+Alt+Shift+Space");
+#endif
 
 	// Since the keycode is set to Key::NONE upon initialization of the
 	// InputEventKey and you can only update it with another Key, the keycode
@@ -335,5 +356,3 @@ TEST_CASE("[IsMatch] Keys are correctly matched") {
 	CHECK(key3.is_match(loc_ref, false) == true);
 }
 } // namespace TestInputEventKey
-
-#endif // TEST_INPUT_EVENT_KEY_H

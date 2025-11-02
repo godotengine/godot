@@ -78,6 +78,16 @@ XRSession.prototype.frameRate;
 XRSession.prototype.supportedFrameRates;
 
 /**
+ * @type {Array<string>}
+ */
+XRSession.prototype.enabledFeatures;
+
+/**
+ * @type {string}
+ */
+XRSession.prototype.environmentBlendMode;
+
+/**
  * @type {?function (Event)}
  */
 XRSession.prototype.onend;

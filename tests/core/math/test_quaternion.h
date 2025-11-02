@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_QUATERNION_H
-#define TEST_QUATERNION_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -57,7 +56,7 @@ Quaternion quat_euler_yxz_deg(Vector3 angle) {
 }
 
 TEST_CASE("[Quaternion] Default Construct") {
-	Quaternion q;
+	constexpr Quaternion q;
 
 	CHECK(q[0] == 0.0);
 	CHECK(q[1] == 0.0);
@@ -67,7 +66,7 @@ TEST_CASE("[Quaternion] Default Construct") {
 
 TEST_CASE("[Quaternion] Construct x,y,z,w") {
 	// Values are taken from actual use in another project & are valid (except roundoff error).
-	Quaternion q(0.2391, 0.099, 0.3696, 0.8924);
+	constexpr Quaternion q(0.2391, 0.099, 0.3696, 0.8924);
 
 	CHECK(q[0] == doctest::Approx(0.2391));
 	CHECK(q[1] == doctest::Approx(0.099));
@@ -108,7 +107,7 @@ TEST_CASE("[Quaternion] Construct AxisAngle 3") {
 
 TEST_CASE("[Quaternion] Construct AxisAngle 4") {
 	// More complex & hard to visualize, so test w/ data from online calculator.
-	Vector3 axis(1.0, 2.0, 0.5);
+	constexpr Vector3 axis(1.0, 2.0, 0.5);
 	Quaternion q(axis.normalized(), Math::deg_to_rad(35.0));
 
 	CHECK(q[0] == doctest::Approx(0.131239));
@@ -118,7 +117,7 @@ TEST_CASE("[Quaternion] Construct AxisAngle 4") {
 }
 
 TEST_CASE("[Quaternion] Construct from Quaternion") {
-	Vector3 axis(1.0, 2.0, 0.5);
+	constexpr Vector3 axis(1.0, 2.0, 0.5);
 	Quaternion q_src(axis.normalized(), Math::deg_to_rad(35.0));
 	Quaternion q(q_src);
 
@@ -199,17 +198,17 @@ TEST_CASE("[Quaternion] Construct Basis Euler") {
 
 TEST_CASE("[Quaternion] Construct Basis Axes") {
 	// Arbitrary Euler angles.
-	Vector3 euler_yxz(Math::deg_to_rad(31.41), Math::deg_to_rad(-49.16), Math::deg_to_rad(12.34));
+	const Vector3 euler_yxz(Math::deg_to_rad(31.41), Math::deg_to_rad(-49.16), Math::deg_to_rad(12.34));
 	// Basis vectors from online calculation of rotation matrix.
-	Vector3 i_unit(0.5545787, 0.1823950, 0.8118957);
-	Vector3 j_unit(-0.5249245, 0.8337420, 0.1712555);
-	Vector3 k_unit(-0.6456754, -0.5211586, 0.5581192);
+	constexpr Vector3 i_unit(0.5545787, 0.1823950, 0.8118957);
+	constexpr Vector3 j_unit(-0.5249245, 0.8337420, 0.1712555);
+	constexpr Vector3 k_unit(-0.6456754, -0.5211586, 0.5581192);
 	// Quaternion from online calculation.
-	Quaternion q_calc(0.2016913, -0.4245716, 0.206033, 0.8582598);
+	constexpr Quaternion q_calc(0.2016913, -0.4245716, 0.206033, 0.8582598);
 	// Quaternion from local calculation.
-	Quaternion q_local = quat_euler_yxz_deg(Vector3(31.41, -49.16, 12.34));
+	const Quaternion q_local = quat_euler_yxz_deg(Vector3(31.41, -49.16, 12.34));
 	// Quaternion from Euler angles constructor.
-	Quaternion q_euler = Quaternion::from_euler(euler_yxz);
+	const Quaternion q_euler = Quaternion::from_euler(euler_yxz);
 	CHECK(q_calc.is_equal_approx(q_local));
 	CHECK(q_local.is_equal_approx(q_euler));
 
@@ -235,6 +234,39 @@ TEST_CASE("[Quaternion] Construct Basis Axes") {
 	CHECK(q[3] == doctest::Approx(0.8582598));
 }
 
+TEST_CASE("[Quaternion] Construct Shortest Arc For 180 Degree Arc") {
+	Vector3 up(0, 1, 0);
+	Vector3 down(0, -1, 0);
+	Vector3 left(-1, 0, 0);
+	Vector3 right(1, 0, 0);
+	Vector3 forward(0, 0, -1);
+	Vector3 back(0, 0, 1);
+
+	// When we have a 180 degree rotation quaternion which was defined as
+	// A to B, logically when we transform A we expect to get B.
+	Quaternion left_to_right(left, right);
+	Quaternion right_to_left(right, left);
+	CHECK(left_to_right.xform(left).is_equal_approx(right));
+	CHECK(Quaternion(right, left).xform(right).is_equal_approx(left));
+	CHECK(Quaternion(up, down).xform(up).is_equal_approx(down));
+	CHECK(Quaternion(down, up).xform(down).is_equal_approx(up));
+	CHECK(Quaternion(forward, back).xform(forward).is_equal_approx(back));
+	CHECK(Quaternion(back, forward).xform(back).is_equal_approx(forward));
+
+	// With (arbitrary) opposite vectors that are not axis-aligned as parameters.
+	Vector3 diagonal_up = Vector3(1.2, 2.3, 4.5).normalized();
+	Vector3 diagonal_down = -diagonal_up;
+	Quaternion q1(diagonal_up, diagonal_down);
+	CHECK(q1.xform(diagonal_down).is_equal_approx(diagonal_up));
+	CHECK(q1.xform(diagonal_up).is_equal_approx(diagonal_down));
+
+	// For the consistency of the rotation direction, they should be symmetrical to the plane.
+	CHECK(left_to_right.is_equal_approx(right_to_left.inverse()));
+
+	// If vectors are same, no rotation.
+	CHECK(Quaternion(diagonal_up, diagonal_up).is_equal_approx(Quaternion()));
+}
+
 TEST_CASE("[Quaternion] Get Euler Orders") {
 	double x = Math::deg_to_rad(30.0);
 	double y = Math::deg_to_rad(45.0);
@@ -254,10 +286,10 @@ TEST_CASE("[Quaternion] Get Euler Orders") {
 
 TEST_CASE("[Quaternion] Product (book)") {
 	// Example from "Quaternions and Rotation Sequences" by Jack Kuipers, p. 108.
-	Quaternion p(1.0, -2.0, 1.0, 3.0);
-	Quaternion q(-1.0, 2.0, 3.0, 2.0);
+	constexpr Quaternion p(1.0, -2.0, 1.0, 3.0);
+	constexpr Quaternion q(-1.0, 2.0, 3.0, 2.0);
 
-	Quaternion pq = p * q;
+	constexpr Quaternion pq = p * q;
 	CHECK(pq[0] == doctest::Approx(-9.0));
 	CHECK(pq[1] == doctest::Approx(-2.0));
 	CHECK(pq[2] == doctest::Approx(11.0));
@@ -350,13 +382,13 @@ TEST_CASE("[Quaternion] xform unit vectors") {
 
 TEST_CASE("[Quaternion] xform vector") {
 	// Arbitrary quaternion rotates an arbitrary vector.
-	Vector3 euler_yzx(Math::deg_to_rad(31.41), Math::deg_to_rad(-49.16), Math::deg_to_rad(12.34));
-	Basis basis_axes = Basis::from_euler(euler_yzx);
-	Quaternion q(basis_axes);
+	const Vector3 euler_yzx(Math::deg_to_rad(31.41), Math::deg_to_rad(-49.16), Math::deg_to_rad(12.34));
+	const Basis basis_axes = Basis::from_euler(euler_yzx);
+	const Quaternion q(basis_axes);
 
-	Vector3 v_arb(3.0, 4.0, 5.0);
-	Vector3 v_rot = q.xform(v_arb);
-	Vector3 v_compare = basis_axes.xform(v_arb);
+	constexpr Vector3 v_arb(3.0, 4.0, 5.0);
+	const Vector3 v_rot = q.xform(v_arb);
+	const Vector3 v_compare = basis_axes.xform(v_arb);
 
 	CHECK(v_rot.length_squared() == doctest::Approx(v_arb.length_squared()));
 	CHECK(v_rot.is_equal_approx(v_compare));
@@ -364,45 +396,18 @@ TEST_CASE("[Quaternion] xform vector") {
 
 // Test vector xform for a single combination of Quaternion and Vector.
 void test_quat_vec_rotate(Vector3 euler_yzx, Vector3 v_in) {
-	Basis basis_axes = Basis::from_euler(euler_yzx);
-	Quaternion q(basis_axes);
+	const Basis basis_axes = Basis::from_euler(euler_yzx);
+	const Quaternion q(basis_axes);
 
-	Vector3 v_rot = q.xform(v_in);
-	Vector3 v_compare = basis_axes.xform(v_in);
+	const Vector3 v_rot = q.xform(v_in);
+	const Vector3 v_compare = basis_axes.xform(v_in);
 
 	CHECK(v_rot.length_squared() == doctest::Approx(v_in.length_squared()));
 	CHECK(v_rot.is_equal_approx(v_compare));
 }
 
-TEST_CASE("[Stress][Quaternion] Many vector xforms") {
-	// Many arbitrary quaternions rotate many arbitrary vectors.
-	// For each trial, check that rotation by Quaternion yields same result as
-	// rotation by Basis.
-	const int STEPS = 100; // Number of test steps in each dimension
-	const double delta = 2.0 * Math_PI / STEPS; // Angle increment per step
-	const double delta_vec = 20.0 / STEPS; // Vector increment per step
-	Vector3 vec_arb(1.0, 1.0, 1.0);
-	double x_angle = -Math_PI;
-	double y_angle = -Math_PI;
-	double z_angle = -Math_PI;
-	for (double i = 0; i < STEPS; ++i) {
-		vec_arb[0] = -10.0 + i * delta_vec;
-		x_angle = i * delta - Math_PI;
-		for (double j = 0; j < STEPS; ++j) {
-			vec_arb[1] = -10.0 + j * delta_vec;
-			y_angle = j * delta - Math_PI;
-			for (double k = 0; k < STEPS; ++k) {
-				vec_arb[2] = -10.0 + k * delta_vec;
-				z_angle = k * delta - Math_PI;
-				Vector3 euler_yzx(x_angle, y_angle, z_angle);
-				test_quat_vec_rotate(euler_yzx, vec_arb);
-			}
-		}
-	}
-}
-
 TEST_CASE("[Quaternion] Finite number checks") {
-	const real_t x = NAN;
+	constexpr real_t x = Math::NaN;
 
 	CHECK_MESSAGE(
 			Quaternion(0, 1, 2, 3).is_finite(),
@@ -459,5 +464,3 @@ TEST_CASE("[Quaternion] Finite number checks") {
 }
 
 } // namespace TestQuaternion
-
-#endif // TEST_QUATERNION_H

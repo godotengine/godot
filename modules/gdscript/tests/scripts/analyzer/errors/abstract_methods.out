@@ -1,0 +1,13 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 37: "@abstract" annotation can only be used once per class.
+>> ERROR at line 28: "@abstract" annotation can only be used once per function.
+>> ERROR at line 35: "@abstract" annotation cannot be applied to static functions.
+>> ERROR at line 40: A lambda function must have a ":" followed by a body.
+>> ERROR at line 41: A lambda function must have a ":" followed by a body.
+>> ERROR at line 11: Class "Test1" is not abstract but contains abstract methods. Mark the class as "@abstract" or remove "@abstract" from all methods in this class.
+>> ERROR at line 14: Class "Test2" must implement "AbstractClass.some_func()" and other inherited abstract methods or be marked as "@abstract".
+>> ERROR at line 17: Class "Test3" must implement "AbstractClassAgain.some_func()" and other inherited abstract methods or be marked as "@abstract".
+>> ERROR at line 22: Cannot call the parent class' abstract function "some_func()" because it hasn't been defined.
+>> ERROR at line 25: Cannot call the parent class' abstract function "some_func()" because it hasn't been defined.
+>> ERROR at line 32: An abstract function cannot have a body.
+>> ERROR at line 35: A function must either have a ":" followed by a body, or be marked as "@abstract".

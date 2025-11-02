@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -43,7 +42,10 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
-	enum TrackType {
+	static inline String PARAMETERS_BASE_PATH = "parameters/";
+	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
+
+	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.
 		TYPE_ROTATION_3D, // Rotation 3D track, can be compressed.
@@ -55,7 +57,7 @@ public:
 		TYPE_ANIMATION,
 	};
 
-	enum InterpolationType {
+	enum InterpolationType : uint8_t {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
 		INTERPOLATION_CUBIC,
@@ -63,26 +65,26 @@ public:
 		INTERPOLATION_CUBIC_ANGLE,
 	};
 
-	enum UpdateMode {
+	enum UpdateMode : uint8_t {
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
 		UPDATE_CAPTURE,
 	};
 
-	enum LoopMode {
+	enum LoopMode : uint8_t {
 		LOOP_NONE,
 		LOOP_LINEAR,
 		LOOP_PINGPONG,
 	};
 
 	// LoopedFlag is used in Animataion to "process the keys at both ends correct".
-	enum LoopedFlag {
+	enum LoopedFlag : uint8_t {
 		LOOPED_FLAG_NONE,
 		LOOPED_FLAG_END,
 		LOOPED_FLAG_START,
 	};
 
-	enum FindMode {
+	enum FindMode : uint8_t {
 		FIND_MODE_NEAREST,
 		FIND_MODE_APPROX,
 		FIND_MODE_EXACT,
@@ -102,7 +104,6 @@ public:
 	};
 #endif // TOOLS_ENABLED
 
-private:
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
@@ -111,10 +112,10 @@ private:
 		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
 		bool imported = false;
 		bool enabled = true;
-		Track() {}
 		virtual ~Track() {}
 	};
 
+private:
 	struct Key {
 		real_t transition = 1.0;
 		double time = 0.0; // Time in secs.
@@ -134,7 +135,7 @@ private:
 	/* POSITION TRACK */
 
 	struct PositionTrack : public Track {
-		Vector<TKey<Vector3>> positions;
+		LocalVector<TKey<Vector3>> positions;
 		int32_t compressed_track = -1;
 		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
@@ -142,7 +143,7 @@ private:
 	/* ROTATION TRACK */
 
 	struct RotationTrack : public Track {
-		Vector<TKey<Quaternion>> rotations;
+		LocalVector<TKey<Quaternion>> rotations;
 		int32_t compressed_track = -1;
 		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
@@ -150,7 +151,7 @@ private:
 	/* SCALE TRACK */
 
 	struct ScaleTrack : public Track {
-		Vector<TKey<Vector3>> scales;
+		LocalVector<TKey<Vector3>> scales;
 		int32_t compressed_track = -1;
 		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
@@ -158,7 +159,7 @@ private:
 	/* BLEND SHAPE TRACK */
 
 	struct BlendShapeTrack : public Track {
-		Vector<TKey<float>> blend_shapes;
+		LocalVector<TKey<float>> blend_shapes;
 		int32_t compressed_track = -1;
 		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
@@ -168,7 +169,7 @@ private:
 	struct ValueTrack : public Track {
 		UpdateMode update_mode = UPDATE_CONTINUOUS;
 		bool update_on_seek = false;
-		Vector<TKey<Variant>> values;
+		LocalVector<TKey<Variant>> values;
 
 		ValueTrack() {
 			type = TYPE_VALUE;
@@ -183,7 +184,7 @@ private:
 	};
 
 	struct MethodTrack : public Track {
-		Vector<MethodKey> methods;
+		LocalVector<MethodKey> methods;
 		MethodTrack() { type = TYPE_METHOD; }
 	};
 
@@ -199,7 +200,7 @@ private:
 	};
 
 	struct BezierTrack : public Track {
-		Vector<TKey<BezierKey>> values;
+		LocalVector<TKey<BezierKey>> values;
 
 		BezierTrack() {
 			type = TYPE_BEZIER;
@@ -217,7 +218,7 @@ private:
 	};
 
 	struct AudioTrack : public Track {
-		Vector<TKey<AudioKey>> values;
+		LocalVector<TKey<AudioKey>> values;
 		bool use_blend = true;
 
 		AudioTrack() {
@@ -228,24 +229,37 @@ private:
 	/* ANIMATION TRACK */
 
 	struct AnimationTrack : public Track {
-		Vector<TKey<StringName>> values;
+		LocalVector<TKey<StringName>> values;
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
 		}
 	};
 
-	Vector<Track *> tracks;
+	/* Marker */
 
-	template <typename T>
-	void _clear(T &p_keys);
+	struct MarkerKey {
+		double time;
+		StringName name;
+		MarkerKey(double p_time, const StringName &p_name) :
+				time(p_time), name(p_name) {}
+		MarkerKey() = default;
+	};
+
+	LocalVector<MarkerKey> marker_names; // time -> name
+	HashMap<StringName, double> marker_times; // name -> time
+	HashMap<StringName, Color> marker_colors; // name -> color
+
+	LocalVector<Track *> tracks;
 
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
+	int _marker_insert(double p_time, LocalVector<MarkerKey> &p_keys, const MarkerKey &p_value);
+
 	template <typename K>
 
-	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
+	inline int _find(const LocalVector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
@@ -260,14 +274,16 @@ private:
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
 	template <typename T>
-	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
+	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <typename T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 1.0 / 30;
+	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
+	bool capture_included = false;
+	void _check_capture_included();
 
 	void _track_update_hash(int p_track);
 
@@ -318,7 +334,7 @@ private:
 	 * data for X / Blend Shape, Y and Z must be normalized first: unorm = float(data) / 65535.0
 	 * **Blend Shape**: (unorm * 2.0 - 1.0) * Compression::BLEND_SHAPE_RANGE
 	 * **Pos/Scale**: unorm_vec3 * bounds[track].size + bounds[track].position
-	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math_PI * 2.0)
+	 * **Rotation**: Quaternion(Vector3::octahedron_decode(unorm_vec3.xy),unorm_vec3.z * Math::PI * 2.0)
 	 * **Frame**: page.time_offset + frame * (1.0/fps)
 	 */
 
@@ -356,10 +372,10 @@ private:
 
 	// bind helpers
 private:
-	bool _float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error);
-	bool _vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
-	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
-	bool _quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	bool _float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error, bool p_is_nearest);
+	bool _vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest);
+	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest);
+	bool _quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest);
 
 	void _position_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error);
 	void _rotation_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
@@ -384,13 +400,19 @@ protected:
 	Vector3 _scale_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	float _blend_shape_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
 	Variant _value_track_interpolate_bind_compat_86629(int p_track, double p_time) const;
-	int _track_find_key_bind_compat_86661(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
+	int _track_find_key_bind_compat_92861(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
 public:
 	int add_track(TrackType p_type, int p_at_pos = -1);
 	void remove_track(int p_track);
+
+	_FORCE_INLINE_ const LocalVector<Track *> &get_tracks() {
+		return tracks;
+	}
+
+	bool is_capture_included() const;
 
 	int get_track_count() const;
 	TrackType track_get_type(int p_track) const;
@@ -416,7 +438,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST, bool p_limit = false, bool p_backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -448,6 +470,7 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
+	Array make_default_bezier_key(float p_value);
 	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
 	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, real_t p_balanced_value_time_ratio = 1.0);
@@ -458,6 +481,8 @@ public:
 #ifdef TOOLS_ENABLED
 	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode = HANDLE_SET_MODE_NONE);
 	HandleMode bezier_track_get_key_handle_mode(int p_track, int p_index) const;
+	bool bezier_track_calculate_handles(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode, Vector2 *r_in_handle, Vector2 *r_out_handle);
+	bool bezier_track_calculate_handles(float p_time, float p_prev_time, float p_prev_value, float p_next_time, float p_next_value, HandleMode p_mode, HandleSetMode p_set_mode, Vector2 *r_in_handle, Vector2 *r_out_handle);
 #endif // TOOLS_ENABLED
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
@@ -490,6 +515,17 @@ public:
 
 	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
+	void add_marker(const StringName &p_name, double p_time);
+	void remove_marker(const StringName &p_name);
+	bool has_marker(const StringName &p_name) const;
+	StringName get_marker_at_time(double p_time) const;
+	StringName get_next_marker(double p_time) const;
+	StringName get_prev_marker(double p_time) const;
+	double get_marker_time(const StringName &p_time) const;
+	PackedStringArray get_marker_names() const;
+	Color get_marker_color(const StringName &p_name) const;
+	void set_marker_color(const StringName &p_name, const Color &p_color);
+
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
@@ -506,6 +542,7 @@ public:
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
 	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
@@ -518,6 +555,22 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+
+	static bool is_less_or_equal_approx(double a, double b) {
+		return a < b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_less_approx(double a, double b) {
+		return a < b && !Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_or_equal_approx(double a, double b) {
+		return a > b || Math::is_equal_approx(a, b);
+	}
+
+	static bool is_greater_approx(double a, double b) {
+		return a > b && !Math::is_equal_approx(a, b);
+	}
 
 	static TrackType get_cache_type(TrackType p_type);
 
@@ -535,5 +588,3 @@ VARIANT_ENUM_CAST(Animation::FindMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
 #endif // TOOLS_ENABLED
-
-#endif // ANIMATION_H

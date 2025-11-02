@@ -1,41 +1,41 @@
 GDTEST_OK
 var test_untyped: int = null
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_with_values: int = null
-  hint=ENUM hint_string="Red:10,Green:20,Blue:30" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red:10,Green:20,Blue:30" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_variant: int = null
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_int: int = 0
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_string: String = ""
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_array_int: Array = Array[int]([])
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_array_string: Array = Array[String]([])
-  hint=TYPE_STRING hint_string="String/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_byte_array: PackedByteArray = PackedByteArray()
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_int32_array: PackedInt32Array = PackedInt32Array()
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_int64_array: PackedInt64Array = PackedInt64Array()
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_weak_packed_string_array: PackedStringArray = PackedStringArray()
-  hint=TYPE_STRING hint_string="String/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_variant: int = null
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_int: int = 0
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_string: String = ""
-  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=ENUM hint_string="Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_array_int: Array = Array[int]([])
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_hard_array_string: Array = Array[String]([])
-  hint=TYPE_STRING hint_string="String/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_variant_array_int: Array = Array[int]([])
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_variant_packed_int32_array: PackedInt32Array = PackedInt32Array()
-  hint=TYPE_STRING hint_string="int/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<int>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_variant_array_string: Array = Array[String]([])
-  hint=TYPE_STRING hint_string="String/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_variant_packed_string_array: PackedStringArray = PackedStringArray()
-  hint=TYPE_STRING hint_string="String/ENUM:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE
+  hint=TYPE_STRING hint_string="<String>/<ENUM>:Red,Green,Blue" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""

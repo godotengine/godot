@@ -1,5 +1,3 @@
-const Utils = preload("../../utils.notest.gd")
-
 @export_dir var test_dir: Array[String]
 @export_dir var test_dir_packed: PackedStringArray
 @export_file var test_file: Array[String]
@@ -63,6 +61,7 @@ var temp_packed_float64_array: PackedFloat64Array
 var temp_packed_color_array: PackedColorArray
 var temp_packed_vector2_array: PackedVector2Array
 var temp_packed_vector3_array: PackedVector3Array
+var temp_packed_vector4_array: PackedVector4Array
 
 @export var test_weak_packed_byte_array = temp_packed_byte_array
 @export var test_weak_packed_int32_array = temp_packed_int32_array
@@ -72,6 +71,7 @@ var temp_packed_vector3_array: PackedVector3Array
 @export var test_weak_packed_color_array = temp_packed_color_array
 @export var test_weak_packed_vector2_array = temp_packed_vector2_array
 @export var test_weak_packed_vector3_array = temp_packed_vector3_array
+@export var test_weak_packed_vector4_array = temp_packed_vector4_array
 
 @export_range(1, 10) var test_range_weak_packed_byte_array = temp_packed_byte_array
 @export_range(1, 10) var test_range_weak_packed_int32_array = temp_packed_int32_array

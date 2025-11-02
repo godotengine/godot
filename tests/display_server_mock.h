@@ -28,16 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MOCK_H
-#define DISPLAY_SERVER_MOCK_H
+#pragma once
 
-#include "servers/display_server_headless.h"
+#include "servers/display/display_server_headless.h"
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that
-// additionally supports rudimentary InputEvent handling and mouse position.
+// additionally supports things like mouse enter/exit events and clipboard.
 class DisplayServerMock : public DisplayServerHeadless {
+	GDSOFTCLASS(DisplayServerMock, DisplayServerHeadless);
+
 private:
 	friend class DisplayServer;
 
@@ -45,7 +46,6 @@ private:
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	bool window_over = false;
 	Callable event_callback;
-	Callable input_event_callback;
 
 	String clipboard_text;
 	String primary_clipboard_text;
@@ -56,20 +56,10 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 		r_error = OK;
 		RasterizerDummy::make_current();
 		return memnew(DisplayServerMock());
-	}
-
-	static void _dispatch_input_events(const Ref<InputEvent> &p_event) {
-		static_cast<DisplayServerMock *>(get_singleton())->_dispatch_input_event(p_event);
-	}
-
-	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
-		if (input_event_callback.is_valid()) {
-			input_event_callback.call(p_event);
-		}
 	}
 
 	void _set_mouse_position(const Point2i &p_position) {
@@ -112,7 +102,7 @@ public:
 	String get_name() const override { return "mock"; }
 
 	// You can simulate DisplayServer-events by calling this function.
-	// The events will be deliverd to Godot's Input-system.
+	// The events will be delivered to Godot's Input-system.
 	// Mouse-events (Button & Motion) will additionally update the DisplayServer's mouse position.
 	// For Mouse motion events, the `relative`-property is set based on the distance to the previous mouse position.
 	void simulate_event(Ref<InputEvent> p_event) {
@@ -153,18 +143,7 @@ public:
 		event_callback = p_callable;
 	}
 
-	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {
-		input_event_callback = p_callable;
-	}
-
 	static void register_mock_driver() {
 		register_create_function("mock", create_func, get_rendering_drivers_func);
 	}
-
-	DisplayServerMock() {
-		Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	}
-	~DisplayServerMock() {}
 };
-
-#endif // DISPLAY_SERVER_MOCK_H

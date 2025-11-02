@@ -2,6 +2,8 @@
  * \file mbedtls/config_adjust_psa_from_legacy.h
  * \brief Adjust PSA configuration: construct PSA configuration from legacy
  *
+ * This is an internal header. Do not include it directly.
+ *
  * When MBEDTLS_PSA_CRYPTO_CONFIG is disabled, we automatically enable
  * cryptographic mechanisms through the PSA interface when the corresponding
  * legacy mechanism is enabled. In many cases, this just enables the PSA
@@ -17,6 +19,14 @@
 
 #ifndef MBEDTLS_CONFIG_ADJUST_PSA_FROM_LEGACY_H
 #define MBEDTLS_CONFIG_ADJUST_PSA_FROM_LEGACY_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include mbedtls/config_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /*
  * Ensure PSA_WANT_* defines are setup properly if MBEDTLS_PSA_CRYPTO_CONFIG

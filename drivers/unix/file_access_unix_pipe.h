@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_UNIX_PIPE_H
-#define FILE_ACCESS_UNIX_PIPE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/os/memory.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #if defined(UNIX_ENABLED)
 
 class FileAccessUnixPipe : public FileAccess {
+	GDSOFTCLASS(FileAccessUnixPipe, FileAccess);
 	bool unlink_on_close = false;
 
 	int fd[2] = { -1, -1 };
@@ -50,7 +50,7 @@ class FileAccessUnixPipe : public FileAccess {
 	void _close();
 
 public:
-	Error open_existing(int p_rfd, int p_wfd);
+	Error open_existing(int p_rfd, int p_wfd, bool p_blocking);
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 
 	virtual bool is_open() const override; ///< true when file is open
@@ -61,23 +61,23 @@ public:
 	virtual void seek(uint64_t p_position) override {}
 	virtual void seek_end(int64_t p_position = 0) override {}
 	virtual uint64_t get_position() const override { return 0; }
-	virtual uint64_t get_length() const override { return 0; }
+	virtual uint64_t get_length() const override;
 
 	virtual bool eof_reached() const override { return false; }
 
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override {}
-	virtual void store_8(uint8_t p_src) override; ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_path) override { return false; }
 
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
 
@@ -93,5 +93,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // FILE_ACCESS_UNIX_PIPE_H

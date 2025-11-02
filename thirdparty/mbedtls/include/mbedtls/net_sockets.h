@@ -229,7 +229,7 @@ int mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len);
 
 /**
  * \brief          Write at most 'len' characters. If no error occurs,
- *                 the actual amount read is returned.
+ *                 the actual amount written is returned.
  *
  * \param ctx      Socket
  * \param buf      The buffer to read from

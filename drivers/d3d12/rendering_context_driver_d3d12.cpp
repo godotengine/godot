@@ -30,6 +30,8 @@
 
 #include "rendering_context_driver_d3d12.h"
 
+#include "d3d12_hooks.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
@@ -37,19 +39,21 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
-#include "dxcapi.h"
+#include <dxcapi.h>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
@@ -63,10 +67,6 @@ const GUID CLSID_D3D12DeviceFactoryGodot = { 0x114863bf, 0xc386, 0x4aee, { 0xb3,
 const GUID CLSID_D3D12DebugGodot = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
 const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
 
-extern "C" {
-char godot_nir_arch_name[32];
-}
-
 #ifdef PIX_ENABLED
 #if defined(__GNUC__)
 #define _MSC_VER 1800
@@ -78,18 +78,25 @@ char godot_nir_arch_name[32];
 #endif
 #endif
 
-RenderingContextDriverD3D12::RenderingContextDriverD3D12() {
-	CharString cs = Engine::get_singleton()->get_architecture_name().ascii();
-	memcpy(godot_nir_arch_name, (const char *)cs.get_data(), cs.size());
-}
+RenderingContextDriverD3D12::RenderingContextDriverD3D12() {}
 
 RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
+	// Let's release manually everything that may still be holding
+	// onto the DLLs before freeing them.
+	device_factory.Reset();
+	dxgi_factory.Reset();
+
 	if (lib_d3d12) {
 		FreeLibrary(lib_d3d12);
 	}
 	if (lib_dxgi) {
 		FreeLibrary(lib_dxgi);
 	}
+#ifdef DCOMP_ENABLED
+	if (lib_dcomp) {
+		FreeLibrary(lib_dcomp);
+	}
+#endif
 }
 
 Error RenderingContextDriverD3D12::_init_device_factory() {
@@ -101,6 +108,11 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 
 	lib_dxgi = LoadLibraryW(L"DXGI.dll");
 	ERR_FAIL_NULL_V(lib_dxgi, ERR_CANT_CREATE);
+
+#ifdef DCOMP_ENABLED
+	lib_dcomp = LoadLibraryW(L"Dcomp.dll");
+	ERR_FAIL_NULL_V(lib_dcomp, ERR_CANT_CREATE);
+#endif
 
 	// Note: symbol is not available in MinGW import library.
 	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetInterface");
@@ -172,7 +184,8 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 
 		Device &device = driver_devices[i];
 		device.name = desc.Description;
-		device.vendor = Vendor(desc.VendorId);
+		device.vendor = desc.VendorId;
+		device.workarounds = Workarounds();
 
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
 			device.type = DEVICE_TYPE_CPU;

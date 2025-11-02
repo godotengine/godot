@@ -86,7 +86,7 @@ layout(push_constant, std430) uniform Params {
 	uint cell_offset;
 	uint cell_count;
 	float aniso_strength;
-	uint pad;
+	float cell_size;
 }
 params;
 
@@ -126,7 +126,8 @@ layout(push_constant, std430) uniform Params {
 	float dynamic_range;
 	bool on_mipmap;
 	float propagation;
-	float pad[3];
+	float cell_size;
+	float pad[2];
 }
 params;
 
@@ -209,7 +210,10 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 			return false;
 		}
 
-		attenuation = get_omni_attenuation(distance, 1.0 / lights.data[light].radius, lights.data[light].attenuation);
+		attenuation = get_omni_attenuation(
+				distance * params.cell_size,
+				1.0 / (lights.data[light].radius * params.cell_size),
+				lights.data[light].attenuation);
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
 			vec3 rel = normalize(pos - light_pos);

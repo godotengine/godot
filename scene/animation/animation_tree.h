@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TREE_H
-#define ANIMATION_TREE_H
+#pragma once
 
 #include "animation_mixer.h"
 #include "scene/resources/animation.h"
@@ -59,8 +58,8 @@ public:
 	};
 
 	bool closable = false;
-	Vector<Input> inputs;
-	HashMap<NodePath, bool> filter;
+	LocalVector<Input> inputs;
+	AHashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
 	// To propagate information from upstream for use in estimation of playback progress.
@@ -74,7 +73,7 @@ public:
 
 		// Needs internally to estimate remain time, the previous frame values are not retained.
 		Animation::LoopMode loop_mode = Animation::LOOP_NONE;
-		bool is_just_looped = false; // For breaking loop, it is true when just looped.
+		bool will_end = false; // For breaking loop, it is true when just looped.
 		bool is_infinity = false; // For unpredictable state machine's end.
 
 		bool is_looping() {
@@ -84,31 +83,70 @@ public:
 			if ((is_looping() && !p_break_loop) || is_infinity) {
 				return HUGE_LENGTH;
 			}
-			if (p_break_loop && is_just_looped) {
+			if (is_looping() && p_break_loop && will_end) {
 				return 0;
 			}
-			return length - position;
+			double remain = length - position;
+			if (Math::is_zero_approx(remain)) {
+				return 0;
+			}
+			return remain;
 		}
 	};
 
 	// Temporary state for blending process which needs to be stored in each AnimationNodes.
 	struct NodeState {
+		friend AnimationNode;
+
+	private:
 		StringName base_path;
+
+	public:
 		AnimationNode *parent = nullptr;
 		Vector<StringName> connections;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> track_weights;
+
+		const StringName get_base_path() const {
+			return base_path;
+		}
+
 	} node_state;
 
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
 	struct ProcessState {
 		AnimationTree *tree = nullptr;
-		HashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
+		const AHashMap<NodePath, int> *track_map; // TODO: Is there a better way to manage filter/tracks?
 		bool is_testing = false;
 		bool valid = false;
 		String invalid_reasons;
 		uint64_t last_pass = 0;
 	} *process_state = nullptr;
 
+private:
+	mutable AHashMap<StringName, int> property_cache;
+
+public:
+	void set_node_state_base_path(const StringName p_base_path) {
+		if (p_base_path != node_state.base_path) {
+			node_state.base_path = p_base_path;
+			make_cache_dirty();
+		}
+	}
+
+	void set_node_state_base_path(const String p_base_path) {
+		if (p_base_path != node_state.base_path) {
+			node_state.base_path = p_base_path;
+			make_cache_dirty();
+		}
+	}
+
+	const StringName get_node_state_base_path() const {
+		return node_state.get_base_path();
+	}
+
+	void make_cache_dirty() {
+		property_cache.clear();
+	}
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
@@ -147,7 +185,7 @@ protected:
 	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
 	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
 	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
-	GDVIRTUAL4RC(double, _process, double, bool, bool, bool)
+	GDVIRTUAL4R(double, _process, double, bool, bool, bool)
 	GDVIRTUAL0RC(String, _get_caption)
 	GDVIRTUAL0RC(bool, _has_filter)
 
@@ -187,6 +225,10 @@ public:
 	void set_deletable(bool p_closable);
 	bool is_deletable() const;
 
+	ObjectID get_processing_animation_tree_instance_id() const;
+
+	bool is_process_testing() const;
+
 	virtual bool has_filter() const;
 
 #ifdef TOOLS_ENABLED
@@ -209,9 +251,6 @@ protected:
 	virtual void _tree_changed();
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
-
-public:
-	AnimationRootNode() {}
 };
 
 class AnimationNodeStartState : public AnimationRootNode {
@@ -245,15 +284,15 @@ private:
 
 	friend class AnimationNode;
 
-	List<PropertyInfo> properties;
-	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
-	HashMap<ObjectID, StringName> property_reference_map;
-	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
+	mutable List<PropertyInfo> properties;
+	mutable AHashMap<StringName, AHashMap<StringName, StringName>> property_parent_map;
+	mutable AHashMap<ObjectID, StringName> property_reference_map;
+	mutable AHashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
 
-	bool properties_dirty = true;
+	mutable bool properties_dirty = true;
 
-	void _update_properties();
-	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node);
+	void _update_properties() const;
+	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node) const;
 
 	void _tree_changed();
 	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
@@ -263,8 +302,8 @@ private:
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
 	};
-	HashMap<StringName, Vector<Activity>> input_activity_map;
-	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+	mutable AHashMap<StringName, LocalVector<Activity>> input_activity_map;
+	mutable AHashMap<StringName, int> input_activity_map_get;
 
 	NodePath animation_player;
 
@@ -273,6 +312,7 @@ private:
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	virtual uint32_t _get_libraries_property_usage() const override;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	virtual void _validate_property(PropertyInfo &p_property) const override;
 	void _notification(int p_what);
@@ -282,7 +322,7 @@ private:
 	virtual void _set_active(bool p_active) override;
 
 	// Make animation instances.
-	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) override;
 
 #ifndef DISABLE_DEPRECATED
 	void _set_process_callback_bind_compat_80813(AnimationProcessCallback p_mode);
@@ -312,6 +352,10 @@ public:
 
 	uint64_t get_last_process_pass() const;
 
+#ifdef TOOLS_ENABLED
+	String get_editor_error_message() const;
+#endif
+
 	AnimationTree();
 	~AnimationTree();
 };
@@ -319,5 +363,3 @@ public:
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback);
 #endif // DISABLE_DEPRECATED
-
-#endif // ANIMATION_TREE_H

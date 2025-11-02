@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_CACHE_INTERFACE_H
-#define SCENE_CACHE_INTERFACE_H
+#pragma once
 
-#include "scene/main/multiplayer_api.h"
+#include "core/object/ref_counted.h"
 
 class Node;
 class SceneMultiplayer;
@@ -49,8 +48,18 @@ private:
 		HashMap<int, bool> confirmed_peers; // peer id, confirmed
 	};
 
+	struct RecvNode {
+		ObjectID oid;
+		NodePath path;
+
+		RecvNode(const ObjectID &p_oid, const NodePath &p_path) {
+			oid = p_oid;
+			path = p_path;
+		}
+	};
+
 	struct PeerInfo {
-		HashMap<int, ObjectID> recv_nodes; // remote cache id, ObjectID
+		HashMap<int, RecvNode> recv_nodes; // remote cache id, (ObjectID, NodePath)
 		HashSet<ObjectID> sent_nodes;
 	};
 
@@ -79,5 +88,3 @@ public:
 
 	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
 };
-
-#endif // SCENE_CACHE_INTERFACE_H

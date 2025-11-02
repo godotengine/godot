@@ -30,7 +30,7 @@
 
 #include "audio_effect_hard_limiter.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
@@ -47,7 +47,7 @@ void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, Aud
 		sample_left *= pre_gain;
 		sample_right *= pre_gain;
 
-		float largest_sample = MAX(ABS(sample_left), ABS(sample_right));
+		float largest_sample = MAX(Math::abs(sample_left), Math::abs(sample_right));
 
 		release_factor = MAX(0.0, release_factor - 1.0 / sample_rate);
 		release_factor = MIN(release_factor, release);

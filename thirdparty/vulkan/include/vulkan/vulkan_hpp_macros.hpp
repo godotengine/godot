@@ -88,10 +88,11 @@
 #endif
 
 // 32-bit vulkan is not typesafe for non-dispatchable handles, so don't allow copy constructors on this platform by default.
-// To enable this feature on 32-bit platforms please define VULKAN_HPP_TYPESAFE_CONVERSION
+// To enable this feature on 32-bit platforms please #define VULKAN_HPP_TYPESAFE_CONVERSION 1
+// To disable this feature on 64-bit platforms please #define VULKAN_HPP_TYPESAFE_CONVERSION 0
 #if ( VK_USE_64_BIT_PTR_DEFINES == 1 )
 #  if !defined( VULKAN_HPP_TYPESAFE_CONVERSION )
-#    define VULKAN_HPP_TYPESAFE_CONVERSION
+#    define VULKAN_HPP_TYPESAFE_CONVERSION 1
 #  endif
 #endif
 
@@ -131,7 +132,7 @@
 #  endif
 #endif
 
-#if defined( VULKAN_HPP_TYPESAFE_CONVERSION )
+#if ( VULKAN_HPP_TYPESAFE_CONVERSION == 1 )
 #  define VULKAN_HPP_TYPESAFE_EXPLICIT
 #else
 #  define VULKAN_HPP_TYPESAFE_EXPLICIT explicit

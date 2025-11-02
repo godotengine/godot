@@ -30,8 +30,6 @@
 
 #include "cone_twist_joint_3d.h"
 
-#include "scene/scene_string_names.h"
-
 void ConeTwistJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &ConeTwistJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &ConeTwistJoint3D::get_param);
@@ -89,8 +87,8 @@ void ConeTwistJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, Phys
 }
 
 ConeTwistJoint3D::ConeTwistJoint3D() {
-	params[PARAM_SWING_SPAN] = Math_PI * 0.25;
-	params[PARAM_TWIST_SPAN] = Math_PI;
+	params[PARAM_SWING_SPAN] = Math::PI * 0.25;
+	params[PARAM_TWIST_SPAN] = Math::PI;
 	params[PARAM_BIAS] = 0.3;
 	params[PARAM_SOFTNESS] = 0.8;
 	params[PARAM_RELAXATION] = 1.0;

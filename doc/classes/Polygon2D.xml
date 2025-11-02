@@ -71,9 +71,6 @@
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
 			If [code]true[/code], polygon edges will be anti-aliased.
 		</member>
-		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[]">
-			Internal list of [Bone2D] nodes used by the assigned [member skeleton]. Edited using the Polygon2D editor ("UV" button on the top toolbar).
-		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The polygon's fill color. If [member texture] is set, it will be multiplied by this color. It will also be the default color for vertices not set in [member vertex_colors].
 		</member>

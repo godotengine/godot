@@ -230,7 +230,7 @@ namespace GodotTools.Build
 
             if (!success)
             {
-                ShowBuildErrorDialog("Failed to build project");
+                ShowBuildErrorDialog("Failed to build project. Check MSBuild panel for details.");
             }
 
             return success;
@@ -263,11 +263,6 @@ namespace GodotTools.Build
             {
                 pr.Step("Running dotnet publish", 0);
                 success = Publish(buildInfo);
-            }
-
-            if (!success)
-            {
-                ShowBuildErrorDialog("Failed to publish .NET project");
             }
 
             return success;

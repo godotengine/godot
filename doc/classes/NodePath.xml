@@ -23,14 +23,15 @@
 		[/codeblock]
 		Despite their name, node paths may also point to a property:
 		[codeblock]
-		^"position"            # Points to this object's position.
-		^"position:x"          # Points to this object's position in the x axis.
+		^":position"           # Points to this object's position.
+		^":position:x"         # Points to this object's position in the x axis.
 		^"Camera3D:rotation:y" # Points to the child Camera3D and its y rotation.
 		^"/root:size:x"        # Points to the root Window and its width.
 		[/codeblock]
+		In some situations, it's possible to omit the leading [code]:[/code] when pointing to an object's property. As an example, this is the case with [method Object.set_indexed] and [method Tween.tween_property], as those methods call [method NodePath.get_as_property_path] under the hood. However, it's generally recommended to keep the [code]:[/code] prefix.
 		Node paths cannot check whether they are valid and may point to nodes or properties that do not exist. Their meaning depends entirely on the context in which they're used.
 		You usually do not have to worry about the [NodePath] type, as strings are automatically converted to the type when necessary. There are still times when defining node paths is useful. For example, exported [NodePath] properties allow you to easily select any node within the currently edited scene. They are also automatically updated when moving, renaming or deleting nodes in the scene tree editor. See also [annotation @GDScript.@export_node_path].
-		See also [StringName], which is a similar type designed for optimised strings.
+		See also [StringName], which is a similar type designed for optimized strings.
 		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
@@ -56,7 +57,7 @@
 			<description>
 				Constructs a [NodePath] from a [String]. The created path is absolute if prefixed with a slash (see [method is_absolute]).
 				The "subnames" optionally included after the path to the target node can point to properties, and can also be nested.
-				Examples of strings that could be node paths:
+				The following strings can be valid node paths:
 				[codeblock]
 				# Points to the Sprite2D node.
 				"Level/RigidBody2D/Sprite2D"
@@ -99,7 +100,7 @@
 
 				// propertyPath points to the "position" in the "x" axis of this node.
 				NodePath propertyPath = nodePath.GetAsPropertyPath();
-				GD.Print(propertyPath); // Prints ":position:x".
+				GD.Print(propertyPath); // Prints ":position:x"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -117,11 +118,11 @@
 				[codeblocks]
 				[gdscript]
 				var node_path = ^"Sprite2D:texture:resource_name"
-				print(node_path.get_concatenated_subnames()) # Prints "texture:resource_name".
+				print(node_path.get_concatenated_subnames()) # Prints "texture:resource_name"
 				[/gdscript]
 				[csharp]
 				var nodePath = new NodePath("Sprite2D:texture:resource_name");
-				GD.Print(nodePath.GetConcatenatedSubnames()); // Prints "texture:resource_name".
+				GD.Print(nodePath.GetConcatenatedSubnames()); // Prints "texture:resource_name"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -134,15 +135,15 @@
 				[codeblocks]
 				[gdscript]
 				var sprite_path = NodePath("../RigidBody2D/Sprite2D")
-				print(sprite_path.get_name(0)) # Prints "..".
-				print(sprite_path.get_name(1)) # Prints "RigidBody2D".
-				print(sprite_path.get_name(2)) # Prints "Sprite".
+				print(sprite_path.get_name(0)) # Prints ".."
+				print(sprite_path.get_name(1)) # Prints "RigidBody2D"
+				print(sprite_path.get_name(2)) # Prints "Sprite"
 				[/gdscript]
 				[csharp]
 				var spritePath = new NodePath("../RigidBody2D/Sprite2D");
-				GD.Print(spritePath.GetName(0)); // Prints "..".
-				GD.Print(spritePath.GetName(1)); // Prints "PathFollow2D".
-				GD.Print(spritePath.GetName(2)); // Prints "Sprite".
+				GD.Print(spritePath.GetName(0)); // Prints ".."
+				GD.Print(spritePath.GetName(1)); // Prints "PathFollow2D"
+				GD.Print(spritePath.GetName(2)); // Prints "Sprite"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -162,13 +163,13 @@
 				[codeblocks]
 				[gdscript]
 				var path_to_name = NodePath("Sprite2D:texture:resource_name")
-				print(path_to_name.get_subname(0)) # Prints "texture".
-				print(path_to_name.get_subname(1)) # Prints "resource_name".
+				print(path_to_name.get_subname(0)) # Prints "texture"
+				print(path_to_name.get_subname(1)) # Prints "resource_name"
 				[/gdscript]
 				[csharp]
 				var pathToName = new NodePath("Sprite2D:texture:resource_name");
-				GD.Print(pathToName.GetSubname(0)); // Prints "texture".
-				GD.Print(pathToName.GetSubname(1)); // Prints "resource_name".
+				GD.Print(pathToName.GetSubname(0)); // Prints "texture"
+				GD.Print(pathToName.GetSubname(1)); // Prints "resource_name"
 				[/csharp]
 				[/codeblocks]
 			</description>

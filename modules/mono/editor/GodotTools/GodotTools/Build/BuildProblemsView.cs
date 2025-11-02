@@ -280,7 +280,7 @@ namespace GodotTools.Build
 
             if (_problemsContextMenu.ItemCount > 0)
             {
-                _problemsContextMenu.Position = (Vector2I)(_problemsTree.GlobalPosition + position);
+                _problemsContextMenu.Position = (Vector2I)(GetScreenPosition() + position);
                 _problemsContextMenu.Popup();
             }
         }

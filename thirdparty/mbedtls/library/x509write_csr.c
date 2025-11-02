@@ -43,6 +43,10 @@ void mbedtls_x509write_csr_init(mbedtls_x509write_csr *ctx)
 
 void mbedtls_x509write_csr_free(mbedtls_x509write_csr *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
     mbedtls_asn1_free_named_data_list(&ctx->subject);
     mbedtls_asn1_free_named_data_list(&ctx->extensions);
 
@@ -62,6 +66,7 @@ void mbedtls_x509write_csr_set_key(mbedtls_x509write_csr *ctx, mbedtls_pk_contex
 int mbedtls_x509write_csr_set_subject_name(mbedtls_x509write_csr *ctx,
                                            const char *subject_name)
 {
+    mbedtls_asn1_free_named_data_list(&ctx->subject);
     return mbedtls_x509_string_to_names(&ctx->subject, subject_name);
 }
 

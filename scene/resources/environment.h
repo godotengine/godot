@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "scene/resources/sky.h"
@@ -67,6 +66,7 @@ public:
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
+		TONE_MAPPER_AGX,
 	};
 
 	enum SDFGIYScale {
@@ -122,7 +122,7 @@ private:
 	int ssr_max_steps = 64;
 	float ssr_fade_in = 0.15;
 	float ssr_fade_out = 2.0;
-	float ssr_depth_tolerance = 0.2;
+	float ssr_depth_tolerance = 0.5;
 	void _update_ssr();
 
 	// SSAO
@@ -163,12 +163,12 @@ private:
 	bool glow_enabled = false;
 	Vector<float> glow_levels;
 	bool glow_normalize_levels = false;
-	float glow_intensity = 0.8;
+	float glow_intensity = 0.3;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
 	float glow_bloom = 0.0;
-	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
-	float glow_hdr_bleed_threshold = 1.0;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SCREEN;
+	float glow_hdr_bleed_threshold = 0.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
 	float glow_map_strength = 0.8f;
@@ -453,5 +453,3 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::FogMode)
-
-#endif // ENVIRONMENT_H

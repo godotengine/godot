@@ -30,7 +30,9 @@
 
 #include "mesh_library.h"
 
+#ifndef PHYSICS_3D_DISABLED
 #include "box_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -47,6 +49,25 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_mesh(idx, p_value);
 		} else if (what == "mesh_transform") {
 			set_item_mesh_transform(idx, p_value);
+		} else if (what == "mesh_cast_shadow") {
+			switch ((int)p_value) {
+				case 0: {
+					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+				} break;
+				case 1: {
+					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+				} break;
+				case 2: {
+					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+				} break;
+				case 3: {
+					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+				} break;
+				default: {
+					set_item_mesh_cast_shadow(idx, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+				} break;
+			}
+#ifndef PHYSICS_3D_DISABLED
 		} else if (what == "shape") {
 			Vector<ShapeData> shapes;
 			ShapeData sd;
@@ -55,6 +76,7 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_shapes(idx, shapes);
 		} else if (what == "shapes") {
 			_set_item_shapes(idx, p_value);
+#endif // PHYSICS_3D_DISABLED
 		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
 		} else if (what == "navigation_mesh") {
@@ -91,8 +113,12 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_mesh(idx);
 	} else if (what == "mesh_transform") {
 		r_ret = get_item_mesh_transform(idx);
+	} else if (what == "mesh_cast_shadow") {
+		r_ret = (int)get_item_mesh_cast_shadow(idx);
+#ifndef PHYSICS_3D_DISABLED
 	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
+#endif // PHYSICS_3D_DISABLED
 	} else if (what == "navigation_mesh") {
 		r_ret = get_item_navigation_mesh(idx);
 	} else if (what == "navigation_mesh_transform") {
@@ -120,6 +146,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
@@ -154,12 +181,20 @@ void MeshLibrary::set_item_mesh_transform(int p_item, const Transform3D &p_trans
 	emit_changed();
 }
 
+void MeshLibrary::set_item_mesh_cast_shadow(int p_item, RS::ShadowCastingSetting p_shadow_casting_setting) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].mesh_cast_shadow = p_shadow_casting_setting;
+	emit_changed();
+}
+
+#ifndef PHYSICS_3D_DISABLED
 void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].shapes = p_shapes;
 	emit_changed();
 	notify_property_list_changed();
 }
+#endif // PHYSICS_3D_DISABLED
 
 void MeshLibrary::set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -200,10 +235,17 @@ Transform3D MeshLibrary::get_item_mesh_transform(int p_item) const {
 	return item_map[p_item].mesh_transform;
 }
 
+RS::ShadowCastingSetting MeshLibrary::get_item_mesh_cast_shadow(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].mesh_cast_shadow;
+}
+
+#ifndef PHYSICS_3D_DISABLED
 Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Vector<ShapeData>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].shapes;
 }
+#endif // PHYSICS_3D_DISABLED
 
 Ref<NavigationMesh> MeshLibrary::get_item_navigation_mesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<NavigationMesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -270,6 +312,7 @@ int MeshLibrary::get_last_unused_item_id() const {
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void MeshLibrary::_set_item_shapes(int p_item, const Array &p_shapes) {
 	Array arr_shapes = p_shapes;
 	int size = p_shapes.size();
@@ -319,6 +362,7 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 
 	return ret;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void MeshLibrary::reset_state() {
 	clear();
@@ -328,18 +372,24 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
+	ClassDB::bind_method(D_METHOD("set_item_mesh_cast_shadow", "id", "shadow_casting_setting"), &MeshLibrary::set_item_mesh_cast_shadow);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh_transform", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
+#endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
+	ClassDB::bind_method(D_METHOD("get_item_mesh_cast_shadow", "id"), &MeshLibrary::get_item_mesh_cast_shadow);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh", "id"), &MeshLibrary::get_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh_transform", "id"), &MeshLibrary::get_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
+#endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("find_item_by_name", "name"), &MeshLibrary::find_item_by_name);

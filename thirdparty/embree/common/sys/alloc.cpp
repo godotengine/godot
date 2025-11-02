@@ -12,75 +12,6 @@
   
 namespace embree
 {
-  size_t total_allocations = 0;
-
-#if defined(EMBREE_SYCL_SUPPORT)
-  
-  __thread sycl::context* tls_context_tutorial = nullptr;
-  __thread sycl::device* tls_device_tutorial = nullptr;
-  
-  __thread sycl::context* tls_context_embree = nullptr;
-  __thread sycl::device* tls_device_embree = nullptr;
-  
-  void enableUSMAllocEmbree(sycl::context* context, sycl::device* device)
-  {
-    // -- GODOT start --
-    // if (tls_context_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
-    // if (tls_device_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
-    if (tls_context_embree != nullptr) {
-      abort();
-    }
-    if (tls_device_embree != nullptr) {
-      abort();
-    }
-    // -- GODOT end --
-    tls_context_embree = context;
-    tls_device_embree = device;
-  }
-
-  void disableUSMAllocEmbree()
-  {
-    // -- GODOT start --
-    // if (tls_context_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
-    // if (tls_device_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
-    if (tls_context_embree  == nullptr) {
-      abort();
-    }
-    if (tls_device_embree  == nullptr) {
-      abort();
-    }
-    // -- GODOT end --
-    tls_context_embree = nullptr;
-    tls_device_embree = nullptr;
-  }
-
-  void enableUSMAllocTutorial(sycl::context* context, sycl::device* device)
-  {
-    //if (tls_context_tutorial != nullptr) throw std::runtime_error("USM allocation already enabled");
-    //if (tls_device_tutorial != nullptr) throw std::runtime_error("USM allocation already enabled");
-    tls_context_tutorial = context;
-    tls_device_tutorial = device;
-  }
-
-  void disableUSMAllocTutorial()
-  {
-    // -- GODOT start --
-    // if (tls_context_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
-    // if (tls_device_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
-    if (tls_context_tutorial  == nullptr) {
-      abort();
-    }
-    if (tls_device_tutorial  == nullptr) {
-      abort();
-    }
-    // -- GODOT end --
-    
-    tls_context_tutorial = nullptr;
-    tls_device_tutorial = nullptr;
-  }
-
-#endif
-  
   void* alignedMalloc(size_t size, size_t align)
   {
     if (size == 0)
@@ -88,20 +19,16 @@ namespace embree
 
     assert((align & (align-1)) == 0);
     void* ptr = _mm_malloc(size,align);
-    // -- GODOT start --
-    // if (size != 0 && ptr == nullptr)
-    //   throw std::bad_alloc();
-    if (size != 0 && ptr == nullptr) {
-      abort();
-    }
-    // -- GODOT end --
+    if (size != 0 && ptr == nullptr)
+      abort(); //throw std::bad_alloc();
     return ptr;
   }
 
   void alignedFree(void* ptr)
   {
-    if (ptr)
+    if (ptr) {
       _mm_free(ptr);
+    }
   }
 
 #if defined(EMBREE_SYCL_SUPPORT)
@@ -115,69 +42,66 @@ namespace embree
       return nullptr;
 
     assert((align & (align-1)) == 0);
-    total_allocations++;    
 
     void* ptr = nullptr;
-    if (mode == EMBREE_USM_SHARED_DEVICE_READ_ONLY)
+    if (mode == EmbreeUSMMode::DEVICE_READ_ONLY)
       ptr = sycl::aligned_alloc_shared(align,size,*device,*context,sycl::ext::oneapi::property::usm::device_read_only());
     else
       ptr = sycl::aligned_alloc_shared(align,size,*device,*context);
-      
-    // -- GODOT start --
-    // if (size != 0 && ptr == nullptr)
-    //   throw std::bad_alloc();
-    if (size != 0 && ptr == nullptr) {
-      abort();
+
+    if (size != 0 && ptr == nullptr)
+      abort(); //throw std::bad_alloc();
+
+    return ptr;
+  }
+
+  void* alignedSYCLMalloc(sycl::context* context, sycl::device* device, size_t size, size_t align, EmbreeUSMMode mode, EmbreeMemoryType type)
+  {
+    assert(context);
+    assert(device);
+    
+    if (size == 0)
+      return nullptr;
+
+    assert((align & (align-1)) == 0);
+
+    void* ptr = nullptr;
+    if (type == EmbreeMemoryType::USM_SHARED) {
+      if (mode == EmbreeUSMMode::DEVICE_READ_ONLY)
+        ptr = sycl::aligned_alloc_shared(align,size,*device,*context,sycl::ext::oneapi::property::usm::device_read_only());
+      else
+        ptr = sycl::aligned_alloc_shared(align,size,*device,*context);
     }
-    // -- GODOT end --
+    else if (type == EmbreeMemoryType::USM_HOST) {
+      ptr = sycl::aligned_alloc_host(align,size,*context);
+    }
+    else if (type == EmbreeMemoryType::USM_DEVICE) {
+      ptr = sycl::aligned_alloc_device(align,size,*device,*context);
+    }
+    else {
+      ptr = alignedMalloc(size,align);
+    }
+
+    if (size != 0 && ptr == nullptr)
+      abort(); //throw std::bad_alloc();
 
     return ptr;
   }
   
-  static MutexSys g_alloc_mutex;
-  
-  void* alignedSYCLMalloc(size_t size, size_t align, EmbreeUSMMode mode)
-  {
-    if (tls_context_tutorial) return alignedSYCLMalloc(tls_context_tutorial, tls_device_tutorial, size, align, mode);
-    if (tls_context_embree  ) return alignedSYCLMalloc(tls_context_embree,   tls_device_embree,   size, align, mode);
-    return nullptr;
-  }
-
   void alignedSYCLFree(sycl::context* context, void* ptr)
   {
     assert(context);
     if (ptr) {
-      sycl::free(ptr,*context);
+      sycl::usm::alloc type = sycl::get_pointer_type(ptr, *context);
+      if (type == sycl::usm::alloc::host || type == sycl::usm::alloc::device || type == sycl::usm::alloc::shared)
+        sycl::free(ptr,*context);
+      else {
+        alignedFree(ptr);
+      }
     }
   }
 
-  void alignedSYCLFree(void* ptr)
-  {
-    if (tls_context_tutorial) return alignedSYCLFree(tls_context_tutorial, ptr);
-    if (tls_context_embree  ) return alignedSYCLFree(tls_context_embree, ptr);
-  }
-
 #endif
-
-  void* alignedUSMMalloc(size_t size, size_t align, EmbreeUSMMode mode)
-  {
-#if defined(EMBREE_SYCL_SUPPORT)
-    if (tls_context_embree || tls_context_tutorial)
-      return alignedSYCLMalloc(size,align,mode);
-    else
-#endif
-      return alignedMalloc(size,align);
-  }
-
-  void alignedUSMFree(void* ptr)
-  {
-#if defined(EMBREE_SYCL_SUPPORT)
-    if (tls_context_embree || tls_context_tutorial)
-      return alignedSYCLFree(ptr);
-    else
-#endif
-      return alignedFree(ptr);
-  }
 
   static bool huge_pages_enabled = false;
   static MutexSys os_init_mutex;
@@ -275,12 +199,7 @@ namespace embree
     /* fall back to 4k pages */
     int flags = MEM_COMMIT | MEM_RESERVE;
     char* ptr = (char*) VirtualAlloc(nullptr,bytes,flags,PAGE_READWRITE);
-    // -- GODOT start --
-    // if (ptr == nullptr) throw std::bad_alloc();
-    if (ptr == nullptr) {
-      abort();
-    }
-    // -- GODOT end --
+    if (ptr == nullptr) abort(); //throw std::bad_alloc();
     hugepages = false;
     return ptr;
   }
@@ -296,13 +215,8 @@ namespace embree
     if (bytesNew >= bytesOld)
       return bytesOld;
 
-    // -- GODOT start --
-    // if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
-    //   throw std::bad_alloc();
-    if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT)) {
-      abort();
-    }
-    // -- GODOT end --
+    if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
+      abort(); //throw std::bad_alloc();
 
     return bytesNew;
   }
@@ -312,13 +226,8 @@ namespace embree
     if (bytes == 0) 
       return;
 
-    // -- GODOT start --
-    // if (!VirtualFree(ptr,0,MEM_RELEASE))
-    //   throw std::bad_alloc();
-    if (!VirtualFree(ptr,0,MEM_RELEASE)) {
-      abort();
-    }
-    // -- GODOT end --
+    if (!VirtualFree(ptr,0,MEM_RELEASE))
+      abort(); //throw std::bad_alloc();
   }
 
   void os_advise(void *ptr, size_t bytes)
@@ -422,12 +331,7 @@ namespace embree
 
     /* fallback to 4k pages */
     void* ptr = (char*) mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-    // -- GODOT start --
-    // if (ptr == MAP_FAILED) throw std::bad_alloc();
-    if (ptr == MAP_FAILED) {
-      abort();
-    }
-    // -- GODOT end --
+    if (ptr == MAP_FAILED) abort(); //throw std::bad_alloc();
     hugepages = false;
 
     /* advise huge page hint for THP */
@@ -443,13 +347,8 @@ namespace embree
     if (bytesNew >= bytesOld)
       return bytesOld;
 
-    // -- GODOT start --
-    // if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
-    //   throw std::bad_alloc();
-    if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1) {
-      abort();
-    }
-    // -- GODOT end --
+    if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
+      abort(); //throw std::bad_alloc();
 
     return bytesNew;
   }
@@ -462,13 +361,8 @@ namespace embree
     /* for hugepages we need to also align the size */
     const size_t pageSize = hugepages ? PAGE_SIZE_2M : PAGE_SIZE_4K;
     bytes = (bytes+pageSize-1) & ~(pageSize-1);
-    // -- GODOT start --
-    // if (munmap(ptr,bytes) == -1)
-    //   throw std::bad_alloc();
-    if (munmap(ptr,bytes) == -1) {
-      abort();
-    }
-    // -- GODOT end --
+    if (munmap(ptr,bytes) == -1)
+      abort(); //throw std::bad_alloc();
   }
 
   /* hint for transparent huge pages (THP) */

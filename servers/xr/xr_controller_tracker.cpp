@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 
-void XRControllerTracker::_bind_methods(){};
+void XRControllerTracker::_bind_methods() {}
 
 XRControllerTracker::XRControllerTracker() {
 	type = XRServer::TRACKER_CONTROLLER;

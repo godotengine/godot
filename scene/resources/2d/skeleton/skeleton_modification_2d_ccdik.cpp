@@ -31,10 +31,6 @@
 #include "skeleton_modification_2d_ccdik.h"
 #include "scene/2d/skeleton_2d.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif // TOOLS_ENABLED
-
 bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -175,13 +171,13 @@ void SkeletonModification2DCCDIK::_execute(float p_delta) {
 		return;
 	}
 
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+	Node2D *target = ObjectDB::get_instance<Node2D>(target_node_cache);
 	if (!target || !target->is_inside_tree()) {
 		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
 	}
 
-	Node2D *tip = Object::cast_to<Node2D>(ObjectDB::get_instance(tip_node_cache));
+	Node2D *tip = ObjectDB::get_instance<Node2D>(tip_node_cache);
 	if (!tip || !tip->is_inside_tree()) {
 		ERR_PRINT_ONCE("Tip node is not in the scene tree. Cannot execute modification!");
 		return;

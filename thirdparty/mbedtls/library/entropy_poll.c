@@ -5,9 +5,11 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#if defined(__linux__) || defined(__midipix__) && !defined(_GNU_SOURCE)
+#if defined(__linux__) || defined(__midipix__)
 /* Ensure that syscall() is available even when compiling with -std=c99 */
+#if !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
+#endif
 #endif
 
 #include "common.h"

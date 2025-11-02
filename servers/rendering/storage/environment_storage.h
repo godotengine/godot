@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ENVIRONMENT_STORAGE_H
-#define ENVIRONMENT_STORAGE_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererEnvironmentStorage {
 private:
@@ -57,6 +56,7 @@ private:
 		float ambient_light_energy = 1.0;
 		float ambient_sky_contribution = 1.0;
 		RS::EnvironmentReflectionSource reflection_source = RS::ENV_REFLECTION_SOURCE_BG;
+		int camera_feed_id = 0;
 
 		// Tonemap
 		RS::EnvironmentToneMapper tone_mapper;
@@ -98,12 +98,12 @@ private:
 		// Glow
 		bool glow_enabled = false;
 		Vector<float> glow_levels;
-		float glow_intensity = 0.8;
+		float glow_intensity = 0.3;
 		float glow_strength = 1.0;
 		float glow_bloom = 0.0;
 		float glow_mix = 0.01;
-		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT;
-		float glow_hdr_bleed_threshold = 1.0;
+		RS::EnvironmentGlowBlendMode glow_blend_mode = RS::ENV_GLOW_BLEND_MODE_SCREEN;
+		float glow_hdr_bleed_threshold = 0.0;
 		float glow_hdr_luminance_cap = 12.0;
 		float glow_hdr_bleed_scale = 2.0;
 		float glow_map_strength = 0.0f; // 1.0f in GLES3 ??
@@ -114,7 +114,7 @@ private:
 		int ssr_max_steps = 64;
 		float ssr_fade_in = 0.15;
 		float ssr_fade_out = 2.0;
-		float ssr_depth_tolerance = 0.2;
+		float ssr_depth_tolerance = 0.5;
 
 		// SSAO
 		bool ssao_enabled = false;
@@ -181,10 +181,8 @@ public:
 	void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
 	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG);
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
 	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
-#endif
+	int environment_get_camera_feed_id(RID p_env) const;
 
 	RS::EnvironmentBG environment_get_background(RID p_env) const;
 	RID environment_get_sky(RID p_env) const;
@@ -306,5 +304,3 @@ public:
 	bool environment_get_use_1d_color_correction(RID p_env) const;
 	RID environment_get_color_correction(RID p_env) const;
 };
-
-#endif // ENVIRONMENT_STORAGE_H

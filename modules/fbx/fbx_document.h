@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FBX_DOCUMENT_H
-#define FBX_DOCUMENT_H
+#pragma once
 
 #include "fbx_state.h"
 
@@ -40,6 +39,8 @@
 
 class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
+
+	int _naming_version = 2;
 
 public:
 	enum {
@@ -61,8 +62,8 @@ public:
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
 	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
 
-protected:
-	static void _bind_methods();
+	void set_naming_version(int p_version);
+	int get_naming_version() const;
 
 private:
 	String _get_texture_path(const String &p_base_directory, const String &p_source_file_path) const;
@@ -99,8 +100,6 @@ public:
 	void _generate_scene_node(Ref<FBXState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player,
-			const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks);
+			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
 	Error _parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> p_file);
 };
-
-#endif // FBX_DOCUMENT_H

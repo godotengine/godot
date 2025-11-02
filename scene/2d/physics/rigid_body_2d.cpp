@@ -30,8 +30,6 @@
 
 #include "rigid_body_2d.h"
 
-#include "scene/scene_string_names.h"
-
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
@@ -44,10 +42,10 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	contact_monitor->locked = true;
 
 	E->value.in_scene = true;
-	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+	emit_signal(SceneStringName(body_entered), node);
 
 	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
+		emit_signal(SceneStringName(body_shape_entered), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -65,10 +63,10 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	contact_monitor->locked = true;
 
-	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+	emit_signal(SceneStringName(body_exited), node);
 
 	for (int i = 0; i < E->value.shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
+		emit_signal(SceneStringName(body_shape_exited), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -93,10 +91,10 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 			//E->value.rc=0;
 			E->value.in_scene = node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
-				node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
+				node->connect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree).bind(objid));
+				node->connect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree).bind(objid));
 				if (E->value.in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_entered, node);
+					emit_signal(SceneStringName(body_entered), node);
 				}
 			}
 
@@ -108,7 +106,7 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 		}
 
 		if (E->value.in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringName(body_shape_entered), p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
@@ -122,17 +120,17 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 
 		if (E->value.shapes.is_empty()) {
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree));
 				if (in_scene) {
-					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+					emit_signal(SceneStringName(body_exited), node);
 				}
 			}
 
 			contact_monitor->body_map.remove(E);
 		}
 		if (node && in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringName(body_shape_exited), p_body, node, p_body_shape, p_local_shape);
 		}
 	}
 }
@@ -158,7 +156,7 @@ void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 
 	if (sleeping != p_state->is_sleeping()) {
 		sleeping = p_state->is_sleeping();
-		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
+		emit_signal(SceneStringName(sleeping_state_changed));
 	}
 }
 
@@ -500,6 +498,7 @@ bool RigidBody2D::is_sleeping() const {
 }
 
 void RigidBody2D::set_max_contacts_reported(int p_amount) {
+	ERR_FAIL_INDEX_MSG(p_amount, MAX_CONTACTS_REPORTED_2D_MAX, "Max contacts reported allocates memory (about 100 bytes each), and therefore must not be set too high.");
 	max_contacts_reported = p_amount;
 	PhysicsServer2D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
@@ -605,8 +604,8 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 			Node *node = Object::cast_to<Node>(obj);
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
+				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &RigidBody2D::_body_enter_tree));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &RigidBody2D::_body_exit_tree));
 			}
 		}
 
@@ -643,9 +642,9 @@ void RigidBody2D::_notification(int p_what) {
 PackedStringArray RigidBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
-	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
+	PackedStringArray warnings = PhysicsBody2D::get_configuration_warnings();
 
-	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
+	if (Math::abs(t.columns[0].length() - 1.0) > 0.05 || Math::abs(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
@@ -791,6 +790,9 @@ void RigidBody2D::_bind_methods() {
 }
 
 void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM && p_property.name == "center_of_mass") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

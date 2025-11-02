@@ -1,10 +1,10 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  19 November 2023                                                *
-* Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2023                                         *
+* Date      :  22 January 2025                                                 *
+* Website   :  https://www.angusj.com                                          *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  Path Offset (Inflate/Shrink)                                    *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #ifndef CLIPPER_OFFSET_H_
@@ -12,6 +12,7 @@
 
 #include "clipper.core.h"
 #include "clipper.engine.h"
+#include <optional>
 
 namespace Clipper2Lib {
 
@@ -34,9 +35,7 @@ private:
 	class Group {
 	public:
 		Paths64 paths_in;
-		std::vector<bool> is_hole_list;
-		std::vector<Rect64> bounds_list;
-		int lowest_path_idx = -1;
+    std::optional<size_t> lowest_path_idx{};
 		bool is_reversed = false;
 		JoinType join_type;
 		EndType end_type;
@@ -52,7 +51,8 @@ private:
 	double step_cos_ = 0.0;
 	PathD norms;
 	Path64 path_out;
-	Paths64 solution;
+	Paths64* solution = nullptr;
+	PolyTree64* solution_tree = nullptr;
 	std::vector<Group> groups_;
 	JoinType join_type_ = JoinType::Bevel;
 	EndType end_type_ = EndType::Polygon;
@@ -64,9 +64,10 @@ private:
 
 #ifdef USINGZ
 	ZCallback64 zCallback64_ = nullptr;
+	void ZCB(const Point64& bot1, const Point64& top1,
+		const Point64& bot2, const Point64& top2, Point64& ip);
 #endif
 	DeltaCallback64 deltaCallback64_ = nullptr;
-
 	size_t CalcSolutionCapacity();
 	bool CheckReverseOrientation();
 	void DoBevel(const Path64& path, size_t j, size_t k);
@@ -83,7 +84,7 @@ private:
 public:
 	explicit ClipperOffset(double miter_limit = 2.0,
 		double arc_tolerance = 0.0,
-		bool preserve_collinear = false, 
+		bool preserve_collinear = false,
 		bool reverse_solution = false) :
 		miter_limit_(miter_limit), arc_tolerance_(arc_tolerance),
 		preserve_collinear_(preserve_collinear),
@@ -91,12 +92,12 @@ public:
 
 	~ClipperOffset() { Clear(); };
 
-	int ErrorCode() { return error_code_; };
+	int ErrorCode() const { return error_code_; };
 	void AddPath(const Path64& path, JoinType jt_, EndType et_);
 	void AddPaths(const Paths64& paths, JoinType jt_, EndType et_);
 	void Clear() { groups_.clear(); norms.clear(); };
 	
-	void Execute(double delta, Paths64& paths);
+	void Execute(double delta, Paths64& sols_64);
 	void Execute(double delta, PolyTree64& polytree);
 	void Execute(DeltaCallback64 delta_cb, Paths64& paths);
 

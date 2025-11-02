@@ -223,13 +223,36 @@ static inline struct psa_key_derivation_s psa_key_derivation_operation_init(
     return v;
 }
 
-#ifndef __cplusplus
-struct psa_key_production_parameters_s {
+struct psa_custom_key_parameters_s {
     /* Future versions may add other fields in this structure. */
+    uint32_t flags;
+};
+
+/** The default production parameters for key generation or key derivation.
+ *
+ * Calling psa_generate_key_custom() or psa_key_derivation_output_key_custom()
+ * with `custom=PSA_CUSTOM_KEY_PARAMETERS_INIT` and `custom_data_length=0` is
+ * equivalent to calling psa_generate_key() or psa_key_derivation_output_key()
+ * respectively.
+ */
+#define PSA_CUSTOM_KEY_PARAMETERS_INIT { 0 }
+
+#ifndef __cplusplus
+/* Omitted when compiling in C++, because one of the parameters is a
+ * pointer to a struct with a flexible array member, and that is not
+ * standard C++.
+ * https://github.com/Mbed-TLS/mbedtls/issues/9020
+ */
+/* This is a deprecated variant of `struct psa_custom_key_parameters_s`.
+ * It has exactly the same layout, plus an extra field which is a flexible
+ * array member. Thus a `const struct psa_key_production_parameters_s *`
+ * can be passed to any function that reads a
+ * `const struct psa_custom_key_parameters_s *`.
+ */
+struct psa_key_production_parameters_s {
     uint32_t flags;
     uint8_t data[];
 };
-#endif
 
 /** The default production parameters for key generation or key derivation.
  *
@@ -240,6 +263,7 @@ struct psa_key_production_parameters_s {
  * respectively.
  */
 #define PSA_KEY_PRODUCTION_PARAMETERS_INIT { 0 }
+#endif /* !__cplusplus */
 
 struct psa_key_policy_s {
     psa_key_usage_t MBEDTLS_PRIVATE(usage);

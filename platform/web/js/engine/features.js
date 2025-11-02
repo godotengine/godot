@@ -1,4 +1,4 @@
-const Features = { // eslint-disable-line no-unused-vars
+const Features = {
 	/**
 	 * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
 	 *
@@ -76,7 +76,8 @@ const Features = { // eslint-disable-line no-unused-vars
 	 */
 	getMissingFeatures: function (supportedFeatures = {}) {
 		const {
-			threads: supportsThreads = true,
+			// Quotes are needed for the Closure compiler.
+			'threads': supportsThreads = true,
 		} = supportedFeatures;
 
 		const missing = [];
