@@ -96,6 +96,12 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
+		<method name="get_editor_language" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the language currently used for the editor interface.
+			</description>
+		</method>
 		<method name="get_editor_main_screen" qualifiers="const">
 			<return type="VBoxContainer" />
 			<description>
