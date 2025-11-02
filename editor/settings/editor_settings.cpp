@@ -363,6 +363,28 @@ void EditorSettings::_set_initialized() {
 	initialized = true;
 }
 
+static LocalVector<String> _get_skipped_locales() {
+	// Skip locales if Text server lack required features.
+	LocalVector<String> locales_to_skip;
+	if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
+		locales_to_skip.push_back("ar"); // Arabic.
+		locales_to_skip.push_back("fa"); // Persian.
+		locales_to_skip.push_back("ur"); // Urdu.
+	}
+	if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
+		locales_to_skip.push_back("he"); // Hebrew.
+	}
+	if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
+		locales_to_skip.push_back("bn"); // Bengali.
+		locales_to_skip.push_back("hi"); // Hindi.
+		locales_to_skip.push_back("ml"); // Malayalam.
+		locales_to_skip.push_back("si"); // Sinhala.
+		locales_to_skip.push_back("ta"); // Tamil.
+		locales_to_skip.push_back("te"); // Telugu.
+	}
+	return locales_to_skip;
+}
+
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
@@ -381,36 +403,18 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint = ";en/[en] English";
-		String host_lang = OS::get_singleton()->get_locale();
+		String lang_hint;
+		const String host_lang = OS::get_singleton()->get_locale();
 
-		// Skip locales if Text server lack required features.
-		Vector<String> locales_to_skip;
-		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
-			locales_to_skip.push_back("ar"); // Arabic
-			locales_to_skip.push_back("fa"); // Persian
-			locales_to_skip.push_back("ur"); // Urdu
-		}
-		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
-			locales_to_skip.push_back("he"); // Hebrew
-		}
-		if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
-			locales_to_skip.push_back("bn"); // Bengali
-			locales_to_skip.push_back("hi"); // Hindi
-			locales_to_skip.push_back("ml"); // Malayalam
-			locales_to_skip.push_back("si"); // Sinhala
-			locales_to_skip.push_back("ta"); // Tamil
-			locales_to_skip.push_back("te"); // Telugu
-		}
-
+		// Skip locales which we can't render properly.
+		const LocalVector<String> locales_to_skip = _get_skipped_locales();
 		if (!locales_to_skip.is_empty()) {
 			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
 		}
 
-		String best;
+		String best = "en";
 		int best_score = 0;
 		for (const String &locale : get_editor_locales()) {
-			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slicec('_', 0);
 			if (locales_to_skip.has(lang_code)) {
@@ -427,11 +431,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 				best_score = score;
 			}
 		}
-		if (best_score == 0) {
-			best = "en";
-		}
+		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
-		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", best, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
 	// Asset library
@@ -1329,7 +1331,7 @@ fail:
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
-	String lang = _EDITOR_GET("interface/editor/editor_language");
+	String lang = get_language();
 	if (p_initial_setup) {
 		String lang_ov = Main::get_locale_override();
 		if (!lang_ov.is_empty()) {
@@ -1849,6 +1851,37 @@ float EditorSettings::get_auto_display_scale() {
 #endif // defined(WINDOWS_ENABLED)
 
 #endif // defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
+}
+
+String EditorSettings::get_language() const {
+	const String language = has_setting("interface/editor/editor_language") ? get("interface/editor/editor_language") : "auto";
+	if (language != "auto") {
+		return language;
+	}
+
+	if (auto_language.is_empty()) {
+		// Skip locales which we can't render properly.
+		const LocalVector<String> locales_to_skip = _get_skipped_locales();
+		const String host_lang = OS::get_singleton()->get_locale();
+
+		String best = "en";
+		int best_score = 0;
+		for (const String &locale : get_editor_locales()) {
+			// Test against language code without regional variants (e.g. ur_PK).
+			String lang_code = locale.get_slicec('_', 0);
+			if (locales_to_skip.has(lang_code)) {
+				continue;
+			}
+
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
+				best = locale;
+				best_score = score;
+			}
+		}
+		auto_language = best;
+	}
+	return auto_language;
 }
 
 // Shortcuts
