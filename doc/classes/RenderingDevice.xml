@@ -198,6 +198,7 @@
 			<description>
 				Creates a new compute pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
@@ -416,6 +417,7 @@
 			<description>
 				Creates a new framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
@@ -437,6 +439,7 @@
 			<description>
 				Creates a new multipass framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
@@ -695,6 +698,7 @@
 			<description>
 				Creates a new index array. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param index_buffer] is freed.
 			</description>
 		</method>
 		<method name="index_buffer_create">
@@ -733,6 +737,7 @@
 			<description>
 				Creates a new render pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
@@ -944,6 +949,7 @@
 			<param index="1" name="with_texture" type="RID" />
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture].
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
@@ -958,6 +964,7 @@
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_get_data">
@@ -1089,6 +1096,7 @@
 			<description>
 				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] or any of the RIDs in the [param uniforms] is freed.
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
@@ -1106,6 +1114,8 @@
 			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
 				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param src_buffers] is freed.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">

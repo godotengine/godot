@@ -696,7 +696,7 @@ private:
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
-	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "", bool p_fallback_script_to_theme = false, bool p_skip_fallback_virtual = false);
 	Ref<Texture2D> _get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
@@ -938,7 +938,7 @@ public:
 
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object");
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "");
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "");
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);

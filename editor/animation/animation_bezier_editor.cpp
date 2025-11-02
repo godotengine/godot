@@ -412,7 +412,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					if (node) {
 						int ofs = 0;
 
-						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 
 						text = node->get_name();
 						ofs += h_separation;

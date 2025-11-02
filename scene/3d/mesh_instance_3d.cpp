@@ -926,6 +926,11 @@ void MeshInstance3D::_bind_methods() {
 
 MeshInstance3D::MeshInstance3D() {
 	_define_ancestry(AncestralClass::MESH_INSTANCE_3D);
+#ifndef DISABLE_DEPRECATED
+	if (use_parent_skeleton_compat) {
+		skeleton_path = NodePath("..");
+	}
+#endif
 }
 
 MeshInstance3D::~MeshInstance3D() {

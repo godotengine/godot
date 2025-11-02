@@ -5266,7 +5266,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback, bool p_fallback_script_to_theme) {
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback, bool p_fallback_script_to_theme, bool p_skip_fallback_virtual) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 	EditorData &ed = EditorNode::get_editor_data();
 
@@ -5289,8 +5289,9 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 					base_type = scr->get_instance_base_type();
 				}
 			}
-			if (theme.is_valid() && theme->has_icon(base_type, EditorStringName(EditorIcons))) {
-				return theme->get_icon(base_type, EditorStringName(EditorIcons));
+			if (theme.is_valid()) {
+				bool instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				return _get_class_or_script_icon(base_type, "", "", false, p_skip_fallback_virtual || instantiable);
 			}
 		}
 	}
@@ -5324,11 +5325,20 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 
 		// If the fallback is empty or wasn't found, use the default fallback.
 		if (ClassDB::class_exists(p_class)) {
-			bool instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
-			if (ClassDB::is_parent_class(p_class, SNAME("Node"))) {
-				return theme->get_icon(instantiable ? "Node" : "NodeDisabled", EditorStringName(EditorIcons));
-			} else {
-				return theme->get_icon(instantiable ? "Object" : "ObjectDisabled", EditorStringName(EditorIcons));
+			if (!p_skip_fallback_virtual) {
+				bool instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				if (!instantiable) {
+					if (ClassDB::is_parent_class(p_class, SNAME("Node"))) {
+						return theme->get_icon("NodeDisabled", EditorStringName(EditorIcons));
+					} else {
+						return theme->get_icon("ObjectDisabled", EditorStringName(EditorIcons));
+					}
+				}
+			}
+			StringName parent = ClassDB::get_parent_class_nocheck(p_class);
+			if (parent) {
+				// Skip virtual class if `p_skip_fallback_virtual` is true or `p_class` is instantiable.
+				return _get_class_or_script_icon(parent, "", "", false, true);
 			}
 		}
 	}
@@ -7834,11 +7844,13 @@ EditorNode::EditorNode() {
 		import_shader_file.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
 
-		Ref<ResourceImporterScene> import_scene = memnew(ResourceImporterScene("PackedScene", true));
-		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
+		Ref<ResourceImporterScene> import_model_as_scene;
+		import_model_as_scene.instantiate("PackedScene");
+		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_scene);
 
-		Ref<ResourceImporterScene> import_animation = memnew(ResourceImporterScene("AnimationLibrary", true));
-		ResourceFormatImporter::get_singleton()->add_importer(import_animation);
+		Ref<ResourceImporterScene> import_model_as_animation;
+		import_model_as_animation.instantiate("AnimationLibrary");
+		ResourceFormatImporter::get_singleton()->add_importer(import_model_as_animation);
 
 		{
 			Ref<EditorSceneFormatImporterCollada> import_collada;
