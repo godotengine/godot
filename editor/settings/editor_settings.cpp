@@ -753,6 +753,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/theme/highlighting/comment_markers/warning_list", "BUG,DEPRECATED,FIXME,HACK,TASK,TBD,TODO,WARNING");
 	_initial_set("text_editor/theme/highlighting/comment_markers/notice_list", "INFO,NOTE,NOTICE,TEST,TESTING");
 
+	PackedColorArray bracket_pair_colors_defaults;
+
+	bracket_pair_colors_defaults.push_back(Color::from_ok_hsl(252.5 / 360.0, 0.65, 0.7));
+	bracket_pair_colors_defaults.push_back(Color::from_ok_hsl(200.0 / 360.0, 0.65, 0.7));
+	bracket_pair_colors_defaults.push_back(Color::from_ok_hsl(337.5 / 360.0, 0.65, 0.7));
+	bracket_pair_colors_defaults.push_back(Color::from_ok_hsl(115.0 / 360.0, 0.65, 0.7));
+
+	EDITOR_SETTING_BASIC(Variant::PACKED_COLOR_ARRAY, PROPERTY_HINT_NONE, "text_editor/theme/highlighting/gdscript/bracket_pair_colors", bracket_pair_colors_defaults, "")
+
 	// Appearance
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "text_editor/appearance/enable_inline_color_picker", true, "");
 
