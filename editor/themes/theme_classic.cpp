@@ -2295,5 +2295,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
+
+		// TileSet editor.
+		p_theme->set_stylebox("expand_panel", "TileSetEditor", p_config.tree_panel_style);
 	}
 }
