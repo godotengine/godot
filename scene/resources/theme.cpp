@@ -154,8 +154,23 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Constants.
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
-		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+		for (const KeyValue<StringName, Variant> &F : E.value) {
+			Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(E.key, F.key);
+			String name = String() + E.key + "/constants/" + F.key;
+			switch (expected_type) {
+				case Variant::INT: {
+					list.push_back(PropertyInfo(Variant::INT, name));
+				} break;
+				case Variant::FLOAT: {
+					list.push_back(PropertyInfo(Variant::FLOAT, name));
+				} break;
+				case Variant::BOOL: {
+					list.push_back(PropertyInfo(Variant::BOOL, name));
+				} break;
+				default: {
+					list.push_back(PropertyInfo(Variant::NIL, name));
+				} break;
+			}
 		}
 	}
 
@@ -845,9 +860,14 @@ void Theme::get_color_type_list(List<StringName> *p_list) const {
 }
 
 // Theme constants.
-void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant) {
+void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, const Variant &p_constant) {
 	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+	if (expected_type != Variant::NIL && p_constant.get_type() != expected_type) {
+		ERR_FAIL_COND_MSG(!Variant::can_convert_strict(p_constant.get_type(), expected_type), vformat("Invalid constant value type, got '%s' expected '%s'", Variant::get_type_name(p_constant.get_type()), Variant::get_type_name(expected_type)));
+	}
 
 	bool existing = has_constant_nocheck(p_name, p_theme_type);
 	constant_map[p_theme_type][p_name] = p_constant;
@@ -855,11 +875,15 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_theme_typ
 	_emit_theme_changed(!existing);
 }
 
-int Theme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+Variant Theme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
 		return constant_map[p_theme_type][p_name];
 	} else {
-		return 0;
+		Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+		Variant value;
+		Callable::CallError err;
+		Variant::construct(expected_type, value, nullptr, 0, err);
+		return value;
 	}
 }
 
@@ -900,7 +924,7 @@ void Theme::get_constant_list(const StringName &p_theme_type, List<StringName> *
 		return;
 	}
 
-	for (const KeyValue<StringName, int> &E : constant_map[p_theme_type]) {
+	for (const KeyValue<StringName, Variant> &E : constant_map[p_theme_type]) {
 		p_list->push_back(E.key);
 	}
 }
@@ -951,9 +975,43 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 			set_color(p_name, p_theme_type, color_value);
 		} break;
 		case DATA_TYPE_CONSTANT: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
-
-			int constant_value = p_value;
+			Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+			Variant constant_value;
+			if (p_value.get_type() == Variant::NIL) {
+				switch (expected_type) {
+					case Variant::INT: {
+						constant_value = 0;
+					} break;
+					case Variant::FLOAT: {
+						constant_value = 0.0;
+					} break;
+					case Variant::BOOL: {
+						constant_value = false;
+					} break;
+					default: {
+						constant_value = Variant();
+					} break;
+				}
+			} else {
+				if (expected_type != Variant::NIL && p_value.get_type() != expected_type) {
+					ERR_FAIL_COND_MSG(!Variant::can_convert_strict(p_value.get_type(), expected_type), vformat("Theme item's data type (%s) data type (%s).", Variant::get_type_name(expected_type), Variant::get_type_name(p_value.get_type())));
+					WARN_PRINT(vformat("Theme item's '%s/%s' data type (%s) data type (%s).", p_theme_type, p_name, Variant::get_type_name(p_value.get_type()), Variant::get_type_name(expected_type)));
+				}
+				switch (expected_type) {
+					case Variant::INT: {
+						constant_value = (int64_t)p_value;
+					} break;
+					case Variant::FLOAT: {
+						constant_value = (double)p_value;
+					} break;
+					case Variant::BOOL: {
+						constant_value = (bool)p_value;
+					} break;
+					default: {
+						constant_value = p_value;
+					} break;
+				}
+			}
 			set_constant(p_name, p_theme_type, constant_value);
 		} break;
 		case DATA_TYPE_FONT: {
@@ -1713,7 +1771,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 	// Constants.
 	{
 		for (const KeyValue<StringName, ThemeConstantMap> &E : p_other->constant_map) {
-			for (const KeyValue<StringName, int> &F : E.value) {
+			for (const KeyValue<StringName, Variant> &F : E.value) {
 				set_constant(F.key, E.key, F.value);
 			}
 		}

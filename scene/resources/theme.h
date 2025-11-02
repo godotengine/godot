@@ -51,7 +51,7 @@ public:
 	using ThemeFontMap = HashMap<StringName, Ref<Font>>;
 	using ThemeFontSizeMap = HashMap<StringName, int>;
 	using ThemeColorMap = HashMap<StringName, Color>;
-	using ThemeConstantMap = HashMap<StringName, int>;
+	using ThemeConstantMap = HashMap<StringName, Variant>;
 
 	enum DataType {
 		DATA_TYPE_COLOR,
@@ -192,8 +192,8 @@ public:
 	void rename_color_type(const StringName &p_old_theme_type, const StringName &p_theme_type);
 	void get_color_type_list(List<StringName> *p_list) const;
 
-	void set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant);
-	virtual int get_constant(const StringName &p_name, const StringName &p_theme_type) const;
+	void set_constant(const StringName &p_name, const StringName &p_theme_type, const Variant &p_constant);
+	virtual Variant get_constant(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_constant_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_constant(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);

@@ -50,7 +50,7 @@ Color EditorTheme::get_color(const StringName &p_name, const StringName &p_theme
 }
 
 // Keep in sync with Theme::get_constant.
-int EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+Variant EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
 		return constant_map[p_theme_type][p_name];
 	} else {

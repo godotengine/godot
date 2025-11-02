@@ -421,7 +421,21 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_constant_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+				String name = PNAME("theme_override_constants") + String("/") + E.item_name;
+				switch (E.constant_type) {
+					case Variant::INT: {
+						p_list->push_back(PropertyInfo(Variant::INT, name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+					} break;
+					case Variant::FLOAT: {
+						p_list->push_back(PropertyInfo(Variant::FLOAT, name, PROPERTY_HINT_RANGE, "-16384,16384,0.001,or_greater,or_less", usage));
+					} break;
+					case Variant::BOOL: {
+						p_list->push_back(PropertyInfo(Variant::BOOL, name, PROPERTY_HINT_NONE, "", usage));
+					} break;
+					default: {
+						p_list->push_back(PropertyInfo(Variant::INT, name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+					} break;
+				}
 			} break;
 
 			case Theme::DATA_TYPE_FONT: {
@@ -3146,9 +3160,9 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const int *constant = data.theme_constant_override.getptr(p_name);
+		const Variant *constant = data.theme_constant_override.getptr(p_name);
 		if (constant) {
-			return *constant;
+			return (int)*constant;
 		}
 	}
 
@@ -3469,7 +3483,7 @@ bool Control::has_theme_color_override(const StringName &p_name) const {
 
 bool Control::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	const int *constant = data.theme_constant_override.getptr(p_name);
+	const Variant *constant = data.theme_constant_override.getptr(p_name);
 	return constant != nullptr;
 }
 

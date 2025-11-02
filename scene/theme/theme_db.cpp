@@ -324,7 +324,7 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 
 // Theme item binding.
 
-void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, Variant::Type p_constant_type, ThemeItemSetter p_setter) {
 	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
 
 	ThemeItemBind bind;
@@ -332,6 +332,7 @@ void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_c
 	bind.class_name = p_class_name;
 	bind.item_name = p_item_name;
 	bind.setter = p_setter;
+	bind.constant_type = p_constant_type;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
 	theme_item_binds_list[p_class_name].push_back(bind);
@@ -407,6 +408,27 @@ void ThemeDB::_sort_theme_items() {
 	for (KeyValue<StringName, List<ThemeDB::ThemeItemBind>> &E : theme_item_binds_list) {
 		E.value.sort_custom<ThemeItemBind::SortByType>();
 	}
+}
+
+Variant::Type ThemeDB::get_class_constant_type(const StringName &p_class_name, const StringName &p_item_name) {
+	List<StringName> class_hierarchy;
+	StringName class_name = p_class_name;
+	while (class_name != StringName()) {
+		class_hierarchy.push_front(class_name); // Put parent classes in front.
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+
+	for (const StringName &theme_type : class_hierarchy) {
+		const HashMap<StringName, List<ThemeItemBind>>::Iterator E = theme_item_binds_list.find(theme_type);
+		if (E) {
+			for (const ThemeItemBind &bind : E->value) {
+				if (bind.item_name == p_item_name && bind.data_type == Theme::DATA_TYPE_CONSTANT) {
+					return bind.constant_type;
+				}
+			}
+		}
+	}
+	return Variant::NIL;
 }
 
 // Object methods.

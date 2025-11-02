@@ -1063,7 +1063,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("sv_height", "ColorPicker", Math::round(256 * scale));
 	theme->set_constant("h_width", "ColorPicker", Math::round(30 * scale));
 	theme->set_constant("label_width", "ColorPicker", Math::round(10 * scale));
-	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
+	theme->set_constant("center_slider_grabbers", "ColorPicker", true);
 
 	theme->set_stylebox("sample_focus", "ColorPicker", focus);
 	theme->set_stylebox("picker_focus_rectangle", "ColorPicker", focus);

@@ -44,18 +44,32 @@ class ThemeContext;
 // Macros for binding theme items of this class. This information is used for the documentation, theme
 // overrides, etc. This is also the basis for theme cache.
 
-#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                       \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop,            \
-			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {            \
-				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                     \
-				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name); \
+#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                          \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop, Variant::INT, \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {               \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                        \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name);    \
 			})
 
-#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                   \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name,        \
-			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {            \
-				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                     \
-				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name); \
+#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                          \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name, Variant::INT, \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {                   \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                            \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name);        \
+			})
+
+#define BIND_THEME_ITEM_TYPED(m_data_type, m_class, m_prop, m_item_type)                                      \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop, m_item_type, \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {              \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                       \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name);   \
+			})
+
+#define BIND_THEME_ITEM_TYPED_CUSTOM(m_data_type, m_class, m_prop, m_item_name, m_item_type)                      \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name, m_item_type, \
+			[](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) {                  \
+				m_class *p_cast = Object::cast_to<m_class>(p_instance);                                           \
+				p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, p_item_name, p_type_name);       \
 			})
 
 // Macro for binding theme items used by this class, but defined/binded by other classes. This is primarily used for
@@ -106,6 +120,7 @@ public:
 		StringName item_name;
 		StringName type_name;
 		bool external = false;
+		Variant::Type constant_type = Variant::NIL;
 
 		ThemeItemSetter setter;
 
@@ -168,11 +183,13 @@ public:
 
 	// Theme item binding.
 
-	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter);
+	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, Variant::Type p_constant_type, ThemeItemSetter p_setter);
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 
 	void get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited = false, Theme::DataType p_filter_type = Theme::DATA_TYPE_MAX);
+	void get_class_own_items(const StringName &p_class_name, List<ThemeItemBind> *r_list);
+	Variant::Type get_class_constant_type(const StringName &p_class_name, const StringName &p_item_name);
 
 	// Memory management, reference, and initialization.
 

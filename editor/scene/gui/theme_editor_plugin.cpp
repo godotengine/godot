@@ -2629,25 +2629,51 @@ void ThemeTypeEditor::_update_type_items() {
 
 		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
+			Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(edited_type, E.key);
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
-			SpinBox *item_editor = memnew(SpinBox);
-			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
-			item_editor->set_min(-100000);
-			item_editor->set_max(100000);
-			item_editor->set_step(1);
-			item_editor->set_allow_lesser(true);
-			item_editor->set_allow_greater(true);
-			item_control->add_child(item_editor);
+			switch (expected_type) {
+				case Variant::INT:
+				case Variant::FLOAT: {
+					SpinBox *item_editor = memnew(SpinBox);
+					item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+					item_editor->set_min(-100000);
+					item_editor->set_max(100000);
+					if (expected_type == Variant::INT) {
+						item_editor->set_step(1);
+					} else {
+						item_editor->set_step(0.01);
+					}
+					item_editor->set_allow_lesser(true);
+					item_editor->set_allow_greater(true);
+					item_control->add_child(item_editor);
 
-			if (E.value) {
-				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
-				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
-			} else {
-				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
-				item_editor->set_editable(false);
+					if (E.value) {
+						item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
+						item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
+					} else {
+						item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
+						item_editor->set_editable(false);
+					}
+					_add_focusable(item_editor);
+				} break;
+				case Variant::BOOL: {
+					CheckBox *item_editor = memnew(CheckBox);
+					item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+					item_control->add_child(item_editor);
+
+					if (E.value) {
+						item_editor->set_pressed_no_signal(edited_theme->get_constant(E.key, edited_type));
+						item_editor->connect("toggled", callable_mp(this, &ThemeTypeEditor::_constant_item_changed_bool).bind(E.key));
+					} else {
+						item_editor->set_pressed_no_signal(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
+						item_editor->set_disabled(true);
+					}
+					_add_focusable(item_editor);
+				} break;
+				default: {
+					WARN_PRINT(vformat("Invalid '%s' constant value type, got '%s' for '%s'", edited_type, Variant::get_type_name(expected_type), E.key));
+				} break;
 			}
-
-			_add_focusable(item_editor);
 			constant_items_list->add_child(item_control);
 		}
 	}
@@ -3241,6 +3267,14 @@ void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
 }
 
 void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Constant Item in Theme"));
+	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);
+	ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
+	ur->commit_action();
+}
+
+void ThemeTypeEditor::_constant_item_changed_bool(bool p_value, String p_item_name) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Constant Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);

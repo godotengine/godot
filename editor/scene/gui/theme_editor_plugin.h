@@ -403,6 +403,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	void _color_item_changed(Color p_value, String p_item_name);
 	void _constant_item_changed(float p_value, String p_item_name);
+	void _constant_item_changed_bool(bool p_value, String p_item_name);
 	void _font_size_item_changed(float p_value, String p_item_name);
 	void _edit_resource_item(Ref<Resource> p_resource, bool p_edit);
 	void _font_item_changed(Ref<Font> p_value, String p_item_name);

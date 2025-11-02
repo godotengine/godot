@@ -1458,7 +1458,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_constant("sv_height", "ColorPicker", 256 * EDSCALE);
 		p_theme->set_constant("h_width", "ColorPicker", 30 * EDSCALE);
 		p_theme->set_constant("label_width", "ColorPicker", 10 * EDSCALE);
-		p_theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
+		p_theme->set_constant("center_slider_grabbers", "ColorPicker", true);
 
 		p_theme->set_stylebox("sample_focus", "ColorPicker", p_config.button_style_focus);
 		p_theme->set_stylebox("picker_focus_rectangle", "ColorPicker", p_config.button_style_focus);

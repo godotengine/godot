@@ -2526,14 +2526,14 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 	return color;
 }
 
-int Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+Variant Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(0);
 	if (!initialized) {
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
-		const int *constant = theme_constant_override.getptr(p_name);
+		const Variant *constant = theme_constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
 		}
@@ -2830,7 +2830,7 @@ bool Window::has_theme_color_override(const StringName &p_name) const {
 
 bool Window::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	const int *constant = theme_constant_override.getptr(p_name);
+	const Variant *constant = theme_constant_override.getptr(p_name);
 	return constant != nullptr;
 }
 

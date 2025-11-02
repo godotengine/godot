@@ -43,7 +43,7 @@ class EditorTheme : public Theme {
 
 public:
 	virtual Color get_color(const StringName &p_name, const StringName &p_theme_type) const override;
-	virtual int get_constant(const StringName &p_name, const StringName &p_theme_type) const override;
+	virtual Variant get_constant(const StringName &p_name, const StringName &p_theme_type) const override;
 	virtual Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const override;
 	virtual int get_font_size(const StringName &p_name, const StringName &p_theme_type) const override;
 	virtual Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_theme_type) const override;
