@@ -4010,8 +4010,17 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::STRING_NAME: {
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",", false);
-				editor->setup(options, Vector<String>(), true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				Vector<String> options;
+				Vector<String> option_names;
+				if (p_hint_text.begins_with(";")) {
+					for (const String &option : p_hint_text.split(";", false)) {
+						options.append(option.get_slicec('/', 0));
+						option_names.append(option.get_slicec('/', 1));
+					}
+				} else {
+					options = p_hint_text.split(",", false);
+				}
+				editor->setup(options, option_names, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
 				return get_input_action_editor(p_hint_text, true);
