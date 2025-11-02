@@ -530,7 +530,7 @@ void EditorDebuggerNode::_debugger_changed(int p_tab) {
 	_break_state_changed();
 }
 
-void EditorDebuggerNode::_debug_data(const String &p_msg, const Array &p_data, int p_debugger) {
+void EditorDebuggerNode::_debug_data(const String &p_msg, const Array &p_data, int p_thread_id, int p_debugger) {
 	if (p_debugger != tabs->get_current_tab()) {
 		return;
 	}
@@ -620,7 +620,7 @@ void EditorDebuggerNode::_paused() {
 	});
 }
 
-void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger) {
+void EditorDebuggerNode::_breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_thread_id, int p_debugger) {
 	if (get_current_debugger() != get_debugger(p_debugger)) {
 		if (!p_breaked) {
 			return;
