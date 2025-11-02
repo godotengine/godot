@@ -74,8 +74,20 @@ class DebugAdapterProtocol : public Object {
 
 	friend class DebugAdapterParser;
 
-	using DAPVarID = int;
-	using DAPStackFrameID = int;
+	using DAPRemoteID = int;
+
+public:
+	struct ThreadData : RefCounted {
+		String name;
+		bool stepping = false;
+		bool processing_breakpoint = false;
+		bool processing_stackdump = false;
+		int remaining_vars = 0;
+		DAPRemoteID current_frame = 0;
+
+		List<DAP::StackFrame> stackframe_list;
+		HashMap<DAPRemoteID, int> godot_stackframe_ids;
+	};
 
 private:
 	static DebugAdapterProtocol *singleton;
@@ -89,35 +101,31 @@ private:
 	void on_debug_paused();
 	void on_debug_stopped();
 	void on_debug_output(const String &p_message, int p_type);
-	void on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump);
-	void on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled);
-	void on_debug_stack_dump(const Array &p_stack_dump);
-	void on_debug_stack_frame_vars(const int &p_size);
-	void on_debug_stack_frame_var(const Array &p_data);
-	void on_debug_data(const String &p_msg, const Array &p_data);
+	void on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump, Thread::ID p_thread_id);
+	void on_debug_breakpoint_toggled(const String &p_path, int p_line, bool p_enabled);
+	void on_debug_stack_dump(const Array &p_stack_dump, Thread::ID p_thread_id);
+	void on_debug_stack_frame_vars(int p_size, Thread::ID p_thread_id);
+	void on_debug_stack_frame_var(const Array &p_data, Thread::ID p_thread_id);
+	void on_debug_data(const String &p_msg, const Array &p_data, Thread::ID p_thread_id);
+
+	DAPRemoteID generate_remote_id(const Ref<ThreadData> &p_thread);
 
 	void reset_current_info();
 	void reset_ids();
-	void reset_stack_info();
 
-	int parse_variant(const Variant &p_var);
+	int parse_variant(const Variant &p_var, const Ref<ThreadData> &p_thread);
 	void parse_object(SceneDebuggerObject &p_obj);
-	const Variant parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property);
+	const Variant parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property, const Ref<ThreadData> &p_thread);
 	void parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var);
 
-	ObjectID search_object_id(DAPVarID p_var_id);
-	bool request_remote_object(const ObjectID &p_object_id);
+	ObjectID search_object_id(DAPRemoteID p_var_id);
+	bool request_remote_object(const ObjectID &p_object_id, const Ref<ThreadData> &p_thread);
 	bool request_remote_evaluate(const String &p_eval, int p_stack_frame);
 
 	const DAP::Source &fetch_source(const String &p_path);
 	void update_source(const String &p_path);
 
 	bool _initialized = false;
-	bool _processing_breakpoint = false;
-	bool _stepping = false;
-	bool _processing_stackdump = false;
-	int _remaining_vars = 0;
-	int _current_frame = 0;
 	uint64_t _request_timeout = 5000;
 	bool _sync_breakpoints = false;
 
@@ -125,16 +133,18 @@ private:
 	Ref<DAPeer> _current_peer;
 
 	int breakpoint_id = 0;
-	int stackframe_id = 0;
-	DAPVarID variable_id = 0;
+	DAPRemoteID object_id = 0;
+
+	HashMap<Thread::ID, Ref<ThreadData>> thread_data_list;
+	HashMap<DAPRemoteID, Ref<ThreadData>> thread_remote_data_lookup;
+
 	List<DAP::Breakpoint> breakpoint_list;
 	HashMap<String, DAP::Source> breakpoint_source_list;
-	List<DAP::StackFrame> stackframe_list;
-	HashMap<DAPStackFrameID, Vector<int>> scope_list;
-	HashMap<DAPVarID, Array> variable_list;
+	HashMap<DAPRemoteID, Vector<DAPRemoteID>> scope_list;
+	HashMap<DAPRemoteID, Array> variable_list;
 
-	HashMap<ObjectID, DAPVarID> object_list;
-	HashSet<ObjectID> object_pending_set;
+	HashMap<ObjectID, DAPRemoteID> object_list;
+	HashMap<ObjectID, Ref<ThreadData>> object_pending_list;
 
 	HashMap<String, DAP::Variable> eval_list;
 	HashSet<String> eval_pending_list;
@@ -153,15 +163,15 @@ public:
 	void notify_initialized();
 	void notify_process();
 	void notify_terminated();
-	void notify_exited(const int &p_exitcode = 0);
-	void notify_stopped_paused();
-	void notify_stopped_exception(const String &p_error);
-	void notify_stopped_breakpoint(const int &p_id);
-	void notify_stopped_step();
-	void notify_continued();
+	void notify_exited(int p_exitcode = 0);
+	void notify_stopped_paused(Thread::ID p_thread_id);
+	void notify_stopped_exception(const String &p_error, Thread::ID p_thread_id);
+	void notify_stopped_breakpoint(int p_id, Thread::ID p_thread_id);
+	void notify_stopped_step(Thread::ID p_thread_id);
+	void notify_continued(Thread::ID p_thread_id);
 	void notify_output(const String &p_message, RemoteDebugger::MessageType p_type);
 	void notify_custom_data(const String &p_msg, const Array &p_data);
-	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled);
+	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, bool p_enabled);
 
 	Array update_breakpoints(const String &p_path, const Array &p_lines);
 
