@@ -174,7 +174,9 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		} else {
 			es.shader_editor = memnew(TextShaderEditor);
 		}
-		es.shader_editor->edit_shader(es.shader);
+		// Needs to be deferred so it's called after entering the scene tree,
+		// otherwise it won't be able to correctly fetch the editor theme.
+		callable_mp(es.shader_editor, &ShaderEditor::edit_shader).call_deferred(es.shader);
 	}
 
 	// TextShaderEditor-specific setup code.
