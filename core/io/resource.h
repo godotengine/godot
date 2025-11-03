@@ -210,11 +210,46 @@ class ResourceCache {
 public:
 	static bool has(const String &p_path);
 	static Ref<Resource> get_ref(const String &p_path);
-	static void get_cached_resource_paths(const bool &p_with_godot_type, PackedStringArray *p_paths);
-	static void get_cached_resource_paths_of_type(const bool &p_with_godot_type, const String &p_type_hint, PackedStringArray *p_paths);
-	static void get_cached_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths);
-	static void get_cached_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type, PackedStringArray *p_paths);
-	static void get_cached_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type, PackedStringArray *p_paths);
+
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
+
+	template <typename PredicateArray>
+	static PackedStringArray _get_all_paths_filtered_array(PredicateArray pred, bool with_gd_type_prefix, const String &p_separator) {
+		MutexLock mutex_lock(lock);
+		PackedStringArray paths;
+
+		for (const auto &elem : resources) {
+			const String &path = elem.key;
+			Resource *res_ptr = elem.value;
+			Ref<Resource> res = Ref<Resource>(res_ptr);
+
+			// Prüfen, ob das Predicate für dieses Element true zurückgibt.
+			if (pred(path, res)) {
+				if (with_gd_type_prefix && res_ptr) {
+					GDType type = res_ptr->get_gdtype();
+					paths.push_back("" + type.get_name() + p_separator + path);
+				} else {
+					paths.push_back(path);
+				}
+			}
+		}
+		return paths;
+	}
+
+	template <typename PredicateDict>
+	static Dictionary _get_all_paths_filtered_dict(PredicateDict pred) {
+		MutexLock mutex_lock(lock);
+		Dictionary paths_types_dict = Dictionary();
+		for (const auto &elem : ResourceCache::resources) {
+			const String &path = elem.key;
+			Resource *res_ptr = elem.value;
+			Ref<Resource> res = Ref<Resource>(res_ptr);
+
+			if (pred(path, res)) {
+				paths_types_dict.set(path, res->get_gdtype().get_name());
+			}
+		}
+		return paths_types_dict;
+	}
 };

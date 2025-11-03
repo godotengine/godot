@@ -72,11 +72,34 @@ public:
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
-	PackedStringArray get_resource_paths(const bool &p_with_godot_type);
-	PackedStringArray get_resource_paths_of_type(const String &p_type_hint, const bool &p_with_godot_type);
-	PackedStringArray get_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type);
-	PackedStringArray get_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type);
-	PackedStringArray get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type);
+	PackedStringArray get_cached_paths(const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_resource_name_substring(const String &p_resource_name_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_path_substring(const String &p_path_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_name_substring(const String &p_file_name_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths_by_file_extension_substring(const String &p_file_extension_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
+
+	Dictionary get_cached_paths_dict();
+	Dictionary get_cached_paths_by_resource_name_dict(const String &p_resource_name);
+	Dictionary get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix);
+	Dictionary get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name_substr);
+	Dictionary get_cached_paths_by_type_hint_dict(const String &p_type_hint);
+	Dictionary get_cached_paths_by_path_prefix_dict(const String &p_path_prefix);
+	Dictionary get_cached_paths_by_path_substring_dict(const String &p_path_substr);
+	Dictionary get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix);
+	Dictionary get_cached_paths_by_file_name_dict(const String &p_file_name);
+	Dictionary get_cached_paths_by_file_name_substring_dict(const String &p_file_name_substr);
+	Dictionary get_cached_paths_by_file_extension_dict(const String &p_file_extension);
+	Dictionary get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix);
+	Dictionary get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension_substr);
+
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);

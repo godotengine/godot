@@ -224,11 +224,34 @@ private:
 	static String _validate_local_path(const String &p_path);
 
 public:
-	static PackedStringArray get_resource_paths(const bool &p_with_godot_type);
-	static PackedStringArray get_resource_paths_of_type(const String &p_type_hint, const bool &p_with_godot_type);
-	static PackedStringArray get_resource_paths_with_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type);
-	static PackedStringArray get_resource_paths_with_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type);
-	static PackedStringArray get_resource_paths_with_file_extension(const String &p_file_extension, const bool &p_with_godot_type);
+	static PackedStringArray get_cached_paths(const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_resource_name_substring(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_path_substring(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_name_substring(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static PackedStringArray get_cached_paths_by_file_extension_substring(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
+
+	static Dictionary get_cached_paths_dict();
+	static Dictionary get_cached_paths_by_resource_name_dict(const String &p_resource_name);
+	static Dictionary get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix);
+	static Dictionary get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name);
+	static Dictionary get_cached_paths_by_type_hint_dict(const String &p_type_hint);
+	static Dictionary get_cached_paths_by_path_prefix_dict(const String &p_path_prefix);
+	static Dictionary get_cached_paths_by_path_substring_dict(const String &p_path_prefix);
+	static Dictionary get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix);
+	static Dictionary get_cached_paths_by_file_name_dict(const String &p_file_name);
+	static Dictionary get_cached_paths_by_file_name_substring_dict(const String &p_file_name);
+	static Dictionary get_cached_paths_by_file_extension_dict(const String &p_file_extension);
+	static Dictionary get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix);
+	static Dictionary get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension);
+
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
