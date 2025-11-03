@@ -918,7 +918,6 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	int idx = tab_container->get_current_tab();
 	if (current) {
-		current->clear_edit_menu();
 		_save_editor_state(current);
 	}
 	memdelete(tselected);
@@ -2031,7 +2030,7 @@ void ScriptEditor::ensure_select_current() {
 	if (tab_container->get_tab_count() && tab_container->get_current_tab() >= 0) {
 		ScriptEditorBase *se = _get_current_editor();
 		if (se) {
-			se->enable_editor(this);
+			se->enable_editor();
 
 			if (!grab_focus_block && is_visible_in_tree()) {
 				se->ensure_focus();
@@ -2452,7 +2451,7 @@ void ScriptEditor::_update_script_names() {
 
 			ScriptEditorBase *se = _get_current_editor();
 			if (se) {
-				se->enable_editor(this);
+				se->enable_editor();
 				_update_selected_editor_menu();
 			}
 		}
@@ -2621,7 +2620,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 		if ((scr.is_valid() && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 			if (should_open) {
-				se->enable_editor(this);
+				se->enable_editor();
 
 				if (tab_container->get_current_tab() != i) {
 					_go_to_tab(i);
@@ -2686,7 +2685,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	tab_container->add_child(se);
 
 	if (p_grab_focus) {
-		se->enable_editor(this);
+		se->enable_editor();
 	}
 
 	// If we delete a script within the filesystem, the original resource path
@@ -2696,10 +2695,18 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
 
-	if (se->get_edit_menu()) {
-		se->get_edit_menu()->hide();
-		menu_hb->add_child(se->get_edit_menu());
-		menu_hb->move_child(se->get_edit_menu(), 1);
+	Control *editor_edit_menu = se->get_edit_menu();
+	if (editor_edit_menu && !editor_edit_menu->get_parent()) {
+		editor_edit_menu->hide();
+		editor_menus.push_back(editor_edit_menu);
+		menu_hb->add_child(editor_edit_menu);
+		menu_hb->move_child(editor_edit_menu, 1);
+		for (int i = 0; i < editor_edit_menu->get_child_count(); ++i) {
+			Control *c = Object::cast_to<Control>(editor_edit_menu->get_child(i));
+			if (c) {
+				c->set_shortcut_context(this);
+			}
+		}
 	}
 
 	if (p_grab_focus) {
@@ -3834,17 +3841,9 @@ void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
 }
 
 void ScriptEditor::_update_selected_editor_menu() {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		bool current = tab_container->get_current_tab() == i;
-
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (se && se->get_edit_menu()) {
-			if (current) {
-				se->get_edit_menu()->show();
-			} else {
-				se->get_edit_menu()->hide();
-			}
-		}
+	ScriptEditorBase *current_editor = _get_current_editor();
+	for (Control *editor_menu : editor_menus) {
+		editor_menu->set_visible(current_editor && editor_menu == current_editor->get_edit_menu());
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
