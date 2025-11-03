@@ -32,6 +32,20 @@
 				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
+		<method name="get_cached_paths">
+			<return type="PackedStringArray" />
+			<param index="0" name="with_godot_type" type="bool" />
+			<param index="1" name="separator" type="String" />
+			<description>
+				Returns all cached resource paths as a [PackedStringArray].
+				[b]Example (with_godot_type = false):[/b]
+				[code]get_cached_paths(false, "|")[/code] →
+				[code]["res://icon.svg", "res://scenes/menu.tscn", "res://audio/click.wav"][/code].
+				[b]Example (with_godot_type = true, separator = "|"):[/b]
+				[code]get_cached_paths(true, "|")[/code] →
+				[code]["Image|res://icon.svg", "PackedScene|res://scenes/menu.tscn", "AudioStreamWAV|res://audio/click.wav"][/code].
+			</description>
+		</method>
 		<method name="get_cached_paths_by_file_extension">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_extension" type="String" />
@@ -48,7 +62,6 @@
 				[code]["Image|res://icon.svg", "Image|res://art/logo.svg"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_extension_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_extension" type="String" />
@@ -60,7 +73,6 @@
 				[code]{ "res://data/config.tres": "Resource" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_extension_prefix">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_extension_prefix" type="String" />
@@ -77,7 +89,6 @@
 				[code]["AudioStreamOggVorbis|res://clip.ogg", "AudioStreamOggVorbis|res://voice.oga", "VideoStream|res://movie.ogv"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_extension_prefix_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_extension_prefix" type="String" />
@@ -89,7 +100,6 @@
 				[code]{ "res://cutscene.tsbc": "VideoStream", "res://track.tscn": "PackedScene" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_extension_substring">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_extension_substr" type="String" />
@@ -106,7 +116,6 @@
 				[code]["FontFile|res://font.otf"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_extension_substring_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_extension_substr" type="String" />
@@ -118,7 +127,6 @@
 				[code]{ "res://image.tga": "Image" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_name" type="String" />
@@ -135,7 +143,6 @@
 				[code]["Image|res://icon.svg", "Image|res://art/icon.svg"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_name" type="String" />
@@ -147,7 +154,6 @@
 				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name_prefix">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_name_prefix" type="String" />
@@ -164,7 +170,6 @@
 				[code]["Image|res://ui/button_play.png", "Image|res://ui/button_stop.png"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name_prefix_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_name_prefix" type="String" />
@@ -176,7 +181,6 @@
 				[code]{ "res://tileset/tile_grass.png": "Image" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name_substring">
 			<return type="PackedStringArray" />
 			<param index="0" name="file_name_substr" type="String" />
@@ -193,7 +197,6 @@
 				[code]["Image|res://icon.svg", "Image|res://art/app_icon.png"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_file_name_substring_dict">
 			<return type="Dictionary" />
 			<param index="0" name="file_name_substr" type="String" />
@@ -205,7 +208,6 @@
 				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_path_prefix">
 			<return type="PackedStringArray" />
 			<param index="0" name="path_prefix" type="String" />
@@ -222,7 +224,6 @@
 				[code]["PackedScene|res://scenes/menu.tscn", "PackedScene|res://scenes/game.tscn"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_path_prefix_dict">
 			<return type="Dictionary" />
 			<param index="0" name="path_prefix" type="String" />
@@ -234,7 +235,6 @@
 				[code]{ "res://assets/atlas.png": "Image" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_path_substring">
 			<return type="PackedStringArray" />
 			<param index="0" name="path_substr" type="String" />
@@ -251,7 +251,6 @@
 				[code]["Image|res://ui/button.png", "PackedScene|res://scenes/ui/hud.tscn"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_path_substring_dict">
 			<return type="Dictionary" />
 			<param index="0" name="path_substr" type="String" />
@@ -263,7 +262,6 @@
 				[code]{ "res://audio/click.wav": "AudioStreamWAV" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name">
 			<return type="PackedStringArray" />
 			<param index="0" name="resource_name" type="String" />
@@ -280,7 +278,6 @@
 				[code]["PackedScene|res://scenes/menu.tscn"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name_dict">
 			<return type="Dictionary" />
 			<param index="0" name="resource_name" type="String" />
@@ -292,7 +289,6 @@
 				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name_prefix">
 			<return type="PackedStringArray" />
 			<param index="0" name="resource_name_prefix" type="String" />
@@ -308,7 +304,6 @@
 				[code]["Image|res://textures/enemy.png", "PackedScene|res://scenes/EnemyBoss.tscn"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name_prefix_dict">
 			<return type="Dictionary" />
 			<param index="0" name="resource_name_prefix" type="String" />
@@ -320,7 +315,6 @@
 				[code]{ "res://scenes/Level1.tscn": "PackedScene", "res://scenes/Level2.tscn": "PackedScene" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name_substring">
 			<return type="PackedStringArray" />
 			<param index="0" name="resource_name_substr" type="String" />
@@ -336,7 +330,6 @@
 				[code]["PackedScene|res://scenes/menu.tscn", "Theme|res://ui/menu_theme.tres"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_resource_name_substring_dict">
 			<return type="Dictionary" />
 			<param index="0" name="resource_name_substr" type="String" />
@@ -348,7 +341,6 @@
 				[code]{ "res://scenes/menu.tscn": "PackedScene", "res://ui/menu_theme.tres": "Theme" }[/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_type_hint">
 			<return type="PackedStringArray" />
 			<param index="0" name="type_hint" type="String" />
@@ -364,7 +356,6 @@
 				[code]["Image|res://icon.svg", "Image|res://textures/player.png"][/code].
 			</description>
 		</method>
-
 		<method name="get_cached_paths_by_type_hint_dict">
 			<return type="Dictionary" />
 			<param index="0" name="type_hint" type="String" />
@@ -376,22 +367,6 @@
 				[code]{ "res://ui/theme.tres": "Theme" }[/code].
 			</description>
 		</method>
-
-		<method name="get_cached_paths">
-			<return type="PackedStringArray" />
-			<param index="0" name="with_godot_type" type="bool" />
-			<param index="1" name="separator" type="String" />
-			<description>
-				Returns all cached resource paths as a [PackedStringArray].
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths(false, "|")[/code] →
-				[code]["res://icon.svg", "res://scenes/menu.tscn", "res://audio/click.wav"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths(true, "|")[/code] →
-				[code]["Image|res://icon.svg", "PackedScene|res://scenes/menu.tscn", "AudioStreamWAV|res://audio/click.wav"][/code].
-			</description>
-		</method>
-
 		<method name="get_cached_paths_dict">
 			<return type="Dictionary" />
 			<description>
