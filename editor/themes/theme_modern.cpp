@@ -61,7 +61,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// White (dark theme) or black (light theme), will be used to generate the rest of the colors
 		p_config.mono_color = p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
-		p_config.mono_color_icon_and_font = p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(0, 0, 0);
+		p_config.mono_color_font = p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(0, 0, 0);
 		p_config.mono_color_inv = p_config.dark_theme ? Color(0, 0, 0) : Color(1, 1, 1);
 
 		// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
@@ -81,7 +81,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.error_color = Color(1, 0.47, 0.42);
 		if (!p_config.dark_icon_and_font) {
 			// Darken some colors to be readable on a light background.
-			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_icon_and_font, 0.35);
+			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
 			p_config.warning_color = Color(0.83, 0.49, 0.01);
 			p_config.error_color = Color(0.8, 0.22, 0.22);
 		}
@@ -110,14 +110,14 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Font colors.
 
-		p_config.font_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, 0.7);
-		p_config.font_secondary_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, 0.45);
-		p_config.font_focus_color = p_config.mono_color_icon_and_font;
-		p_config.font_hover_color = p_config.mono_color_icon_and_font;
-		p_config.font_pressed_color = p_config.mono_color_icon_and_font;
-		p_config.font_hover_pressed_color = p_config.mono_color_icon_and_font;
-		p_config.font_disabled_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
-		p_config.font_readonly_color = Color(p_config.mono_color_icon_and_font.r, p_config.mono_color_icon_and_font.g, p_config.mono_color_icon_and_font.b, 0.65);
+		p_config.font_color = p_config.mono_color_font * Color(1, 1, 1, 0.7);
+		p_config.font_secondary_color = p_config.mono_color_font * Color(1, 1, 1, 0.45);
+		p_config.font_focus_color = p_config.mono_color_font;
+		p_config.font_hover_color = p_config.mono_color_font;
+		p_config.font_pressed_color = p_config.mono_color_font;
+		p_config.font_hover_pressed_color = p_config.mono_color_font;
+		p_config.font_disabled_color = p_config.mono_color_font * Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
+		p_config.font_readonly_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.65);
 		p_config.font_placeholder_color = p_config.font_disabled_color;
 		p_config.font_outline_color = Color(1, 1, 1, 0);
 
@@ -139,12 +139,13 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Icon colors.
 
-		p_config.icon_normal_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, 0.7);
-		p_config.icon_secondary_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, 0.45);
-		p_config.icon_focus_color = p_config.mono_color_icon_and_font;
-		p_config.icon_hover_color = p_config.mono_color_icon_and_font;
-		p_config.icon_pressed_color = p_config.mono_color_icon_and_font;
-		p_config.icon_disabled_color = p_config.mono_color_icon_and_font * Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
+		p_config.icon_normal_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.7 : 0.95);
+		p_config.icon_secondary_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.45 : 0.6);
+		p_config.icon_focus_color = Color(1, 1, 1);
+		p_config.icon_hover_color = Color(1, 1, 1);
+		p_config.icon_pressed_color = p_config.accent_color * (p_config.dark_icon_and_font ? 1.15 : 3.5);
+		p_config.icon_pressed_color.a = 1.0;
+		p_config.icon_disabled_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.35 : 0.5);
 
 		p_theme->set_color("icon_normal_color", EditorStringName(Editor), p_config.icon_normal_color);
 		p_theme->set_color("icon_focus_color", EditorStringName(Editor), p_config.icon_focus_color);
@@ -198,9 +199,9 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Special colors for rendering methods.
 
-		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color(0.55, 0.75, 0.39));
-		p_theme->set_color("mobile_color", EditorStringName(Editor), Color(0.45, 0.70, 0.89));
-		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color(0.86, 0.48, 0.58));
+		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color::hex(0x5d8c3fff));
+		p_theme->set_color("mobile_color", EditorStringName(Editor), Color::hex(0xa5557dff));
+		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color::hex(0x5586a4ff));
 
 		if (p_config.dark_theme) {
 			p_theme->set_color("highend_color", EditorStringName(Editor), Color(1.0, 0.0, 0.0));
@@ -436,8 +437,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_color("icon_normal_color", "Button", p_config.icon_normal_color);
 		p_theme->set_color("icon_hover_color", "Button", p_config.icon_hover_color);
 		p_theme->set_color("icon_focus_color", "Button", p_config.icon_focus_color);
-		p_theme->set_color("icon_hover_pressed_color", "Button", p_config.accent_color);
-		p_theme->set_color("icon_pressed_color", "Button", p_config.accent_color);
+		p_theme->set_color("icon_hover_pressed_color", "Button", p_config.icon_pressed_color);
+		p_theme->set_color("icon_pressed_color", "Button", p_config.icon_pressed_color);
 		p_theme->set_color("icon_disabled_color", "Button", p_config.icon_disabled_color);
 
 		p_theme->set_constant("h_separation", "Button", 4 * EDSCALE);
@@ -542,7 +543,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		p_theme->set_stylebox("focus", "LinkButton", p_config.base_empty_style);
 
-		p_theme->set_color(SceneStringName(font), "LinkButton", p_config.font_color);
+		p_theme->set_color(SceneStringName(font_color), "LinkButton", p_config.font_color);
 		p_theme->set_color("font_hover_color", "LinkButton", p_config.font_hover_color);
 		p_theme->set_color("font_hover_pressed_color", "LinkButton", p_config.font_hover_pressed_color);
 		p_theme->set_color("font_focus_color", "LinkButton", p_config.font_focus_color);
@@ -1213,12 +1214,11 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 	{
 		// GraphEdit.
 
-		Ref<StyleBoxFlat> graph_panel_focus = p_config.base_style->duplicate();
-		graph_panel_focus->set_border_color(p_config.mono_color * Color(1, 1, 1, 0.07));
-		graph_panel_focus->set_border_width_all(Math::round(2 * EDSCALE));
+		Ref<StyleBoxFlat> ge_panel_style = p_config.base_style->duplicate();
+		ge_panel_style->set_bg_color(p_config.surface_lowest_color);
 
-		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", p_config.tree_panel_style);
-		p_theme->set_stylebox("panel_focus", "GraphEdit", graph_panel_focus);
+		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", ge_panel_style);
+		p_theme->set_stylebox("panel_focus", "GraphEdit", p_config.focus_style);
 		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
@@ -1291,7 +1291,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = gn_bg_color.lerp(p_config.tree_panel_style->get_bg_color(), 0.3);
+			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -1.0, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
@@ -1746,11 +1746,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			p_theme->set_type_variation("EditorLogFilterButton", "Button");
 			// When pressed, don't tint the icons with the accent color, just leave them normal.
-			p_theme->set_color("icon_pressed_color", "EditorLogFilterButton", p_config.icon_pressed_color);
+			p_theme->set_color("icon_pressed_color", "EditorLogFilterButton", p_config.icon_normal_color);
 			// When unpressed, dim the icons.
-			p_theme->set_color("icon_normal_color", "EditorLogFilterButton", p_config.icon_disabled_color);
-			p_theme->set_color("icon_hover_color", "EditorLogFilterButton", p_config.icon_hover_color);
-			p_theme->set_color("icon_hover_pressed_color", "EditorLogFilterButton", p_config.icon_hover_color);
+			Color icon_normal_color = Color(p_config.icon_normal_color, (p_config.dark_icon_and_font ? 0.4 : 0.8));
+			p_theme->set_color("icon_normal_color", "EditorLogFilterButton", icon_normal_color);
+			Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_icon_and_font ? 1.15 : 1.0);
+			icon_hover_color.a = 1.0;
+			p_theme->set_color("icon_hover_color", "EditorLogFilterButton", icon_hover_color);
+			p_theme->set_color("icon_hover_pressed_color", "EditorLogFilterButton", icon_hover_color);
 
 			// Hover and pressed styles are swapped for toggle buttons on purpose.
 			p_theme->set_stylebox(CoreStringName(normal), "EditorLogFilterButton", p_config.base_empty_style);
@@ -1922,7 +1925,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
-		p_theme->set_color("property_color", EditorStringName(Editor), p_config.dark_color_1.lerp(p_config.mono_color_icon_and_font, 0.12));
+		p_theme->set_color("property_color", EditorStringName(Editor), p_config.dark_color_1.lerp(p_config.mono_color_font, 0.12));
 #endif
 
 		// EditorInspectorCategory.
@@ -2109,7 +2112,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		const Color kbd_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 
 		p_theme->set_color("title_color", "EditorHelp", p_config.accent_color);
-		p_theme->set_color("headline_color", "EditorHelp", p_config.mono_color_icon_and_font);
+		p_theme->set_color("headline_color", "EditorHelp", p_config.mono_color_font);
 		p_theme->set_color("text_color", "EditorHelp", p_config.font_color);
 		p_theme->set_color("comment_color", "EditorHelp", p_config.font_color * Color(1, 1, 1, 0.6));
 		p_theme->set_color("symbol_color", "EditorHelp", p_config.font_color * Color(1, 1, 1, 0.6));
@@ -2118,8 +2121,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("type_color", "EditorHelp", p_config.accent_color.lerp(p_config.font_color, 0.5));
 		p_theme->set_color("override_color", "EditorHelp", p_config.warning_color);
 		p_theme->set_color("selection_color", "EditorHelp", p_config.selection_color);
-		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_icon_and_font, 0.8));
-		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_icon_and_font, 0.6));
+		p_theme->set_color("link_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.8));
+		p_theme->set_color("code_color", "EditorHelp", p_config.accent_color.lerp(p_config.mono_color_font, 0.6));
 		p_theme->set_color("kbd_color", "EditorHelp", p_config.accent_color.lerp(kbd_color, 0.6));
 		p_theme->set_color("code_bg_color", "EditorHelp", p_config.dark_color_3);
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
