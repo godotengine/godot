@@ -44,259 +44,261 @@ public:
 		CURSOR_END,
 	};
 
+	typedef Pair<int, int> LineColumn;
+
 	struct CodeArea {
-		Pair<int, int> start;
-		Pair<int, int> end;
+		LineColumn start;
+		LineColumn end;
 
 	public:
-		constexpr bool is_overlapping(const Pair<int, int> &p_other) const {
+		constexpr bool is_overlapping(const LineColumn &p_other) const {
 			return !(is_before(p_other) || is_after(p_other));
 		}
 		constexpr bool is_overlapping(const CodeArea &p_other) const {
 			return !(is_before(p_other) || is_after(p_other));
 		}
 		constexpr bool is_overlapping(int p_line, int p_column) const {
-			return is_overlapping(Pair<int, int>{ p_line, p_column });
+			return is_overlapping(LineColumn{ p_line, p_column });
 		}
 		constexpr bool is_overlapping(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return is_overlapping({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool is_overlapping(Vector2i p_position) const {
-			return is_overlapping(Pair<int, int>{ p_position.y, p_position.x });
+			return is_overlapping(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool is_overlapping(Vector2i p_start, Vector2i p_end) const {
 			return is_overlapping({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool is_before(const Pair<int, int> &p_other) const {
+		constexpr bool is_before(const LineColumn &p_other) const {
 			return end < p_other;
 		}
 		constexpr bool is_before(const CodeArea &p_other) const {
 			return is_before(p_other.start);
 		}
 		constexpr bool is_before(int p_line, int p_column) const {
-			return is_before(Pair<int, int>{ p_line, p_column });
+			return is_before(LineColumn{ p_line, p_column });
 		}
 		constexpr bool is_before(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return is_before({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool is_before(Vector2i p_position) const {
-			return is_before(Pair<int, int>{ p_position.y, p_position.x });
+			return is_before(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool is_before(Vector2i p_start, Vector2i p_end) const {
 			return is_before({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool is_after(const Pair<int, int> &p_other) const {
+		constexpr bool is_after(const LineColumn &p_other) const {
 			return p_other < start;
 		}
 		constexpr bool is_after(const CodeArea &p_other) const {
 			return p_other.end < start;
 		}
 		constexpr bool is_after(int p_line, int p_column) const {
-			return is_after(Pair<int, int>{ p_line, p_column });
+			return is_after(LineColumn{ p_line, p_column });
 		}
 		constexpr bool is_after(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return is_after({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool is_after(Vector2i p_position) const {
-			return is_after(Pair<int, int>{ p_position.y, p_position.x });
+			return is_after(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool is_after(Vector2i p_start, Vector2i p_end) const {
 			return is_after({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool starts_together(const Pair<int, int> &p_other) const {
+		constexpr bool starts_together(const LineColumn &p_other) const {
 			return start == p_other;
 		}
 		constexpr bool starts_together(const CodeArea &p_other) const {
 			return starts_together(p_other.start);
 		}
 		constexpr bool starts_together(int p_line, int p_column) const {
-			return starts_together(Pair<int, int>{ p_line, p_column });
+			return starts_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool starts_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return starts_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool starts_together(Vector2i p_position) const {
-			return starts_together(Pair<int, int>{ p_position.y, p_position.x });
+			return starts_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool starts_together(Vector2i p_start, Vector2i p_end) const {
 			return starts_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool starts_before(const Pair<int, int> &p_other) const {
+		constexpr bool starts_before(const LineColumn &p_other) const {
 			return start < p_other;
 		}
 		constexpr bool starts_before(const CodeArea &p_other) const {
 			return starts_before(p_other.start);
 		}
 		constexpr bool starts_before(int p_line, int p_column) const {
-			return starts_before(Pair<int, int>{ p_line, p_column });
+			return starts_before(LineColumn{ p_line, p_column });
 		}
 		constexpr bool starts_before(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return starts_before({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool starts_before(Vector2i p_position) const {
-			return starts_before(Pair<int, int>{ p_position.y, p_position.x });
+			return starts_before(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool starts_before(Vector2i p_start, Vector2i p_end) const {
 			return starts_before({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool starts_before_or_together(const Pair<int, int> &p_other) const {
+		constexpr bool starts_before_or_together(const LineColumn &p_other) const {
 			return start <= p_other;
 		}
 		constexpr bool starts_before_or_together(const CodeArea &p_other) const {
 			return starts_before_or_together(p_other.start);
 		}
 		constexpr bool starts_before_or_together(int p_line, int p_column) const {
-			return starts_before_or_together(Pair<int, int>{ p_line, p_column });
+			return starts_before_or_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool starts_before_or_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return starts_before_or_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool starts_before_or_together(Vector2i p_position) const {
-			return starts_before_or_together(Pair<int, int>{ p_position.y, p_position.x });
+			return starts_before_or_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool starts_before_or_together(Vector2i p_start, Vector2i p_end) const {
 			return starts_before_or_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool starts_after(const Pair<int, int> &p_other) const {
+		constexpr bool starts_after(const LineColumn &p_other) const {
 			return start > p_other;
 		}
 		constexpr bool starts_after(const CodeArea &p_other) const {
 			return starts_after(p_other.start);
 		}
 		constexpr bool starts_after(int p_line, int p_column) const {
-			return starts_after(Pair<int, int>{ p_line, p_column });
+			return starts_after(LineColumn{ p_line, p_column });
 		}
 		constexpr bool starts_after(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return starts_after({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool starts_after(Vector2i p_position) const {
-			return starts_after(Pair<int, int>{ p_position.y, p_position.x });
+			return starts_after(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool starts_after(Vector2i p_start, Vector2i p_end) const {
 			return starts_after({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool starts_after_or_together(const Pair<int, int> &p_other) const {
+		constexpr bool starts_after_or_together(const LineColumn &p_other) const {
 			return start >= p_other;
 		}
 		constexpr bool starts_after_or_together(const CodeArea &p_other) const {
 			return starts_after_or_together(p_other.start);
 		}
 		constexpr bool starts_after_or_together(int p_line, int p_column) const {
-			return starts_after_or_together(Pair<int, int>{ p_line, p_column });
+			return starts_after_or_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool starts_after_or_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return starts_after_or_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool starts_after_or_together(Vector2i p_position) const {
-			return starts_after_or_together(Pair<int, int>{ p_position.y, p_position.x });
+			return starts_after_or_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool starts_after_or_together(Vector2i p_start, Vector2i p_end) const {
 			return starts_after_or_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool ends_together(const Pair<int, int> &p_other) const {
+		constexpr bool ends_together(const LineColumn &p_other) const {
 			return end == p_other;
 		}
 		constexpr bool ends_together(const CodeArea &p_other) const {
 			return ends_together(p_other.end);
 		}
 		constexpr bool ends_together(int p_line, int p_column) const {
-			return ends_together(Pair<int, int>{ p_line, p_column });
+			return ends_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool ends_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return ends_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool ends_together(Vector2i p_position) const {
-			return ends_together(Pair<int, int>{ p_position.y, p_position.x });
+			return ends_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool ends_together(Vector2i p_start, Vector2i p_end) const {
 			return ends_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool ends_before(const Pair<int, int> &p_other) const {
+		constexpr bool ends_before(const LineColumn &p_other) const {
 			return end < p_other;
 		}
 		constexpr bool ends_before(const CodeArea &p_other) const {
 			return ends_before(p_other.end);
 		}
 		constexpr bool ends_before(int p_line, int p_column) const {
-			return ends_before(Pair<int, int>{ p_line, p_column });
+			return ends_before(LineColumn{ p_line, p_column });
 		}
 		constexpr bool ends_before(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return ends_before({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool ends_before(Vector2i p_position) const {
-			return ends_before(Pair<int, int>{ p_position.y, p_position.x });
+			return ends_before(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool ends_before(Vector2i p_start, Vector2i p_end) const {
 			return ends_before({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool ends_before_or_together(const Pair<int, int> &p_other) const {
+		constexpr bool ends_before_or_together(const LineColumn &p_other) const {
 			return end <= p_other;
 		}
 		constexpr bool ends_before_or_together(const CodeArea &p_other) const {
 			return ends_before_or_together(p_other.end);
 		}
 		constexpr bool ends_before_or_together(int p_line, int p_column) const {
-			return ends_before_or_together(Pair<int, int>{ p_line, p_column });
+			return ends_before_or_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool ends_before_or_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return ends_before_or_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool ends_before_or_together(Vector2i p_position) const {
-			return ends_before_or_together(Pair<int, int>{ p_position.y, p_position.x });
+			return ends_before_or_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool ends_before_or_together(Vector2i p_start, Vector2i p_end) const {
 			return ends_before_or_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool ends_after(const Pair<int, int> &p_other) const {
+		constexpr bool ends_after(const LineColumn &p_other) const {
 			return end > p_other;
 		}
 		constexpr bool ends_after(const CodeArea &p_other) const {
 			return ends_after(p_other.end);
 		}
 		constexpr bool ends_after(int p_line, int p_column) const {
-			return ends_after(Pair<int, int>{ p_line, p_column });
+			return ends_after(LineColumn{ p_line, p_column });
 		}
 		constexpr bool ends_after(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return ends_after({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool ends_after(Vector2i p_position) const {
-			return ends_after(Pair<int, int>{ p_position.y, p_position.x });
+			return ends_after(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool ends_after(Vector2i p_start, Vector2i p_end) const {
 			return ends_after({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool ends_after_or_together(const Pair<int, int> &p_other) const {
+		constexpr bool ends_after_or_together(const LineColumn &p_other) const {
 			return end >= p_other;
 		}
 		constexpr bool ends_after_or_together(const CodeArea &p_other) const {
 			return ends_after_or_together(p_other.end);
 		}
 		constexpr bool ends_after_or_together(int p_line, int p_column) const {
-			return ends_after_or_together(Pair<int, int>{ p_line, p_column });
+			return ends_after_or_together(LineColumn{ p_line, p_column });
 		}
 		constexpr bool ends_after_or_together(int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
 			return ends_after_or_together({ { p_start_line, p_start_column }, { p_end_line, p_end_column } });
 		}
 		constexpr bool ends_after_or_together(Vector2i p_position) const {
-			return ends_after_or_together(Pair<int, int>{ p_position.y, p_position.x });
+			return ends_after_or_together(LineColumn{ p_position.y, p_position.x });
 		}
 		constexpr bool ends_after_or_together(Vector2i p_start, Vector2i p_end) const {
 			return ends_after_or_together({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
 		}
 
-		constexpr bool contains(const Pair<int, int> &p_other, bool p_allow_start_overlap = true, bool p_allow_end_overlap = false) const {
+		constexpr bool contains(const LineColumn &p_other, bool p_allow_start_overlap = true, bool p_allow_end_overlap = false) const {
 			if (p_allow_start_overlap) {
 				if (!starts_before_or_together(p_other)) {
 					return false;
@@ -314,13 +316,13 @@ public:
 			return contains(p_other.start, p_allow_overlap, p_allow_overlap) && contains(p_other.end, p_allow_overlap, p_allow_overlap);
 		}
 		constexpr bool contains(int p_line, int p_column, bool p_allow_overlap = true) const {
-			return contains(Pair<int, int>{ p_line, p_column }, p_allow_overlap);
+			return contains(LineColumn{ p_line, p_column }, p_allow_overlap);
 		}
 		constexpr bool contains(int p_start_line, int p_start_column, int p_end_line, int p_end_column, bool p_allow_overlap = true) const {
 			return contains({ { p_start_line, p_start_column }, { p_end_line, p_end_column } }, p_allow_overlap);
 		}
 		constexpr bool contains(Vector2i p_position, bool p_allow_start_overlap = true, bool p_allow_end_overlap = false) const {
-			return contains(Pair<int, int>{ p_position.y, p_position.x }, p_allow_start_overlap, p_allow_end_overlap);
+			return contains(LineColumn{ p_position.y, p_position.x }, p_allow_start_overlap, p_allow_end_overlap);
 		}
 		constexpr bool contains(Vector2i p_start, Vector2i p_end, bool p_allow_overlap = true) const {
 			return contains({ { p_start.y, p_start.x }, { p_end.y, p_end.x } });
@@ -342,7 +344,7 @@ public:
 		}
 
 		constexpr CodeArea() = default;
-		constexpr CodeArea(Pair<int, int> p_start, Pair<int, int> p_end) :
+		constexpr CodeArea(LineColumn p_start, LineColumn p_end) :
 				start(p_start), end(p_end) {
 			ERR_FAIL_COND(start > end);
 		}
