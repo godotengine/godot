@@ -84,7 +84,7 @@ public:
 		// Make sure to keep those in sync with the definitions in the editor settings.
 		const float default_icon_saturation = 2.0;
 		const int default_relationship_lines = RELATIONSHIP_SELECTED_ONLY;
-		const float default_contrast = 0.3;
+		const float default_contrast = 0.35;
 		const int default_corner_radius = 4;
 
 		// Generated properties.
