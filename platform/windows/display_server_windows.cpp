@@ -301,7 +301,7 @@ TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
 	return tts->get_voices();
 }
 
-void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
