@@ -427,13 +427,17 @@ bool GDScriptParser::refactor_rename_is_node_more_specific(const GDScriptParser:
 	return other_code_area.contains(node_code_area);
 }
 
-bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node) {
+bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, bool p_check_for_cursor) {
 	if (!is_for_refactor_rename()) {
 		return false;
 	}
-	if (!previous.has_cursor() && tokenizer->is_past_cursor()) {
-		return false;
+	if (p_check_for_cursor) {
+		if (!previous.has_cursor() && tokenizer->is_past_cursor()) {
+			return false;
+		}
 	}
+
+	GDScriptParser::Node *previous_node = refactor_rename_context.node;
 
 	RefactorRenameContext context;
 	context.type = p_type;
@@ -442,19 +446,27 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	context.current_suite = current_suite;
 	context.current_line = tokenizer->get_cursor_line();
 	context.parser = this;
-	if (refactor_rename_context.node == p_node) {
-		context.token = refactor_rename_context.token;
-	}
 	context.node = p_node;
-	context.value = nullptr;
+	if (p_node == previous_node) {
+		if (refactor_rename_context.token.has_cursor()) {
+			context.token = refactor_rename_context.token;
+		}
+		context.identifier = refactor_rename_context.identifier;
+		context.identifier_is_enum_value = refactor_rename_context.identifier_is_enum_value;
+		context.literal = refactor_rename_context.literal;
+	} else {
+		context.identifier = nullptr;
+		context.literal = nullptr;
+	}
 	if (previous.has_cursor()) {
 		context.token = previous;
 	}
 	refactor_rename_context = context;
+
 	return true;
 }
 
-bool GDScriptParser::refactor_rename_register_value(GDScriptParser::Node *p_value_node) {
+bool GDScriptParser::refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_identifier) {
 	if (!is_for_refactor_rename()) {
 		return false;
 	}
@@ -462,7 +474,22 @@ bool GDScriptParser::refactor_rename_register_value(GDScriptParser::Node *p_valu
 		return false;
 	}
 	ERR_FAIL_NULL_V(refactor_rename_context.node, false);
-	refactor_rename_context.value = p_value_node;
+	refactor_rename_context.identifier = p_identifier;
+	if (previous.has_cursor()) {
+		refactor_rename_context.token = previous;
+	}
+	return true;
+}
+
+bool GDScriptParser::refactor_rename_register_literal(GDScriptParser::LiteralNode *p_literal) {
+	if (!is_for_refactor_rename()) {
+		return false;
+	}
+	if (!previous.has_cursor()) {
+		return false;
+	}
+	ERR_FAIL_NULL_V(refactor_rename_context.node, false);
+	refactor_rename_context.literal = p_literal;
 	if (previous.has_cursor()) {
 		refactor_rename_context.token = previous;
 	}
@@ -1611,8 +1638,14 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 }
 
 GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
+	GDScriptTokenizer::Token enum_start = previous;
+
 	EnumNode *enum_node = alloc_node<EnumNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node);
+	if (is_for_refactor_rename()) {
+		if (previous.has_cursor() || current.has_cursor() || !tokenizer->is_past_cursor()) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node, false);
+		}
+	}
 	bool named = false;
 
 	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
@@ -1639,6 +1672,9 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 		}
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for enum key.)")) {
 			GDScriptParser::IdentifierNode *identifier = parse_identifier();
+			if (is_for_refactor_rename() && refactor_rename_context.identifier == identifier) {
+				refactor_rename_context.identifier_is_enum_value = true;
+			}
 
 			EnumNode::Value item;
 			item.identifier = identifier;
@@ -1705,6 +1741,16 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" for enum.)");
 	complete_extents(enum_node);
 	end_statement("enum");
+
+	GDScriptTokenizer::Token enum_end = previous;
+
+	if (is_for_refactor_rename()) {
+		GDScriptTokenizer::CodeArea enum_code_area(enum_start.get_code_area().start, enum_end.get_code_area().end);
+		if (enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()))) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node, false);
+		}
+	}
+
 	return enum_node;
 }
 
@@ -2864,7 +2910,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing identifier node without identifier token.");
 	}
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
-	refactor_rename_register_value(identifier);
+	refactor_rename_register_identifier(identifier);
 	complete_extents(identifier);
 
 	identifier->name = previous.get_identifier();
@@ -2922,7 +2968,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	}
 
 	LiteralNode *literal = alloc_node<LiteralNode>();
-	refactor_rename_register_value(literal);
+	refactor_rename_register_literal(literal);
 	literal->value = previous.literal;
 	reset_extents(literal, p_previous_operand);
 	update_extents(literal);

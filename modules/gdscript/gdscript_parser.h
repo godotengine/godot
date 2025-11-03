@@ -1799,8 +1799,10 @@ public:
 
 	struct RefactorRenameContext : ParsingContext {
 		RefactorRenameType type = REFACTOR_RENAME_TYPE_NONE;
-		GDScriptParser::Node *value = nullptr;
+		GDScriptParser::IdentifierNode *identifier = nullptr;
+		GDScriptParser::LiteralNode *literal = nullptr;
 		GDScriptTokenizer::Token token;
+		bool identifier_is_enum_value = false;
 	};
 
 private:
@@ -1984,8 +1986,9 @@ private:
 	bool refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const;
 	bool refactor_rename_was_cursor_just_parsed() const;
 	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
-	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node);
-	bool refactor_rename_register_value(GDScriptParser::Node *p_node);
+	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, bool p_check_for_cursor = true);
+	bool refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_node);
+	bool refactor_rename_register_literal(GDScriptParser::LiteralNode *p_node);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
