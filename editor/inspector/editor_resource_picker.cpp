@@ -712,8 +712,12 @@ String EditorResourcePicker::_get_owner_path() const {
 
 	Node *node = Object::cast_to<Node>(obj);
 	if (node) {
+		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
+			// PackedScene should use root scene path.
+			return p_edited_scene_root->get_scene_file_path();
 		}
 		if (node) {
 			return node->get_scene_file_path();
