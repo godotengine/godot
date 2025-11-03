@@ -398,7 +398,7 @@ void Polygon2D::_notification(int p_what) {
 				}
 
 				RS::get_singleton()->mesh_add_surface(mesh, sd);
-				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_rid() : RID());
+				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
 			}
 
 		} break;
