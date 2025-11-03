@@ -293,7 +293,9 @@ JPH::MassProperties JoltBody3D::_calculate_mass_properties(const JPH::Shape &p_s
 	}
 
 	// If using custom inertia, set products of inertia
-	if (!calculate_inertia)	{
+	// Uses the "alternate" (but correct) convention
+	// https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor
+	if (!calculate_inertia) {
 		mass_properties.mInertia(1, 2) = -(float)product_of_inertia.x;  // Iyz
 		mass_properties.mInertia(2, 1) = -(float)product_of_inertia.x;  // Iyz
 
