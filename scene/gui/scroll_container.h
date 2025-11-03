@@ -78,6 +78,9 @@ private:
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
+
+		int scrollbar_h_separation = 0;
+		int scrollbar_v_separation = 0;
 	} theme_cache;
 
 	void _cancel_drag();

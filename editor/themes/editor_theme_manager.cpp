@@ -318,6 +318,9 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			bool preset_draw_extra_borders = false;
 			float preset_icon_saturation = config.default_icon_saturation;
 
+			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+			const float light_contrast = config.style == "Modern" ? -0.4 : -0.06;
+
 			// Please use alphabetical order if you're adding a new color preset here.
 			if (config.preset == "Black (OLED)") {
 				preset_accent_color = Color(0.45, 0.75, 1.0);
@@ -342,8 +345,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			} else if (config.preset == "Light") {
 				preset_accent_color = Color(0.18, 0.50, 1.00);
 				preset_base_color = Color(0.9, 0.9, 0.9);
-				// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-				preset_contrast = -0.4;
+				preset_contrast = light_contrast;
 			} else if (config.preset == "Solarized (Dark)") {
 				preset_accent_color = Color(0.15, 0.55, 0.82);
 				preset_base_color = Color(0.03, 0.21, 0.26);
@@ -351,8 +353,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			} else if (config.preset == "Solarized (Light)") {
 				preset_accent_color = Color(0.15, 0.55, 0.82);
 				preset_base_color = Color(0.89, 0.86, 0.79);
-				// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-				preset_contrast = -0.4;
+				preset_contrast = light_contrast;
 			} else { // Default
 				preset_accent_color = Color(0.337, 0.62, 1.0);
 				preset_base_color = Color(0.145, 0.145, 0.145);

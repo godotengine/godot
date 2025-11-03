@@ -268,11 +268,14 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
 		pi.start = 0.0;
 		pi.end = cur_len;
-		if (node_backward ? cur_backward : !cur_backward) {
+		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
-			pi.delta = cur_delta;
 		} else {
 			pi.time = anim_size - cur_playback_time;
+		}
+		if (node_backward ? cur_backward : !cur_backward) {
+			pi.delta = cur_delta;
+		} else {
 			pi.delta = -cur_delta;
 		}
 		pi.weight = 1.0;
