@@ -730,10 +730,15 @@ def get_compiler_version(env):
             for line in version.splitlines():
                 split = line.split(":", 1)
                 if split[0] == "catalog_productDisplayVersion":
+                    import re
                     sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                    # Extract only the leading digits for each version part
+                    major_match = re.search(r'\d+', sem_ver[0])
+                    minor_match = re.search(r'\d+', sem_ver[1]) if len(sem_ver) > 1 else None
+                    patch_match = re.search(r'\d+', sem_ver[2]) if len(sem_ver) > 2 else None
+                    ret["major"] = int(major_match.group()) if major_match else -1
+                    ret["minor"] = int(minor_match.group()) if minor_match else -1
+                    ret["patch"] = int(patch_match.group()) if patch_match else -1
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
