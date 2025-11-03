@@ -480,9 +480,7 @@ private:
 
 	int pressed_button = -1;
 	bool pressing_for_editor = false;
-	String pressing_for_editor_text;
 	Vector2 pressing_pos;
-	Rect2 pressing_item_rect;
 
 	Vector2 hovered_pos;
 	bool is_mouse_hovering = false;
@@ -562,7 +560,7 @@ private:
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void _line_editor_submit(String p_text);
-	void _apply_multiline_edit();
+	void _apply_multiline_edit(bool p_hide_focus = false);
 	void _text_editor_popup_modal_close();
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void value_editor_changed(double p_value);
