@@ -5140,7 +5140,6 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				RefactorRenameSymbolDefinintionType enum_type = context.identifier_is_enum_value
 						? RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM_VALUE
 						: RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
-				print_line("refactor rename symbol enum");
 				Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, enum_type, context.node);
 				REFACTOR_RENAME_RETURN(enum_err);
 			}
