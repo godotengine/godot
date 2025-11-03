@@ -272,6 +272,7 @@ public:
 	void setup(const Vector<String> &p_options);
 	virtual void update_property() override;
 	void set_option_button_clip(bool p_enable);
+	OptionButton *get_option_button(); // Hack to allow setting icons.
 	EditorPropertyEnum();
 };
 
