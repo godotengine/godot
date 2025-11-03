@@ -104,44 +104,45 @@ int64_t VideoStreamH264::read_se() {
 	}
 }
 
-bool VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata, VideoDecodeH264SliceHeader *r_h264_slice_header) {
+VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size, VideoDecodeH264SliceHeader *r_h264_slice_header) {
 	const uint8_t *nal_start = src;
 
 	uint8_t header = read_bits(8);
 	uint8_t nal_ref_idc = (header & 0b1100000) >> 5;
-	uint8_t nal_unit_type = header & 0b11111;
+	VideoCodingH264NalUnitType nal_unit_type = VideoCodingH264NalUnitType(header & 0b11111);
 
-	bool is_frame = false;
 	switch (nal_unit_type) {
-		case 1: {
-			is_frame = true;
+		case VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE: {
 			print_line(vformat("Standard Frame [%d]", p_size));
 			*r_h264_slice_header = parse_slice_header(p_size - 1, nal_ref_idc != 0, false);
 		} break;
 
-		case 5: {
-			is_frame = true;
+		case VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR: {
 			print_line(vformat("IDR Frame [%d]", p_size));
 			*r_h264_slice_header = parse_slice_header(p_size - 1, nal_ref_idc != 0, true);
 		} break;
 
-		case 6: {
+		case VIDEO_CODING_H264_NAL_UNIT_TYPE_SUPPLEMENTAL_ENHACEMENT_INFORMATION: {
 			print_line(vformat("Supplemental Information [%d]", p_size));
 		} break;
 
-		case 7: {
+		case VIDEO_CODING_H264_NAL_UNIT_TYPE_SEQUENCE_PARAMETER_SET: {
 			print_line(vformat("Sequence Parameter Set [%d]", p_size));
 			VideoCodingH264SequenceParameterSet sps = parse_sequence_parameter_set(p_size - 1);
-			if (p_is_metadata) {
-				sps_sets.push_back(sps);
+			if (sps.seq_parameter_set_id < sps_sets.size()) {
+				sps_sets.set(sps.seq_parameter_set_id, sps);
+			} else {
+				sps_sets.insert(sps.seq_parameter_set_id, sps);
 			}
 		} break;
 
-		case 8: {
+		case VIDEO_CODING_H264_NAL_UNIT_TYPE_PICTURE_PARAMETER_SET: {
 			print_line(vformat("Picture Parameter Set [%d]", p_size));
 			VideoCodingH264PictureParameterSet pps = parse_picture_parameter_set(p_size - 1);
-			if (p_is_metadata) {
-				pps_sets.push_back(pps);
+			if (pps.pic_parameter_set_id < pps_sets.size()) {
+				pps_sets.set(pps.pic_parameter_set_id, pps);
+			} else {
+				pps_sets.insert(pps.pic_parameter_set_id, pps);
 			}
 		} break;
 
@@ -153,7 +154,7 @@ bool VideoStreamH264::parse_nal_unit(uint64_t p_size, bool p_is_metadata, VideoD
 	src = nal_start + p_size;
 	shift = 0;
 
-	return is_frame;
+	return nal_unit_type;
 }
 
 VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_set(uint64_t p_size) {
@@ -609,13 +610,13 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	uint8_t sps_set_count = read_bits(8) & 0b11111;
 	for (uint8_t set = 0; set < sps_set_count; set++) {
 		uint16_t sps_size = read_bits(16);
-		parse_nal_unit(sps_size, true, nullptr);
+		parse_nal_unit(sps_size, nullptr);
 	}
 
 	uint8_t pps_set_count = read_bits(8);
 	for (uint8_t set = 0; set < pps_set_count; set++) {
 		uint16_t pps_size = read_bits(16);
-		parse_nal_unit(pps_size, true, nullptr);
+		parse_nal_unit(pps_size, nullptr);
 	}
 
 	if (target_profile_idc == VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
@@ -636,9 +637,12 @@ void VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t
 		uint8_t sps_ext_sets = read_bits(8);
 		for (uint8_t set = 0; set < sps_ext_sets; set++) {
 			uint16_t sps_ext_size = read_bits(16);
-			parse_nal_unit(sps_ext_size, true, nullptr);
+			parse_nal_unit(sps_ext_size, nullptr);
 		}
 	}
+
+	sps_sets.clear();
+	pps_sets.clear();
 }
 
 void VideoStreamH264::set_rendering_device(RenderingDevice *p_local_device) {
@@ -678,13 +682,32 @@ void VideoStreamH264::parse_container_block(Vector<uint8_t> p_buffer, RID p_dst_
 	src = p_buffer.ptr();
 	shift = 0;
 
+	bool seen_sps = false;
+	bool seen_pps = false;
+
 	while (src < p_buffer.ptr() + p_buffer.size()) {
 		uint64_t nal_size = read_bits(length_size * 8);
 		const uint8_t *nal_start = src;
 
 		VideoDecodeH264SliceHeader slice_header = {};
-		bool is_frame = parse_nal_unit(nal_size, false, &slice_header);
-		if (is_frame) {
+		VideoCodingH264NalUnitType nal_unit_type = parse_nal_unit(nal_size, &slice_header);
+
+		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_SEQUENCE_PARAMETER_SET) {
+			seen_sps = true;
+		}
+
+		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_PICTURE_PARAMETER_SET) {
+			seen_pps = true;
+		}
+
+		if (seen_sps && seen_pps) {
+			create_video_session(1920, 1088);
+			coding_device->video_session_begin();
+			seen_sps = false;
+			seen_pps = false;
+		}
+
+		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE || nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR) {
 			Span<uint8_t> slice_span = Span(nal_start, nal_size);
 			coding_device->video_session_decode_h264(video_session, slice_span, slice_header, p_dst_texture);
 		}

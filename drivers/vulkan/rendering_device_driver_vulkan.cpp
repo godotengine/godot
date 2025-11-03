@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "vulkan/vulkan_core.h"
 #include "vulkan_hooks.h"
 
 #include "thirdparty/misc/smolv.h"
@@ -6925,27 +6926,36 @@ void RenderingDeviceDriverVulkan::video_session_add_h264_parameters(VideoSession
 	h264_add_info.stdPPSCount = pps_sets.size();
 	h264_add_info.pStdPPSs = pps_sets.ptr();
 
-	VkVideoDecodeH264SessionParametersCreateInfoKHR h264_parameter_info = {};
-	h264_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR;
-	h264_parameter_info.pNext = nullptr;
-	h264_parameter_info.maxStdSPSCount = sps_sets.size();
-	h264_parameter_info.maxStdPPSCount = pps_sets.size();
-	h264_parameter_info.pParametersAddInfo = &h264_add_info;
+	if (video_session_info->vk_session_parameters == VK_NULL_HANDLE) {
+		VkVideoDecodeH264SessionParametersCreateInfoKHR h264_parameter_info = {};
+		h264_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR;
+		h264_parameter_info.pNext = nullptr;
+		h264_parameter_info.maxStdSPSCount = 1;
+		h264_parameter_info.maxStdPPSCount = 1;
+		h264_parameter_info.pParametersAddInfo = &h264_add_info;
 
-	VkVideoSessionParametersCreateInfoKHR parameter_info = {};
-	parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
-	parameter_info.pNext = &h264_parameter_info;
-	parameter_info.flags = 0;
-	parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
-	parameter_info.videoSession = video_session_info->vk_session;
+		VkVideoSessionParametersCreateInfoKHR parameter_info = {};
+		parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
+		parameter_info.pNext = &h264_parameter_info;
+		parameter_info.flags = 0;
+		parameter_info.videoSessionParametersTemplate = VK_NULL_HANDLE;
+		parameter_info.videoSession = video_session_info->vk_session;
 
-	VkVideoSessionParametersKHR session_parameters;
-	VkResult err = vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
-	if (err != VK_SUCCESS) {
-		ERR_FAIL_MSG("Failed to create parameters");
+		VkVideoSessionParametersKHR session_parameters;
+		VkResult err = vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
+		if (err != VK_SUCCESS) {
+			ERR_FAIL_MSG("Failed to create parameters");
+		}
+
+		video_session_info->vk_session_parameters = session_parameters;
+	} else {
+		VkVideoSessionParametersUpdateInfoKHR update_info;
+		update_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_UPDATE_INFO_KHR;
+		update_info.pNext = &h264_add_info;
+		update_info.updateSequenceCount = 1;
+
+		vkUpdateVideoSessionParametersKHR(vk_device, video_session_info->vk_session_parameters, &update_info);
 	}
-
-	video_session_info->vk_session_parameters = session_parameters;
 }
 
 void RenderingDeviceDriverVulkan::video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) {

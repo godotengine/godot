@@ -5863,6 +5863,7 @@ void RenderingDevice::video_session_add_h264_parameters(RID p_video_session, Vec
 
 	RDD::FenceID fence = driver->fence_create();
 
+	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
 	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
 	driver->command_buffer_end(decode_buffer);
@@ -5881,6 +5882,7 @@ void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, Vide
 
 	RDD::FenceID fence = driver->fence_create();
 
+	driver->command_pool_reset(decode_pool);
 	driver->command_buffer_begin(decode_buffer);
 	driver->command_video_session_reset(decode_buffer, video_session->driver_id);
 	driver->command_buffer_end(decode_buffer);

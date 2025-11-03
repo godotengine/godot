@@ -67,7 +67,7 @@ private:
 	uint64_t read_ue();
 	int64_t read_se();
 
-	bool parse_nal_unit(uint64_t p_size, bool p_is_metadata, VideoDecodeH264SliceHeader *r_h264_slice_header);
+	VideoCodingH264NalUnitType parse_nal_unit(uint64_t p_size, VideoDecodeH264SliceHeader *r_h264_slice_header);
 	VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	VideoDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr);
