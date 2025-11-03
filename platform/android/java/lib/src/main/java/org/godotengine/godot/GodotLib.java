@@ -105,7 +105,7 @@ public class GodotLib {
 	/**
 	 * TTS callback.
 	 */
-	public static native void ttsCallback(int event, int id, int pos);
+	public static native void ttsCallback(int event, long id, int pos);
 
 	/**
 	 * Forward touch events.

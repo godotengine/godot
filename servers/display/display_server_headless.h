@@ -165,7 +165,7 @@ public:
 	bool tts_is_speaking() const override { return false; }
 	bool tts_is_paused() const override { return false; }
 	TypedArray<Dictionary> tts_get_voices() const override { return TypedArray<Dictionary>(); }
-	void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.0f, float p_rate = 1.0f, int p_utterance_id = 0, bool p_interrupt = false) override {}
+	void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.0f, float p_rate = 1.0f, int64_t p_utterance_id = 0, bool p_interrupt = false) override {}
 	void tts_pause() override {}
 	void tts_resume() override {}
 	void tts_stop() override {}

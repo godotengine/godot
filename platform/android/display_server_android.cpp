@@ -109,7 +109,7 @@ TypedArray<Dictionary> DisplayServerAndroid::tts_get_voices() const {
 	return TTS_Android::get_voices();
 }
 
-void DisplayServerAndroid::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerAndroid::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	TTS_Android::speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
