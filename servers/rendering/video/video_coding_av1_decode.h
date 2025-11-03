@@ -85,8 +85,12 @@ struct VideoDecodeAV1Frame {
 	bool segmentation_update_data;
 	VideoCodingAV1Segmentation segmentation;
 
+	bool delta_q_present;
 	uint8_t delta_q_res;
+
+	bool delta_lf_present;
 	uint8_t delta_lf_res;
+	bool delta_lf_multi;
 
 	VideoCodingAV1LoopFilter loop_filter;
 	VideoCodingAV1CDEF cdef;

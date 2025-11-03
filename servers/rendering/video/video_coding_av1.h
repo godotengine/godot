@@ -56,6 +56,41 @@
 #define VIDEO_CODING_AV1_MAX_NUM_POS_LUMA 24
 #define VIDEO_CODING_AV1_MAX_NUM_POS_CHROMA 25
 
+#define VIDEO_CODING_AV1_MAX_LOOP_FILTER 63
+
+static constexpr uint8_t video_coding_av1_segmentation_bits[VIDEO_CODING_AV1_SEG_LVL_MAX] = {
+	8,
+	6,
+	6,
+	6,
+	6,
+	3,
+	0,
+	0
+};
+
+static constexpr bool video_coding_av1_segmentation_signed[VIDEO_CODING_AV1_SEG_LVL_MAX] = {
+	true,
+	true,
+	true,
+	true,
+	true,
+	false,
+	false,
+	false,
+};
+
+static constexpr uint8_t video_coding_av1_segmentation_feature_max[VIDEO_CODING_AV1_SEG_LVL_MAX] = {
+	255,
+	VIDEO_CODING_AV1_MAX_LOOP_FILTER,
+	VIDEO_CODING_AV1_MAX_LOOP_FILTER,
+	VIDEO_CODING_AV1_MAX_LOOP_FILTER,
+	VIDEO_CODING_AV1_MAX_LOOP_FILTER,
+	7,
+	0,
+	0
+};
+
 enum VideoCodingAV1ObuType {
 	VIDEO_CODING_AV1_OBU_TYPE_SEQUENCE_HEADER = 1,
 	VIDEO_CODING_AV1_OBU_TYPE_TEMPORAL_DELIMITER = 2,

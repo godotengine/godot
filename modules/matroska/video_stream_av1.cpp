@@ -31,6 +31,7 @@
 #include "video_stream_av1.h"
 
 #include "core/string/print_string.h"
+#include "core/typedefs.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/video/video_coding_av1.h"
 
@@ -103,6 +104,10 @@ uint64_t VideoStreamAV1::read_leb128() {
 	}
 
 	return value;
+}
+
+int64_t VideoStreamAV1::read_su(uint8_t p_bits) {
+	return 0;
 }
 
 int64_t VideoStreamAV1::read_delta_q() {
@@ -711,6 +716,87 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 		} else {
 			std_frame_header.quantization.qm_v = read_bits(4);
 		}
+	}
+
+	std_frame_header.segmentation_enabled = read_bits(1);
+	if (std_frame_header.segmentation_enabled) {
+		if (std_frame_header.primary_ref_frame == VIDEO_CODING_AV1_PRIMARY_REF_NONE) {
+			std_frame_header.segmentation_update_map = true;
+			std_frame_header.segmentation_temporal_update = false;
+			std_frame_header.segmentation_update_data = true;
+		} else {
+			std_frame_header.segmentation_update_map = read_bits(1);
+			if (std_frame_header.segmentation_update_map) {
+				std_frame_header.segmentation_temporal_update = read_bits(1);
+			}
+
+			std_frame_header.segmentation_update_data = read_bits(1);
+		}
+
+		if (std_frame_header.segmentation_update_data) {
+			for (uint64_t i = 0; i < VIDEO_CODING_AV1_MAX_SEGMENTS; i++) {
+				for (uint64_t j = 0; j < VIDEO_CODING_AV1_SEG_LVL_MAX; j++) {
+					int64_t feature_value = 0;
+					bool feature_enabled = read_bits(1);
+
+					std_frame_header.segmentation.feature_enabled[i] = feature_enabled;
+					if (feature_enabled) {
+						uint8_t size = video_coding_av1_segmentation_bits[j];
+						int8_t limit = video_coding_av1_segmentation_feature_max[j];
+
+						if (video_coding_av1_segmentation_signed[j]) {
+							feature_value = read_su(size + 1);
+							std_frame_header.segmentation.feature_data[i][j] = CLAMP(feature_value, -limit, limit);
+						} else {
+							feature_value = read_bits(size);
+							std_frame_header.segmentation.feature_data[i][j] = CLAMP(feature_value, 0, limit);
+						}
+					}
+				}
+			}
+		}
+	} else {
+		for (uint64_t i = 0; i < VIDEO_CODING_AV1_MAX_SEGMENTS; i++) {
+			for (uint64_t j = 0; j < VIDEO_CODING_AV1_SEG_LVL_MAX; j++) {
+				std_frame_header.segmentation.feature_enabled[i] = false;
+				std_frame_header.segmentation.feature_data[i][j] = 0;
+			}
+		}
+	}
+
+	if (std_frame_header.quantization.base_q_idx > 0) {
+		std_frame_header.delta_q_present = read_bits(1);
+		if (std_frame_header.delta_q_present) {
+			std_frame_header.delta_q_res = read_bits(2);
+		} else {
+			std_frame_header.delta_q_res = 0;
+		}
+	} else {
+		std_frame_header.delta_q_present = false;
+		std_frame_header.delta_q_res = 0;
+	}
+
+	if (std_frame_header.delta_q_present) {
+		if (!std_frame_header.allow_intrabc) {
+			std_frame_header.delta_lf_present = read_bits(1);
+			if (std_frame_header.delta_lf_present) {
+				std_frame_header.delta_lf_res = read_bits(2);
+				std_frame_header.delta_lf_multi = read_bits(1);
+			} else {
+				std_frame_header.delta_lf_res = 0;
+				std_frame_header.delta_lf_multi = false;
+			}
+		} else {
+			std_frame_header.delta_lf_present = false;
+			std_frame_header.delta_lf_res = 0;
+			std_frame_header.delta_lf_multi = false;
+		}
+	}
+
+	if (std_frame_header.primary_ref_frame == VIDEO_CODING_AV1_PRIMARY_REF_NONE) {
+		// init_coeff_cdfs
+	} else {
+		// load_previous_segment_ids
 	}
 
 	return std_frame_header;

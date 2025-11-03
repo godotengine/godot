@@ -937,7 +937,7 @@ void VideoStreamPlaybackMatroska::set_file(const String &p_file) {
 	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
 	video_stream_encoding->set_rendering_device(local_device);
 
-	video_session = video_stream_encoding->create_video_session(width, height);
+	//video_session = video_stream_encoding->create_video_session(width, height);
 
 	RD::SamplerState src_sampler_state;
 	src_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
@@ -1007,7 +1007,7 @@ void VideoStreamPlaybackMatroska::play() {
 
 	Cluster cluster = clusters[0];
 	print_line(vformat("------------Begin Matroska Cluster [%d]----------------", cluster.blocks.size()));
-	local_device->video_session_begin();
+	//local_device->video_session_begin();
 
 	Cluster::Block block = cluster.blocks[0];
 	file->seek(block.position);
@@ -1138,6 +1138,7 @@ Ref<Resource> ResourceFormatLoaderMatroska::load(const String &p_path, const Str
 
 void ResourceFormatLoaderMatroska::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("mkv");
+	p_extensions->push_back("webm");
 }
 
 bool ResourceFormatLoaderMatroska::handles_type(const String &p_type) const {
@@ -1146,7 +1147,7 @@ bool ResourceFormatLoaderMatroska::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderMatroska::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "mkv") {
+	if (el == "mkv" || el == "webm") {
 		return "VideoStreamMatroska";
 	}
 	return "";
