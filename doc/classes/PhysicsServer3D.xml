@@ -1782,25 +1782,28 @@
 		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
-		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
+		<constant name="BODY_PARAM_PROD_INERTIA" value="4" enum="BodyParameter">
+			Constant to set/get a body's product of inertia.
+		</constant>
+		<constant name="BODY_PARAM_CENTER_OF_MASS" value="5" enum="BodyParameter">
 			Constant to set/get a body's center of mass position in the body's local coordinate system.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="6" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="7" enum="BodyParameter">
 			Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="8" enum="BodyParameter">
 			Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="9" enum="BodyParameter">
 			Constant to set/get a body's linear damping factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="10" enum="BodyParameter">
 			Constant to set/get a body's angular damping factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="11" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">

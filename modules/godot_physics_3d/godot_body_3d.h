@@ -86,7 +86,6 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	bool calculate_inertia = true;
 	bool calculate_center_of_mass = true;
-	bool use_product_of_inertia = false;
 
 	Vector3 gravity;
 
