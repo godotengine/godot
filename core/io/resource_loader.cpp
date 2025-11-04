@@ -45,8 +45,6 @@
 #include "core/variant/variant_parser.h"
 #include "servers/rendering/rendering_server.h"
 
-#include <algorithm>
-
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
 #else
