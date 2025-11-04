@@ -168,10 +168,10 @@ void memdelete_allocator(T *p_class) {
 }
 
 #define memdelete_notnull(m_v) \
-	{                          \
-		if (m_v) {             \
-			memdelete(m_v);    \
-		}                      \
+	{ \
+		if (m_v) { \
+			memdelete(m_v); \
+		} \
 	}
 
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)

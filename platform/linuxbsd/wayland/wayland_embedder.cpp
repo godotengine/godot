@@ -57,11 +57,11 @@
 // Gotta flush as we're doing this mess from a thread without any
 // synchronization. It's awful, I know, but the `print_*` utilities hang for
 // some reason during editor startup and I need some quick and dirty debugging.
-#define DEBUG_LOG_WAYLAND_EMBED(...)                               \
-	if (1) {                                                       \
+#define DEBUG_LOG_WAYLAND_EMBED(...) \
+	if (1) { \
 		printf("[PROXY] %s\n", vformat(__VA_ARGS__).utf8().ptr()); \
-		fflush(stdout);                                            \
-	} else                                                         \
+		fflush(stdout); \
+	} else \
 		((void)0)
 
 #else

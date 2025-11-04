@@ -327,8 +327,8 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 }
 
 #define ENUM_TO_STRING_CASE(e) \
-	case e: {                  \
-		return String(#e);     \
+	case e: { \
+		return String(#e); \
 	} break;
 
 String OpenXROpenGLExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {

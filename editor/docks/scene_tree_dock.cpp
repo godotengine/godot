@@ -3845,21 +3845,21 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	bool section_ended = false;
 
 // Marks beginning of a new separated section. When used multiple times in a row, only first use has effect.
-#define BEGIN_SECTION()            \
-	{                              \
-		if (section_ended) {       \
+#define BEGIN_SECTION() \
+	{ \
+		if (section_ended) { \
 			section_ended = false; \
 			menu->add_separator(); \
-		}                          \
-		section_started = true;    \
+		} \
+		section_started = true; \
 	}
 // Marks end of a section.
-#define END_SECTION()                \
-	{                                \
-		if (section_started) {       \
-			section_ended = true;    \
+#define END_SECTION() \
+	{ \
+		if (section_started) { \
+			section_ended = true; \
 			section_started = false; \
-		}                            \
+		} \
 	}
 
 	Ref<Script> existing_script;

@@ -38,15 +38,15 @@
 #include "editor/settings/editor_settings.h"
 #include "modules/gdscript/language_server/godot_lsp.h"
 
-#define LSP_CLIENT_V(m_ret_val)                                    \
+#define LSP_CLIENT_V(m_ret_val) \
 	ERR_FAIL_COND_V(latest_client_id == LSP_NO_CLIENT, m_ret_val); \
-	ERR_FAIL_COND_V(!clients.has(latest_client_id), m_ret_val);    \
-	Ref<LSPeer> client = clients.get(latest_client_id);            \
+	ERR_FAIL_COND_V(!clients.has(latest_client_id), m_ret_val); \
+	Ref<LSPeer> client = clients.get(latest_client_id); \
 	ERR_FAIL_COND_V(!client.is_valid(), m_ret_val);
 
-#define LSP_CLIENT                                      \
-	ERR_FAIL_COND(latest_client_id == LSP_NO_CLIENT);   \
-	ERR_FAIL_COND(!clients.has(latest_client_id));      \
+#define LSP_CLIENT \
+	ERR_FAIL_COND(latest_client_id == LSP_NO_CLIENT); \
+	ERR_FAIL_COND(!clients.has(latest_client_id)); \
 	Ref<LSPeer> client = clients.get(latest_client_id); \
 	ERR_FAIL_COND(!client.is_valid());
 

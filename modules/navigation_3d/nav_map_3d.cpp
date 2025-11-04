@@ -55,16 +55,16 @@ using namespace Nav3D;
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG()
 #endif // DEBUG_ENABLED
 
-#define GET_MAP_ITERATION()                                                   \
-	iteration_slot_rwlock.read_lock();                                        \
+#define GET_MAP_ITERATION() \
+	iteration_slot_rwlock.read_lock(); \
 	NavMapIteration3D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead3D iteration_read_lock(map_iteration);                 \
+	NavMapIterationRead3D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
-#define GET_MAP_ITERATION_CONST()                                                   \
-	iteration_slot_rwlock.read_lock();                                              \
+#define GET_MAP_ITERATION_CONST() \
+	iteration_slot_rwlock.read_lock(); \
 	const NavMapIteration3D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead3D iteration_read_lock(map_iteration);                       \
+	NavMapIterationRead3D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
 void NavMap3D::set_up(Vector3 p_up) {

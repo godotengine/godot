@@ -426,14 +426,14 @@ void GraphEditArranger::_calculate_inner_shifts(Dictionary &r_inner_shifts, cons
 
 float GraphEditArranger::_calculate_threshold(const StringName &p_v, const StringName &p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
 #define MAX_ORDER 2147483647
-#define ORDER(node, layers)                            \
+#define ORDER(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			order = index;                             \
-			break;                                     \
-		}                                              \
-		order = MAX_ORDER;                             \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			order = index; \
+			break; \
+		} \
+		order = MAX_ORDER; \
 	}
 
 	int order = MAX_ORDER;
@@ -505,14 +505,14 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 }
 
 void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions) {
-#define PRED(node, layers)                             \
+#define PRED(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			predecessor = layers[i][index - 1];        \
-			break;                                     \
-		}                                              \
-		predecessor = StringName();                    \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			predecessor = layers[i][index - 1]; \
+			break; \
+		} \
+		predecessor = StringName(); \
 	}
 
 	StringName predecessor;

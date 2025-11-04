@@ -655,12 +655,12 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 				break;
 		}
 
-#define ADD_VTX(x, y, z)                                         \
-	{                                                            \
-		Vector3 v;                                               \
-		v[a1] = (x);                                             \
-		v[a2] = (y);                                             \
-		v[a3] = (z);                                             \
+#define ADD_VTX(x, y, z) \
+	{ \
+		Vector3 v; \
+		v[a1] = (x); \
+		v[a2] = (y); \
+		v[a3] = (z); \
 		r_points.push_back(p_offset.translated_local(v).origin); \
 	}
 

@@ -225,16 +225,16 @@ void ResourceFormatLoader::_bind_methods() {
 // something we must treat as a different stack for the purposes
 // of tracking nesting.
 
-#define PREPARE_FOR_WTP_WAIT                                                   \
-	int load_nesting_backup = ResourceLoader::load_nesting;                    \
+#define PREPARE_FOR_WTP_WAIT \
+	int load_nesting_backup = ResourceLoader::load_nesting; \
 	Vector<String> load_paths_stack_backup = ResourceLoader::load_paths_stack; \
-	ResourceLoader::load_nesting = 0;                                          \
+	ResourceLoader::load_nesting = 0; \
 	ResourceLoader::load_paths_stack.clear();
 
-#define RESTORE_AFTER_WTP_WAIT                                  \
-	DEV_ASSERT(ResourceLoader::load_nesting == 0);              \
-	DEV_ASSERT(ResourceLoader::load_paths_stack.is_empty());    \
-	ResourceLoader::load_nesting = load_nesting_backup;         \
+#define RESTORE_AFTER_WTP_WAIT \
+	DEV_ASSERT(ResourceLoader::load_nesting == 0); \
+	DEV_ASSERT(ResourceLoader::load_paths_stack.is_empty()); \
+	ResourceLoader::load_nesting = load_nesting_backup; \
 	ResourceLoader::load_paths_stack = load_paths_stack_backup; \
 	load_paths_stack_backup.clear();
 

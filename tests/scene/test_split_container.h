@@ -37,9 +37,9 @@
 
 namespace TestSplitContainer {
 
-#define CHECK_RECTS(m_rects, m_child_rects)                                                                                                                   \
-	CHECK(m_rects.size() == m_child_rects.size());                                                                                                            \
-	for (int i = 0; i < (int)m_child_rects.size(); i++) {                                                                                                     \
+#define CHECK_RECTS(m_rects, m_child_rects) \
+	CHECK(m_rects.size() == m_child_rects.size()); \
+	for (int i = 0; i < (int)m_child_rects.size(); i++) { \
 		CHECK_MESSAGE(m_child_rects[i] == m_rects[i], vformat("Child %s is the wrong size. Child rect: %s, expected: %s.", i, m_child_rects[i], m_rects[i])); \
 	}
 

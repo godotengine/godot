@@ -46,23 +46,23 @@ class JavaObject;
 
 // This extension provides access to composition layers for displaying 2D content through the XR compositor.
 
-#define OPENXR_LAYER_FUNC1(m_name, m_arg1)                                                                                                                                \
-	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1) {                                                                                                       \
-		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);                                                                                           \
-		ERR_FAIL_NULL(layer);                                                                                                                                             \
-		layer->m_name(p1);                                                                                                                                                \
-	}                                                                                                                                                                     \
-	void composition_layer_##m_name(RID p_layer, m_arg1 p1) {                                                                                                             \
+#define OPENXR_LAYER_FUNC1(m_name, m_arg1) \
+	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1); \
+	} \
+	void composition_layer_##m_name(RID p_layer, m_arg1 p1) { \
 		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1)); \
 	}
 
-#define OPENXR_LAYER_FUNC2(m_name, m_arg1, m_arg2)                                                                                                                            \
-	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2) {                                                                                                \
-		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);                                                                                               \
-		ERR_FAIL_NULL(layer);                                                                                                                                                 \
-		layer->m_name(p1, p2);                                                                                                                                                \
-	}                                                                                                                                                                         \
-	void composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2) {                                                                                                      \
+#define OPENXR_LAYER_FUNC2(m_name, m_arg1, m_arg2) \
+	void _composition_layer_##m_name##_rt(RID p_layer, m_arg1 p1, m_arg2 p2) { \
+		CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer); \
+		ERR_FAIL_NULL(layer); \
+		layer->m_name(p1, p2); \
+	} \
+	void composition_layer_##m_name(RID p_layer, m_arg1 p1, m_arg2 p2) { \
 		RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &OpenXRCompositionLayerExtension::_composition_layer_##m_name##_rt).bind(p_layer, p1, p2)); \
 	}
 

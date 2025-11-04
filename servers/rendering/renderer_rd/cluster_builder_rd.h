@@ -301,11 +301,11 @@ public:
 			// Approximate, probably better to use a cone support function.
 			float max_d = -1e20;
 			float min_d = 1e20;
-#define CONE_MINMAX(m_x, m_y)                                             \
-	{                                                                     \
+#define CONE_MINMAX(m_x, m_y) \
+	{ \
 		float d = -xform.xform(Vector3(len * m_x, len * m_y, -radius)).z; \
-		min_d = MIN(d, min_d);                                            \
-		max_d = MAX(d, max_d);                                            \
+		min_d = MIN(d, min_d); \
+		max_d = MAX(d, max_d); \
 	}
 
 			CONE_MINMAX(1, 1);

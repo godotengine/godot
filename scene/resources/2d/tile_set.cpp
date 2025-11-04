@@ -2201,11 +2201,11 @@ void TileSet::draw_cells_outline(CanvasItem *p_canvas_item, const RBSet<Vector2i
 	for (const Vector2i &E : p_cells) {
 		Vector2 center = map_to_local(E);
 
-#define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
-	if (!p_cells.has(get_neighbor_cell(E, side))) {                                         \
+#define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to) \
+	if (!p_cells.has(get_neighbor_cell(E, side))) { \
 		Vector2 from = p_transform.xform(center + polygon[polygon_index_from] * tile_size); \
-		Vector2 to = p_transform.xform(center + polygon[polygon_index_to] * tile_size);     \
-		p_canvas_item->draw_line(from, to, p_color);                                        \
+		Vector2 to = p_transform.xform(center + polygon[polygon_index_to] * tile_size); \
+		p_canvas_item->draw_line(from, to, p_color); \
 	}
 
 		if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {

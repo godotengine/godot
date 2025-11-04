@@ -37,7 +37,7 @@
 #include "core/os/os.h"
 #include "scene/main/node.h"
 
-#define MAKE_ROOM(m_amount)             \
+#define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
 

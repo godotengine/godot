@@ -62,13 +62,13 @@ const SourceLocationData *intern_source_location(const void *p_function_ptr, con
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
 #ifndef TRACY_CALLSTACK
-#define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                                                                       \
-	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                                                                                  \
+#define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
+	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), true)
 #else
-#define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                                                                       \
-	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                                                                                  \
+#define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
+	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
@@ -80,9 +80,9 @@ const SourceLocationData *intern_source_location(const void *p_function_ptr, con
 
 // Memory allocation
 #ifdef GODOT_PROFILER_TRACK_MEMORY
-#define GodotProfileAlloc(m_ptr, m_size)                       \
+#define GodotProfileAlloc(m_ptr, m_size) \
 	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") \
-	TracyAlloc(m_ptr, m_size);                                 \
+	TracyAlloc(m_ptr, m_size); \
 	GODOT_GCC_WARNING_POP
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
 #else
@@ -118,11 +118,11 @@ struct PerfettoGroupedEventEnder {
 #define GodotProfileFrameMark // TODO
 #define GodotProfileZone(m_zone_name) TRACE_EVENT("godot", m_zone_name);
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
-	TRACE_EVENT_BEGIN("godot", m_zone_name);                    \
+	TRACE_EVENT_BEGIN("godot", m_zone_name); \
 	PerfettoGroupedEventEnder __godot_perfetto_zone_##m_group_name
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_perfetto_zone_##m_group_name.~PerfettoGroupedEventEnder()
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
-	__godot_perfetto_zone_##m_group_name._end_now();       \
+	__godot_perfetto_zone_##m_group_name._end_now(); \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
 
 #define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line)
@@ -163,22 +163,22 @@ private:
 #define GodotProfileFrameMark \
 	os_signpost_event_emit(apple::instruments::LOG, OS_SIGNPOST_ID_EXCLUSIVE, "Frame");
 
-#define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)                                           \
-	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name);   \
-	apple::instruments::DeferFunc _GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() {                \
+#define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
+	apple::instruments::DeferFunc _GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() { \
 		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	};                                                                                                    \
+	}; \
 	apple::instruments::Defer _GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
 
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) \
 	_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name).~Defer();
 
-#define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                \
-	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                           \
-	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name);   \
-	_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() {                                              \
+#define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
+	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
+	_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() { \
 		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	};                                                                                                    \
+	}; \
 	new (&_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)) apple::instruments::Defer(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
 
 #define GodotProfileZone(m_zone_name) \
