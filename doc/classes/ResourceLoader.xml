@@ -35,9 +35,7 @@
 		<method name="get_cached_paths">
 			<return type="PackedStringArray" />
 			<description>
-				Returns all cached resource paths as a [PackedStringArray]
-				A resource is considered cached when it has a reference count &gt; 0
-				This means the resource must be assigned to attributes/variables of Nodes, Resources or Objects
+				Returns all cached resource paths as a [PackedStringArray]. A resource is considered cached when it has a reference count greater than zero. This means the resource must be assigned to attributes/variables of Nodes, Resources, or Objects.
 			</description>
 		</method>
 		<method name="get_cached_paths_by_filter">
@@ -49,8 +47,6 @@
 				Returns all cached resource paths that match a single filter condition as [PackedStringArray]
 				The [param target] selects which attribute is checked, [param comparator] defines how it is compared to
 				[param value].
-				Allowed [param target]: FILTER_TARGET_TYPE_HINT, FILTER_TARGET_PATH, FILTER_TARGET_FILE_NAME, FILTER_TARGET_FILE_EXTENSION, FILTER_TARGET_BASE_DIR, FILTER_TARGET_RESOURCE_NAME, FILTER_TARGET_RESOURCE_PATH, FILTER_TARGET_RESOURCE_CLASS.
-				Allowed [param comparator]: FILTER_COMP_EQUALS, FILTER_COMP_NOT_EQUAL, FILTER_COMP_BEGINS_WITH,	FILTER_COMP_ENDS_WITH, FILTER_COMP_CONTAINS.
 				[b]Examples (GDScript)[/b]
 				All Image resources (type hint)
 				[codeblock]
