@@ -88,7 +88,7 @@
 				Returns a [Dictionary] of cached resource paths that match a single filter condition in the form of { "res://icon.svg": "Image" }
 				The [param target] selects the attribute and [param comparator] defines comparison against [param value].
 				[b]Examples (GDScript)[/b]
-				All resources whose path starts with res://, with types included:
+				All resources whose path starts with [code]res://[/code], with types included:
 				[codeblock]
 				var dict1 = ResourceLoader.get_cached_paths_typed_by_filter(
 					ResourceLoader.FILTER_TARGET_PATH,
