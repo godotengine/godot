@@ -67,84 +67,17 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	Ref<Resource> res = ::ResourceLoader::load_threaded_get(p_path, &error);
 	return res;
 }
-PackedStringArray ResourceLoader::get_cached_paths(const bool &p_with_godot_type, const String &p_separator) {
-	return ::ResourceLoader::get_cached_paths(p_with_godot_type, p_separator);
+PackedStringArray ResourceLoader::get_cached_paths() {
+	return ::ResourceLoader::get_cached_paths();
 }
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type, const String &p_separator) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name(p_resource_name, p_with_godot_type, p_separator);
+Dictionary ResourceLoader::get_cached_paths_typed() {
+	return ::ResourceLoader::get_cached_paths_typed();
 }
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name_prefix(p_resource_name_prefix, p_with_godot_type, separator);
+PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	return ::ResourceLoader::get_cached_paths_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
 }
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name_substring(const String &p_resource_name_substr, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name_substring(p_resource_name_substr, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_type_hint(p_type_hint, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_path_prefix(p_path_prefix, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_path_substring(const String &p_path_substr, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_path_substring(p_path_substr, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_name_prefix(p_file_name_prefix, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_name(p_file_name, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name_substring(const String &p_file_name_substr, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_name_substring(p_file_name_substr, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension(p_file_extension, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension_prefix(p_file_extension_prefix, p_with_godot_type, separator);
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension_substring(const String &p_file_extension_substr, const bool &p_with_godot_type, const String &separator) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension_substring(p_file_extension_substr, p_with_godot_type, separator);
-}
-
-Dictionary ResourceLoader::get_cached_paths_dict() {
-	return ::ResourceLoader::get_cached_paths_dict();
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_dict(const String &p_resource_name) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name_dict(p_resource_name);
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name_prefix_dict(p_resource_name_prefix);
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name_substr) {
-	return ::ResourceLoader::get_cached_paths_by_resource_name_substring_dict(p_resource_name_substr);
-}
-Dictionary ResourceLoader::get_cached_paths_by_type_hint_dict(const String &p_type_hint) {
-	return ::ResourceLoader::get_cached_paths_by_type_hint_dict(p_type_hint);
-}
-Dictionary ResourceLoader::get_cached_paths_by_path_prefix_dict(const String &p_path_prefix) {
-	return ::ResourceLoader::get_cached_paths_by_path_prefix_dict(p_path_prefix);
-}
-Dictionary ResourceLoader::get_cached_paths_by_path_substring_dict(const String &p_path_substr) {
-	return ::ResourceLoader::get_cached_paths_by_path_substring_dict(p_path_substr);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix) {
-	return ::ResourceLoader::get_cached_paths_by_file_name_prefix_dict(p_file_name_prefix);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_dict(const String &p_file_name) {
-	return ::ResourceLoader::get_cached_paths_by_file_name_dict(p_file_name);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_substring_dict(const String &p_file_name_substr) {
-	return ::ResourceLoader::get_cached_paths_by_file_name_substring_dict(p_file_name_substr);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_dict(const String &p_file_extension) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension_dict(p_file_extension);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension_prefix_dict(p_file_extension_prefix);
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension_substr) {
-	return ::ResourceLoader::get_cached_paths_by_file_extension_substring_dict(p_file_extension_substr);
+Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	return ::ResourceLoader::get_cached_paths_typed_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
 }
 
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
@@ -217,33 +150,10 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("get_cached_paths", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name", "resource_name", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_resource_name);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name_prefix", "resource_name_prefix", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_resource_name_prefix);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name_substring", "resource_name_substr", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_resource_name_substring);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_type_hint", "type_hint", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_type_hint);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_path_prefix", "path_prefix", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_path_prefix);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_path_substring", "path_substr", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_path_substring);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name_prefix", "file_name_prefix", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_name_prefix);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name", "file_name", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_name);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name_substring", "file_name_substr", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_name_substring);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension", "file_extension", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_extension);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension_prefix", "file_extension_prefix", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_extension_prefix);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension_substring", "file_extension_substr", "with_godot_type", "separator"), &ResourceLoader::get_cached_paths_by_file_extension_substring);
-
-	ClassDB::bind_method(D_METHOD("get_cached_paths_dict"), &ResourceLoader::get_cached_paths_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name_dict", "resource_name"), &ResourceLoader::get_cached_paths_by_resource_name_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name_prefix_dict", "resource_name_prefix"), &ResourceLoader::get_cached_paths_by_resource_name_prefix_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_resource_name_substring_dict", "resource_name_substr"), &ResourceLoader::get_cached_paths_by_resource_name_substring_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_type_hint_dict", "type_hint"), &ResourceLoader::get_cached_paths_by_type_hint_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_path_prefix_dict", "path_prefix"), &ResourceLoader::get_cached_paths_by_path_prefix_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_path_substring_dict", "path_substr"), &ResourceLoader::get_cached_paths_by_path_substring_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name_prefix_dict", "file_name_prefix"), &ResourceLoader::get_cached_paths_by_file_name_prefix_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name_dict", "file_name"), &ResourceLoader::get_cached_paths_by_file_name_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_name_substring_dict", "file_name_substr"), &ResourceLoader::get_cached_paths_by_file_name_substring_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension_dict", "file_extension"), &ResourceLoader::get_cached_paths_by_file_extension_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension_prefix_dict", "file_extension_prefix"), &ResourceLoader::get_cached_paths_by_file_extension_prefix_dict);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_file_extension_substring_dict", "file_extension_substr"), &ResourceLoader::get_cached_paths_by_file_extension_substring_dict);
+	ClassDB::bind_method(D_METHOD("get_cached_paths"), &ResourceLoader::get_cached_paths);
+	ClassDB::bind_method(D_METHOD("get_cached_paths_typed"), &ResourceLoader::get_cached_paths_typed);
+	ClassDB::bind_method(D_METHOD("get_cached_paths_by_filter", "target", "comparator", "value"), &ResourceLoader::get_cached_paths_by_filter);
+	ClassDB::bind_method(D_METHOD("get_cached_paths_typed_by_filter", "target", "comparator", "value"), &ResourceLoader::get_cached_paths_typed_by_filter);
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
@@ -267,6 +177,21 @@ void ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
+
+	BIND_ENUM_CONSTANT(FILTER_TARGET_TYPE_HINT);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_PATH);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_FILE_NAME);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_FILE_EXTENSION);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_BASE_DIR);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_NAME);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_PATH);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_CLASS);
+
+	BIND_ENUM_CONSTANT(FILTER_COMP_EQUALS);
+	BIND_ENUM_CONSTANT(FILTER_COMP_NOT_EQUAL);
+	BIND_ENUM_CONSTANT(FILTER_COMP_BEGINS_WITH);
+	BIND_ENUM_CONSTANT(FILTER_COMP_ENDS_WITH);
+	BIND_ENUM_CONSTANT(FILTER_COMP_CONTAINS);
 }
 
 ////// ResourceSaver //////

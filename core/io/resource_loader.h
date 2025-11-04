@@ -126,6 +126,25 @@ public:
 		LOAD_THREAD_DISTRIBUTE,
 	};
 
+	enum FilterTarget {
+		FILTER_TARGET_TYPE_HINT = 0,
+		FILTER_TARGET_PATH,
+		FILTER_TARGET_FILE_NAME,
+		FILTER_TARGET_FILE_EXTENSION,
+		FILTER_TARGET_BASE_DIR,
+		FILTER_TARGET_RESOURCE_NAME,
+		FILTER_TARGET_RESOURCE_PATH,
+		FILTER_TARGET_RESOURCE_CLASS
+	};
+
+	enum FilterComparator {
+		FILTER_COMP_EQUALS = 0,
+		FILTER_COMP_NOT_EQUAL,
+		FILTER_COMP_BEGINS_WITH,
+		FILTER_COMP_ENDS_WITH,
+		FILTER_COMP_CONTAINS,
+	};
+
 	struct LoadToken : public RefCounted {
 		String local_path;
 		String user_path;
@@ -223,34 +242,15 @@ private:
 
 	static String _validate_local_path(const String &p_path);
 
-public:
-	static PackedStringArray get_cached_paths(const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_resource_name_substring(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_path_substring(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_name_substring(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	static PackedStringArray get_cached_paths_by_file_extension_substring(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	static const String _get_cached_info(const FilterTarget &p_target, const String &p_path, const Ref<Resource> &p_res);
+	static bool _validate_comparison(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value);
 
-	static Dictionary get_cached_paths_dict();
-	static Dictionary get_cached_paths_by_resource_name_dict(const String &p_resource_name);
-	static Dictionary get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix);
-	static Dictionary get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name);
-	static Dictionary get_cached_paths_by_type_hint_dict(const String &p_type_hint);
-	static Dictionary get_cached_paths_by_path_prefix_dict(const String &p_path_prefix);
-	static Dictionary get_cached_paths_by_path_substring_dict(const String &p_path_prefix);
-	static Dictionary get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix);
-	static Dictionary get_cached_paths_by_file_name_dict(const String &p_file_name);
-	static Dictionary get_cached_paths_by_file_name_substring_dict(const String &p_file_name);
-	static Dictionary get_cached_paths_by_file_extension_dict(const String &p_file_extension);
-	static Dictionary get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix);
-	static Dictionary get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension);
+public:
+	static PackedStringArray get_cached_paths();
+	static Dictionary get_cached_paths_typed();
+
+	static PackedStringArray get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
+	static Dictionary get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
 
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
@@ -340,3 +340,6 @@ public:
 	static void initialize();
 	static void finalize();
 };
+
+VARIANT_ENUM_CAST(ResourceLoader::FilterTarget)
+VARIANT_ENUM_CAST(ResourceLoader::FilterComparator)

@@ -45,6 +45,8 @@
 #include "core/variant/variant_parser.h"
 #include "servers/rendering/rendering_server.h"
 
+#include <algorithm>
+
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
 #else
@@ -513,6 +515,86 @@ String ResourceLoader::_validate_local_path(const String &p_path) {
 	}
 }
 
+const String ResourceLoader::_get_cached_info(const FilterTarget &p_target, const String &p_path, const Ref<Resource> &p_res) {
+	if (p_target == FILTER_TARGET_TYPE_HINT) {
+		return p_res->get_gdtype().get_name();
+	}
+	if (p_target == FILTER_TARGET_PATH) {
+		return p_path;
+	}
+	if (p_target == FILTER_TARGET_FILE_NAME) {
+		return p_path.get_file();
+	}
+	if (p_target == FILTER_TARGET_FILE_EXTENSION) {
+		return p_path.get_extension();
+	}
+	if (p_target == FILTER_TARGET_BASE_DIR) {
+		return p_path.get_base_dir();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_NAME) {
+		return p_res->get_name();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_PATH) {
+		return p_res->get_path();
+	}
+	if (p_target == FILTER_TARGET_RESOURCE_CLASS) {
+		return p_res->get_class();
+	}
+	return "";
+}
+bool ResourceLoader::_validate_comparison(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value) {
+	if (p_filter == FILTER_COMP_EQUALS) {
+		return p_attribute_value == p_value;
+	}
+	if (p_filter == FILTER_COMP_NOT_EQUAL) {
+		return p_attribute_value != p_value;
+	}
+	if (p_filter == FILTER_COMP_CONTAINS) {
+		return p_attribute_value.contains(p_value);
+	}
+	if (p_filter == FILTER_COMP_BEGINS_WITH) {
+		return p_attribute_value.begins_with(p_value);
+	}
+	if (p_filter == FILTER_COMP_ENDS_WITH) {
+		return p_attribute_value.ends_with(p_value);
+	}
+	return false;
+}
+
+PackedStringArray ResourceLoader::get_cached_paths() {
+	PackedStringArray paths;
+	for (const auto &elem : ResourceCache::resources) {
+		paths.push_back(elem.key);
+	}
+	return paths;
+}
+Dictionary ResourceLoader::get_cached_paths_typed() {
+	Dictionary ret;
+	for (const auto &elem : ResourceCache::resources) {
+		ret.set(elem.key, elem.value->get_gdtype().get_name());
+	}
+	return ret;
+}
+PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	return ResourceCache::_get_all_paths_filtered_array(
+			[&](const String &path, const Ref<Resource> &res) {
+				const String info_value = _get_cached_info(p_target, path, res);
+				return _validate_comparison(info_value, p_comparator, p_value);
+			},
+			false,
+			"");
+}
+Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	Dictionary ret;
+	for (const auto &elem : ResourceCache::resources) {
+		const String info_value = _get_cached_info(p_target, elem.key, elem.value);
+		if (_validate_comparison(info_value, p_comparator, p_value)) {
+			ret.set(elem.key, elem.value->get_gdtype().get_name());
+		}
+	}
+	return ret;
+}
+
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode) {
 	Ref<ResourceLoader::LoadToken> token = _load_start(p_path, p_type_hint, p_use_sub_threads ? LOAD_THREAD_DISTRIBUTE : LOAD_THREAD_SPAWN_SINGLE, p_cache_mode, true);
 	return token.is_valid() ? OK : FAILED;
@@ -683,221 +765,6 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 	} else {
 		return 1.0; //assume finished loading it so it no longer exists
 	}
-}
-
-PackedStringArray ResourceLoader::get_cached_paths(const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray paths = PackedStringArray();
-
-	if (p_with_godot_type) {
-		for (const auto &elem : ResourceCache::resources) {
-			GDType type = elem.value->get_gdtype();
-			paths.push_back("" + type.get_name() + p_separator + elem.key);
-		}
-	} else {
-		for (const auto &elem : ResourceCache::resources) {
-			paths.push_back(elem.key);
-		}
-	}
-	return paths;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name() == p_resource_name;
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name().begins_with(p_resource_name_prefix);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_resource_name_substring(const String &p_resource_name, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name().find(p_resource_name) != -1;
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_gdtype().get_name() == p_type_hint;
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.begins_with(p_path_prefix);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_path_substring(const String &p_path, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.contains(p_path);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file().begins_with(p_file_name_prefix);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file() == p_file_name;
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_name_substring(const String &p_file_name, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file().contains(p_file_name);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension() == p_file_extension;
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension().begins_with(p_file_extension_prefix);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-PackedStringArray ResourceLoader::get_cached_paths_by_file_extension_substring(const String &p_file_extension, const bool &p_with_godot_type, const String &p_separator) {
-	PackedStringArray ret = ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension().contains(p_file_extension);
-			},
-			p_with_godot_type,
-			p_separator);
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_dict() {
-	Dictionary ret = Dictionary(); // Key: Path, Value: Type
-	for (const auto &elem : ResourceCache::resources) {
-		ret.set(elem.key, elem.value->get_gdtype().get_name());
-	}
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_dict(const String &p_resource_name) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name() == p_resource_name;
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name().begins_with(p_resource_name_prefix);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_name().find(p_resource_name) != -1;
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_type_hint_dict(const String &p_type_hint) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return res->get_gdtype().get_name() == p_type_hint;
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_path_prefix_dict(const String &p_path_prefix) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.begins_with(p_path_prefix);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_path_substring_dict(const String &p_path_prefix) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.contains(p_path_prefix);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file().begins_with(p_file_name_prefix);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_dict(const String &p_file_name) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file() == p_file_name;
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_name_substring_dict(const String &p_file_name) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_file().contains(p_file_name);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_dict(const String &p_file_extension) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension() == p_file_extension;
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension().begins_with(p_file_extension_prefix);
-			});
-	return ret;
-}
-Dictionary ResourceLoader::get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension) {
-	Dictionary ret = ResourceCache::_get_all_paths_filtered_dict(
-			[&](const String &path, const Ref<Resource> &res) {
-				return path.get_extension().contains(p_file_extension);
-			});
-	return ret;
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, float *r_progress) {

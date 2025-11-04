@@ -66,39 +66,36 @@ public:
 		CACHE_MODE_REPLACE_DEEP,
 	};
 
+	enum FilterTarget {
+		FILTER_TARGET_TYPE_HINT = 0,
+		FILTER_TARGET_PATH,
+		FILTER_TARGET_FILE_NAME,
+		FILTER_TARGET_FILE_EXTENSION,
+		FILTER_TARGET_BASE_DIR,
+		FILTER_TARGET_RESOURCE_NAME,
+		FILTER_TARGET_RESOURCE_PATH,
+		FILTER_TARGET_RESOURCE_CLASS
+	};
+
+	enum FilterComparator {
+		FILTER_COMP_EQUALS = 0,
+		FILTER_COMP_NOT_EQUAL,
+		FILTER_COMP_BEGINS_WITH,
+		FILTER_COMP_ENDS_WITH,
+		FILTER_COMP_CONTAINS,
+	};
+
 	static ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
-	PackedStringArray get_cached_paths(const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_resource_name(const String &p_resource_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_resource_name_prefix(const String &p_resource_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_resource_name_substring(const String &p_resource_name_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_type_hint(const String &p_type_hint, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_path_prefix(const String &p_path_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_path_substring(const String &p_path_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_name_prefix(const String &p_file_name_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_name(const String &p_file_name, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_name_substring(const String &p_file_name_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_extension(const String &p_file_extension, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_extension_prefix(const String &p_file_extension_prefix, const bool &p_with_godot_type = false, const String &p_separator = "|");
-	PackedStringArray get_cached_paths_by_file_extension_substring(const String &p_file_extension_substr, const bool &p_with_godot_type = false, const String &p_separator = "|");
+	PackedStringArray get_cached_paths();
+	Dictionary get_cached_paths_typed();
 
-	Dictionary get_cached_paths_dict();
-	Dictionary get_cached_paths_by_resource_name_dict(const String &p_resource_name);
-	Dictionary get_cached_paths_by_resource_name_prefix_dict(const String &p_resource_name_prefix);
-	Dictionary get_cached_paths_by_resource_name_substring_dict(const String &p_resource_name_substr);
-	Dictionary get_cached_paths_by_type_hint_dict(const String &p_type_hint);
-	Dictionary get_cached_paths_by_path_prefix_dict(const String &p_path_prefix);
-	Dictionary get_cached_paths_by_path_substring_dict(const String &p_path_substr);
-	Dictionary get_cached_paths_by_file_name_prefix_dict(const String &p_file_name_prefix);
-	Dictionary get_cached_paths_by_file_name_dict(const String &p_file_name);
-	Dictionary get_cached_paths_by_file_name_substring_dict(const String &p_file_name_substr);
-	Dictionary get_cached_paths_by_file_extension_dict(const String &p_file_extension);
-	Dictionary get_cached_paths_by_file_extension_prefix_dict(const String &p_file_extension_prefix);
-	Dictionary get_cached_paths_by_file_extension_substring_dict(const String &p_file_extension_substr);
+	PackedStringArray get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
+	Dictionary get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
@@ -726,6 +723,8 @@ public:
 VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::FilterTarget);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::FilterComparator);
 
 VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 

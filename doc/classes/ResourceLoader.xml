@@ -34,347 +34,94 @@
 		</method>
 		<method name="get_cached_paths">
 			<return type="PackedStringArray" />
-			<param index="0" name="with_godot_type" type="bool" />
-			<param index="1" name="separator" type="String" />
 			<description>
-				Returns all cached resource paths as a [PackedStringArray].
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths(false, "|")[/code] →
-				[code]["res://icon.svg", "res://scenes/menu.tscn", "res://audio/click.wav"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths(true, "|")[/code] →
-				[code]["Image|res://icon.svg", "PackedScene|res://scenes/menu.tscn", "AudioStreamWAV|res://audio/click.wav"][/code].
+				Returns all cached resource paths as a [PackedStringArray]
+				A resource is considered cached when it has a reference count &gt; 0
+				This means the resource must be assigned to attributes/variables of Nodes, Resources or Objects
 			</description>
 		</method>
-		<method name="get_cached_paths_by_file_extension">
+		<method name="get_cached_paths_by_filter">
 			<return type="PackedStringArray" />
-			<param index="0" name="file_extension" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
+			<param index="0" name="target" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
+			<param index="2" name="value" type="String" />
 			<description>
-				Returns cached resource paths whose file extension exactly matches [param file_extension].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://icon.svg[/code], [code]res://art/logo.svg[/code], [code]res://data/config.tres[/code].
-				[code]get_cached_paths_by_file_extension("svg", false, "|")[/code] →
-				[code]["res://icon.svg", "res://art/logo.svg"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_extension("svg", true, "|")[/code] →
-				[code]["Image|res://icon.svg", "Image|res://art/logo.svg"][/code].
+				Returns all cached resource paths that match a single filter condition as [PackedStringArray]
+				The [param target] selects which attribute is checked, [param comparator] defines how it is compared to
+				[param value].
+				Allowed [param target]: FILTER_TARGET_TYPE_HINT, FILTER_TARGET_PATH, FILTER_TARGET_FILE_NAME, FILTER_TARGET_FILE_EXTENSION, FILTER_TARGET_BASE_DIR, FILTER_TARGET_RESOURCE_NAME, FILTER_TARGET_RESOURCE_PATH, FILTER_TARGET_RESOURCE_CLASS.
+				Allowed [param comparator]: FILTER_COMP_EQUALS, FILTER_COMP_NOT_EQUAL, FILTER_COMP_BEGINS_WITH,	FILTER_COMP_ENDS_WITH, FILTER_COMP_CONTAINS.
+				[b]Examples (GDScript)[/b]
+				All Image resources (type hint)
+				[codeblock]
+				var img_paths = ResourceLoader.get_cached_paths_by_filter(
+				ResourceLoader.FILTER_TARGET_TYPE_HINT,
+				ResourceLoader.FILTER_COMP_EQUALS,
+				"Image"
+				)
+				[/codeblock]
+				All resources in the res://assets/ folder:
+				[codeblock]
+				#
+				var in_dir = ResourceLoader.get_cached_paths_by_filter(
+				ResourceLoader.FILTER_TARGET_PATH,
+				ResourceLoader.FILTER_COMP_BEGINS_WITH,
+				"res://assets/"
+				)
+				[/codeblock]
+				All PNG files (by extension):
+				[codeblock]
+				var pngs = ResourceLoader.get_cached_paths_by_filter(
+				ResourceLoader.FILTER_TARGET_FILE_EXTENSION,
+				ResourceLoader.FILTER_COMP_EQUALS,
+				"png"
+				)
+				[/codeblock]
 			</description>
 		</method>
-		<method name="get_cached_paths_by_file_extension_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_extension" type="String" />
-			<description>
-				Returns a [Dictionary] where keys are cached paths and values are their Godot types, filtered by exact [param file_extension].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_extension_dict("svg")[/code] →
-				[code]{ "res://icon.svg": "Image", "res://art/logo.svg": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_extension_dict("tres")[/code] →
-				[code]{ "res://data/config.tres": "Resource" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_extension_prefix">
-			<return type="PackedStringArray" />
-			<param index="0" name="file_extension_prefix" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose file extension starts with [param file_extension_prefix].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://clip.ogg[/code], [code]res://voice.oga[/code], [code]res://movie.ogv[/code].
-				[code]get_cached_paths_by_file_extension_prefix("og", false, "|")[/code] →
-				[code]["res://clip.ogg", "res://voice.oga", "res://movie.ogv"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_extension_prefix("og", true, "|")[/code] →
-				[code]["AudioStreamOggVorbis|res://clip.ogg", "AudioStreamOggVorbis|res://voice.oga", "VideoStream|res://movie.ogv"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_extension_prefix_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_extension_prefix" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for items whose file extension starts with [param file_extension_prefix].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_extension_prefix_dict("og")[/code] →
-				[code]{ "res://clip.ogg": "AudioStreamOggVorbis", "res://voice.oga": "AudioStreamOggVorbis" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_extension_prefix_dict("ts")[/code] →
-				[code]{ "res://cutscene.tsbc": "VideoStream", "res://track.tscn": "PackedScene" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_extension_substring">
-			<return type="PackedStringArray" />
-			<param index="0" name="file_extension_substr" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose file extension contains [param file_extension_substr].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://font.ttf[/code], [code]res://font.otf[/code], [code]res://image.tga[/code].
-				[code]get_cached_paths_by_file_extension_substring("tf", false, "|")[/code] →
-				[code]["res://font.ttf"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_extension_substring("ot", true, "|")[/code] →
-				[code]["FontFile|res://font.otf"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_extension_substring_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_extension_substr" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose extension contains [param file_extension_substr].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_extension_substring_dict("tf")[/code] →
-				[code]{ "res://font.ttf": "FontFile" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_extension_substring_dict("tg")[/code] →
-				[code]{ "res://image.tga": "Image" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name">
-			<return type="PackedStringArray" />
-			<param index="0" name="file_name" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose base file name exactly matches [param file_name] (no directories).
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://icon.svg[/code], [code]res://art/icon.svg[/code].
-				[code]get_cached_paths_by_file_name("icon.svg", false, "|")[/code] →
-				[code]["res://icon.svg", "res://art/icon.svg"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_name("icon.svg", true, "|")[/code] →
-				[code]["Image|res://icon.svg", "Image|res://art/icon.svg"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_name" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries with base name [param file_name].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_name_dict("icon.svg")[/code] →
-				[code]{ "res://icon.svg": "Image", "res://art/icon.svg": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_name_dict("menu.tscn")[/code] →
-				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name_prefix">
-			<return type="PackedStringArray" />
-			<param index="0" name="file_name_prefix" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose base file name starts with [param file_name_prefix].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://ui/button_play.png[/code], [code]res://ui/button_stop.png[/code].
-				[code]get_cached_paths_by_file_name_prefix("button_", false, "|")[/code] →
-				[code]["res://ui/button_play.png", "res://ui/button_stop.png"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_name_prefix("button_", true, "|")[/code] →
-				[code]["Image|res://ui/button_play.png", "Image|res://ui/button_stop.png"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name_prefix_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_name_prefix" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose base file name starts with [param file_name_prefix].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_name_prefix_dict("button_")[/code] →
-				[code]{ "res://ui/button_play.png": "Image", "res://ui/button_stop.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_name_prefix_dict("tile")[/code] →
-				[code]{ "res://tileset/tile_grass.png": "Image" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name_substring">
-			<return type="PackedStringArray" />
-			<param index="0" name="file_name_substr" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose base file name contains [param file_name_substr].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://icon.svg[/code], [code]res://art/app_icon.png[/code], [code]res://ui/button.png[/code].
-				[code]get_cached_paths_by_file_name_substring("icon", false, "|")[/code] →
-				[code]["res://icon.svg", "res://art/app_icon.png"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_file_name_substring("icon", true, "|")[/code] →
-				[code]["Image|res://icon.svg", "Image|res://art/app_icon.png"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_file_name_substring_dict">
-			<return type="Dictionary" />
-			<param index="0" name="file_name_substr" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose base file name contains [param file_name_substr].
-				[b]Example 1:[/b] [code]get_cached_paths_by_file_name_substring_dict("icon")[/code] →
-				[code]{ "res://icon.svg": "Image", "res://art/app_icon.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_file_name_substring_dict("menu")[/code] →
-				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_path_prefix">
-			<return type="PackedStringArray" />
-			<param index="0" name="path_prefix" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths beginning with [param path_prefix].
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://scenes/menu.tscn[/code], [code]res://scenes/game.tscn[/code], [code]res://assets/atlas.png[/code].
-				[code]get_cached_paths_by_path_prefix("res://scenes/", false, "|")[/code] →
-				[code]["res://scenes/menu.tscn", "res://scenes/game.tscn"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_path_prefix("res://scenes/", true, "|")[/code] →
-				[code]["PackedScene|res://scenes/menu.tscn", "PackedScene|res://scenes/game.tscn"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_path_prefix_dict">
-			<return type="Dictionary" />
-			<param index="0" name="path_prefix" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for cached entries beginning with [param path_prefix].
-				[b]Example 1:[/b] [code]get_cached_paths_by_path_prefix_dict("res://scenes/")[/code] →
-				[code]{ "res://scenes/menu.tscn": "PackedScene", "res://scenes/game.tscn": "PackedScene" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_path_prefix_dict("res://assets/")[/code] →
-				[code]{ "res://assets/atlas.png": "Image" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_path_substring">
-			<return type="PackedStringArray" />
-			<param index="0" name="path_substr" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths containing [param path_substr] anywhere in the path.
-				[b]Example (with_godot_type = false):[/b]
-				Cache contains [code]res://ui/button.png[/code], [code]res://scenes/ui/hud.tscn[/code], [code]res://scenes/game.tscn[/code].
-				[code]get_cached_paths_by_path_substring("/ui/", false, "|")[/code] →
-				[code]["res://ui/button.png", "res://scenes/ui/hud.tscn"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_path_substring("/ui/", true, "|")[/code] →
-				[code]["Image|res://ui/button.png", "PackedScene|res://scenes/ui/hud.tscn"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_path_substring_dict">
-			<return type="Dictionary" />
-			<param index="0" name="path_substr" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries containing [param path_substr] anywhere in the path.
-				[b]Example 1:[/b] [code]get_cached_paths_by_path_substring_dict("/ui/")[/code] →
-				[code]{ "res://ui/button.png": "Image", "res://scenes/ui/hud.tscn": "PackedScene" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_path_substring_dict("/audio/")[/code] →
-				[code]{ "res://audio/click.wav": "AudioStreamWAV" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name">
-			<return type="PackedStringArray" />
-			<param index="0" name="resource_name" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose resource name exactly matches [param resource_name].
-				[i]The resource name is the internal name stored in the resource.[/i]
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths_by_resource_name("PlayerAtlas", false, "|")[/code] →
-				[code]["res://textures/player.png"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_resource_name("MainMenu", true, "|")[/code] →
-				[code]["PackedScene|res://scenes/menu.tscn"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name_dict">
-			<return type="Dictionary" />
-			<param index="0" name="resource_name" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose resource name exactly matches [param resource_name].
-				[b]Example 1:[/b] [code]get_cached_paths_by_resource_name_dict("PlayerAtlas")[/code] →
-				[code]{ "res://textures/player.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_resource_name_dict("MainMenu")[/code] →
-				[code]{ "res://scenes/menu.tscn": "PackedScene" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name_prefix">
-			<return type="PackedStringArray" />
-			<param index="0" name="resource_name_prefix" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose resource name starts with [param resource_name_prefix].
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths_by_resource_name_prefix("Enemy", false, "|")[/code] →
-				[code]["res://textures/enemy.png", "res://scenes/EnemyBoss.tscn"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_resource_name_prefix("Enemy", true, "|")[/code] →
-				[code]["Image|res://textures/enemy.png", "PackedScene|res://scenes/EnemyBoss.tscn"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name_prefix_dict">
-			<return type="Dictionary" />
-			<param index="0" name="resource_name_prefix" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose resource name starts with [param resource_name_prefix].
-				[b]Example 1:[/b] [code]get_cached_paths_by_resource_name_prefix_dict("Enemy")[/code] →
-				[code]{ "res://textures/enemy.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_resource_name_prefix_dict("Level")[/code] →
-				[code]{ "res://scenes/Level1.tscn": "PackedScene", "res://scenes/Level2.tscn": "PackedScene" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name_substring">
-			<return type="PackedStringArray" />
-			<param index="0" name="resource_name_substr" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose resource name contains [param resource_name_substr].
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths_by_resource_name_substring("Atlas", false, "|")[/code] →
-				[code]["res://textures/PlayerAtlas.png", "res://textures/EnemyAtlas.png"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_resource_name_substring("Menu", true, "|")[/code] →
-				[code]["PackedScene|res://scenes/menu.tscn", "Theme|res://ui/menu_theme.tres"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_resource_name_substring_dict">
-			<return type="Dictionary" />
-			<param index="0" name="resource_name_substr" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries whose resource name contains [param resource_name_substr].
-				[b]Example 1:[/b] [code]get_cached_paths_by_resource_name_substring_dict("Atlas")[/code] →
-				[code]{ "res://textures/PlayerAtlas.png": "Image", "res://textures/EnemyAtlas.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_resource_name_substring_dict("Menu")[/code] →
-				[code]{ "res://scenes/menu.tscn": "PackedScene", "res://ui/menu_theme.tres": "Theme" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_type_hint">
-			<return type="PackedStringArray" />
-			<param index="0" name="type_hint" type="String" />
-			<param index="1" name="with_godot_type" type="bool" />
-			<param index="2" name="separator" type="String" />
-			<description>
-				Returns cached paths whose inferred or declared type matches [param type_hint].
-				[b]Example (with_godot_type = false):[/b]
-				[code]get_cached_paths_by_type_hint("PackedScene", false, "|")[/code] →
-				[code]["res://scenes/menu.tscn", "res://scenes/game.tscn"][/code].
-				[b]Example (with_godot_type = true, separator = "|"):[/b]
-				[code]get_cached_paths_by_type_hint("Image", true, "|")[/code] →
-				[code]["Image|res://icon.svg", "Image|res://textures/player.png"][/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_by_type_hint_dict">
-			<return type="Dictionary" />
-			<param index="0" name="type_hint" type="String" />
-			<description>
-				Returns a [Dictionary] mapping paths to types for entries matching [param type_hint].
-				[b]Example 1:[/b] [code]get_cached_paths_by_type_hint_dict("Image")[/code] →
-				[code]{ "res://icon.svg": "Image", "res://textures/player.png": "Image" }[/code].
-				[b]Example 2:[/b] [code]get_cached_paths_by_type_hint_dict("Theme")[/code] →
-				[code]{ "res://ui/theme.tres": "Theme" }[/code].
-			</description>
-		</method>
-		<method name="get_cached_paths_dict">
+		<method name="get_cached_paths_typed">
 			<return type="Dictionary" />
 			<description>
-				Returns a [Dictionary] with all cached paths as keys and their Godot types as values.
-				[b]Example 1:[/b]
-				[code]{ "res://icon.svg": "Image", "res://scenes/menu.tscn": "PackedScene" }[/code].
-				[b]Example 2:[/b]
-				[code]{ "res://audio/click.wav": "AudioStreamWAV", "res://textures/player.png": "Image" }[/code].
+				Returns all cached resource paths as a [Dictionary] in the form of { "res://icon.svg": "Image" }
+				A resource is considered cached when it has a reference count &gt; 0 due to being assigned to
+				attributes/variables of Nodes, Resources or Objects via code or export variables.
+			</description>
+		</method>
+		<method name="get_cached_paths_typed_by_filter">
+			<return type="Dictionary" />
+			<param index="0" name="target" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
+			<param index="2" name="value" type="String" />
+			<description>
+				Returns a [Dictionary] of cached resource paths that match a single filter condition in the form of { "res://icon.svg": "Image" }
+				The [param target] selects the attribute and [param comparator] defines comparison against [param value].
+				Allowed [param target]: FILTER_TARGET_TYPE_HINT, FILTER_TARGET_PATH, FILTER_TARGET_FILE_NAME, FILTER_TARGET_FILE_EXTENSION, FILTER_TARGET_BASE_DIR, FILTER_TARGET_RESOURCE_NAME, FILTER_TARGET_RESOURCE_PATH, FILTER_TARGET_RESOURCE_CLASS.
+				Allowed [param comparator]: FILTER_COMP_EQUALS, FILTER_COMP_NOT_EQUAL, FILTER_COMP_BEGINS_WITH,	FILTER_COMP_ENDS_WITH, FILTER_COMP_CONTAINS.
+				[b]Examples (GDScript)[/b]
+				All resources whose path starts with res://, with types included:
+				[codeblock]
+				var dict1 = ResourceLoader.get_cached_paths_typed_by_filter(
+				ResourceLoader.FILTER_TARGET_PATH,
+				ResourceLoader.FILTER_COMP_BEGINS_WITH,
+				"res://"
+				)
+				[codeblock]
+				All resources whose file name contains "Character01":
+				[codeblock]
+				var dict2 = ResourceLoader.get_cached_paths_typed_by_filter(
+				ResourceLoader.FILTER_TARGET_FILE_NAME,
+				ResourceLoader.FILTER_COMP_ENDS_WITH,
+				"Character01"
+				)
+				[codeblock]
+				All resources of class "Texture2D":
+				[codeblock]
+				var dict3 = ResourceLoader.get_cached_paths_typed_by_filter(
+				ResourceLoader.FILTER_TARGET_TYPE_HINT,
+				ResourceLoader.FILTER_COMP_EQUALS,
+				"Texture2D"
+				)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_cached_ref">
@@ -523,6 +270,46 @@
 		</constant>
 		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
 			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="FILTER_TARGET_TYPE_HINT" value="0" enum="FilterTarget">
+			Target attribute is the resource's type hint (its GDType name),
+			e.g. [Image] [Texture2D] [AudioStreamWAV] [AudioStreamMP3] [Shader].
+		</constant>
+		<constant name="FILTER_TARGET_PATH" value="1" enum="FilterTarget">
+			Target attribute is the full resource path, e.g. "res://assets/ui/button.png".
+		</constant>
+		<constant name="FILTER_TARGET_FILE_NAME" value="2" enum="FilterTarget">
+			Target attribute is the file name part only (without directories), e.g. "button.png". (String.get_file())
+		</constant>
+		<constant name="FILTER_TARGET_FILE_EXTENSION" value="3" enum="FilterTarget">
+			Target attribute is the file extension (without dot), e.g. "png", "tscn", "gd". (String.get_extension())
+		</constant>
+		<constant name="FILTER_TARGET_BASE_DIR" value="4" enum="FilterTarget">
+			Target attribute is the base directory of the resource path, e.g. "res://assets/ui" (String.get_base_dir())
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_NAME" value="5" enum="FilterTarget">
+			Target attribute is the resource's user-defined name (Resource.get_name()).
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_PATH" value="6" enum="FilterTarget">
+			Target attribute is the resource's internal path (Resource.get_path()).
+		</constant>
+		<constant name="FILTER_TARGET_RESOURCE_CLASS" value="7" enum="FilterTarget">
+			Target attribute is the resource's class name, e.g. "Texture2D", "Script", "AudioStreamOggVorbis".
+		</constant>
+		<constant name="FILTER_COMP_EQUALS" value="0" enum="FilterComparator">
+			Compares for exact equality between the target attribute and the provided value.
+		</constant>
+		<constant name="FILTER_COMP_NOT_EQUAL" value="1" enum="FilterComparator">
+			Matches when the target attribute is not exactly equal to the provided value.
+		</constant>
+		<constant name="FILTER_COMP_BEGINS_WITH" value="2" enum="FilterComparator">
+			Matches when the target attribute starts with the provided value (prefix).
+		</constant>
+		<constant name="FILTER_COMP_ENDS_WITH" value="3" enum="FilterComparator">
+			Matches when the target attribute ends with the provided value (suffix).
+		</constant>
+		<constant name="FILTER_COMP_CONTAINS" value="4" enum="FilterComparator">
+			Matches when the target attribute contains the provided value as a substring.
 		</constant>
 	</constants>
 </class>
