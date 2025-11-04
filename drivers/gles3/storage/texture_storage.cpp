@@ -958,7 +958,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.type = Texture::TYPE_2D;
 	texture.target = GL_TEXTURE_2D;
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
-	texture.total_data_size = p_image->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps);
+	texture.total_data_size = p_image->get_image_data_size(texture.width, texture.height, texture.format, true, texture.mipmaps);
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 2D");
@@ -1050,7 +1050,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	texture.target = p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D_ARRAY;
 	texture.layers = p_layers.size();
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
-	texture.total_data_size = p_layers[0]->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps) * texture.layers;
+	texture.total_data_size = p_layers[0]->get_image_data_size(texture.width, texture.height, texture.format, true, texture.mipmaps) * texture.layers;
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture Layered");
@@ -1090,7 +1090,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	texture.type = Texture::TYPE_3D;
 	texture.target = GL_TEXTURE_3D;
 	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
-	texture.total_data_size = p_data[0]->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps) * texture.depth;
+	texture.total_data_size = p_data[0]->get_image_data_size(texture.width, texture.height, texture.format, true, texture.mipmaps) * texture.depth;
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 3D");
@@ -1264,7 +1264,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		// It also allows for reading compressed textures, mipmaps, and more formats.
 		Vector<uint8_t> data;
 
-		int64_t data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
+		int64_t data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, true, texture->mipmaps - 1);
 
 		data.resize(data_size * 2); // Add some memory at the end, just in case for buggy drivers.
 		uint8_t *w = data.ptrw();
@@ -1290,7 +1290,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, true, texture->real_format, data, texture->mipmaps - 1);
 		if (image->is_empty()) {
 			const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
 			ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
@@ -1436,7 +1436,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 	}
 
 	if (texture->mipmaps > 1) {
-		image->generate_mipmaps();
+		image->generate_mipmaps(false, texture->mipmaps - 1);
 	}
 
 	return image;

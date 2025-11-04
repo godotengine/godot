@@ -509,11 +509,11 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(dxt1_encoding_table.size() * sizeof(float), Span<float>(dxt1_encoding_table).reinterpret<uint8_t>());
 	}
 
-	const int mip_count = r_img->get_mipmap_count() + 1;
+	const int mip_count = r_img->get_mipmap_count();
 
 	// Container for the compressed data.
 	Vector<uint8_t> dst_data;
-	dst_data.resize(Image::get_image_data_size(img_width, img_height, dest_format, r_img->has_mipmaps()));
+	dst_data.resize(Image::get_image_data_size(img_width, img_height, dest_format, true, r_img->get_mipmap_count()));
 	uint8_t *dst_data_ptr = dst_data.ptrw();
 
 	Vector<Vector<uint8_t>> src_images;
@@ -521,7 +521,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	Vector<uint8_t> *src_image_ptr = src_images.ptrw();
 
 	// Compress each mipmap.
-	for (int i = 0; i < mip_count; i++) {
+	for (int i = 0; i < mip_count + 1; i++) {
 		int width, height;
 		Image::get_image_mipmap_offset_and_dimensions(img_width, img_height, dest_format, i, width, height);
 
@@ -830,7 +830,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	src_images.clear();
 
 	// Set the compressed data to the image.
-	r_img->set_data(img_width, img_height, r_img->has_mipmaps(), dest_format, dst_data);
+	r_img->set_data(img_width, img_height, true, dest_format, dst_data, mip_count);
 
 	print_verbose(
 			vformat("Betsy: Encoding a %dx%d image with %d mipmaps as %s took %d ms.",

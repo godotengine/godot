@@ -63,10 +63,10 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 	compression_mode = CompressionMode(decode_uint16(data));
 	DataFormat data_format = DataFormat(decode_uint16(data + 2));
 	format = Image::Format(decode_uint32(data + 4));
-	uint32_t mipmap_count = decode_uint32(data + 8);
+	uint32_t mip_count = decode_uint32(data + 8);
 	size.width = decode_uint32(data + 12);
 	size.height = decode_uint32(data + 16);
-	mipmaps = mipmap_count > 1;
+	mipmap_count = (int)mip_count - 1;
 
 	data += 20;
 	data_size -= 20;
@@ -89,7 +89,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 			Vector<uint8_t> image_data;
 
 			ERR_FAIL_COND(data_size < 4);
-			for (uint32_t i = 0; i < mipmap_count; i++) {
+			for (uint32_t i = 0; i < mip_count; i++) {
 				uint32_t mipsize = decode_uint32(data);
 				data += 4;
 				data_size -= 4;
@@ -107,7 +107,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 				data_size -= mipsize;
 			}
 
-			image.instantiate(size.width, size.height, mipmaps, format, image_data);
+			image.instantiate(size.width, size.height, true, format, image_data, mipmap_count);
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
@@ -119,7 +119,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 		case COMPRESSION_MODE_ETC2:
 		case COMPRESSION_MODE_BPTC:
 		case COMPRESSION_MODE_ASTC: {
-			image.instantiate(size.width, size.height, mipmaps, format, p_data.slice(20));
+			image.instantiate(size.width, size.height, true, format, p_data.slice(20), mipmap_count);
 		} break;
 	}
 	ERR_FAIL_COND(image.is_null());
