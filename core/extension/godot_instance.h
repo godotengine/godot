@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/object/class_db.h"
 
 class GodotInstance : public Object {
