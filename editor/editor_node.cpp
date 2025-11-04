@@ -900,6 +900,7 @@ void EditorNode::_notification(int p_what) {
 			}
 			EditorHelp::save_script_doc_cache();
 			editor_data.save_editor_external_data();
+			EditorSettings::get_singleton()->save_project_metadata();
 			FileAccess::set_file_close_fail_notify_callback(nullptr);
 			log->deinit(); // Do not get messages anymore.
 			editor_data.clear_edited_scenes();
@@ -2278,6 +2279,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		}
 	}
 
+	EditorSettings::get_singleton()->save_project_metadata();
 	EditorUndoRedoManager::get_singleton()->set_history_as_saved(EditorUndoRedoManager::GLOBAL_HISTORY);
 	_update_unsaved_cache();
 

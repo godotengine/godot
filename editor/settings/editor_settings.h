@@ -92,6 +92,7 @@ private:
 	mutable String auto_language;
 
 	mutable Ref<ConfigFile> project_metadata;
+	bool project_metadata_dirty = false;
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
@@ -171,6 +172,7 @@ public:
 
 	void set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
+	void save_project_metadata();
 
 	void set_favorites(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
