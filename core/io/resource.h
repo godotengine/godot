@@ -215,14 +215,14 @@ public:
 	static int get_cached_resource_count();
 
 	template <typename PredicateArray>
-	static PackedStringArray _get_all_paths_filtered_array(PredicateArray pred, bool with_gd_type_prefix, const String &p_separator) {
+	static PackedStringArray _get_all_paths_filtered_array(PredicateArray p_pred, bool p_with_gd_type_prefix, const String &p_separator) {
 		MutexLock mutex_lock(lock);
 		PackedStringArray paths;
 
 		for (const auto &elem : resources) {
 			const String &path = elem.key;
 			Resource *res_ptr = elem.value;
-			Ref<Resource> res = Ref<Resource>(res_ptr);
+			Ref<Resource> res = res_ptr;
 
 			// Prüfen, ob das Predicate für dieses Element true zurückgibt.
 			if (pred(path, res)) {
