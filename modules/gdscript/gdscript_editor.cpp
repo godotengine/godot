@@ -5154,23 +5154,55 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 			}
 
-			if (context.identifier != nullptr) {
-				RefactorRenameSymbolDefinintionType enum_type = context.identifier_is_enum_value
-						? RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM_VALUE
-						: RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
-				Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, enum_type, context.node);
-				REFACTOR_RENAME_RETURN(enum_err);
-			}
+			if (context.identifier == nullptr) {
+				if (context.node->get_start() == context.token.get_start()) {
+					// The user tried to refactor the enum keyword.
+					REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+					REFACTOR_RENAME_RETURN(OK);
+				}
 
-			if (context.node->start_line == context.token.start_line && context.node->start_column == context.token.start_column) {
-				// The user tried to refactor the enum keyword.
-				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+				// The user tried to refactor the enum braces.
+				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_SYMBOL);
 				REFACTOR_RENAME_RETURN(OK);
 			}
 
-			// The user tried to refactor the enum braces.
-			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_SYMBOL);
-			REFACTOR_RENAME_RETURN(OK);
+			GDScriptParser::EnumNode *enum_node = static_cast<GDScriptParser::EnumNode *>(context.node);
+			RefactorRenameSymbolDefinintionType enum_type = context.identifier_is_enum_value
+					? RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM_VALUE
+					: RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
+			Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, enum_type, enum_node);
+			REFACTOR_RENAME_RETURN(enum_err);
+		} break;
+		case GDScriptParser::REFACTOR_RENAME_TYPE_SIGNAL: {
+			GDScriptParser::DataType base_type;
+			if (context.current_class) {
+				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+					base_type = context.current_class->get_datatype();
+				} else {
+					base_type = context.current_class->base_type;
+				}
+			} else {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			if (context.identifier == nullptr) {
+				if (context.node->get_start() == context.token.get_start()) {
+					// The user tried to refactor the signal keyword.
+					REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+					REFACTOR_RENAME_RETURN(OK);
+				}
+				// The user tried to refactor the symbols.
+				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_SYMBOL);
+				REFACTOR_RENAME_RETURN(OK);
+			}
+
+			GDScriptParser::SignalNode *signal_node = static_cast<GDScriptParser::SignalNode *>(context.node);
+			if (context.identifier != signal_node->identifier) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			Error signal_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_SIGNAL, signal_node);
+			REFACTOR_RENAME_RETURN(signal_err);
 		} break;
 		default: {
 			REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);

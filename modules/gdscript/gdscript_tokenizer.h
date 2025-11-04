@@ -488,7 +488,9 @@ public:
 		bool has_cursor() const;
 		StringName get_identifier() const { return literal; }
 
-		CodeArea get_code_area() const { return CodeArea(start_line, start_column, end_line, end_column); }
+		constexpr LineColumn get_start() const { return { start_line, start_column }; }
+		constexpr LineColumn get_end() const { return { end_line, end_column }; }
+		constexpr CodeArea get_code_area() const { return { get_start(), get_end() }; }
 
 		constexpr bool operator==(const Token &p_right) {
 			if (type != p_right.type) {

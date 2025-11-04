@@ -373,14 +373,16 @@ public:
 
 		DataType datatype;
 
-		GDScriptTokenizer::CodeArea get_code_area() const { return GDScriptTokenizer::CodeArea(start_line, start_column, end_line, end_column); }
-
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
 		virtual bool is_expression() const { return false; }
 
 		virtual void get_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, bool p_deep = false) const {}
+
+		constexpr GDScriptTokenizer::LineColumn get_start() const { return { start_line, start_column }; }
+		constexpr GDScriptTokenizer::LineColumn get_end() const { return { end_line, end_column }; }
+		constexpr GDScriptTokenizer::CodeArea get_code_area() const { return { get_start(), get_end() }; }
 
 		virtual ~Node() {}
 	};

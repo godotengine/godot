@@ -1587,8 +1587,14 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 }
 
 GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
+	GDScriptTokenizer::Token signal_start_token = previous;
+
 	SignalNode *signal = alloc_node<SignalNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal);
+	if (is_for_refactor_rename()) {
+		if (previous.has_cursor() || current.has_cursor() || !tokenizer->is_past_cursor()) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal, false);
+		}
+	}
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
@@ -1630,6 +1636,14 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 
 	complete_extents(signal);
 	end_statement("signal declaration");
+
+	GDScriptTokenizer::Token signal_end_token = previous;
+	if (is_for_refactor_rename()) {
+		GDScriptTokenizer::CodeArea enum_code_area(signal_start_token.get_code_area().start, signal_end_token.get_code_area().end);
+		if (enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()))) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal, false);
+		}
+	}
 
 	return signal;
 }
@@ -1740,7 +1754,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	end_statement("enum");
 
 	GDScriptTokenizer::Token enum_end = previous;
-
 	if (is_for_refactor_rename()) {
 		GDScriptTokenizer::CodeArea enum_code_area(enum_start.get_code_area().start, enum_end.get_code_area().end);
 		if (enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()))) {
