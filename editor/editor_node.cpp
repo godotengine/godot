@@ -1641,9 +1641,6 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	saving_resources_in_path.erase(p_resource);
 
 	_resource_saved(p_resource, path);
-
-	emit_signal(SNAME("resource_saved"), p_resource);
-	editor_data.notify_resource_saved(p_resource);
 }
 
 void EditorNode::save_resource(const Ref<Resource> &p_resource) {
@@ -7315,6 +7312,8 @@ void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path)
 	}
 
 	singleton->editor_folding.save_resource_folding(p_resource, p_path);
+	singleton->emit_signal(SNAME("resource_saved"), p_resource);
+	singleton->editor_data.notify_resource_saved(p_resource);
 }
 
 void EditorNode::_resource_loaded(Ref<Resource> p_resource, const String &p_path) {
