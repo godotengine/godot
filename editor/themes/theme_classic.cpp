@@ -1963,6 +1963,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 		p_theme->set_constant("h_separation", "EditorInspectorSection", 2.0 * EDSCALE);
 
+		Color prop_subsection_stylebox_color = Color(1, 1, 1, 0);
+		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
+
+		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
+		style_highlight_subsection->set_bg_color(prop_subsection_stylebox_color);
+		p_theme->set_stylebox("style_highlight_subsection", EditorStringName(Editor), style_highlight_subsection);
+
 		Color prop_category_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 		Color prop_subsection_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.06);
 
@@ -2295,5 +2302,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
+
+		// TileSet editor.
+		p_theme->set_stylebox("expand_panel", "TileSetEditor", p_config.tree_panel_style);
 	}
 }

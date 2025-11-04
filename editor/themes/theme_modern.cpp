@@ -175,7 +175,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.selection_color = p_config.accent_color * Color(1, 1, 1, 0.4);
 		p_config.disabled_border_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.7);
 		p_config.disabled_bg_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.9);
-		p_config.separator_color = p_config.dark_theme ? Color(0, 0, 0, 0.3) : Color(0, 0, 0, 0.1);
+		p_config.separator_color = p_config.dark_theme ? Color(0, 0, 0, 0.4) : Color(0, 0, 0, 0.2);
 
 		p_theme->set_color("selection_color", EditorStringName(Editor), p_config.selection_color);
 		p_theme->set_color("disabled_border_color", EditorStringName(Editor), p_config.disabled_border_color);
@@ -991,7 +991,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 			p_theme->set_stylebox(SceneStringName(hover), "PopupMenu", p_config.flat_button_hover);
 
-			Ref<StyleBoxLine> style_popup_separator = EditorThemeManager::make_line_stylebox(Color(0, 0, 0, p_config.dark_theme ? 0.2 : 0.1), Math::round(2 * EDSCALE), p_config.base_margin * -1.5 * EDSCALE, p_config.base_margin * -1.5 * EDSCALE);
+			Ref<StyleBoxLine> style_popup_separator = EditorThemeManager::make_line_stylebox(p_config.mono_color * Color(1, 1, 1, p_config.dark_theme ? 0.075 : 0.125), Math::round(2 * EDSCALE), p_config.base_margin * -2 * EDSCALE, p_config.base_margin * -2 * EDSCALE);
 
 			p_theme->set_stylebox("separator", "PopupMenu", style_popup_separator);
 			p_theme->set_stylebox("labeled_separator_left", "PopupMenu", style_popup_separator);
@@ -1922,6 +1922,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 		p_theme->set_constant("h_separation", "EditorInspectorSection", p_config.base_margin * EDSCALE);
+
+		Color prop_subsection_stylebox_color = p_config.dark_color_1.lerp(p_config.mono_color_font, p_config.dark_icon_and_font ? 0.09 : 0.16);
+		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
+
+		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
+		style_highlight_subsection->set_bg_color(prop_subsection_stylebox_color);
+		style_highlight_subsection->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		p_theme->set_stylebox("style_highlight_subsection", EditorStringName(Editor), style_highlight_subsection);
 
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
