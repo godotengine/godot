@@ -4248,7 +4248,9 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(LocalVector<GDS
 					_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
 					continue;
 				} else if (identifier_node_source_node != nullptr) {
-					continue;
+					if (identifier_node_source_node->type != p_source_node->type) {
+						continue;
+					}
 				}
 
 				// Maybe the identifier is in the definition itself of the source, so it doesn't have any source.
@@ -4345,21 +4347,21 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(LocalVector<GDS
 						if (identifier_node->name != source_node_signal_node->identifier->name) {
 							continue;
 						}
-						GDScriptParser::SignalNode *identifier_signal_node;
+						GDScriptParser::SignalNode *identifier_signal_node = nullptr;
 						if (identifier_node_source_node) {
-							ERR_FAIL_COND_V_MSG(identifier_node_source_node->type != GDScriptParser::Node::SIGNAL, FAILED, "identifier_node_source_node is not of type SIGNAL");
 							identifier_signal_node = static_cast<GDScriptParser::SignalNode *>(identifier_node_source_node);
-						} else {
-							ERR_FAIL_COND_V_MSG(identifier_node_owner->type != GDScriptParser::Node::SIGNAL, FAILED, "identifier_node_owner is not of type SIGNAL");
+						} else if (identifier_node_owner) {
+							if (identifier_node_owner->type != GDScriptParser::Node::SIGNAL) {
+								continue;
+							}
 							identifier_signal_node = static_cast<GDScriptParser::SignalNode *>(identifier_node_owner);
+						} else {
+							continue;
 						}
-						if (identifier_signal_node != source_node_signal_node) {
-							if (identifier_signal_node->current_class->fqcn != source_node_signal_node->current_class->fqcn) {
-								continue;
-							}
-							if (identifier_signal_node->start_line != source_node_signal_node->start_line || identifier_signal_node->start_column != source_node_signal_node->start_column || identifier_signal_node->end_line != source_node_signal_node->end_line || identifier_signal_node->end_column != source_node_signal_node->end_column) {
-								continue;
-							}
+						GDScriptParser::ClassNode *identifier_signal_node_owner_class = static_cast<GDScriptParser::ClassNode *>(identifier_signal_node->owner);
+						GDScriptParser::ClassNode *source_node_owner_class = static_cast<GDScriptParser::ClassNode *>(source_node_signal_node->owner);
+						if (identifier_signal_node_owner_class->fqcn != source_node_owner_class->fqcn) {
+							continue;
 						}
 						_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
 						continue;
