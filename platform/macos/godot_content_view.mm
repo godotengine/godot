@@ -543,7 +543,7 @@
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	const NSRect contentRect = [wd.window_view frame];
-	if (NSPointInRect([event locationInWindow], contentRect)) {
+	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
 		ds->mouse_enter_window(window_id);
 	}
 
