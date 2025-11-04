@@ -36,6 +36,7 @@
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/inspector/editor_inspector.h"
@@ -312,6 +313,9 @@ void EditorResourcePicker::_update_menu_items() {
 			edit_menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
 			edit_menu->add_item(TTRC("Paste as Unique"), OBJ_MENU_PASTE_AS_UNIQUE);
 		}
+		if (edited_resource.is_valid()) {
+			edit_menu->add_item(TTR("Rename"), OBJ_MENU_RENAME);
+		}
 	}
 
 	// Add options to convert existing resource to another type of resource.
@@ -502,6 +506,23 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
 		} break;
 
+		case OBJ_MENU_RENAME: {
+			if (Ref<Script>(edited_resource).is_valid()) {
+				return;
+			}
+			assign_button->set_visible(false);
+			rename_line = memnew(LineEdit);
+			rename_line->set_h_size_flags(SIZE_EXPAND_FILL);
+			add_child(rename_line);
+			move_child(rename_line, quick_load_button->get_index());
+			rename_line->set_text(edited_resource->get_name());
+			rename_line->select_all();
+			rename_line->grab_focus();
+			rename_line->connect(SNAME("text_submitted"), callable_mp(this, &EditorResourcePicker::_perform_resource_rename));
+			rename_line->connect(SNAME("editing_toggled"), callable_mp(this, &EditorResourcePicker::_clean_up_resource_rename));
+
+		} break;
+
 		default: {
 			// Allow subclasses to handle their own options first, only then fallback on the default branch logic.
 			if (handle_menu_selected(p_which)) {
@@ -629,6 +650,21 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->set_position(pos);
 			edit_menu->popup();
 		}
+	}
+}
+
+void EditorResourcePicker::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	if (edited_resource.is_null()) {
+		return;
+	}
+
+	if (ED_IS_SHORTCUT("inspector/resource/rename", p_event) && assign_button->has_focus()) {
+		_edit_menu_cbk(OBJ_MENU_RENAME);
+		accept_event();
 	}
 }
 
@@ -1280,6 +1316,24 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 	}
 }
 
+void EditorResourcePicker::_perform_resource_rename(String new_name) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	Resource *res = edited_resource.ptr();
+	undo_redo->create_action(TTR("Rename Node"), UndoRedo::MERGE_DISABLE, res);
+	undo_redo->add_undo_method(res, "set_name", res->get_name());
+	undo_redo->add_do_method(res, "set_name", new_name);
+	undo_redo->commit_action();
+	_update_resource();
+}
+
+void EditorResourcePicker::_clean_up_resource_rename(bool toggled_on) {
+	if (toggled_on) {
+		return;
+	}
+	rename_line->queue_free();
+	assign_button->set_visible(true);
+}
+
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
@@ -1321,6 +1375,9 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
+	set_process_shortcut_input(true);
+
+	ED_SHORTCUT("inspector/resource/rename", "Rename Selected Resource", Key::F2);
 }
 
 // EditorScriptPicker
