@@ -164,6 +164,134 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 
 /////////////////////////////////
 
+void DocumentOutline::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+
+			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+			if (use_monospace_font) {
+				Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+				item_list->add_theme_font_override(SceneStringName(font), monospace_font);
+			} else {
+				item_list->remove_theme_font_override(SceneStringName(font));
+			}
+		} break;
+	}
+}
+
+void DocumentOutline::_item_list_selected(int p_idx) {
+	Control *active_editor = ScriptEditor::get_singleton()->get_active_editor();
+
+	int line = item_list->get_item_metadata(p_idx);
+	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(active_editor)) {
+		teb->goto_line_centered(line);
+	} else if (EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor)) {
+		eh->scroll_to_section(line);
+	}
+}
+
+void DocumentOutline::_toggle_sort(bool p_alphabetic_sort) {
+	EditorSettings::get_singleton()->set("text_editor/script_list/sort_members_outline_alphabetically", p_alphabetic_sort);
+	update_outline();
+}
+
+void DocumentOutline::update_editor_settings() {
+	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
+	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
+	update_visibility();
+}
+
+void DocumentOutline::update_outline() {
+	Control *active_editor = ScriptEditor::get_singleton()->get_active_editor();
+	item_list->clear();
+
+	if (CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(active_editor)) {
+		PackedStringArray functions = ceb->get_functions();
+		if (EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically")) {
+			functions.sort();
+		}
+
+		const String &filter_text = filter->get_text();
+		if (filter_text.is_empty()) {
+			for (const String &function_name : functions) {
+				item_list->add_item(function_name.get_slicec(':', 0));
+				item_list->set_item_metadata(-1, function_name.get_slicec(':', 1).to_int() - 1);
+			}
+		} else {
+			PackedStringArray search_names;
+			for (const String &function_name : functions) {
+				search_names.append(function_name.get_slicec(':', 0));
+			}
+
+			Vector<FuzzySearchResult> results;
+			FuzzySearch fuzzy;
+			fuzzy.set_query(filter_text, false);
+			fuzzy.search_all(search_names, results);
+
+			for (const FuzzySearchResult &res : results) {
+				const String &name = functions[res.original_index].get_slicec(':', 0);
+				int line = functions[res.original_index].get_slicec(':', 1).to_int() - 1;
+				item_list->add_item(name);
+				item_list->set_item_metadata(-1, line);
+			}
+		}
+	} else if (EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor)) {
+		const Vector<Pair<String, int>> sections = eh->get_sections();
+		for (const Pair<String, int> &section : sections) {
+			item_list->add_item(section.first);
+			item_list->set_item_metadata(-1, section.second);
+		}
+	}
+}
+
+void DocumentOutline::update_visibility() {
+	Control *active_editor = ScriptEditor::get_singleton()->get_active_editor();
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(active_editor);
+	EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor);
+
+	bool members_overview_visible = members_overview_enabled && seb && seb->show_members_overview();
+	bool help_overview_visible = help_overview_enabled && eh;
+
+	buttons_hbox->set_visible(members_overview_visible);
+	set_visible(members_overview_visible || help_overview_visible);
+}
+
+DocumentOutline::DocumentOutline() {
+	buttons_hbox = memnew(HBoxContainer);
+
+	filter = memnew(FilterLineEdit);
+	filter->set_placeholder(TTRC("Filter Methods"));
+	filter->set_accessibility_name(TTRC("Filter Methods"));
+	filter->set_clear_button_enabled(true);
+	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &DocumentOutline::update_outline).unbind(1));
+	buttons_hbox->add_child(filter);
+
+	sort_button = memnew(Button);
+	sort_button->set_theme_type_variation(SceneStringName(FlatButton));
+	sort_button->set_tooltip_text(TTRC("Toggle alphabetical sorting of the method list."));
+	sort_button->set_toggle_mode(true);
+	sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
+	sort_button->connect(SceneStringName(toggled), callable_mp(this, &DocumentOutline::_toggle_sort));
+	buttons_hbox->add_child(sort_button);
+
+	add_child(buttons_hbox);
+
+	item_list = memnew(ItemList);
+	filter->set_forward_control(item_list);
+	item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	item_list->set_theme_type_variation("ItemListSecondary");
+	item_list->set_allow_reselect(true);
+	item_list->set_allow_rmb_select(true);
+	item_list->set_custom_minimum_size(Size2(0, 60) * EDSCALE);
+	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	item_list->connect(SceneStringName(item_selected), callable_mp(this, &DocumentOutline::_item_list_selected));
+	add_child(item_list);
+}
+
+/////////////////////////////////
+
 ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
@@ -420,12 +548,10 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
 	_update_script_colors();
-	_update_members_overview();
-	_update_help_overview();
 	_update_selected_editor_menu();
 	_update_online_doc();
-	_update_members_overview_visibility();
-	_update_help_overview_visibility();
+	document_outline->update_outline();
+	document_outline->update_visibility();
 }
 
 void ScriptEditor::_add_recent_script(const String &p_path) {
@@ -1457,18 +1583,7 @@ void ScriptEditor::_notification(int p_what) {
 				script_back->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			}
 
-			members_overview_alphabeta_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
-
-			bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
-			Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
-			if (use_monospace_font) {
-				members_overview->add_theme_font_override(SceneStringName(font), monospace_font);
-			} else {
-				members_overview->remove_theme_font_override(SceneStringName(font));
-			}
-
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			recent_scripts->reset_size();
 			script_list->set_fixed_icon_size(Vector2i(1, 1) * get_theme_constant("class_icon_size", EditorStringName(Editor)));
@@ -1502,8 +1617,6 @@ void ScriptEditor::_notification(int p_what) {
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected));
 
-			members_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_members_overview_selected));
-			help_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_help_overview_selected));
 			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
@@ -1643,21 +1756,6 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 	}
 }
 
-void ScriptEditor::_members_overview_selected(int p_idx) {
-	int line = members_overview->get_item_metadata(p_idx);
-	ScriptEditorBase *current = _get_current_editor();
-	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(current)) {
-		teb->goto_line_centered(line);
-	}
-}
-
-void ScriptEditor::_help_overview_selected(int p_idx) {
-	Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
-	if (EditorHelp *eh = Object::cast_to<EditorHelp>(current)) {
-		eh->scroll_to_section(help_overview->get_item_metadata(p_idx));
-	}
-}
-
 void ScriptEditor::_script_selected(int p_idx) {
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT); //amazing hack, simply amazing
 
@@ -1725,118 +1823,6 @@ struct _ScriptEditorItemData {
 		}
 	}
 };
-
-void ScriptEditor::_update_members_overview_visibility() {
-	ScriptEditorBase *seb = _get_current_editor();
-	if (!seb) {
-		members_overview_alphabeta_sort_button->set_visible(false);
-		members_overview->set_visible(false);
-
-		Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
-		EditorHelp *editor_help = Object::cast_to<EditorHelp>(current);
-		overview_vbox->set_visible(help_overview_enabled && editor_help);
-		return;
-	}
-
-	if (members_overview_enabled && seb->show_members_overview()) {
-		members_overview_alphabeta_sort_button->set_visible(true);
-		filter_methods->set_visible(true);
-		members_overview->set_visible(true);
-		overview_vbox->set_visible(true);
-	} else {
-		members_overview_alphabeta_sort_button->set_visible(false);
-		filter_methods->set_visible(false);
-		members_overview->set_visible(false);
-		overview_vbox->set_visible(false);
-	}
-}
-
-void ScriptEditor::_toggle_members_overview_alpha_sort(bool p_alphabetic_sort) {
-	EditorSettings::get_singleton()->set("text_editor/script_list/sort_members_outline_alphabetically", p_alphabetic_sort);
-	_update_members_overview();
-}
-
-void ScriptEditor::_update_members_overview() {
-	members_overview->clear();
-
-	CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(_get_current_editor());
-	if (!ceb) {
-		return;
-	}
-
-	Vector<String> functions = ceb->get_functions();
-	if (EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically")) {
-		functions.sort();
-	}
-
-	String filter = filter_methods->get_text();
-	if (filter.is_empty()) {
-		for (int i = 0; i < functions.size(); i++) {
-			String name = functions[i].get_slicec(':', 0);
-			members_overview->add_item(name);
-			members_overview->set_item_metadata(-1, functions[i].get_slicec(':', 1).to_int() - 1);
-		}
-	} else {
-		PackedStringArray search_names;
-		for (int i = 0; i < functions.size(); i++) {
-			search_names.append(functions[i].get_slicec(':', 0));
-		}
-
-		Vector<FuzzySearchResult> results;
-		FuzzySearch fuzzy;
-		fuzzy.set_query(filter, false);
-		fuzzy.search_all(search_names, results);
-
-		for (const FuzzySearchResult &res : results) {
-			String name = functions[res.original_index].get_slicec(':', 0);
-			int line = functions[res.original_index].get_slicec(':', 1).to_int() - 1;
-			members_overview->add_item(name);
-			members_overview->set_item_metadata(-1, line);
-		}
-	}
-}
-
-void ScriptEditor::_update_help_overview_visibility() {
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_tab_count()) {
-		help_overview->set_visible(false);
-		return;
-	}
-
-	Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
-	if (!Object::cast_to<EditorHelp>(current)) {
-		help_overview->set_visible(false);
-		return;
-	}
-
-	if (help_overview_enabled) {
-		members_overview_alphabeta_sort_button->set_visible(false);
-		filter_methods->set_visible(false);
-		help_overview->set_visible(true);
-		overview_vbox->set_visible(true);
-	} else {
-		help_overview->set_visible(false);
-		overview_vbox->set_visible(false);
-	}
-}
-
-void ScriptEditor::_update_help_overview() {
-	help_overview->clear();
-
-	int selected = tab_container->get_current_tab();
-	if (selected < 0 || selected >= tab_container->get_tab_count()) {
-		return;
-	}
-
-	Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
-	if (EditorHelp *eh = Object::cast_to<EditorHelp>(current)) {
-		Vector<Pair<String, int>> sections = eh->get_sections();
-		for (int i = 0; i < sections.size(); i++) {
-			help_overview->add_item(sections[i].first);
-			help_overview->set_item_metadata(i, sections[i].second);
-		}
-	}
-}
 
 void ScriptEditor::_update_online_doc() {
 	Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
@@ -2099,13 +2085,11 @@ void ScriptEditor::_update_script_names() {
 	}
 
 	if (!waiting_update_names) {
-		_update_members_overview();
-		_update_help_overview();
+		document_outline->update_outline();
 	} else {
 		waiting_update_names = false;
 	}
-	_update_members_overview_visibility();
-	_update_help_overview_visibility();
+	document_outline->update_visibility();
 	_update_script_colors();
 }
 
@@ -2359,6 +2343,10 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 void ScriptEditor::reload_open_files() {
 	_test_script_times_on_disk();
 	_update_modified_scripts_for_external_editor();
+}
+
+Control *ScriptEditor::get_active_editor() const {
+	return tab_container->get_current_tab_control();
 }
 
 PackedStringArray ScriptEditor::get_unsaved_scripts() const {
@@ -2676,11 +2664,8 @@ void ScriptEditor::_apply_editor_settings() {
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
 	convert_indent_on_save = EDITOR_GET("text_editor/behavior/files/convert_indent_on_save");
 
-	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
-	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
 	external_editor_active = EDITOR_GET("text_editor/external/use_external_editor");
-	_update_members_overview_visibility();
-	_update_help_overview_visibility();
+	document_outline->update_editor_settings();
 
 	_update_autosave_timer();
 
@@ -3741,10 +3726,6 @@ void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
 	_update_script_names();
 }
 
-void ScriptEditor::_filter_methods_text_changed(const String &p_newtext) {
-	_update_members_overview();
-}
-
 void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_help_tab_goto", &ScriptEditor::_help_tab_goto);
 	ClassDB::bind_method("get_current_editor", &ScriptEditor::_get_current_editor);
@@ -3781,8 +3762,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	pending_auto_reload = false;
 	auto_reload_running_scripts = true;
 	external_editor_active = false;
-	members_overview_enabled = EDITOR_GET("text_editor/script_list/show_members_overview");
-	help_overview_enabled = EDITOR_GET("text_editor/help/show_help_index");
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
@@ -3831,48 +3810,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 
-	overview_vbox = memnew(VBoxContainer);
-	overview_vbox->set_custom_minimum_size(Size2(0, 90));
-	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	document_outline = memnew(DocumentOutline);
+	document_outline->set_custom_minimum_size(Size2(0, 90));
+	document_outline->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	list_split->add_child(overview_vbox);
+	list_split->add_child(document_outline);
 	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true));
-	buttons_hbox = memnew(HBoxContainer);
-	overview_vbox->add_child(buttons_hbox);
-
-	filter_methods = memnew(LineEdit);
-	filter_methods->set_placeholder(TTRC("Filter Methods"));
-	filter_methods->set_accessibility_name(TTRC("Filter Methods"));
-	filter_methods->set_clear_button_enabled(true);
-	filter_methods->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter_methods->connect(SceneStringName(text_changed), callable_mp(this, &ScriptEditor::_filter_methods_text_changed));
-	buttons_hbox->add_child(filter_methods);
-
-	members_overview_alphabeta_sort_button = memnew(Button);
-	members_overview_alphabeta_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
-	members_overview_alphabeta_sort_button->set_tooltip_text(TTRC("Toggle alphabetical sorting of the method list."));
-	members_overview_alphabeta_sort_button->set_toggle_mode(true);
-	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
-	members_overview_alphabeta_sort_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_members_overview_alpha_sort));
-	buttons_hbox->add_child(members_overview_alphabeta_sort_button);
-
-	members_overview = memnew(ItemList);
-	members_overview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	members_overview->set_theme_type_variation("ItemListSecondary");
-	overview_vbox->add_child(members_overview);
-
-	members_overview->set_allow_reselect(true);
-	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
-	members_overview->set_allow_rmb_select(true);
-
-	help_overview = memnew(ItemList);
-	help_overview->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	help_overview->set_theme_type_variation("ItemListSecondary");
-	overview_vbox->add_child(help_overview);
-	help_overview->set_allow_reselect(true);
-	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
-	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	VBoxContainer *code_editor_container = memnew(VBoxContainer);
 	script_split->add_child(code_editor_container);

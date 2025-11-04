@@ -76,6 +76,31 @@ public:
 	ScriptEditorQuickOpen();
 };
 
+class DocumentOutline : public VBoxContainer {
+	GDCLASS(DocumentOutline, VBoxContainer);
+
+	ItemList *item_list = nullptr;
+	HBoxContainer *buttons_hbox = nullptr;
+	FilterLineEdit *filter = nullptr;
+	Button *sort_button = nullptr;
+
+	bool members_overview_enabled = false;
+	bool help_overview_enabled = false;
+
+	void _toggle_sort(bool p_alphabetic_sort);
+	void _item_list_selected(int p_idx);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void update_editor_settings();
+	void update_outline();
+	void update_visibility();
+
+	DocumentOutline();
+};
+
 class EditorScriptCodeCompletionCache;
 class FindInFilesContainer;
 class FindInFilesDialog;
@@ -167,16 +192,9 @@ class ScriptEditor : public PanelContainer {
 
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
-	ItemList *members_overview = nullptr;
+	DocumentOutline *document_outline = nullptr;
 	LineEdit *filter_scripts = nullptr;
-	LineEdit *filter_methods = nullptr;
 	VBoxContainer *scripts_vbox = nullptr;
-	VBoxContainer *overview_vbox = nullptr;
-	HBoxContainer *buttons_hbox = nullptr;
-	Button *members_overview_alphabeta_sort_button = nullptr;
-	bool members_overview_enabled;
-	ItemList *help_overview = nullptr;
-	bool help_overview_enabled;
 	VSplitContainer *list_split = nullptr;
 	TabContainer *tab_container = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
@@ -316,20 +334,11 @@ class ScriptEditor : public PanelContainer {
 	void _reload_scripts(bool p_refresh_only = false);
 	void _auto_format_text(ScriptEditorBase *p_seb);
 
-	void _update_members_overview_visibility();
-	void _update_members_overview();
-	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
 	void _filter_scripts_text_changed(const String &p_newtext);
-	void _filter_methods_text_changed(const String &p_newtext);
 	void _update_script_names();
 	bool _sort_list_on_update;
 
-	void _members_overview_selected(int p_idx);
 	void _script_selected(int p_idx);
-
-	void _update_help_overview_visibility();
-	void _update_help_overview();
-	void _help_overview_selected(int p_idx);
 
 	void _update_online_doc();
 
@@ -419,6 +428,8 @@ public:
 
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
+
+	Control *get_active_editor() const;
 
 	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
