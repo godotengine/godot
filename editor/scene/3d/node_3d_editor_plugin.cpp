@@ -492,7 +492,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventScreenDrag> screen_drag = p_event;
 	if (screen_drag.is_valid()) {
-		_process_drag(screen_drag, screen_drag->get_index(), screen_drag->get_position(), screen_drag->get_relative());
+		_process_drag(nullptr, screen_drag->get_index(), screen_drag->get_position(), screen_drag->get_relative());
 	}
 }
 
