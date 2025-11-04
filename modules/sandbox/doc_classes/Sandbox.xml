@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Sandbox" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="Sandbox" inherits="SandboxBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Sandbox is designed to run programs in a controlled environment, providing a safe way to execute code with restricted access to the Godot engine's API and resources.
 	</brief_description>
@@ -45,14 +45,6 @@
 				This can be used to get the memory address of functions or variables defined in the ELF program.
 			</description>
 		</method>
-		<method name="assault">
-			<return type="void" />
-			<param index="0" name="test" type="String" />
-			<param index="1" name="iterations" type="int" />
-			<description>
-				Performs a stress test on the sandboxed program by executing a specified test function multiple times. For internal testing only.
-			</description>
-		</method>
 		<method name="clear_allowed_objects">
 			<return type="void" />
 			<description>
@@ -94,13 +86,6 @@
 				Generates an API header file for the sandboxed program in the specified language.
 				This header file contains function declarations and type definitions for the sandboxed program's API.
 				It can be used to interact with the entire/full Godot API from the sandboxed program.
-			</description>
-		</method>
-		<method name="get">
-			<return type="Variant" />
-			<param index="0" name="name" type="StringName" />
-			<description>
-				Retrieves the value of a property by its name from the Sandbox.
 			</description>
 		</method>
 		<method name="get_binary_translation_bg_compilation" qualifiers="const">
@@ -146,13 +131,6 @@
 			<description>
 				Returns an Array of hotspots used for profiling.
 				Hotspots are functions or code segments that are frequently executed in the sandboxed program.
-			</description>
-		</method>
-		<method name="get_property_list" qualifiers="const">
-			<return type="Array" />
-			<description>
-				Returns a list of all properties available in the Sandbox, including properties that are
-				defined in the sandboxed program (by the program).
 			</description>
 		</method>
 		<method name="has_feature_jit" qualifiers="static">
@@ -289,15 +267,6 @@
 			<description>
 				Resumes the execution of the sandboxed program after it has been paused.
 				Does not work properly right now. Do not use.
-			</description>
-		</method>
-		<method name="set">
-			<return type="void" />
-			<param index="0" name="name" type="StringName" />
-			<param index="1" name="value" type="Variant" />
-			<description>
-				Sets the value of a property by its name in the Sandbox.
-				This can be used to modify properties of the sandboxed program or its environment.
 			</description>
 		</method>
 		<method name="set_argument_registers">
@@ -455,7 +424,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="vmcall" qualifiers="const vararg">
+		<method name="vmcall" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
 				Calls a function in the sandboxed program with the provided arguments. This is used to make function calls defined in the ELF program from the Godot engine. Functions in the Sandbox always return a Variant.
@@ -495,7 +464,7 @@
 				Creates a callable object that can be used to later call a function at a specific memory address in the sandboxed program. Works the same way as [code skip-lint]vmcallable()[/code], but instead of a function name, it takes any executable address.
 			</description>
 		</method>
-		<method name="vmcallv" qualifiers="const vararg">
+		<method name="vmcallv" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
 				Calls a function in the sandboxed program with the provided arguments, similar to vmcall, but uses Variants for all arguments. This is more resistant to mistakes, as it does not require knowing argument types in advance, but is less performant than vmcall. The first argument is the string name of the function to call, and subsequent arguments are passed as Variants to that function. If the function does not exist, an error will be thrown.
@@ -574,7 +543,7 @@
 		<member name="restrictions" type="bool" setter="set_restrictions" getter="get_restrictions" default="false">
 			Enables or disables restrictions on the sandboxed program. When enabled, the program will have limited access to the Godot engine's API and resources.
 		</member>
-		<member name="unboxed_arguments" type="bool" setter="set_unboxed_arguments" getter="get_unboxed_arguments" default="true">
+		<member name="unboxed_arguments" type="bool" setter="set_unboxed_arguments" getter="get_unboxed_arguments" default="false">
 			Enables or disables the use of unboxed arguments for function calls. When enabled, function arguments will be passed as their real types instead of Variants, which improves performance.
 		</member>
 	</members>

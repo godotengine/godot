@@ -81,7 +81,6 @@ public:
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	// Required abstract methods
-	virtual bool has_named_classes() const override;
 	virtual void profiling_set_save_native_calls(bool p_enable) override;
 
 	// Debug functions

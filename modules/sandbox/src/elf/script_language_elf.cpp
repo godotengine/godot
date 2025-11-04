@@ -110,10 +110,6 @@ Script *ELFScriptLanguage::create_script() const {
 	return elf_script;
 }
 
-bool ELFScriptLanguage::has_named_classes() const {
-	return true;
-}
-
 bool ELFScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
