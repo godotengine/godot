@@ -331,6 +331,9 @@ public:
 		constexpr bool operator==(const CodeArea &p_other) const {
 			return start == p_other.start && end == p_other.end;
 		}
+		constexpr bool operator!=(const CodeArea &p_other) const {
+			return !operator==(p_other);
+		}
 
 		constexpr int get_start_line() const { return start.first; }
 		constexpr int get_start_column() const { return start.second; }
