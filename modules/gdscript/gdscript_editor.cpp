@@ -4410,7 +4410,7 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes(GDScri
 
 	// As we found that the match comes from a class, let's find all the matches in that class.
 	LocalVector<GDScriptParser::Node *> nodes;
-	p_class_node->get_nodes(nodes);
+	p_class_node->get_nodes(nodes, true);
 	return _refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, p_path, r_result, p_expected_definition_type, p_source_node, target_sources);
 }
 
@@ -4489,6 +4489,7 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes_from_s
 		}
 
 		LocalVector<GDScriptParser::Node *> nodes;
+		parser.get_head()->get_nodes(nodes, true);
 		_refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, script_path, r_result, p_expected_definition_type, p_source_node);
 	}
 
