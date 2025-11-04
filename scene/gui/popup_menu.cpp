@@ -228,49 +228,42 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	minsize.width += panel->get_offset(SIDE_LEFT) - panel->get_offset(SIDE_RIGHT);
 	minsize.height += panel->get_offset(SIDE_TOP) - panel->get_offset(SIDE_BOTTOM);
 
-	float max_w = 0.0;
-	float icon_w = 0.0;
-	int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width()) + theme_cache.h_separation;
-	int accel_max_w = 0;
+	real_t body_max_w = 0.0; // Indentation, text, and submenu arrow.
+	real_t icon_max_w = 0.0;
+	real_t accel_max_w = 0.0;
 	bool has_check = false;
 
 	for (int i = 0; i < items.size(); i++) {
-		Size2 item_size;
 		_shape_item(i);
 
-		Size2 icon_size = _get_item_icon_size(i);
-		item_size.height = _get_item_height(i);
-		icon_w = MAX(icon_size.width, icon_w);
-
-		item_size.width += items[i].indent * theme_cache.indent;
+		icon_max_w = MAX(_get_item_icon_size(i).width, icon_max_w);
 
 		if (items[i].checkable_type && !items[i].separator) {
 			has_check = true;
 		}
 
-		item_size.width += items[i].text_buf->get_size().x;
-		item_size.height += theme_cache.v_separation;
-
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
-			int accel_w = theme_cache.h_separation * 2;
-			accel_w += items[i].accel_text_buf->get_size().x;
+			real_t accel_w = theme_cache.h_separation * 2 + items[i].accel_text_buf->get_size().x;
 			accel_max_w = MAX(accel_w, accel_max_w);
 		}
 
+		real_t body_w = items[i].indent * theme_cache.indent + items[i].text_buf->get_size().x;
 		if (items[i].submenu) {
-			item_size.width += theme_cache.submenu->get_width();
+			body_w += theme_cache.submenu->get_width();
 		}
+		body_max_w = MAX(body_max_w, body_w);
 
-		max_w = MAX(max_w, item_size.width);
-
-		minsize.height += item_size.height;
+		minsize.height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
-	int item_side_padding = theme_cache.item_start_padding + theme_cache.item_end_padding;
-	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
+	minsize.width += theme_cache.item_start_padding + body_max_w + accel_max_w + theme_cache.item_end_padding;
 
+	if (icon_max_w > 0) {
+		minsize.width += icon_max_w + theme_cache.h_separation;
+	}
 	if (has_check) {
-		minsize.width += check_w;
+		int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width());
+		minsize.width += check_w + theme_cache.h_separation;
 	}
 
 	if (is_inside_tree()) {
