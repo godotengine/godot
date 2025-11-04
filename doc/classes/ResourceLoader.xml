@@ -35,7 +35,8 @@
 		<method name="get_cached_paths">
 			<return type="PackedStringArray" />
 			<description>
-				Returns all cached resource paths as a [PackedStringArray]. A resource is considered cached when it has a reference count greater than zero. This means the resource must be assigned to attributes/variables of Nodes, Resources, or Objects.
+				Returns a [PackedStringArray] of all cached [Resource] paths.
+				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] count greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
 			</description>
 		</method>
 		<method name="get_cached_paths_by_filter">
@@ -44,11 +45,11 @@
 			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
 			<param index="2" name="value" type="String" />
 			<description>
-				Returns all cached resource paths that match a single filter condition as [PackedStringArray]
-				The [param target] selects which attribute is checked, [param comparator] defines how it is compared to
-				[param value].
+				Returns a [PackedStringArray] of all cached [Resource] paths that match the given filter condition
+				The [param target] selects which attribute is checked, [param comparator] defines how it is compared to [param value].
+				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
 				[b]Examples (GDScript)[/b]
-				All Image resources (type hint)
+				All [Image] resources (type hint)
 				[codeblock]
 				var img_paths = ResourceLoader.get_cached_paths_by_filter(
 					ResourceLoader.FILTER_TARGET_TYPE_HINT,
@@ -74,9 +75,8 @@
 		<method name="get_cached_paths_typed">
 			<return type="Dictionary" />
 			<description>
-				Returns all cached resource paths as a [Dictionary] in the form of { "res://icon.svg": "Image" }
-				A resource is considered cached when it has a reference count &gt; 0 due to being assigned to
-				attributes/variables of Nodes, Resources or Objects via code or export variables.
+				Returns a [Dictionary] of all cached [Resource] paths as in the form of [code]{ "res://icon.svg": "Image" }[/code]
+				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
 			</description>
 		</method>
 		<method name="get_cached_paths_typed_by_filter">
@@ -85,8 +85,9 @@
 			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
 			<param index="2" name="value" type="String" />
 			<description>
-				Returns a [Dictionary] of cached resource paths that match a single filter condition in the form of { "res://icon.svg": "Image" }
+				Returns a [Dictionary] of cached [Resource] paths that match a single filter condition in the form of { "res://icon.svg": "Image" }
 				The [param target] selects the attribute and [param comparator] defines comparison against [param value].
+				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
 				[b]Examples (GDScript)[/b]
 				All resources whose path starts with [code]res://[/code], with types included:
 				[codeblock]
@@ -102,12 +103,12 @@
 					ResourceLoader.FILTER_COMP_ENDS_WITH,
 					"Character01")
 				[/codeblock]
-				All resources of class "Texture2D":
+				All resources of class [Image]:
 				[codeblock]
 				var dict3 = ResourceLoader.get_cached_paths_typed_by_filter(
 					ResourceLoader.FILTER_TARGET_TYPE_HINT,
 					ResourceLoader.FILTER_COMP_EQUALS,
-					"Texture2D")
+					"Image")
 				[/codeblock]
 			</description>
 		</method>

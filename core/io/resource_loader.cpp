@@ -45,8 +45,6 @@
 #include "core/variant/variant_parser.h"
 #include "servers/rendering/rendering_server.h"
 
-#include <algorithm>
-
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
 #else
@@ -567,6 +565,7 @@ bool ResourceLoader::_is_key_value_matching_filter(const String &p_path, const R
 }
 
 PackedStringArray ResourceLoader::get_cached_paths() {
+	MutexLock mutex_lock(ResourceCache::lock);
 	PackedStringArray paths;
 	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		paths.push_back(elem.key);
@@ -575,6 +574,7 @@ PackedStringArray ResourceLoader::get_cached_paths() {
 }
 
 Dictionary ResourceLoader::get_cached_paths_typed() {
+	MutexLock mutex_lock(ResourceCache::lock);
 	Dictionary ret;
 	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		ret.set(elem.key, elem.value->get_gdtype().get_name());
@@ -583,6 +583,7 @@ Dictionary ResourceLoader::get_cached_paths_typed() {
 }
 
 PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	MutexLock mutex_lock(ResourceCache::lock);
 	PackedStringArray paths;
 	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {
@@ -593,6 +594,7 @@ PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget 
 }
 
 Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	MutexLock mutex_lock(ResourceCache::lock);
 	Dictionary pathTypesDict;
 	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {

@@ -45,6 +45,7 @@
 #include "core/variant/typed_array.h"
 
 namespace CoreBind {
+
 ////// ResourceLoader //////
 
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
