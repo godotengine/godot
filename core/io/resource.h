@@ -54,6 +54,8 @@ class Resource : public RefCounted {
 	GDCLASS(Resource, RefCounted);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::RESOURCE;
+
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
 	virtual String get_base_extension() const { return "res"; }
 
@@ -120,6 +122,7 @@ protected:
 	GDVIRTUAL0(_reset_state);
 
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
+	virtual String _to_string() override;
 
 public:
 	static Node *(*_get_local_scene_func)(); // Used by the editor.

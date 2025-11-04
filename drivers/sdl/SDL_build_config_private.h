@@ -81,15 +81,18 @@
 #define SDL_PLATFORM_UNIX 1
 
 #define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
 
 #ifdef __linux__
 #define HAVE_INOTIFY 1
 #define HAVE_INOTIFY_INIT1 1
-#define HAVE_GETENV 1
-#define HAVE_SETENV 1
-#define HAVE_UNSETENV 1
+// Don't add these defines, for some reason they mess with C#'s ability
+// to use environment variables (see GH-109024)
+//#define HAVE_GETENV 1
+//#define HAVE_SETENV 1
+//#define HAVE_UNSETENV 1
 #endif
 
 #ifdef DBUS_ENABLED

@@ -784,7 +784,7 @@
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
 				[b]Note:[/b] [param current_directory] might be ignored.
-				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On Android and macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
@@ -812,7 +812,7 @@
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE_EXTRA] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
-				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Linux (X11), [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
@@ -2261,6 +2261,14 @@
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
 			</description>
 		</method>
+		<method name="window_set_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the background color of the root window.
+				[b]Note:[/b] This method is implemented only on Android.
+			</description>
+		</method>
 		<method name="window_set_current_screen">
 			<return type="void" />
 			<param index="0" name="screen" type="int" />
@@ -2592,10 +2600,10 @@
 			The display server supports initiating window drag and resize operations on demand. See [method window_start_drag] and [method window_start_resize].
 		</constant>
 		<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28" enum="Feature">
-			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag.
+			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_WINDOW_EMBEDDING" value="29" enum="Feature">
-			Display server supports embedding a window from another process. [b]Windows, Linux (X11)[/b]
+			Display server supports embedding a window from another process. [b]Windows, Linux (X11), macOS[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30" enum="Feature">
 			Native file selection dialog supports MIME types as filters.
@@ -3123,7 +3131,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
 			Window is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">

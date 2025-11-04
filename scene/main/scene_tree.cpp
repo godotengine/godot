@@ -57,11 +57,11 @@
 #endif // _3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 void SceneTreeTimer::_bind_methods() {
@@ -246,10 +246,10 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 	Vector<ObjectID> processed;
 	for (const ObjectID &id : accessibility_change_queue) {
 		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-		if (!node || !node->get_window()) {
+		if (!node || !node->get_non_popup_window() || !node->get_window()->is_visible()) {
 			processed.push_back(id);
 			continue; // Invalid node, remove from list and skip.
-		} else if (node->get_window()->get_window_id() != p_window_id) {
+		} else if (node->get_non_popup_window()->get_window_id() != p_window_id) {
 			continue; // Another window, skip.
 		}
 		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
@@ -265,6 +265,15 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 		Window *w_focus = w_this->get_focused_subwindow();
 		if (w_focus && !w_focus->is_part_of_edited_scene()) {
 			w_this = w_focus;
+		}
+
+		// Popups have no native window focus, but have focused element.
+		DisplayServer::WindowID popup_id = DisplayServer::get_singleton()->window_get_active_popup();
+		if (popup_id != DisplayServer::INVALID_WINDOW_ID) {
+			Window *popup_w = Window::get_from_id(popup_id);
+			if (popup_w && w_this->is_ancestor_of(popup_w)) {
+				w_this = popup_w;
+			}
 		}
 
 		RID new_focus_element;
@@ -888,6 +897,10 @@ void SceneTree::_main_window_focus_in() {
 }
 
 void SceneTree::_notification(int p_notification) {
+	if (!get_root()) {
+		return;
+	}
+
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			get_root()->propagate_notification(p_notification);
@@ -1677,6 +1690,13 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
+	return change_scene_to_node(new_scene);
+}
+
+Error SceneTree::change_scene_to_node(Node *p_node) {
+	ERR_FAIL_NULL_V_MSG(p_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
+
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
 		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
@@ -1694,7 +1714,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene_id = new_scene->get_instance_id();
+	pending_new_scene_id = p_node->get_instance_id();
 	return OK;
 }
 
@@ -1909,6 +1929,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
 	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
+	ClassDB::bind_method(D_METHOD("change_scene_to_node", "node"), &SceneTree::change_scene_to_node);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 	ClassDB::bind_method(D_METHOD("unload_current_scene"), &SceneTree::unload_current_scene);
@@ -2073,7 +2094,7 @@ SceneTree::SceneTree() {
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
 	root->set_use_taa(use_taa);
 
-	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	root->set_use_debanding(use_debanding);
 
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);

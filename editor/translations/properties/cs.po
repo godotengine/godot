@@ -45,13 +45,14 @@
 # Vojtech Krajnansky <vojtech.krajnansky@gmail.com>, 2025.
 # kubfaf <kubfaf@gmail.com>, 2025.
 # Jan Matějka <controlcommanddev@gmail.com>, 2025.
+# Pixeluted <pixeluted@proton.me>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-23 18:15+0000\n"
-"Last-Translator: Jan Matějka <controlcommanddev@gmail.com>\n"
+"PO-Revision-Date: 2025-09-14 16:20+0000\n"
+"Last-Translator: Pixeluted <pixeluted@proton.me>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -180,6 +181,9 @@ msgstr "Ostré rohy"
 
 msgid "Minimize Disabled"
 msgstr "Vypnutá minimalizace"
+
+msgid "Maximize Disabled"
+msgstr "Maximalizace Vypnuta"
 
 msgid "Window Width Override"
 msgstr "Přepsání šířky okna"

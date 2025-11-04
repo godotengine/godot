@@ -387,7 +387,7 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_damping_coefficient", "get_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
@@ -704,10 +704,6 @@ void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_central_force(physics_rid, p_force);
 }
 
-void SoftBody3D::pin_point_toggle(int p_point_index) {
-	pin_point(p_point_index, !(-1 != _has_pinned_point(p_point_index)));
-}
-
 void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
 	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
 	_pin_point_on_physics_server(p_point_index, pin);
@@ -745,7 +741,7 @@ SoftBody3D::SoftBody3D() :
 SoftBody3D::~SoftBody3D() {
 	memdelete(rendering_server_handler);
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(physics_rid);
+	PhysicsServer3D::get_singleton()->free_rid(physics_rid);
 }
 
 void SoftBody3D::_make_cache_dirty() {

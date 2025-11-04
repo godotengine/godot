@@ -40,6 +40,8 @@
 
 #include <cstdlib>
 
+class MainLoop;
+
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
@@ -223,6 +225,7 @@ public:
 
 	void ensure_user_data_dir();
 
+	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
 	virtual MainLoop *get_main_loop() const = 0;
 
 	virtual void yield();
@@ -294,6 +297,7 @@ public:
 	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
+	virtual String get_bundle_icon_name() const;
 
 	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;

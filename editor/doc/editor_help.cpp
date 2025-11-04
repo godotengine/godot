@@ -66,7 +66,7 @@
 #include "modules/mono/csharp_script.h"
 #endif
 
-#define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", GODOT_VERSION_DOCS_URL)
+#define CONTRIBUTE_URL "https://contributing.godotengine.org/en/latest/documentation/class_reference.html"
 
 #ifdef MODULE_MONO_ENABLED
 // Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
@@ -471,6 +471,10 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 
 void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &p_fallback) {
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
+	if (icon.is_null()) {
+		icon = EditorNode::get_singleton()->get_class_icon("Object");
+		ERR_FAIL_COND(icon.is_null());
+	}
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
 		// Ensures icon scales proportionally on both axes, based on icon height.
@@ -974,7 +978,7 @@ void EditorHelp::_update_doc() {
 	_push_title_font();
 
 	class_desc->add_text(TTR("Class:") + " ");
-	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "Object");
+	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "");
 	class_desc->add_text(nbsp);
 
 	class_desc->push_color(theme_cache.headline_color);
@@ -3315,6 +3319,12 @@ void EditorHelp::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
+				if (is_visible_in_tree()) {
+					_update_doc();
+				} else {
+					update_pending = true;
+				}
+
 				_class_desc_resized(true);
 			}
 			update_toggle_files_button();
@@ -3459,9 +3469,9 @@ EditorHelp::EditorHelp() {
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
 	toggle_files_button = memnew(Button);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->set_accessibility_name(TTRC("Scripts"));
 	toggle_files_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	toggle_files_button->set_flat(true);
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_files_pressed));
 	status_bar->add_child(toggle_files_button);
 
@@ -4533,6 +4543,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation("EditorHelpBitContent");
 	content->set_custom_minimum_size(Size2(640 * EDSCALE, content_min_height));
+	content->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	content->set_selection_enabled(p_allow_selection);
 	content->set_context_menu_enabled(p_allow_selection);
 	content->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));
@@ -4891,7 +4902,7 @@ FindBar::FindBar() {
 	matches_label->hide();
 
 	find_prev = memnew(Button);
-	find_prev->set_flat(true);
+	find_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTR("Previous Match"));
 	add_child(find_prev);
@@ -4899,7 +4910,7 @@ FindBar::FindBar() {
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
-	find_next->set_flat(true);
+	find_next->set_theme_type_variation(SceneStringName(FlatButton));
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTR("Next Match"));
 	add_child(find_next);
@@ -4907,7 +4918,7 @@ FindBar::FindBar() {
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
 	hide_button = memnew(Button);
-	hide_button->set_flat(true);
+	hide_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));

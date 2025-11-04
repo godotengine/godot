@@ -69,7 +69,7 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
-		_update_bone_list();
+		_update_bone_list(node);
 		_update_available_modes();
 		if (current_mode == MODE_MAX) {
 			_select_mode(MODE_POINTS); // Initialize when opening the first time.
@@ -200,12 +200,17 @@ void Polygon2DEditor::_sync_bones() {
 	undo_redo->create_action(TTR("Sync Bones"));
 	undo_redo->add_do_method(node, "_set_bones", new_bones);
 	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
-	undo_redo->add_do_method(this, "_update_bone_list");
-	undo_redo->add_undo_method(this, "_update_bone_list");
+	undo_redo->add_do_method(this, "_update_bone_list", node);
+	undo_redo->add_undo_method(this, "_update_bone_list", node);
 	undo_redo->commit_action();
 }
 
-void Polygon2DEditor::_update_bone_list() {
+void Polygon2DEditor::_update_bone_list(const Polygon2D *p_for_node) {
+	ERR_FAIL_NULL(p_for_node);
+	if (p_for_node != node) {
+		return;
+	}
+
 	NodePath selected;
 	while (bone_scroll_vb->get_child_count()) {
 		CheckBox *cb = Object::cast_to<CheckBox>(bone_scroll_vb->get_child(0));
@@ -297,7 +302,7 @@ void Polygon2DEditor::_select_mode(int p_mode) {
 			bone_paint_strength->show();
 			bone_paint_radius->show();
 			bone_paint_radius_label->show();
-			_update_bone_list();
+			_update_bone_list(node);
 			bone_paint_pos = Vector2(-100000, -100000); // Send brush away when switching.
 		} break;
 		default:
@@ -574,13 +579,16 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						return;
 					}
 
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					int closest = -1;
+					real_t closest_dist = Math::INF;
 
-					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices; i--) {
+					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices && closest_dist >= 8; i--) {
 						Vector2 tuv = mtx.xform(previous_polygon[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						const real_t dist = tuv.distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							closest = i;
-							break;
+							closest_dist = dist;
 						}
 					}
 
@@ -625,11 +633,15 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (current_action == ACTION_EDIT_POINT) {
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					point_drag_index = -1;
-					for (int i = 0; i < editing_points.size(); i++) {
-						if (mtx.xform(editing_points[i]).distance_to(mb->get_position()) < 8) {
+					real_t closest_dist = Math::INF;
+					for (int i = editing_points.size() - 1; i >= 0 && closest_dist >= 8; i--) {
+						const real_t dist = mtx.xform(editing_points[i]).distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							drag_from = mb->get_position();
 							point_drag_index = i;
+							closest_dist = dist;
 						}
 					}
 
@@ -639,13 +651,16 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (current_action == ACTION_ADD_POLYGON) {
+					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 					int closest = -1;
+					real_t closest_dist = Math::INF;
 
-					for (int i = editing_points.size() - 1; i >= 0; i--) {
+					for (int i = editing_points.size() - 1; i >= 0 && closest_dist >= 8; i--) {
 						Vector2 tuv = mtx.xform(editing_points[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						const real_t dist = tuv.distance_to(mb->get_position());
+						if (dist < grab_threshold && dist < closest_dist) {
 							closest = i;
-							break;
+							closest_dist = dist;
 						}
 					}
 
@@ -784,7 +799,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				} break;
 				case ACTION_EDIT_POINT: {
 					Vector<Vector2> uv_new = editing_points;
-					uv_new.set(point_drag_index, uv_new[point_drag_index] + drag);
+					uv_new.set(point_drag_index, mtx.affine_inverse().xform(snap_point(mm->get_position())));
 
 					if (current_mode == MODE_UV) {
 						node->set_uv(uv_new);
@@ -1250,7 +1265,7 @@ void Polygon2DEditor::_canvas_draw() {
 }
 
 void Polygon2DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_list"), &Polygon2DEditor::_update_bone_list);
+	ClassDB::bind_method(D_METHOD("_update_bone_list", "for_node"), &Polygon2DEditor::_update_bone_list);
 	ClassDB::bind_method(D_METHOD("_update_polygon_editing_state"), &Polygon2DEditor::_update_polygon_editing_state);
 }
 

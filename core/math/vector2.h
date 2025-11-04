@@ -32,12 +32,18 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2i;
 
 struct [[nodiscard]] Vector2 {
-	static const int AXIS_COUNT = 2;
+	static const Vector2 LEFT;
+	static const Vector2 RIGHT;
+	static const Vector2 UP;
+	static const Vector2 DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -185,6 +191,12 @@ struct [[nodiscard]] Vector2 {
 	explicit operator String() const;
 	operator Vector2i() const;
 
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		return hash_fmix32(h);
+	}
+
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	constexpr Vector2() :
 			x(0), y(0) {}
@@ -192,6 +204,11 @@ struct [[nodiscard]] Vector2 {
 			x(p_x), y(p_y) {}
 	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2 Vector2::LEFT = { -1, 0 };
+inline constexpr Vector2 Vector2::RIGHT = { 1, 0 };
+inline constexpr Vector2 Vector2::UP = { 0, -1 };
+inline constexpr Vector2 Vector2::DOWN = { 0, 1 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
 	return p_vec - *this * (dot(p_vec) - p_d);

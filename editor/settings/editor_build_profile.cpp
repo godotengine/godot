@@ -944,20 +944,20 @@ void EditorBuildProfileManager::_detect_from_project() {
 
 	edited->clear_disabled_classes();
 
-	List<StringName> all_classes;
-	ClassDB::get_class_list(&all_classes);
+	LocalVector<StringName> all_classes;
+	ClassDB::get_class_list(all_classes);
 
-	for (const StringName &E : all_classes) {
-		if (String(E).begins_with("Editor") || ClassDB::get_api_type(E) != ClassDB::API_CORE || all_used_classes.has(E)) {
+	for (const StringName &class_name : all_classes) {
+		if (String(class_name).begins_with("Editor") || ClassDB::get_api_type(class_name) != ClassDB::API_CORE || all_used_classes.has(class_name)) {
 			// This class is valid or editor-only, do nothing.
 			continue;
 		}
 
-		StringName p = ClassDB::get_parent_class(E);
+		StringName p = ClassDB::get_parent_class(class_name);
 		if (!p || all_used_classes.has(p)) {
 			// If no parent, or if the parent is enabled, then add to disabled classes.
 			// This way we avoid disabling redundant classes.
-			edited->set_disable_class(E, true);
+			edited->set_disable_class(class_name, true);
 		}
 	}
 

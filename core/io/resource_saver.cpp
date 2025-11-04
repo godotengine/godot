@@ -105,7 +105,6 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 	}
 	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
 
-	String extension = path.get_extension();
 	Error err = ERR_FILE_UNRECOGNIZED;
 
 	for (int i = 0; i < saver_count; i++) {
@@ -255,8 +254,8 @@ void ResourceSaver::add_custom_savers() {
 
 	String custom_saver_base_class = ResourceFormatSaver::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

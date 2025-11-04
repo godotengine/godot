@@ -114,6 +114,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		random_tile_toggle->show();
 		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	}
+	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 }
 
 void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
@@ -183,6 +184,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 	}
 	sources_list->set_meta("old_source", old_source);
 	sources_list->clear();
+	sources_list->tile_set = Ref<TileSet>();
 
 	TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer) {
@@ -193,6 +195,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 	if (tile_set.is_null()) {
 		return;
 	}
+	sources_list->tile_set = tile_set;
 
 	if (!tile_set->has_source(old_source)) {
 		old_source = -1;
@@ -441,8 +444,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 		int item_index = 0;
 		if (scene.is_valid()) {
 			item_index = scene_tiles_list->add_item(vformat("%s (Path: %s, ID: %d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
-			Variant udata = i;
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, callable_mp(this, &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done).bind(i));
 		} else {
 			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), tiles_bottom_panel->get_editor_theme_icon(SNAME("PackedScene")));
 		}
@@ -463,11 +465,9 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
-void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
-	int index = p_ud;
-
-	if (index >= 0 && index < scene_tiles_list->get_item_count()) {
-		scene_tiles_list->set_item_icon(index, p_preview);
+void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index) {
+	if (p_index >= 0 && p_index < scene_tiles_list->get_item_count()) {
+		scene_tiles_list->set_item_icon(p_index, p_preview);
 	}
 }
 
@@ -817,7 +817,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			// Do nothing.
 		} else {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-			Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+			Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 			tile_set->draw_cells_outline(p_overlay, tile_map_selection, selection_color, xform);
 		}
 	}
@@ -1117,8 +1117,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	// Get or create the pattern.
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
-	HashMap<Vector2i, TileMapCell> err_output;
-	ERR_FAIL_COND_V(pattern->is_empty(), err_output);
+	ERR_FAIL_COND_V(pattern->is_empty(), (HashMap<Vector2i, TileMapCell>()));
 
 	// Compute the offset to align things to the bottom or right.
 	bool aligned_right = p_end_cell.x < p_start_cell.x;
@@ -1807,7 +1806,7 @@ void TileMapLayerEditorTilesPlugin::_tile_atlas_control_draw() {
 
 	// Draw the selection.
 	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
-	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
+	Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
 		int16_t untransformed_alternative_id = E.alternative_tile & TileSetAtlasSource::UNTRANSFORM_MASK;
 		if (E.source_id == source_id && untransformed_alternative_id == 0) {
@@ -2112,7 +2111,6 @@ void TileMapLayerEditorTilesPlugin::_set_source_sort(int p_sort) {
 }
 
 void TileMapLayerEditorTilesPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_set_tile_map_selection", "selection"), &TileMapLayerEditorTilesPlugin::_set_tile_map_selection);
 	ClassDB::bind_method(D_METHOD("_get_tile_map_selection"), &TileMapLayerEditorTilesPlugin::_get_tile_map_selection);
 }
@@ -2380,20 +2378,11 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 	sources_bottom_actions->add_child(source_sort_button);
 
-	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
-	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	sources_list->set_stretch_ratio(0.25);
-	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
-	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	sources_list->set_theme_type_variation("ItemListSecondary");
+	sources_list = memnew(TileSetSourceItemList);
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect("item_activated", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::display_tile_set_editor_panel).unbind(1));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
-	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list));
 	split_container_left_side->add_child(sources_list);
 	split_container_left_side->add_child(sources_bottom_actions);
@@ -3427,11 +3416,9 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 							icon = atlas_source->get_texture();
 							region = atlas_source->get_tile_texture_region(cell.get_atlas_coords());
 							if (tile_data->get_flip_h()) {
-								region.position.x += region.size.x;
 								region.size.x = -region.size.x;
 							}
 							if (tile_data->get_flip_v()) {
-								region.position.y += region.size.y;
 								region.size.y = -region.size.y;
 							}
 							transpose = tile_data->get_transpose();
@@ -3670,6 +3657,9 @@ void TileMapLayerEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (custom_overlay) {
 				custom_overlay->set_visible(is_visible_in_tree());
+			}
+			if (is_visible()) {
+				CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 			}
 		} break;
 
@@ -4253,107 +4243,112 @@ void TileMapLayerEditor::_draw_overlay() {
 	Transform2D xform_inv = xform.affine_inverse();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 
-	// Draw tiles with invalid IDs in the grid.
-	TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
-	for (int i = 0; i < used_cells.size(); i++) {
-		Vector2i coords = used_cells[i];
-		int tile_source_id = edited_layer->get_cell_source_id(coords);
-		if (tile_source_id >= 0) {
-			Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
-			int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
+	// Fade the overlay out when size too small.
+	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
+	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
+	if (scale_fading > 0) {
+		// Draw tiles with invalid IDs in the grid.
+		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
+		for (int i = 0; i < used_cells.size(); i++) {
+			Vector2i coords = used_cells[i];
+			int tile_source_id = edited_layer->get_cell_source_id(coords);
+			if (tile_source_id >= 0) {
+				Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
+				int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
 
-			TileSetSource *source = nullptr;
-			if (tile_set->has_source(tile_source_id)) {
-				source = *tile_set->get_source(tile_source_id);
-			}
+				TileSetSource *source = nullptr;
+				if (tile_set->has_source(tile_source_id)) {
+					source = *tile_set->get_source(tile_source_id);
+				}
 
-			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
-				// Generate a random color from the hashed identifier of the tiles.
-				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
-				uint32_t hash = RandomPCG(to_hash.hash()).rand();
+				if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
+					// Generate a random color from the hashed identifier of the tiles.
+					Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
+					uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
-				Color color;
-				color = color.from_hsv(
-						(float)((hash >> 24) & 0xFF) / 256.0,
-						Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-						Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
-						0.8);
+					Color color;
+					color = color.from_hsv(
+							(float)((hash >> 24) & 0xFF) / 256.0,
+							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
+							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+							0.8 * scale_fading);
 
-				// Display the warning pattern.
-				Transform2D tile_xform;
-				tile_xform.set_origin(tile_set->map_to_local(coords));
-				tile_xform.set_scale(tile_shape_size);
-				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
+					// Display the warning pattern.
+					Transform2D tile_xform;
+					tile_xform.set_origin(tile_set->map_to_local(coords));
+					tile_xform.set_scale(tile_shape_size);
+					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
 
-				// Draw the warning icon.
-				Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
-				Vector2 icon_size;
-				icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
-				icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
-				Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-				custom_overlay->draw_texture_rect(missing_tile_texture, rect);
+					// Draw the warning icon.
+					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
+					Vector2 icon_size;
+					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
+					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
+					Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
+					custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
+				}
 			}
 		}
-	}
 
-	// Fading on the border.
-	const int fading = 5;
+		// Fading on the border.
+		const int fading = 5;
 
-	// Determine the drawn area.
-	Size2 screen_size = custom_overlay->get_size();
-	Rect2i screen_rect;
-	screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
-	screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(screen_size)));
-	screen_rect = screen_rect.grow(1);
+		// Determine the drawn area.
+		Size2 screen_size = custom_overlay->get_size();
+		Rect2i screen_rect;
+		screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(screen_size.width, 0))));
+		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(screen_size)));
+		screen_rect = screen_rect.grow(1);
 
-	Rect2i tilemap_used_rect = edited_layer->get_used_rect();
+		Rect2i tilemap_used_rect = edited_layer->get_used_rect();
 
-	Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
-	displayed_rect = displayed_rect.grow(fading);
+		Rect2i displayed_rect = tilemap_used_rect.intersection(screen_rect);
+		displayed_rect = displayed_rect.grow(fading);
 
-	// Reduce the drawn area to avoid crashes if needed.
-	int max_size = 100;
-	if (displayed_rect.size.x > max_size) {
-		displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
-	}
-	if (displayed_rect.size.y > max_size) {
-		displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
-	}
+		// Reduce the drawn area to avoid crashes if needed.
+		int max_size = 100;
+		if (displayed_rect.size.x > max_size) {
+			displayed_rect = displayed_rect.grow_individual(-(displayed_rect.size.x - max_size) / 2, 0, -(displayed_rect.size.x - max_size) / 2, 0);
+		}
+		if (displayed_rect.size.y > max_size) {
+			displayed_rect = displayed_rect.grow_individual(0, -(displayed_rect.size.y - max_size) / 2, 0, -(displayed_rect.size.y - max_size) / 2);
+		}
 
-	// Draw the grid.
-	bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
-	if (display_grid) {
-		Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+		// Draw the grid.
+		bool display_grid = EDITOR_GET("editors/tiles_editor/display_grid");
+		if (display_grid) {
+			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
+			for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
+				for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
+					Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
+
+					// Fade out the border of the grid.
+					float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
+					float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)(pos_in_rect.x + 1)), 0.0f, 1.0f);
+					float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
+					float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)(pos_in_rect.y + 1)), 0.0f, 1.0f);
+					float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
+
+					Transform2D tile_xform;
+					tile_xform.set_origin(tile_set->map_to_local(Vector2(x, y)));
+					tile_xform.set_scale(tile_shape_size);
+					Color color = grid_color;
+					color.a = color.a * opacity * scale_fading;
+					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
+				}
+			}
+		}
+
+		// Draw the IDs for debug.
+		/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-				Vector2i pos_in_rect = Vector2i(x, y) - displayed_rect.position;
-
-				// Fade out the border of the grid.
-				float left_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.x), 0.0f, 1.0f);
-				float right_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.x, (float)(displayed_rect.size.x - fading), (float)(pos_in_rect.x + 1)), 0.0f, 1.0f);
-				float top_opacity = CLAMP(Math::inverse_lerp(0.0f, (float)fading, (float)pos_in_rect.y), 0.0f, 1.0f);
-				float bottom_opacity = CLAMP(Math::inverse_lerp((float)displayed_rect.size.y, (float)(displayed_rect.size.y - fading), (float)(pos_in_rect.y + 1)), 0.0f, 1.0f);
-				float opacity = CLAMP(MIN(left_opacity, MIN(right_opacity, MIN(top_opacity, bottom_opacity))) + 0.1, 0.0f, 1.0f);
-
-				Transform2D tile_xform;
-				tile_xform.set_origin(tile_set->map_to_local(Vector2(x, y)));
-				tile_xform.set_scale(tile_shape_size);
-				Color color = grid_color;
-				color.a = color.a * opacity;
-				tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
+				custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
 			}
-		}
+		}*/
 	}
-
-	// Draw the IDs for debug.
-	/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
-	for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
-		for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-			custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
-		}
-	}*/
 
 	// Draw the plugins.
 	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(custom_overlay);

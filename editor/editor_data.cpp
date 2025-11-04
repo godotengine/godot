@@ -668,7 +668,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 	if (p_node == p_root) {
 		ss = p_node->get_scene_inherited_state();
-	} else if (!p_node->get_scene_file_path().is_empty()) {
+	} else if (p_node->is_instance()) {
 		ss = p_node->get_scene_instance_state();
 	}
 
@@ -706,38 +706,52 @@ bool EditorData::check_and_update_scene(int p_idx) {
 	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
 
 	if (must_reload) {
-		Ref<PackedScene> pscene;
-		pscene.instantiate();
-
-		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
-		ep.step(TTR("Storing local changes..."), 0);
-		// Pack first, so it stores diffs to previous version of saved scene.
-		Error err = pscene->pack(edited_scene[p_idx].root);
-		ERR_FAIL_COND_V(err != OK, false);
-		ep.step(TTR("Updating scene..."), 1);
-		Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
-		ERR_FAIL_NULL_V(new_scene, false);
-
-		// Transfer selection.
-		List<Node *> new_selection;
-		for (const Node *E : edited_scene.write[p_idx].selection) {
-			NodePath p = edited_scene[p_idx].root->get_path_to(E);
-			Node *new_node = new_scene->get_node(p);
-			if (new_node) {
-				new_selection.push_back(new_node);
-			}
-		}
-
-		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-		Node *old_root = edited_scene[p_idx].root;
-		EditorNode::get_singleton()->set_edited_scene(new_scene);
-		memdelete(old_root);
-		edited_scene.write[p_idx].selection = new_selection;
+		reload_scene_from_memory(p_idx, false);
 
 		return true;
 	}
 
 	return false;
+}
+
+bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
+	if (!edited_scene[p_idx].root) {
+		return false;
+	}
+
+	Ref<PackedScene> pscene;
+	pscene.instantiate();
+
+	EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
+	ep.step(TTR("Storing local changes..."), 0);
+	// Pack first, so it stores diffs to previous version of saved scene.
+	Error err = pscene->pack(edited_scene[p_idx].root);
+	ERR_FAIL_COND_V(err != OK, false);
+	ep.step(TTR("Updating scene..."), 1);
+	Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+	ERR_FAIL_NULL_V(new_scene, false);
+
+	// Transfer selection.
+	List<Node *> new_selection;
+	for (const Node *E : edited_scene.write[p_idx].selection) {
+		NodePath p = edited_scene[p_idx].root->get_path_to(E);
+		Node *new_node = new_scene->get_node(p);
+		if (new_node) {
+			new_selection.push_back(new_node);
+		}
+	}
+
+	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
+	Node *old_root = edited_scene[p_idx].root;
+	EditorNode::get_singleton()->set_edited_scene(new_scene);
+	memdelete(old_root);
+	edited_scene.write[p_idx].selection = new_selection;
+
+	if (p_mark_unsaved) {
+		EditorUndoRedoManager::get_singleton()->clear_history(get_scene_history_id(p_idx));
+	}
+	return true;
 }
 
 int EditorData::get_edited_scene() const {
@@ -773,7 +787,7 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	edited_scene.write[current_edited_scene].root = p_root;
 	if (p_root) {
-		if (!p_root->get_scene_file_path().is_empty()) {
+		if (p_root->is_instance()) {
 			edited_scene.write[current_edited_scene].path = p_root->get_scene_file_path();
 		} else {
 			p_root->set_scene_file_path(edited_scene[current_edited_scene].path);
@@ -839,7 +853,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
 	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (s.is_null() && n && n->get_scene_file_path().is_empty()) {
+		while (s.is_null() && n && !n->is_instance()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}
@@ -1045,8 +1059,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_global_classes() {
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 	Array array_classes;
 	for (const StringName &class_name : global_classes) {
 		Dictionary d;
@@ -1296,7 +1310,7 @@ void EditorSelection::_update_node_list() {
 		top_selected_node_list.push_back(E.key);
 	}
 
-	node_list_changed = true;
+	node_list_changed = false;
 }
 
 void EditorSelection::update() {

@@ -123,6 +123,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match"), &Input::is_action_just_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed_by_event", "action", "event", "exact_match"), &Input::is_action_just_pressed_by_event, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_just_released_by_event", "action", "event", "exact_match"), &Input::is_action_just_released_by_event, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
@@ -411,6 +413,37 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+	ERR_FAIL_COND_V(p_event.is_null(), false);
+
+	if (disable_input) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+		return false;
+	}
+
+	// Backward compatibility for legacy behavior, only return true if currently pressed.
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.cache.pressed : true;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
+	}
+}
+
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
@@ -424,6 +457,37 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 
 	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	// Backward compatibility for legacy behavior, only return true if currently released.
+	bool released_requirement = legacy_just_pressed_behavior ? !E->value.cache.pressed : true;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
+	}
+}
+
+bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+	ERR_FAIL_COND_V(p_event.is_null(), false);
+
+	if (disable_input) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	if (E->value.released_event_id != p_event->get_instance_id()) {
 		return false;
 	}
 
@@ -599,6 +663,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 				}
 			}
 		}
+		// We don't want this setting to be exposed to the user, because it's not very useful outside of this method.
+		js.info.erase("mapping_handled");
+
 		_set_joypad_mapping(js, mapping);
 	} else {
 		js.connected = false;
@@ -895,10 +962,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		_update_action_cache(E.key, action_state);
 		// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 		if (action_state.cache.pressed && !was_pressed) {
+			action_state.pressed_event_id = p_event->get_instance_id();
 			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 		if (!action_state.cache.pressed && was_pressed) {
+			action_state.released_event_id = p_event->get_instance_id();
 			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 		}
@@ -1027,6 +1096,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 	if (!action_state.cache.pressed) {
+		action_state.pressed_event_id = ObjectID();
 		action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 		action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	}
@@ -1045,6 +1115,7 @@ void Input::action_release(const StringName &p_action) {
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
+	action_state.released_event_id = ObjectID();
 	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 	action_state.device_states.clear();
@@ -1685,8 +1756,7 @@ void Input::parse_mapping(const String &p_mapping) {
 void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
-		Vector<String> entry = p_mapping.split(",");
-		const String &uid = entry[0];
+		const String uid = p_mapping.get_slicec(',', 0);
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {

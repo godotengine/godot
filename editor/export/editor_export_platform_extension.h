@@ -151,6 +151,9 @@ public:
 	virtual String get_debug_protocol() const override;
 	GDVIRTUAL0RC(String, _get_debug_protocol);
 
+	virtual void initialize() override;
+	GDVIRTUAL0(_initialize);
+
 	EditorExportPlatformExtension();
 	~EditorExportPlatformExtension();
 };

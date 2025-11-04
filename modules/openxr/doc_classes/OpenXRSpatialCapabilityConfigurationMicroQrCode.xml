@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationMicroQrCode" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for QR code markers.
+	</brief_description>
+	<description>
+		Configuration header for QR code markers. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect QR code markers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns the components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -32,7 +32,7 @@
 
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
 
@@ -653,7 +653,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_uppercase(bool p_uppercase);

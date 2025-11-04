@@ -33,7 +33,7 @@
 #include "detect_prime_x11.h"
 
 #include "core/string/print_string.h"
-#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"

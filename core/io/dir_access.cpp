@@ -490,19 +490,22 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
-				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				Error err = p_target_da->create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				if (err) {
+					ERR_PRINT(vformat("Failed to copy symlink \"%s\".", n));
+				}
 			} else if (current_is_dir()) {
 				dirs.push_back(n);
 			} else {
 				const String &rel_path = n;
 				if (!n.is_relative_path()) {
 					list_dir_end();
-					return ERR_BUG;
+					ERR_FAIL_V_MSG(ERR_BUG, vformat("BUG: \"%s\" is not a relative path.", n));
 				}
 				Error err = copy(get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
-					return err;
+					ERR_FAIL_V_MSG(err, vformat("Failed to copy file \"%s\".", n));
 				}
 			}
 		}

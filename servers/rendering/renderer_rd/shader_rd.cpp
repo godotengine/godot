@@ -158,6 +158,8 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 	tohash.append(p_fragment_code ? p_fragment_code : "");
 	tohash.append("[Compute]");
 	tohash.append(p_compute_code ? p_compute_code : "");
+	tohash.append("[DebugInfo]");
+	tohash.append(Engine::get_singleton()->is_generate_spirv_debug_info_enabled() ? "1" : "0");
 
 	base_sha256 = tohash.as_string().sha256_text();
 }
@@ -207,7 +209,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 	if (!p_version->variants.is_empty()) {
 		for (int i = 0; i < variant_defines.size(); i++) {
 			if (p_version->variants[i].is_valid()) {
-				RD::get_singleton()->free(p_version->variants[i]);
+				RD::get_singleton()->free_rid(p_version->variants[i]);
 			}
 		}
 
@@ -300,7 +302,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 	}
 
 	Vector<String> variant_stage_sources = _build_variant_stage_sources(variant, p_data);
-	Vector<RD::ShaderStageSPIRVData> variant_stages = compile_stages(variant_stage_sources);
+	Vector<RD::ShaderStageSPIRVData> variant_stages = compile_stages(variant_stage_sources, dynamic_buffers);
 	ERR_FAIL_COND(variant_stages.is_empty());
 
 	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(variant_stages, name + ":" + itos(variant));
@@ -437,7 +439,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		f = FileAccess::open(_get_cache_file_path(p_version, p_group, api_safe_name, true), FileAccess::READ);
 	}
 
-	if (f.is_null()) {
+	if (f.is_null() && shader_cache_res_dir_valid) {
 		f = FileAccess::open(_get_cache_file_path(p_version, p_group, api_safe_name, false), FileAccess::READ);
 	}
 
@@ -463,8 +465,13 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
-		if (!variants_enabled[variant_id] || variant_size == 0) {
+		if (!variants_enabled[variant_id]) {
 			continue;
+		}
+		if (variant_size == 0) {
+			// A new variant has been requested, failing the entire load will generate it
+			print_verbose(vformat("Shader cache miss for %s due to missing variant %d", name.path_join(group_sha256[p_group]).path_join(_version_get_sha1(p_version)), variant_id));
+			return false;
 		}
 		Vector<uint8_t> variant_bytes;
 		variant_bytes.resize(variant_size);
@@ -488,7 +495,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 			if (shader.is_null()) {
 				for (uint32_t j = 0; j < i; j++) {
 					int variant_free_id = group_to_variant_map[p_group][j];
-					RD::get_singleton()->free(p_version->variants[variant_free_id]);
+					RD::get_singleton()->free_rid(p_version->variants[variant_free_id]);
 				}
 				ERR_FAIL_COND_V(shader.is_null(), false);
 			}
@@ -534,8 +541,10 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 	p_version->dirty = false;
 
 #if ENABLE_SHADER_CACHE
-	if (_load_from_cache(p_version, p_group)) {
-		return;
+	if (shader_cache_user_dir_valid || shader_cache_res_dir_valid) {
+		if (_load_from_cache(p_version, p_group)) {
+			return;
+		}
 	}
 #endif
 
@@ -575,7 +584,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 				continue; // Disabled.
 			}
 			if (!p_version->variants[i].is_null()) {
-				RD::get_singleton()->free(p_version->variants[i]);
+				RD::get_singleton()->free_rid(p_version->variants[i]);
 			}
 		}
 
@@ -774,6 +783,10 @@ const String &ShaderRD::get_name() const {
 	return name;
 }
 
+const Vector<uint64_t> &ShaderRD::get_dynamic_buffers() const {
+	return dynamic_buffers;
+}
+
 bool ShaderRD::shader_cache_cleanup_on_start = false;
 
 ShaderRD::ShaderRD() {
@@ -792,12 +805,13 @@ ShaderRD::ShaderRD() {
 	base_compute_defines = base_compute_define_text.ascii();
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 	immutable_samplers = p_immutable_samplers;
+	dynamic_buffers = p_dynamic_buffers;
 
 	// When initialized this way, there is just one group and its always enabled.
 	group_to_variant_map.insert(0, LocalVector<int>{});
@@ -818,6 +832,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 
 void ShaderRD::_initialize_cache() {
 	shader_cache_user_dir_valid = !shader_cache_user_dir.is_empty();
+	shader_cache_res_dir_valid = !shader_cache_res_dir.is_empty();
 	if (!shader_cache_user_dir_valid) {
 		return;
 	}
@@ -834,6 +849,11 @@ void ShaderRD::_initialize_cache() {
 		for (uint32_t i = 0; i < E.value.size(); i++) {
 			hash_build.append("[variant_defines:" + itos(E.value[i]) + "]");
 			hash_build.append(variant_defines[E.value[i]].text.get_data());
+		}
+
+		for (const uint64_t dyn_buffer : dynamic_buffers) {
+			hash_build.append("[dynamic_buffer]");
+			hash_build.append(uitos(dyn_buffer));
 		}
 
 		group_sha256[E.key] = hash_build.as_string().sha256_text();
@@ -870,12 +890,13 @@ void ShaderRD::_initialize_cache() {
 }
 
 // Same as above, but allows specifying shader compilation groups.
-void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
+void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
 	immutable_samplers = p_immutable_samplers;
+	dynamic_buffers = p_dynamic_buffers;
 
 	int max_group_id = 0;
 
@@ -952,7 +973,7 @@ void ShaderRD::set_shader_cache_save_debug(bool p_enable) {
 	shader_cache_save_debug = p_enable;
 }
 
-Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &p_stage_sources) {
+Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &p_stage_sources, const Vector<uint64_t> &p_dynamic_buffers) {
 	RD::ShaderStageSPIRVData stage;
 	Vector<RD::ShaderStageSPIRVData> stages;
 	String error;
@@ -964,6 +985,7 @@ Vector<RD::ShaderStageSPIRVData> ShaderRD::compile_stages(const Vector<String> &
 		}
 
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), p_stage_sources[i], RD::SHADER_LANGUAGE_GLSL, &error);
+		stage.dynamic_buffers = p_dynamic_buffers;
 		stage.shader_stage = RD::ShaderStage(i);
 		if (!stage.spirv.is_empty()) {
 			stages.push_back(stage);

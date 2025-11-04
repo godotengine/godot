@@ -32,6 +32,7 @@
 
 #include "core/templates/hash_map.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -165,8 +166,8 @@ class TreeItem;
 class ProgressBar;
 
 // Display search results
-class FindInFilesPanel : public Control {
-	GDCLASS(FindInFilesPanel, Control);
+class FindInFilesPanel : public MarginContainer {
+	GDCLASS(FindInFilesPanel, MarginContainer);
 
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
@@ -200,6 +201,11 @@ private:
 	void _on_replace_text_changed(const String &text);
 	void _on_replace_all_clicked();
 
+	enum {
+		FIND_BUTTON_REPLACE,
+		FIND_BUTTON_REMOVE,
+	};
+
 	struct Result {
 		int line_number = 0;
 		int begin = 0;
@@ -214,7 +220,6 @@ private:
 
 	void draw_result_text(Object *item_obj, Rect2 rect);
 
-	void set_progress_visible(bool p_visible);
 	void clear();
 
 	FindInFiles *_finder = nullptr;
@@ -226,6 +231,7 @@ private:
 	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
+	HashMap<TreeItem *, int> _file_items_results_count;
 	HashMap<TreeItem *, Result> _result_items;
 	bool _with_replace = false;
 

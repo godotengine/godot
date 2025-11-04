@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -772,8 +773,8 @@ SpriteBase3D::SpriteBase3D() {
 
 SpriteBase3D::~SpriteBase3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
-	RenderingServer::get_singleton()->free(material);
+	RenderingServer::get_singleton()->free_rid(mesh);
+	RenderingServer::get_singleton()->free_rid(material);
 }
 
 ///////////////////////////////////////////
@@ -972,14 +973,6 @@ void Sprite3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	if (p_property.name == "frame_coords") {
-		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (!region && (p_property.name == "region_rect")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 }
 
 void Sprite3D::_bind_methods() {
@@ -1009,9 +1002,9 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_KEYING_INCREMENTS), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
@@ -1438,8 +1431,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	int frame_count = frames->get_frame_count(animation);
-	if (animation == StringName() || frame_count == 0) {
+	if (animation == StringName() || frames->get_frame_count(animation) == 0) {
 		stop();
 		return;
 	} else if (!frames->get_animation_names().has(animation)) {
@@ -1449,7 +1441,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 	}
 
 	if (std::signbit(get_playing_speed())) {
-		set_frame_and_progress(frame_count - 1, 1.0);
+		set_frame_and_progress(frames->get_frame_count(animation) - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);
 	}

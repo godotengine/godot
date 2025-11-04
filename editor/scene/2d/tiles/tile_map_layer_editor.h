@@ -47,8 +47,11 @@
 
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileSetSourceItemList;
 
 class TileMapLayerSubEditorPlugin : public Object {
+	GDSOFTCLASS(TileMapLayerSubEditorPlugin, Object);
+
 protected:
 	ObjectID edited_tile_map_layer_id;
 	TileMapLayer *_get_edited_layer() const;
@@ -176,7 +179,7 @@ private:
 	Label *missing_source_label = nullptr;
 	Label *invalid_source_label = nullptr;
 
-	ItemList *sources_list = nullptr;
+	TileSetSourceItemList *sources_list = nullptr;
 	MenuButton *source_sort_button = nullptr;
 
 	Ref<Texture2D> missing_atlas_texture_icon;
@@ -209,7 +212,7 @@ private:
 	ItemList *scene_tiles_list = nullptr;
 
 	void _update_scenes_collection_view();
-	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud);
+	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index);
 	void _scenes_list_multi_selected(int p_index, bool p_selected);
 	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 

@@ -51,13 +51,13 @@ template <>
 class OperatorEvaluatorMul<Vector2, Vector2i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		*r_ret = Vector2(a.x, a.y) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(left)->x, VariantGetInternalPtr<Vector2i>::get_ptr(left)->y) * *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector2>::get(r_ret) = Vector2(VariantInternalAccessor<Vector2i>::get(left).x, VariantInternalAccessor<Vector2i>::get(left).y) * VariantInternalAccessor<double>::get(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) * PtrToArg<double>::convert(right), r_ret);
@@ -69,13 +69,13 @@ template <>
 class OperatorEvaluatorMul<Vector2, double, Vector2i> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_right);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_left);
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_right);
+		const double &b = VariantInternalAccessor<double>::get(&p_left);
 		*r_ret = Vector2(a.x, a.y) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(right)->x, VariantGetInternalPtr<Vector2i>::get_ptr(right)->y) * *VariantGetInternalPtr<double>::get_ptr(left);
+		VariantInternalAccessor<Vector2>::get(r_ret) = Vector2(VariantInternalAccessor<Vector2i>::get(right).x, VariantInternalAccessor<Vector2i>::get(right).y) * VariantInternalAccessor<double>::get(left);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(right).x, PtrToArg<Vector2i>::convert(right).y) * PtrToArg<double>::convert(left), r_ret);
@@ -87,8 +87,8 @@ template <>
 class OperatorEvaluatorDivNZ<Vector2, Vector2i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector2i &a = *VariantGetInternalPtr<Vector2i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector2i &a = VariantInternalAccessor<Vector2i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		if (unlikely(b == 0)) {
 			r_valid = false;
 			*r_ret = "Division by zero error";
@@ -98,7 +98,7 @@ public:
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector2>::get_ptr(r_ret) = Vector2(VariantGetInternalPtr<Vector2i>::get_ptr(left)->x, VariantGetInternalPtr<Vector2i>::get_ptr(left)->y) / *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector2>::get(r_ret) = Vector2(VariantInternalAccessor<Vector2i>::get(left).x, VariantInternalAccessor<Vector2i>::get(left).y) / VariantInternalAccessor<double>::get(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2>::encode(Vector2(PtrToArg<Vector2i>::convert(left).x, PtrToArg<Vector2i>::convert(left).y) / PtrToArg<double>::convert(right), r_ret);
@@ -110,13 +110,13 @@ template <>
 class OperatorEvaluatorMul<Vector3, Vector3i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		*r_ret = Vector3(a.x, a.y, a.z) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(left)->x, VariantGetInternalPtr<Vector3i>::get_ptr(left)->y, VariantGetInternalPtr<Vector3i>::get_ptr(left)->z) * *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector3>::get(r_ret) = Vector3(VariantInternalAccessor<Vector3i>::get(left).x, VariantInternalAccessor<Vector3i>::get(left).y, VariantInternalAccessor<Vector3i>::get(left).z) * VariantInternalAccessor<double>::get(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) * PtrToArg<double>::convert(right), r_ret);
@@ -128,13 +128,13 @@ template <>
 class OperatorEvaluatorMul<Vector3, double, Vector3i> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_right);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_left);
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_right);
+		const double &b = VariantInternalAccessor<double>::get(&p_left);
 		*r_ret = Vector3(a.x, a.y, a.z) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(right)->x, VariantGetInternalPtr<Vector3i>::get_ptr(right)->y, VariantGetInternalPtr<Vector3i>::get_ptr(right)->z) * *VariantGetInternalPtr<double>::get_ptr(left);
+		VariantInternalAccessor<Vector3>::get(r_ret) = Vector3(VariantInternalAccessor<Vector3i>::get(right).x, VariantInternalAccessor<Vector3i>::get(right).y, VariantInternalAccessor<Vector3i>::get(right).z) * VariantInternalAccessor<double>::get(left);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(right).x, PtrToArg<Vector3i>::convert(right).y, PtrToArg<Vector3i>::convert(right).z) * PtrToArg<double>::convert(left), r_ret);
@@ -146,8 +146,8 @@ template <>
 class OperatorEvaluatorDivNZ<Vector3, Vector3i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector3i &a = *VariantGetInternalPtr<Vector3i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector3i &a = VariantInternalAccessor<Vector3i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		if (unlikely(b == 0)) {
 			r_valid = false;
 			*r_ret = "Division by zero error";
@@ -157,7 +157,7 @@ public:
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector3>::get_ptr(r_ret) = Vector3(VariantGetInternalPtr<Vector3i>::get_ptr(left)->x, VariantGetInternalPtr<Vector3i>::get_ptr(left)->y, VariantGetInternalPtr<Vector3i>::get_ptr(left)->z) / *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector3>::get(r_ret) = Vector3(VariantInternalAccessor<Vector3i>::get(left).x, VariantInternalAccessor<Vector3i>::get(left).y, VariantInternalAccessor<Vector3i>::get(left).z) / VariantInternalAccessor<double>::get(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3>::encode(Vector3(PtrToArg<Vector3i>::convert(left).x, PtrToArg<Vector3i>::convert(left).y, PtrToArg<Vector3i>::convert(left).z) / PtrToArg<double>::convert(right), r_ret);
@@ -171,13 +171,13 @@ template <>
 class OperatorEvaluatorMul<Vector4, Vector4i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector4i &a = *VariantGetInternalPtr<Vector4i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		*r_ret = Vector4(a.x, a.y, a.z, a.w) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector4>::get_ptr(r_ret) = Vector4(VariantGetInternalPtr<Vector4i>::get_ptr(left)->x, VariantGetInternalPtr<Vector4i>::get_ptr(left)->y, VariantGetInternalPtr<Vector4i>::get_ptr(left)->z, VariantGetInternalPtr<Vector4i>::get_ptr(left)->w) * *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector4>::get(r_ret) = Vector4(VariantInternalAccessor<Vector4i>::get(left).x, VariantInternalAccessor<Vector4i>::get(left).y, VariantInternalAccessor<Vector4i>::get(left).z, VariantInternalAccessor<Vector4i>::get(left).w) * VariantInternalAccessor<double>::get(right);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector4>::encode(Vector4(PtrToArg<Vector4i>::convert(left).x, PtrToArg<Vector4i>::convert(left).y, PtrToArg<Vector4i>::convert(left).z, PtrToArg<Vector4i>::convert(left).w) * PtrToArg<double>::convert(right), r_ret);
@@ -189,13 +189,13 @@ template <>
 class OperatorEvaluatorMul<Vector4, double, Vector4i> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector4i &a = *VariantGetInternalPtr<Vector4i>::get_ptr(&p_right);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_left);
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_right);
+		const double &b = VariantInternalAccessor<double>::get(&p_left);
 		*r_ret = Vector4(a.x, a.y, a.z, a.w) * b;
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector4>::get_ptr(r_ret) = Vector4(VariantGetInternalPtr<Vector4i>::get_ptr(right)->x, VariantGetInternalPtr<Vector4i>::get_ptr(right)->y, VariantGetInternalPtr<Vector4i>::get_ptr(right)->z, VariantGetInternalPtr<Vector4i>::get_ptr(right)->w) * *VariantGetInternalPtr<double>::get_ptr(left);
+		VariantInternalAccessor<Vector4>::get(r_ret) = Vector4(VariantInternalAccessor<Vector4i>::get(right).x, VariantInternalAccessor<Vector4i>::get(right).y, VariantInternalAccessor<Vector4i>::get(right).z, VariantInternalAccessor<Vector4i>::get(right).w) * VariantInternalAccessor<double>::get(left);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector4>::encode(Vector4(PtrToArg<Vector4i>::convert(right).x, PtrToArg<Vector4i>::convert(right).y, PtrToArg<Vector4i>::convert(right).z, PtrToArg<Vector4i>::convert(right).w) * PtrToArg<double>::convert(left), r_ret);
@@ -207,8 +207,8 @@ template <>
 class OperatorEvaluatorDivNZ<Vector4, Vector4i, double> {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const Vector4i &a = *VariantGetInternalPtr<Vector4i>::get_ptr(&p_left);
-		const double &b = *VariantGetInternalPtr<double>::get_ptr(&p_right);
+		const Vector4i &a = VariantInternalAccessor<Vector4i>::get(&p_left);
+		const double &b = VariantInternalAccessor<double>::get(&p_right);
 		if (unlikely(b == 0)) {
 			r_valid = false;
 			*r_ret = "Division by zero error";
@@ -219,7 +219,7 @@ public:
 	}
 
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<Vector4>::get_ptr(r_ret) = Vector4(VariantGetInternalPtr<Vector4i>::get_ptr(left)->x, VariantGetInternalPtr<Vector4i>::get_ptr(left)->y, VariantGetInternalPtr<Vector4i>::get_ptr(left)->z, VariantGetInternalPtr<Vector4i>::get_ptr(left)->w) / *VariantGetInternalPtr<double>::get_ptr(right);
+		VariantInternalAccessor<Vector4>::get(r_ret) = Vector4(VariantInternalAccessor<Vector4i>::get(left).x, VariantInternalAccessor<Vector4i>::get(left).y, VariantInternalAccessor<Vector4i>::get(left).z, VariantInternalAccessor<Vector4i>::get(left).w) / VariantInternalAccessor<double>::get(right);
 	}
 
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
@@ -1166,7 +1166,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 	}
 	if (valid) {
 		ERR_FAIL_COND_V(ret.type != BOOL, false);
-		return *VariantGetInternalPtr<bool>::get_ptr(&ret);
+		return VariantInternalAccessor<bool>::get(&ret);
 	} else {
 		return false;
 	}

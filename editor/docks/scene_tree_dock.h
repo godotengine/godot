@@ -30,22 +30,24 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/script/script_create_dialog.h"
-#include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
 
 class CheckBox;
 class EditorData;
 class EditorSelection;
+class HBoxContainer;
 class MenuButton;
 class RenameDialog;
 class ReparentDialog;
 class ShaderCreateDialog;
 class TextureRect;
+class VBoxContainer;
 
-class SceneTreeDock : public VBoxContainer {
-	GDCLASS(SceneTreeDock, VBoxContainer);
+class SceneTreeDock : public EditorDock {
+	GDCLASS(SceneTreeDock, EditorDock);
 
 	enum Tool {
 		TOOL_NEW,
@@ -100,6 +102,9 @@ class SceneTreeDock : public VBoxContainer {
 	bool reset_create_dialog = false;
 
 	int current_option = 0;
+
+	VBoxContainer *main_vbox = nullptr;
+
 	CreateDialog *create_dialog = nullptr;
 	RenameDialog *rename_dialog = nullptr;
 
@@ -135,7 +140,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
-	LocalVector<Node *> node_previous_selection;
+	LocalVector<ObjectID> node_previous_selection;
 	bool update_script_button_queued = false;
 
 	List<Node *> node_clipboard;

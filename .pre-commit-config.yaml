@@ -6,7 +6,7 @@ exclude: |
     .*thirdparty/.*|
     .*-(dll|dylib|so)_wrap\.[ch]|
     platform/android/java/editor/src/main/java/com/android/.*|
-    platform/android/java/lib/src/com/google/.*
+    platform/android/java/lib/src/main/java/com/google/.*
   )$
 
 repos:
@@ -34,9 +34,9 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.0
+    rev: v0.13.1
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]
@@ -148,9 +148,9 @@ repos:
           (?x)^(
             core/math/bvh_.*\.inc|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
-            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java|
-            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java|
-            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix\.java
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java
           )$
 
       - id: header-guards

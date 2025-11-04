@@ -25,7 +25,7 @@
 		[b]Note:[/b] In a boolean context, an [Object] will evaluate to [code]false[/code] if it is equal to [code]null[/code] or it has been freed. Otherwise, an [Object] will always evaluate to [code]true[/code]. See also [method @GlobalScope.is_instance_valid].
 	</description>
 	<tutorials>
-		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
+		<link title="Object class introduction">$DOCS_URL/engine_details/architecture/object_class.html</link>
 		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
 		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
@@ -73,6 +73,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
@@ -185,6 +186,7 @@
 				[/codeblocks]
 				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -265,7 +267,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
-				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
@@ -274,6 +276,7 @@
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] has a custom default value and is revertible in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
 				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_property_get_revert" qualifiers="virtual">
@@ -282,6 +285,7 @@
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return the default value for the [param property]. If the default value differs from the [param property]'s current value, a revert icon is displayed in the Inspector dock.
 				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -336,6 +340,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">

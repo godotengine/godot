@@ -139,7 +139,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			case 1: {
 				DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
 
-				int count = *p_args[0];
+				int64_t count = *p_args[0];
 
 				Array arr;
 				if (count <= 0) {
@@ -147,10 +147,11 @@ struct GDScriptUtilityFunctionsDefinitions {
 					return;
 				}
 
+				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, RTR("Range too big."));
 				Error err = arr.resize(count);
 				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
 
-				for (int i = 0; i < count; i++) {
+				for (int64_t i = 0; i < count; i++) {
 					arr[i] = i;
 				}
 
@@ -160,8 +161,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
 				DEBUG_VALIDATE_ARG_TYPE(1, Variant::INT);
 
-				int from = *p_args[0];
-				int to = *p_args[1];
+				int64_t from = *p_args[0];
+				int64_t to = *p_args[1];
 
 				Array arr;
 				if (from >= to) {
@@ -169,10 +170,11 @@ struct GDScriptUtilityFunctionsDefinitions {
 					return;
 				}
 
+				GDFUNC_FAIL_COND_MSG(to - from > INT32_MAX, RTR("Range too big."));
 				Error err = arr.resize(to - from);
 				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
 
-				for (int i = from; i < to; i++) {
+				for (int64_t i = from; i < to; i++) {
 					arr[i - from] = i;
 				}
 
@@ -183,9 +185,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 				DEBUG_VALIDATE_ARG_TYPE(1, Variant::INT);
 				DEBUG_VALIDATE_ARG_TYPE(2, Variant::INT);
 
-				int from = *p_args[0];
-				int to = *p_args[1];
-				int incr = *p_args[2];
+				int64_t from = *p_args[0];
+				int64_t to = *p_args[1];
+				int64_t incr = *p_args[2];
 
 				VALIDATE_ARG_CUSTOM(2, Variant::INT, incr == 0, RTR("Step argument is zero!"));
 
@@ -200,24 +202,25 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 
 				// Calculate how many.
-				int count = 0;
+				int64_t count = 0;
 				if (incr > 0) {
 					count = Math::division_round_up(to - from, incr);
 				} else {
 					count = Math::division_round_up(from - to, -incr);
 				}
 
+				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, RTR("Range too big."));
 				Error err = arr.resize(count);
 				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
 
 				if (incr > 0) {
-					int idx = 0;
-					for (int i = from; i < to; i += incr) {
+					int64_t idx = 0;
+					for (int64_t i = from; i < to; i += incr) {
 						arr[idx++] = i;
 					}
 				} else {
-					int idx = 0;
-					for (int i = from; i > to; i += incr) {
+					int64_t idx = 0;
+					for (int64_t i = from; i > to; i += incr) {
 						arr[idx++] = i;
 					}
 				}

@@ -861,7 +861,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(uniform_name);
 			if (v) {
 				if (v->buffer_index >= 0) {
-					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!.");
+					WARN_PRINT("Shader uses global parameter texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!");
 
 				} else {
 					HashMap<StringName, uint64_t>::Iterator E = used_global_textures.find(uniform_name);
@@ -960,6 +960,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_CUBEMAP_WHITE);
 						} break;
@@ -979,6 +982,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_BLACK);
 						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_TRANSPARENT);
+						} break;
 						default: {
 							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_3D_WHITE);
 						} break;
@@ -988,7 +994,17 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
-					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_TRANSPARENT: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT);
+						} break;
+						default: {
+							gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+						} break;
+					}
 				} break;
 
 				default: {
@@ -1228,13 +1244,13 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
 		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
-		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
-		actions.renames["INV_VIEW_MATRIX"] = "scene_data.inv_view_matrix";
+		actions.renames["VIEW_MATRIX"] = "scene_data_block.data.view_matrix";
+		actions.renames["INV_VIEW_MATRIX"] = "scene_data_block.data.inv_view_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
-		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
+		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data_block.data.main_cam_inv_view_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";
@@ -1256,15 +1272,15 @@ MaterialStorage::MaterialStorage() {
 
 		//builtins
 
-		actions.renames["TIME"] = "scene_data.time";
-		actions.renames["EXPOSURE"] = "(1.0 / scene_data.emissive_exposure_normalization)";
+		actions.renames["TIME"] = "scene_data_block.data.time";
+		actions.renames["EXPOSURE"] = "(1.0 / scene_data_block.data.emissive_exposure_normalization)";
 		actions.renames["PI"] = String::num(Math::PI);
 		actions.renames["TAU"] = String::num(Math::TAU);
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["IN_SHADOW_PASS"] = "IN_SHADOW_PASS";
-		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
+		actions.renames["VIEWPORT_SIZE"] = "scene_data_block.data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
@@ -1307,10 +1323,10 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
-		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
-		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.inv_view_matrix[2].xyz";
-		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
-		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * model_matrix)[3].xyz";
+		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data_block.data.inv_view_matrix[3].xyz";
+		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data_block.data.inv_view_matrix[2].xyz";
+		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data_block.data.camera_visible_layers";
+		actions.renames["NODE_POSITION_VIEW"] = "(scene_data_block.data.view_matrix * model_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
@@ -1407,6 +1423,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
+		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 		actions.instance_uniform_index_variable = "instance_offset";
@@ -1496,22 +1513,22 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
 		actions.renames["FOG"] = "custom_fog";
-		actions.renames["LIGHT0_ENABLED"] = "directional_lights.data[0].enabled";
+		actions.renames["LIGHT0_ENABLED"] = "bool(directional_lights.data[0].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT0_DIRECTION"] = "directional_lights.data[0].direction_energy.xyz";
 		actions.renames["LIGHT0_ENERGY"] = "directional_lights.data[0].direction_energy.w";
 		actions.renames["LIGHT0_COLOR"] = "directional_lights.data[0].color_size.xyz";
 		actions.renames["LIGHT0_SIZE"] = "directional_lights.data[0].color_size.w";
-		actions.renames["LIGHT1_ENABLED"] = "directional_lights.data[1].enabled";
+		actions.renames["LIGHT1_ENABLED"] = "bool(directional_lights.data[1].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT1_DIRECTION"] = "directional_lights.data[1].direction_energy.xyz";
 		actions.renames["LIGHT1_ENERGY"] = "directional_lights.data[1].direction_energy.w";
 		actions.renames["LIGHT1_COLOR"] = "directional_lights.data[1].color_size.xyz";
 		actions.renames["LIGHT1_SIZE"] = "directional_lights.data[1].color_size.w";
-		actions.renames["LIGHT2_ENABLED"] = "directional_lights.data[2].enabled";
+		actions.renames["LIGHT2_ENABLED"] = "bool(directional_lights.data[2].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT2_DIRECTION"] = "directional_lights.data[2].direction_energy.xyz";
 		actions.renames["LIGHT2_ENERGY"] = "directional_lights.data[2].direction_energy.w";
 		actions.renames["LIGHT2_COLOR"] = "directional_lights.data[2].color_size.xyz";
 		actions.renames["LIGHT2_SIZE"] = "directional_lights.data[2].color_size.w";
-		actions.renames["LIGHT3_ENABLED"] = "directional_lights.data[3].enabled";
+		actions.renames["LIGHT3_ENABLED"] = "bool(directional_lights.data[3].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT3_DIRECTION"] = "directional_lights.data[3].direction_energy.xyz";
 		actions.renames["LIGHT3_ENERGY"] = "directional_lights.data[3].direction_energy.w";
 		actions.renames["LIGHT3_COLOR"] = "directional_lights.data[3].color_size.xyz";
@@ -2398,7 +2415,8 @@ void MaterialStorage::material_free(RID p_rid) {
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
 		if (E.value.get_type() == Variant::ARRAY) {
-			Array(E.value).clear();
+			// Clear the array for this material only (the array may be shared).
+			E.value = Variant();
 		}
 	}
 

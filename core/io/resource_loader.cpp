@@ -43,7 +43,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -174,7 +174,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+	return Ref<Resource>();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -1068,20 +1068,6 @@ void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_f
 	--loader_count;
 }
 
-int ResourceLoader::get_import_order(const String &p_path) {
-	String local_path = _path_remap(_validate_local_path(p_path));
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-
-		return loader[i]->get_import_order(p_path);
-	}
-
-	return 0;
-}
-
 String ResourceLoader::get_import_group_file(const String &p_path) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
@@ -1199,21 +1185,6 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	}
 
 	return ResourceUID::INVALID_ID;
-}
-
-bool ResourceLoader::has_custom_uid_support(const String &p_path) {
-	String local_path = _validate_local_path(p_path);
-
-	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path)) {
-			continue;
-		}
-		if (loader[i]->has_custom_uid_support()) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
@@ -1465,8 +1436,8 @@ void ResourceLoader::add_custom_loaders() {
 
 	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
+	LocalVector<StringName> global_classes;
+	ScriptServer::get_global_class_list(global_classes);
 
 	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);

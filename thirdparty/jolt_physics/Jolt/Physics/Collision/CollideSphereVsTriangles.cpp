@@ -47,8 +47,6 @@ CollideSphereVsTriangles::CollideSphereVsTriangles(const SphereShape *inShape1, 
 
 void CollideSphereVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and make it relative to the center of the sphere
 	Vec3 v0 = mScale2 * inV0 - mSphereCenterIn2;
 	Vec3 v1 = mScale2 * inV1 - mSphereCenterIn2;

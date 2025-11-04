@@ -31,7 +31,7 @@
 #include "video_stream_player.h"
 
 #include "core/os/os.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 int VideoStreamPlayer::sp_get_channel_count() const {
 	if (playback.is_null()) {
@@ -157,7 +157,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			double delta = first_frame ? 0 : get_process_delta_time();
 			first_frame = false;
 
-			resampler.set_playback_speed(Engine::get_singleton()->get_time_scale() * speed_scale);
+			resampler.set_playback_speed(Engine::get_singleton()->get_effective_time_scale() * speed_scale);
 
 			playback->update(delta * speed_scale); // playback->is_playing() returns false in the last video frame
 

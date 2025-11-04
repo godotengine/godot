@@ -33,9 +33,9 @@
 
 #include "core/io/file_access.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "servers/rendering_server.h"
 #include "texture.h"
 
 #ifdef TOOLS_ENABLED
@@ -295,7 +295,7 @@ Shader::Shader() {
 Shader::~Shader() {
 	if (shader_rid.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(shader_rid);
+		RenderingServer::get_singleton()->free_rid(shader_rid);
 	}
 }
 
@@ -338,8 +338,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdshader") {
+	if (p_path.has_extension("gdshader")) {
 		return "Shader";
 	}
 	return "";

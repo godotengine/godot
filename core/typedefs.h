@@ -110,7 +110,6 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
-#undef MemoryBarrier
 #undef MONO_FONT
 #endif
 
@@ -144,6 +143,12 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 #ifndef SWAP
 #define SWAP(m_x, m_y) std::swap((m_x), (m_y))
 #endif // SWAP
+
+// Like std::size, but without requiring any additional includes.
+template <typename T, size_t SIZE>
+constexpr size_t std_size(const T (&)[SIZE]) {
+	return SIZE;
+}
 
 /* Functions to handle powers of 2 and shifting. */
 
@@ -439,4 +444,24 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_IGNORE(m_warning)
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+template <typename T, typename = void>
+struct is_fully_defined : std::false_type {};
+
+template <typename T>
+struct is_fully_defined<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
+
+template <typename T>
+constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
+
+#ifndef SCU_BUILD_ENABLED
+/// Enforces the requirement that a class is not fully defined.
+/// This can be used to reduce include coupling and keep compile times low.
+/// The check must be made at the top of the corresponding .cpp file of a header.
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type) \
+	m_keyword m_type;                                    \
+	static_assert(!is_fully_defined_v<m_type>, #m_type " was unexpectedly fully defined. Please check the include hierarchy of '" __FILE__ "' and remove includes that resolve the " #m_keyword ".");
+#else
+#define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)
 #endif

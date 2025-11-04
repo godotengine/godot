@@ -45,7 +45,7 @@
 		<method name="get_last_slide_collision">
 			<return type="KinematicCollision2D" />
 			<description>
-				Returns a [KinematicCollision2D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
+				Returns a [KinematicCollision2D] if a collision occurred. The returned value contains information about the latest collision that occurred during the last call to [method move_and_slide]. Returns [code]null[/code] if no collision occurred. See also [method get_slide_collision].
 			</description>
 		</method>
 		<method name="get_platform_velocity" qualifiers="const">
@@ -70,7 +70,7 @@
 			<return type="KinematicCollision2D" />
 			<param index="0" name="slide_idx" type="int" />
 			<description>
-				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
+				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1). See also [method get_last_slide_collision].
 				[b]Example:[/b] Iterate through the collisions with a [code]for[/code] loop:
 				[codeblocks]
 				[gdscript]
@@ -141,6 +141,7 @@
 			<return type="bool" />
 			<description>
 				Moves the body based on [member velocity]. If the body collides with another, it will slide along the other body (by default only on floor) rather than stop immediately. If the other body is a [CharacterBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
 				The general behavior and available properties change according to the [member motion_mode].
@@ -196,6 +197,7 @@
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
+			[b]Note:[/b] A common mistake is setting this property to the desired velocity multiplied by [code]delta[/code], which produces a motion vector in pixels.
 		</member>
 		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.2617994">
 			Minimum angle (in radians) where the body is allowed to slide when it encounters a wall. The default value equals 15 degrees. This property only affects movement when [member motion_mode] is [constant MOTION_MODE_FLOATING].

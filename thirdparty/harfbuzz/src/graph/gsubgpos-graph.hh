@@ -87,6 +87,12 @@ struct Lookup : public OT::Lookup
     return lookupType == extension_type (table_tag);
   }
 
+  bool use_mark_filtering_set () const
+  {
+    unsigned flag = lookupFlag;
+    return flag & 0x0010u;
+  }
+
   bool make_extension (gsubgpos_graph_context_t& c,
                        unsigned this_index)
   {
@@ -219,6 +225,9 @@ struct Lookup : public OT::Lookup
      return false;
     }
     hb_memcpy (buffer, v->obj.head, v->table_size());
+
+    if (use_mark_filtering_set ())
+      hb_memcpy (buffer + new_size - 2, v->obj.tail - 2, 2);
 
     v->obj.head = buffer;
     v->obj.tail = buffer + new_size;

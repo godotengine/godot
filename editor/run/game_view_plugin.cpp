@@ -134,6 +134,28 @@ void GameViewDebugger::next_frame() {
 	}
 }
 
+void GameViewDebugger::set_time_scale(double p_scale) {
+	Array message;
+	message.append(p_scale);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:speed_changed", message);
+		}
+	}
+}
+
+void GameViewDebugger::reset_time_scale() {
+	Array message;
+	message.append(1.0);
+
+	for (Ref<EditorDebuggerSession> &I : sessions) {
+		if (I->is_active()) {
+			I->send_message("scene:speed_changed", message);
+		}
+	}
+}
+
 void GameViewDebugger::set_node_type(int p_type) {
 	node_type = p_type;
 
@@ -288,8 +310,6 @@ GameViewDebugger::GameViewDebugger() {
 	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame"), Key::F10);
-
-	ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q);
 }
 
 ///////
@@ -499,6 +519,8 @@ void GameView::_update_debugger_buttons() {
 
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
+	speed_state_button->set_disabled(empty);
+	reset_speed_button->set_disabled(empty);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -511,6 +533,8 @@ void GameView::_update_debugger_buttons() {
 		camera_override_button->set_pressed(false);
 	}
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+
+	_reset_time_scales();
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
@@ -589,6 +613,51 @@ void GameView::_size_mode_button_pressed(int size_mode) {
 
 	_update_embed_menu_options();
 	_update_embed_window_size();
+}
+
+void GameView::_reset_time_scales() {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+	time_scale_index = DEFAULT_TIME_SCALE_INDEX;
+	debugger->reset_time_scale();
+	_update_speed_buttons();
+}
+
+void GameView::_speed_state_menu_pressed(int p_id) {
+	time_scale_index = p_id;
+	debugger->set_time_scale(time_scale_range[time_scale_index]);
+	_update_speed_buttons();
+}
+
+void GameView::_update_speed_buttons() {
+	bool disabled = time_scale_index == DEFAULT_TIME_SCALE_INDEX;
+	reset_speed_button->set_disabled(disabled);
+	speed_state_button->set_text(vformat(U"%s×", time_scale_label[time_scale_index]));
+	_update_speed_state_color();
+}
+
+void GameView::_update_speed_state_color() {
+	Color text_color;
+	if (time_scale_index == DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	} else if (time_scale_index > DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SNAME("success_color"), EditorStringName(Editor));
+	} else if (time_scale_index < DEFAULT_TIME_SCALE_INDEX) {
+		text_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	}
+	speed_state_button->add_theme_color_override(SceneStringName(font_color), text_color);
+}
+
+void GameView::_update_speed_state_size() {
+	if (!speed_state_button) {
+		return;
+	}
+	float min_size = 0;
+	for (const String lbl : time_scale_label) {
+		min_size = MAX(speed_state_button->get_minimum_size_for_text_and_icon(vformat(U"%s×", lbl), Ref<Texture2D>()).x, min_size);
+	}
+	speed_state_button->set_custom_minimum_size(Vector2(min_size, 0));
 }
 
 GameView::EmbedAvailability GameView::_get_embed_available() {
@@ -777,9 +846,14 @@ void GameView::_notification(int p_what) {
 			_update_ui();
 		} break;
 
+		case NOTIFICATION_POST_ENTER_TREE: {
+			_update_speed_state_size();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Suspend")));
 			next_frame_button->set_button_icon(get_editor_theme_icon(SNAME("NextFrame")));
+			reset_speed_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_button_icon(get_editor_theme_icon(SNAME("2DNodes")));
@@ -798,6 +872,9 @@ void GameView::_notification(int p_what) {
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+			_update_speed_state_size();
+			_update_speed_state_color();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1048,12 +1125,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	window_wrapper = p_wrapper;
 	embedded_process = p_embedded_process;
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
@@ -1066,6 +1139,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
 	suspend_button->set_accessibility_name(TTRC("Suspend"));
 	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
+	suspend_button->set_tooltip_text(TTRC("Force pause at SceneTree level. Stops all processing, but you can still interact with the project."));
 
 	next_frame_button = memnew(Button);
 	main_menu_hbox->add_child(next_frame_button);
@@ -1073,6 +1147,26 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	next_frame_button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::next_frame));
 	next_frame_button->set_accessibility_name(TTRC("Next Frame"));
 	next_frame_button->set_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
+
+	speed_state_button = memnew(MenuButton);
+	main_menu_hbox->add_child(speed_state_button);
+	speed_state_button->set_text(U"1.0×");
+	speed_state_button->set_theme_type_variation(SceneStringName(FlatButton));
+	speed_state_button->set_tooltip_text(TTRC("Change the game speed."));
+	speed_state_button->set_accessibility_name(TTRC("Speed State"));
+
+	PopupMenu *menu = speed_state_button->get_popup();
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_speed_state_menu_pressed));
+	for (String lbl : time_scale_label) {
+		menu->add_item(vformat(U"%s×", lbl));
+	}
+
+	reset_speed_button = memnew(Button);
+	main_menu_hbox->add_child(reset_speed_button);
+	reset_speed_button->set_theme_type_variation(SceneStringName(FlatButton));
+	reset_speed_button->set_tooltip_text(TTRC("Reset the game speed."));
+	reset_speed_button->set_accessibility_name(TTRC("Reset Speed"));
+	reset_speed_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_reset_time_scales));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -1155,7 +1249,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTRC("Camera Override Options"));
 
-	PopupMenu *menu = camera_override_menu->get_popup();
+	menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
 	menu->add_item(TTRC("Reset 2D Camera"), CAMERA_RESET_2D);
 	menu->add_item(TTRC("Reset 3D Camera"), CAMERA_RESET_3D);

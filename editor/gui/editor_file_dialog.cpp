@@ -50,7 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 void EditorFileDialog::_native_popup() {
 	// Show native dialog directly.
@@ -75,11 +75,10 @@ void EditorFileDialog::popup(const Rect2i &p_rect) {
 	_update_option_controls();
 
 	bool use_native = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed());
-	if (!side_vbox && use_native) {
+	if (use_native) {
 		_native_popup();
 	} else {
-		// Show custom file dialog (full dialog or side menu only).
-		_update_side_menu_visibility(use_native);
+		// Show custom file dialog.
 		ConfirmationDialog::popup(p_rect);
 	}
 }
@@ -88,11 +87,10 @@ void EditorFileDialog::set_visible(bool p_visible) {
 	if (p_visible) {
 		bool use_native = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed());
 		_update_option_controls();
-		if (!side_vbox && use_native) {
+		if (use_native) {
 			_native_popup();
 		} else {
-			// Show custom file dialog (full dialog or side menu only).
-			_update_side_menu_visibility(use_native);
+			// Show custom file dialog.
 			ConfirmationDialog::set_visible(p_visible);
 		}
 	} else {
@@ -229,6 +227,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
 	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
 
+	theme_cache.file = get_editor_theme_icon(SNAME("File"));
 	theme_cache.folder = get_editor_theme_icon(SNAME("Folder"));
 	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
@@ -482,9 +481,9 @@ void EditorFileDialog::_post_popup() {
 	set_current_dir(current);
 
 	if (mode == FILE_MODE_SAVE_FILE) {
-		file->grab_focus();
+		file->grab_focus(true);
 	} else {
-		item_list->grab_focus();
+		item_list->grab_focus(true);
 	}
 
 	bool is_open_directory_mode = mode == FILE_MODE_OPEN_DIR;
@@ -510,7 +509,7 @@ void EditorFileDialog::_post_popup() {
 	set_process_shortcut_input(true);
 }
 
-void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview) {
 	if (display_mode == DISPLAY_LIST || p_preview.is_null()) {
 		return;
 	}
@@ -525,7 +524,7 @@ void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture
 	}
 }
 
-void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview) {
 	set_process(false);
 	preview_waiting = false;
 
@@ -551,18 +550,10 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 	set_process(true);
 	preview_waiting = true;
 	preview_wheel_timeout = 0;
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(this, &EditorFileDialog::_thumbnail_done));
 }
 
 void EditorFileDialog::_action_pressed() {
-	// Accept side menu properties and show native dialog.
-	if (side_vbox && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed())) {
-		hide();
-		_native_popup();
-
-		return;
-	}
-
 	// Accept selection in the custom dialog.
 	if (mode == FILE_MODE_OPEN_FILES) {
 		String fbase = dir_access->get_current_dir();
@@ -1114,9 +1105,9 @@ void EditorFileDialog::update_file_list() {
 			item_list->add_item(dir_name);
 
 			if (display_mode == DISPLAY_THUMBNAILS) {
-				item_list->set_item_icon(-1, folder_thumbnail);
+				item_list->set_item_icon(-1, bundle ? file_thumbnail : folder_thumbnail);
 			} else {
-				item_list->set_item_icon(-1, theme_cache.folder);
+				item_list->set_item_icon(-1, bundle ? theme_cache.file : theme_cache.folder);
 			}
 
 			Dictionary d;
@@ -1172,7 +1163,7 @@ void EditorFileDialog::update_file_list() {
 			item_list->set_item_metadata(-1, d);
 
 			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
-				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, this, "_thumbnail_result", file_info.path);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, callable_mp(this, &EditorFileDialog::_thumbnail_result));
 			}
 
 			if (file->get_text() == file_info.name) {
@@ -2171,14 +2162,14 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &EditorFileDialog::is_showing_hidden_files);
-	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &EditorFileDialog::set_display_mode);
 	ClassDB::bind_method(D_METHOD("get_display_mode"), &EditorFileDialog::get_display_mode);
-	ClassDB::bind_method(D_METHOD("_thumbnail_result"), &EditorFileDialog::_thumbnail_result);
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
-	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &EditorFileDialog::popup_file_dialog);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
+#endif
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -2299,39 +2290,6 @@ void EditorFileDialog::set_previews_enabled(bool p_enabled) {
 
 bool EditorFileDialog::are_previews_enabled() {
 	return previews_enabled;
-}
-
-void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
-	// HSplitContainer has 3 children at maximum capacity, 1 of them is the SplitContainerDragger.
-	ERR_FAIL_COND_MSG(body_hsplit->get_child_count() > 2, "EditorFileDialog: Only one side menu can be added.");
-	// Everything for the side menu goes inside of a VBoxContainer.
-	side_vbox = memnew(VBoxContainer);
-	side_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	side_vbox->set_stretch_ratio(0.5);
-	body_hsplit->add_child(side_vbox);
-	// Add a Label to the VBoxContainer.
-	if (!p_title.is_empty()) {
-		Label *title_label = memnew(Label(p_title));
-		title_label->set_theme_type_variation("HeaderSmall");
-		side_vbox->add_child(title_label);
-	}
-	// Add the given menu to the VBoxContainer.
-	p_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	side_vbox->add_child(p_menu);
-}
-
-void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
-	if (p_native_dlg) {
-		pathhb->set_visible(false);
-		flow_checkbox_options->set_visible(false);
-		grid_select_options->set_visible(false);
-		list_hb->set_visible(false);
-	} else {
-		pathhb->set_visible(true);
-		flow_checkbox_options->set_visible(true);
-		grid_select_options->set_visible(true);
-		list_hb->set_visible(true);
-	}
 }
 
 EditorFileDialog::EditorFileDialog() {

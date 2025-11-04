@@ -94,6 +94,16 @@
 				Implement to override the behavior of [member PhysicsDirectBodyState2D.center_of_mass_local] and its respective getter.
 			</description>
 		</method>
+		<method name="_get_collision_layer" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_collision_mask" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_constant_force" qualifiers="virtual required const">
 			<return type="Vector2" />
 			<description>
@@ -267,6 +277,18 @@
 			<param index="0" name="velocity" type="float" />
 			<description>
 				Implement to override the behavior of [member PhysicsDirectBodyState2D.angular_velocity] and its respective setter.
+			</description>
+		</method>
+		<method name="_set_collision_layer" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_collision_mask" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="mask" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="_set_constant_force" qualifiers="virtual required">

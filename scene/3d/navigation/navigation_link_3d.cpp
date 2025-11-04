@@ -30,7 +30,7 @@
 
 #include "navigation_link_3d.h"
 
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 #ifdef DEBUG_ENABLED
 void NavigationLink3D::_update_debug_mesh() {
@@ -286,16 +286,16 @@ NavigationLink3D::NavigationLink3D() {
 
 NavigationLink3D::~NavigationLink3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(link);
+	NavigationServer3D::get_singleton()->free_rid(link);
 	link = RID();
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }

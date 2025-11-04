@@ -37,6 +37,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/rendering_shader_container.h"
 
 // Ensure that AlphaCut is the same between the two classes so we can share the code to detect transparency.
 static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_DISABLED, Label3D::ALPHA_CUT_DISABLED));
@@ -54,7 +55,7 @@ bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const
 	return RendererSceneRenderRD::get_singleton() != nullptr && RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
 }
 
-bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
+bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features, const Ref<EditorExportPreset> &p_preset) {
 	Variant driver_variant = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
 	if (!driver_variant.is_string()) {
 		driver_variant = GLOBAL_GET("rendering/rendering_device/driver");
@@ -67,7 +68,7 @@ bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExpor
 
 	for (Ref<ShaderBakerExportPluginPlatform> platform : platforms) {
 		if (platform->matches_driver(shader_container_driver)) {
-			shader_container_format = platform->create_shader_container_format(p_platform);
+			shader_container_format = platform->create_shader_container_format(p_platform, get_export_preset());
 			ERR_FAIL_NULL_V_MSG(shader_container_format, false, "Unable to create shader container format for the export platform.");
 			return true;
 		}
@@ -99,7 +100,12 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		return false;
 	}
 
-	if (!_initialize_container_format(p_platform, p_features)) {
+	if (!_initialize_container_format(p_platform, p_features, get_export_preset())) {
+		return false;
+	}
+
+	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
+		WARN_PRINT("Shader baker can't generate a compatible shader when run with --generate-spirv-debug-info. Restart the editor without this argument if you want to bake shaders.");
 		return false;
 	}
 
@@ -119,11 +125,13 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 	customization_configuration_hash = to_hash.as_string().hash64();
 
 	BitField<RenderingShaderLibrary::FeatureBits> renderer_features = {};
+#ifndef XR_DISABLED
 	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_ADVANCED_BIT);
 	if (xr_enabled) {
 		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_MULTIVIEW_BIT);
 	}
+#endif // XR_DISABLED
 
 	int vrs_mode = GLOBAL_GET("rendering/vrs/mode");
 	if (vrs_mode != 0) {
@@ -405,6 +413,7 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 		work_item.cache_path = group_items[group].cache_path;
 		work_item.shader_name = p_shader->get_name();
 		work_item.stage_sources = p_shader->version_build_variant_stage_sources(p_version, i);
+		work_item.dynamic_buffers = p_shader->get_dynamic_buffers();
 		work_item.variant = i;
 
 		WorkerThreadPool::TaskID task_id = WorkerThreadPool::get_singleton()->add_template_task(this, &ShaderBakerExportPlugin::_process_work_item, work_item);
@@ -420,18 +429,13 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 	if (!tasks_cancelled) {
 		// Only process the item if the tasks haven't been cancelled by the user yet.
-		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources);
+		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers);
 		ERR_FAIL_COND_MSG(spirv_data.is_empty(), "Unable to retrieve SPIR-V data for shader");
 
-		RD::ShaderReflection shader_refl;
-		Error err = RenderingDeviceCommons::reflect_spirv(spirv_data, shader_refl);
-		ERR_FAIL_COND_MSG(err != OK, "Unable to reflect SPIR-V data that was compiled");
-
 		Ref<RenderingShaderContainer> shader_container = shader_container_format->create_container();
-		shader_container->set_from_shader_reflection(p_work_item.shader_name, shader_refl);
 
 		// Compile shader binary from SPIR-V.
-		bool code_compiled = shader_container->set_code_from_spirv(spirv_data);
+		bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
 		ERR_FAIL_COND_MSG(!code_compiled, vformat("Failed to compile code to native for SPIR-V."));
 
 		PackedByteArray shader_bytes = shader_container->to_bytes();

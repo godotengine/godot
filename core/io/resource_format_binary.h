@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/templates/rb_map.h"
 
 class ResourceLoaderBinary {
 	bool translation_remapped = false;
@@ -108,6 +109,8 @@ public:
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderBinary, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
@@ -179,6 +182,8 @@ public:
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverBinary, ResourceFormatSaver);
+
 public:
 	static inline ResourceFormatSaverBinary *singleton = nullptr;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;

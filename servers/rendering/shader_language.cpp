@@ -33,8 +33,8 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 #include "shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
@@ -3865,6 +3865,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	int last_arg_count = 0;
 	bool exists = false;
 	String arg_list = "";
+	bool overload_fail = false;
+	struct OverloadErrorInfo {
+		String arg_list;
+		int index = 0;
+		String func_arg_name;
+		String arg_name;
+	};
+	Vector<OverloadErrorInfo> overload_errors;
 
 	for (int i = 0; i < shader->vfunctions.size(); i++) {
 		if (rname != shader->vfunctions[i].rname) {
@@ -3878,24 +3886,23 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		}
 
 		FunctionNode *pfunc = shader->vfunctions[i].function;
-		if (arg_list.is_empty()) {
-			for (int j = 0; j < pfunc->arguments.size(); j++) {
-				if (j > 0) {
-					arg_list += ", ";
-				}
-				String func_arg_name;
-				if (pfunc->arguments[j].type == TYPE_STRUCT) {
-					func_arg_name = pfunc->arguments[j].struct_name;
-				} else {
-					func_arg_name = get_datatype_name(pfunc->arguments[j].type);
-				}
-				if (pfunc->arguments[j].array_size > 0) {
-					func_arg_name += "[";
-					func_arg_name += itos(pfunc->arguments[j].array_size);
-					func_arg_name += "]";
-				}
-				arg_list += func_arg_name;
+		arg_list.clear();
+		for (int j = 0; j < pfunc->arguments.size(); j++) {
+			if (j > 0) {
+				arg_list += ", ";
 			}
+			String func_arg_name;
+			if (pfunc->arguments[j].type == TYPE_STRUCT) {
+				func_arg_name = pfunc->arguments[j].struct_name;
+			} else {
+				func_arg_name = get_datatype_name(pfunc->arguments[j].type);
+			}
+			if (pfunc->arguments[j].array_size > 0) {
+				func_arg_name += "[";
+				func_arg_name += itos(pfunc->arguments[j].array_size);
+				func_arg_name += "]";
+			}
+			arg_list += func_arg_name;
 		}
 
 		if (pfunc->arguments.size() != args.size()) {
@@ -3933,9 +3940,17 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 					arg_name += "]";
 				}
 
-				_set_error(vformat(RTR("Invalid argument for \"%s(%s)\" function: argument %d should be %s but is %s."), String(rname), arg_list, j + 1, func_arg_name, arg_name));
 				fail = true;
+				OverloadErrorInfo err_info;
+				err_info.arg_list = arg_list;
+				err_info.index = j + 1;
+				err_info.func_arg_name = func_arg_name;
+				err_info.arg_name = arg_name;
+				overload_errors.push_back(err_info);
+				overload_fail = true;
 				break;
+			} else {
+				overload_fail = false;
 			}
 		}
 
@@ -3970,6 +3985,19 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 			}
 			return true;
 		}
+	}
+	if (overload_fail) {
+		String err_str;
+		if (overload_errors.size() == 1) {
+			const OverloadErrorInfo &err_info = overload_errors[0];
+			err_str = vformat("No matching function for \"%s(%s)\" call: argument %d should be %s but is %s.", String(rname), err_info.arg_list, err_info.index, err_info.func_arg_name, err_info.arg_name);
+		} else {
+			err_str = vformat(RTR("No matching function for \"%s\" call:"), String(rname));
+			for (const OverloadErrorInfo &err_info : overload_errors) {
+				err_str += "\n\t" + vformat(RTR("candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."), String(rname), err_info.arg_list, err_info.index, err_info.func_arg_name, err_info.arg_name);
+			}
+		}
+		_set_error(err_str);
 	}
 
 	if (exists) {
@@ -4698,8 +4726,8 @@ Variant ShaderLanguage::get_default_datatype_value(DataType p_type, int p_array_
 				}
 				value = Variant(array);
 			} else {
-				VariantInitializer<float>::init(&value);
-				VariantDefaultInitializer<float>::init(&value);
+				VariantInitializer<double>::init(&value);
+				VariantDefaultInitializer<double>::init(&value);
 			}
 			break;
 		case ShaderLanguage::TYPE_VEC2:
@@ -5254,7 +5282,7 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_VOID,
 	};
 
-	static_assert(std::size(scalar_types) == TYPE_MAX);
+	static_assert(std_size(scalar_types) == TYPE_MAX);
 
 	return scalar_types[p_type];
 }
@@ -5296,7 +5324,7 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		1,
 	};
 
-	static_assert(std::size(cardinality_table) == TYPE_MAX);
+	static_assert(std_size(cardinality_table) == TYPE_MAX);
 
 	return cardinality_table[p_type];
 }
@@ -11341,7 +11369,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
 	if (keyword_completion_context != CF_UNSPECIFIED) {
-		constexpr int sz = std::size(keyword_list);
+		constexpr int sz = std_size(keyword_list);
 		for (int i = 0; i < sz; i++) {
 			if (keyword_list[i].flags == CF_UNSPECIFIED) {
 				break; // Ignore hint keywords (parsed below).

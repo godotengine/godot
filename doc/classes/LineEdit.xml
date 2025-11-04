@@ -82,8 +82,9 @@
 		</method>
 		<method name="edit">
 			<return type="void" />
+			<param index="0" name="hide_focus" type="bool" default="false" />
 			<description>
-				Allows entering edit mode whether the [LineEdit] is focused or not.
+				Allows entering edit mode whether the [LineEdit] is focused or not. If [param hide_focus] is [code]true[/code], the focused state will not be shown (see [method Control.grab_focus]).
 				See also [member keep_editing_on_text_submit].
 			</description>
 		</method>

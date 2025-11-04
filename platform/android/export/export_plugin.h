@@ -93,6 +93,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
@@ -176,8 +177,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
 
-	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data);
-
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome);
@@ -221,6 +220,10 @@ public:
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
+
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+
+	virtual bool is_option_runnable(int p_index) const override { return p_index != 0; }
 
 	virtual String get_options_tooltip() const override;
 
@@ -279,7 +282,7 @@ public:
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
-	EditorExportPlatformAndroid();
+	virtual void initialize() override;
 
 	~EditorExportPlatformAndroid();
 };

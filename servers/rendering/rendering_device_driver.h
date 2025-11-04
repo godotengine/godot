@@ -49,7 +49,9 @@
 #include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
-#include "servers/rendering/rendering_shader_container.h"
+
+class RenderingShaderContainer;
+class RenderingShaderContainerFormat;
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
@@ -68,7 +70,7 @@
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
+	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -86,6 +88,8 @@ struct VersatileResourceTemplate {
 };
 
 class RenderingDeviceDriver : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingDeviceDriver, RenderingDeviceCommons);
+
 public:
 	struct ID {
 		uint64_t id = 0;
@@ -167,19 +171,30 @@ public:
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
+		// There are no Vulkan-equivalent. Try to use unused/unclaimed bits.
+		BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT = (1 << 31),
 	};
 
 	enum {
 		BUFFER_WHOLE_SIZE = ~0ULL
 	};
 
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) = 0;
+	/** Allocates a new GPU buffer. Must be destroyed with buffer_free().
+	 * @param p_size The size in bytes of the buffer.
+	 * @param p_usage Usage flags.
+	 * @param p_allocation_type See MemoryAllocationType.
+	 * @param p_frames_drawn Used for debug checks when BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT is set.
+	 * @return the buffer.
+	 */
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) = 0;
+	virtual void buffer_flush(BufferID p_buffer) {}
 	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
 
@@ -267,6 +282,8 @@ public:
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
+	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
+	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
 	virtual void texture_unmap(TextureID p_texture) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
@@ -339,7 +356,8 @@ public:
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
-	struct MemoryBarrier {
+	// https://github.com/godotengine/godot/pull/110360 - "MemoryBarrier" conflicts with Windows header defines
+	struct MemoryAccessBarrier {
 		BitField<BarrierAccessBits> src_access = {};
 		BitField<BarrierAccessBits> dst_access = {};
 	};
@@ -365,7 +383,7 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<MemoryBarrier> p_memory_barriers,
+			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) = 0;
 
@@ -492,12 +510,17 @@ public:
 		// Flag to indicate  that this is an immutable sampler so it is skipped when creating uniform
 		// sets, as it would be set previously when creating the pipeline layout.
 		bool immutable_sampler = false;
+
+		_FORCE_INLINE_ bool is_dynamic() const {
+			return type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC || type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		}
 	};
 
 	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
 	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) {}
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
 	virtual bool uniform_sets_have_linear_pools() const { return false; }
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const = 0;
 
 	// ----- COMMANDS -----
 
@@ -639,8 +662,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
-	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
@@ -682,8 +704,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
-	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
