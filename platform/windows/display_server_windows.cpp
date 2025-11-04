@@ -1613,8 +1613,26 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL);
-	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
+	bool no_redirection_bitmap = false;
+#ifdef DCOMP_ENABLED
+	no_redirection_bitmap = OS::get_singleton()->is_layered_allowed() && rendering_driver == "d3d12";
+#endif
+
+	WindowID window_id = window_id_counter;
+	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL, no_redirection_bitmap);
+	ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create sub window.");
+	++window_id_counter;
+
+#ifdef RD_ENABLED
+	if (rendering_context != nullptr) {
+		_create_rendering_context_window(window_id);
+	}
+#endif
+#ifdef GLES3_ENABLED
+	_create_gl_window(window_id);
+#endif
+
+	window_set_vsync_mode(p_vsync_mode, window_id);
 
 	WindowData &wd = windows[window_id];
 
@@ -1742,15 +1760,6 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	WindowData &wd = windows[p_window];
 
-	IPropertyStore *prop_store;
-	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
-	if (hr == S_OK) {
-		PROPVARIANT val;
-		PropVariantInit(&val);
-		prop_store->SetValue(PKEY_AppUserModel_ID, val);
-		prop_store->Release();
-	}
-
 	while (wd.transient_children.size()) {
 		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
@@ -1777,18 +1786,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
-	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
-		wintab_WTClose(wd.wtctx);
-		wd.wtctx = nullptr;
-	}
-
-	if (wd.drop_target != nullptr) {
-		RevokeDragDrop(wd.hWnd);
-		wd.drop_target->Release();
-	}
-
-	DestroyWindow(wd.hWnd);
-	windows.erase(p_window);
+	_destroy_window(p_window);
 
 	if (last_focused_window == p_window) {
 		last_focused_window = INVALID_WINDOW_ID;
@@ -2310,7 +2308,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_no_redirection_bitmap, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2387,11 +2385,9 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
 
-#ifdef DCOMP_ENABLED
-	if (OS::get_singleton()->is_layered_allowed() && OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
+	if (p_no_redirection_bitmap) {
 		r_style_ex |= WS_EX_NOREDIRECTIONBITMAP;
 	}
-#endif
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
@@ -2403,7 +2399,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, wd.no_redirection_bitmap, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -6321,11 +6317,11 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd) {
+Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
+	_get_window_style(p_window_id == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, p_no_redirection_bitmap, dwStyle, dwExStyle);
 
 	int rq_screen = get_screen_from_rect(p_rect);
 	if (rq_screen < 0) {
@@ -6375,7 +6371,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
-	WindowID id = window_id_counter;
+	WindowID id = p_window_id;
 	{
 		WindowData *wd_transient_parent = nullptr;
 		HWND owner_hwnd = nullptr;
@@ -6414,7 +6410,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if (!wd.hWnd) {
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			windows.erase(id);
-			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Windows OS window.");
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Failed to create Windows OS window.");
 		}
 
 		wd.parent_hwnd = p_parent_hwnd;
@@ -6466,66 +6462,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			BOOL value = is_dark_mode();
 			::DwmSetWindowAttribute(wd.hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
-
-		RECT real_client_rect;
-		GetClientRect(wd.hWnd, &real_client_rect);
-
-#ifdef RD_ENABLED
-		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
-#endif
-#ifdef D3D12_ENABLED
-				RenderingContextDriverD3D12::WindowPlatformData d3d12;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.window = wd.hWnd;
-				wpd.vulkan.instance = hInstance;
-			}
-#endif
-#ifdef D3D12_ENABLED
-			if (rendering_driver == "d3d12") {
-				wpd.d3d12.window = wd.hWnd;
-			}
-#endif
-			if (rendering_context->window_create(id, &wpd) != OK) {
-				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				windows.erase(id);
-				return INVALID_WINDOW_ID;
-			}
-
-			rendering_context->window_set_size(id, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top);
-			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
-			wd.context_created = true;
-		}
-#endif
-
-#ifdef GLES3_ENABLED
-		if (gl_manager_native) {
-			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
-				memdelete(gl_manager_native);
-				gl_manager_native = nullptr;
-				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
-			}
-			window_set_vsync_mode(p_vsync_mode, id);
-		}
-
-		if (gl_manager_angle) {
-			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
-				memdelete(gl_manager_angle);
-				gl_manager_angle = nullptr;
-				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
-			}
-			window_set_vsync_mode(p_vsync_mode, id);
-		}
-#endif
 
 		RegisterTouchWindow(wd.hWnd, 0);
 		DragAcceptFiles(wd.hWnd, true);
@@ -6620,17 +6556,106 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.height = p_rect.size.height;
 		}
 
+		wd.no_redirection_bitmap = p_no_redirection_bitmap;
+
 		wd.create_completed = true;
 		// Set size of maximized borderless window (by default it covers the entire screen).
 		if (!p_parent_hwnd && p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
 			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off_x, usable_rect.position.y, usable_rect.size.width + off_x, usable_rect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		_update_window_mouse_passthrough(id);
-		window_id_counter++;
 	}
 
-	return id;
+	return OK;
 }
+
+void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
+	WindowData &wd = windows[p_window_id];
+
+	IPropertyStore *prop_store;
+	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+	if (hr == S_OK) {
+		PROPVARIANT val;
+		PropVariantInit(&val);
+		prop_store->SetValue(PKEY_AppUserModel_ID, val);
+		prop_store->Release();
+	}
+
+	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
+		wintab_WTClose(wd.wtctx);
+		wd.wtctx = nullptr;
+	}
+
+	if (wd.drop_target != nullptr) {
+		RevokeDragDrop(wd.hWnd);
+		wd.drop_target->Release();
+	}
+
+	DestroyWindow(wd.hWnd);
+	windows.erase(p_window_id);
+}
+
+#ifdef RD_ENABLED
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id) {
+	DEV_ASSERT(rendering_context != nullptr);
+
+	WindowData &wd = windows[p_window_id];
+
+	union {
+#ifdef VULKAN_ENABLED
+		RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
+#endif
+#ifdef D3D12_ENABLED
+		RenderingContextDriverD3D12::WindowPlatformData d3d12;
+#endif
+	} wpd;
+#ifdef VULKAN_ENABLED
+	if (rendering_driver == "vulkan") {
+		wpd.vulkan.window = wd.hWnd;
+		wpd.vulkan.instance = hInstance;
+	}
+#endif
+#ifdef D3D12_ENABLED
+	if (rendering_driver == "d3d12") {
+		wpd.d3d12.window = wd.hWnd;
+	}
+#endif
+
+	Error err = rendering_context->window_create(p_window_id, &wpd);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", rendering_driver));
+
+	rendering_context->window_set_size(p_window_id, wd.width, wd.height);
+	wd.context_created = true;
+
+	return OK;
+}
+
+void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_id) {
+	DEV_ASSERT(rendering_context != nullptr);
+
+	WindowData &wd = windows[p_window_id];
+	DEV_ASSERT(wd.context_created);
+
+	rendering_context->window_destroy(p_window_id);
+	wd.context_created = false;
+}
+#endif
+
+#ifdef GLES3_ENABLED
+Error DisplayServerWindows::_create_gl_window(WindowID p_window_id) {
+	if (gl_manager_native) {
+		WindowData &wd = windows[p_window_id];
+		return gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+	}
+
+	if (gl_manager_angle) {
+		WindowData &wd = windows[p_window_id];
+		return gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+	}
+
+	return OK;
+}
+#endif
 
 BitField<DisplayServerWindows::DriverID> DisplayServerWindows::tested_drivers = 0;
 
@@ -7058,81 +7083,179 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
+	String appname;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
+	} else {
+		String name = GLOBAL_GET("application/config/name");
+		String version = GLOBAL_GET("application/config/version");
+		if (version.is_empty()) {
+			version = "0";
+		}
+		String clean_app_name = name.to_pascal_case();
+		for (int i = 0; i < clean_app_name.length(); i++) {
+			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+				clean_app_name[i] = '_';
+			}
+		}
+		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+		appname = "Godot." + clean_app_name + "." + version;
+
+#ifndef TOOLS_ENABLED
+		// Set for exported projects only.
+		HKEY key;
+		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
+			Char16String cs_name = name.utf16();
+			String value_name = OS::get_singleton()->get_executable_path().replace_char('/', '\\') + ".FriendlyAppName";
+			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
+			RegCloseKey(key);
+		}
+#endif
+	}
+	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
+
+	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
+
+	Point2i window_position;
+	if (p_position != nullptr) {
+		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		Rect2i scr_rect = screen_get_usable_rect(p_screen);
+		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
+	}
+
+	HWND parent_hwnd = NULL;
+	if (p_parent_window) {
+		// Parented window.
+		parent_hwnd = (HWND)p_parent_window;
+	}
+
 	// Init context and rendering device.
 	if (rendering_driver == "dummy") {
 		RasterizerDummy::make_current();
 	}
 
-#if defined(RD_ENABLED)
-	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
-	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
+#ifdef RD_ENABLED
+	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
 
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWindows);
-		tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-	}
-#else
+#ifndef VULKAN_ENABLED
 	fallback_to_d3d12 = true; // Always enable fallback if engine was built w/o other driver support.
 #endif
-#if defined(D3D12_ENABLED)
-	if (rendering_driver == "d3d12") {
-		rendering_context = memnew(RenderingContextDriverD3D12);
-		tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-	}
-#else
+#ifndef D3D12_ENABLED
 	fallback_to_vulkan = true; // Always enable fallback if engine was built w/o other driver support.
 #endif
 
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			bool failed = true;
-#if defined(VULKAN_ENABLED)
-			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverVulkanWindows);
-				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
-					rendering_driver = "vulkan";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
-#if defined(D3D12_ENABLED)
-			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverD3D12);
-				tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
-					rendering_driver = "d3d12";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-				failed = false;
-			}
-#endif
-			if (failed) {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				r_error = ERR_UNAVAILABLE;
-				return;
-			}
+	String rendering_drivers[2];
+	uint32_t rendering_driver_count = 0;
+
+	if (rendering_driver == "d3d12") {
+		rendering_drivers[rendering_driver_count++] = rendering_driver;
+		if (fallback_to_vulkan) {
+			rendering_drivers[rendering_driver_count++] = "vulkan";
 		}
+	} else if (rendering_driver == "vulkan") {
+		rendering_drivers[rendering_driver_count++] = rendering_driver;
+		if (fallback_to_d3d12) {
+			rendering_drivers[rendering_driver_count++] = "d3d12";
+		}
+	}
+
+	bool main_window_created = false;
+	bool cur_no_redirection_bitmap_value = false;
+
+	for (uint32_t i = 0; i < rendering_driver_count; i++) {
+		const String &tested_rendering_driver = rendering_drivers[i];
+
+#ifdef VULKAN_ENABLED
+		if (tested_rendering_driver == "vulkan") {
+			rendering_context = memnew(RenderingContextDriverVulkanWindows);
+			tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
+		}
+#endif
+#ifdef D3D12_ENABLED
+		if (tested_rendering_driver == "d3d12") {
+			rendering_context = memnew(RenderingContextDriverD3D12);
+			tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
+		}
+#endif
+		if (rendering_context != nullptr) {
+			if (rendering_context->initialize() == OK) {
+				// The window needs to be recreated when this value differs, because it cannot be added or removed after creation.
+#ifdef DCOMP_ENABLED
+				bool new_no_redirection_bitmap_value = OS::get_singleton()->is_layered_allowed() && tested_rendering_driver == "d3d12";
+#else
+				bool new_no_redirection_bitmap_value = false;
+#endif
+				if (cur_no_redirection_bitmap_value != new_no_redirection_bitmap_value) {
+					if (main_window_created) {
+						_destroy_window(MAIN_WINDOW_ID);
+						main_window_created = false;
+					}
+					cur_no_redirection_bitmap_value = new_no_redirection_bitmap_value;
+				}
+
+				if (!main_window_created) {
+					if (_create_window(MAIN_WINDOW_ID, p_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd, cur_no_redirection_bitmap_value) != OK) {
+						r_error = ERR_UNAVAILABLE;
+						ERR_FAIL_MSG("Failed to create main window.");
+					}
+					main_window_created = true;
+				}
+
+				if (_create_rendering_context_window(MAIN_WINDOW_ID) == OK) {
+					rendering_device = memnew(RenderingDevice);
+					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
+#ifdef VULKAN_ENABLED
+						if (rendering_driver == "vulkan" && tested_rendering_driver == "d3d12") {
+							WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
+						}
+#endif
+#ifdef D3D12_ENABLED
+						if (rendering_driver == "d3d12" && tested_rendering_driver == "vulkan") {
+							WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
+						}
+#endif
+						rendering_driver = tested_rendering_driver;
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+
+						break;
+					}
+
+					memdelete(rendering_device);
+					rendering_device = nullptr;
+
+					_destroy_rendering_context_window(MAIN_WINDOW_ID);
+				}
+			}
+
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+	}
+
+	bool rendering_driver_failed = rendering_driver_count != 0 && rendering_context == nullptr;
+
+#ifdef GLES3_ENABLED
+	if (rendering_driver_failed) {
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (fallback_to_opengl3) {
+			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
+			rendering_driver = "opengl3";
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			rendering_driver_failed = false;
+		}
+	}
+#endif
+
+	if (rendering_driver_failed) {
+		r_error = ERR_UNAVAILABLE;
+		return;
 	}
 #endif
 
@@ -7242,69 +7365,59 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
 	}
+#endif
 
+	bool should_create_main_window = true;
+	bool no_redirection_bitmap = false;
+
+#ifdef RD_ENABLED
+#ifdef DCOMP_ENABLED
+	no_redirection_bitmap = OS::get_singleton()->is_layered_allowed() && rendering_driver == "d3d12";
+#endif
+
+	// The window may still need to be recreated when all RD backends fail and it falls back to OpenGL.
+	if (main_window_created) {
+		if (no_redirection_bitmap != cur_no_redirection_bitmap_value) {
+			DEV_ASSERT(rendering_context == nullptr);
+			_destroy_window(MAIN_WINDOW_ID);
+		} else {
+			should_create_main_window = false;
+		}
+	}
+#endif
+
+	if (should_create_main_window) {
+		if (_create_window(MAIN_WINDOW_ID, p_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd, no_redirection_bitmap) != OK) {
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Failed to create main window.");
+		}
+	}
+	++window_id_counter;
+
+#ifdef GLES3_ENABLED
 	if (rendering_driver == "opengl3") {
+		if (_create_gl_window(MAIN_WINDOW_ID) != OK) {
+			memdelete(gl_manager_native);
+			gl_manager_native = nullptr;
+			windows.erase(MAIN_WINDOW_ID);
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+		}
 		RasterizerGLES3::make_current(true);
 	}
 	if (rendering_driver == "opengl3_angle") {
+		if (_create_gl_window(MAIN_WINDOW_ID) != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			windows.erase(MAIN_WINDOW_ID);
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Failed to create an OpenGL window.");
+		}
 		RasterizerGLES3::make_current(false);
 	}
 #endif
-	String appname;
-	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
-	} else {
-		String name = GLOBAL_GET("application/config/name");
-		String version = GLOBAL_GET("application/config/version");
-		if (version.is_empty()) {
-			version = "0";
-		}
-		String clean_app_name = name.to_pascal_case();
-		for (int i = 0; i < clean_app_name.length(); i++) {
-			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-				clean_app_name[i] = '_';
-			}
-		}
-		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-		appname = "Godot." + clean_app_name + "." + version;
 
-#ifndef TOOLS_ENABLED
-		// Set for exported projects only.
-		HKEY key;
-		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
-			Char16String cs_name = name.utf16();
-			String value_name = OS::get_singleton()->get_executable_path().replace_char('/', '\\') + ".FriendlyAppName";
-			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
-			RegCloseKey(key);
-		}
-#endif
-	}
-	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
-
-	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
-
-	Point2i window_position;
-	if (p_position != nullptr) {
-		window_position = *p_position;
-	} else {
-		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-			p_screen = SCREEN_PRIMARY;
-		}
-		Rect2i scr_rect = screen_get_usable_rect(p_screen);
-		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
-	}
-
-	HWND parent_hwnd = NULL;
-	if (p_parent_window) {
-		// Parented window.
-		parent_hwnd = (HWND)p_parent_window;
-	}
-
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd);
-	if (main_window == INVALID_WINDOW_ID) {
-		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Failed to create main window.");
-	}
+	window_set_vsync_mode(p_vsync_mode, MAIN_WINDOW_ID);
 
 #ifdef SDL_ENABLED
 	joypad_sdl = memnew(JoypadSDL(windows[MAIN_WINDOW_ID].hWnd));
@@ -7317,7 +7430,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, main_window);
+			window_set_flag(WindowFlags(i), true, MAIN_WINDOW_ID);
 		}
 	}
 
@@ -7345,15 +7458,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
-		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
-			memdelete(rendering_device);
-			rendering_device = nullptr;
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
-		}
+		DEV_ASSERT(rendering_device != nullptr);
+
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -7519,17 +7625,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 			rendering_context->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
-		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
-			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
-			windows[MAIN_WINDOW_ID].wtctx = nullptr;
-		}
-
-		if (windows[MAIN_WINDOW_ID].drop_target != nullptr) {
-			RevokeDragDrop(windows[MAIN_WINDOW_ID].hWnd);
-			windows[MAIN_WINDOW_ID].drop_target->Release();
-		}
-
-		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
+		_destroy_window(MAIN_WINDOW_ID);
 	}
 
 #ifdef RD_ENABLED

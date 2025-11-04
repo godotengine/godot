@@ -6252,7 +6252,9 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	buffer_free(breadcrumb_buffer);
+	if (breadcrumb_buffer != BufferID()) {
+		buffer_free(breadcrumb_buffer);
+	}
 #endif
 
 	while (small_allocs_pools.size()) {
