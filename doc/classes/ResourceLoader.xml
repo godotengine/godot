@@ -55,7 +55,7 @@
 					ResourceLoader.FILTER_COMP_EQUALS,
 					"Image")
 				[/codeblock]
-				All resources in the res://assets/ folder:
+				All resources in the [code]res://assets/[/code] folder:
 				[codeblock]
 				var in_dir = ResourceLoader.get_cached_paths_by_filter(
 					ResourceLoader.FILTER_TARGET_PATH,
