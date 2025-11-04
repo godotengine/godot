@@ -1,16 +1,40 @@
-// This is new code produced by Erik Scott in the 'products of inertia' branch
-// Should this be integrated into the Godot Engine, please add appropriate 
-// copyright and license information consistent with other source files
-// License: MIT
-
-// This code is simply a re-implementation of the same function from Jolt Physics, 
-// but using Godot's Vector3 and Basis structures
+/**************************************************************************/
+/*  eigen_value_symmetric.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #pragma once
 
 #include "core/math/vector3.h"
 #include "core/math/basis.h"
 
+// This code is simply a re-implementation of the same function from Jolt Physics, 
+// but using Godot's Vector3 and Basis structures
 bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &out_eig_val) {
 
     const int MAX_SWEEPS = 50;
@@ -58,9 +82,7 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
                 real_t g = 100.0 * abs_a_pq;
 
                 // After four sweeps, skip the rotation if the off-diagonal element is small
-				if (sweep > 4
-					&& abs(eigval_p) + g == abs(eigval_p)
-					&& abs(eigval_q) + g == abs(eigval_q)) {
+				if (sweep > 4 && abs(eigval_p) + g == abs(eigval_p) && abs(eigval_q) + g == abs(eigval_q)) {
 					a_pq = 0.0;
 				} else if (abs_a_pq > thresh) {
 					real_t h = eigval_q - eigval_p;
