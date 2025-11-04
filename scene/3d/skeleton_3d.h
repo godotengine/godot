@@ -67,7 +67,7 @@ class Skeleton3D : public Node3D {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;

@@ -221,14 +221,20 @@
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/ccd_ik_3d.h"
+#include "scene/3d/chain_ik_3d.h"
 #include "scene/3d/convert_transform_modifier_3d.h"
 #include "scene/3d/copy_transform_modifier_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
+#include "scene/3d/fabr_ik_3d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/3d/ik_modifier_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/iterate_ik_3d.h"
+#include "scene/3d/jacobian_ik_3d.h"
 #include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
@@ -246,12 +252,14 @@
 #include "scene/3d/retarget_modifier_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
+#include "scene/3d/spline_ik_3d.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 #include "scene/3d/spring_bone_collision_capsule_3d.h"
 #include "scene/3d/spring_bone_collision_plane_3d.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
+#include "scene/3d/two_bone_ik_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
@@ -345,6 +353,12 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/joint_limitation_3d.h"
+#include "scene/resources/3d/joint_limitation_cone_3d.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
@@ -649,6 +663,8 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
+	GDREGISTER_VIRTUAL_CLASS(JointLimitation3D);
+	GDREGISTER_CLASS(JointLimitationCone3D);
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
 	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
@@ -658,6 +674,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CopyTransformModifier3D);
 	GDREGISTER_CLASS(ConvertTransformModifier3D);
 	GDREGISTER_CLASS(AimModifier3D);
+	GDREGISTER_ABSTRACT_CLASS(IKModifier3D);
+	GDREGISTER_CLASS(TwoBoneIK3D);
+	GDREGISTER_ABSTRACT_CLASS(ChainIK3D);
+	GDREGISTER_CLASS(SplineIK3D);
+	GDREGISTER_ABSTRACT_CLASS(IterateIK3D);
+	GDREGISTER_CLASS(FABRIK3D);
+	GDREGISTER_CLASS(CCDIK3D);
+	GDREGISTER_CLASS(JacobianIK3D);
 
 #ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
