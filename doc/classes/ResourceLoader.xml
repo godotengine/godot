@@ -105,7 +105,7 @@
 				ResourceLoader.FILTER_COMP_BEGINS_WITH,
 				"res://"
 				)
-				[codeblock]
+				[/codeblock]
 				All resources whose file name contains "Character01":
 				[codeblock]
 				var dict2 = ResourceLoader.get_cached_paths_typed_by_filter(
@@ -113,7 +113,7 @@
 				ResourceLoader.FILTER_COMP_ENDS_WITH,
 				"Character01"
 				)
-				[codeblock]
+				[/codeblock]
 				All resources of class "Texture2D":
 				[codeblock]
 				var dict3 = ResourceLoader.get_cached_paths_typed_by_filter(
