@@ -1886,7 +1886,7 @@ private:
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
-	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
+	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assignn);
 	// Higher value means higher precedence (i.e. is evaluated first).
 	enum Precedence {
 		PREC_NONE,
@@ -2057,30 +2057,53 @@ private:
 	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
 	ExpressionNode *parse_precedence(Precedence p_precedence, bool p_can_assign, bool p_stop_on_assign = false);
 	ExpressionNode *parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_literal));
 	LiteralNode *parse_literal();
 	ExpressionNode *parse_self(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_self));
 	ExpressionNode *parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_identifier));
 	IdentifierNode *parse_identifier();
 	ExpressionNode *parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_builtin_constant));
 	ExpressionNode *parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_unary_operator));
 	ExpressionNode *parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_binary_operator));
 	ExpressionNode *parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_binary_not_in_operator));
 	ExpressionNode *parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_ternary_operator));
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_assignment));
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_array));
 	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_dictionary));
 	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_call));
 	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_get_node));
 	ExpressionNode *parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_preload));
 	ExpressionNode *parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_preload));
 	ExpressionNode *parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_cast));
 	ExpressionNode *parse_await(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_await));
 	ExpressionNode *parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_attribute));
 	ExpressionNode *parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_subscript));
 	ExpressionNode *parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_lambda));
 	ExpressionNode *parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_type_test));
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_yield));
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
+	static_assert(static_cast<ParseFunction>(&GDScriptParser::parse_invalid_token));
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED

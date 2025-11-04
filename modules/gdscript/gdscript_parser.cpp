@@ -454,9 +454,6 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 		context.identifier = refactor_rename_context.identifier;
 		context.identifier_is_enum_value = refactor_rename_context.identifier_is_enum_value;
 		context.literal = refactor_rename_context.literal;
-	} else {
-		context.identifier = nullptr;
-		context.literal = nullptr;
 	}
 	if (previous.has_cursor()) {
 		context.token = previous;
@@ -3516,7 +3513,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute);
 	reset_extents(attribute, p_previous_operand);
 	update_extents(attribute);
 
@@ -3540,6 +3536,13 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 	if (current.is_node_name()) {
 		current.type = GDScriptTokenizer::Token::IDENTIFIER;
 	}
+
+	if (is_for_refactor_rename()) {
+		if (current.has_cursor()) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE, attribute, false);
+		}
+	}
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
 		complete_extents(attribute);
 		return attribute;
@@ -3668,6 +3671,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 					call->function_name = attribute->attribute->name;
 				}
 				make_completion_context(COMPLETION_ATTRIBUTE_METHOD, call->callee);
+				refactor_rename_register(REFACTOR_RENAME_TYPE_ATTRIBUTE_METHOD, attribute);
 			} else {
 				// TODO: The analyzer can see if this is actually a Callable and give better error message.
 				push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");

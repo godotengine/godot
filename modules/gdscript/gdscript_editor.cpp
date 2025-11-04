@@ -4538,7 +4538,7 @@ static Error _refactor_rename_symbol_match_from_class(GDScriptParser::RefactorRe
 	return OK;
 }
 
-static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameContext p_context, const GDScriptParser::DataType &p_base, const String &p_symbol, const String &p_path, const String &p_class_path, Object *p_owner, const HashMap<String, String> &p_unsaved_scripts_source_code, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
+static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameContext p_context, const GDScriptParser::DataType &p_base, const String &p_symbol, const String &p_path, const String &p_class_path, Object *p_owner, const HashMap<String, String> &p_unsaved_scripts_source_code, ScriptLanguage::RefactorRenameSymbolResult &r_result, RefactorRenameSymbolDefinintionType p_expected_definition_type = REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_UNDEFINED) {
 #define OUTSIDE_REFACTOR(_type)                                            \
 	r_result.type = ScriptLanguage::RefactorRenameSymbolResultType::_type; \
 	r_result.outside_refactor = true;                                      \
@@ -4657,7 +4657,7 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 			} break;
 			case GDScriptParser::DataType::ENUM: {
 				if (base_type.is_meta_type) {
-					if (base_type.enum_values.has(p_symbol)) {
+					if (base_type.enum_type == p_symbol || base_type.enum_values.has(p_symbol)) {
 						String type_name;
 						String enum_name;
 						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), type_name, enum_name);
@@ -4668,10 +4668,14 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 							const GDScriptParser::ClassNode::Member &member_enum = base_type.class_type->get_member(base_type.enum_type);
 							switch (member_enum.type) {
 								case GDScriptParser::ClassNode::Member::ENUM: {
+									RefactorRenameSymbolDefinintionType enum_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
+									if (p_expected_definition_type != REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_UNDEFINED) {
+										enum_type = p_expected_definition_type;
+									}
 									return _refactor_rename_symbol_match_from_class(
 											p_context, p_symbol, p_path, p_class_path,
 											p_unsaved_scripts_source_code, r_result,
-											_refactor_rename_symbol_get_expected_type_from_classnode_member_type(member_enum.type),
+											enum_type,
 											member_enum.get_source_node());
 								} break;
 								default: {
@@ -5018,12 +5022,27 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_ATTRIBUTE_METHOD:
 		case GDScriptParser::REFACTOR_RENAME_TYPE_ATTRIBUTE: {
-			if (context.node->type != GDScriptParser::Node::SUBSCRIPT) {
-				break;
+			Error attribute_err;
+
+			if (context.identifier == nullptr) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 			}
+			if (context.node->type != GDScriptParser::Node::SUBSCRIPT) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
 			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(context.node);
 			if (!subscript->is_attribute) {
-				break;
+				REFACTOR_RENAME_RETURN(ERR_BUG);
+			}
+
+			if (subscript->get_datatype().kind == GDScriptParser::DataType::ENUM) {
+				GDScriptParser::DataType base_type = subscript->get_datatype();
+				RefactorRenameSymbolDefinintionType enum_type = context.identifier->get_datatype().builtin_type == Variant::INT
+						? REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM_VALUE
+						: REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
+				attribute_err = _refactor_rename_symbol_from_base(context, subscript->get_datatype(), symbol, p_path, base_type.script_path, p_owner, p_unsaved_scripts_source_code, r_result, enum_type);
+				REFACTOR_RENAME_RETURN(attribute_err);
 			}
 
 			GDScriptParsingIdentifier base;
@@ -5032,9 +5051,8 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				break;
 			}
 
-			if (_refactor_rename_symbol_from_base(context, base.type, symbol, p_path, base.type.script_path, p_owner, p_unsaved_scripts_source_code, r_result) == OK) {
-				REFACTOR_RENAME_RETURN(OK);
-			}
+			attribute_err = _refactor_rename_symbol_from_base(context, base.type, symbol, p_path, base.type.script_path, p_owner, p_unsaved_scripts_source_code, r_result);
+			REFACTOR_RENAME_RETURN(attribute_err);
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE: {
 			if (context.node == nullptr || context.node->type != GDScriptParser::Node::TYPE) {
