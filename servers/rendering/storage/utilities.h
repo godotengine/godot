@@ -148,15 +148,15 @@ public:
 
 	bool capturing_timestamps = false;
 
-#define TIMESTAMP_BEGIN()                               \
-	{                                                   \
-		if (RSG::utilities->capturing_timestamps)       \
+#define TIMESTAMP_BEGIN() \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamps_begin(); \
 	}
 
-#define RENDER_TIMESTAMP(m_text)                       \
-	{                                                  \
-		if (RSG::utilities->capturing_timestamps)      \
+#define RENDER_TIMESTAMP(m_text) \
+	{ \
+		if (RSG::utilities->capturing_timestamps) \
 			RSG::utilities->capture_timestamp(m_text); \
 	}
 

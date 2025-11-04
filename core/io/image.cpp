@@ -2600,24 +2600,24 @@ void Image::initialize_data(const char **p_xpm) {
 #define DETECT_ALPHA_MAX_THRESHOLD 254
 #define DETECT_ALPHA_MIN_THRESHOLD 2
 
-#define DETECT_ALPHA(m_value)                          \
-	{                                                  \
-		uint8_t value = m_value;                       \
-		if (value < DETECT_ALPHA_MIN_THRESHOLD)        \
-			bit = true;                                \
+#define DETECT_ALPHA(m_value) \
+	{ \
+		uint8_t value = m_value; \
+		if (value < DETECT_ALPHA_MIN_THRESHOLD) \
+			bit = true; \
 		else if (value < DETECT_ALPHA_MAX_THRESHOLD) { \
-			detected = true;                           \
-			break;                                     \
-		}                                              \
+			detected = true; \
+			break; \
+		} \
 	}
 
 #define DETECT_NON_ALPHA(m_value) \
-	{                             \
-		uint8_t value = m_value;  \
-		if (value > 0) {          \
-			detected = true;      \
-			break;                \
-		}                         \
+	{ \
+		uint8_t value = m_value; \
+		if (value > 0) { \
+			detected = true; \
+			break; \
+		} \
 	}
 
 bool Image::is_invisible() const {

@@ -55,16 +55,16 @@ using namespace Nav2D;
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG()
 #endif // DEBUG_ENABLED
 
-#define GET_MAP_ITERATION()                                                   \
-	iteration_slot_rwlock.read_lock();                                        \
+#define GET_MAP_ITERATION() \
+	iteration_slot_rwlock.read_lock(); \
 	NavMapIteration2D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead2D iteration_read_lock(map_iteration);                 \
+	NavMapIterationRead2D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
-#define GET_MAP_ITERATION_CONST()                                                   \
-	iteration_slot_rwlock.read_lock();                                              \
+#define GET_MAP_ITERATION_CONST() \
+	iteration_slot_rwlock.read_lock(); \
 	const NavMapIteration2D &map_iteration = iteration_slots[iteration_slot_index]; \
-	NavMapIterationRead2D iteration_read_lock(map_iteration);                       \
+	NavMapIterationRead2D iteration_read_lock(map_iteration); \
 	iteration_slot_rwlock.read_unlock();
 
 void NavMap2D::set_cell_size(real_t p_cell_size) {

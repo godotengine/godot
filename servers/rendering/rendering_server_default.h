@@ -130,59 +130,59 @@ public:
 #define ServerName RendererTextureStorage
 #define server_name RSG::texture_storage
 
-#define FUNCRIDTEX0(m_type)                                                                              \
-	virtual RID m_type##_create() override {                                                             \
-		RID ret = RSG::texture_storage->texture_allocate();                                              \
+#define FUNCRIDTEX0(m_type) \
+	virtual RID m_type##_create() override { \
+		RID ret = RSG::texture_storage->texture_allocate(); \
 		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
-			RSG::texture_storage->m_type##_initialize(ret);                                              \
-		} else {                                                                                         \
+			RSG::texture_storage->m_type##_initialize(ret); \
+		} else { \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret); \
-		}                                                                                                \
-		return ret;                                                                                      \
+		} \
+		return ret; \
 	}
 
-#define FUNCRIDTEX1(m_type, m_type1)                                                                         \
-	virtual RID m_type##_create(m_type1 p1) override {                                                       \
-		RID ret = RSG::texture_storage->texture_allocate();                                                  \
-		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {     \
-			RSG::texture_storage->m_type##_initialize(ret, p1);                                              \
-		} else {                                                                                             \
+#define FUNCRIDTEX1(m_type, m_type1) \
+	virtual RID m_type##_create(m_type1 p1) override { \
+		RID ret = RSG::texture_storage->texture_allocate(); \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret, p1); \
+		} else { \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1); \
-		}                                                                                                    \
-		return ret;                                                                                          \
+		} \
+		return ret; \
 	}
 
-#define FUNCRIDTEX2(m_type, m_type1, m_type2)                                                                    \
-	virtual RID m_type##_create(m_type1 p1, m_type2 p2) override {                                               \
-		RID ret = RSG::texture_storage->texture_allocate();                                                      \
-		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {         \
-			RSG::texture_storage->m_type##_initialize(ret, p1, p2);                                              \
-		} else {                                                                                                 \
+#define FUNCRIDTEX2(m_type, m_type1, m_type2) \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2) override { \
+		RID ret = RSG::texture_storage->texture_allocate(); \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2); \
+		} else { \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2); \
-		}                                                                                                        \
-		return ret;                                                                                              \
+		} \
+		return ret; \
 	}
 
-#define FUNCRIDTEX3(m_type, m_type1, m_type2, m_type3)                                                               \
-	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3) override {                                       \
-		RID ret = RSG::texture_storage->texture_allocate();                                                          \
-		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {             \
-			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3);                                              \
-		} else {                                                                                                     \
+#define FUNCRIDTEX3(m_type, m_type1, m_type2, m_type3) \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3) override { \
+		RID ret = RSG::texture_storage->texture_allocate(); \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3); \
+		} else { \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3); \
-		}                                                                                                            \
-		return ret;                                                                                                  \
+		} \
+		return ret; \
 	}
 
-#define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
-	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
-		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
-		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                         \
-			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4, p5, p6);                                              \
-		} else {                                                                                                                 \
+#define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6) \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override { \
+		RID ret = RSG::texture_storage->texture_allocate(); \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) { \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4, p5, p6); \
+		} else { \
 			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4, p5, p6); \
-		}                                                                                                                        \
-		return ret;                                                                                                              \
+		} \
+		return ret; \
 	}
 
 	//these go pass-through, as they can be called from any thread

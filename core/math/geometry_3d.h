@@ -602,18 +602,18 @@ public:
 	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
 
 #define FINDMINMAX(x0, x1, x2, min, max) \
-	min = max = x0;                      \
-	if (x1 < min) {                      \
-		min = x1;                        \
-	}                                    \
-	if (x1 > max) {                      \
-		max = x1;                        \
-	}                                    \
-	if (x2 < min) {                      \
-		min = x2;                        \
-	}                                    \
-	if (x2 > max) {                      \
-		max = x2;                        \
+	min = max = x0; \
+	if (x1 < min) { \
+		min = x1; \
+	} \
+	if (x1 > max) { \
+		max = x1; \
+	} \
+	if (x2 < min) { \
+		min = x2; \
+	} \
+	if (x2 > max) { \
+		max = x2; \
 	}
 
 	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
@@ -639,96 +639,96 @@ public:
 	}
 
 /*======================== X-tests ========================*/
-#define AXISTEST_X01(a, b, fa, fb)                 \
-	p0 = a * v0.y - b * v0.z;                      \
-	p2 = a * v2.y - b * v2.z;                      \
-	if (p0 < p2) {                                 \
-		min = p0;                                  \
-		max = p2;                                  \
-	} else {                                       \
-		min = p2;                                  \
-		max = p0;                                  \
-	}                                              \
+#define AXISTEST_X01(a, b, fa, fb) \
+	p0 = a * v0.y - b * v0.z; \
+	p2 = a * v2.y - b * v2.z; \
+	if (p0 < p2) { \
+		min = p0; \
+		max = p2; \
+	} else { \
+		min = p2; \
+		max = p0; \
+	} \
 	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
-#define AXISTEST_X2(a, b, fa, fb)                  \
-	p0 = a * v0.y - b * v0.z;                      \
-	p1 = a * v1.y - b * v1.z;                      \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
+#define AXISTEST_X2(a, b, fa, fb) \
+	p0 = a * v0.y - b * v0.z; \
+	p1 = a * v1.y - b * v1.z; \
+	if (p0 < p1) { \
+		min = p0; \
+		max = p1; \
+	} else { \
+		min = p1; \
+		max = p0; \
+	} \
 	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
 /*======================== Y-tests ========================*/
-#define AXISTEST_Y02(a, b, fa, fb)                 \
-	p0 = -a * v0.x + b * v0.z;                     \
-	p2 = -a * v2.x + b * v2.z;                     \
-	if (p0 < p2) {                                 \
-		min = p0;                                  \
-		max = p2;                                  \
-	} else {                                       \
-		min = p2;                                  \
-		max = p0;                                  \
-	}                                              \
+#define AXISTEST_Y02(a, b, fa, fb) \
+	p0 = -a * v0.x + b * v0.z; \
+	p2 = -a * v2.x + b * v2.z; \
+	if (p0 < p2) { \
+		min = p0; \
+		max = p2; \
+	} else { \
+		min = p2; \
+		max = p0; \
+	} \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
-#define AXISTEST_Y1(a, b, fa, fb)                  \
-	p0 = -a * v0.x + b * v0.z;                     \
-	p1 = -a * v1.x + b * v1.z;                     \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
+#define AXISTEST_Y1(a, b, fa, fb) \
+	p0 = -a * v0.x + b * v0.z; \
+	p1 = -a * v1.x + b * v1.z; \
+	if (p0 < p1) { \
+		min = p0; \
+		max = p1; \
+	} else { \
+		min = p1; \
+		max = p0; \
+	} \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
 /*======================== Z-tests ========================*/
-#define AXISTEST_Z12(a, b, fa, fb)                 \
-	p1 = a * v1.x - b * v1.y;                      \
-	p2 = a * v2.x - b * v2.y;                      \
-	if (p2 < p1) {                                 \
-		min = p2;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p2;                                  \
-	}                                              \
+#define AXISTEST_Z12(a, b, fa, fb) \
+	p1 = a * v1.x - b * v1.y; \
+	p2 = a * v2.x - b * v2.y; \
+	if (p2 < p1) { \
+		min = p2; \
+		max = p1; \
+	} else { \
+		min = p1; \
+		max = p2; \
+	} \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
-#define AXISTEST_Z0(a, b, fa, fb)                  \
-	p0 = a * v0.x - b * v0.y;                      \
-	p1 = a * v1.x - b * v1.y;                      \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
+#define AXISTEST_Z0(a, b, fa, fb) \
+	p0 = a * v0.x - b * v0.y; \
+	p1 = a * v1.x - b * v1.y; \
+	if (p0 < p1) { \
+		min = p0; \
+		max = p1; \
+	} else { \
+		min = p1; \
+		max = p0; \
+	} \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) {                 \
-		return false;                              \
+	if (min > rad || max < -rad) { \
+		return false; \
 	}
 
 	_FORCE_INLINE_ static bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {

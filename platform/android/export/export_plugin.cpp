@@ -2353,14 +2353,14 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
-#define CLEANUP_AND_RETURN(m_err)                                        \
-	{                                                                    \
-		DirAccess::remove_file_or_error(tmp_export_path);                \
-		if (FileAccess::exists(tmp_export_path + ".idsig")) {            \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		DirAccess::remove_file_or_error(tmp_export_path); \
+		if (FileAccess::exists(tmp_export_path + ".idsig")) { \
 			DirAccess::remove_file_or_error(tmp_export_path + ".idsig"); \
-		}                                                                \
-		return m_err;                                                    \
-	}                                                                    \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	// Export to temporary APK before sending to device.
@@ -3979,11 +3979,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	String tmp_unaligned_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
-#define CLEANUP_AND_RETURN(m_err)                            \
-	{                                                        \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
 		DirAccess::remove_file_or_error(tmp_unaligned_path); \
-		return m_err;                                        \
-	}                                                        \
+		return m_err; \
+	} \
 	((void)0)
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);

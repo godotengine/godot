@@ -8048,29 +8048,29 @@ void TextEdit::_update_context_menu() {
 
 	int idx = -1;
 
-#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
-		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
-#define MENU_ITEM_ACTION(m_menu, m_id, m_action)                                                                       \
-	idx = m_menu->get_item_index(m_id);                                                                                \
-	if (idx >= 0) {                                                                                                    \
+#define MENU_ITEM_ACTION(m_menu, m_id, m_action) \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
 		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
 	}
 
 #define MENU_ITEM_DISABLED(m_menu, m_id, m_disabled) \
-	idx = m_menu->get_item_index(m_id);              \
-	if (idx >= 0) {                                  \
-		m_menu->set_item_disabled(idx, m_disabled);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_disabled(idx, m_disabled); \
 	}
 
 #define MENU_ITEM_CHECKED(m_menu, m_id, m_checked) \
-	idx = m_menu->get_item_index(m_id);            \
-	if (idx >= 0) {                                \
-		m_menu->set_item_checked(idx, m_checked);  \
+	idx = m_menu->get_item_index(m_id); \
+	if (idx >= 0) { \
+		m_menu->set_item_checked(idx, m_checked); \
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {

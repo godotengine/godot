@@ -115,12 +115,12 @@ void EQ::recalculate_band_coefficients() {
 void EQ::set_preset_band_mode(Preset p_preset) {
 	band.clear();
 
-#define PUSH_BANDS(m_bands)             \
+#define PUSH_BANDS(m_bands) \
 	for (int i = 0; i < m_bands; i++) { \
-		Band b;                         \
-		b.freq = bands[i];              \
-		b.c1 = b.c2 = b.c3 = 0;         \
-		band.push_back(b);              \
+		Band b; \
+		b.freq = bands[i]; \
+		b.c1 = b.c2 = b.c3 = 0; \
+		band.push_back(b); \
 	}
 
 	switch (p_preset) {

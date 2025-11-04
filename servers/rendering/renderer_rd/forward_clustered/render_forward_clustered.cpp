@@ -612,8 +612,8 @@ void RenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_lis
 	//use template for faster performance (pass mode comparisons are inlined)
 
 	switch (p_params->pass_mode) {
-#define VALID_FLAG_COMBINATION(f)                                                                                             \
-	case f: {                                                                                                                 \
+#define VALID_FLAG_COMBINATION(f) \
+	case f: { \
 		_render_list_template<PASS_MODE_COLOR, f>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element); \
 	} break;
 

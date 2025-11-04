@@ -163,13 +163,13 @@ RID RenderingServer::_make_test_cube() {
 	Vector<float> tangents;
 	Vector<Vector3> uvs;
 
-#define ADD_VTX(m_idx)                           \
-	vertices.push_back(face_points[m_idx]);      \
-	normals.push_back(normal_points[m_idx]);     \
+#define ADD_VTX(m_idx) \
+	vertices.push_back(face_points[m_idx]); \
+	normals.push_back(normal_points[m_idx]); \
 	tangents.push_back(normal_points[m_idx][1]); \
 	tangents.push_back(normal_points[m_idx][2]); \
 	tangents.push_back(normal_points[m_idx][0]); \
-	tangents.push_back(1.0);                     \
+	tangents.push_back(1.0); \
 	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0));
 
 	for (int i = 0; i < 6; i++) {
@@ -268,7 +268,7 @@ RID RenderingServer::make_sphere_mesh(int p_lats, int p_lons, real_t p_radius) {
 				Vector3(x0 * zr0, z0, y0 * zr0)
 			};
 
-#define ADD_POINT(m_idx)         \
+#define ADD_POINT(m_idx) \
 	normals.push_back(v[m_idx]); \
 	vertices.push_back(v[m_idx] * p_radius);
 

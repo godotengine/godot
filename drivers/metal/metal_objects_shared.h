@@ -38,14 +38,14 @@ using RDC = RenderingDeviceCommons;
 // These types can be used in Vector and other containers that use
 // pointer operations not supported by ARC.
 namespace MTL {
-#define MTL_CLASS(name)                               \
-	class name {                                      \
-	public:                                           \
+#define MTL_CLASS(name) \
+	class name { \
+	public: \
 		name(id<MTL##name> obj = nil) : m_obj(obj) {} \
-		operator id<MTL##name>() const {              \
-			return m_obj;                             \
-		}                                             \
-		id<MTL##name> m_obj;                          \
+		operator id<MTL##name>() const { \
+			return m_obj; \
+		} \
+		id<MTL##name> m_obj; \
 	};
 
 MTL_CLASS(Texture)
@@ -169,9 +169,9 @@ _FORCE_INLINE_ void *owned(id p_id) {
 	return (__bridge_retained void *)p_id;
 }
 
-#define MAKE_ID(FROM, TO)                \
+#define MAKE_ID(FROM, TO) \
 	_FORCE_INLINE_ TO make(FROM p_obj) { \
-		return TO(owned(p_obj));         \
+		return TO(owned(p_obj)); \
 	}
 
 // These are shared for Metal and Metal 4 drivers

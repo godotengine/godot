@@ -1677,16 +1677,16 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 Vector<uint8_t> String::hex_decode() const {
 	ERR_FAIL_COND_V_MSG(length() % 2 != 0, Vector<uint8_t>(), "Hexadecimal string of uneven length.");
 
-#define HEX_TO_BYTE(m_output, m_index)                                                                                   \
-	uint8_t m_output;                                                                                                    \
-	c = operator[](m_index);                                                                                             \
-	if (is_digit(c)) {                                                                                                   \
-		m_output = c - '0';                                                                                              \
-	} else if (c >= 'a' && c <= 'f') {                                                                                   \
-		m_output = c - 'a' + 10;                                                                                         \
-	} else if (c >= 'A' && c <= 'F') {                                                                                   \
-		m_output = c - 'A' + 10;                                                                                         \
-	} else {                                                                                                             \
+#define HEX_TO_BYTE(m_output, m_index) \
+	uint8_t m_output; \
+	c = operator[](m_index); \
+	if (is_digit(c)) { \
+		m_output = c - '0'; \
+	} else if (c >= 'a' && c <= 'f') { \
+		m_output = c - 'a' + 10; \
+	} else if (c >= 'A' && c <= 'F') { \
+		m_output = c - 'A' + 10; \
+	} else { \
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Invalid hexadecimal character \"" + chr(c) + "\" at index " + m_index + "."); \
 	}
 

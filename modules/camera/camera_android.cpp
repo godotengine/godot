@@ -43,7 +43,7 @@
 
 #ifndef IF_EQUAL_RETURN
 #define MAKE_FORMAT_CONST(suffix) AIMAGE_FORMAT_##suffix
-#define IF_EQUAL_RETURN(param, val)      \
+#define IF_EQUAL_RETURN(param, val) \
 	if (MAKE_FORMAT_CONST(val) == param) \
 	return #val
 #endif

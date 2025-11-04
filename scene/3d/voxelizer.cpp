@@ -1011,7 +1011,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 
 		Vector<Vector3> vertices;
 		Vector<Color> colors;
-#define ADD_VTX(m_idx)                      \
+#define ADD_VTX(m_idx) \
 	vertices.push_back(face_points[m_idx]); \
 	colors.push_back(Color(1, 1, 1, 1));
 

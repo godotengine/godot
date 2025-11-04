@@ -43,12 +43,12 @@
 template <typename T>
 struct PtrConstruct {};
 
-#define MAKE_PTRCONSTRUCT(m_type)                                                  \
-	template <>                                                                    \
-	struct PtrConstruct<m_type> {                                                  \
+#define MAKE_PTRCONSTRUCT(m_type) \
+	template <> \
+	struct PtrConstruct<m_type> { \
 		_FORCE_INLINE_ static void construct(const m_type &p_value, void *p_ptr) { \
-			memnew_placement(p_ptr, m_type(p_value));                              \
-		}                                                                          \
+			memnew_placement(p_ptr, m_type(p_value)); \
+		} \
 	};
 
 MAKE_PTRCONSTRUCT(bool);

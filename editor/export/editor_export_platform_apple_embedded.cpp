@@ -2613,15 +2613,15 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 	filesystem_da->make_dir_recursive(EditorPaths::get_singleton()->get_temp_dir().path_join(id));
 	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.ipa");
 
-#define CLEANUP_AND_RETURN(m_err)                                                                          \
-	{                                                                                                      \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
 		if (filesystem_da->change_dir(EditorPaths::get_singleton()->get_temp_dir().path_join(id)) == OK) { \
-			filesystem_da->erase_contents_recursive();                                                     \
-			filesystem_da->change_dir("..");                                                               \
-			filesystem_da->remove(id);                                                                     \
-		}                                                                                                  \
-		return m_err;                                                                                      \
-	}                                                                                                      \
+			filesystem_da->erase_contents_recursive(); \
+			filesystem_da->change_dir(".."); \
+			filesystem_da->remove(id); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	Device dev = devices[p_device];

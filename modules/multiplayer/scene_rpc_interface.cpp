@@ -345,7 +345,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 	// Create base packet, lots of hardcode because it must be tight.
 	int ofs = 0;
 
-#define MAKE_ROOM(m_amount)             \
+#define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
 

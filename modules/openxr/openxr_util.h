@@ -36,10 +36,10 @@
 #include <openxr/openxr_reflection.h>
 
 #define XR_ENUM_CASE_STR(name, val) \
-	case name:                      \
+	case name: \
 		return #name;
-#define XR_ENUM_SWITCH(enumType, var)                                                                                           \
-	switch (var) {                                                                                                              \
+#define XR_ENUM_SWITCH(enumType, var) \
+	switch (var) { \
 		XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown " #enumType ": " + String::num_int64(int64_t(var)); \
 	}
 

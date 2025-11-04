@@ -1477,13 +1477,13 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_gravity(material->get_gravity());
 	set_lifetime_randomness(material->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                  \
-	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param));          \
-	{                                                                                           \
+#define CONVERT_PARAM(m_param) \
+	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param)); \
+	{ \
 		Ref<CurveTexture> ctex = material->get_param_texture(ParticleProcessMaterial::m_param); \
-		if (ctex.is_valid())                                                                    \
-			set_param_curve(m_param, ctex->get_curve());                                        \
-	}                                                                                           \
+		if (ctex.is_valid()) \
+			set_param_curve(m_param, ctex->get_curve()); \
+	} \
 	set_param_max(m_param, material->get_param_max(ParticleProcessMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);

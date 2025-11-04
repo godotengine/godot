@@ -699,16 +699,16 @@ void GPUParticles3D::convert_from_particles(Node *p_particles) {
 	proc_mat->set_gravity(cpu_particles->get_gravity());
 	proc_mat->set_lifetime_randomness(cpu_particles->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                                        \
+#define CONVERT_PARAM(m_param) \
 	proc_mat->set_param_min(ParticleProcessMaterial::m_param, cpu_particles->get_param_min(CPUParticles3D::m_param)); \
-	{                                                                                                                 \
-		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles3D::m_param);                                   \
-		if (curve.is_valid()) {                                                                                       \
-			Ref<CurveTexture> tex = memnew(CurveTexture);                                                             \
-			tex->set_curve(curve);                                                                                    \
-			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex);                                       \
-		}                                                                                                             \
-	}                                                                                                                 \
+	{ \
+		Ref<Curve> curve = cpu_particles->get_param_curve(CPUParticles3D::m_param); \
+		if (curve.is_valid()) { \
+			Ref<CurveTexture> tex = memnew(CurveTexture); \
+			tex->set_curve(curve); \
+			proc_mat->set_param_texture(ParticleProcessMaterial::m_param, tex); \
+		} \
+	} \
 	proc_mat->set_param_max(ParticleProcessMaterial::m_param, cpu_particles->get_param_max(CPUParticles3D::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);

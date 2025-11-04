@@ -279,10 +279,10 @@ PixelFormats::PixelFormats(id<MTLDevice> p_device, const MetalFeatures &p_feat) 
 }
 
 #define addDataFormatDescFull(DATA_FMT, MTL_FMT, MTL_FMT_ALT, MTL_VTX_FMT, MTL_VTX_FMT_ALT, CSPC, CSCB, BLK_W, BLK_H, BLK_BYTE_CNT, MVK_FMT_TYPE, SWIZ_R, SWIZ_G, SWIZ_B, SWIZ_A) \
-	dfFmt = RD::DATA_FORMAT_##DATA_FMT;                                                                                                                                           \
-	_data_format_descs[dfFmt] = { dfFmt, MTLPixelFormat##MTL_FMT, MTLPixelFormat##MTL_FMT_ALT, MTLVertexFormat##MTL_VTX_FMT, MTLVertexFormat##MTL_VTX_FMT_ALT,                    \
-		CSPC, CSCB, { BLK_W, BLK_H }, BLK_BYTE_CNT, MTLFormatType::MVK_FMT_TYPE,                                                                                                  \
-		{ RD::TEXTURE_SWIZZLE_##SWIZ_R, RD::TEXTURE_SWIZZLE_##SWIZ_G, RD::TEXTURE_SWIZZLE_##SWIZ_B, RD::TEXTURE_SWIZZLE_##SWIZ_A },                                               \
+	dfFmt = RD::DATA_FORMAT_##DATA_FMT; \
+	_data_format_descs[dfFmt] = { dfFmt, MTLPixelFormat##MTL_FMT, MTLPixelFormat##MTL_FMT_ALT, MTLVertexFormat##MTL_VTX_FMT, MTLVertexFormat##MTL_VTX_FMT_ALT, \
+		CSPC, CSCB, { BLK_W, BLK_H }, BLK_BYTE_CNT, MTLFormatType::MVK_FMT_TYPE, \
+		{ RD::TEXTURE_SWIZZLE_##SWIZ_R, RD::TEXTURE_SWIZZLE_##SWIZ_G, RD::TEXTURE_SWIZZLE_##SWIZ_B, RD::TEXTURE_SWIZZLE_##SWIZ_A }, \
 		"DATA_FORMAT_" #DATA_FMT, false }
 
 #define addDataFormatDesc(VK_FMT, MTL_FMT, MTL_FMT_ALT, MTL_VTX_FMT, MTL_VTX_FMT_ALT, BLK_W, BLK_H, BLK_BYTE_CNT, MVK_FMT_TYPE) \
@@ -582,20 +582,20 @@ void PixelFormats::addMTLPixelFormatDescImpl(MTLPixelFormat p_pix_fmt, MTLPixelF
 	_mtl_pixel_format_descs[p_pix_fmt] = { .mtlPixelFormat = p_pix_fmt, DataFormat::DATA_FORMAT_MAX, p_fmt_caps, p_view_class, p_pix_fmt_linear, p_name };
 }
 
-#define addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleGPUCaps)                             \
+#define addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleGPUCaps) \
 	addMTLPixelFormatDescImpl(MTLPixelFormat##mtlFmt, MTLPixelFormat##mtlFmtLinear, MTLViewClass::viewClass, \
 			appleGPUCaps, "MTLPixelFormat" #mtlFmt)
 
 #define addMTLPixelFormatDesc(mtlFmt, viewClass, appleGPUCaps) \
 	addMTLPixelFormatDescFull(mtlFmt, mtlFmt, viewClass, kMTLFmtCaps##appleGPUCaps)
 
-#define addMTLPixelFormatDescSRGB(mtlFmt, viewClass, appleGPUCaps, mtlFmtLinear)               \
-	/* Cannot write to sRGB textures in the simulator */                                       \
-	if (TARGET_OS_SIMULATOR) {                                                                 \
-		MTLFmtCaps appleFmtCaps = kMTLFmtCaps##appleGPUCaps;                                   \
-		flags::clear(appleFmtCaps, kMTLFmtCapsWrite);                                          \
-		addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleFmtCaps);              \
-	} else {                                                                                   \
+#define addMTLPixelFormatDescSRGB(mtlFmt, viewClass, appleGPUCaps, mtlFmtLinear) \
+	/* Cannot write to sRGB textures in the simulator */ \
+	if (TARGET_OS_SIMULATOR) { \
+		MTLFmtCaps appleFmtCaps = kMTLFmtCaps##appleGPUCaps; \
+		flags::clear(appleFmtCaps, kMTLFmtCapsWrite); \
+		addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleFmtCaps); \
+	} else { \
 		addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, kMTLFmtCaps##appleGPUCaps); \
 	}
 
@@ -787,8 +787,8 @@ void PixelFormats::addMTLVertexFormatDescImpl(MTLVertexFormat mtlVtxFmt, MTLFmtC
 }
 
 // Check mtlVtx exists on platform, to avoid overwriting the MTLVertexFormatInvalid entry.
-#define addMTLVertexFormatDesc(mtlVtx)                                                                     \
-	if (MTLVertexFormat##mtlVtx) {                                                                         \
+#define addMTLVertexFormatDesc(mtlVtx) \
+	if (MTLVertexFormat##mtlVtx) { \
 		addMTLVertexFormatDescImpl(MTLVertexFormat##mtlVtx, kMTLFmtCapsVertex, "MTLVertexFormat" #mtlVtx); \
 	}
 

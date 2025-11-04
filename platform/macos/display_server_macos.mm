@@ -3150,9 +3150,9 @@ void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 #define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
-	m_val = m_map.getptr(m_key);                     \
-	if (m_val == nullptr) {                          \
-		ERR_FAIL_V(m_retval);                        \
+	m_val = m_map.getptr(m_key); \
+	if (m_val == nullptr) { \
+		ERR_FAIL_V(m_retval); \
 	}
 
 uint32_t DisplayServerMacOS::window_get_display_id(WindowID p_window) const {

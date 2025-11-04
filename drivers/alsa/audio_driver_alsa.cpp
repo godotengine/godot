@@ -62,14 +62,14 @@ Error AudioDriverALSA::init_output_device() {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_sw_params_t *swparams;
 
-#define CHECK_FAIL(m_cond)                                       \
-	if (m_cond) {                                                \
+#define CHECK_FAIL(m_cond) \
+	if (m_cond) { \
 		fprintf(stderr, "ALSA ERR: %s\n", snd_strerror(status)); \
-		if (pcm_handle) {                                        \
-			snd_pcm_close(pcm_handle);                           \
-			pcm_handle = nullptr;                                \
-		}                                                        \
-		ERR_FAIL_COND_V(m_cond, ERR_CANT_OPEN);                  \
+		if (pcm_handle) { \
+			snd_pcm_close(pcm_handle); \
+			pcm_handle = nullptr; \
+		} \
+		ERR_FAIL_COND_V(m_cond, ERR_CANT_OPEN); \
 	}
 
 	//todo, add

@@ -688,10 +688,10 @@ Error RenderingDeviceDriverVulkan::_check_device_features() {
 	// - sparseResidencyAliased
 	// - inheritedQueries
 
-#define VK_DEVICEFEATURE_ENABLE_IF(x)                             \
-	if (physical_device_features.x) {                             \
+#define VK_DEVICEFEATURE_ENABLE_IF(x) \
+	if (physical_device_features.x) { \
 		requested_device_features.x = physical_device_features.x; \
-	} else                                                        \
+	} else \
 		((void)0)
 
 	requested_device_features = {};

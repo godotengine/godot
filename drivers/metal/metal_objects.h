@@ -1073,9 +1073,9 @@ public:
 };
 
 namespace rid {
-#define MAKE_ID(FROM, TO)                \
+#define MAKE_ID(FROM, TO) \
 	_FORCE_INLINE_ TO make(FROM p_obj) { \
-		return TO(owned(p_obj));         \
+		return TO(owned(p_obj)); \
 	}
 
 MAKE_ID(id<MTLCommandQueue>, RDD::CommandPoolID)

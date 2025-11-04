@@ -626,20 +626,20 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	TreeItem *root = tile_data_editors_tree->create_item();
 
 	TreeItem *group;
-#define ADD_TILE_DATA_EDITOR_GROUP(text)               \
+#define ADD_TILE_DATA_EDITOR_GROUP(text) \
 	group = tile_data_editors_tree->create_item(root); \
-	group->set_custom_bg_color(0, group_color);        \
-	group->set_selectable(0, false);                   \
-	group->set_disable_folding(true);                  \
+	group->set_custom_bg_color(0, group_color); \
+	group->set_selectable(0, false); \
+	group->set_disable_folding(true); \
 	group->set_text(0, text);
 
 	TreeItem *item;
-#define ADD_TILE_DATA_EDITOR(parent, text, property)    \
+#define ADD_TILE_DATA_EDITOR(parent, text, property) \
 	item = tile_data_editors_tree->create_item(parent); \
-	item->set_text(0, text);                            \
-	item->set_metadata(0, property);                    \
-	if (property == previously_selected) {              \
-		item->select(0);                                \
+	item->set_text(0, text); \
+	item->set_metadata(0, property); \
+	if (property == previously_selected) { \
+		item->select(0); \
 	}
 
 	// Theming.

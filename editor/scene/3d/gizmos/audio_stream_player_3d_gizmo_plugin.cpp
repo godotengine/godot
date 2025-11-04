@@ -163,14 +163,14 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				radius = MIN(radius, player->get_max_distance());
 			}
 
-#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y, m_y)   \
-	points_ptrw[index++] = Vector3(m_from_x, -m_from_y - m_y, 0);  \
-	points_ptrw[index++] = Vector3(m_to_x, -m_to_y - m_y, 0);      \
-	points_ptrw[index++] = Vector3(m_from_x, m_from_y + m_y, 0);   \
-	points_ptrw[index++] = Vector3(m_to_x, m_to_y + m_y, 0);       \
+#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y, m_y) \
+	points_ptrw[index++] = Vector3(m_from_x, -m_from_y - m_y, 0); \
+	points_ptrw[index++] = Vector3(m_to_x, -m_to_y - m_y, 0); \
+	points_ptrw[index++] = Vector3(m_from_x, m_from_y + m_y, 0); \
+	points_ptrw[index++] = Vector3(m_to_x, m_to_y + m_y, 0); \
 	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y - m_y, 0); \
-	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y - m_y, 0);     \
-	points_ptrw[index++] = Vector3(-m_from_x, m_from_y + m_y, 0);  \
+	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y - m_y, 0); \
+	points_ptrw[index++] = Vector3(-m_from_x, m_from_y + m_y, 0); \
 	points_ptrw[index++] = Vector3(-m_to_x, m_to_y + m_y, 0);
 
 			// Number of points in an octant. So there will be 8 * points_in_octant points in total.
@@ -251,14 +251,14 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			uint32_t index = 0;
 			float previous_x = radius;
 			float previous_y = 0.f;
-#define PUSH_QUARTER(m_from_x, m_from_y, m_to_x, m_to_y, m_y)  \
-	points_ptrw[index++] = Vector3(m_from_x, -m_from_y, m_y);  \
-	points_ptrw[index++] = Vector3(m_to_x, -m_to_y, m_y);      \
-	points_ptrw[index++] = Vector3(m_from_x, m_from_y, m_y);   \
-	points_ptrw[index++] = Vector3(m_to_x, m_to_y, m_y);       \
+#define PUSH_QUARTER(m_from_x, m_from_y, m_to_x, m_to_y, m_y) \
+	points_ptrw[index++] = Vector3(m_from_x, -m_from_y, m_y); \
+	points_ptrw[index++] = Vector3(m_to_x, -m_to_y, m_y); \
+	points_ptrw[index++] = Vector3(m_from_x, m_from_y, m_y); \
+	points_ptrw[index++] = Vector3(m_to_x, m_to_y, m_y); \
 	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y, m_y); \
-	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y, m_y);     \
-	points_ptrw[index++] = Vector3(-m_from_x, m_from_y, m_y);  \
+	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y, m_y); \
+	points_ptrw[index++] = Vector3(-m_from_x, m_from_y, m_y); \
 	points_ptrw[index++] = Vector3(-m_to_x, m_to_y, m_y);
 
 			for (uint32_t i = 0; i < points_in_octant; i++) {

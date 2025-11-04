@@ -367,15 +367,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
 #define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value);                                              \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_BASIC(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
-	_initial_set(m_name, m_default_value, true);                                              \
+	_initial_set(m_name, m_default_value, true); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
 
 #define EDITOR_SETTING_USAGE(m_type, m_property_hint, m_name, m_default_value, m_hint_string, m_usage) \
-	_initial_set(m_name, m_default_value);                                                             \
+	_initial_set(m_name, m_default_value); \
 	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string, m_usage);
 
 	/* Languages */

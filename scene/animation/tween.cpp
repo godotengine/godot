@@ -34,7 +34,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 
-#define CHECK_VALID()                                                                                      \
+#define CHECK_VALID() \
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Tween invalid. Either finished or created outside scene tree."); \
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 

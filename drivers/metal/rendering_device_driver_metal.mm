@@ -2426,13 +2426,13 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 	MetalLimits const &limits = props.limits;
 	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 #if defined(DEV_ENABLED)
-#define UNKNOWN(NAME)                                                            \
-	case NAME:                                                                   \
+#define UNKNOWN(NAME) \
+	case NAME: \
 		WARN_PRINT_ONCE("Returning maximum value for unknown limit " #NAME "."); \
 		return safe_unbounded;
 #else
 #define UNKNOWN(NAME) \
-	case NAME:        \
+	case NAME: \
 		return safe_unbounded
 #endif
 

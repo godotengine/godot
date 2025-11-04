@@ -34,7 +34,7 @@ AlignAfterOpenBracket: DontAlign
 #   AcrossEmptyLines: false
 #   AcrossComments: false
 #   AlignCaseColons: false
-# AlignEscapedNewlines: Right
+AlignEscapedNewlines: DontAlign # Aligning leads to long diffs
 AlignOperands: DontAlign
 AlignTrailingComments:
   Kind: Never

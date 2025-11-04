@@ -1455,9 +1455,9 @@ void PopupMenu::_notification(int p_what) {
  */
 
 #define ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel) \
-	item.text = p_label;                              \
-	item.xl_text = atr(p_label);                      \
-	item.id = p_id == -1 ? items.size() : p_id;       \
+	item.text = p_label; \
+	item.xl_text = atr(p_label); \
+	item.id = p_id == -1 ? items.size() : p_id; \
 	item.accel = p_accel;
 
 void PopupMenu::add_item(const String &p_label, int p_id, Key p_accel) {
@@ -1632,14 +1632,14 @@ void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int
 	notify_property_list_changed();
 }
 
-#define ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo)             \
+#define ITEM_SETUP_WITH_SHORTCUT(p_shortcut, p_id, p_global, p_allow_echo) \
 	ERR_FAIL_COND_MSG(p_shortcut.is_null(), "Cannot add item with invalid Shortcut."); \
-	_ref_shortcut(p_shortcut);                                                         \
-	item.text = p_shortcut->get_name();                                                \
-	item.xl_text = atr(item.text);                                                     \
-	item.id = p_id == -1 ? items.size() : p_id;                                        \
-	item.shortcut = p_shortcut;                                                        \
-	item.shortcut_is_global = p_global;                                                \
+	_ref_shortcut(p_shortcut); \
+	item.text = p_shortcut->get_name(); \
+	item.xl_text = atr(item.text); \
+	item.id = p_id == -1 ? items.size() : p_id; \
+	item.shortcut = p_shortcut; \
+	item.shortcut_is_global = p_global; \
 	item.allow_echo = p_allow_echo;
 
 void PopupMenu::add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id, bool p_global, bool p_allow_echo) {

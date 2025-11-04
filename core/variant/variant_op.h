@@ -1105,25 +1105,25 @@ _FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
 	return PtrToArg<Object *>::convert(p_ptr) != nullptr;
 }
 
-#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op)                                                                 \
-	class m_class_name {                                                                                                  \
-	public:                                                                                                               \
-		static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {              \
-			*r_ret = m_op(_operate_get_##m_left(&p_left), _operate_get_##m_right(&p_right));                              \
-			r_valid = true;                                                                                               \
-		}                                                                                                                 \
-                                                                                                                          \
-		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                \
+#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op) \
+	class m_class_name { \
+	public: \
+		static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) { \
+			*r_ret = m_op(_operate_get_##m_left(&p_left), _operate_get_##m_right(&p_right)); \
+			r_valid = true; \
+		} \
+\
+		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) { \
 			VariantInternalAccessor<bool>::get(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
-		}                                                                                                                 \
-                                                                                                                          \
-		static void ptr_evaluate(const void *left, const void *right, void *r_ret) {                                      \
-			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret);      \
-		}                                                                                                                 \
-                                                                                                                          \
-		static Variant::Type get_return_type() {                                                                          \
-			return Variant::BOOL;                                                                                         \
-		}                                                                                                                 \
+		} \
+\
+		static void ptr_evaluate(const void *left, const void *right, void *r_ret) { \
+			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret); \
+		} \
+\
+		static Variant::Type get_return_type() { \
+			return Variant::BOOL; \
+		} \
 	};
 
 // OR

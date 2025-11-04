@@ -88,16 +88,16 @@ public:
 };
 
 // Test main override is for the testing behavior.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
+#define TEST_MAIN_OVERRIDE \
+	bool run_test = false; \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
+	if (run_test) { \
+		return return_code; \
 	}
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
+#define TEST_MAIN_PARAM_OVERRIDE(argc, argv) \
+	bool run_test = false; \
 	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
+	if (run_test) { \
+		return return_code; \
 	}

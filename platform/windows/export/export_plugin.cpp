@@ -1010,19 +1010,19 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const String basepath = dest.path_join("tmp_windows_export");
 
-#define CLEANUP_AND_RETURN(m_err)                       \
-	{                                                   \
-		if (da->file_exists(basepath + ".zip")) {       \
-			da->remove(basepath + ".zip");              \
-		}                                               \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.ps1")) { \
-			da->remove(basepath + "_start.ps1");        \
-		}                                               \
+			da->remove(basepath + "_start.ps1"); \
+		} \
 		if (da->file_exists(basepath + "_clean.ps1")) { \
-			da->remove(basepath + "_clean.ps1");        \
-		}                                               \
-		return m_err;                                   \
-	}                                                   \
+			da->remove(basepath + "_clean.ps1"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {

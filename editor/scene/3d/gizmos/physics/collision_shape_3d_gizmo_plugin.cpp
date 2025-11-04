@@ -326,34 +326,34 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Ref<SphereShape3D> sp = s;
 		float radius = sp->get_radius();
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 
-#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0);  \
-	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0);      \
-	points_ptrw[index++] = Vector3(from_x, from_y + y, 0);   \
-	points_ptrw[index++] = Vector3(to_x, to_y + y, 0);       \
+#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0); \
+	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(from_x, from_y + y, 0); \
+	points_ptrw[index++] = Vector3(to_x, to_y + y, 0); \
 	points_ptrw[index++] = Vector3(-from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0);     \
-	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0);  \
+	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0); \
 	points_ptrw[index++] = Vector3(-to_x, to_y + y, 0);
 
-#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(0, -from_y - y, from_x);  \
-	points_ptrw[index++] = Vector3(0, -to_y - y, to_x);      \
-	points_ptrw[index++] = Vector3(0, from_y + y, from_x);   \
-	points_ptrw[index++] = Vector3(0, to_y + y, to_x);       \
+#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(0, -from_y - y, from_x); \
+	points_ptrw[index++] = Vector3(0, -to_y - y, to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, from_x); \
+	points_ptrw[index++] = Vector3(0, to_y + y, to_x); \
 	points_ptrw[index++] = Vector3(0, -from_y - y, -from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x);     \
-	points_ptrw[index++] = Vector3(0, from_y + y, -from_x);  \
+	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
 	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
 
 		// Number of points in an octant. So there will be 8 * points_in_octant * 2 points in total for one circle.
@@ -452,34 +452,34 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points_ptrw[index++] = Vector3(-radius, y_value, 0.f);
 		points_ptrw[index++] = Vector3(-radius, -y_value, 0.f);
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 
-#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0);  \
-	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0);      \
-	points_ptrw[index++] = Vector3(from_x, from_y + y, 0);   \
-	points_ptrw[index++] = Vector3(to_x, to_y + y, 0);       \
+#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0); \
+	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(from_x, from_y + y, 0); \
+	points_ptrw[index++] = Vector3(to_x, to_y + y, 0); \
 	points_ptrw[index++] = Vector3(-from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0);     \
-	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0);  \
+	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0); \
 	points_ptrw[index++] = Vector3(-to_x, to_y + y, 0);
 
-#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(0, -from_y - y, from_x);  \
-	points_ptrw[index++] = Vector3(0, -to_y - y, to_x);      \
-	points_ptrw[index++] = Vector3(0, from_y + y, from_x);   \
-	points_ptrw[index++] = Vector3(0, to_y + y, to_x);       \
+#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(0, -from_y - y, from_x); \
+	points_ptrw[index++] = Vector3(0, -to_y - y, to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, from_x); \
+	points_ptrw[index++] = Vector3(0, to_y + y, to_x); \
 	points_ptrw[index++] = Vector3(0, -from_y - y, -from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x);     \
-	points_ptrw[index++] = Vector3(0, from_y + y, -from_x);  \
+	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
 	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
 
 		float previous_x = radius;
@@ -526,13 +526,13 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		float radius = cs2->get_radius();
 		float height = cs2->get_height();
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 

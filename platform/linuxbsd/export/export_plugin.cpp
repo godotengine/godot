@@ -494,19 +494,19 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 
 	const String basepath = dest.path_join("tmp_linuxbsd_export");
 
-#define CLEANUP_AND_RETURN(m_err)                      \
-	{                                                  \
-		if (da->file_exists(basepath + ".zip")) {      \
-			da->remove(basepath + ".zip");             \
-		}                                              \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.sh")) { \
-			da->remove(basepath + "_start.sh");        \
-		}                                              \
+			da->remove(basepath + "_start.sh"); \
+		} \
 		if (da->file_exists(basepath + "_clean.sh")) { \
-			da->remove(basepath + "_clean.sh");        \
-		}                                              \
-		return m_err;                                  \
-	}                                                  \
+			da->remove(basepath + "_clean.sh"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {

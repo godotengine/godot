@@ -571,24 +571,24 @@ public:
 
 #endif // DEBUG_ENABLED
 
-#define GDREGISTER_CLASS(m_class)                 \
+#define GDREGISTER_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
-		::ClassDB::register_class<m_class>();     \
+		::ClassDB::register_class<m_class>(); \
 	}
-#define GDREGISTER_VIRTUAL_CLASS(m_class)         \
+#define GDREGISTER_VIRTUAL_CLASS(m_class) \
 	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_class<m_class>(true); \
 	}
-#define GDREGISTER_ABSTRACT_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_ABSTRACT_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_abstract_class<m_class>(); \
 	}
-#define GDREGISTER_INTERNAL_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {      \
+#define GDREGISTER_INTERNAL_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_internal_class<m_class>(); \
 	}
-#define GDREGISTER_RUNTIME_CLASS(m_class)             \
-	if constexpr (GD_IS_CLASS_ENABLED(m_class)) {     \
+#define GDREGISTER_RUNTIME_CLASS(m_class) \
+	if constexpr (GD_IS_CLASS_ENABLED(m_class)) { \
 		::ClassDB::register_runtime_class<m_class>(); \
 	}
 

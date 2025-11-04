@@ -383,19 +383,19 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vect
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(p_vertices.size() < 3);
 
-#define ADD_POINT(n)                    \
-	{                                   \
-		if (p_colors.size() > n)        \
-			set_color(p_colors[n]);     \
-		if (p_uvs.size() > n)           \
-			set_uv(p_uvs[n]);           \
-		if (p_uv2s.size() > n)          \
-			set_uv2(p_uv2s[n]);         \
-		if (p_normals.size() > n)       \
-			set_normal(p_normals[n]);   \
-		if (p_tangents.size() > n)      \
+#define ADD_POINT(n) \
+	{ \
+		if (p_colors.size() > n) \
+			set_color(p_colors[n]); \
+		if (p_uvs.size() > n) \
+			set_uv(p_uvs[n]); \
+		if (p_uv2s.size() > n) \
+			set_uv2(p_uv2s[n]); \
+		if (p_normals.size() > n) \
+			set_normal(p_normals[n]); \
+		if (p_tangents.size() > n) \
 			set_tangent(p_tangents[n]); \
-		add_vertex(p_vertices[n]);      \
+		add_vertex(p_vertices[n]); \
 	}
 
 	for (int i = 0; i < p_vertices.size() - 2; i++) {

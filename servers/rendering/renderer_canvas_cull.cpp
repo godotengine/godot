@@ -2712,29 +2712,29 @@ void RendererCanvasCull::tick() {
 }
 
 void RendererCanvasCull::update_interpolation_tick(bool p_process) {
-#define GODOT_UPDATE_INTERPOLATION_TICK(m_list_prev, m_list_curr, m_type, m_owner_list)      \
-	/* Detect any that were on the previous transform list that are no longer active. */     \
-	for (unsigned int n = 0; n < _interpolation_data.m_list_prev->size(); n++) {             \
-		const RID &rid = (*_interpolation_data.m_list_prev)[n];                              \
-		m_type *item = m_owner_list.get_or_null(rid);                                        \
+#define GODOT_UPDATE_INTERPOLATION_TICK(m_list_prev, m_list_curr, m_type, m_owner_list) \
+	/* Detect any that were on the previous transform list that are no longer active. */ \
+	for (unsigned int n = 0; n < _interpolation_data.m_list_prev->size(); n++) { \
+		const RID &rid = (*_interpolation_data.m_list_prev)[n]; \
+		m_type *item = m_owner_list.get_or_null(rid); \
 		/* no longer active? (either the instance deleted or no longer being transformed) */ \
-		if (item && !item->on_interpolate_transform_list) {                                  \
-			item->xform_prev = item->xform_curr;                                             \
-		}                                                                                    \
-	}                                                                                        \
-	/* and now for any in the transform list (being actively interpolated), */               \
-	/* keep the previous transform value up to date and ready for next tick */               \
-	if (p_process) {                                                                         \
-		for (unsigned int n = 0; n < _interpolation_data.m_list_curr->size(); n++) {         \
-			const RID &rid = (*_interpolation_data.m_list_curr)[n];                          \
-			m_type *item = m_owner_list.get_or_null(rid);                                    \
-			if (item) {                                                                      \
-				item->xform_prev = item->xform_curr;                                         \
-				item->on_interpolate_transform_list = false;                                 \
-			}                                                                                \
-		}                                                                                    \
-	}                                                                                        \
-	SWAP(_interpolation_data.m_list_curr, _interpolation_data.m_list_prev);                  \
+		if (item && !item->on_interpolate_transform_list) { \
+			item->xform_prev = item->xform_curr; \
+		} \
+	} \
+	/* and now for any in the transform list (being actively interpolated), */ \
+	/* keep the previous transform value up to date and ready for next tick */ \
+	if (p_process) { \
+		for (unsigned int n = 0; n < _interpolation_data.m_list_curr->size(); n++) { \
+			const RID &rid = (*_interpolation_data.m_list_curr)[n]; \
+			m_type *item = m_owner_list.get_or_null(rid); \
+			if (item) { \
+				item->xform_prev = item->xform_curr; \
+				item->on_interpolate_transform_list = false; \
+			} \
+		} \
+	} \
+	SWAP(_interpolation_data.m_list_curr, _interpolation_data.m_list_prev); \
 	_interpolation_data.m_list_curr->clear();
 
 	GODOT_UPDATE_INTERPOLATION_TICK(canvas_item_transform_update_list_prev, canvas_item_transform_update_list_curr, Item, canvas_item_owner);

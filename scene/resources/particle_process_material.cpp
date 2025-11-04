@@ -2198,10 +2198,10 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticleProcessMaterial::set_collision_bounce);
 	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticleProcessMaterial::get_collision_bounce);
 
-#define ADD_MIN_MAX_PROPERTY(m_property, m_range, m_parameter_name)                                                                                                                       \
+#define ADD_MIN_MAX_PROPERTY(m_property, m_range, m_parameter_name) \
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR2, m_property, PROPERTY_HINT_RANGE, m_range, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_param", "get_param", m_parameter_name); \
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_min", PROPERTY_HINT_RANGE, m_range), "set_param_min", "get_param_min", m_parameter_name);                                     \
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_max", PROPERTY_HINT_RANGE, m_range), "set_param_max", "get_param_max", m_parameter_name);                                     \
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_min", PROPERTY_HINT_RANGE, m_range), "set_param_min", "get_param_min", m_parameter_name); \
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, m_property "_max", PROPERTY_HINT_RANGE, m_range), "set_param_max", "get_param_max", m_parameter_name); \
 	min_max_properties.insert(m_property);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");

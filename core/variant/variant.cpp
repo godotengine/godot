@@ -3152,18 +3152,18 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
 	const Vector<p_type> &r = PackedArrayRef<p_type>::get_array(p_rhs); \
-                                                                        \
-	if (l.size() != r.size())                                           \
-		return false;                                                   \
-                                                                        \
-	const p_type *lr = l.ptr();                                         \
-	const p_type *rr = r.ptr();                                         \
-                                                                        \
-	for (int i = 0; i < l.size(); ++i) {                                \
-		if (!p_compare_func((lr[i]), (rr[i])))                          \
-			return false;                                               \
-	}                                                                   \
-                                                                        \
+\
+	if (l.size() != r.size()) \
+		return false; \
+\
+	const p_type *lr = l.ptr(); \
+	const p_type *rr = r.ptr(); \
+\
+	for (int i = 0; i < l.size(); ++i) { \
+		if (!p_compare_func((lr[i]), (rr[i]))) \
+			return false; \
+	} \
+\
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool semantic_comparison) const {

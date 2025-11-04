@@ -63,13 +63,13 @@ Vector<Pair<size_t, size_t>> find_approx_equal_vec_pairs(std::initializer_list<V
 	return result;
 }
 
-#define CHECK_ARGS_APPROX_PAIRWISE_DISTINCT_VECS(...)                                                              \
-	{                                                                                                              \
-		Vector<Pair<size_t, size_t>> equal_pairs = find_approx_equal_vec_pairs({ __VA_ARGS__ });                   \
-		for (Pair<size_t, size_t> p : equal_pairs) {                                                               \
+#define CHECK_ARGS_APPROX_PAIRWISE_DISTINCT_VECS(...) \
+	{ \
+		Vector<Pair<size_t, size_t>> equal_pairs = find_approx_equal_vec_pairs({ __VA_ARGS__ }); \
+		for (Pair<size_t, size_t> p : equal_pairs) { \
 			MESSAGE("Argument with index ", p.first, " is approximately equal to argument with index ", p.second); \
-		}                                                                                                          \
-		CHECK_MESSAGE(equal_pairs.size() == 0, "All arguments should be pairwise distinct.");                      \
+		} \
+		CHECK_MESSAGE(equal_pairs.size() == 0, "All arguments should be pairwise distinct."); \
 	}
 
 Vector<real_t> get_noise_samples_1d(const FastNoiseLite &p_noise, size_t p_count = 32) {
