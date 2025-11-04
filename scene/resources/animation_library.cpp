@@ -136,8 +136,10 @@ void AnimationLibrary::_set_data(const Dictionary &p_data) {
 
 Dictionary AnimationLibrary::_get_data() const {
 	Dictionary ret;
-	for (const KeyValue<StringName, Ref<Animation>> &K : animations) {
-		ret[K.key] = K.value;
+	List<StringName> names;
+	get_animation_list(&names);
+	for (const StringName &E : names) {
+		ret[E] = animations.get(E);
 	}
 	return ret;
 }
