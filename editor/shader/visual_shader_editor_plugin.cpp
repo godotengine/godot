@@ -2630,6 +2630,10 @@ void VisualShaderEditor::_update_graph() {
 		return;
 	}
 
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	VisualShader::Type type = get_current_shader_type();
 
 	graph->clear_connections();
@@ -5343,12 +5347,18 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			if (is_visible_in_tree()) {
 				_update_graph();
+			} else {
+				theme_dirty = true;
 			}
 			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_files_button();
+			if (theme_dirty && is_visible_in_tree()) {
+				theme_dirty = false;
+				_update_graph();
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
