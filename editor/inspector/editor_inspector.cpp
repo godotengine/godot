@@ -44,6 +44,7 @@
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_property_name_processor.h"
+#include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
@@ -1410,6 +1411,13 @@ void EditorProperty::menu_option(int p_option) {
 			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
+			EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(this);
+			if (epr) {
+				const Ref<Resource> res = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+				if (res.is_valid() && !epr->get_resource_picker()->is_resource_allowed(res)) {
+					return;
+				}
+			}
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
