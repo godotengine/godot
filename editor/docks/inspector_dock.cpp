@@ -161,8 +161,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					unique_resources_confirmation->popup_centered();
 				} else {
 					current_option = -1;
-					unique_resources_label->set_text(TTRC("This object has no resources."));
-					unique_resources_confirmation->popup_centered();
+					EditorNode::get_singleton()->show_warning(TTR("This object has no resources to duplicate."));
 				}
 			} else {
 				editor_data->apply_changes_in_editors();
