@@ -67,15 +67,19 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	Ref<Resource> res = ::ResourceLoader::load_threaded_get(p_path, &error);
 	return res;
 }
+
 PackedStringArray ResourceLoader::get_cached_paths() {
 	return ::ResourceLoader::get_cached_paths();
 }
+
 Dictionary ResourceLoader::get_cached_paths_typed() {
 	return ::ResourceLoader::get_cached_paths_typed();
 }
+
 PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
 	return ::ResourceLoader::get_cached_paths_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
 }
+
 Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
 	return ::ResourceLoader::get_cached_paths_typed_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
 }
