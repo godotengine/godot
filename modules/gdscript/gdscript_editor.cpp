@@ -4231,10 +4231,10 @@ static void _refactor_rename_symbol_add_match(const String &p_path, const GDScri
 	r_result.add_match(p_path, match);
 }
 
-static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser::NodeList &p_node_list, const String &p_symbol, const String &p_path, ScriptLanguage::RefactorRenameSymbolResult &r_result, RefactorRenameSymbolDefinintionType p_expected_definition_type, GDScriptParser::Node *p_source_node, LocalVector<GDScriptParser::IdentifierNode::Source> p_target_sources = {}) {
+static Error _refactor_rename_symbol_match_from_class_loop_nodes(LocalVector<GDScriptParser::Node *> &p_nodes, const String &p_symbol, const String &p_path, ScriptLanguage::RefactorRenameSymbolResult &r_result, RefactorRenameSymbolDefinintionType p_expected_definition_type, GDScriptParser::Node *p_source_node, LocalVector<GDScriptParser::IdentifierNode::Source> p_target_sources = {}) {
 	ERR_FAIL_NULL_V(p_source_node, FAILED);
 
-	for (GDScriptParser::Node *node : p_node_list) {
+	for (GDScriptParser::Node *node : p_nodes) {
 		switch (node->type) {
 			case GDScriptParser::Node::Type::IDENTIFIER: {
 				GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(node);
@@ -4253,7 +4253,7 @@ static Error _refactor_rename_symbol_match_from_class_loop_nodes(GDScriptParser:
 
 				// Maybe the identifier is in the definition itself of the source, so it doesn't have any source.
 				// Though, it's owner could be the same as the source node.
-				GDScriptParser::Node *identifier_node_owner = p_node_list.get_owner(identifier_node);
+				GDScriptParser::Node *identifier_node_owner = node->owner;
 				if (identifier_node_owner == p_source_node) {
 					if (identifier_node_owner->type != GDScriptParser::Node::ENUM) {
 						_refactor_rename_symbol_add_match(p_path, identifier_node, r_result);
@@ -4409,8 +4409,9 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes(GDScri
 	}
 
 	// As we found that the match comes from a class, let's find all the matches in that class.
-	GDScriptParser::NodeList list(p_class_node);
-	return _refactor_rename_symbol_match_from_class_loop_nodes(list, p_symbol, p_path, r_result, p_expected_definition_type, p_source_node, target_sources);
+	LocalVector<GDScriptParser::Node *> nodes;
+	p_class_node->get_nodes(nodes);
+	return _refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, p_path, r_result, p_expected_definition_type, p_source_node, target_sources);
 }
 
 // This function finds and match all instances of the symbol outside the class.
@@ -4487,8 +4488,8 @@ static Error _refactor_rename_symbol_match_from_class_find_matching_nodes_from_s
 			continue;
 		}
 
-		GDScriptParser::NodeList node_list(const_cast<GDScriptParser::ClassNode *>(parser.get_head()));
-		_refactor_rename_symbol_match_from_class_loop_nodes(node_list, p_symbol, script_path, r_result, p_expected_definition_type, p_source_node);
+		LocalVector<GDScriptParser::Node *> nodes;
+		_refactor_rename_symbol_match_from_class_loop_nodes(nodes, p_symbol, script_path, r_result, p_expected_definition_type, p_source_node);
 	}
 
 	return OK;

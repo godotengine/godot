@@ -736,6 +736,8 @@ void GDScriptParser::end_statement(const String &p_context) {
 
 void GDScriptParser::parse_program() {
 	head = alloc_node<ClassNode>();
+	head->is_root = true;
+	push_owner(head);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, head);
 	head->start_line = 1;
 	head->end_line = 1;
@@ -871,6 +873,7 @@ void GDScriptParser::parse_program() {
 	// When the only thing needed is the class name, icon, and abstractness; we don't need to parse the whole file.
 	// It really speed up the call to `GDScriptLanguage::get_global_class_name()` especially for large script.
 	if (!parse_body) {
+		pop_owner(head);
 		return;
 	}
 
@@ -880,6 +883,7 @@ void GDScriptParser::parse_program() {
 	head->end_column = current.end_column;
 
 	complete_extents(head);
+	pop_owner(head);
 
 #ifdef TOOLS_ENABLED
 	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer->get_comments();
@@ -979,6 +983,7 @@ bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
 
 GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	ClassNode *new_class = alloc_node<ClassNode>();
+	push_owner(new_class);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_CLASS, new_class);
 
 	ClassNode *previous_class = current_class;
@@ -1010,6 +1015,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after class declaration.)")) {
 		current_class = previous_class;
 		complete_extents(new_class);
+		pop_owner(new_class);
 		return new_class;
 	}
 
@@ -1023,6 +1029,7 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class(bool p_is_static) {
 
 	parse_class_body(multiline);
 	complete_extents(new_class);
+	pop_owner(new_class);
 
 	if (multiline) {
 		consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the class body.)");
@@ -1277,10 +1284,13 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
 	VariableNode *variable = alloc_node<VariableNode>();
+	push_owner(variable);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, variable);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
 		complete_extents(variable);
+		pop_owner(variable);
+		variable->owner = nullptr;
 		return nullptr;
 	}
 
@@ -1297,6 +1307,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 			} else {
 				push_error(R"(Expected type after ":")");
 				complete_extents(variable);
+				pop_owner(variable);
+				variable->owner = nullptr;
 				return nullptr;
 			}
 		} else if (check((GDScriptTokenizer::Token::EQUAL))) {
@@ -1337,6 +1349,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	complete_extents(variable);
+	pop_owner(variable);
 	end_statement("variable declaration");
 
 	return variable;
@@ -1346,6 +1359,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 	if (p_need_indent) {
 		if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block for property after ":".)")) {
 			complete_extents(p_variable);
+			pop_owner(p_variable);
+			p_variable->owner = nullptr;
 			return nullptr;
 		}
 	}
@@ -1355,6 +1370,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected "get" or "set" for property declaration.)")) {
 		complete_extents(p_variable);
+		pop_owner(p_variable);
+		p_variable->owner = nullptr;
 		return nullptr;
 	}
 
@@ -1411,7 +1428,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 		}
 		function = parse_identifier();
 	}
-	complete_extents(p_variable);
+	complete_extents(property);
+	pop_owner(property);
 
 	if (p_variable->property == VariableNode::PROP_SETGET) {
 		end_statement("property declaration");
@@ -1427,8 +1445,11 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 	switch (p_variable->property) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
+			push_owner(function);
+
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
 			complete_extents(identifier);
+
 			identifier->name = "@" + p_variable->identifier->name + "_setter";
 			function->identifier = identifier;
 			function->is_static = p_variable->is_static;
@@ -1436,6 +1457,8 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "set".)");
 
 			ParameterNode *parameter = alloc_node<ParameterNode>();
+			push_owner(parameter);
+
 			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected parameter name after "(".)")) {
 				reset_extents(parameter, previous);
 				p_variable->setter_parameter = parse_identifier();
@@ -1444,6 +1467,7 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 				function->parameters.push_back(parameter);
 			}
 			complete_extents(parameter);
+			pop_owner(parameter);
 
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after parameter name.)*");
 			consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after ")".)*");
@@ -1452,12 +1476,14 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			current_function = function;
 			if (p_variable->setter_parameter != nullptr) {
 				SuiteNode *body = alloc_node<SuiteNode>();
+				push_owner(body);
 				body->add_local(parameter, function);
 				function->body = parse_suite("setter declaration", body);
 				p_variable->setter = function;
 			}
 			current_function = previous_function;
 			complete_extents(function);
+			pop_owner(function);
 			break;
 		}
 		case VariableNode::PROP_SETGET:
@@ -1476,6 +1502,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 	switch (p_variable->property) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
+			push_owner(function);
 			refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 
 			if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
@@ -1495,11 +1522,13 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			current_function = function;
 
 			SuiteNode *body = alloc_node<SuiteNode>();
+			push_owner(body);
 			function->body = parse_suite("getter declaration", body);
 			p_variable->getter = function;
 
 			current_function = previous_function;
 			complete_extents(function);
+			pop_owner(function);
 			break;
 		}
 		case VariableNode::PROP_SETGET:
@@ -1516,10 +1545,13 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 
 GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
+	push_owner(constant);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, constant);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
 		complete_extents(constant);
+		pop_owner(constant);
+		constant->owner = nullptr;
 		return nullptr;
 	}
 
@@ -1542,14 +1574,19 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 		if (constant->initializer == nullptr) {
 			push_error(R"(Expected initializer expression for constant.)");
 			complete_extents(constant);
+			pop_owner(constant);
+			constant->owner = nullptr;
 			return nullptr;
 		}
 	} else {
 		complete_extents(constant);
+		pop_owner(constant);
+		constant->owner = nullptr;
 		return nullptr;
 	}
 
 	complete_extents(constant);
+	pop_owner(constant);
 	end_statement("constant declaration");
 
 	return constant;
@@ -1561,6 +1598,7 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 	}
 
 	ParameterNode *parameter = alloc_node<ParameterNode>();
+	push_owner(parameter);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_PARAMETER, parameter);
 	parameter->identifier = parse_identifier();
 
@@ -1582,6 +1620,7 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 	}
 
 	complete_extents(parameter);
+	pop_owner(parameter);
 
 	return parameter;
 }
@@ -1590,6 +1629,8 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	GDScriptTokenizer::Token signal_start_token = previous;
 
 	SignalNode *signal = alloc_node<SignalNode>();
+	push_owner(signal);
+
 	if (is_for_refactor_rename()) {
 		if (previous.has_cursor() || current.has_cursor() || !tokenizer->is_past_cursor()) {
 			refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal, false);
@@ -1598,12 +1639,12 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
+		pop_owner(signal);
+		signal->owner = nullptr;
 		return nullptr;
 	}
 
 	signal->identifier = parse_identifier();
-
-	signal->current_class = current_class;
 
 	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 		push_multiline(true);
@@ -1635,6 +1676,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	}
 
 	complete_extents(signal);
+	pop_owner(signal);
 	end_statement("signal declaration");
 
 	GDScriptTokenizer::Token signal_end_token = previous;
@@ -1652,6 +1694,8 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	GDScriptTokenizer::Token enum_start = previous;
 
 	EnumNode *enum_node = alloc_node<EnumNode>();
+	push_owner(enum_node);
+
 	if (is_for_refactor_rename()) {
 		if (previous.has_cursor() || current.has_cursor() || !tokenizer->is_past_cursor()) {
 			refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node, false);
@@ -1751,6 +1795,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" for enum.)");
 	complete_extents(enum_node);
+	pop_owner(enum_node);
 	end_statement("enum");
 
 	GDScriptTokenizer::Token enum_end = previous;
@@ -1853,9 +1898,11 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 
 GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	FunctionNode *function = alloc_node<FunctionNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
+	push_owner(function);
+
 	function->is_static = p_is_static;
 
+	refactor_rename_register(REFACTOR_RENAME_TYPE_DECLARATION, function);
 	make_completion_context(COMPLETION_OVERRIDE_METHOD, function);
 
 #ifdef TOOLS_ENABLED
@@ -1866,6 +1913,8 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after "func".)")) {
 		complete_extents(function);
+		pop_owner(function);
+		function->owner = nullptr;
 		return nullptr;
 	}
 
@@ -1875,6 +1924,7 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 	function->identifier = parse_identifier();
 
 	SuiteNode *body = alloc_node<SuiteNode>();
+	push_owner(body);
 
 	SuiteNode *previous_suite = current_suite;
 	current_suite = body;
@@ -1899,6 +1949,8 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 		end_statement("bodyless function declaration");
 		reset_extents(body, current);
 		complete_extents(body);
+		pop_owner(body);
+
 		function->body = body;
 	} else {
 		function->body = parse_suite("function declaration", body);
@@ -1906,16 +1958,17 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 
 	current_function = previous_function;
 	complete_extents(function);
+	pop_owner(function);
 
 	return function;
 }
 
 GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_valid_targets) {
 	AnnotationNode *annotation = alloc_node<AnnotationNode>();
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION, annotation);
-
+	push_owner(annotation);
 	annotation->name = previous.literal;
 
+	refactor_rename_register(REFACTOR_RENAME_TYPE_ANNOTATION, annotation);
 	make_completion_context(COMPLETION_ANNOTATION, annotation);
 
 	bool valid = true;
@@ -1986,6 +2039,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		pop_completion_call();
 	}
 	complete_extents(annotation);
+	pop_owner(annotation);
 
 	match(GDScriptTokenizer::Token::NEWLINE); // Newline after annotation is optional.
 
@@ -1993,7 +2047,9 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		valid = validate_annotation_arguments(annotation);
 	}
 
-	return valid ? annotation : nullptr;
+	return valid
+			? annotation
+			: nullptr;
 }
 
 void GDScriptParser::clear_unused_annotations() {
@@ -2020,8 +2076,14 @@ bool GDScriptParser::register_annotation(const MethodInfo &p_info, uint32_t p_ta
 	return true;
 }
 
+// If `p_suite != nullptr`, it expects that `push_owner(p_suite)` has been already done.
+// It will `pop_owner()` the returned suite.
 GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, SuiteNode *p_suite, bool p_for_lambda) {
 	SuiteNode *suite = p_suite != nullptr ? p_suite : alloc_node<SuiteNode>();
+	if (p_suite == nullptr) {
+		push_owner(suite);
+	}
+
 	suite->parent_block = current_suite;
 	suite->parent_function = current_function;
 	current_suite = suite;
@@ -2041,6 +2103,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 		if (!consume(GDScriptTokenizer::Token::INDENT, vformat(R"(Expected indented block after %s.)", p_context))) {
 			current_suite = suite->parent_block;
 			complete_extents(suite);
+			pop_owner(suite);
 			return suite;
 		}
 	}
@@ -2095,6 +2158,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 	} while ((multiline || previous.type == GDScriptTokenizer::Token::SEMICOLON) && !check(GDScriptTokenizer::Token::DEDENT) && !lambda_ended && !is_at_end());
 
 	complete_extents(suite);
+	pop_owner(suite);
 
 	if (multiline) {
 		if (!lambda_ended) {
@@ -2175,7 +2239,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			break;
 		case GDScriptTokenizer::Token::RETURN: {
 			advance();
+
 			ReturnNode *n_return = alloc_node<ReturnNode>();
+			push_owner(n_return);
+
 			if (!is_statement_end()) {
 				if (current_function && (current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init || current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._static_init)) {
 					push_error(R"(Constructor cannot return a value.)");
@@ -2186,7 +2253,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 				// If this fails the expression will be nullptr, but that's the same as no return, so it's fine.
 				n_return->return_value = parse_expression(false);
 			}
+
 			complete_extents(n_return);
+			pop_owner(n_return);
+
 			result = n_return;
 
 			current_suite->has_return = true;
@@ -2337,6 +2407,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 	// TODO: Add assert message.
 	AssertNode *assert = alloc_node<AssertNode>();
+	push_owner(assert);
 
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "assert".)");
@@ -2346,6 +2417,8 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 		push_error("Expected expression to assert.");
 		pop_multiline();
 		complete_extents(assert);
+		pop_owner(assert);
+		assert->owner = nullptr;
 		return nullptr;
 	}
 
@@ -2355,6 +2428,8 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 			push_error(R"(Expected error message for assert after ",".)");
 			pop_multiline();
 			complete_extents(assert);
+			pop_owner(assert);
+			assert->owner = nullptr;
 			return nullptr;
 		}
 		match(GDScriptTokenizer::Token::COMMA);
@@ -2364,6 +2439,7 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after assert expression.)*");
 
 	complete_extents(assert);
+	pop_owner(assert);
 	end_statement(R"("assert")");
 
 	return assert;
@@ -2395,6 +2471,7 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 
 GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	ForNode *n_for = alloc_node<ForNode>();
+	push_owner(n_for);
 
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after "for".)")) {
 		n_for->variable = parse_identifier();
@@ -2430,6 +2507,8 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	can_continue = true;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
+	push_owner(suite);
+
 	if (n_for->variable) {
 		const SuiteNode::Local &local = current_suite->get_local(n_for->variable->name);
 		if (local.type != SuiteNode::Local::UNDEFINED) {
@@ -2439,7 +2518,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	}
 	suite->is_in_loop = true;
 	n_for->loop = parse_suite(R"("for" block)", suite);
+
 	complete_extents(n_for);
+	pop_owner(n_for);
 
 	// Reset break/continue state.
 	can_break = could_break;
@@ -2450,6 +2531,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	IfNode *n_if = alloc_node<IfNode>();
+	push_owner(n_if);
 
 	n_if->condition = parse_expression(false);
 	if (n_if->condition == nullptr) {
@@ -2467,6 +2549,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
+		push_owner(else_block);
 		else_block->parent_function = current_function;
 		else_block->parent_block = current_suite;
 
@@ -2476,6 +2559,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 		IfNode *elif = parse_if("elif");
 		else_block->statements.push_back(elif);
 		complete_extents(else_block);
+		pop_owner(else_block);
 		n_if->false_block = else_block;
 
 		current_suite = previous_suite;
@@ -2484,6 +2568,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 		n_if->false_block = parse_suite(R"("else" block)");
 	}
 	complete_extents(n_if);
+	pop_owner(n_if);
 
 	if (n_if->false_block != nullptr && n_if->false_block->has_return && n_if->true_block->has_return) {
 		current_suite->has_return = true;
@@ -2497,6 +2582,7 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 
 GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	MatchNode *match_node = alloc_node<MatchNode>();
+	push_owner(match_node);
 
 	match_node->test = parse_expression(false);
 	if (match_node->test == nullptr) {
@@ -2508,6 +2594,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 	if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected an indented block after "match" statement.)")) {
 		complete_extents(match_node);
+		pop_owner(match_node);
 		return match_node;
 	}
 
@@ -2557,6 +2644,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		match_node->branches.push_back(branch);
 	}
 	complete_extents(match_node);
+	pop_owner(match_node);
 
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
@@ -2574,6 +2662,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 	MatchBranchNode *branch = alloc_node<MatchBranchNode>();
+	push_owner(branch);
 	reset_extents(branch, current);
 
 	bool has_bind = false;
@@ -2606,6 +2695,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		// Pattern guard.
 		// Create block for guard because it also needs to access the bound variables from patterns, and we don't want to add them to the outer scope.
 		branch->guard_body = alloc_node<SuiteNode>();
+		push_owner(branch->guard_body);
 		if (branch->patterns.size() > 0) {
 			for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
 				SuiteNode::Local local(E.value, current_function);
@@ -2626,6 +2716,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		}
 		current_suite = parent_block;
 		complete_extents(branch->guard_body);
+		pop_owner(branch->guard_body);
 
 		has_guard = true;
 		branch->has_wildcard = false; // If it has a guard, the wildcard might still not match.
@@ -2634,6 +2725,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 	if (!consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":"%s after "match" %s.)", has_guard ? "" : R"( or "when")", has_guard ? "pattern guard" : "patterns"))) {
 		branch->block = alloc_recovery_suite();
 		complete_extents(branch);
+		pop_owner(branch);
 		// Consume the whole line and treat the next one as new match branch.
 		while (current.type != GDScriptTokenizer::Token::NEWLINE && !is_at_end()) {
 			advance();
@@ -2645,6 +2737,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 	}
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
+	push_owner(suite);
 	if (branch->patterns.size() > 0) {
 		for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
 			SuiteNode::Local local(E.value, current_function);
@@ -2654,13 +2747,16 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 	}
 
 	branch->block = parse_suite("match pattern block", suite);
+
 	complete_extents(branch);
+	pop_owner(branch);
 
 	return branch;
 }
 
 GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_root_pattern) {
 	PatternNode *pattern = alloc_node<PatternNode>();
+	push_owner(pattern);
 	reset_extents(pattern, current);
 
 	switch (current.type) {
@@ -2669,6 +2765,8 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			advance();
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected bind name after "var".)")) {
 				complete_extents(pattern);
+				pop_owner(pattern);
+				pattern->owner = nullptr;
 				return nullptr;
 			}
 			pattern->pattern_type = PatternNode::PT_BIND;
@@ -2680,6 +2778,8 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 				if (p_root_pattern->has_bind(pattern->bind->name)) {
 					push_error(vformat(R"(Bind variable name "%s" was already used in this pattern.)", pattern->bind->name));
 					complete_extents(pattern);
+					pop_owner(pattern);
+					pattern->owner = nullptr;
 					return nullptr;
 				}
 			}
@@ -2687,6 +2787,7 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			if (current_suite->has_local(pattern->bind->name)) {
 				push_error(vformat(R"(There's already a %s named "%s" in this scope.)", current_suite->get_local(pattern->bind->name).get_name(), pattern->bind->name));
 				complete_extents(pattern);
+				pattern->owner = nullptr;
 				return nullptr;
 			}
 
@@ -2781,6 +2882,8 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			if (expression == nullptr) {
 				push_error(R"(Expected expression for match pattern.)");
 				complete_extents(pattern);
+				pop_owner(pattern);
+				pattern->owner = nullptr;
 				return nullptr;
 			} else {
 				if (expression->type == GDScriptParser::Node::LITERAL) {
@@ -2794,6 +2897,7 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 		}
 	}
 	complete_extents(pattern);
+	pop_owner(pattern);
 
 	return pattern;
 }
@@ -2808,6 +2912,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::PatternNode::get_bind(const Stri
 
 GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	WhileNode *n_while = alloc_node<WhileNode>();
+	push_owner(n_while);
 
 	n_while->condition = parse_expression(false);
 	if (n_while->condition == nullptr) {
@@ -2825,9 +2930,12 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	can_continue = true;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
+	push_owner(suite);
 	suite->is_in_loop = true;
 	n_while->loop = parse_suite(R"("while" block)", suite);
+
 	complete_extents(n_while);
+	pop_owner(n_while);
 
 	// Reset break/continue state.
 	can_break = could_break;
@@ -3016,6 +3124,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 			constant->value = Math::NaN;
 			break;
 		default:
+			constant->owner = nullptr;
 			return nullptr; // Unreachable.
 	}
 
@@ -3024,7 +3133,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	GDScriptTokenizer::Token::Type op_type = previous.type;
+
 	UnaryOpNode *operation = alloc_node<UnaryOpNode>();
+	push_owner(operation);
 
 	switch (op_type) {
 		case GDScriptTokenizer::Token::MINUS:
@@ -3062,9 +3173,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 			break;
 		default:
 			complete_extents(operation);
-			return nullptr; // Unreachable.
+			pop_owner(operation);
+			operation->owner = nullptr;
+			return nullptr;
 	}
 	complete_extents(operation);
+	pop_owner(operation);
 
 	return operation;
 }
@@ -3072,20 +3186,27 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	// check that NOT is followed by IN by consuming it before calling parse_binary_operator which will only receive a plain IN
 	UnaryOpNode *operation = alloc_node<UnaryOpNode>();
+	push_owner(operation);
 	reset_extents(operation, p_previous_operand);
 	update_extents(operation);
+
 	consume(GDScriptTokenizer::Token::TK_IN, R"(Expected "in" after "not" in content-test operator.)");
+
 	ExpressionNode *in_operation = parse_binary_operator(p_previous_operand, p_can_assign);
 	operation->operation = UnaryOpNode::OP_LOGIC_NOT;
 	operation->variant_op = Variant::OP_NOT;
 	operation->operand = in_operation;
 	complete_extents(operation);
+	pop_owner(operation);
+
 	return operation;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	GDScriptTokenizer::Token op = previous;
+
 	BinaryOpNode *operation = alloc_node<BinaryOpNode>();
+	push_owner(operation);
 	reset_extents(operation, p_previous_operand);
 	update_extents(operation);
 
@@ -3093,6 +3214,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 	operation->left_operand = p_previous_operand;
 	operation->right_operand = parse_precedence(precedence, false);
 	complete_extents(operation);
+	pop_owner(operation);
 
 	if (operation->right_operand == nullptr) {
 		push_error(vformat(R"(Expected expression after "%s" operator.)", op.get_name()));
@@ -3183,15 +3305,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->variant_op = Variant::OP_GREATER_EQUAL;
 			break;
 		default:
-			return nullptr; // Unreachable.
+			operation->owner = nullptr;
+			return nullptr;
 	}
 
 	return operation;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
+#define RETURN_PARSED_TERNARY_OPERATOR_NODE(parsed_value) RETURN_PARSED_NODE(TernaryOpNode, operation, parsed_value)
 	// Only one ternary operation exists, so no abstraction here.
 	TernaryOpNode *operation = alloc_node<TernaryOpNode>();
+	push_owner(operation);
 	reset_extents(operation, p_previous_operand);
 	update_extents(operation);
 
@@ -3211,6 +3336,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(Expressio
 	}
 
 	complete_extents(operation);
+	pop_owner(operation);
+
 	return operation;
 }
 
@@ -3257,6 +3384,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 
 	AssignmentNode *assignment = alloc_node<AssignmentNode>();
+	push_owner(assignment);
+
 	refactor_rename_register(REFACTOR_RENAME_TYPE_ASSIGN, assignment);
 	reset_extents(assignment, p_previous_operand);
 	update_extents(assignment);
@@ -3327,20 +3456,23 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		push_error(R"(Expected an expression after "=".)");
 	}
 	complete_extents(assignment);
+	pop_owner(assignment);
 
 	return assignment;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	AwaitNode *await = alloc_node<AwaitNode>();
+	push_owner(await);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, await);
+
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
 		push_error(R"(Expected signal or coroutine after "await".)");
 	}
 	await->to_await = element;
 	complete_extents(await);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, await);
+	pop_owner(await);
 
 	if (current_function) { // Might be null in a getter or setter.
 		current_function->is_coroutine = true;
@@ -3351,9 +3483,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ArrayNode *array = alloc_node<ArrayNode>();
-	if (is_for_refactor_rename()) {
-		(void)0;
-	}
+	push_owner(array);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_ARRAY, array);
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
@@ -3374,14 +3504,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after array elements.)");
 	complete_extents(array);
-
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ARRAY, array);
+	pop_owner(array);
 
 	return array;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
+	push_owner(dictionary);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_DICTIONARY, dictionary);
 	bool decided_style = false;
 	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
@@ -3509,6 +3639,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);
+	pop_owner(dictionary);
 
 	return dictionary;
 }
@@ -3526,6 +3657,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
+	push_owner(attribute);
 	reset_extents(attribute, p_previous_operand);
 	update_extents(attribute);
 
@@ -3558,6 +3690,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier after "." for attribute access.)")) {
 		complete_extents(attribute);
+		pop_owner(attribute);
+
 		return attribute;
 	}
 
@@ -3565,11 +3699,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 	attribute->attribute = parse_identifier();
 
 	complete_extents(attribute);
+	pop_owner(attribute);
+
 	return attribute;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *subscript = alloc_node<SubscriptNode>();
+	push_owner(subscript);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_SUBSCRIPT, subscript);
 	reset_extents(subscript, p_previous_operand);
 	update_extents(subscript);
@@ -3592,12 +3729,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected "]" after subscription index.)");
 	complete_extents(subscript);
+	pop_owner(subscript);
 
 	return subscript;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	CastNode *cast = alloc_node<CastNode>();
+	push_owner(cast);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, cast);
 	reset_extents(cast, p_previous_operand);
 	update_extents(cast);
@@ -3605,6 +3744,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_pre
 	cast->operand = p_previous_operand;
 	cast->cast_type = parse_type();
 	complete_extents(cast);
+	pop_owner(cast);
 
 	if (cast->cast_type == nullptr) {
 		push_error(R"(Expected type specifier after "as".)");
@@ -3616,6 +3756,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_pre
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	CallNode *call = alloc_node<CallNode>();
+	push_owner(call);
 	reset_extents(call, p_previous_operand);
 
 	if (previous.type == GDScriptTokenizer::Token::SUPER) {
@@ -3637,6 +3778,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				push_error(R"(Cannot use implicit "super" call outside of a function.)");
 				pop_multiline();
 				complete_extents(call);
+				pop_owner(call);
+				call->owner = nullptr;
 				return nullptr;
 			}
 			if (current_function->identifier) {
@@ -3654,6 +3797,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
 				pop_multiline();
 				complete_extents(call);
+				pop_owner(call);
+				call->owner = nullptr;
 				return nullptr;
 			}
 
@@ -3665,6 +3810,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
 				pop_multiline();
 				complete_extents(call);
+				pop_owner(call);
+				call->owner = nullptr;
 				return nullptr;
 			}
 		}
@@ -3738,6 +3885,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
 	complete_extents(call);
+	pop_owner(call);
 
 	return call;
 }
@@ -3761,6 +3909,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 	}
 
 	GetNodeNode *get_node = alloc_node<GetNodeNode>();
+	push_owner(get_node);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_GET_NODE, get_node);
 
 	// Store the last item in the path so the parser knows what to expect.
@@ -3785,6 +3934,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			if (path_state != PATH_STATE_START && path_state != PATH_STATE_SLASH) {
 				push_error(R"("%" is only valid in the beginning of a node name (either after "$" or after "/"))");
 				complete_extents(get_node);
+				pop_owner(get_node);
+				get_node->owner = nullptr;
 				return nullptr;
 			}
 
@@ -3795,6 +3946,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			if (path_state != PATH_STATE_START && path_state != PATH_STATE_NODE_NAME) {
 				push_error(R"("/" is only valid at the beginning of the path or after a node name.)");
 				complete_extents(get_node);
+				pop_owner(get_node);
+				get_node->owner = nullptr;
 				return nullptr;
 			}
 
@@ -3825,6 +3978,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 				}
 				push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous_token));
 				complete_extents(get_node);
+				pop_owner(get_node);
+				get_node->owner = nullptr;
 				return nullptr;
 			}
 
@@ -3847,6 +4002,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 		} else if (!check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
 			push_error(vformat(R"(Unexpected "%s" in node path.)", current.get_name()));
 			complete_extents(get_node);
+			pop_owner(get_node);
+			get_node->owner = nullptr;
 			return nullptr;
 		}
 
@@ -3858,11 +4015,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 	} while (true);
 
 	complete_extents(get_node);
+	pop_owner(get_node);
+
 	return get_node;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	PreloadNode *preload = alloc_node<PreloadNode>();
+	push_owner(preload);
 	refactor_rename_register(REFACTOR_RENAME_TYPE_LOAD, preload);
 	preload->resolved_path = "<missing path>";
 
@@ -3888,16 +4048,19 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after preload path.)*");
 	complete_extents(preload);
+	pop_owner(preload);
 
 	return preload;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	LambdaNode *lambda = alloc_node<LambdaNode>();
+	push_owner(lambda);
 	lambda->parent_function = current_function;
 	lambda->parent_lambda = current_lambda;
 
 	FunctionNode *function = alloc_node<FunctionNode>();
+	push_owner(function);
 	function->source_lambda = lambda;
 
 	function->is_static = current_function != nullptr ? current_function->is_static : false;
@@ -3930,6 +4093,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	current_lambda = lambda;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
+	push_owner(body);
 	body->parent_function = current_function;
 	body->parent_block = current_suite;
 
@@ -3953,7 +4117,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 
 	function->body = parse_suite("lambda declaration", body, true);
 	complete_extents(function);
+	pop_owner(function);
 	complete_extents(lambda);
+	pop_owner(lambda);
 
 	pop_multiline();
 
@@ -3987,6 +4153,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *
 	UnaryOpNode *not_node = nullptr;
 	if (match(GDScriptTokenizer::Token::NOT)) {
 		not_node = alloc_node<UnaryOpNode>();
+		push_owner(not_node);
 		not_node->operation = UnaryOpNode::OP_LOGIC_NOT;
 		not_node->variant_op = Variant::OP_NOT;
 		reset_extents(not_node, p_previous_operand);
@@ -3994,16 +4161,19 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *
 	}
 
 	TypeTestNode *type_test = alloc_node<TypeTestNode>();
+	push_owner(type_test);
 	reset_extents(type_test, p_previous_operand);
 	update_extents(type_test);
 
 	type_test->operand = p_previous_operand;
 	type_test->test_type = parse_type();
 	complete_extents(type_test);
+	pop_owner(type_test);
 
 	if (not_node != nullptr) {
 		not_node->operand = type_test;
 		complete_extents(not_node);
+		pop_owner(not_node);
 	}
 
 	if (type_test->test_type == nullptr) {
@@ -4044,12 +4214,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
+	push_owner(type);
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
 
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		if (match(GDScriptTokenizer::Token::TK_VOID)) {
 			if (p_allow_void) {
 				complete_extents(type);
+				pop_owner(type);
 				TypeNode *void_type = type;
 				refactor_rename_register(REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID, type);
 				return void_type;
@@ -4059,7 +4231,9 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		}
 		// Leave error message to the caller who knows the context.
 		complete_extents(type);
+		pop_owner(type);
 		refactor_rename_register(p_allow_void ? REFACTOR_RENAME_TYPE_TYPE_NAME_OR_VOID : REFACTOR_RENAME_TYPE_TYPE_NAME, type);
+		type->owner = nullptr;
 		return nullptr;
 	}
 
@@ -4088,6 +4262,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after collection type.)");
 		if (type != nullptr) {
 			complete_extents(type);
+			pop_owner(type);
 		}
 		return type;
 	}
@@ -4105,6 +4280,8 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	}
 
 	complete_extents(type);
+	pop_owner(type);
+
 	return type;
 }
 

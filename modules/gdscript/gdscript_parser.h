@@ -373,6 +373,36 @@ public:
 
 		DataType datatype;
 
+		Node *owner = nullptr;
+		bool is_detatched() const {
+			Node *current_owner = owner;
+			while (current_owner != nullptr) {
+				if (current_owner->type == CLASS) {
+					if (static_cast<ClassNode *>(current_owner)->is_root) {
+						return false;
+					}
+				}
+				current_owner = current_owner->owner;
+			}
+			return true;
+		}
+		bool is_owner_of(const Node *p_node, bool p_immediate_child = false) const {
+			if (p_immediate_child) {
+				return p_node->owner == this;
+			}
+			Node *node_owner = p_node->owner;
+			while (node_owner != nullptr) {
+				if (node_owner == this) {
+					return true;
+				}
+				node_owner = node_owner->owner;
+			}
+			return false;
+		}
+		bool is_owned_by(const Node *p_node, bool p_immediate_parent = false) const {
+			return p_node->is_owner_of(this, p_immediate_parent);
+		}
+
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
@@ -845,6 +875,7 @@ public:
 		bool extends_used = false;
 		bool onready_used = false;
 		bool is_abstract = false;
+		bool is_root = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
 		String extends_path;
@@ -1300,7 +1331,6 @@ public:
 
 	struct SignalNode : public Node {
 		IdentifierNode *identifier = nullptr;
-		ClassNode *current_class = nullptr;
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		MethodInfo method_info;
@@ -1636,76 +1666,6 @@ public:
 		}
 	};
 
-	class NodeList {
-	protected:
-		LocalVector<GDScriptParser::Node *> nodes;
-		HashMap<GDScriptParser::Node *, LocalVector<GDScriptParser::Node *>> node_map;
-		HashMap<GDScriptParser::Node *, GDScriptParser::Node *> node_owners;
-
-		void _insert_entry(GDScriptParser::Node *p_node, GDScriptParser::Node *p_owner) {
-			if (p_node == p_owner) {
-				return;
-			}
-
-			if (nodes.has(p_node)) {
-				return;
-			}
-			if (node_map[p_owner].has(p_node)) {
-				return;
-			}
-			if (node_owners.has(p_node)) {
-				return;
-			}
-			nodes.push_back(p_node);
-			node_map[p_owner].push_back(p_node);
-			node_owners[p_node] = p_owner;
-
-			LocalVector<GDScriptParser::Node *> local_nodes;
-			p_node->get_nodes(local_nodes, false);
-			for (GDScriptParser::Node *node : local_nodes) {
-				_insert_entry(node, p_node);
-			}
-		}
-
-	public:
-		LocalVector<GDScriptParser::Node *>::Iterator begin() {
-			return nodes.begin();
-		}
-
-		LocalVector<GDScriptParser::Node *>::Iterator end() {
-			return nodes.end();
-		}
-
-		GDScriptParser::Node *get_head() {
-			return node_map[nullptr][0];
-		}
-
-		GDScriptParser::Node *get_owner(GDScriptParser::Node *p_node) {
-			return node_owners[p_node];
-		}
-
-		LocalVector<GDScriptParser::Node *> &get_children(GDScriptParser::Node *p_node) {
-			return node_map[p_node];
-		}
-
-		NodeList(GDScriptParser::Node *p_node) {
-			nodes.push_back(p_node);
-			node_map[nullptr].push_back(p_node);
-
-			LocalVector<GDScriptParser::Node *> _nodes;
-			p_node->get_nodes(_nodes, false);
-			for (GDScriptParser::Node *_node : _nodes) {
-				_insert_entry(_node, p_node);
-			}
-		}
-
-		~NodeList() {
-			nodes.clear();
-			node_map.clear();
-			node_owners.clear();
-		}
-	};
-
 	enum ParsingType {
 		PARSING_TYPE_STANDARD,
 		PARSING_TYPE_COMPLETION,
@@ -1857,6 +1817,23 @@ private:
 	FunctionNode *current_function = nullptr;
 	LambdaNode *current_lambda = nullptr;
 	SuiteNode *current_suite = nullptr;
+	LocalVector<Node *> owners;
+
+	void push_owner(Node *p_owner) {
+		owners.push_back(p_owner);
+	}
+	void pop_owner(Node *p_owner) {
+		if (owners.is_empty()) {
+			ERR_PRINT("Couldn't pop node as owners is empty.");
+			return;
+		}
+		Node *last = owners[owners.size() - 1];
+		if (last != p_owner) {
+			ERR_PRINT("Couldn't pop as node is not the last owner.");
+			return;
+		}
+		owners.remove_at(owners.size() - 1);
+	}
 
 	CompletionContext completion_context;
 	CompletionCall completion_call;
@@ -1933,6 +1910,9 @@ private:
 	T *alloc_node() {
 		T *node = memnew(T);
 
+		if (!owners.is_empty()) {
+			node->owner = owners[owners.size() - 1];
+		}
 		node->next = list;
 		list = node;
 
