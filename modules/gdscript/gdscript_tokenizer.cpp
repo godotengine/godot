@@ -261,6 +261,10 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 	}
 }
 
+bool GDScriptTokenizer::Token::has_cursor() const {
+	return cursor_place != CURSOR_NONE;
+}
+
 String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 	ERR_FAIL_INDEX_V_MSG(p_token_type, Token::TK_MAX, "<error>", "Using token type out of the enum.");
 	return token_names[p_token_type];

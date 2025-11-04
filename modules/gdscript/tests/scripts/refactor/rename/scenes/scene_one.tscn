@@ -1,0 +1,60 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnp4cigxa1hvr"]
+
+[sub_resource type="GDScript" id="GDScript_cx43s"]
+resource_name = "InternalScript1"
+script/source = "extends Node2D
+
+var class_b_instance: B
+
+func _ready() -> void:
+	await test()
+
+func test() -> ClassA:
+	const NoNameB = preload(\"res://scripts/noname_b.gd\")
+	print(\"NoNameB name is \" + NoNameB.NONAME_B_NAME)
+	class_b_instance
+	var class_a_instance: = ClassA.new()
+	var class_b_instance: int = 123
+	class_a_instance.signal_of_a.emit()
+	class_b_instance = 456
+	return class_a_instance
+"
+
+[sub_resource type="GDScript" id="GDScript_11pc1"]
+resource_name = "InternalScript2"
+script/source = "extends Control
+
+enum InternalScriptEnum {
+	INTERNAL_SCRIPT_ENUM_ONE = 1,
+	INTERNAL_SCRIPT_ENUM_TWO = 20,
+	INTERNAL_SCRIPT_ENUM_THREE = 200,
+}
+
+signal inner_script_signal
+@export var class_a_instance: ClassA
+
+func _ready() -> void:
+	inner_script_signal.emit()
+"
+
+[node name="SceneOne" type="Node"]
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Node3D" type="Node3D" parent="Control"]
+
+[node name="InternalScript1" type="Node2D" parent="Control/Node3D"]
+script = SubResource("GDScript_cx43s")
+
+[node name="Node" type="Node" parent="Control"]
+
+[node name="InternalScript2" type="Control" parent="Control/Node"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = SubResource("GDScript_11pc1")

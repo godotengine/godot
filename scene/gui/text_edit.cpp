@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "text_edit.h"
+#include "core/error/error_macros.h"
 #include "text_edit.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -4986,6 +4987,24 @@ String TextEdit::get_word(int p_line, int p_column) const {
 		}
 	}
 	return String();
+}
+
+Point2i TextEdit::get_word_pos_at_pos(const Point2i &p_pos) const {
+	int line = p_pos.y;
+	int column = p_pos.x;
+
+	String s = text[line];
+	if (s.length() == 0) {
+		return Point2i(0, 0);
+	}
+	const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
+	for (int i = 0; i < words.size(); i = i + 2) {
+		if (words[i] <= column && words[i + 1] >= column) {
+			return Point2i(words[i], line);
+		}
+	}
+
+	return Point2i(0, 0);
 }
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {

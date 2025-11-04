@@ -934,6 +934,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			push_error(vformat(R"(Could not find nested type "%s" under base "%s".)", p_type->type_chain[1]->name, result.to_string()), p_type->type_chain[1]);
 			return bad_type;
 		}
+	} else {
+		p_type->type_chain[0]->set_datatype(result);
 	}
 
 	if (!p_type->container_types.is_empty()) {
@@ -3836,7 +3838,7 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 	HashMap<Variant, GDScriptParser::ExpressionNode *, HashMapHasherDefault, StringLikeVariantComparator> elements;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
-		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+		const GDScriptParser::DictionaryNode::DictionaryElement &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
 			reduce_expression(element.key);
 		}
@@ -5318,7 +5320,7 @@ Variant GDScriptAnalyzer::make_dictionary_reduced_value(GDScriptParser::Dictiona
 			: Dictionary();
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
-		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+		const GDScriptParser::DictionaryNode::DictionaryElement &element = p_dictionary->elements[i];
 
 		bool is_element_key_reduced = false;
 		Variant element_key = make_expression_reduced_value(element.key, is_element_key_reduced);

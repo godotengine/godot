@@ -170,7 +170,7 @@ static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<
 
 static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
-	Error err = parser.parse(p_code, p_script_path, false);
+	Error err = parser.parse(p_code, p_script_path);
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
@@ -255,7 +255,7 @@ static void recursively_disassemble_functions(const Ref<GDScript> p_script, cons
 
 static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
-	Error err = parser.parse(p_code, p_script_path, false);
+	Error err = parser.parse(p_code, p_script_path);
 
 	if (err != OK) {
 		print_line("Error in parser:");
@@ -311,7 +311,8 @@ void test(TestType p_type) {
 	ERR_FAIL_COND_MSG(fa.is_null(), "Could not open file: " + test);
 
 	// Initialize the language for the test routine.
-	init_language(fa->get_path_absolute().get_base_dir());
+	init_project_dir(fa->get_path_absolute().get_base_dir(), "gdscript");
+	init_language();
 
 	// Load global classes.
 	TypedArray<Dictionary> script_classes = ProjectSettings::get_singleton()->get_global_class_list();
