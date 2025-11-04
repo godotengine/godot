@@ -35,12 +35,14 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/extension/gdextension.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
-#include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
+#include "core/os/shared_object.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -51,8 +53,10 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor_export_plugin.h"
-#include "scene/resources/image_texture.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/texture.h"
 
 class EditorExportSaveProxy {
 	HashSet<String> saved_paths;
@@ -84,7 +88,7 @@ static int _get_pad(int p_alignment, int p_n) {
 	return pad;
 }
 
-#define PCK_PADDING 16
+static constexpr int PCK_PADDING = 16;
 
 Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path, Error *r_error) const {
 	Ref<Image> image;
@@ -311,11 +315,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	PackData *pd = (PackData *)p_userdata;
 
-	String simplified_path = p_path.simplify_path();
-	if (simplified_path.begins_with("uid://")) {
-		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
-	}
+	const String simplified_path = simplify_path(p_path);
 
 	Ref<FileAccess> ftmp;
 	if (pd->use_sparse_pck) {
@@ -374,13 +374,7 @@ Error EditorExportPlatform::_save_pack_patch_file(void *p_userdata, const String
 Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
 
-	String path = p_path.simplify_path();
-	if (path.begins_with("uid://")) {
-		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
-	}
-
-	path = path.replace_first("res://", "");
+	const String path = simplify_path(p_path).replace_first("res://", "");
 
 	ZipData *zd = (ZipData *)p_userdata;
 
@@ -1046,11 +1040,7 @@ Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_
 	Callable cb = ((ScriptCallbackData *)p_userdata)->file_cb;
 	ERR_FAIL_COND_V(!cb.is_valid(), FAILED);
 
-	String simplified_path = p_path.simplify_path();
-	if (simplified_path.begins_with("uid://")) {
-		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
-	}
+	const String simplified_path = simplify_path(p_path);
 
 	Variant path = simplified_path;
 	Variant data = p_data;
@@ -2492,6 +2482,16 @@ Array EditorExportPlatform::get_current_presets() const {
 		}
 	}
 	return ret;
+}
+
+String EditorExportPlatform::simplify_path(const String &p_path) {
+	if (p_path.begins_with("uid://")) {
+		const String path = ResourceUID::uid_to_path(p_path);
+		print_verbose(vformat(R"(UID-referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+		return path.simplify_path();
+	} else {
+		return p_path.simplify_path();
+	}
 }
 
 Variant EditorExportPlatform::get_project_setting(const Ref<EditorExportPreset> &p_preset, const StringName &p_name) {
