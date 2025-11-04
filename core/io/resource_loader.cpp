@@ -542,6 +542,7 @@ const String ResourceLoader::_get_cached_info(const FilterTarget &p_target, cons
 	}
 	return "";
 }
+
 bool ResourceLoader::_is_info_matching_filter(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value) {
 	if (p_filter == FILTER_COMP_EQUALS) {
 		return p_attribute_value == p_value;
