@@ -2387,9 +2387,11 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
 
-	if (OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
+#ifdef DCOMP_ENABLED
+	if (OS::get_singleton()->is_layered_allowed() && OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
 		r_style_ex |= WS_EX_NOREDIRECTIONBITMAP;
 	}
+#endif
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
