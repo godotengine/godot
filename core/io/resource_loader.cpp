@@ -542,7 +542,7 @@ const String ResourceLoader::_get_cached_info(const FilterTarget &p_target, cons
 	}
 	return "";
 }
-bool ResourceLoader::_validate_comparison(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value) {
+bool ResourceLoader::_is_info_matching_filter(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value) {
 	if (p_filter == FILTER_COMP_EQUALS) {
 		return p_attribute_value == p_value;
 	}
@@ -560,39 +560,45 @@ bool ResourceLoader::_validate_comparison(const String &p_attribute_value, const
 	}
 	return false;
 }
+bool ResourceLoader::_is_key_value_matching_filter(const String &p_path, const Ref<Resource> &p_res, const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	const String info_value = _get_cached_info(p_target, p_path, p_res);
+	return _is_info_matching_filter(info_value, p_comparator, p_value);
+}
 
 PackedStringArray ResourceLoader::get_cached_paths() {
 	PackedStringArray paths;
-	for (const auto &elem : ResourceCache::resources) {
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		paths.push_back(elem.key);
 	}
 	return paths;
 }
+
 Dictionary ResourceLoader::get_cached_paths_typed() {
 	Dictionary ret;
-	for (const auto &elem : ResourceCache::resources) {
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
 		ret.set(elem.key, elem.value->get_gdtype().get_name());
 	}
 	return ret;
 }
+
 PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
-	return ResourceCache::_get_all_paths_filtered_array(
-			[&](const String &path, const Ref<Resource> &res) {
-				const String info_value = _get_cached_info(p_target, path, res);
-				return _validate_comparison(info_value, p_comparator, p_value);
-			},
-			false,
-			"");
-}
-Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
-	Dictionary ret;
-	for (const auto &elem : ResourceCache::resources) {
-		const String info_value = _get_cached_info(p_target, elem.key, elem.value);
-		if (_validate_comparison(info_value, p_comparator, p_value)) {
-			ret.set(elem.key, elem.value->get_gdtype().get_name());
+	PackedStringArray paths;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {
+			paths.push_back(elem.key);
 		}
 	}
-	return ret;
+	return paths;
+}
+
+Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
+	Dictionary pathTypesDict;
+	for (const KeyValue<String, Resource *> &elem : ResourceCache::resources) {
+		if (_is_key_value_matching_filter(elem.key, elem.value, p_target, p_comparator, p_value)) {
+			pathTypesDict.set(elem.key, elem.value->get_gdtype().get_name());
+		}
+	}
+	return pathTypesDict;
 }
 
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode) {

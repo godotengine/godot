@@ -243,7 +243,8 @@ private:
 	static String _validate_local_path(const String &p_path);
 
 	static const String _get_cached_info(const FilterTarget &p_target, const String &p_path, const Ref<Resource> &p_res);
-	static bool _validate_comparison(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value);
+	static bool _is_info_matching_filter(const String &p_attribute_value, const FilterComparator &p_filter, const String &p_value);
+	static bool _is_key_value_matching_filter(const String &p_path, const Ref<Resource> &p_res, const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
 
 public:
 	static PackedStringArray get_cached_paths();
