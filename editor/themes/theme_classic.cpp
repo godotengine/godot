@@ -1964,11 +1964,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_constant("h_separation", "EditorInspectorSection", 2.0 * EDSCALE);
 
 		Color prop_subsection_stylebox_color = Color(1, 1, 1, 0);
-		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
-
-		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
-		style_highlight_subsection->set_bg_color(prop_subsection_stylebox_color);
-		p_theme->set_stylebox("style_highlight_subsection", EditorStringName(Editor), style_highlight_subsection);
+		p_theme->set_color("prop_subsection_stylebox_color", EditorStringName(Editor), prop_subsection_stylebox_color);
+		Ref<StyleBoxFlat> prop_subsection_stylebox = p_config.base_style->duplicate();
+		prop_subsection_stylebox->set_bg_color(p_theme->get_color("prop_subsection_stylebox_color", EditorStringName(Editor)));
+		p_theme->set_stylebox("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox);
+		p_theme->set_stylebox("prop_subsection_stylebox_left", EditorStringName(Editor), prop_subsection_stylebox);
+		p_theme->set_stylebox("prop_subsection_stylebox_right", EditorStringName(Editor), prop_subsection_stylebox);
 
 		Color prop_category_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 		Color prop_subsection_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.06);
