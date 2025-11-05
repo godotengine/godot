@@ -2028,13 +2028,10 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_id));
-	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted");
 
 	popup_close(p_id);
 
 	WindowData &wd = windows[p_id];
-
-	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	if (window_mouseover_id == p_id) {
 		window_mouseover_id = INVALID_WINDOW_ID;
@@ -2049,54 +2046,59 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		window_set_transient(p_id, INVALID_WINDOW_ID);
 	}
 
-#if defined(RD_ENABLED)
-	if (rendering_device) {
-		rendering_device->screen_free(p_id);
-	}
+	XUnmapWindow(x11_display, wd.x11_window);
 
-	if (rendering_context) {
-		rendering_context->window_destroy(p_id);
-	}
+	if (p_id != MAIN_WINDOW_ID) {
+		DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
+
+#if defined(RD_ENABLED)
+		if (rendering_device) {
+			rendering_device->screen_free(p_id);
+		}
+
+		if (rendering_context) {
+			rendering_context->window_destroy(p_id);
+		}
 #endif
 #ifdef GLES3_ENABLED
-	if (gl_manager) {
-		gl_manager->window_destroy(p_id);
-	}
-	if (gl_manager_egl) {
-		gl_manager_egl->window_destroy(p_id);
-	}
+		if (gl_manager) {
+			gl_manager->window_destroy(p_id);
+		}
+		if (gl_manager_egl) {
+			gl_manager_egl->window_destroy(p_id);
+		}
 #endif
 
 #ifdef ACCESSKIT_ENABLED
-	if (accessibility_driver) {
-		accessibility_driver->window_destroy(p_id);
-	}
-#endif
-
-	if (wd.xic) {
-		XDestroyIC(wd.xic);
-		wd.xic = nullptr;
-	}
-	XDestroyWindow(x11_display, wd.x11_xim_window);
-#ifdef XKB_ENABLED
-	if (xkb_loaded_v05p) {
-		if (wd.xkb_state) {
-			xkb_compose_state_unref(wd.xkb_state);
-			wd.xkb_state = nullptr;
+		if (accessibility_driver) {
+			accessibility_driver->window_destroy(p_id);
 		}
-	}
 #endif
 
-	XUnmapWindow(x11_display, wd.x11_window);
-	XDestroyWindow(x11_display, wd.x11_window);
+		if (wd.xic) {
+			XDestroyIC(wd.xic);
+			wd.xic = nullptr;
+		}
+		XDestroyWindow(x11_display, wd.x11_xim_window);
+#ifdef XKB_ENABLED
+		if (xkb_loaded_v05p) {
+			if (wd.xkb_state) {
+				xkb_compose_state_unref(wd.xkb_state);
+				wd.xkb_state = nullptr;
+			}
+		}
+#endif
 
-	window_set_rect_changed_callback(Callable(), p_id);
-	window_set_window_event_callback(Callable(), p_id);
-	window_set_input_event_callback(Callable(), p_id);
-	window_set_input_text_callback(Callable(), p_id);
-	window_set_drop_files_callback(Callable(), p_id);
+		XDestroyWindow(x11_display, wd.x11_window);
 
-	windows.erase(p_id);
+		window_set_rect_changed_callback(Callable(), p_id);
+		window_set_window_event_callback(Callable(), p_id);
+		window_set_input_event_callback(Callable(), p_id);
+		window_set_input_text_callback(Callable(), p_id);
+		window_set_drop_files_callback(Callable(), p_id);
+
+		windows.erase(p_id);
+	}
 
 	if (last_focused_window == p_id) {
 		last_focused_window = INVALID_WINDOW_ID;
