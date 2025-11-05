@@ -1935,6 +1935,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation(SNAME("EditorInspectorForeground"));
 
 	property_split->add_child(inspector);
 
