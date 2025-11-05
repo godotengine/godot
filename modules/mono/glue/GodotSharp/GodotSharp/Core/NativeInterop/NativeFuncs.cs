@@ -584,7 +584,11 @@ namespace Godot.NativeInterop
 
         internal static partial double godotsharp_randf_range(double from, double to);
 
+        internal static partial float godotsharp_randf32_range(float from, float to);
+
         internal static partial double godotsharp_randfn(double mean, double deviation);
+
+        internal static partial float godotsharp_randfn32(float mean, float deviation);
 
         internal static partial int godotsharp_randi_range(int from, int to);
 

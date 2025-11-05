@@ -690,6 +690,7 @@ _ALWAYS_INLINE_ float randf() {
 	return (float)rand() / (float)UINT32_MAX;
 }
 double randfn(double p_mean, double p_deviation);
+float randfn(float p_mean, float p_deviation);
 
 double random(double p_from, double p_to);
 float random(float p_from, float p_to);
