@@ -23,8 +23,10 @@
 			The action to trigger when the joystick is moved up.
 		</member>
 		<member name="clampzone_ratio" type="float" setter="set_clampzone_ratio" getter="get_clampzone_ratio" default="1.0">
-			The ratio of the joystick size that defines the clamp zone area.
-		</member>
+			The multiplier applied to the joystick's radius that defines the clamp zone. 
+			This zone limits how far the joystick tip can move from its center before being clamped. 
+			A value of [code]1.0[/code] means the tip can move up to the edge of the joystick's visual size. 
+			In [code]JOYSTICK_FOLLOWING[/code] mode, this radius also determines how far the finger can move before the joystick base starts following the touch input.
 		<member name="deadzone_ratio" type="float" setter="set_deadzone_ratio" getter="get_deadzone_ratio" default="0.25">
 			The ratio of the joystick size that defines the deadzone area. The joystick tip must move beyond this ratio before being considered active.
 		</member>
