@@ -114,12 +114,12 @@ public:
 		return embedding_state == EmbeddingState::COMPLETED;
 	}
 
-	bool is_process_focused() const override { return layer_host->has_focus(); }
-	void embed_process(OS::ProcessID p_pid) override;
-	int get_embedded_pid() const override { return current_process_id; }
-	void reset() override;
-	void request_close() override;
-	void queue_update_embedded_process() override { update_embedded_process(); }
+	virtual bool is_process_focused() const override { return layer_host->has_focus(); }
+	virtual void embed_process(OS::ProcessID p_pid, const String &p_embedded_window) override;
+	virtual int get_embedded_pid() const override { return current_process_id; }
+	virtual void reset() override;
+	virtual void request_close() override;
+	virtual void queue_update_embedded_process() override { update_embedded_process(); }
 
 	Rect2i get_adjusted_embedded_window_rect(const Rect2i &p_rect) const override;
 
