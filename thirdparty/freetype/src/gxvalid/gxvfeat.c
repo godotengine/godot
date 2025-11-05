@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT feat table validation (body).
  *
- * Copyright (C) 2004-2024 by
+ * Copyright (C) 2004-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -306,7 +306,7 @@
       FT_INVALID_FORMAT;
 
     featureNameCount = FT_NEXT_USHORT( p );
-    GXV_TRACE(( " (featureNameCount = %d)\n", featureNameCount ));
+    GXV_TRACE(( " (featureNameCount = %u)\n", featureNameCount ));
 
     if ( !( IS_PARANOID_VALIDATION ) )
       p += 6; /* skip (none) and (none) */

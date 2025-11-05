@@ -49,7 +49,7 @@ Introduction
 
    """
     Portions of this software are copyright © <year> The FreeType
-    Project (www.freetype.org).  All rights reserved.
+    Project (https://freetype.org).  All rights reserved.
    """
 
   Please replace <year> with the value from the FreeType version you
@@ -163,7 +163,7 @@ Legal Terms
 
   Our home page can be found at
 
-    https://www.freetype.org
+    https://freetype.org
 
 
 --- end of FTL.TXT ---

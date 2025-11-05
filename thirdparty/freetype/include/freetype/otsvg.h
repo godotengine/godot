@@ -4,7 +4,7 @@
  *
  *   Interface for OT-SVG support related things (specification).
  *
- * Copyright (C) 2022-2024 by
+ * Copyright (C) 2022-2025 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti.
  *
  * This file is part of the FreeType project, and may only be used,

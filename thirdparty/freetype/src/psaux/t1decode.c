@@ -4,7 +4,7 @@
  *
  *   PostScript Type 1 decoding routines (body).
  *
- * Copyright (C) 2000-2024 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1633,7 +1633,7 @@
 
         default:
           FT_ERROR(( "t1_decoder_parse_charstrings:"
-                     " unhandled opcode %d\n", op ));
+                     " unhandled opcode %u\n", op ));
           goto Syntax_Error;
         }
 

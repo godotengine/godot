@@ -57,39 +57,13 @@ FT_BEGIN_HEADER
    */
 
 
-#define BDF_CORRECT_METRICS  0x01 /* Correct invalid metrics when loading. */
-#define BDF_KEEP_COMMENTS    0x02 /* Preserve the font comments.           */
-#define BDF_KEEP_UNENCODED   0x04 /* Keep the unencoded glyphs.            */
-#define BDF_PROPORTIONAL     0x08 /* Font has proportional spacing.        */
-#define BDF_MONOWIDTH        0x10 /* Font has mono width.                  */
-#define BDF_CHARCELL         0x20 /* Font has charcell spacing.            */
+#define BDF_CORRECT_METRICS  0x1000 /* Correct metrics when loading. */
+#define BDF_KEEP_COMMENTS    0x2000 /* Preserve the font comments.   */
+#define BDF_KEEP_UNENCODED   0x4000 /* Keep the unencoded glyphs.    */
 
-#define BDF_ALL_SPACING  ( BDF_PROPORTIONAL | \
-                           BDF_MONOWIDTH    | \
-                           BDF_CHARCELL     )
-
-#define BDF_DEFAULT_LOAD_OPTIONS  ( BDF_CORRECT_METRICS | \
-                                    BDF_KEEP_COMMENTS   | \
-                                    BDF_KEEP_UNENCODED  | \
-                                    BDF_PROPORTIONAL    )
-
-
-  typedef struct  bdf_options_t_
-  {
-    int            correct_metrics;
-    int            keep_unencoded;
-    int            keep_comments;
-    int            font_spacing;
-
-  } bdf_options_t;
-
-
-  /* Callback function type for unknown configuration options. */
-  typedef int
-  (*bdf_options_callback_t)( bdf_options_t*  opts,
-                             char**          params,
-                             unsigned long   nparams,
-                             void*           client_data );
+#define BDF_PROPORTIONAL     0x08 /* Font has proportional spacing.  */
+#define BDF_MONOWIDTH        0x10 /* Font has mono width.            */
+#define BDF_CHARCELL         0x20 /* Font has charcell spacing.      */
 
 
   /**************************************************************************
@@ -167,9 +141,6 @@ FT_BEGIN_HEADER
     unsigned long    resolution_y;   /* Font vertical resolution.           */
 
     int              spacing;        /* Font spacing value.                 */
-
-    unsigned short   monowidth;      /* Logical width for monowidth font.   */
-
     unsigned long    default_char;   /* Encoding of the default glyph.      */
 
     long             font_ascent;    /* Font ascent.                        */
@@ -190,7 +161,7 @@ FT_BEGIN_HEADER
     char*            comments;       /* Font comments.                      */
     unsigned long    comments_len;   /* Length of comment string.           */
 
-    void*            internal;       /* Internal data for the font.         */
+    FT_Hash          internal;       /* Internal data for the font.         */
 
     unsigned short   bpp;            /* Bits per pixel.                     */
 
@@ -233,7 +204,7 @@ FT_BEGIN_HEADER
   FT_LOCAL( FT_Error )
   bdf_load_font( FT_Stream       stream,
                  FT_Memory       memory,
-                 bdf_options_t*  opts,
+                 unsigned long   flags,
                  bdf_font_t*    *font );
 
   FT_LOCAL( void )

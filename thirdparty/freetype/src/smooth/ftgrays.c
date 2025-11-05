@@ -4,7 +4,7 @@
  *
  *   A new `perfect' anti-aliasing renderer (body).
  *
- * Copyright (C) 2000-2024 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -157,10 +157,6 @@
 
 #define ft_memset   memset
 
-#define ft_setjmp   setjmp
-#define ft_longjmp  longjmp
-#define ft_jmp_buf  jmp_buf
-
 typedef ptrdiff_t  FT_PtrDist;
 
 
@@ -170,8 +166,8 @@ typedef ptrdiff_t  FT_PtrDist;
 #define Smooth_Err_Invalid_Argument     -3
 #define Smooth_Err_Raster_Overflow      -4
 
-#define FT_BEGIN_HEADER
-#define FT_END_HEADER
+#define FT_BEGIN_HEADER  /* nothing */
+#define FT_END_HEADER    /* nothing */
 
 #include "ftimage.h"
 #include "ftgrays.h"
@@ -495,6 +491,7 @@ typedef ptrdiff_t  FT_PtrDist;
     TCoord  min_ey, max_ey;
     TCoord  count_ey;        /* same as (max_ey - min_ey) */
 
+    int         error;       /* pool overflow exception                  */
     PCell       cell;        /* current cell                             */
     PCell       cell_free;   /* call allocation next free slot           */
     PCell       cell_null;   /* last cell, used as dumpster and limit    */
@@ -509,8 +506,6 @@ typedef ptrdiff_t  FT_PtrDist;
 
     FT_Raster_Span_Func  render_span;
     void*                render_span_data;
-
-    ft_jmp_buf  jump_buffer;
 
   } gray_TWorker, *gray_PWorker;
 
@@ -613,9 +608,14 @@ typedef ptrdiff_t  FT_PtrDist;
       }
 
       /* insert new cell */
-      cell = ras.cell_free++;
-      if ( cell >= ras.cell_null )
-        ft_longjmp( ras.jump_buffer, 1 );
+      cell = ras.cell_free;
+      if ( cell == ras.cell_null )
+      {
+        ras.error = FT_THROW( Raster_Overflow );
+        goto Found;
+      }
+
+      ras.cell_free = cell + 1;
 
       cell->x     = ex;
       cell->area  = 0;
@@ -1353,7 +1353,8 @@ typedef ptrdiff_t  FT_PtrDist;
 
     ras.x = x;
     ras.y = y;
-    return 0;
+
+    return ras.error;
   }
 
 
@@ -1365,7 +1366,8 @@ typedef ptrdiff_t  FT_PtrDist;
 
 
     gray_render_line( RAS_VAR_ UPSCALE( to->x ), UPSCALE( to->y ) );
-    return 0;
+
+    return ras.error;
   }
 
 
@@ -1378,7 +1380,8 @@ typedef ptrdiff_t  FT_PtrDist;
 
 
     gray_render_conic( RAS_VAR_ control, to );
-    return 0;
+
+    return ras.error;
   }
 
 
@@ -1392,7 +1395,8 @@ typedef ptrdiff_t  FT_PtrDist;
 
 
     gray_render_cubic( RAS_VAR_ control1, control2, to );
-    return 0;
+
+    return ras.error;
   }
 
 
@@ -1700,30 +1704,22 @@ typedef ptrdiff_t  FT_PtrDist;
   gray_convert_glyph_inner( RAS_ARG_
                             int  continued )
   {
-    volatile int  error;
+    int  error;
 
 
-    if ( ft_setjmp( ras.jump_buffer ) == 0 )
-    {
-      if ( continued )
-        FT_Trace_Disable();
-      error = FT_Outline_Decompose( &ras.outline, &func_interface, &ras );
-      if ( continued )
-        FT_Trace_Enable();
+    if ( continued )
+      FT_Trace_Disable();
+    error = FT_Outline_Decompose( &ras.outline, &func_interface, &ras );
+    if ( continued )
+      FT_Trace_Enable();
 
-      FT_TRACE7(( "band [%d..%d]: %td cell%s remaining\n",
-                  ras.min_ey,
-                  ras.max_ey,
-                  ras.cell_null - ras.cell_free,
-                  ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
-    }
-    else
-    {
-      error = FT_THROW( Raster_Overflow );
-
-      FT_TRACE7(( "band [%d..%d]: to be bisected\n",
-                  ras.min_ey, ras.max_ey ));
-    }
+    FT_TRACE7(( error == Smooth_Err_Raster_Overflow
+                  ? "band [%d..%d]: to be bisected\n"
+                  : "band [%d..%d]: %td cell%s remaining\n",
+                ras.min_ey,
+                ras.max_ey,
+                ras.cell_null - ras.cell_free,
+                ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
 
     return error;
   }
@@ -1873,6 +1869,7 @@ typedef ptrdiff_t  FT_PtrDist;
     TCoord*  band;
 
     int  continued = 0;
+    int  error     = Smooth_Err_Ok;
 
 
     /* Initialize the null cell at the end of the poll. */
@@ -1907,7 +1904,6 @@ typedef ptrdiff_t  FT_PtrDist;
       do
       {
         TCoord  i;
-        int     error;
 
 
         ras.min_ex = band[1];
@@ -1922,6 +1918,7 @@ typedef ptrdiff_t  FT_PtrDist;
 
         ras.cell_free = buffer + n;
         ras.cell      = ras.cell_null;
+        ras.error     = Smooth_Err_Ok;
 
         error     = gray_convert_glyph_inner( RAS_VAR_ continued );
         continued = 1;
@@ -1936,7 +1933,7 @@ typedef ptrdiff_t  FT_PtrDist;
           continue;
         }
         else if ( error != Smooth_Err_Raster_Overflow )
-          return error;
+          goto Exit;
 
         /* render pool overflow; we will reduce the render band by half */
         i = ( band[0] - band[1] ) >> 1;
@@ -1945,7 +1942,8 @@ typedef ptrdiff_t  FT_PtrDist;
         if ( i == 0 )
         {
           FT_TRACE7(( "gray_convert_glyph: rotten glyph\n" ));
-          return FT_THROW( Raster_Overflow );
+          error = FT_THROW( Raster_Overflow );
+          goto Exit;
         }
 
         band++;
@@ -1954,7 +1952,11 @@ typedef ptrdiff_t  FT_PtrDist;
       } while ( band >= bands );
     }
 
-    return Smooth_Err_Ok;
+  Exit:
+    ras.cell   = ras.cell_free = ras.cell_null = NULL;
+    ras.ycells = NULL;
+
+    return error;
   }
 
 

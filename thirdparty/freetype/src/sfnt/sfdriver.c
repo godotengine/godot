@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -895,7 +895,7 @@
         FT_TRACE0(( "sfnt_get_var_ps_name:"
                     " Shortening variation PS name prefix\n" ));
         FT_TRACE0(( "                     "
-                    " to %d characters\n", len ));
+                    " to %u characters\n", len ));
       }
 
       face->var_postscript_prefix     = result;

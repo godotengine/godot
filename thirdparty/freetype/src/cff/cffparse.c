@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -892,7 +892,7 @@
                    dict->cid_supplement ));
       error = FT_Err_Ok;
 
-      FT_TRACE4(( " %d %d %ld\n",
+      FT_TRACE4(( " %u %u %ld\n",
                   dict->cid_registry,
                   dict->cid_ordering,
                   dict->cid_supplement ));
@@ -929,7 +929,7 @@
 
     priv->vsindex = (FT_UInt)cff_parse_num( parser, data++ );
 
-    FT_TRACE4(( " %d\n", priv->vsindex ));
+    FT_TRACE4(( " %u\n", priv->vsindex ));
 
     error = FT_Err_Ok;
 
@@ -979,7 +979,7 @@
       goto Exit;
     }
 
-    FT_TRACE4(( "   %d value%s blended\n",
+    FT_TRACE4(( "   %u value%s blended\n",
                 numBlends,
                 numBlends == 1 ? "" : "s" ));
 
@@ -1014,7 +1014,7 @@
     if ( dict->maxstack < CFF2_DEFAULT_STACK )
       dict->maxstack = CFF2_DEFAULT_STACK;
 
-    FT_TRACE4(( " %d\n", dict->maxstack ));
+    FT_TRACE4(( " %u\n", dict->maxstack ));
 
   Exit:
     return error;
