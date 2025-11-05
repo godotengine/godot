@@ -2439,7 +2439,23 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					}
 				}
 
-				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
+				String variable_name = String(node->get_name());
+				int naming_convention = (int)EDITOR_GET("project_manager/dropped_node_naming_convention");
+				switch (naming_convention) {
+					case 0: // snake_case
+						variable_name = variable_name.to_snake_case().validate_unicode_identifier();
+						break;
+					case 1: // camelCase
+						variable_name = variable_name.to_camel_case().validate_unicode_identifier();
+						break;
+					case 2: // PascalCase
+						variable_name = variable_name.to_pascal_case().validate_unicode_identifier();
+						break;
+					default:
+						ERR_FAIL_MSG("Invalid dropped node naming convention.");
+						break;
+				}
+
 				if (use_type) {
 					StringName class_name = node->get_class_name();
 					Ref<Script> node_script = node->get_script();
@@ -2470,8 +2486,23 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				if (!node) {
 					continue;
 				}
+				String variable_name = String(node->get_name());
+				int naming_convention = (int)EDITOR_GET("project_manager/dropped_node_naming_convention");
+				switch (naming_convention) {
+					case 0: // snake_case
+						variable_name = variable_name.to_snake_case().validate_unicode_identifier();
+						break;
+					case 1: // camelCase
+						variable_name = variable_name.to_camel_case().validate_unicode_identifier();
+						break;
+					case 2: // PascalCase
+						variable_name = variable_name.to_pascal_case().validate_unicode_identifier();
+						break;
+					default:
+						ERR_FAIL_MSG("Invalid dropped node naming convention.");
+						break;
+				}
 
-				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				StringName class_name = node->get_class_name();
 				Ref<Script> node_script = node->get_script();
 				if (node_script.is_valid()) {
