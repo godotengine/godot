@@ -340,7 +340,7 @@ for UI.
 
 ## freetype
 
-- Upstream: https://www.freetype.org
+- Upstream: https://gitlab.freedesktop.org/freetype/freetype
 - Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
 - License: FreeType License (BSD-like)
 
