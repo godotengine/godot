@@ -387,6 +387,9 @@ public:
 			return true;
 		}
 		bool is_owner_of(const Node *p_node, bool p_immediate_child = false) const {
+			if (p_node == this) {
+				return false;
+			}
 			if (p_immediate_child) {
 				return p_node->owner == this;
 			}
@@ -1739,7 +1742,8 @@ public:
 		REFACTOR_RENAME_TYPE_CONTROL_FLOW, // Control-flow keywords (e.g. break, continue).
 		REFACTOR_RENAME_TYPE_DECLARATION, // Potential declaration (var, const, func).
 		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
-		REFACTOR_RENAME_TYPE_ENUM, // Enum content.
+		REFACTOR_RENAME_TYPE_ENUM, // Enum name (and wrapper).
+		REFACTOR_RENAME_TYPE_ENUM_VALUE, // Enum value.
 		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
 		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
@@ -1765,7 +1769,6 @@ public:
 		GDScriptParser::IdentifierNode *identifier = nullptr;
 		GDScriptParser::LiteralNode *literal = nullptr;
 		GDScriptTokenizer::Token token;
-		bool identifier_is_enum_value = false;
 	};
 
 private:
@@ -1969,8 +1972,10 @@ private:
 	bool refactor_rename_does_token_have_cursor(const GDScriptTokenizer::Token &p_token) const;
 	bool refactor_rename_was_cursor_just_parsed() const;
 	bool refactor_rename_is_node_more_specific(const GDScriptParser::Node *p_node) const;
-	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, bool p_check_for_cursor = true);
+	bool refactor_rename_is_cursor_inside_node(const GDScriptParser::Node *p_node) const;
+	bool refactor_rename_register(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, bool p_check_for_cursor = true, bool p_check_for_previous = true);
 	bool refactor_rename_register_if_cursor_is_between_tokens(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, const GDScriptTokenizer::Token &p_start, const GDScriptTokenizer::Token &p_end);
+	bool refactor_rename_register_if_cursor_is_inside_node(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, bool p_force = false);
 	bool refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_node);
 	bool refactor_rename_register_literal(GDScriptParser::LiteralNode *p_node);
 

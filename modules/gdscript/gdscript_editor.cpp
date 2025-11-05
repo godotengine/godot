@@ -4859,6 +4859,12 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 		case GDScriptParser::REFACTOR_RENAME_TYPE_CALL_ARGUMENTS:
 		case GDScriptParser::REFACTOR_RENAME_TYPE_PROPERTY_METHOD:
 		case GDScriptParser::REFACTOR_RENAME_TYPE_SUBSCRIPT: {
+			if (context.type == GDScriptParser::REFACTOR_RENAME_TYPE_CALL_ARGUMENTS && context.node->type == GDScriptParser::Node::LITERAL) {
+				// The call argument is a literal.
+				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_LITERAL);
+				REFACTOR_RENAME_RETURN(OK);
+			}
+
 			if (symbol == "self" && context.token.type == GDScriptTokenizer::Token::IDENTIFIER) {
 				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_NATIVE);
 				REFACTOR_RENAME_RETURN(OK);
@@ -5145,16 +5151,10 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 			REFACTOR_RENAME_RETURN(OK);
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_ENUM: {
-			GDScriptParser::DataType base_type;
-			if (context.current_class) {
-				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
-					base_type = context.current_class->get_datatype();
-				} else {
-					base_type = context.current_class->base_type;
-				}
-			} else {
+			if (context.node == nullptr || context.node->type != GDScriptParser::Node::ENUM) {
 				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 			}
+			GDScriptParser::EnumNode *enum_node = static_cast<GDScriptParser::EnumNode *>(context.node);
 
 			if (context.identifier == nullptr) {
 				if (context.node->get_start() == context.token.get_start()) {
@@ -5168,11 +5168,42 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				REFACTOR_RENAME_RETURN(OK);
 			}
 
+			GDScriptParser::DataType base_type;
+			if (context.current_class) {
+				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+					base_type = context.current_class->get_datatype();
+				} else {
+					base_type = context.current_class->base_type;
+				}
+			} else {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM, enum_node);
+			REFACTOR_RENAME_RETURN(enum_err);
+		} break;
+		case GDScriptParser::REFACTOR_RENAME_TYPE_ENUM_VALUE: {
+			if (context.node == nullptr || context.node->type != GDScriptParser::Node::ENUM) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
 			GDScriptParser::EnumNode *enum_node = static_cast<GDScriptParser::EnumNode *>(context.node);
-			RefactorRenameSymbolDefinintionType enum_type = context.identifier_is_enum_value
-					? RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM_VALUE
-					: RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
-			Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, enum_type, enum_node);
+
+			if (context.identifier == nullptr) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			GDScriptParser::DataType base_type;
+			if (context.current_class) {
+				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+					base_type = context.current_class->get_datatype();
+				} else {
+					base_type = context.current_class->base_type;
+				}
+			} else {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			Error enum_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM, enum_node);
 			REFACTOR_RENAME_RETURN(enum_err);
 		} break;
 		case GDScriptParser::REFACTOR_RENAME_TYPE_SIGNAL: {
@@ -5243,6 +5274,47 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 				} break;
 			}
+		} break;
+		case GDScriptParser::REFACTOR_RENAME_TYPE_DECLARATION: {
+			if (context.node == nullptr) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			if (context.token.get_start() == context.node->get_start()) {
+				// The user tried to refactor the keyword.
+				REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+				REFACTOR_RENAME_RETURN(OK);
+			}
+
+			switch (context.node->type) {
+				case GDScriptParser::Node::VARIABLE: {
+					GDScriptParser::VariableNode *variable_node = static_cast<GDScriptParser::VariableNode *>(context.node);
+					Error variable_err;
+
+					if (variable_node->identifier->name == symbol && context.token.get_code_area() == variable_node->identifier->get_code_area()) {
+						// The target is the variable name itself.
+						GDScriptParser::DataType base_type;
+						if (context.current_class) {
+							if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+								base_type = context.current_class->get_datatype();
+							} else {
+								base_type = context.current_class->base_type;
+							}
+						} else {
+							REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+						}
+
+						variable_err = _refactor_rename_symbol_from_base(context, base_type, symbol, p_path, base_type.script_path, p_owner, p_unsaved_scripts_source_code, r_result);
+						REFACTOR_RENAME_RETURN(variable_err);
+					}
+
+					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+				} break;
+				default: {
+					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+				} break;
+			}
+
 		} break;
 		default: {
 			REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
