@@ -98,6 +98,7 @@ private:
 		bool custom_button = false;
 		bool expand_right = false;
 		Color icon_color = Color(1, 1, 1);
+		Ref<StyleBox> custom_stylebox;
 
 		Size2i cached_minimum_size;
 		bool cached_minimum_size_dirty = true;
@@ -358,6 +359,9 @@ public:
 
 	void set_custom_minimum_height(int p_height);
 	int get_custom_minimum_height() const;
+
+	void set_custom_stylebox(int p_column, const Ref<StyleBox> &p_stylebox);
+	Ref<StyleBox> get_custom_stylebox(int p_column) const;
 
 	void set_selectable(int p_column, bool p_selectable);
 	bool is_selectable(int p_column) const;
