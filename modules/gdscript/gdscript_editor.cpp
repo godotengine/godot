@@ -4660,36 +4660,34 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 				return ERR_CANT_RESOLVE;
 			} break;
 			case GDScriptParser::DataType::ENUM: {
-				if (base_type.is_meta_type) {
-					if (base_type.enum_type == p_symbol || base_type.enum_values.has(p_symbol)) {
-						String type_name;
-						String enum_name;
-						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), type_name, enum_name);
+				if (base_type.enum_type == p_symbol || base_type.enum_values.has(p_symbol)) {
+					String type_name;
+					String enum_name;
+					GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), type_name, enum_name);
 
-						if (CoreConstants::is_global_enum(enum_name)) {
-							OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT);
-						} else {
-							const GDScriptParser::ClassNode::Member &member_enum = base_type.class_type->get_member(base_type.enum_type);
-							switch (member_enum.type) {
-								case GDScriptParser::ClassNode::Member::ENUM: {
-									RefactorRenameSymbolDefinintionType enum_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
-									if (p_expected_definition_type != REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_UNDEFINED) {
-										enum_type = p_expected_definition_type;
-									}
-									return _refactor_rename_symbol_match_from_class(
-											p_context, p_symbol, p_path, p_class_path,
-											p_unsaved_scripts_source_code, r_result,
-											enum_type,
-											member_enum.get_source_node());
-								} break;
-								default: {
-									return ERR_BUG;
+					if (CoreConstants::is_global_enum(enum_name)) {
+						OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_CONSTANT);
+					} else {
+						const GDScriptParser::ClassNode::Member &member_enum = base_type.class_type->get_member(base_type.enum_type);
+						switch (member_enum.type) {
+							case GDScriptParser::ClassNode::Member::ENUM: {
+								RefactorRenameSymbolDefinintionType enum_type = RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_ENUM;
+								if (p_expected_definition_type != REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_UNDEFINED) {
+									enum_type = p_expected_definition_type;
 								}
+								return _refactor_rename_symbol_match_from_class(
+										p_context, p_symbol, p_path, p_class_path,
+										p_unsaved_scripts_source_code, r_result,
+										enum_type,
+										member_enum.get_source_node());
+							} break;
+							default: {
+								return ERR_BUG;
 							}
 						}
-					} else if (Variant::has_builtin_method(Variant::DICTIONARY, p_symbol)) {
-						OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_METHOD);
 					}
+				} else if (Variant::has_builtin_method(Variant::DICTIONARY, p_symbol)) {
+					OUTSIDE_REFACTOR(REFACTOR_RENAME_SYMBOL_RESULT_CLASS_METHOD);
 				}
 
 				return ERR_CANT_RESOLVE;
