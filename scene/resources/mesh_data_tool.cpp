@@ -32,6 +32,7 @@
 #include "mesh_data_tool.compat.inc"
 
 void MeshDataTool::clear() {
+	primitive_type = Mesh::PRIMITIVE_TRIANGLES;
 	vertices.clear();
 	edges.clear();
 	faces.clear();
@@ -41,7 +42,6 @@ void MeshDataTool::clear() {
 
 Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surface) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 
 	Array arrays = p_mesh->surface_get_arrays(p_surface);
 	ERR_FAIL_COND_V(arrays.is_empty(), ERR_INVALID_PARAMETER);
@@ -68,7 +68,8 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	const int *r = indices.ptr();
 
 	ERR_FAIL_COND_V(icount == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(icount % 3, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(icount % 3 && p_mesh->surface_get_primitive_type(p_surface) == Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(icount % 2 && p_mesh->surface_get_primitive_type(p_surface) == Mesh::PRIMITIVE_LINES, ERR_INVALID_PARAMETER);
 	for (int i = 0; i < icount; i++) {
 		ERR_FAIL_INDEX_V(r[i], vcount, ERR_INVALID_PARAMETER);
 	}
@@ -151,6 +152,19 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		vertices.write[i] = v;
 	}
 
+	primitive_type = p_mesh->surface_get_primitive_type(p_surface);
+	if (primitive_type != Mesh::PRIMITIVE_TRIANGLES) {
+		if (primitive_type == Mesh::PRIMITIVE_LINES) {
+			for (int i = 0; i < icount; i += 2) {
+				Edge e;
+				e.vertex[0] = r[i + 0];
+				e.vertex[1] = r[i + 1];
+				edges.push_back(e);
+			}
+		}
+		return OK;
+	}
+
 	HashMap<Point2i, int> edge_indices;
 
 	for (int i = 0; i < icount; i += 3) {
@@ -193,6 +207,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_compression_flags) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(primitive_type != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
 

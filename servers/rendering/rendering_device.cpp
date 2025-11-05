@@ -4118,6 +4118,7 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 		1,
 	};
 	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
+	pipeline.validation.render_primitive = p_render_primitive;
 #endif
 
 	// Create ID to associate with this pipeline.
@@ -4593,6 +4594,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 	draw_list.validation.pipeline_dynamic_state = pipeline->validation.dynamic_state;
 	draw_list.validation.pipeline_vertex_format = pipeline->validation.vertex_format;
 	draw_list.validation.pipeline_uses_restart_indices = pipeline->validation.uses_restart_indices;
+	draw_list.validation.pipeline_render_primitive = pipeline->validation.render_primitive;
 	draw_list.validation.pipeline_primitive_divisor = pipeline->validation.primitive_divisor;
 	draw_list.validation.pipeline_primitive_minimum = pipeline->validation.primitive_minimum;
 	draw_list.validation.pipeline_push_constant_size = pipeline->push_constant_size;
@@ -4847,7 +4849,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				"Too few indices (" + itos(to_draw) + ") for the render primitive set in the render pipeline (" + itos(draw_list.validation.pipeline_primitive_minimum) + ").");
 
 		ERR_FAIL_COND_MSG((to_draw % draw_list.validation.pipeline_primitive_divisor) != 0,
-				"Index amount (" + itos(to_draw) + ") must be a multiple of the amount of indices required by the render primitive (" + itos(draw_list.validation.pipeline_primitive_divisor) + ").");
+				"Index amount (" + itos(to_draw) + ") must be a multiple of the amount of indices required by the render primitive " + itos(draw_list.validation.pipeline_render_primitive) + " (" + itos(draw_list.validation.pipeline_primitive_divisor) + ").");
 #endif
 
 		draw_graph.add_draw_list_draw_indexed(to_draw, p_instances, 0);

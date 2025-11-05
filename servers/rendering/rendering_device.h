@@ -1185,6 +1185,7 @@ private:
 			uint32_t dynamic_state = 0;
 			VertexFormatID vertex_format;
 			bool uses_restart_indices = false;
+			RenderPrimitive render_primitive = RENDER_PRIMITIVE_MAX;
 			uint32_t primitive_minimum = 0;
 			uint32_t primitive_divisor = 0;
 		} validation;
@@ -1302,6 +1303,7 @@ private:
 			VertexFormatID pipeline_vertex_format = INVALID_ID;
 			RID pipeline_shader;
 			bool pipeline_uses_restart_indices = false;
+			RenderPrimitive pipeline_render_primitive = RENDER_PRIMITIVE_MAX;
 			uint32_t pipeline_primitive_divisor = 0;
 			uint32_t pipeline_primitive_minimum = 0;
 			uint32_t pipeline_push_constant_size = 0;

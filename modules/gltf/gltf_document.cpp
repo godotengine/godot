@@ -3183,6 +3183,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Dictionary a = mesh_prim["attributes"];
 
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
+			bool loop = false;
 			if (mesh_prim.has("mode")) {
 				const int mode = mesh_prim["mode"];
 				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
@@ -3191,15 +3192,21 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS, // 0 POINTS
 					Mesh::PRIMITIVE_LINES, // 1 LINES
-					Mesh::PRIMITIVE_LINES, // 2 LINE_LOOP; loop not supported, should be converted
+					Mesh::PRIMITIVE_LINE_STRIP, // 2 LINE_LOOP; loop not supported, should be converted
 					Mesh::PRIMITIVE_LINE_STRIP, // 3 LINE_STRIP
 					Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
 					Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
-					Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
+					Mesh::PRIMITIVE_MAX, // 6 TRIANGLE_FAN fan not supported, should be converted
 					// TODO: Line loop and triangle fan are not supported and need to be converted to lines and triangles.
 				};
 
 				primitive = primitives2[mode];
+				if (mode == 2) {
+					loop = true;
+				}
+			}
+			if (primitive == Mesh::PRIMITIVE_MAX) {
+				continue;
 			}
 
 			int32_t orig_vertex_num = 0;
@@ -3217,6 +3224,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_vec4_mapping;
 			if (mesh_prim.has("indices")) {
 				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
+				if (loop && !indices.is_empty() && indices.size() % 2 != 0) {
+					indices.append(indices[0]);
+				}
 				const int index_count = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
