@@ -31,6 +31,7 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "nvapi_profile.h"
 #include "os_windows.h"
 #include "scene/main/window.h"
 #include "wgl_detect_version.h"
@@ -7069,6 +7070,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
+		if (OS::get_singleton()->is_layered_allowed()) {
+			Dictionary props;
+			props[OGL_CPL_PREFER_DXPRESENT_ID] = OGL_CPL_PREFER_DXPRESENT_PREFER_DISABLED;
+			if (nvapi_setup_profile(props)) {
+				print_verbose("NVAPI: Transparency support enabled, Vulkan present method changed to native");
+			}
+		}
 		rendering_context = memnew(RenderingContextDriverVulkanWindows);
 		tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 	}
@@ -7090,6 +7098,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(VULKAN_ENABLED)
 			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
 				memdelete(rendering_context);
+				if (OS::get_singleton()->is_layered_allowed()) {
+					Dictionary props;
+					props[OGL_CPL_PREFER_DXPRESENT_ID] = OGL_CPL_PREFER_DXPRESENT_PREFER_DISABLED;
+					if (nvapi_setup_profile(props)) {
+						print_verbose("NVAPI: Transparency support enabled, Vulkan present method changed to native");
+					}
+				}
 				rendering_context = memnew(RenderingContextDriverVulkanWindows);
 				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 				if (rendering_context->initialize() == OK) {
