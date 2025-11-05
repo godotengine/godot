@@ -384,6 +384,14 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_config.content_panel_style->set_corner_radius(CORNER_TOP_RIGHT, 0);
 			p_config.content_panel_style->set_content_margin_individual(content_panel_margin, 2 * EDSCALE + content_panel_margin, content_panel_margin, content_panel_margin);
 
+			p_config.tab_container_style = p_config.base_style->duplicate();
+			p_config.tab_container_style->set_content_margin_all(p_config.increased_margin * 1.5 * EDSCALE);
+			p_config.tab_container_style->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
+
+			p_config.foreground_panel = p_config.tab_container_style->duplicate();
+			p_config.foreground_panel->set_corner_radius(CORNER_TOP_LEFT, p_config.tab_container_style->get_corner_radius(CORNER_BOTTOM_LEFT));
+			p_config.foreground_panel->set_corner_radius(CORNER_TOP_RIGHT, p_config.tab_container_style->get_corner_radius(CORNER_BOTTOM_RIGHT));
+
 			// Trees and similarly inset panels.
 
 			p_config.tree_panel_style = p_config.base_style->duplicate();
@@ -755,12 +763,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		style_tabbar_background->set_content_margin_individual(0, 0, p_config.base_margin * 0.25 * EDSCALE, 0);
 
-		Ref<StyleBoxFlat> style_panel = p_config.base_style->duplicate();
-		style_panel->set_content_margin_all(p_config.increased_margin * 1.5 * EDSCALE);
-		style_panel->set_corner_radius_individual(0, 0, p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE);
-
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
-		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", style_panel);
+		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", p_config.tab_container_style);
 
 		p_theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 		p_theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
@@ -1500,14 +1504,10 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, EditorThemeManager::ThemeConfiguration &p_config) {
 	// Project manager.
 	{
-		Ref<StyleBoxFlat> style_panel_container = p_theme->get_stylebox(SceneStringName(panel), SNAME("TabContainer"))->duplicate();
-		style_panel_container->set_corner_radius(CORNER_TOP_LEFT, style_panel_container->get_corner_radius(CORNER_BOTTOM_LEFT));
-		style_panel_container->set_corner_radius(CORNER_TOP_RIGHT, style_panel_container->get_corner_radius(CORNER_BOTTOM_RIGHT));
-
 		Ref<StyleBoxFlat> style_project_list = p_config.base_style->duplicate();
 		style_project_list->set_bg_color(p_config.surface_low_color);
 
-		p_theme->set_stylebox("panel_container", "ProjectManager", style_panel_container);
+		p_theme->set_stylebox("panel_container", "ProjectManager", p_config.foreground_panel);
 		p_theme->set_stylebox("project_list", "ProjectManager", style_project_list);
 		p_theme->set_stylebox("quick_settings_panel", "ProjectManager", style_project_list);
 		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
@@ -1927,6 +1927,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			// as the debugger inspector is too small to be considered a main area.
 			p_theme->set_stylebox(SceneStringName(panel), "EditorDebuggerInspector", style_sidebar);
 		}
+
+		// ForegroundPanel.
+		{
+			p_theme->set_type_variation("PanelForeground", "Panel");
+			p_theme->set_type_variation("EditorInspectorForeground", "EditorInspector");
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
+		}
 	}
 
 	// Editor inspector.
@@ -2092,7 +2101,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		Ref<StyleBoxEmpty> style_dictionary_add_item = EditorThemeManager::make_empty_stylebox(0, 4, 0, 4);
 		p_theme->set_stylebox("DictionaryAddItem0", EditorStringName(EditorStyles), style_dictionary_add_item);
 
-		// Object selector;
+		// Object selector.
 		p_theme->set_type_variation("ObjectSelectorMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "ObjectSelectorMargin", p_config.base_margin * 2 * EDSCALE);
 		p_theme->set_constant("margin_right", "ObjectSelectorMargin", p_config.base_margin * 2.5 * EDSCALE);
