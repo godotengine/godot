@@ -1730,6 +1730,11 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	if (_is_always_on_top_recursive(p_id)) {
 		SetWindowPos(wd.hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 	}
+
+	if (wd.exclusive && wd.transient_parent != INVALID_WINDOW_ID) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		EnableWindow(wd_parent.hWnd, false);
+	}
 }
 
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
@@ -1749,6 +1754,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		PropVariantInit(&val);
 		prop_store->SetValue(PKEY_AppUserModel_ID, val);
 		prop_store->Release();
+	}
+
+	if (wd.exclusive && wd.transient_parent != INVALID_WINDOW_ID) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		EnableWindow(wd_parent.hWnd, true);
 	}
 
 	while (wd.transient_children.size()) {
@@ -2145,10 +2155,12 @@ void DisplayServerWindows::window_set_exclusive(WindowID p_window, bool p_exclus
 	if (wd.exclusive != p_exclusive) {
 		wd.exclusive = p_exclusive;
 		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
 			if (wd.exclusive) {
-				WindowData &wd_parent = windows[wd.transient_parent];
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+				EnableWindow(wd_parent.hWnd, false);
 			} else {
+				EnableWindow(wd_parent.hWnd, true);
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 			}
 		}
@@ -2178,6 +2190,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 		wd_parent.transient_children.erase(p_window);
 
 		if (wd_window.exclusive) {
+			EnableWindow(wd_parent.hWnd, true);
 			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 		}
 	} else {
@@ -2190,6 +2203,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 
 		if (wd_window.exclusive) {
 			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+			EnableWindow(wd_parent.hWnd, false);
 		}
 	}
 }
@@ -6454,6 +6468,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if (wd_transient_parent) {
 			wd.transient_parent = p_transient_parent;
 			wd_transient_parent->transient_children.insert(id);
+			if (p_exclusive) {
+				EnableWindow(wd_transient_parent->hWnd, false);
+			}
 		}
 
 		wd.sharp_corners = p_flags & WINDOW_FLAG_SHARP_CORNERS_BIT;
