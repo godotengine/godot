@@ -459,7 +459,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	_update_wheel_transform(wheel, s);
 
-	real_t depth = -1;
+	real_t hit_depth = -1;
 
 	real_t raylen = wheel.m_suspensionRestLength + wheel.m_wheelRadius;
 
@@ -468,8 +468,6 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	wheel.m_raycastInfo.m_contactPointWS = source + rayvector;
 	const Vector3 &target = wheel.m_raycastInfo.m_contactPointWS;
 	source -= wheel.m_wheelRadius * wheel.m_raycastInfo.m_wheelDirectionWS;
-
-	real_t param = real_t(0.);
 
 	PS3DT::RayResult rr;
 
@@ -485,8 +483,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	bool col = ss->intersect_ray(ray_params, rr);
 
 	if (col) {
-		param = source.distance_to(rr.position) / source.distance_to(target);
-		depth = raylen * param;
+		hit_depth = (source.distance_to(rr.position) - wheel.m_wheelRadius);
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
@@ -494,8 +491,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
 		}
 
-		real_t hitDistance = param * raylen;
-		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
+		wheel.m_raycastInfo.m_suspensionLength = hit_depth - wheel.m_wheelRadius;
 		//clamp on max suspension travel
 
 		real_t minSuspensionLength = wheel.m_suspensionRestLength - wheel.m_maxSuspensionTravel;
@@ -539,7 +535,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 		wheel.m_clippedInvContactDotSuspension = real_t(1.0);
 	}
 
-	return depth;
+	return hit_depth;
 }
 
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
