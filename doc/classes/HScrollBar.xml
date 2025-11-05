@@ -8,4 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<theme_items>
+		<theme_item name="padding_bottom" data_type="constant" type="int" default="0">
+			Padding between the bottom of the [theme_item ScrollBar.scroll] element and the [theme_item ScrollBar.grabber].
+			[b]Note:[/b] To apply horizontal padding, modify the left/right content margins of [theme_item ScrollBar.scroll] instead.
+		</theme_item>
+		<theme_item name="padding_top" data_type="constant" type="int" default="0">
+			Padding between the top of the [theme_item ScrollBar.scroll] element and the [theme_item ScrollBar.grabber].
+			[b]Note:[/b] To apply horizontal padding, modify the left/right content margins of [theme_item ScrollBar.scroll] instead.
+		</theme_item>
+	</theme_items>
 </class>
