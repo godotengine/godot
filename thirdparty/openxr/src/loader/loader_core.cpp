@@ -839,7 +839,3 @@ LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrGetInstanceProcAddr(XrInstance in
                                                                    PFN_xrVoidFunction *function) {
     return LoaderXrGetInstanceProcAddr(instance, name, function);
 }
-
-LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrInitializeLoaderKHR(const XrLoaderInitInfoBaseHeaderKHR *loaderInitInfo) {
-    return LoaderXrInitializeLoaderKHR(loaderInitInfo);
-}
