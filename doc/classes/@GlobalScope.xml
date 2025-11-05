@@ -192,6 +192,19 @@
 				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
+		<method name="cbrt">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the cubic root of [param x].
+				[codeblock]
+				cbrt(9)     # Returns 2.0800838230519
+				cbrt(3.5)   # Returns 1.51829448593783
+				cbrt(-1)    # Returns -1.0
+				[/codeblock]
+				See also [method sqrt].
+			</description>
+		</method>
 		<method name="ceil">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />
@@ -1322,6 +1335,7 @@
 				sqrt(10.24) # Returns 3.2
 				sqrt(-1)    # Returns NaN
 				[/codeblock]
+				See also [method cbrt].
 				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). In C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
 			</description>
 		</method>

@@ -97,6 +97,10 @@ double VariantUtilityFunctions::sqrt(double x) {
 	return Math::sqrt(x);
 }
 
+double VariantUtilityFunctions::cbrt(double x) {
+	return Math::cbrt(x);
+}
+
 double VariantUtilityFunctions::fmod(double b, double r) {
 	return Math::fmod(b, r);
 }
@@ -1649,6 +1653,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(atanh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(sqrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cbrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fposmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(posmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
