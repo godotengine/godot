@@ -611,7 +611,10 @@ void TranslationServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 }
 
-void TranslationServer::load_translations() {
+void TranslationServer::load_project_translations(Ref<TranslationDomain> p_domain) {
+	DEV_ASSERT(p_domain.is_valid());
+
+	p_domain->clear();
 	const String prop = "internationalization/locale/translations";
 	if (!ProjectSettings::get_singleton()->has_setting(prop)) {
 		return;
@@ -620,7 +623,7 @@ void TranslationServer::load_translations() {
 	for (const String &path : translations) {
 		Ref<Translation> tr = ResourceLoader::load(path);
 		if (tr.is_valid()) {
-			add_translation(tr);
+			p_domain->add_translation(tr);
 		}
 	}
 }
