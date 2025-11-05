@@ -33,6 +33,7 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
