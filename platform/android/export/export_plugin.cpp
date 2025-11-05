@@ -39,6 +39,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/version.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
