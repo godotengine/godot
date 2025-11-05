@@ -30,7 +30,7 @@
 
 #include "gradle_export_util.h"
 
-#include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
 
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
@@ -219,6 +219,12 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 		return ERR_CANT_OPEN;
 	}
+
+	// Setup a temporary translation domain to translate the project name.
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+
 	da->list_dir_begin();
 	while (true) {
 		String file = da->get_next();
@@ -231,8 +237,15 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
 		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
-		if (p_appnames.has(locale)) {
-			String locale_project_name = p_appnames[locale];
+
+		String locale_project_name;
+		if (p_appnames.is_empty()) {
+			domain->set_locale_override(locale);
+			locale_project_name = domain->translate(p_project_name, String());
+		} else {
+			locale_project_name = p_appnames.get(locale, p_project_name);
+		}
+		if (locale_project_name != p_project_name) {
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
@@ -242,6 +255,9 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 	da->list_dir_end();
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
+
 	return OK;
 }
 

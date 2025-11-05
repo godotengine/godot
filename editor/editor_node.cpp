@@ -578,8 +578,7 @@ void EditorNode::_gdextensions_reloaded() {
 void EditorNode::_update_translations() {
 	Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
 
-	main->clear();
-	TranslationServer::get_singleton()->load_translations();
+	TranslationServer::get_singleton()->load_project_translations(main);
 
 	if (main->is_enabled()) {
 		// Check for the exact locale.

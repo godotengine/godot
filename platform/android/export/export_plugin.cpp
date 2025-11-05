@@ -39,6 +39,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -1770,8 +1771,11 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 	Vector<String> string_table;
 
-	String package_name = p_preset->get("package/name");
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const String project_name = get_project_name(p_preset, p_preset->get("package/name"));
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
 
 	for (uint32_t i = 0; i < string_count; i++) {
 		uint32_t offset = decode_uint32(&r_manifest[string_table_begins + i * 4]);
@@ -1779,23 +1783,23 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 		String str = _parse_string(&r_manifest[offset], string_flags & UTF8_FLAG);
 
-		if (str.begins_with("godot-project-name")) {
-			if (str == "godot-project-name") {
-				//project name
-				str = get_project_name(p_preset, package_name);
+		if (str == "godot-project-name") {
+			str = project_name;
+		} else if (str.begins_with("godot-project-name")) {
+			String lang = str.substr(str.rfind_char('-') + 1).replace_char('-', '_');
 
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				str = domain->translate(project_name, String());
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1).replace_char('-', '_');
-				if (appnames.has(lang)) {
-					str = appnames[lang];
-				} else {
-					str = get_project_name(p_preset, package_name);
-				}
+				str = appnames.get(lang, project_name);
 			}
 		}
 
 		string_table.push_back(str);
 	}
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
 
 	//write a new string table, but use 16 bits
 	Vector<uint8_t> ret;

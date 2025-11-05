@@ -64,6 +64,13 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		}
 	}
 
+	if (GLOBAL_GET("application/config/name_localized").operator Dictionary().is_empty()) {
+		const String &project_name = GLOBAL_GET("application/config/name");
+		if (!project_name.is_empty()) {
+			raw.push_back({ project_name, String(), String(), String(), String() });
+		}
+	}
+
 	MessageMap result;
 	for (const Vector<String> &entry : raw) {
 		const String &msgid = entry[0];
@@ -95,7 +102,7 @@ void TranslationTemplateGenerator::generate(const String &p_file) {
 
 	const MessageMap &map = parse(files, add_builtin);
 	if (map.is_empty()) {
-		WARN_PRINT("No translatable strings found.");
+		WARN_PRINT_ED(TTR("No translatable strings found."));
 		return;
 	}
 
