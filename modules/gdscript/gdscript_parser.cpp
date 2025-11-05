@@ -3552,7 +3552,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ArrayNode *array = alloc_node<ArrayNode>();
 	push_owner(array);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_ARRAY, array);
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
 		do {
@@ -3574,13 +3573,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	complete_extents(array);
 	pop_owner(array);
 
+	refactor_rename_register_if_cursor_is_inside_node(REFACTOR_RENAME_TYPE_ARRAY, array);
+
 	return array;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
 	push_owner(dictionary);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_DICTIONARY, dictionary);
 	bool decided_style = false;
 	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 		do {
@@ -3708,6 +3708,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);
 	pop_owner(dictionary);
+
+	refactor_rename_register_if_cursor_is_inside_node(REFACTOR_RENAME_TYPE_DICTIONARY, dictionary);
 
 	return dictionary;
 }
