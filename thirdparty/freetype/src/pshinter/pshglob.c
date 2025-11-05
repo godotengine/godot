@@ -5,7 +5,7 @@
  *   PostScript hinter global hinting management (body).
  *   Inspired by the new auto-hinter module.
  *
- * Copyright (C) 2001-2024 by
+ * Copyright (C) 2001-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
