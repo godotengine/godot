@@ -279,7 +279,13 @@ void Node::_notification(int p_notification) {
 				ERR_PRINT("Attempted to free a node that is currently added to the SceneTree from a thread. This is not permitted, use queue_free() instead. Node has not been freed.");
 				return;
 			}
-
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && data.tree && this == data.tree->get_edited_scene_root()) {
+				cancel_free();
+				ERR_PRINT(vformat("Something attempted to free the root Node of a scene (\"%s\"). This is not supported inside the editor, so the Node was not freed.", get_name()));
+				return;
+			}
+#endif
 			if (data.owner) {
 				_clean_up_owner();
 			}
