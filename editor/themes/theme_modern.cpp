@@ -1924,12 +1924,22 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("h_separation", "EditorInspectorSection", p_config.base_margin * EDSCALE);
 
 		Color prop_subsection_stylebox_color = p_config.button_disabled_color.lerp(p_config.base_color, 0.48);
-		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
+		p_theme->set_color("prop_subsection_stylebox_color", EditorStringName(Editor), prop_subsection_stylebox_color);
 
-		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
-		style_highlight_subsection->set_bg_color(prop_subsection_stylebox_color);
-		style_highlight_subsection->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		p_theme->set_stylebox("style_highlight_subsection", EditorStringName(Editor), style_highlight_subsection);
+		Ref<StyleBoxFlat> prop_subsection_stylebox = p_config.base_style->duplicate();
+		prop_subsection_stylebox->set_bg_color(p_theme->get_color("prop_subsection_stylebox_color", EditorStringName(Editor)));
+		prop_subsection_stylebox->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		p_theme->set_stylebox("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox);
+
+		Ref<StyleBoxFlat> prop_subsection_stylebox_left = prop_subsection_stylebox->duplicate();
+		prop_subsection_stylebox_left->set_corner_radius(CORNER_TOP_RIGHT, 0);
+		prop_subsection_stylebox_left->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		p_theme->set_stylebox("prop_subsection_stylebox_left", EditorStringName(Editor), prop_subsection_stylebox_left);
+
+		Ref<StyleBoxFlat> prop_subsection_stylebox_right = prop_subsection_stylebox->duplicate();
+		prop_subsection_stylebox_right->set_corner_radius(CORNER_TOP_LEFT, 0);
+		prop_subsection_stylebox_right->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		p_theme->set_stylebox("prop_subsection_stylebox_right", EditorStringName(Editor), prop_subsection_stylebox_right);
 
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.

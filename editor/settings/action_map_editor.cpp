@@ -418,18 +418,6 @@ bool ActionMapEditor::_should_display_action(const String &p_name, const Array &
 	return event_match && action_list_search_bar->get_name().is_subsequence_ofn(p_name);
 }
 
-void ActionMapEditor::_highlight_subsection_action(Object *p_item, const Rect2 p_rect) {
-	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	ERR_FAIL_NULL(item);
-
-	if (item->is_selected(0)) {
-		return;
-	}
-
-	const Ref<StyleBox> &stylebox = get_theme_stylebox(SNAME("style_highlight_subsection"), EditorStringName(Editor));
-	stylebox->draw(action_tree->get_canvas_item(), p_rect);
-}
-
 void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_infos) {
 	if (!p_action_infos.is_empty()) {
 		actions_cache = p_action_infos;
@@ -478,7 +466,6 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		// First Column - Action Name
 		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		action_item->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
-		action_item->set_custom_draw_callback(0, callable_mp(this, &ActionMapEditor::_highlight_subsection_action));
 		action_item->set_text(0, action_info.name);
 		action_item->set_editable(0, action_info.editable);
 		action_item->set_icon(0, action_info.icon);
@@ -502,6 +489,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		action_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 		action_item->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox_left"), EditorStringName(Editor)));
+		action_item->set_custom_stylebox(1, get_theme_stylebox(SNAME("prop_subsection_stylebox_right"), EditorStringName(Editor)));
 
 		if (selected_item.first == action_info.name) {
 			action_item->select(selected_item.second);
