@@ -7084,54 +7084,60 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	fallback_to_vulkan = true; // Always enable fallback if engine was built w/o other driver support.
 #endif
 
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			bool failed = true;
+	if (rendering_context == nullptr || rendering_context->initialize() != OK) {
+		bool failed = true;
 #if defined(VULKAN_ENABLED)
-			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
+		if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
+			if (rendering_context) {
 				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverVulkanWindows);
-				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
-					rendering_driver = "vulkan";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
 			}
-#endif
-#if defined(D3D12_ENABLED)
-			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverD3D12);
-				tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
-					rendering_driver = "d3d12";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			rendering_context = memnew(RenderingContextDriverVulkanWindows);
+			tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
+			if (rendering_context->initialize() == OK) {
+				WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
+				rendering_driver = "vulkan";
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 				failed = false;
 			}
+		}
 #endif
-			if (failed) {
+#if defined(D3D12_ENABLED)
+		if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
+			if (rendering_context) {
 				memdelete(rendering_context);
-				rendering_context = nullptr;
-				r_error = ERR_UNAVAILABLE;
-				return;
 			}
+			rendering_context = memnew(RenderingContextDriverD3D12);
+			tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
+			if (rendering_context->initialize() == OK) {
+				WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
+				rendering_driver = "d3d12";
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				failed = false;
+			}
+		}
+#endif
+#if defined(GLES3_ENABLED)
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
+			if (rendering_context) {
+				memdelete(rendering_context);
+			}
+			rendering_context = nullptr;
+			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
+			rendering_driver = "opengl3";
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			failed = false;
+		}
+#endif
+		if (failed) {
+			if (rendering_context) {
+				memdelete(rendering_context);
+			}
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
 		}
 	}
 #endif
