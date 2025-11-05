@@ -49,6 +49,7 @@
 /**************************************************************************/
 
 #import "metal_objects.h"
+#include <cstdint>
 
 #import "metal_utils.h"
 #import "pixel_formats.h"
@@ -640,6 +641,12 @@ void MDCommandBuffer::_end_render_pass() {
 		// see: https://github.com/KhronosGroup/MoltenVK/blob/d20d13fe2735adb845636a81522df1b9d89c0fba/MoltenVK/MoltenVK/GPUObjects/MVKRenderPass.mm#L407
 	}
 
+	uint32_t depth_resolve_index = subpass.depth_stencil_resolve_reference.attachment;
+	if (depth_resolve_index != RDD::AttachmentReference::UNUSED && fb_info.has_texture(depth_resolve_index)) {
+		id<MTLTexture> resolve_tex = fb_info.get_texture(depth_resolve_index);
+		CRASH_COND_MSG(!flags::all(pf.getCapabilities(resolve_tex.pixelFormat), kMTLFmtCapsResolve), "not implemented: unresolvable texture types");
+	}
+
 	render.end_encoding();
 }
 
@@ -751,9 +758,24 @@ void MDCommandBuffer::render_next_subpass() {
 		MDAttachment const &attachment = pass.attachments[idx];
 		id<MTLTexture> tex = fb.get_texture(idx);
 		ERR_FAIL_NULL_MSG(tex, "Frame buffer depth / stencil texture is null.");
+
+		uint32_t depth_resolve_index = subpass.depth_stencil_resolve_reference.attachment;
+		bool has_resolve = depth_resolve_index != RDD::AttachmentReference::UNUSED;
+		bool can_resolve = true;
+		if (has_resolve) {
+			MTLRenderPassDepthAttachmentDescriptor *da = desc.depthAttachment;
+			id<MTLTexture> resolve_tex = fb.get_texture(depth_resolve_index);
+			can_resolve = flags::all(pf.getCapabilities(resolve_tex.pixelFormat), kMTLFmtCapsResolve);
+			if (can_resolve) {
+				da.resolveTexture = resolve_tex;
+			} else {
+				CRASH_NOW_MSG("unimplemented: using a texture format that is not supported for resolve");
+			}
+		}
+
 		if (attachment.type & MDAttachmentType::Depth) {
 			MTLRenderPassDepthAttachmentDescriptor *da = desc.depthAttachment;
-			if (attachment.configureDescriptor(da, pf, subpass, tex, render.is_rendering_entire_area, false, false, false)) {
+			if (attachment.configureDescriptor(da, pf, subpass, tex, render.is_rendering_entire_area, has_resolve, can_resolve, false)) {
 				da.clearDepth = render.clear_values[idx].depth;
 			}
 		}
@@ -1725,6 +1747,10 @@ MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const 
 
 	if (depth_stencil_reference.attachment == p_index) {
 		flags::set(caps, kMTLFmtCapsDSAtt);
+	}
+
+	if (depth_stencil_resolve_reference.attachment == p_index) {
+		flags::set(caps, kMTLFmtCapsResolve);
 	}
 
 	return caps;

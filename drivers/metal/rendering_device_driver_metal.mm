@@ -49,6 +49,7 @@
 /**************************************************************************/
 
 #import "rendering_device_driver_metal.h"
+#include "servers/rendering/rendering_device_commons.h"
 
 #import "pixel_formats.h"
 #import "rendering_context_driver_metal.h"
@@ -1843,6 +1844,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.depth_stencil_resolve_reference = p_subpasses[i].depth_resolve_reference;
 	}
 
 	static const MTLLoadAction LOAD_ACTIONS[] = {
@@ -2772,6 +2774,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.supports_native_image_atomics;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return true;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return device_properties->features.supports_msaa_depth_resolve;
 		default:
 			return false;
 	}

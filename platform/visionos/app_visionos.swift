@@ -56,7 +56,7 @@ struct ContentStageConfiguration: CompositorLayerConfiguration {
 
 		GDTAppDelegateServiceVisionOS.layerRendererCapabilities = capabilities as __CP_OBJECT_cp_layer_renderer_capabilities
 
-		configuration.depthFormat = .depth32Float
+		configuration.depthFormat = .depth32Float_stencil8
 		configuration.colorFormat = .rgba16Float
 
 		let foveationEnabled = capabilities.supportsFoveation

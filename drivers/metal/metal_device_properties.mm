@@ -130,6 +130,11 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		features.supports_native_image_atomics = false;
 	}
 
+	features.supports_msaa_depth_resolve = [p_device supportsFamily:MTLGPUFamilyApple3] || [p_device supportsFamily:MTLGPUFamilyMac2];
+	if (@available(macos 13.0, ios 16.0, *)) {
+		features.supports_msaa_depth_resolve = features.supports_msaa_depth_resolve || [p_device supportsFamily:MTLGPUFamilyMetal3];
+	}
+
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.needs_arg_encoders = !([p_device supportsFamily:MTLGPUFamilyMetal3] && features.argument_buffers_tier == MTLArgumentBuffersTier2);
 	}
