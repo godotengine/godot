@@ -293,17 +293,17 @@ JPH::MassProperties JoltBody3D::_calculate_mass_properties(const JPH::Shape &p_s
 	}
 
 	// If using custom inertia, set products of inertia
-	// Uses the "alternate" (but correct) convention
+	// Uses the "alternate" convention
 	// https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor
 	if (!calculate_inertia) {
-		mass_properties.mInertia(1, 2) = -(float)product_of_inertia.x;  // Iyz
-		mass_properties.mInertia(2, 1) = -(float)product_of_inertia.x;  // Iyz
+		mass_properties.mInertia(1, 2) = -(float)product_of_inertia.x; // Iyz
+		mass_properties.mInertia(2, 1) = -(float)product_of_inertia.x; // Iyz
 
-		mass_properties.mInertia(0, 2) = -(float)product_of_inertia.y;  // Ixz
-		mass_properties.mInertia(2, 0) = -(float)product_of_inertia.y;  // Ixz
+		mass_properties.mInertia(0, 2) = -(float)product_of_inertia.y; // Ixz
+		mass_properties.mInertia(2, 0) = -(float)product_of_inertia.y; // Ixz
 
-		mass_properties.mInertia(0, 1) = -(float)product_of_inertia.z;  // Ixy
-		mass_properties.mInertia(1, 0) = -(float)product_of_inertia.z;  // Ixy
+		mass_properties.mInertia(0, 1) = -(float)product_of_inertia.z; // Ixy
+		mass_properties.mInertia(1, 0) = -(float)product_of_inertia.z; // Ixy
 	}
 
 	mass_properties.mInertia(3, 3) = 1.0f;

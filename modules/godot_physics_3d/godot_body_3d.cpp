@@ -30,11 +30,11 @@
 
 #include "godot_body_3d.h"
 
+#include "core/math/eigen_value_symmetric.h"
 #include "godot_area_3d.h"
 #include "godot_body_direct_state_3d.h"
 #include "godot_constraint_3d.h"
 #include "godot_space_3d.h"
-#include "core/math/eigen_value_symmetric.h"
 
 void GodotBody3D::_mass_properties_changed() {
 	if (get_space() && !mass_properties_update_list.in_list()) {
@@ -47,11 +47,11 @@ void GodotBody3D::_update_local_inertia() {
 	inertia_tensor_local = Basis();
 	inertia_tensor_local.scale(inertia);
 
-	// Add off-diagonal entries using the "alternate" (but correct) convention
+	// Add off-diagonal entries using the "alternate" convention
 	// https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor
 	inertia_tensor_local[1][2] = -product_of_inertia.x;
 	inertia_tensor_local[2][1] = -product_of_inertia.x;
-	
+
 	inertia_tensor_local[0][2] = -product_of_inertia.y;
 	inertia_tensor_local[2][0] = -product_of_inertia.y;
 
@@ -309,9 +309,9 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 		} break;
 		case PhysicsServer3D::BODY_PARAM_PROD_INERTIA: {
 			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-				return Vector3( -inertia_tensor_local[1][2], 
-								-inertia_tensor_local[0][2], 
-								-inertia_tensor_local[0][1] );
+				return Vector3(-inertia_tensor_local[1][2],
+						-inertia_tensor_local[0][2],
+						-inertia_tensor_local[0][1]);
 			} else {
 				return Vector3();
 			}
