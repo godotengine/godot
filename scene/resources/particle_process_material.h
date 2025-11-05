@@ -209,6 +209,8 @@ private:
 		StringName anim_speed_min;
 		StringName anim_offset_min;
 		StringName directional_velocity_min;
+		StringName scale_3d_min;
+		StringName angle_3d_min;
 
 		StringName initial_linear_velocity_max;
 		StringName initial_angle_max;
@@ -225,6 +227,8 @@ private:
 		StringName anim_speed_max;
 		StringName anim_offset_max;
 		StringName directional_velocity_max;
+		StringName scale_3d_max;
+		StringName angle_3d_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
@@ -348,6 +352,11 @@ private:
 	double lifetime_randomness = 0.0;
 	double inherit_emitter_velocity_ratio = 0.0;
 
+	Vector3 scale_3d_min;
+	Vector3 scale_3d_max;
+	Vector3 angle_3d_min;
+	Vector3 angle_3d_max;
+
 	SubEmitterMode sub_emitter_mode;
 	double sub_emitter_frequency = 0.0;
 	int sub_emitter_amount_at_end = 0;
@@ -409,6 +418,18 @@ public:
 
 	void set_emission_curve(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_emission_curve() const;
+
+	void set_scale_3d_min(const Vector3 &p_scale_3d_min);
+	Vector3 get_scale_3d_min() const;
+
+	void set_scale_3d_max(const Vector3 &p_scale_3d_max);
+	Vector3 get_scale_3d_max() const;
+
+	void set_angle_3d_min(const Vector3 &p_angle_3d_min);
+	Vector3 get_angle_3d_min() const;
+
+	void set_angle_3d_max(const Vector3 &p_angle_3d_max);
+	Vector3 get_angle_3d_max() const;
 
 	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
