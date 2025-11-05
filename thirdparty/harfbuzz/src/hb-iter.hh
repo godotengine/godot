@@ -772,8 +772,9 @@ struct hb_iota_iter_t :
   template <typename S2 = S>
   auto
   inc (hb_type_identity<S2> s, hb_priority<1>)
-    -> hb_void_t<decltype (hb_invoke (std::forward<S2> (s), hb_declval<T&> ()))>
-  { v = hb_invoke (std::forward<S2> (s), v); }
+    -> hb_void_t<decltype (hb_invoke (std::forward<hb_type_identity<S2>> (s),
+                                      hb_declval<T&> ()))>
+  { v = hb_invoke (std::forward<hb_type_identity<S2>> (s), v); }
 
   void
   inc (S s, hb_priority<0>)

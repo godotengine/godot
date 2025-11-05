@@ -93,7 +93,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
   shaper = hb_ot_shaper_categorize (props.script, props.direction, map.chosen_script[0]);
 
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
-  script_fallback_mark_positioning = shaper->fallback_position;
+  script_fallback_position = shaper->fallback_position;
 
 #ifndef HB_NO_AAT_SHAPE
   /* https://github.com/harfbuzz/harfbuzz/issues/1528 */
@@ -179,12 +179,12 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
 #ifndef HB_NO_OT_KERN
     else if (hb_ot_layout_has_kerning (face))
-      plan.apply_kern = true;
+      plan.apply_kern = script_fallback_position; // Not all shapers apply legacy `kern`
 #endif
     else {}
   }
 
-  plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
+  plan.apply_fallback_kern = script_fallback_position && !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
 
   plan.zero_marks = script_zero_marks &&
 		    !plan.apply_kerx &&
@@ -204,7 +204,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 					      );
 
   plan.fallback_mark_positioning = plan.adjust_mark_positioning_when_zeroing &&
-				   script_fallback_mark_positioning;
+				   script_fallback_position;
 
 #ifndef HB_NO_AAT_SHAPE
   /* If we're using morx shaping, we cancel mark position adjustment because

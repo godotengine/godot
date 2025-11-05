@@ -687,7 +687,7 @@ struct gvar_GVAR
 
 	bool apply_to_all = (indices.length == 0);
 	unsigned num_deltas = apply_to_all ? points.length : indices.length;
-	unsigned start_deltas = (phantom_only && num_deltas >= 4 ? num_deltas - 4 : 0);
+	unsigned start_deltas = (apply_to_all && phantom_only && num_deltas >= 4 ? num_deltas - 4 : 0);
 	if (unlikely (!x_deltas.resize_dirty  (num_deltas))) return false;
 	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end, false, start_deltas))) return false;
 	if (unlikely (!y_deltas.resize_dirty  (num_deltas))) return false;
