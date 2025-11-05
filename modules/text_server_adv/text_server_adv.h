@@ -95,7 +95,7 @@ using namespace godot;
 // Thirdparty headers.
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
-#if defined(__EMSCRIPTEN__) || __clang_major__ >= 21
+#ifdef __EMSCRIPTEN__
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
 #endif
 
@@ -113,7 +113,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
 #include <unicode/utypes.h>
 
 GODOT_GCC_WARNING_POP
-#if defined(__EMSCRIPTEN__) || __clang_major__ >= 21
+#ifdef __EMSCRIPTEN__
 GODOT_CLANG_WARNING_POP
 #endif
 
@@ -143,6 +143,16 @@ class TextServerAdvanced : public TextServerExtension {
 	GDCLASS(TextServerAdvanced, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
+	struct NumSystemData {
+		HashSet<StringName> lang;
+		String digits;
+		String percent_sign;
+		String exp_l;
+		String exp_u;
+	};
+
+	Vector<NumSystemData> num_systems;
+
 	struct FeatureInfo {
 		StringName name;
 		Variant::Type vtype = Variant::INT;
@@ -163,6 +173,7 @@ class TextServerAdvanced : public TextServerExtension {
 	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
+	void _insert_num_systems_lang();
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
 
@@ -703,19 +714,17 @@ class TextServerAdvanced : public TextServerExtension {
 		int current_priority = 0;
 		uint32_t current_index = 0;
 		uint32_t font_count = 0;
-		String language;
-		String script_code;
-		bool color = false;
+		const String *language;
+		const String *script_code;
 		LocalVector<Pair<RID, int>> unprocessed_fonts;
 		LocalVector<RID> fonts;
 		const TextServerAdvanced *text_server;
 
-		FontPriorityList(const TextServerAdvanced *p_text_server, const Array &p_fonts, const String &p_language, const String &p_script_code, bool p_color) {
+		FontPriorityList(const TextServerAdvanced *p_text_server, const Array &p_fonts, const String &p_language, const String &p_script_code) {
 			text_server = p_text_server;
-			language = p_language;
-			script_code = p_script_code;
+			language = &p_language;
+			script_code = &p_script_code;
 			font_count = p_fonts.size();
-			color = p_color;
 
 			unprocessed_fonts.reserve(font_count);
 			for (uint32_t i = 0; i < font_count; i++) {
@@ -735,10 +744,7 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 
 		_FORCE_INLINE_ int _get_priority(const RID &p_font) {
-			if (color && text_server->_font_is_color(p_font)) {
-				return 0;
-			}
-			return text_server->_font_is_script_supported(p_font, script_code) ? (text_server->_font_is_language_supported(p_font, language) ? 0 : 1) : 2;
+			return text_server->_font_is_script_supported(p_font, *script_code) ? (text_server->_font_is_language_supported(p_font, *language) ? 0 : 1) : 2;
 		}
 
 		RID operator[](uint32_t p_index) {
@@ -767,13 +773,11 @@ class TextServerAdvanced : public TextServerExtension {
 			return RID();
 		}
 	};
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, const String &p_language, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
+	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	_FORCE_INLINE_ void _add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
-
-	String os_locale;
 
 	Mutex ft_mutex;
 
@@ -801,7 +805,6 @@ class TextServerAdvanced : public TextServerExtension {
 	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
 	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size, bool &r_is_color) const;
-	bool _font_is_color(const RID &p_font) const;
 
 	struct GlyphCompare { // For line breaking reordering.
 		_FORCE_INLINE_ bool operator()(const Glyph &l, const Glyph &r) const {
@@ -835,7 +838,6 @@ public:
 	MODBIND0RC(String, get_support_data_info);
 	MODBIND1RC(bool, save_support_data, const String &);
 	MODBIND0RC(PackedByteArray, get_support_data);
-	MODBIND1RC(bool, is_locale_using_support_data, const String &);
 
 	MODBIND1RC(bool, is_locale_right_to_left, const String &);
 
@@ -1032,7 +1034,6 @@ public:
 	MODBIND2R(RID, create_shaped_text, Direction, Orientation);
 
 	MODBIND1(shaped_text_clear, const RID &);
-	MODBIND1R(RID, shaped_text_duplicate, const RID &);
 
 	MODBIND2(shaped_text_set_direction, const RID &, Direction);
 	MODBIND1RC(Direction, shaped_text_get_direction, const RID &);
@@ -1061,7 +1062,6 @@ public:
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
-	MODBIND2RC(bool, shaped_text_has_object, const RID &, const Variant &);
 	MODBIND1RC(String, shaped_get_text, const RID &);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
@@ -1118,6 +1118,10 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
 	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
+
+	MODBIND2RC(String, format_number, const String &, const String &);
+	MODBIND2RC(String, parse_number, const String &, const String &);
+	MODBIND1RC(String, percent_sign, const String &);
 
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
 	MODBIND2RC(PackedInt32Array, string_get_character_breaks, const String &, const String &);
