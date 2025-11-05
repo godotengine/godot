@@ -101,7 +101,7 @@ enum SandboxPropertyNameIndex : int {
 };
 static std::vector<StringName> property_names;
 
-String Sandbox::_to_string() const {
+String Sandbox::_to_string() {
 	return "[ GDExtension::Sandbox <--> Instance ID:" + uitos(get_instance_id()) + " ]";
 }
 

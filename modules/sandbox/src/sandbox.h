@@ -80,7 +80,7 @@ class Sandbox : public SandboxBase {
 protected:
 	static void _bind_methods();
 
-	String _to_string() const;
+	String _to_string() override;
 
 public:
 	static constexpr unsigned MAX_INSTRUCTIONS = 8000; // Millions
