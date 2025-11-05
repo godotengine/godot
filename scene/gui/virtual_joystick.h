@@ -110,14 +110,14 @@ public:
 	void set_initial_offset_ratio(const Vector2 &p_ratio);
 	Vector2 get_initial_offset_ratio() const;
 
-	void set_action_left(const String &p_action);
-	String get_action_left() const;
-	void set_action_right(const String &p_action);
-	String get_action_right() const;
-	void set_action_up(const String &p_action);
-	String get_action_up() const;
-	void set_action_down(const String &p_action);
-	String get_action_down() const;
+	void set_action_left(const StringName &p_action);
+	StringName get_action_left() const;
+	void set_action_right(const StringName &p_action);
+	StringName get_action_right() const;
+	void set_action_up(const StringName &p_action);
+	StringName get_action_up() const;
+	void set_action_down(const StringName &p_action);
+	StringName get_action_down() const;
 
 	void set_visibility_mode(VisibilityMode p_mode);
 	VisibilityMode get_visibility_mode() const;

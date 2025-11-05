@@ -10,19 +10,20 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="action_down" type="String" setter="set_action_down" getter="get_action_down" default="&quot;ui_down&quot;">
+		<member name="action_down" type="StringName" setter="set_action_down" getter="get_action_down" default="&quot;ui_down&quot;">
 			The action to trigger when the joystick is moved down.
 		</member>
-		<member name="action_left" type="String" setter="set_action_left" getter="get_action_left" default="&quot;ui_left&quot;">
+		<member name="action_left" type="StringName" setter="set_action_left" getter="get_action_left" default="&quot;ui_left&quot;">
 			The action to trigger when the joystick is moved left.
 		</member>
-		<member name="action_right" type="String" setter="set_action_right" getter="get_action_right" default="&quot;ui_right&quot;">
+		<member name="action_right" type="StringName" setter="set_action_right" getter="get_action_right" default="&quot;ui_right&quot;">
 			The action to trigger when the joystick is moved right.
 		</member>
-		<member name="action_up" type="String" setter="set_action_up" getter="get_action_up" default="&quot;ui_up&quot;">
+		<member name="action_up" type="StringName" setter="set_action_up" getter="get_action_up" default="&quot;ui_up&quot;">
 			The action to trigger when the joystick is moved up.
 		</member>
 		<member name="clampzone_ratio" type="float" setter="set_clampzone_ratio" getter="get_clampzone_ratio" default="1.0">
+			The ratio of the joystick size that defines the clamp zone area.
 		</member>
 		<member name="deadzone_ratio" type="float" setter="set_deadzone_ratio" getter="get_deadzone_ratio" default="0.25">
 			The ratio of the joystick size that defines the deadzone area. The joystick tip must move beyond this ratio before being considered active.
@@ -58,7 +59,7 @@
 		<signal name="flicked">
 			<param index="0" name="input_vector" type="Vector2" />
 			<description>
-				Emitted when the tip moved outside the deadzone and the joystick is released. The input_vector contains the last input direction and strength before release. Its length is between [code]0.0[/code] and [code]1.0[/code]
+				Emitted when the tip moved outside the deadzone and the joystick is released. The [param input_vector] contains the last input direction and strength before release. Its length is between [code]0.0[/code] and [code]1.0[/code]
 			</description>
 		</signal>
 		<signal name="pressed">
@@ -69,7 +70,7 @@
 		<signal name="released">
 			<param index="0" name="input_vector" type="Vector2" />
 			<description>
-				Emitted when the joystick is released. The input_vector is the final input direction and strength, with a length between [code]0.0[/code] and [code]1.0[/code].
+				Emitted when the joystick is released. The [param input_vector] is the final input direction and strength, with a length between [code]0.0[/code] and [code]1.0[/code].
 			</description>
 		</signal>
 		<signal name="tapped">

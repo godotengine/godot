@@ -331,35 +331,35 @@ VirtualJoystick::JoystickMode VirtualJoystick::get_joystick_mode() const {
 	return joystick_mode;
 }
 
-void VirtualJoystick::set_action_left(const String &p_action) {
+void VirtualJoystick::set_action_left(const StringName &p_action) {
 	action_left = p_action;
 }
 
-String VirtualJoystick::get_action_left() const {
+StringName VirtualJoystick::get_action_left() const {
 	return action_left;
 }
 
-void VirtualJoystick::set_action_right(const String &p_action) {
+void VirtualJoystick::set_action_right(const StringName &p_action) {
 	action_right = p_action;
 }
 
-String VirtualJoystick::get_action_right() const {
+StringName VirtualJoystick::get_action_right() const {
 	return action_right;
 }
 
-void VirtualJoystick::set_action_up(const String &p_action) {
+void VirtualJoystick::set_action_up(const StringName &p_action) {
 	action_up = p_action;
 }
 
-String VirtualJoystick::get_action_up() const {
+StringName VirtualJoystick::get_action_up() const {
 	return action_up;
 }
 
-void VirtualJoystick::set_action_down(const String &p_action) {
+void VirtualJoystick::set_action_down(const StringName &p_action) {
 	action_down = p_action;
 }
 
-String VirtualJoystick::get_action_down() const {
+StringName VirtualJoystick::get_action_down() const {
 	return action_down;
 }
 
