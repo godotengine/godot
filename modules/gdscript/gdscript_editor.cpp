@@ -5314,6 +5314,44 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 				} break;
 			}
+		} break;
+		case GDScriptParser::REFACTOR_RENAME_TYPE_CLASS: {
+			if (context.node == nullptr || context.node->type != GDScriptParser::Node::CLASS) {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			GDScriptParser::DataType base_type;
+			if (context.current_class) {
+				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+					base_type = context.current_class->get_datatype();
+				} else {
+					base_type = context.current_class->base_type;
+				}
+			} else {
+				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+			}
+
+			Error class_err;
+			if (context.identifier != nullptr && context.token.get_code_area() == context.identifier->get_code_area()) {
+				// Trying to edit the class_name.
+				class_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_CLASS, context.identifier);
+				REFACTOR_RENAME_RETURN(class_err);
+			}
+
+			switch (context.token.type) {
+				case GDScriptTokenizer::Token::CLASS:
+				case GDScriptTokenizer::Token::CLASS_NAME:
+				case GDScriptTokenizer::Token::EXTENDS: {
+					REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+					REFACTOR_RENAME_RETURN(OK);
+				} break;
+				case GDScriptTokenizer::Token::EMPTY: {
+					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+				} break;
+				default: {
+					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+				} break;
+			}
 
 		} break;
 		default: {
