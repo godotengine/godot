@@ -709,7 +709,8 @@ class TextServerAdvanced : public TextServerExtension {
 	struct FontPriorityList {
 		friend class TextServerAdvanced;
 
-		const int MAX_PRIORITY = 2;
+		const int PRIORITY_SKIP = 100; // Font already used.
+		const int PRIORITY_MAX = 2;
 		int current_priority = 0;
 		uint32_t current_index = 0;
 		uint32_t font_count = 0;
@@ -733,7 +734,7 @@ class TextServerAdvanced : public TextServerExtension {
 			fonts.reserve(font_count);
 			if (font_count > 0) {
 				fonts.push_back(p_fonts[0]);
-				unprocessed_fonts[0].second = 0;
+				unprocessed_fonts[0].second = PRIORITY_SKIP;
 				current_index++;
 			}
 		}
@@ -742,15 +743,15 @@ class TextServerAdvanced : public TextServerExtension {
 			return font_count;
 		}
 
-		_FORCE_INLINE_ int _get_priority(const RID &font) {
-			return text_server->_font_is_script_supported(font, *script_code) ? (text_server->_font_is_language_supported(font, *language) ? 0 : 1) : 2;
+		_FORCE_INLINE_ int _get_priority(const RID &p_font) {
+			return text_server->_font_is_script_supported(p_font, *script_code) ? (text_server->_font_is_language_supported(p_font, *language) ? 0 : 1) : 2;
 		}
 
-		RID operator[](uint32_t index) {
-			if (index < fonts.size()) {
-				return fonts[index];
+		RID operator[](uint32_t p_index) {
+			if (p_index < fonts.size()) {
+				return fonts[p_index];
 			}
-			while (current_priority < MAX_PRIORITY || current_index < font_count) {
+			while (current_priority < PRIORITY_MAX || current_index < font_count) {
 				if (current_index >= font_count) {
 					current_priority++;
 					current_index = 0;
@@ -761,9 +762,10 @@ class TextServerAdvanced : public TextServerExtension {
 					priority = _get_priority(font);
 				}
 				if (priority == current_priority) {
+					unprocessed_fonts[current_index].second = PRIORITY_SKIP;
 					fonts.push_back(font);
-					if (index < fonts.size()) {
-						return fonts[index];
+					if (p_index < fonts.size()) {
+						return fonts[p_index];
 					}
 				}
 				current_index++;
