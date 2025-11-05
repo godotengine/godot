@@ -275,7 +275,6 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	bool uses_uvs = false;
 
 	while (true) {
-		//print_verbose(String::num_int64(line++));
 		String l = f->get_line().strip_edges();
 		while (l.length() && l[l.length() - 1] == '\\') {
 			String add = f->get_line().strip_edges();
@@ -345,7 +344,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 3, ERR_FILE_CORRUPT);
 			for (int i = 2; i < v.size(); i++) {
-				int vtx = v[i-1].to_int() - 1;
+				int vtx = v[i - 1].to_int() - 1;
 				if (vtx < 0) {
 					vtx += vertices.size() + 1;
 				}
