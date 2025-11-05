@@ -39,14 +39,17 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class CreateDialog;
+class DependencyEditor;
+class DependencyEditorOwners;
+class DependencyRemoveDialog;
 class EditorDirDialog;
 class HBoxContainer;
-class ItemList;
 class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
