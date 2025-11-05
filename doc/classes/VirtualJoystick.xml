@@ -10,16 +10,16 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="action_down" type="StringName" setter="set_action_down" getter="get_action_down" default="&quot;ui_down&quot;">
+		<member name="action_down" type="StringName" setter="set_action_down" getter="get_action_down" default="&amp;&quot;ui_down&quot;">
 			The action to trigger when the joystick is moved down.
 		</member>
-		<member name="action_left" type="StringName" setter="set_action_left" getter="get_action_left" default="&quot;ui_left&quot;">
+		<member name="action_left" type="StringName" setter="set_action_left" getter="get_action_left" default="&amp;&quot;ui_left&quot;">
 			The action to trigger when the joystick is moved left.
 		</member>
-		<member name="action_right" type="StringName" setter="set_action_right" getter="get_action_right" default="&quot;ui_right&quot;">
+		<member name="action_right" type="StringName" setter="set_action_right" getter="get_action_right" default="&amp;&quot;ui_right&quot;">
 			The action to trigger when the joystick is moved right.
 		</member>
-		<member name="action_up" type="StringName" setter="set_action_up" getter="get_action_up" default="&quot;ui_up&quot;">
+		<member name="action_up" type="StringName" setter="set_action_up" getter="get_action_up" default="&amp;&quot;ui_up&quot;">
 			The action to trigger when the joystick is moved up.
 		</member>
 		<member name="clampzone_ratio" type="float" setter="set_clampzone_ratio" getter="get_clampzone_ratio" default="1.0">
