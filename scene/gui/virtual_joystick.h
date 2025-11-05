@@ -39,20 +39,21 @@ public:
 	enum JoystickMode {
 		JOYSTICK_FIXED,
 		JOYSTICK_DYNAMIC,
-		JOYSTICK_FOLLOWING
+		JOYSTICK_FOLLOWING,
 	};
 
 	enum VisibilityMode {
 		VISIBILITY_ALWAYS,
 		VISIBILITY_TOUCHSCREEN_ONLY,
-		VISIBILITY_WHEN_TOUCHED
+		VISIBILITY_WHEN_TOUCHED,
 	};
 
 private:
 	JoystickMode joystick_mode = JOYSTICK_FIXED;
 	float joystick_size = 100.0f;
-	float deadzone_size = 25.0f;
-	float clampzone_size = 100.0f;
+	float tip_size = 50.0f;
+	float deadzone_ratio = 0.25f;
+	float clampzone_ratio = 1.0f;
 	Vector2 initial_offset_ratio = Vector2(0.5, 0.5);
 	StringName action_left = "ui_left";
 	StringName action_right = "ui_right";
@@ -61,22 +62,22 @@ private:
 	VisibilityMode visibility = VISIBILITY_ALWAYS;
 
 	struct ThemeCache {
-		Color base_normal_color;
+		Color ring_normal_color;
 		Color tip_normal_color;
-		Color base_pressed_color;
+		Color ring_pressed_color;
 		Color tip_pressed_color;
 	} theme_cache;
 
 	bool is_pressed = false;
 	bool has_input = false;
 	bool has_moved = false;
-	Vector2 raw_input_vector = Vector2();
-	Vector2 input_vector = Vector2();
+	Vector2 raw_input_vector;
+	Vector2 input_vector;
 	bool is_flick_canceled = false;
 	int touch_index = -1;
 
-	Vector2 joystick_pos = Vector2(0, 0);
-	Vector2 tip_pos = Vector2(0, 0);
+	Vector2 joystick_pos;
+	Vector2 tip_pos;
 
 	Ref<Texture2D> joystick_texture;
 	Ref<Texture2D> tip_texture;
@@ -97,11 +98,14 @@ public:
 	void set_joystick_size(float p_size);
 	float get_joystick_size() const;
 
-	void set_deadzone_size(float p_size);
-	float get_deadzone_size() const;
+	void set_tip_size(float p_size);
+	float get_tip_size() const;
 
-	void set_clampzone_size(float p_size);
-	float get_clampzone_size() const;
+	void set_deadzone_ratio(float p_ratio);
+	float get_deadzone_ratio() const;
+
+	void set_clampzone_ratio(float p_ratio);
+	float get_clampzone_ratio() const;
 
 	void set_initial_offset_ratio(const Vector2 &p_ratio);
 	Vector2 get_initial_offset_ratio() const;
