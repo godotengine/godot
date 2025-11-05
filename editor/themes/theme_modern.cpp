@@ -1923,7 +1923,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
 		p_theme->set_constant("h_separation", "EditorInspectorSection", p_config.base_margin * EDSCALE);
 
-		Color prop_subsection_stylebox_color = p_config.dark_color_1.lerp(p_config.mono_color_font, p_config.dark_icon_and_font ? 0.09 : 0.16);
+		Color prop_subsection_stylebox_color = p_config.button_disabled_color.lerp(p_config.base_color, 0.48);
 		p_theme->set_color("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox_color);
 
 		Ref<StyleBoxFlat> style_highlight_subsection = p_config.base_style->duplicate();
