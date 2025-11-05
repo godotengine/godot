@@ -480,7 +480,7 @@ The files of hidapi are stored in `thirdparty/sdl/hidapi/` folder.
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 77.1 (457157a92aa053e632cc7fcfd0e12f8a943b2d11, 2025)
+- Version: 78.1 (049e0d6a420629ac7db77256987d083a563287b5, 2025)
 - License: Unicode
 
 Files extracted from upstream source:
