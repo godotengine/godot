@@ -1741,10 +1741,8 @@ public:
 		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
 		REFACTOR_RENAME_TYPE_ENUM, // Enum content.
 		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
-		REFACTOR_RENAME_TYPE_IDENTIFIER, // Rare. Context when it's a naked identifier, nothing else.
 		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
-		REFACTOR_RENAME_TYPE_LITERAL, // Rare. Context when it's a naked literal, nothing else.
 		REFACTOR_RENAME_TYPE_LOAD, // For load/preload.
 		REFACTOR_RENAME_TYPE_METHOD, // List available methods in scope.
 		REFACTOR_RENAME_TYPE_OVERRIDE_METHOD, // Override implementation, also for native virtuals.
@@ -1754,7 +1752,7 @@ public:
 		REFACTOR_RENAME_TYPE_PROPERTY_DECLARATION_OR_TYPE, // Property declaration (get, set) or a type hint.
 		REFACTOR_RENAME_TYPE_PROPERTY_METHOD, // Property setter or getter (list available methods).
 		REFACTOR_RENAME_TYPE_SIGNAL, // Signal.
-		REFACTOR_RENAME_TYPE_STATEMENT, // Inside a statement. Shouldn't come up often, more for debugging purposes.
+		REFACTOR_RENAME_TYPE_STATEMENT, // Inside a statement.
 		REFACTOR_RENAME_TYPE_SUBSCRIPT, // Inside id[|].
 		REFACTOR_RENAME_TYPE_SUPER_METHOD, // After super.
 		REFACTOR_RENAME_TYPE_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).

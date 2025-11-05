@@ -5206,28 +5206,43 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 			Error signal_err = _refactor_rename_symbol_match_from_class(context, symbol, p_path, base_type.script_path, p_unsaved_scripts_source_code, r_result, RefactorRenameSymbolDefinintionType::REFACTOR_RENAME_SYMBOL_DEFINITION_TYPE_SIGNAL, signal_node);
 			REFACTOR_RENAME_RETURN(signal_err);
 		} break;
-		case GDScriptParser::REFACTOR_RENAME_TYPE_IDENTIFIER: {
-			if (context.node->type != GDScriptParser::Node::IDENTIFIER) {
+		case GDScriptParser::REFACTOR_RENAME_TYPE_STATEMENT: {
+			if (context.node == nullptr) {
 				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
 			}
+			switch (context.node->type) {
+				case GDScriptParser::Node::AWAIT: {
+					GDScriptParser::AwaitNode *await_node = static_cast<GDScriptParser::AwaitNode *>(context.node);
+					if (await_node->get_code_area() != context.token.get_code_area()) {
+						REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+					}
+					REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_KEYWORD);
+					REFACTOR_RENAME_RETURN(OK);
+				} break;
+				case GDScriptParser::Node::IDENTIFIER: {
+					GDScriptParser::DataType base_type;
+					if (context.current_class) {
+						if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
+							base_type = context.current_class->get_datatype();
+						} else {
+							base_type = context.current_class->base_type;
+						}
+					} else {
+						REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+					}
 
-			GDScriptParser::DataType base_type;
-			if (context.current_class) {
-				if (context.type != GDScriptParser::REFACTOR_RENAME_TYPE_SUPER_METHOD) {
-					base_type = context.current_class->get_datatype();
-				} else {
-					base_type = context.current_class->base_type;
-				}
-			} else {
-				REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+					Error identifier_err = _refactor_rename_symbol_from_base(context, base_type, symbol, p_path, base_type.script_path, p_owner, p_unsaved_scripts_source_code, r_result);
+					REFACTOR_RENAME_RETURN(identifier_err);
+				} break;
+				case GDScriptParser::Node::LITERAL: {
+					REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_LITERAL);
+					REFACTOR_RENAME_RETURN(OK);
+				} break;
+				default: {
+					ERR_PRINT("Unexpected node type as statement.");
+					REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);
+				} break;
 			}
-
-			Error identifier_err = _refactor_rename_symbol_from_base(context, base_type, symbol, p_path, base_type.script_path, p_owner, p_unsaved_scripts_source_code, r_result);
-			REFACTOR_RENAME_RETURN(identifier_err);
-		} break;
-		case GDScriptParser::REFACTOR_RENAME_TYPE_LITERAL: {
-			REFACTOR_RENAME_OUTSIDE_GDSCRIPT(REFACTOR_RENAME_SYMBOL_RESULT_LITERAL);
-			REFACTOR_RENAME_RETURN(OK);
 		} break;
 		default: {
 			REFACTOR_RENAME_RETURN(ERR_CANT_RESOLVE);

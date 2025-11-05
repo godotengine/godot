@@ -1813,12 +1813,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 	end_statement("enum");
 
 	GDScriptTokenizer::Token enum_end = previous;
-	if (is_for_refactor_rename()) {
-		GDScriptTokenizer::CodeArea enum_code_area(enum_start.get_code_area().start, enum_end.get_code_area().end);
-		if (enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()))) {
-			refactor_rename_register(REFACTOR_RENAME_TYPE_ENUM, enum_node, false);
-		}
-	}
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_ENUM, enum_node, enum_start, enum_end);
 
 	return enum_node;
 }
@@ -2145,29 +2140,14 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 		}
 		suite->statements.push_back(statement);
 
-		if (is_for_refactor_rename() && refactor_rename_is_cursor_between_tokens(statement_start, statement_end)) {
-			if (statement->type == GDScriptParser::Node::IDENTIFIER) {
-				// The statement is a naked identifier.
-				refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, statement, false);
-				GDScriptTokenizer::Token before_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column() - 1);
-				GDScriptTokenizer::Token after_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column());
-				if (before_token == after_token || statement->get_code_area() == before_token.get_code_area()) {
-					refactor_rename_context.token = before_token;
-				} else {
-					refactor_rename_context.token = after_token;
-				}
-			} else if (statement->type == GDScriptParser::Node::LITERAL) {
-				// The statement is a naked literal.
-				refactor_rename_register(REFACTOR_RENAME_TYPE_LITERAL, statement, false);
-				GDScriptTokenizer::Token before_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column() - 1);
-				GDScriptTokenizer::Token after_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column());
-				if (before_token == after_token || statement->get_code_area() == before_token.get_code_area()) {
-					refactor_rename_context.token = before_token;
-				} else {
-					refactor_rename_context.token = after_token;
-				}
-			} else if (!refactor_rename_context.node->is_owned_by(statement)) {
-				refactor_rename_register(REFACTOR_RENAME_TYPE_STATEMENT, suite, false);
+		if (is_for_refactor_rename() && refactor_rename_is_cursor_between_tokens(statement_start, statement_end) && !refactor_rename_context.node->is_owned_by(statement)) {
+			refactor_rename_register(REFACTOR_RENAME_TYPE_STATEMENT, statement, false);
+			GDScriptTokenizer::Token before_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column() - 1);
+			GDScriptTokenizer::Token after_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column());
+			if (before_token == after_token || statement->get_code_area() == before_token.get_code_area()) {
+				refactor_rename_context.token = before_token;
+			} else {
+				refactor_rename_context.token = after_token;
 			}
 		}
 
@@ -3508,9 +3488,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	GDScriptTokenizer::Token start_token = previous;
+
 	AwaitNode *await = alloc_node<AwaitNode>();
 	push_owner(await);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_KEYWORD, await);
+	refactor_rename_register(REFACTOR_RENAME_TYPE_STATEMENT, await);
 
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
@@ -3519,6 +3501,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 	await->to_await = element;
 	complete_extents(await);
 	pop_owner(await);
+
+	GDScriptTokenizer::Token end_token = previous;
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_STATEMENT, await, start_token, end_token);
 
 	if (current_function) { // Might be null in a getter or setter.
 		current_function->is_coroutine = true;
