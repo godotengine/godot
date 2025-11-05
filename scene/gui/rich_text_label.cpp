@@ -2981,6 +2981,35 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	if (m.is_valid()) {
 		local_mouse_pos = get_local_mouse_position();
 		last_clamped_mouse_pos = local_mouse_pos.clamp(Vector2(), get_size());
+
+		Item *c_item = nullptr;
+		bool outside = false;
+
+		// Update meta hovering.
+		_find_click(main, local_mouse_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
+		Variant meta;
+		ItemMeta *item_meta;
+		ItemMeta *prev_meta = meta_hovering;
+		if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
+			if (meta_hovering != item_meta) {
+				if (meta_hovering) {
+					emit_signal(SNAME("meta_hover_ended"), current_meta);
+				}
+				meta_hovering = item_meta;
+				current_meta = meta;
+				emit_signal(SNAME("meta_hover_started"), meta);
+				if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
+					queue_redraw();
+				}
+			}
+		} else if (meta_hovering) {
+			meta_hovering = nullptr;
+			emit_signal(SNAME("meta_hover_ended"), current_meta);
+			current_meta = false;
+			if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
+				queue_redraw();
+			}
+		}
 	}
 }
 
@@ -3066,32 +3095,6 @@ void RichTextLabel::_update_selection() {
 		selection.active = true;
 		queue_accessibility_update();
 		queue_redraw();
-	}
-
-	// Update meta hovering.
-	_find_click(main, local_mouse_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
-	Variant meta;
-	ItemMeta *item_meta;
-	ItemMeta *prev_meta = meta_hovering;
-	if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
-		if (meta_hovering != item_meta) {
-			if (meta_hovering) {
-				emit_signal(SNAME("meta_hover_ended"), current_meta);
-			}
-			meta_hovering = item_meta;
-			current_meta = meta;
-			emit_signal(SNAME("meta_hover_started"), meta);
-			if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
-				queue_redraw();
-			}
-		}
-	} else if (meta_hovering) {
-		meta_hovering = nullptr;
-		emit_signal(SNAME("meta_hover_ended"), current_meta);
-		current_meta = false;
-		if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
-			queue_redraw();
-		}
 	}
 }
 
