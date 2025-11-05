@@ -4,7 +4,7 @@
  *
  *   OpenType and CFF data/program tables loader (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -442,7 +442,7 @@
       if ( cur_offset != 0 )
       {
         FT_TRACE0(( "cff_index_get_pointers:"
-                    " invalid first offset value %ld set to zero\n",
+                    " invalid first offset value %lu set to zero\n",
                     cur_offset ));
         cur_offset = 0;
       }
@@ -559,8 +559,8 @@
            idx->data_offset > stream->size - off2 + 1 )
       {
         FT_ERROR(( "cff_index_access_element:"
-                   " offset to next entry (%ld)"
-                   " exceeds the end of stream (%ld)\n",
+                   " offset to next entry (%lu)"
+                   " exceeds the end of stream (%lu)\n",
                    off2, stream->size - idx->data_offset + 1 ));
         off2 = stream->size - idx->data_offset + 1;
       }
@@ -982,7 +982,7 @@
             if ( glyph_sid > 0xFFFFL - nleft )
             {
               FT_ERROR(( "cff_charset_load: invalid SID range trimmed"
-                         " nleft=%d -> %ld\n", nleft, 0xFFFFL - glyph_sid ));
+                         " nleft=%u -> %ld\n", nleft, 0xFFFFL - glyph_sid ));
               nleft = ( FT_UInt )( 0xFFFFL - glyph_sid );
             }
 
@@ -1315,7 +1315,7 @@
 
     if ( numOperands > count )
     {
-      FT_TRACE4(( " cff_blend_doBlend: Stack underflow %d argument%s\n",
+      FT_TRACE4(( " cff_blend_doBlend: Stack underflow %u argument%s\n",
                   count,
                   count == 1 ? "" : "s" ));
 
@@ -1466,7 +1466,7 @@
       if ( master == 0 )
       {
         blend->BV[master] = FT_FIXED_ONE;
-        FT_TRACE4(( "   build blend vector len %d\n", len ));
+        FT_TRACE4(( "   build blend vector len %u\n", len ));
         FT_TRACE4(( "   [ %f ", blend->BV[master] / 65536.0 ));
         continue;
       }
@@ -2341,7 +2341,7 @@
       if ( face_index > 0 && subfont_index >= font->name_index.count )
       {
         FT_ERROR(( "cff_font_load:"
-                   " invalid subfont index for pure CFF font (%d)\n",
+                   " invalid subfont index for pure CFF font (%u)\n",
                    subfont_index ));
         error = FT_THROW( Invalid_Argument );
         goto Exit;
