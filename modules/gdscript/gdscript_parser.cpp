@@ -395,6 +395,11 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 	completion_call_stack.back()->get().argument = p_argument;
 }
 
+bool GDScriptParser::refactor_rename_is_cursor_between_tokens(const GDScriptTokenizer::Token &p_token_start, const GDScriptTokenizer::Token &p_token_end) const {
+	GDScriptTokenizer::CodeArea enum_code_area(p_token_start.get_code_area().start, p_token_end.get_code_area().end);
+	return enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()));
+}
+
 bool GDScriptParser::refactor_rename_does_node_contains_cursor(const GDScriptParser::Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
 	GDScriptTokenizer::CodeArea node_code_area = p_node->get_code_area();
@@ -461,6 +466,19 @@ bool GDScriptParser::refactor_rename_register(GDScriptParser::RefactorRenameType
 	refactor_rename_context = context;
 
 	return true;
+}
+
+bool GDScriptParser::refactor_rename_register_if_cursor_is_between_tokens(GDScriptParser::RefactorRenameType p_type, GDScriptParser::Node *p_node, const GDScriptTokenizer::Token &p_token_start, const GDScriptTokenizer::Token &p_token_end) {
+	if (!is_for_refactor_rename()) {
+		return false;
+	}
+	if (refactor_rename_context.node != nullptr && refactor_rename_context.node->is_owned_by(p_node)) {
+		return false;
+	}
+	if (!refactor_rename_is_cursor_between_tokens(p_token_start, p_token_end)) {
+		return false;
+	}
+	return refactor_rename_register(p_type, p_node, false);
 }
 
 bool GDScriptParser::refactor_rename_register_identifier(GDScriptParser::IdentifierNode *p_identifier) {
@@ -1597,9 +1615,11 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 		return nullptr;
 	}
 
+	GDScriptTokenizer::Token token_start = previous;
+
 	ParameterNode *parameter = alloc_node<ParameterNode>();
 	push_owner(parameter);
-	refactor_rename_register(REFACTOR_RENAME_TYPE_PARAMETER, parameter);
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_PARAMETER, parameter, previous, current);
 	parameter->identifier = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
@@ -1615,12 +1635,15 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 
 	if (match(GDScriptTokenizer::Token::EQUAL)) {
 		// Default value.
-		parameter->initializer = parse_expression(false);
 		refactor_rename_register(REFACTOR_RENAME_TYPE_PARAMETER_INITIALIZER, parameter->initializer);
+		parameter->initializer = parse_expression(false);
 	}
 
 	complete_extents(parameter);
 	pop_owner(parameter);
+
+	GDScriptTokenizer::Token token_end = previous;
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_PARAMETER, parameter, token_start, token_end);
 
 	return parameter;
 }
@@ -1631,11 +1654,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	SignalNode *signal = alloc_node<SignalNode>();
 	push_owner(signal);
 
-	if (is_for_refactor_rename()) {
-		if (previous.has_cursor() || current.has_cursor() || !tokenizer->is_past_cursor()) {
-			refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal, false);
-		}
-	}
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_SIGNAL, signal, previous, current);
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected signal name after "signal".)")) {
 		complete_extents(signal);
@@ -1680,12 +1699,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	end_statement("signal declaration");
 
 	GDScriptTokenizer::Token signal_end_token = previous;
-	if (is_for_refactor_rename()) {
-		GDScriptTokenizer::CodeArea enum_code_area(signal_start_token.get_code_area().start, signal_end_token.get_code_area().end);
-		if (enum_code_area.contains(GDScriptTokenizer::LineColumn(tokenizer->get_cursor_line(), tokenizer->get_cursor_column()))) {
-			refactor_rename_register(REFACTOR_RENAME_TYPE_SIGNAL, signal, false);
-		}
-	}
+	refactor_rename_register_if_cursor_is_between_tokens(REFACTOR_RENAME_TYPE_SIGNAL, signal, signal_start_token, signal_end_token);
 
 	return signal;
 }
@@ -2115,7 +2129,13 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 		if (is_at_end() || (!multiline && previous.type == GDScriptTokenizer::Token::SEMICOLON && check(GDScriptTokenizer::Token::NEWLINE))) {
 			break;
 		}
+
+		refactor_rename_register(REFACTOR_RENAME_TYPE_STATEMENT, suite);
+
+		GDScriptTokenizer::Token statement_start = current;
 		Node *statement = parse_statement();
+		GDScriptTokenizer::Token statement_end = previous;
+
 		if (statement == nullptr) {
 			if (error_count++ > 100) {
 				push_error("Too many statement errors.", suite);
@@ -2124,6 +2144,32 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 			continue;
 		}
 		suite->statements.push_back(statement);
+
+		if (is_for_refactor_rename() && refactor_rename_is_cursor_between_tokens(statement_start, statement_end)) {
+			if (statement->type == GDScriptParser::Node::IDENTIFIER) {
+				// The statement is a naked identifier.
+				refactor_rename_register(REFACTOR_RENAME_TYPE_IDENTIFIER, statement, false);
+				GDScriptTokenizer::Token before_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column() - 1);
+				GDScriptTokenizer::Token after_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column());
+				if (before_token == after_token || statement->get_code_area() == before_token.get_code_area()) {
+					refactor_rename_context.token = before_token;
+				} else {
+					refactor_rename_context.token = after_token;
+				}
+			} else if (statement->type == GDScriptParser::Node::LITERAL) {
+				// The statement is a naked literal.
+				refactor_rename_register(REFACTOR_RENAME_TYPE_LITERAL, statement, false);
+				GDScriptTokenizer::Token before_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column() - 1);
+				GDScriptTokenizer::Token after_token = get_token(tokenizer->get_cursor_line(), tokenizer->get_cursor_column());
+				if (before_token == after_token || statement->get_code_area() == before_token.get_code_area()) {
+					refactor_rename_context.token = before_token;
+				} else {
+					refactor_rename_context.token = after_token;
+				}
+			} else if (!refactor_rename_context.node->is_owned_by(statement)) {
+				refactor_rename_register(REFACTOR_RENAME_TYPE_STATEMENT, suite, false);
+			}
+		}
 
 		// Register locals.
 		switch (statement->type) {
