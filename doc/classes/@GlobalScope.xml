@@ -500,7 +500,7 @@
 				func _ready():
 					var id = get_instance_id()
 					var instance = instance_from_id(id)
-					print(instance.foo) # Prints "water"
+					print(instance.drink) # Prints "water"
 				[/gdscript]
 				[csharp]
 				public partial class MyNode : Node
