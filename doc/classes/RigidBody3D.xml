@@ -209,11 +209,6 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="product_of_inertia" type="Vector3" setter="set_product_of_inertia" getter="get_product_of_inertia" default="Vector3(0, 0, 0)">
-			The body's products of inertia in (Iyz, Ixz, Ixy) order. Like the inertia parameter, this also determines how much torque it takes to rotate an object. However, it describes how asymmetrically the mass is distributed relative to the body's axes. When combined with the inertia vector, the local inertia tensor can be fully defined. However, for most applications, this can safely be left at zero.
-			If inertia is computed automatically, the value set here will be ignored.
-			[b]Note:[/b] The "alternate" convention for products of inertia is used. These values will be negated in the inertia tensor.
-		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
 			Damps the body's movement. By default, the body will use the [member ProjectSettings.physics/3d/default_linear_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
@@ -237,6 +232,11 @@
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
+		</member>
+		<member name="product_of_inertia" type="Vector3" setter="set_product_of_inertia" getter="get_product_of_inertia" default="Vector3(0, 0, 0)">
+			The body's products of inertia in (Iyz, Ixz, Ixy) order. Like the inertia parameter, this also determines how much torque it takes to rotate an object. However, it describes how asymmetrically the mass is distributed relative to the body's axes. When combined with the inertia vector, the local inertia tensor can be fully defined. However, for most applications, this can safely be left at zero.
+			If inertia is computed automatically, the value set here will be ignored.
+			[b]Note:[/b] The "alternate" convention for products of inertia is used. These values will be negated in the inertia tensor.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.
