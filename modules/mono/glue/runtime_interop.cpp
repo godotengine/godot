@@ -39,6 +39,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -1434,7 +1435,7 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 		return;
 	}
 
-	Ref<WeakRef> wref;
+	Ref<CoreBind::WeakRef> wref;
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
 	if (rc) {
