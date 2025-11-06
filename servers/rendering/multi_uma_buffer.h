@@ -111,6 +111,12 @@ public:
 	}
 };
 
+enum class MultiUmaBufferType : uint8_t {
+	UNIFORM,
+	STORAGE,
+	VERTEX,
+};
+
 /// Interface for making it easier to work with UMA.
 ///
 /// # What is UMA?
@@ -157,7 +163,7 @@ public:
 ///
 /// Example code 01:
 ///		MultiUmaBuffer<1> uma_buffer = MultiUmaBuffer<1>("Debug name displayed if run with --verbose");
-///		uma_buffer.set_size(0, max_size_bytes, false);
+///		uma_buffer.set_uniform_size(0, max_size_bytes);
 ///
 ///		for(uint32_t i = 0u; i < num_passes; ++i) {
 ///			uma_buffer.prepare_for_upload(); // Creates a new buffer (if none exists already)
@@ -225,9 +231,9 @@ public:
 ///		MultiUmaBuffer<1> spot_lights = /*...*/;
 ///		MultiUmaBuffer<1> directional_lights = /*...*/;
 ///
-///		omni_lights.set_size(0u, omni_size);
-///		spot_lights.set_size(0u, spot_size);
-///		directional_lights.set_size(0u, dir_size);
+///		omni_lights.set_uniform_size(0u, omni_size);
+///		spot_lights.set_uniform_size(0u, spot_size);
+///		directional_lights.set_uniform_size(0u, dir_size);
 ///
 ///		omni_lights.prepare_for_upload();
 ///		spot_lights.prepare_for_upload();
@@ -237,9 +243,9 @@ public:
 ///
 ///		MultiUmaBuffer<3> lights = /*...*/;
 ///
-///		lights.set_size(0u, omni_size);
-///		lights.set_size(1u, spot_size);
-///		lights.set_size(2u, dir_size);
+///		lights.set_uniform_size(0u, omni_size);
+///		lights.set_uniform_size(1u, spot_size);
+///		lights.set_uniform_size(2u, dir_size);
 ///
 ///		lights.prepare_for_upload();
 ///
@@ -276,7 +282,11 @@ public:
 /// Launching godot with --verbose will print diagnostic information.
 template <uint32_t NUM_BUFFERS, uint32_t MAX_EXTRA_BUFFERS = UINT32_MAX>
 class MultiUmaBuffer : public MultiUmaBufferBase {
-	uint32_t buffer_sizes[NUM_BUFFERS] = {};
+	struct BufferInfo {
+		uint32_t size_bytes = 0;
+		MultiUmaBufferType type = MultiUmaBufferType::UNIFORM;
+	};
+	BufferInfo buffer_info[NUM_BUFFERS];
 #ifdef DEV_ENABLED
 	bool can_upload[NUM_BUFFERS] = {};
 #endif
@@ -284,13 +294,19 @@ class MultiUmaBuffer : public MultiUmaBufferBase {
 	void push() {
 		RenderingDevice *rd = RD::RenderingDevice::get_singleton();
 		for (uint32_t i = 0u; i < NUM_BUFFERS; ++i) {
-			const bool is_storage = buffer_sizes[i] & 0x80000000u;
-			const uint32_t size_bytes = buffer_sizes[i] & ~0x80000000u;
+			const BufferInfo &info = buffer_info[i];
 			RID buffer;
-			if (is_storage) {
-				buffer = rd->storage_buffer_create(size_bytes, Vector<uint8_t>(), 0, RD::BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
-			} else {
-				buffer = rd->uniform_buffer_create(size_bytes, Vector<uint8_t>(), RD::BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
+			switch (info.type) {
+				case MultiUmaBufferType::STORAGE:
+					buffer = rd->storage_buffer_create(info.size_bytes, Vector<uint8_t>(), BitField<RenderingDevice::StorageBufferUsage>(), RD::BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
+					break;
+				case MultiUmaBufferType::VERTEX:
+					buffer = rd->vertex_buffer_create(info.size_bytes, Vector<uint8_t>(), RD::BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
+					break;
+				case MultiUmaBufferType::UNIFORM:
+				default:
+					buffer = rd->uniform_buffer_create(info.size_bytes, Vector<uint8_t>(), RD::BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
+					break;
 			}
 			buffers.push_back(buffer);
 		}
@@ -302,14 +318,31 @@ public:
 
 	uint32_t get_curr_idx() const { return curr_idx; }
 
-	void set_size(uint32_t p_idx, uint32_t p_size_bytes, bool p_is_storage) {
+	void set_size(uint32_t p_idx, uint32_t p_size_bytes, MultiUmaBufferType p_type) {
 		DEV_ASSERT(buffers.is_empty());
-		buffer_sizes[p_idx] = p_size_bytes | (p_is_storage ? 0x80000000u : 0u);
+		buffer_info[p_idx].size_bytes = p_size_bytes;
+		buffer_info[p_idx].type = p_type;
 		curr_idx = UINT32_MAX;
 		last_frame_mapped = UINT64_MAX;
 	}
 
-	uint32_t get_size(uint32_t p_idx) const { return buffer_sizes[p_idx] & ~0x80000000u; }
+	void set_size(uint32_t p_idx, uint32_t p_size_bytes, bool p_is_storage) {
+		set_size(p_idx, p_size_bytes, p_is_storage ? MultiUmaBufferType::STORAGE : MultiUmaBufferType::UNIFORM);
+	}
+
+	void set_uniform_size(uint32_t p_idx, uint32_t p_size_bytes) {
+		set_size(p_idx, p_size_bytes, MultiUmaBufferType::UNIFORM);
+	}
+
+	void set_storage_size(uint32_t p_idx, uint32_t p_size_bytes) {
+		set_size(p_idx, p_size_bytes, MultiUmaBufferType::STORAGE);
+	}
+
+	void set_vertex_size(uint32_t p_idx, uint32_t p_size_bytes) {
+		set_size(p_idx, p_size_bytes, MultiUmaBufferType::VERTEX);
+	}
+
+	uint32_t get_size(uint32_t p_idx) const { return buffer_info[p_idx].size_bytes; }
 
 	// Gets the raw buffer. Use with care.
 	// If you call this function, make sure to have called prepare_for_upload() first.
@@ -320,7 +353,7 @@ public:
 
 	/**
 	 * @param p_append	True if you wish to append more data to existing buffer.
-	 * @return			True if it's possible to append. False if the internal buffer changed.
+	 * @return			False if it's possible to append. True if the internal buffer changed.
 	 */
 	bool prepare_for_map(bool p_append) {
 		RenderingDevice *rd = RD::RenderingDevice::get_singleton();

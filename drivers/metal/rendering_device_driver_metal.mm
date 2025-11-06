@@ -186,6 +186,23 @@ uint8_t *RenderingDeviceDriverMetal::buffer_persistent_map_advance(BufferID p_bu
 	return (uint8_t *)buf_info->metal_buffer.contents + buf_info->next_frame_index(_frame_count) * buf_info->size_bytes;
 }
 
+uint64_t RenderingDeviceDriverMetal::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
+	uint64_t mask = 0u;
+	uint64_t shift = 0u;
+
+	for (const BufferID &buf : p_buffers) {
+		const BufferInfo *buf_info = (const BufferInfo *)buf.id;
+		if (!buf_info->is_dynamic()) {
+			continue;
+		}
+		mask |= buf_info->frame_index() << shift;
+		// We can encode the frame index in 2 bits since frame_count won't be > 4.
+		shift += 2UL;
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverMetal::buffer_flush(BufferID p_buffer) {
 	// Nothing to do.
 }
@@ -809,27 +826,33 @@ bool RenderingDeviceDriverMetal::sampler_is_format_supported_for_filter(DataForm
 
 #pragma mark - Vertex Array
 
-RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) {
 	MTLVertexDescriptor *desc = MTLVertexDescriptor.vertexDescriptor;
 
-	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
-		VertexAttribute const &vf = p_vertex_attribs[i];
+	for (const VertexAttributeBindingsMap::KV &kv : p_vertex_bindings) {
+		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(kv.key);
+		MTLVertexBufferLayoutDescriptor *ld = desc.layouts[idx];
+		if (kv.value.stride != 0) {
+			ld.stepFunction = kv.value.frequency == VERTEX_FREQUENCY_VERTEX ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
+			ld.stepRate = 1;
+			ld.stride = kv.value.stride;
+		} else {
+			ld.stepFunction = MTLVertexStepFunctionConstant;
+			ld.stepRate = 0;
+			ld.stride = 0;
+		}
+		DEV_ASSERT(ld.stride == desc.layouts[idx].stride);
+	}
 
-		ERR_FAIL_COND_V_MSG(get_format_vertex_size(vf.format) == 0, VertexFormatID(),
-				"Data format for attachment (" + itos(i) + "), '" + FORMAT_NAMES[vf.format] + "', is not valid for a vertex array.");
-
+	for (const VertexAttribute &vf : p_vertex_attribs) {
 		desc.attributes[vf.location].format = pixel_formats->getMTLVertexFormat(vf.format);
 		desc.attributes[vf.location].offset = vf.offset;
-		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(i);
+		uint32_t idx = get_metal_buffer_index_for_vertex_attribute_binding(vf.binding);
 		desc.attributes[vf.location].bufferIndex = idx;
 		if (vf.stride == 0) {
-			desc.layouts[idx].stepFunction = MTLVertexStepFunctionConstant;
-			desc.layouts[idx].stepRate = 0;
-			desc.layouts[idx].stride = pixel_formats->getBytesPerBlock(vf.format);
-		} else {
-			desc.layouts[idx].stepFunction = vf.frequency == VERTEX_FREQUENCY_VERTEX ? MTLVertexStepFunctionPerVertex : MTLVertexStepFunctionPerInstance;
-			desc.layouts[idx].stepRate = 1;
-			desc.layouts[idx].stride = vf.stride;
+			// Constant attribute, so we must determine the stride to satisfy Metal API.
+			uint32_t stride = desc.layouts[idx].stride;
+			desc.layouts[idx].stride = std::max(stride, vf.offset + pixel_formats->getBytesPerBlock(vf.format));
 		}
 	}
 
@@ -1768,9 +1791,9 @@ void RenderingDeviceDriverMetal::command_render_draw_indirect_count(CommandBuffe
 	cb->render_draw_indirect_count(p_indirect_buffer, p_offset, p_count_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
-void RenderingDeviceDriverMetal::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
+void RenderingDeviceDriverMetal::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	cb->render_bind_vertex_buffers(p_binding_count, p_buffers, p_offsets);
+	cb->render_bind_vertex_buffers(p_binding_count, p_buffers, p_offsets, p_dynamic_offsets);
 }
 
 void RenderingDeviceDriverMetal::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {

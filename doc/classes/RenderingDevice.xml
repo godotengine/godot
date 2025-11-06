@@ -335,6 +335,17 @@
 				Binds [param vertex_array] to the specified [param draw_list].
 			</description>
 		</method>
+		<method name="draw_list_bind_vertex_buffers_format">
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="vertex_count" type="int" />
+			<param index="3" name="vertex_buffers" type="RID[]" />
+			<param index="4" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
+			<description>
+				Binds a set of [param vertex_buffers] directly to the specified [param draw_list] using [param vertex_format] without creating a vertex array RID. Provide the number of vertices in [param vertex_count]; optional per-buffer byte [param offsets] may also be supplied.
+			</description>
+		</method>
 		<method name="draw_list_disable_scissor">
 			<return type="void" />
 			<param index="0" name="draw_list" type="int" />
