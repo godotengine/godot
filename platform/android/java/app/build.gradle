@@ -35,9 +35,11 @@ configurations {
 
 dependencies {
     // Android instrumented test dependencies
-    androidTestImplementation "androidx.test.ext:junit:1.3.0"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.7.0"
-    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:1.3.11"
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
 
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
@@ -121,6 +123,15 @@ android {
         missingDimensionStrategy 'products', 'template'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     lintOptions {

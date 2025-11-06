@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotAppTest.kt                                                       */
+/*  GodotEditorTest.kt                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package com.godot.game
+package org.godotengine.editor
 
 import android.content.ComponentName
 import android.content.Intent
-import android.util.Log
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.godot.game.test.GodotAppInstrumentedTestPlugin
 import org.godotengine.godot.GodotActivity.Companion.EXTRA_COMMAND_LINE_PARAMS
-import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertEquals
@@ -46,58 +43,32 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * This instrumented test will launch the `instrumented` version of GodotApp and run a set of tests against it.
+ * Instrumented test for the Godot editor.
  */
 @RunWith(AndroidJUnit4::class)
-class GodotAppTest {
-
+class GodotEditorTest {
 	companion object {
-		private val TAG = GodotAppTest::class.java.simpleName
-
-		private const val GODOT_APP_LAUNCHER_CLASS_NAME = "com.godot.game.GodotAppLauncher"
-		private const val GODOT_APP_CLASS_NAME = "com.godot.game.GodotApp"
+		private val TAG = GodotEditorTest::class.simpleName
 
 		private val TEST_COMMAND_LINE_PARAMS = arrayOf("This is a test")
+		private const val PROJECT_MANAGER_CLASS_NAME = "org.godotengine.editor.ProjectManager"
+		private const val GODOT_EDITOR_CLASS_NAME = "org.godotengine.editor.GodotEditor"
 	}
 
 	/**
-	 * Runs the JavaClassWrapper tests via the GodotAppInstrumentedTestPlugin.
+	 * Implicitly launch the project manager.
 	 */
 	@Test
-	fun runJavaClassWrapperTests() {
-		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
-			scenario.onActivity { activity ->
-				val testPlugin = GodotPluginRegistry.getPluginRegistry()
-					.getPlugin("GodotAppInstrumentedTestPlugin") as GodotAppInstrumentedTestPlugin?
-				assertNotNull(testPlugin)
-
-				Log.d(TAG, "Waiting for the Godot main loop to start...")
-				testPlugin.waitForGodotMainLoopStarted()
-
-				Log.d(TAG, "Running JavaClassWrapper tests...")
-				val result = testPlugin.runJavaClassWrapperTests()
-				assertNotNull(result)
-				result.exceptionOrNull()?.let { throw it }
-				assertTrue(result.isSuccess)
-				Log.d(TAG, "Passed ${result.getOrNull()} tests")
-			}
-		}
-	}
-
-	/**
-	 * Test implicit launch of the Godot app, and validates this resolves to the `GodotAppLauncher` activity alias.
-	 */
-	@Test
-	fun testImplicitGodotAppLauncherLaunch() {
+	fun testImplicitProjectManagerLaunch() {
 		val implicitLaunchIntent = Intent().apply {
 			setPackage(BuildConfig.APPLICATION_ID)
 			action = Intent.ACTION_MAIN
 			addCategory(Intent.CATEGORY_LAUNCHER)
 			putExtra(EXTRA_COMMAND_LINE_PARAMS, TEST_COMMAND_LINE_PARAMS)
 		}
-		ActivityScenario.launch<GodotApp>(implicitLaunchIntent).use { scenario ->
+		ActivityScenario.launch<GodotEditor>(implicitLaunchIntent).use { scenario ->
 			scenario.onActivity { activity ->
-				assertEquals(activity.intent.component?.className, GODOT_APP_LAUNCHER_CLASS_NAME)
+				assertEquals(activity.intent.component?.className, PROJECT_MANAGER_CLASS_NAME)
 
 				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 				assertNull(commandLineParams)
@@ -106,17 +77,17 @@ class GodotAppTest {
 	}
 
 	/**
-	 * Test explicit launch of the Godot app via its activity-alias launcher, and validates it resolves properly.
+	 * Explicitly launch the project manager.
 	 */
 	@Test
-	fun testExplicitGodotAppLauncherLaunch() {
-		val explicitIntent = Intent().apply {
-			component = ComponentName(BuildConfig.APPLICATION_ID, GODOT_APP_LAUNCHER_CLASS_NAME)
+	fun testExplicitProjectManagerLaunch() {
+		val explicitProjectManagerIntent = Intent().apply {
+			component = ComponentName(BuildConfig.APPLICATION_ID, PROJECT_MANAGER_CLASS_NAME)
 			putExtra(EXTRA_COMMAND_LINE_PARAMS, TEST_COMMAND_LINE_PARAMS)
 		}
-		ActivityScenario.launch<GodotApp>(explicitIntent).use { scenario ->
+		ActivityScenario.launch<GodotEditor>(explicitProjectManagerIntent).use { scenario ->
 			scenario.onActivity { activity ->
-				assertEquals(activity.intent.component?.className, GODOT_APP_LAUNCHER_CLASS_NAME)
+				assertEquals(activity.intent.component?.className, PROJECT_MANAGER_CLASS_NAME)
 
 				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 				assertNull(commandLineParams)
@@ -125,17 +96,17 @@ class GodotAppTest {
 	}
 
 	/**
-	 * Test explicit launch of the `GodotApp` activity.
+	 * Explicitly launch the `GodotEditor` activity.
 	 */
 	@Test
-	fun testExplicitGodotAppLaunch() {
-		val explicitIntent = Intent().apply {
-			component = ComponentName(BuildConfig.APPLICATION_ID, GODOT_APP_CLASS_NAME)
+	fun testExplicitGodotEditorLaunch() {
+		val godotEditorIntent = Intent().apply {
+			component = ComponentName(BuildConfig.APPLICATION_ID, GODOT_EDITOR_CLASS_NAME)
 			putExtra(EXTRA_COMMAND_LINE_PARAMS, TEST_COMMAND_LINE_PARAMS)
 		}
-		ActivityScenario.launch<GodotApp>(explicitIntent).use { scenario ->
+		ActivityScenario.launch<GodotEditor>(godotEditorIntent).use { scenario ->
 			scenario.onActivity { activity ->
-				assertEquals(activity.intent.component?.className, GODOT_APP_CLASS_NAME)
+				assertEquals(activity.intent.component?.className, GODOT_EDITOR_CLASS_NAME)
 
 				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 				assertNotNull(commandLineParams)

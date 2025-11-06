@@ -91,6 +91,17 @@ android {
         ]
 
         ndk { debugSymbolLevel 'NONE' }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     base {
@@ -196,4 +207,11 @@ dependencies {
     horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
     // Pico dependencies
     picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
+
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
 }
