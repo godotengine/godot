@@ -55,12 +55,8 @@ Ref<ShaderMaterial> MaterialEditor::make_shader_material(const Ref<Material> &p_
 
 	// Some materials (like SkyMaterials) are not initialized in the inspector,
 	// so we should allow conversion for them without blocking on _is_initialized().
-	if (!p_from->_is_initialized()) {
-		if (p_from->is_class("SkyMaterial")) {
-			// Allow conversion to continue.
-		} else {
-			ERR_FAIL_V_MSG(Ref<ShaderMaterial>(), "Failed to convert material: the source material is not initialized and is not a SkyMaterial.");
-		}
+	if (!p_from->_is_initialized() && !p_from->is_class("SkyMaterial")) {
+		ERR_FAIL_V_MSG(Ref<ShaderMaterial>(), "Failed to convert material: the source material is not initialized and is not a SkyMaterial.");
 	}
 
 	Ref<ShaderMaterial> smat;
