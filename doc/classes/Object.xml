@@ -1042,6 +1042,7 @@
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Signals dock are always persisting.
+			[b]Note:[/b] Connections to lambda functions (that is, when the function code is embedded in the [method connect] call) cannot be made persistent.
 		</constant>
 		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
 			One-shot connections disconnect themselves after emission.
