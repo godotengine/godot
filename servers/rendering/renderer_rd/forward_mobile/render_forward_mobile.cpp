@@ -467,7 +467,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (scene_state.instance_buffer[p_render_list].get_size(0u) == 0u) {
 			// Any buffer will do since it's not used, so just create one.
 			// We can't use scene_shader.default_vec4_xform_buffer because it's not dynamic.
-			scene_state.instance_buffer[p_render_list].set_size(0u, INSTANCE_DATA_BUFFER_MIN_SIZE * sizeof(SceneState::InstanceData), true);
+			scene_state.instance_buffer[p_render_list].set_storage_size(0u, INSTANCE_DATA_BUFFER_MIN_SIZE * sizeof(SceneState::InstanceData));
 			scene_state.instance_buffer[p_render_list].prepare_for_upload();
 		}
 		RID instance_buffer = scene_state.instance_buffer[p_render_list]._get(0u);
@@ -1910,7 +1910,7 @@ void RenderForwardMobile::SceneState::grow_instance_buffer(RenderListType p_rend
 		if (instance_buffer[p_render_list].get_size(0u) < p_req_element_count * sizeof(SceneState::InstanceData)) {
 			instance_buffer[p_render_list].uninit();
 			uint32_t new_size = nearest_power_of_2_templated(MAX(uint64_t(INSTANCE_DATA_BUFFER_MIN_SIZE), p_req_element_count));
-			instance_buffer[p_render_list].set_size(0u, new_size * sizeof(SceneState::InstanceData), true);
+			instance_buffer[p_render_list].set_storage_size(0u, new_size * sizeof(SceneState::InstanceData));
 			curr_gpu_ptr[p_render_list] = nullptr;
 		}
 
@@ -2204,7 +2204,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// May do this earlier in RenderSceneRenderRD::render_scene
 	if (scene_state.uniform_buffers.get_size(0u) == 0u) {
-		scene_state.uniform_buffers.set_size(0u, p_render_data->scene_data->get_uniform_buffer_size_bytes(), false);
+		scene_state.uniform_buffers.set_uniform_size(0u, p_render_data->scene_data->get_uniform_buffer_size_bytes());
 	}
 
 	float luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
