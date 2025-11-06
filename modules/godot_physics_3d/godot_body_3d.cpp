@@ -64,6 +64,7 @@ void GodotBody3D::_update_local_inertia() {
 	// Compute the principal axes and moments of inertia.
 	if (!eigen_value_symmetric(inertia_tensor_local, principal_inertia_axes_local, principal_inertia)) {
 		// Set to identity and on-axis inertia if it fails.
+		WARN_PRINT("Unable to determine principle axes of inertia. Falling back to on-axis inertia only.");
 		principal_inertia_axes_local = Basis();
 		principal_inertia = inertia;
 	}

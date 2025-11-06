@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/math/basis.h"
+#include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
 
 // This code is simply a re-implementation of the same function from Jolt Physics,
@@ -57,7 +58,7 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 		real_t sm = 0.0;
 		for (int ip = 0; ip < N; ++ip) {
 			for (int iq = ip + 1; iq < N; ++iq) {
-				sm += abs(a[ip][iq]);
+				sm += Math::abs(a[ip][iq]);
 			}
 		}
 		real_t avg_sm = sm / (N * N);
@@ -75,22 +76,22 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 				real_t &eigval_p = out_eig_val[ip];
 				real_t &eigval_q = out_eig_val[iq];
 
-				real_t abs_a_pq = abs(a_pq);
+				real_t abs_a_pq = Math::abs(a_pq);
 				real_t g = 100.0 * abs_a_pq;
 
 				// After four sweeps, skip the rotation if the off-diagonal element is small
-				if (sweep > 4 && abs(eigval_p) + g == abs(eigval_p) && abs(eigval_q) + g == abs(eigval_q)) {
+				if (sweep > 4 && Math::abs(eigval_p) + g == Math::abs(eigval_p) && Math::abs(eigval_q) + g == Math::abs(eigval_q)) {
 					a_pq = 0.0;
 				} else if (abs_a_pq > thresh) {
 					real_t h = eigval_q - eigval_p;
-					real_t abs_h = abs(h);
+					real_t abs_h = Math::abs(h);
 
 					real_t t;
 					if (abs_h + g == abs_h) {
 						t = a_pq / h;
 					} else {
 						real_t theta = 0.5 * h / a_pq; // Warning: Can become infinite if a(ip, iq) is very small which may trigger an invalid float exception
-						t = 1.0 / (abs(theta) + sqrt(1.0 + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
+						t = 1.0 / (Math::abs(theta) + sqrt(1.0 + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
 						if (theta < 0.0f) {
 							t = -t;
 						}
@@ -108,27 +109,27 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 					eigval_p -= h;
 					eigval_q += h;
 
-#define GD_EVS_ROTATE(a, i, j, k, l) \
-	g = a[i][j],                     \
-	h = a[k][l],                     \
-	a[i][j] = g - s * (h + g * tau), \
+#define GODOT_EVS_ROTATE(a, i, j, k, l) \
+	g = a[i][j],                        \
+	h = a[k][l],                        \
+	a[i][j] = g - s * (h + g * tau),    \
 	a[k][l] = h + s * (g - h * tau)
 
 					int j;
 					for (j = 0; j < ip; ++j) {
-						GD_EVS_ROTATE(a, j, ip, j, iq);
+						GODOT_EVS_ROTATE(a, j, ip, j, iq);
 					}
 					for (j = ip + 1; j < iq; ++j) {
-						GD_EVS_ROTATE(a, ip, j, j, iq);
+						GODOT_EVS_ROTATE(a, ip, j, j, iq);
 					}
 					for (j = iq + 1; j < N; ++j) {
-						GD_EVS_ROTATE(a, ip, j, iq, j);
+						GODOT_EVS_ROTATE(a, ip, j, iq, j);
 					}
 					for (j = 0; j < N; ++j) {
-						GD_EVS_ROTATE(out_eig_vec, j, ip, j, iq);
+						GODOT_EVS_ROTATE(out_eig_vec, j, ip, j, iq);
 					}
 
-#undef GD_EVS_ROTATE
+#undef GODOT_EVS_ROTATE
 				}
 			}
 		}
