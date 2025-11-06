@@ -262,7 +262,7 @@
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
 			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. Godot uses a form of SSAO called Adaptive Screen Space Ambient Occlusion which is itself a form of Horizon Based Ambient Occlusion.
-			[b]Note:[/b] SSAO is only supported in the Forward+ rendering method, not Mobile or Compatibility.
+			[b]Note:[/b] SSAO is only supported in the Forward+ and Compatibility rendering methods, not Mobile.
 		</member>
 		<member name="ssao_horizon" type="float" setter="set_ssao_horizon" getter="get_ssao_horizon" default="0.06">
 			The threshold for considering whether a given point on a surface is occluded or not represented as an angle from the horizon mapped into the [code]0.0-1.0[/code] range. A value of [code]1.0[/code] results in no occlusion.
