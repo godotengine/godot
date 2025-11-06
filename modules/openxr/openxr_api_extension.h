@@ -119,6 +119,8 @@ public:
 
 	void set_render_region(const Rect2i &p_render_region);
 
+	void update_main_swapchain_size();
+
 	enum OpenXRAlphaBlendModeSupport {
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,

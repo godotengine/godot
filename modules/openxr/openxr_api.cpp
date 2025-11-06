@@ -2228,6 +2228,27 @@ void OpenXRAPI::_set_render_state_render_region_rt(const Rect2i &p_render_region
 	openxr_api->render_state.render_region = p_render_region;
 }
 
+void OpenXRAPI::_update_main_swapchain_size_rt() {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+
+	uint32_t view_count_output = 0;
+	XrResult result = openxr_api->xrEnumerateViewConfigurationViews(openxr_api->instance, openxr_api->system_id, openxr_api->view_configuration, openxr_api->get_view_count(), &view_count_output, openxr_api->view_configuration_views.ptr());
+	if (XR_FAILED(result)) {
+		return;
+	}
+
+#ifdef DEBUG_ENABLED
+	for (uint32_t i = 0; i < view_count_output; i++) {
+		print_verbose("OpenXR: Recommended resolution changed");
+		print_verbose(String(" - recommended render width: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectWidth));
+		print_verbose(String(" - recommended render height: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectHeight));
+	}
+#endif
+}
+
 bool OpenXRAPI::process() {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 

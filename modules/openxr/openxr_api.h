@@ -371,6 +371,7 @@ private:
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
+	static void _update_main_swapchain_size_rt();
 
 	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
@@ -428,6 +429,13 @@ private:
 	}
 
 public:
+	_FORCE_INLINE_ void update_main_swapchain_size() {
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_update_main_swapchain_size_rt));
+	}
+
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
@@ -607,6 +615,7 @@ public:
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
+
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }
