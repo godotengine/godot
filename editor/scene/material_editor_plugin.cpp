@@ -61,8 +61,7 @@ Ref<ShaderMaterial> MaterialEditor::make_shader_material(const Ref<Material> &p_
 			p_from->is_class("PanoramaSkyMaterial")) {
 			// Allow conversion to continue.
 		} else {
-			ERR_PRINT("Condition \"!p_from->_is_initialized()\" is true. Returning: Ref<ShaderMaterial>()");
-			return Ref<ShaderMaterial>();
+			ERR_FAIL_V_MSG(Ref<ShaderMaterial>(), "Failed to convert material: the source material is not initialized and is not a SkyMaterial.");
 		}
 	}
 	
