@@ -69,6 +69,10 @@ public:
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
 		MENU_EMOJI_AND_SYMBOL,
+		MENU_SUBMENU_VARIATION,
+		MENU_VARIATION_CLEAR,
+		MENU_VARIATION_COLOR,
+		MENU_VARIATION_TEXT,
 		MENU_MAX
 	};
 
@@ -126,6 +130,7 @@ private:
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
+	PopupMenu *menu_var = nullptr;
 
 	bool caret_mid_grapheme_enabled = false;
 
@@ -262,6 +267,7 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
+	void _replace_text_internal(const String &p_text);
 
 	void _edit(bool p_show_virtual_keyboard = true, bool p_hide_focus = false);
 
