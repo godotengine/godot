@@ -187,7 +187,12 @@
 		<method name="get_cmdline_args">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the command-line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine, excluding arguments processed by the engine, such as [code]--headless[/code] and [code]--fullscreen[/code].
+				[codeblock]
+				# Godot has been executed with the following command:
+				# godot --headless --verbose --scene my_scene.tscn --custom
+				OS.get_cmdline_args() # Returns ["--scene", "my_scene.tscn", "--custom"]
+				[/codeblock]
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
@@ -231,12 +236,12 @@
 				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
 				# Godot has been executed with the following command:
-				# godot --fullscreen -- --level=2 --hardcore
+				# godot --fullscreen --custom -- --level=2 --hardcore
 
-				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
+				OS.get_cmdline_args()      # Returns ["--custom"]
 				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
 				[/codeblock]
-				To get all passed arguments, use [method get_cmdline_args].
+				To get arguments passed before [code]--[/code] or [code]++[/code], use [method get_cmdline_args].
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
