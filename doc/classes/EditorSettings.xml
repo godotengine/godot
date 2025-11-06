@@ -1177,6 +1177,24 @@
 			A touch-friendly panel that provides easy access to common actions such as save, delete, undo, and redo without requiring a keyboard.
 			[b]Note:[/b] Only available in the Android and XR editor.
 		</member>
+		<member name="naming/default_signal_callback_name" type="String" setter="" getter="">
+			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="naming/default_signal_callback_to_self_name" type="String" setter="" getter="">
+			The format of the default signal callback name when a signal connects to the same node that emits it (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="naming/node_name_casing" type="int" setter="" getter="">
+			The type of casing to use when creating node names automatically.
+		</member>
+		<member name="naming/node_name_num_separator" type="int" setter="" getter="">
+			What to use to separate node name from number.
+		</member>
+		<member name="naming/scene_name_casing" type="int" setter="" getter="">
+			The type of casing to use when generating scene file names from scene root node.
+		</member>
+		<member name="naming/script_name_casing" type="int" setter="" getter="">
+			The type of casing to use when generating script file names from the selected node.
+		</member>
 		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.
 			- [b]Disable Update Checks[/b] will block the engine from checking updates (see also [member network/connection/network_mode]).
@@ -1360,6 +1378,9 @@
 		</member>
 		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
 			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
+		</member>
+		<member name="text_editor/behavior/general/search_in_file_extensions" type="PackedStringArray" setter="" getter="">
+			Text-based file extensions to include in the editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.

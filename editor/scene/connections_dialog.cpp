@@ -303,9 +303,9 @@ StringName ConnectDialog::generate_method_callback_name(Object *p_source, const 
 
 	String dst_method;
 	if (p_source == p_target) {
-		dst_method = String(GLOBAL_GET("editor/naming/default_signal_callback_to_self_name")).format(subst);
+		dst_method = String(GLOBAL_EDITOR_GET("naming/default_signal_callback_to_self_name")).format(subst);
 	} else {
-		dst_method = String(GLOBAL_GET("editor/naming/default_signal_callback_name")).format(subst);
+		dst_method = String(GLOBAL_EDITOR_GET("naming/default_signal_callback_name")).format(subst);
 	}
 
 	return dst_method;
