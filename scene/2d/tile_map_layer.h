@@ -72,17 +72,20 @@ public:
 		HashMap<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits(const Ref<TileSet> &p_tile_set) const;
 
 	protected:
-		explicit Bit(const Vector2i &p_position) : base_cell_coords(p_position), bit(0) {} // For the center terrain bit
+		explicit Bit(const Vector2i &p_position) :
+				base_cell_coords(p_position), bit(0) {} // For the center terrain bit
 		Bit(const Ref<TileSet> &p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit); // For peering bits
 		Bit() {}
 	};
 	class CenterBit : public Bit {
 	public:
-		explicit CenterBit(const Vector2i &p_position) : Bit(p_position) {}
+		explicit CenterBit(const Vector2i &p_position) :
+				Bit(p_position) {}
 	};
 	class PeeringBit : public Bit {
 	public:
-		PeeringBit(const Ref<TileSet> &p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit) : Bit(p_tile_set, p_position, p_bit) {}
+		PeeringBit(const Ref<TileSet> &p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit) :
+				Bit(p_tile_set, p_position, p_bit) {}
 	};
 
 	class Action {
@@ -126,17 +129,20 @@ public:
 
 	protected:
 		// Protected constructor ensures use of child classes to better communicate intent
-		constexpr Action(int p_terrain, int p_priority) : terrain(p_terrain), priority(p_priority) {}
+		constexpr Action(int p_terrain, int p_priority) :
+				terrain(p_terrain), priority(p_priority) {}
 	};
 	class TargetTerrain : public Action {
 	public:
-		explicit TargetTerrain(int p_terrain, int p_priority = 1) : Action(p_terrain, p_priority) {
+		explicit TargetTerrain(int p_terrain, int p_priority = 1) :
+				Action(p_terrain, p_priority) {
 			ERR_FAIL_COND(p_terrain < -1);
 		}
 	};
 	class Unconstrained : public Action {
 	public:
-		Unconstrained() : Action(-2, 0) {}
+		Unconstrained() :
+				Action(-2, 0) {}
 	};
 
 private:
