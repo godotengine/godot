@@ -2829,7 +2829,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 	bool glow_enabled = false;
 	float glow_intensity = 1.0;
 	float glow_bloom = 0.0;
-	float glow_hdr_bleed_threshold = 0.0;
+	float glow_hdr_bleed_threshold = 1.0;
 	float glow_hdr_bleed_scale = 2.0;
 	float glow_hdr_luminance_cap = 12.0;
 	float srgb_white = 1.0;
