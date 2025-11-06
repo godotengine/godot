@@ -478,9 +478,9 @@ RID RendererCanvasRenderRD::_get_pipeline_specialization_or_ubershader(CanvasSha
 			RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 			uint64_t input_mask = p_shader_data->get_vertex_input_mask(r_pipeline_key.variant, r_pipeline_key.ubershader);
 			if (p_mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(p_mesh_instance, p_surface_index, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(p_surface, input_mask, false, *r_vertex_array, r_pipeline_key.vertex_format_id);
 			}
 		}
 
@@ -1840,7 +1840,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_uniform_string = "material.";
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR;
 		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
-		actions.base_varying_index = 8;
+		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
@@ -2276,9 +2276,6 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target.render_target)) {
 			clear = true;
 			clear_color = texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target);
-			if (texture_storage->render_target_is_using_hdr(p_to_render_target.render_target)) {
-				clear_color = clear_color.srgb_to_linear();
-			}
 			texture_storage->render_target_disable_clear_request(p_to_render_target.render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
@@ -2541,7 +2538,6 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					r_current_batch->shader_variant = SHADER_VARIANT_NINEPATCH;
 					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
 					r_current_batch->flags = 0;
-					r_current_batch->use_msdf = false;
 				}
 
 				TextureState tex_state(np->texture, texture_filter, texture_repeat, false, use_linear_colors);
@@ -2561,15 +2557,16 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				Rect2 src_rect;
 				Rect2 dst_rect(np->rect.position.x, np->rect.position.y, np->rect.size.x, np->rect.size.y);
 
-				if (np->texture.is_valid() && np->source != Rect2()) {
-					src_rect = Rect2(np->source.position.x * tex_info->texpixel_size.width, np->source.position.y * tex_info->texpixel_size.height, np->source.size.x * tex_info->texpixel_size.width, np->source.size.y * tex_info->texpixel_size.height);
-					instance_data->ninepatch_pixel_size[0] = 1.0 / np->source.size.width;
-					instance_data->ninepatch_pixel_size[1] = 1.0 / np->source.size.height;
-				} else {
+				if (np->texture.is_null()) {
 					src_rect = Rect2(0, 0, 1, 1);
-					// Set the default ninepatch pixel size to the full texture size.
-					instance_data->ninepatch_pixel_size[0] = tex_info->texpixel_size.width;
-					instance_data->ninepatch_pixel_size[1] = tex_info->texpixel_size.height;
+				} else {
+					if (np->source != Rect2()) {
+						src_rect = Rect2(np->source.position.x * tex_info->texpixel_size.width, np->source.position.y * tex_info->texpixel_size.height, np->source.size.x * tex_info->texpixel_size.width, np->source.size.y * tex_info->texpixel_size.height);
+						instance_data->ninepatch_pixel_size[0] = 1.0 / np->source.size.width;
+						instance_data->ninepatch_pixel_size[1] = 1.0 / np->source.size.height;
+					} else {
+						src_rect = Rect2(0, 0, 1, 1);
+					}
 				}
 
 				Color modulated = np->color * base_color;
@@ -2617,7 +2614,6 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->has_blend = false;
 				r_current_batch->command = c;
 				r_current_batch->flags = 0;
-				r_current_batch->use_msdf = false;
 
 				TextureState tex_state(polygon->texture, texture_filter, texture_repeat, false, use_linear_colors);
 				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
@@ -2744,7 +2740,6 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				r_current_batch->command_type = c->type;
 				r_current_batch->has_blend = false;
 				r_current_batch->flags = 0;
-				r_current_batch->use_msdf = false;
 
 				InstanceData *instance_data = nullptr;
 
@@ -3248,6 +3243,7 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 			if (!must_remap) {
 				state.instance_data = state.prev_instance_data;
 				state.instance_data_index = state.prev_instance_data_index;
+				new_batch.start = state.instance_data_index;
 			}
 			state.prev_instance_data = nullptr;
 			state.prev_instance_data_index = 0;
@@ -3257,9 +3253,6 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 		if (state.instance_data == nullptr) {
 			// If there is no existing instance buffer, we must allocate a new one.
 			_allocate_instance_buffer();
-		} else {
-			// Otherwise, just use the existing one from where it last left off.
-			new_batch.start = state.instance_data_index;
 		}
 		new_batch.instance_buffer = state.instance_buffers._get(0);
 		state.canvas_instance_batches.push_back(new_batch);
