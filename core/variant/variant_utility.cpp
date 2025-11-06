@@ -30,6 +30,7 @@
 
 #include "variant_utility.h"
 
+#include "core/core_bind.h"
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
@@ -816,14 +817,14 @@ Variant VariantUtilityFunctions::weakref(const Variant &p_obj, Callable::CallErr
 	if (p_obj.get_type() == Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (p_obj.is_ref_counted()) {
-			Ref<WeakRef> wref = memnew(WeakRef);
+			Ref<CoreBind::WeakRef> wref = memnew(CoreBind::WeakRef);
 			Ref<RefCounted> r = p_obj;
 			if (r.is_valid()) {
 				wref->set_ref(r);
 			}
 			return wref;
 		} else {
-			Ref<WeakRef> wref = memnew(WeakRef);
+			Ref<CoreBind::WeakRef> wref = memnew(CoreBind::WeakRef);
 			Object *o = p_obj.get_validated_object();
 			if (o) {
 				wref->set_obj(o);
@@ -832,7 +833,7 @@ Variant VariantUtilityFunctions::weakref(const Variant &p_obj, Callable::CallErr
 		}
 	} else if (p_obj.get_type() == Variant::NIL) {
 		r_error.error = Callable::CallError::CALL_OK;
-		Ref<WeakRef> wref = memnew(WeakRef);
+		Ref<CoreBind::WeakRef> wref = memnew(CoreBind::WeakRef);
 		return wref;
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
