@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main_ios.mm                                                           */
+/*  godot_renderer.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#pragma once
 
-#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
-#import "drivers/apple_embedded/main_utilities.h"
-#include "main/main.h"
+#import <Foundation/Foundation.h>
 
-#import <UIKit/UIKit.h>
-#include <cstdio>
-
-static OS_IOS *os = nullptr;
-
-int apple_embedded_main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
-
-	change_to_launch_dir(argv);
-
-	os = new OS_IOS();
-
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	argc = process_args(argc, argv, fargv);
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
+inline void safeDispatchSyncToMain(void (^block)(void)) {
+	if ([NSThread isMainThread]) {
+		block();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), block);
 	}
-
-	os->initialize_modules();
-
-	return os->get_exit_code();
 }
 
-void apple_embedded_finish() {
-	Main::cleanup();
-	delete os;
-}
+@interface GDTRenderer : NSObject
+
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
+
+- (BOOL)setUp;
+
+@end

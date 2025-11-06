@@ -2,25 +2,41 @@
 from misc.utility.scons_hints import *
 
 from platform_ios_builders import generate_bundle
+from SCons.Script import Glob
 
-from platform_methods import combine_libs_apple_embedded
+from platform_methods import combine_libs_apple_embedded, setup_swift_builder
 
 Import("env")
 
-ios_lib = [
-    "device_metrics.mm",
-    "display_layer_ios.mm",
-    "display_server_ios.mm",
-    "godot_view_ios.mm",
-    "main_ios.mm",
-    "os_ios.mm",
-]
+swift_files = Glob("*.swift")
+swift_file_names = list(map(lambda f: f.name, swift_files))
+
+mm_files = Glob("*.mm")
+mm_file_names = list(map(lambda f: f.name, mm_files))
+
+ios_lib = swift_file_names + mm_file_names
 
 env_ios = env.Clone()
-ios_lib = env_ios.add_library("ios", ios_lib)
 
-# (iOS) Enable module support
+# Configure Swift builder
+additional_swift_file_names = ["../../drivers/apple_embedded/godot_swiftui_view_controller.swift"]
+apple_platform = env["APPLE_PLATFORM"]
+sdk_path = env["APPLE_SDK_PATH"]
+current_path = Dir(".").abspath
+bridging_header_filename = "bridging_header_ios.h"
+setup_swift_builder(
+    env_ios,
+    apple_platform,
+    sdk_path,
+    current_path,
+    bridging_header_filename,
+    swift_file_names + additional_swift_file_names,
+)
+
+# Enable module support
 env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+ios_lib = env_ios.add_library("ios", ios_lib)
 
 combine_command = env_ios.CommandNoCache(
     "#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], env.Run(combine_libs_apple_embedded)

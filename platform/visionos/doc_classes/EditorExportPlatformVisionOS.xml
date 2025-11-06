@@ -17,6 +17,9 @@
 			&lt;string&gt;value&lt;/string&gt;
 			[/codeblock]
 		</member>
+		<member name="application/app_role" type="int" setter="" getter="">
+			The application role on the visionOS platform. It can be [code skip-lint]Window[/code] for running a 3D game on a 2D window, or [code skip-lint]Immersive[/code] for a XR experience.
+		</member>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
 			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
@@ -44,14 +47,17 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/immersion_style" type="int" setter="" getter="">
+			The immersion style, only applicable if you have chosen the [code]Immersive[/code] app role. It can be [code]Full[/code] for a VR experience, or [code]Mixed[/code] for a mixed reality experience where the rendered content is display along with the real environment.
+		</member>
 		<member name="application/min_visionos_version" type="String" setter="" getter="">
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">

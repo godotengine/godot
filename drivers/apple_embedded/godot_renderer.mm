@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main_ios.mm                                                           */
+/*  godot_renderer.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,81 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#import "godot_renderer.h"
 
-#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
-#import "drivers/apple_embedded/main_utilities.h"
+#import "display_server_apple_embedded.h"
+#import "os_apple_embedded.h"
+
+#include "core/config/project_settings.h"
 #include "main/main.h"
 
-#import <UIKit/UIKit.h>
-#include <cstdio>
+@interface GDTRenderer ()
 
-static OS_IOS *os = nullptr;
+@property(assign, nonatomic) BOOL hasCalledProjectDataSetUp;
+@property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasFinishedSetUp;
 
-int apple_embedded_main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+@end
 
-	change_to_launch_dir(argv);
+@implementation GDTRenderer
 
-	os = new OS_IOS();
-
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	argc = process_args(argc, argv, fargv);
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
+- (BOOL)setUp {
+	if (self.hasFinishedSetUp) {
+		return NO;
 	}
 
-	os->initialize_modules();
+	if (!OS::get_singleton()) {
+		exit(0);
+	}
 
-	return os->get_exit_code();
+	if (!self.hasCalledProjectDataSetUp) {
+		[self setUpProjectData];
+	}
+
+	if (!self.hasStartedMain) {
+		[self startMain];
+	}
+
+	self.hasFinishedSetUp = YES;
+
+	return NO;
 }
 
-void apple_embedded_finish() {
-	Main::cleanup();
-	delete os;
+- (void)setUpProjectData {
+	self.hasCalledProjectDataSetUp = YES;
+	safeDispatchSyncToMain(^{
+		Main::setup2();
+
+		// this might be necessary before here
+		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+		for (NSString *key in dict) {
+			NSObject *value = [dict objectForKey:key];
+			String ukey = String::utf8([key UTF8String]);
+
+			// we need a NSObject to Variant conversor
+
+			if ([value isKindOfClass:[NSString class]]) {
+				NSString *str = (NSString *)value;
+				String uval = String::utf8([str UTF8String]);
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+
+			} else if ([value isKindOfClass:[NSNumber class]]) {
+				NSNumber *n = (NSNumber *)value;
+				double dval = [n doubleValue];
+
+				ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
+			}
+			// do stuff
+		}
+	});
 }
+
+- (void)startMain {
+	self.hasStartedMain = YES;
+	safeDispatchSyncToMain(^{
+		OS_AppleEmbedded::get_singleton()->start();
+	});
+}
+
+@end

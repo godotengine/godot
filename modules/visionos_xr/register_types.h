@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app_delegate_service.h                                                */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,12 +30,11 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#ifdef VISIONOS_ENABLED
 
-@class GDTViewController;
+#include "modules/register_module_types.h"
 
-@interface GDTAppDelegateService : NSObject <UIApplicationDelegate>
+void initialize_visionos_xr_module(ModuleInitializationLevel p_level);
+void uninitialize_visionos_xr_module(ModuleInitializationLevel p_level);
 
-@property(strong, class, nonatomic) GDTViewController *viewController;
-
-@end
+#endif

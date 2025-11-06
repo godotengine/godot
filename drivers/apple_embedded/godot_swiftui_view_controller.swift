@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main_ios.mm                                                           */
+/*  godot_swiftui_view_controller.swift                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+import SwiftUI
+import UIKit
 
-#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
-#import "drivers/apple_embedded/main_utilities.h"
-#include "main/main.h"
+struct GodotSwiftUIViewController: UIViewControllerRepresentable {
 
-#import <UIKit/UIKit.h>
-#include <cstdio>
-
-static OS_IOS *os = nullptr;
-
-int apple_embedded_main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
-
-	change_to_launch_dir(argv);
-
-	os = new OS_IOS();
-
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	argc = process_args(argc, argv, fargv);
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
+	func makeUIViewController(context: Context) -> GDTViewController {
+		let viewController = GDTViewController()
+		GDTAppDelegateService.viewController = viewController
+		return viewController
 	}
 
-	os->initialize_modules();
+	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
+		// NOOP
+	}
 
-	return os->get_exit_code();
 }
 
-void apple_embedded_finish() {
-	Main::cleanup();
-	delete os;
+struct GodotWindowScene: Scene {
+	@Environment(\.scenePhase) private var scenePhase
+
+	// UIViewControllerRepresentable does not call viewWillDisappear() nor viewDidDisappear() when
+	// backgrounding the app, or closing the app's main window, update the renderer here.
+	private func updateRenderer(with newPhase: ScenePhase) -> Void {
+		switch newPhase {
+		case .active:
+			print("GodotSwiftUIViewController scene active")
+			GDTAppDelegateService.viewController?.godotView.startRendering()
+		case .inactive:
+			print("GodotSwiftUIViewController scene inactive")
+			GDTAppDelegateService.viewController?.godotView.stopRendering()
+		case .background:
+			print("GodotSwiftUIViewController scene backgrounded")
+			GDTAppDelegateService.viewController?.godotView.stopRendering()
+		@unknown default:
+			print("unknown default")
+		}
+	}
+
+	var body: some Scene {
+		WindowGroup {
+			if #available(iOS 17, *) {
+			GodotSwiftUIViewController()
+				.ignoresSafeArea()
+				.onChange(of: scenePhase) { _, newPhase in
+					updateRenderer(with: newPhase)
+				}
+			} else {
+				GodotSwiftUIViewController()
+					.ignoresSafeArea()
+				.onChange(of: scenePhase) { newPhase in
+					updateRenderer(with: newPhase)
+				}
+			}
+		}
+	}
 }

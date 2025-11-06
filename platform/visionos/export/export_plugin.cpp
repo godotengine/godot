@@ -56,6 +56,9 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_visionos_version"), get_minimum_deployment_target()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/app_role", PROPERTY_HINT_ENUM, "Window,Immersive"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed"), 1));
 }
 
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformVisionOS::get_icon_infos() const {
@@ -102,6 +105,47 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 		// Valid Archs
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64") + "\n";
+
+		// Application Scene Manifest
+	} else if (p_line.contains("$application_scene_manifest")) {
+		int app_role_enum = (int)p_preset->get("application/app_role");
+		if (app_role_enum == 0) {
+			// Windowed mode, no Application Scene Manifest needed
+			strnew += p_line.replace("$application_scene_manifest", "") + "\n";
+			return strnew;
+		}
+
+		String initial_immersion_style;
+		switch ((int)p_preset->get("application/immersion_style")) {
+			case 0: // Full
+				initial_immersion_style = "UIImmersionStyleFull";
+				break;
+			case 1: // Mixed
+				initial_immersion_style = "UIImmersionStyleMixed";
+				break;
+		}
+
+		String value =
+				"<key>UIApplicationSceneManifest</key>\n"
+				"<dict>\n"
+				"	<key>UIApplicationPreferredDefaultSceneSessionRole</key>\n"
+				"	<string>CPSceneSessionRoleImmersiveSpaceApplication</string>\n"
+				"	  <key>UIApplicationSupportsMultipleScenes</key>\n"
+				"	  <true/>\n"
+				"	  <key>UISceneConfigurations</key>\n"
+				"	  <dict>"
+				"		  <key>UISceneSessionRoleImmersiveSpaceApplication</key>"
+				"		  <array>"
+				"			  <dict>"
+				"				  <key>UISceneInitialImmersionStyle</key>"
+				"				  <string>" +
+				initial_immersion_style + "</string>"
+										  "			  </dict>"
+										  "		  </array>"
+										  "	  </dict>"
+										  "</dict>";
+
+		strnew += p_line.replace("$application_scene_manifest", value) + "\n";
 
 		// Apple Embedded common
 	} else {
