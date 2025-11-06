@@ -424,6 +424,7 @@ public:
 		// Base type for all expression kinds.
 		bool reduced = false;
 		bool is_constant = false;
+		bool is_grouped = false;
 		Variant reduced_value;
 
 		virtual bool is_expression() const override { return true; }
@@ -1744,6 +1745,7 @@ public:
 		REFACTOR_RENAME_TYPE_DICTIONARY, // Dictionary content.
 		REFACTOR_RENAME_TYPE_ENUM, // Enum name (and wrapper).
 		REFACTOR_RENAME_TYPE_ENUM_VALUE, // Enum value.
+		REFACTOR_RENAME_TYPE_EXPRESSION, // Expression.
 		REFACTOR_RENAME_TYPE_GET_NODE, // Get node with $ notation.
 		REFACTOR_RENAME_TYPE_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
 		REFACTOR_RENAME_TYPE_KEYWORD, // Keyword (e.g. class_name).
