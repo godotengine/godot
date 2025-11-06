@@ -52,8 +52,20 @@
 
 Ref<ShaderMaterial> MaterialEditor::make_shader_material(const Ref<Material> &p_from, bool p_copy_params) {
 	ERR_FAIL_COND_V(p_from.is_null(), Ref<ShaderMaterial>());
-	ERR_FAIL_COND_V(!p_from->_is_initialized(), Ref<ShaderMaterial>());
-
+	// Some materials (like SkyMaterials) are not initialized in the inspector,
+	// so we should allow conversion for them without blocking on _is_initialized().
+	if (!p_from->_is_initialized()) {
+		if (p_from->is_class("SkyMaterial") ||
+			p_from->is_class("ProceduralSkyMaterial") ||
+			p_from->is_class("PhysicalSkyMaterial") ||
+			p_from->is_class("PanoramaSkyMaterial")) {
+			// Allow conversion to continue.
+		} else {
+			ERR_PRINT("Condition \"!p_from->_is_initialized()\" is true. Returning: Ref<ShaderMaterial>()");
+			return Ref<ShaderMaterial>();
+		}
+	}
+	
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
 
