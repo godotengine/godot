@@ -74,6 +74,7 @@ def get_doc_classes():
         "OpenXRSpatialAnchorCapability",
         "OpenXRSpatialPlaneTrackingCapability",
         "OpenXRSpatialMarkerTrackingCapability",
+        "OpenXRAndroidThreadSettingsExtension",
     ]
 
 
