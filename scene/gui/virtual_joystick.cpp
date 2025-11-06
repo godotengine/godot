@@ -281,6 +281,9 @@ void VirtualJoystick::_bind_methods() {
 }
 
 void VirtualJoystick::set_joystick_size(float p_size) {
+	if (joystick_size == p_size) {
+		return;
+	}
 	joystick_size = p_size;
 	_reset();
 }
@@ -290,6 +293,9 @@ float VirtualJoystick::get_joystick_size() const {
 }
 
 void VirtualJoystick::set_tip_size(float p_size) {
+	if (tip_size == p_size) {
+		return;
+	}
 	tip_size = p_size;
 	_reset();
 }
@@ -315,6 +321,9 @@ float VirtualJoystick::get_clampzone_ratio() const {
 }
 
 void VirtualJoystick::set_initial_offset_ratio(const Vector2 &p_ratio) {
+	if (initial_offset_ratio == p_ratio) {
+		return;
+	}
 	initial_offset_ratio = p_ratio;
 	_reset();
 }
