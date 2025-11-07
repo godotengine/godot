@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jsonrpc.h                                                             */
+/*  stream_peer_stdio.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,90 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "stream_peer_stdio.h"
 
-#include "core/object/object.h"
-#include "core/variant/binder_common.h"
-#include "core/variant/variant.h"
+#include <fcntl.h>
+#include <cerrno>
+#include <cstdio>
 
-class JSONRPC : public Object {
-	GDCLASS(JSONRPC, Object)
-
-protected:
-	HashMap<String, Callable> methods;
-
-	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	void _set_scope_bind_compat_104890(const String &p_scope, Object *p_obj);
-	static void _bind_compatibility_methods();
+#ifdef WINDOWS_ENABLED
+#include <io.h>
+#define READ_FUNCTION _read
+#define WRITE_FUNCTION _write
+#else
+#include <unistd.h>
+#define READ_FUNCTION read
+#define WRITE_FUNCTION write
 #endif
 
-public:
-	JSONRPC();
-	~JSONRPC();
+StreamPeerStdio::StreamPeerStdio() {
+	// Set stdin to non-blocking mode and binary mode
+#ifdef WINDOWS_ENABLED
+	stdin_fileno = _fileno(stdin);
+	stdout_fileno = _fileno(stdout);
 
-	enum ErrorCode {
-		PARSE_ERROR = -32700,
-		INVALID_REQUEST = -32600,
-		METHOD_NOT_FOUND = -32601,
-		INVALID_PARAMS = -32602,
-		INTERNAL_ERROR = -32603,
-	};
+	_setmode(stdin_fileno, _O_BINARY);
+	_setmode(stdout_fileno, _O_BINARY);
+#else
+	stdin_fileno = STDIN_FILENO;
+	stdout_fileno = STDOUT_FILENO;
 
-	Dictionary make_response_error(int p_code, const String &p_message, const Variant &p_id = Variant()) const;
-	Dictionary make_response(const Variant &p_value, const Variant &p_id);
-	Dictionary make_notification(const String &p_method, const Variant &p_params);
-	Dictionary make_request(const String &p_method, const Variant &p_params, const Variant &p_id);
+	int flags = fcntl(stdin_fileno, F_GETFL, 0);
+	fcntl(stdin_fileno, F_SETFL, flags | O_NONBLOCK);
+#endif
+}
 
-	Variant process_action(const Variant &p_action, bool p_process_arr_elements = false);
-	String process_string(const String &p_input);
+StreamPeerStdio::~StreamPeerStdio() {
+	// TODO: see if make sense to revert the non-blocking
+}
 
-	void set_method(const String &p_name, const Callable &p_callback);
-};
+Error StreamPeerStdio::put_data(const uint8_t *p_data, int p_bytes) {
+	int sent;
+	return put_partial_data(p_data, p_bytes, sent);
+}
 
-VARIANT_ENUM_CAST(JSONRPC::ErrorCode);
+Error StreamPeerStdio::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
+	int sent = WRITE_FUNCTION(stdout_fileno, p_data, p_bytes);
+	if (sent < 0) {
+		r_sent = 0;
+		return FAILED;
+	}
+
+	r_sent = sent;
+	fflush(stdout);
+
+	return OK;
+}
+
+Error StreamPeerStdio::get_data(uint8_t *p_buffer, int p_bytes) {
+	int received;
+	return get_partial_data(p_buffer, p_bytes, received);
+}
+
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wlogical-op") // Silence a false positive. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69602
+
+Error StreamPeerStdio::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
+	int received = READ_FUNCTION(stdin_fileno, p_buffer, p_bytes);
+	if (received < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			r_received = 0;
+			return ERR_BUSY;
+		}
+		r_received = 0;
+		return FAILED;
+	} else if (received == 0) { // EOF
+		r_received = 0;
+		return FAILED;
+	}
+
+	r_received = received;
+	return OK;
+}
+
+GODOT_GCC_WARNING_POP
+
+int StreamPeerStdio::get_available_bytes() const {
+	// Return 1 to indicate data might be available
+	// The actual read will handle EAGAIN/EWOULDBLOCK
+	return 1;
+}

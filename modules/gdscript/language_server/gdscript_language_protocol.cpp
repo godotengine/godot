@@ -31,6 +31,7 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/stream_peer_stdio.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -39,6 +40,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
+#include "modules/gdscript/language_server/gdscript_language_server.h"
 #include "modules/gdscript/language_server/godot_lsp.h"
 
 #define LSP_CLIENT_V(m_ret_val) \
@@ -65,10 +67,10 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK) {
+			if (err == ERR_BUSY || read != 1) {
+				return ERR_BUSY; // Busy, wait until next poll
+			} else if (err != OK) {
 				return FAILED;
-			} else if (read != 1) { // Busy, wait until next poll
-				return ERR_BUSY;
 			}
 			char *r = (char *)req_buf;
 			int l = req_pos;
@@ -93,10 +95,10 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK) {
+			if (err == ERR_BUSY || read != 1) {
+				return ERR_BUSY; // Busy, wait until next poll
+			} else if (err != OK) {
 				return FAILED;
-			} else if (read != 1) {
-				return ERR_BUSY;
 			}
 			req_pos++;
 		}
@@ -254,6 +256,26 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	return ret.to_json();
 }
 
+Variant GDScriptLanguageProtocol::reject_message(const Variant &p_params) {
+	return make_response_error(JSONRPC::INVALID_REQUEST, "Server is shutting down.");
+}
+
+Variant GDScriptLanguageProtocol::shutdown() {
+	_shutdown = true;
+	Callable reject = callable_mp(this, &GDScriptLanguageProtocol::reject_message);
+	for (KeyValue<String, Callable> &E : methods) {
+		if (E.key != "exit") {
+			E.value = reject;
+		}
+	}
+	return Variant();
+}
+
+void GDScriptLanguageProtocol::exit() {
+	int exit_code = _shutdown ? EXIT_SUCCESS : EXIT_FAILURE;
+	EditorNode::get_singleton()->get_tree()->quit(exit_code);
+}
+
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	LSP::GodotCapabilities capabilities;
 
@@ -283,34 +305,37 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
-		peer->connection->poll();
-		StreamPeerTCP::Status status = peer->connection->get_status();
-		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+		Ref<StreamPeerTCP> tcp_peer = peer->connection;
+		if (tcp_peer.is_valid()) {
+			tcp_peer->poll();
+			StreamPeerTCP::Status status = tcp_peer->get_status();
+			if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
+			}
+		}
+
+		Error err = OK;
+		while (peer->connection->get_available_bytes() > 0) {
+			latest_client_id = E->key;
+			err = peer->handle_data();
+			if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+				break;
+			}
+		}
+
+		if (err != OK && err != ERR_BUSY) {
 			on_client_disconnected(E->key);
 			E = clients.begin();
 			continue;
-		} else {
-			Error err = OK;
-			while (peer->connection->get_available_bytes() > 0) {
-				latest_client_id = E->key;
-				err = peer->handle_data();
-				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
-					break;
-				}
-			}
+		}
 
-			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(E->key);
-				E = clients.begin();
-				continue;
-			}
-
-			err = peer->send_data();
-			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(E->key);
-				E = clients.begin();
-				continue;
-			}
+		err = peer->send_data();
+		if (err != OK && err != ERR_BUSY) {
+			on_client_disconnected(E->key);
+			E = clients.begin();
+			continue;
 		}
 		++E;
 	}
@@ -320,10 +345,27 @@ Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 	return server->listen(p_port, p_bind_ip);
 }
 
+Error GDScriptLanguageProtocol::start_stdio() {
+	Ref<LSPeer> peer;
+	peer.instantiate();
+	Ref<StreamPeerStdio> stdio_stream;
+	stdio_stream.instantiate();
+	peer->connection = stdio_stream;
+
+	clients.insert(next_client_id, peer);
+	next_client_id++;
+
+	OS::get_singleton()->print("[LSP] Started in stdio mode\n");
+	return OK;
+}
+
 void GDScriptLanguageProtocol::stop() {
 	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
 		Ref<LSPeer> peer = clients.get(E.key);
-		peer->connection->disconnect_from_host();
+		Ref<StreamPeerTCP> tcp_peer = peer->connection;
+		if (tcp_peer.is_valid()) {
+			tcp_peer->disconnect_from_host();
+		}
 	}
 
 	scene_cache.clear();
@@ -376,7 +418,7 @@ bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
 }
 
 bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
-	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
+	return (GDScriptLanguageServer::use_stdio) ? false : bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
 ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const String &p_path) {
@@ -593,6 +635,10 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 
 	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
 	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
+	if (GDScriptLanguageServer::use_stdio) {
+		set_method("shutdown", callable_mp(this, &GDScriptLanguageProtocol::shutdown));
+		set_method("exit", callable_mp(this, &GDScriptLanguageProtocol::exit));
+	}
 
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }

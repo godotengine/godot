@@ -54,7 +54,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	bool initialized = false;
 	HashMap<StringName, LSP::DocumentSymbol> native_symbols;
 
 	// Absolute paths that are known to point to res://

@@ -231,10 +231,6 @@ void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String>
 #define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
 
 Error GDScriptWorkspace::initialize() {
-	if (initialized) {
-		return OK;
-	}
-
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		const DocData::ClassDoc &class_data = E.value;
