@@ -575,7 +575,7 @@ private:
 
 	struct RenderPassInfo {
 		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-		bool uses_fragment_density_map_offsets = false;
+		bool uses_fragment_density_map = false;
 	};
 
 public:
