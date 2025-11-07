@@ -1834,6 +1834,13 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							} else {
 								player2->play(anim_name);
+
+								// If the target animation player was not playing anything last frame,
+								// it will not be processed this frame. To avoid a full frame of delay,
+								// before first keyframes are applied, manually process the animation
+								// immediately.
+								player2->_process_animation(0);
+
 								t->playing = true;
 								playing_caches.insert(t);
 							}
