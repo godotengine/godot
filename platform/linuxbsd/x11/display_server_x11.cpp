@@ -5292,7 +5292,9 @@ void DisplayServerX11::process_events() {
 				}
 
 				// Check for warp event first
-				if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[focused_window_id].size.width / 2 && event.xmotion.y == windows[focused_window_id].size.height / 2) {
+				if (mouse_mode == MOUSE_MODE_CAPTURED && 
+						event.xmotion.x == windows[focused_window_id].size.width / 2 && 
+						event.xmotion.y == windows[focused_window_id].size.height / 2) {
 					center = Vector2(event.xmotion.x, event.xmotion.y);
 					break;
 				}
