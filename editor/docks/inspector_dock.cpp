@@ -873,6 +873,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_property_name_style(property_name_style);
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
+	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
 
 	inspector->set_use_filter(true);
 
