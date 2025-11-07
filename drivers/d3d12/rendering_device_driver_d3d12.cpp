@@ -2967,6 +2967,14 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		ComPtr<IDXGISwapChain1> swap_chain_1;
 		if (create_for_composition) {
 			res = context_driver->dxgi_factory_get()->CreateSwapChainForComposition(command_queue->d3d_queue.Get(), &swap_chain_desc, nullptr, swap_chain_1.GetAddressOf());
+			if (!SUCCEEDED(res)) {
+				WARN_PRINT_ONCE("Window transparency is not supported without DirectComposition on D3D12.");
+				swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+				has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
+				create_for_composition = false;
+
+				res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
+			}
 		} else {
 			res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
 		}
