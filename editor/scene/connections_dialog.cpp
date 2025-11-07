@@ -1627,6 +1627,7 @@ void ConnectionsDock::update_tree() {
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
 			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			section_item->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox"), EditorStringName(Editor)));
 			section_item->set_metadata(0, doc_class_name);
 		}
 
