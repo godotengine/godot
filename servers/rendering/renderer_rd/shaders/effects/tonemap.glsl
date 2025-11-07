@@ -38,21 +38,16 @@ void main() {
 
 layout(location = 0) in vec2 uv_interp;
 
-#ifdef SUBPASS
-layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#elif defined(USE_MULTIVIEW)
-layout(set = 0, binding = 0) uniform sampler2DArray source_color;
+#ifdef USE_MULTIVIEW
+#define SAMPLER_FORMAT sampler2DArray
 #else
-layout(set = 0, binding = 0) uniform sampler2D source_color;
+#define SAMPLER_FORMAT sampler2D
 #endif
 
+layout(set = 0, binding = 0) uniform SAMPLER_FORMAT source_color;
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
-#ifdef USE_MULTIVIEW
-layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
-#else
-layout(set = 2, binding = 0) uniform sampler2D source_glow;
-#endif
-layout(set = 2, binding = 1) uniform sampler2D glow_map;
+layout(set = 2, binding = 0) uniform SAMPLER_FORMAT source_glow;
+layout(set = 2, binding = 1) uniform sampler2D glow_map; // TODO needs multiview support
 
 #ifdef USE_1D_LUT
 layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
@@ -66,8 +61,7 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_COLOR_CORRECTION (1 << 3)
 #define FLAG_USE_FXAA (1 << 4)
 #define FLAG_USE_8_BIT_DEBANDING (1 << 5)
-#define FLAG_USE_10_BIT_DEBANDING (1 << 6)
-#define FLAG_CONVERT_TO_SRGB (1 << 7)
+#define FLAG_CONVERT_TO_SRGB (1 << 6)
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -92,111 +86,6 @@ layout(push_constant, std430) uniform Params {
 params;
 
 layout(location = 0) out vec4 frag_color;
-
-#ifdef USE_GLOW_FILTER_BICUBIC
-// w0, w1, w2, and w3 are the four cubic B-spline basis functions
-float w0(float a) {
-	return (1.0f / 6.0f) * (a * (a * (-a + 3.0f) - 3.0f) + 1.0f);
-}
-
-float w1(float a) {
-	return (1.0f / 6.0f) * (a * a * (3.0f * a - 6.0f) + 4.0f);
-}
-
-float w2(float a) {
-	return (1.0f / 6.0f) * (a * (a * (-3.0f * a + 3.0f) + 3.0f) + 1.0f);
-}
-
-float w3(float a) {
-	return (1.0f / 6.0f) * (a * a * a);
-}
-
-// g0 and g1 are the two amplitude functions
-float g0(float a) {
-	return w0(a) + w1(a);
-}
-
-float g1(float a) {
-	return w2(a) + w3(a);
-}
-
-// h0 and h1 are the two offset functions
-float h0(float a) {
-	return -1.0f + w1(a) / (w0(a) + w1(a));
-}
-
-float h1(float a) {
-	return 1.0f + w3(a) / (w2(a) + w3(a));
-}
-
-#ifdef USE_MULTIVIEW
-vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
-	float lod = float(p_lod);
-	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
-	vec2 pixel_size = vec2(1.0f) / tex_size;
-
-	uv = uv * tex_size + vec2(0.5f);
-
-	vec2 iuv = floor(uv);
-	vec2 fuv = fract(uv);
-
-	float g0x = g0(fuv.x);
-	float g1x = g1(fuv.x);
-	float h0x = h0(fuv.x);
-	float h1x = h1(fuv.x);
-	float h0y = h0(fuv.y);
-	float h1y = h1(fuv.y);
-
-	vec3 p0 = vec3((vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p1 = vec3((vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p2 = vec3((vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
-	vec3 p3 = vec3((vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
-
-	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
-}
-
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#else // USE_MULTIVIEW
-
-vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
-	float lod = float(p_lod);
-	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
-	vec2 pixel_size = vec2(1.0f) / tex_size;
-
-	uv = uv * tex_size + vec2(0.5f);
-
-	vec2 iuv = floor(uv);
-	vec2 fuv = fract(uv);
-
-	float g0x = g0(fuv.x);
-	float g1x = g1(fuv.x);
-	float h0x = h0(fuv.x);
-	float h1x = h1(fuv.x);
-	float h0y = h0(fuv.y);
-	float h1y = h1(fuv.y);
-
-	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
-	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
-	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
-
-	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
-}
-
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#endif // !USE_MULTIVIEW
-
-#else // USE_GLOW_FILTER_BICUBIC
-
-#ifdef USE_MULTIVIEW
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
-#else // USE_MULTIVIEW
-#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
-#endif // !USE_MULTIVIEW
-
-#endif // !USE_GLOW_FILTER_BICUBIC
 
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float white) {
@@ -360,11 +249,113 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	}
 }
 
+#ifdef USE_GLOW_FILTER_BICUBIC
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0f / 6.0f) * (a * (a * (-a + 3.0f) - 3.0f) + 1.0f);
+}
+
+float w1(float a) {
+	return (1.0f / 6.0f) * (a * a * (3.0f * a - 6.0f) + 4.0f);
+}
+
+float w2(float a) {
+	return (1.0f / 6.0f) * (a * (a * (-3.0f * a + 3.0f) + 3.0f) + 1.0f);
+}
+
+float w3(float a) {
+	return (1.0f / 6.0f) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0f + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0f + w3(a) / (w2(a) + w3(a));
+}
+
 #ifdef USE_MULTIVIEW
-vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
-#else
-vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-#endif // defined(USE_MULTIVIEW)
+vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
+	float lod = float(p_lod);
+	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
+	vec2 pixel_size = vec2(1.0f) / tex_size;
+
+	uv = uv * tex_size + vec2(0.5f);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec3 p0 = vec3((vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p1 = vec3((vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p2 = vec3((vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+	vec3 p3 = vec3((vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size, ViewIndex);
+
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+}
+
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#else // USE_MULTIVIEW
+
+vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
+	float lod = float(p_lod);
+	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
+	vec2 pixel_size = vec2(1.0f) / tex_size;
+
+	uv = uv * tex_size + vec2(0.5f);
+
+	vec2 iuv = floor(uv);
+	vec2 fuv = fract(uv);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5f)) * pixel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5f)) * pixel_size;
+
+	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
+			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+}
+
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
+#endif // !USE_MULTIVIEW
+
+#else // USE_GLOW_FILTER_BICUBIC
+
+#ifdef USE_MULTIVIEW
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
+#else // USE_MULTIVIEW
+#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
+#endif // !USE_MULTIVIEW
+
+#endif // !USE_GLOW_FILTER_BICUBIC
+
+vec3 gather_glow(SAMPLER_FORMAT tex, vec2 uv) { // sample all selected glow levels
+
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {
@@ -460,8 +451,6 @@ vec3 apply_color_correction(vec3 color) {
 	return textureLod(source_color_correction, color, 0.0).rgb;
 }
 #endif
-
-#ifndef SUBPASS
 
 // FXAA 3.11 compact, Ported from https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag
 ///////////////////////////////////////////////////////////////////////////////////
@@ -831,7 +820,6 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 
 #endif
 }
-#endif // !SUBPASS
 
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
@@ -850,15 +838,7 @@ vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 }
 
 void main() {
-#ifdef SUBPASS
-	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
 #ifdef USE_MULTIVIEW
-	// In order to ensure the `SpvCapabilityMultiView` is included in the SPIR-V capabilities, gl_ViewIndex must
-	// be read in the shader. Without this, transpilation to Metal fails to include the multi-view variant.
-	uint vi = ViewIndex;
-#endif
-	vec4 color = subpassLoad(input_color);
-#elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
 	vec4 color = textureLod(source_color, uv_interp, 0.0f);
@@ -869,17 +849,13 @@ void main() {
 
 	float exposure = params.exposure;
 
-#ifndef SUBPASS
 	if (bool(params.flags & FLAG_USE_AUTO_EXPOSURE)) {
 		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_scale);
 	}
-#endif
 
 	color.rgb *= exposure;
 
 	// Single-pass FXAA and pre-tonemap glow.
-
-#ifndef SUBPASS
 	if (bool(params.flags & FLAG_USE_FXAA)) {
 		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
@@ -900,15 +876,13 @@ void main() {
 			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
 	}
-#endif
 
 	// Tonemap to lower dynamic range.
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	// Additional effects.
+	// Post-tonemap glow.
 
-#ifndef SUBPASS
 	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_SOFTLIGHT) {
 		// Apply soft light after tonemapping to mitigate the issue of discontinuity
 		// at 1.0 and higher. This makes the issue only appear with HDR output that
@@ -921,7 +895,8 @@ void main() {
 		glow = apply_tonemapping(glow, params.white);
 		color.rgb = apply_glow(color.rgb, glow, params.white);
 	}
-#endif
+
+	// Additional effects.
 
 	if (bool(params.flags & FLAG_USE_BCS)) {
 		// Apply brightness:
@@ -964,9 +939,6 @@ void main() {
 	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
 		// Divide by 255 to align to 8-bit quantization.
 		color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
-	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
-		// Divide by 1023 to align to 10-bit quantization.
-		color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 
 	frag_color = color;

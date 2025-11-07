@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  pot_generator.h                                                       */
+/*  chain_ik_3d_gizmo_plugin.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,31 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/iterate_ik_3d.h"
 
-//#define DEBUG_POT
+#include "scene/resources/surface_tool.h"
 
-class POTGenerator {
-	static POTGenerator *singleton;
+class ChainIK3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(ChainIK3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	struct MsgidData {
-		String ctx;
-		String plural;
-		HashSet<String> locations;
-		HashSet<String> comments;
+	struct SelectionMaterials {
+		Ref<StandardMaterial3D> unselected_mat;
+		Ref<ShaderMaterial> selected_mat;
 	};
-	// Store msgid as key and the additional data around the msgid - if it's under a context, has plurals and its file locations.
-	HashMap<String, Vector<MsgidData>> all_translation_strings;
-
-	void _write_to_pot(const String &p_file);
-	void _write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural);
-	void _add_new_msgid(const String &p_msgid, const String &p_context, const String &p_plural, const String &p_location, const String &p_comment);
-
-#ifdef DEBUG_POT
-	void _print_all_translation_strings();
-#endif
+	static SelectionMaterials selection_materials;
 
 public:
-	static POTGenerator *get_singleton();
-	void generate_pot(const String &p_file);
+	static Ref<ArrayMesh> get_joints_mesh(Skeleton3D *p_skeleton, ChainIK3D *p_ik, bool p_is_selected);
+	static void draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color);
 
-	~POTGenerator();
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	ChainIK3DGizmoPlugin();
+	~ChainIK3DGizmoPlugin();
 };

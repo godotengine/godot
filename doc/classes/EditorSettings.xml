@@ -456,6 +456,9 @@
 		<member name="editors/3d_gizmos/gizmo_colors/gridmap_grid" type="Color" setter="" getter="">
 			The 3D editor gizmo color for the [GridMap] grid.
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/ik_chain" type="Color" setter="" getter="">
+			The 3D editor gizmo color for the [IKModifier3D] guides.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
@@ -880,7 +883,7 @@
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
-			The language to use for the editor interface.
+			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
@@ -1107,6 +1110,9 @@
 		<member name="interface/theme/border_size" type="int" setter="" getter="">
 			The border size to use for interface elements (in pixels).
 		</member>
+		<member name="interface/theme/color_preset" type="String" setter="" getter="">
+			The editor color preset to use.
+		</member>
 		<member name="interface/theme/contrast" type="float" setter="" getter="">
 			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using a positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
 		</member>
@@ -1118,6 +1124,12 @@
 		</member>
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
+		</member>
+		<member name="interface/theme/draw_relationship_lines" type="int" setter="" getter="">
+			What relationship lines to draw in the editor's [Tree]-based GUIs (such as the Scene tree dock).
+			- [b]None[/b] will make it so that no relationship lines are drawn.
+			- [b]Selected Only[/b] will only draw them for selected items.
+			- [b]All[/b] will always draw them for all items.
 		</member>
 		<member name="interface/theme/follow_system_theme" type="bool" setter="" getter="">
 			If [code]true[/code], the editor theme preset will attempt to automatically match the system theme.
@@ -1132,14 +1144,14 @@
 			The saturation to use for editor icons. Higher values result in more vibrant colors.
 			[b]Note:[/b] The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].
 		</member>
-		<member name="interface/theme/preset" type="String" setter="" getter="">
-			The editor theme preset to use.
-		</member>
 		<member name="interface/theme/relationship_line_opacity" type="float" setter="" getter="">
 			The opacity to use when drawing relationship lines in the editor's [Tree]-based GUIs (such as the Scene tree dock).
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/style" type="String" setter="" getter="">
+			The editor theme style to use.
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.

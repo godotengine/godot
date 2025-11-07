@@ -370,7 +370,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 			sources_advanced_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
-			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
+			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("expand_panel"), SNAME("TileSetEditor")));
 			_update_sources_list();
 		} break;
 
@@ -728,6 +728,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 	// Change the edited object.
 	tile_set = p_tile_set;
+	sources_list->tile_set = p_tile_set;
 
 	// Read-only status is false by default
 	read_only = new_read_only_state;
@@ -855,18 +856,11 @@ TileSetEditor::TileSetEditor() {
 	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
-	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
-	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	sources_list->set_theme_type_variation("ItemListSecondary");
+	sources_list = memnew(TileSetSourceItemList);
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
-	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
-	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);
 

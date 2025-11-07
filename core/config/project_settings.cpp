@@ -790,12 +790,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		resource_path = current_dir;
 		resource_path = resource_path.replace_char('\\', '/'); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
-		if (err == OK && !p_ignore_override) {
-			// Optional, we don't mind if it fails.
+		if (err == OK) {
 #ifdef OVERRIDE_ENABLED
-			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
-			if (!disable_override) {
-				_load_settings_text(current_dir.path_join("override.cfg"));
+			if (!p_ignore_override) {
+				// Optional, we don't mind if it fails.
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text(current_dir.path_join("override.cfg"));
+				}
 			}
 #endif // OVERRIDE_ENABLED
 			found = true;
@@ -1646,6 +1648,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
+#ifndef DISABLE_DEPRECATED
+	GLOBAL_DEF_RST("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", false);
+#endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
@@ -1712,6 +1717,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
 #endif
 
+	GLOBAL_DEF("gui/common/drag_threshold", 10);
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Control Supports Keyboard Input,Always"), 1);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);

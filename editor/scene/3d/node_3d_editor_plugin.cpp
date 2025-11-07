@@ -48,6 +48,7 @@
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/audio_stream_player_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/camera_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/chain_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/cpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/decal_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/fog_volume_gizmo_plugin.h"
@@ -75,6 +76,7 @@
 #include "editor/scene/3d/gizmos/reflection_probe_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/spring_bone_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/sprite_base_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/two_bone_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
@@ -1674,7 +1676,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		for (int i = 0; i < selection_results.size(); i++) {
 			Node3D *spat = selection_results[i];
 
-			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat);
 
 			String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(spat->get_path()));
 
@@ -2455,10 +2457,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		Ref<InputEvent> event_mod = p_event;
 		if (EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
 			const Key code = k->get_physical_keycode();
 			if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-				k->set_keycode(code - Key::KEY_0 + Key::KP_0);
+				event_mod = p_event->duplicate();
+				Ref<InputEventKey> k_mod = event_mod;
+				k_mod->set_keycode(code - Key::KEY_0 + Key::KP_0);
 			}
 		}
 
@@ -2480,18 +2485,18 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		} else {
 			// We're actively transforming, handle keys specially
 			TransformPlane new_plane = TRANSFORM_VIEW;
-			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", event_mod)) {
 				new_plane = TRANSFORM_X_AXIS;
-			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_y", p_event)) {
+			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_y", event_mod)) {
 				new_plane = TRANSFORM_Y_AXIS;
-			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_z", p_event)) {
+			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_z", event_mod)) {
 				new_plane = TRANSFORM_Z_AXIS;
 			} else if (_edit.mode != TRANSFORM_ROTATE) { // rotating on a plane doesn't make sense
-				if (ED_IS_SHORTCUT("spatial_editor/lock_transform_yz", p_event)) {
+				if (ED_IS_SHORTCUT("spatial_editor/lock_transform_yz", event_mod)) {
 					new_plane = TRANSFORM_YZ;
-				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xz", p_event)) {
+				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xz", event_mod)) {
 					new_plane = TRANSFORM_XZ;
-				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xy", p_event)) {
+				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xy", event_mod)) {
 					new_plane = TRANSFORM_XY;
 				}
 			}
@@ -2518,74 +2523,74 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				return;
 			}
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/snap", event_mod)) {
 			if (_edit.mode != TRANSFORM_NONE) {
 				_edit.snap = !_edit.snap;
 			}
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", event_mod)) {
 			_menu_option(VIEW_BOTTOM);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/top_view", event_mod)) {
 			_menu_option(VIEW_TOP);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/rear_view", event_mod)) {
 			_menu_option(VIEW_REAR);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/front_view", event_mod)) {
 			_menu_option(VIEW_FRONT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/left_view", event_mod)) {
 			_menu_option(VIEW_LEFT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/right_view", event_mod)) {
 			_menu_option(VIEW_RIGHT);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_down", event_mod)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			cursor.x_rot = CLAMP(cursor.x_rot - Math::PI / 12.0, -1.57, 1.57);
 			cursor.unsnapped_x_rot = cursor.x_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_up", event_mod)) {
 			// Clamp rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
 			cursor.x_rot = CLAMP(cursor.x_rot + Math::PI / 12.0, -1.57, 1.57);
 			cursor.unsnapped_x_rot = cursor.x_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_right", event_mod)) {
 			cursor.y_rot -= Math::PI / 12.0;
 			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_left", event_mod)) {
 			cursor.y_rot += Math::PI / 12.0;
 			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/orbit_view_180", event_mod)) {
 			cursor.y_rot += Math::PI;
 			cursor.unsnapped_y_rot = cursor.y_rot;
 			view_type = VIEW_TYPE_USER;
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", event_mod)) {
 			_menu_option(VIEW_CENTER_TO_ORIGIN);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", event_mod)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", event_mod)) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", event_mod)) {
 			_menu_option(VIEW_ALIGN_ROTATION_WITH_VIEW);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", event_mod)) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE) {
 				return;
 			}
@@ -2608,20 +2613,20 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			set_message(TTR("Animation Key Inserted."));
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
+		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", event_mod) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
 		if (!is_freelook_active() && !k->is_echo()) {
-			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_position", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_position", event_mod)) {
 				_reset_transform(TransformType::POSITION);
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_rotation", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_rotation", event_mod)) {
 				_reset_transform(TransformType::ROTATION);
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_scale", p_event)) {
+			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_scale", event_mod)) {
 				_reset_transform(TransformType::SCALE);
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && (_edit.mode != TRANSFORM_TRANSLATE || collision_reposition)) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", event_mod) && (_edit.mode != TRANSFORM_TRANSLATE || collision_reposition)) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_TRANSLATE, true);
 				} else if (_edit.instant || collision_reposition) {
@@ -2629,7 +2634,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_TRANSLATE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event) && _edit.mode != TRANSFORM_ROTATE) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", event_mod) && _edit.mode != TRANSFORM_ROTATE) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_ROTATE, true);
 				} else if (_edit.instant || collision_reposition) {
@@ -2637,7 +2642,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_ROTATE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event) && _edit.mode != TRANSFORM_SCALE) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", event_mod) && _edit.mode != TRANSFORM_SCALE) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_SCALE, true);
 				} else if (_edit.instant || collision_reposition) {
@@ -2645,7 +2650,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -2660,7 +2665,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		// Freelook doesn't work in orthogonal mode.
-		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
+		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", event_mod)) {
 			set_freelook_active(!is_freelook_active());
 
 		} else if (k->get_keycode() == Key::ESCAPE) {
@@ -2673,15 +2678,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/decrease_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/decrease_fov", event_mod)) {
 			scale_fov(-0.05);
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/increase_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/increase_fov", event_mod)) {
 			scale_fov(0.05);
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", p_event)) {
+		if (ED_IS_SHORTCUT("spatial_editor/reset_fov", event_mod)) {
 			reset_fov();
 		}
 	}
@@ -7183,9 +7188,9 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 }
 
 void Node3DEditor::_snap_changed() {
-	snap_translate_value = snap_translate->get_text().to_float();
-	snap_rotate_value = snap_rotate->get_text().to_float();
-	snap_scale_value = snap_scale->get_text().to_float();
+	snap_translate_value = snap_translate->get_value();
+	snap_rotate_value = snap_rotate->get_value();
+	snap_scale_value = snap_scale->get_value();
 
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_translate_value", snap_translate_value);
 	EditorSettings::get_singleton()->set_project_metadata("3d_editor", "snap_rotate_value", snap_rotate_value);
@@ -7193,12 +7198,9 @@ void Node3DEditor::_snap_changed() {
 }
 
 void Node3DEditor::_snap_update() {
-	double snap = EDITOR_GET("interface/inspector/default_float_step");
-	int snap_step_decimals = Math::range_step_decimals(snap);
-
-	snap_translate->set_text(String::num(snap_translate_value, snap_step_decimals));
-	snap_rotate->set_text(String::num(snap_rotate_value, snap_step_decimals));
-	snap_scale->set_text(String::num(snap_scale_value, snap_step_decimals));
+	snap_translate->set_value(snap_translate_value);
+	snap_rotate->set_value(snap_rotate_value);
+	snap_scale->set_value(snap_scale_value);
 }
 
 void Node3DEditor::_xform_dialog_action() {
@@ -9237,6 +9239,8 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {
@@ -9600,12 +9604,8 @@ Node3DEditor::Node3DEditor() {
 	snap_key_enabled = false;
 	tool_mode = TOOL_MODE_SELECT;
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	vbc->add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
@@ -9842,12 +9842,12 @@ Node3DEditor::Node3DEditor() {
 	accept = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
 
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/1_viewport", TTRC("1 Viewport"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_1), MENU_VIEW_USE_1_VIEWPORT);
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports", TTRC("2 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_2), MENU_VIEW_USE_2_VIEWPORTS);
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports_alt", TTRC("2 Viewports (Alt)"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::KEY_2), MENU_VIEW_USE_2_VIEWPORTS_ALT);
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports", TTRC("3 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_3), MENU_VIEW_USE_3_VIEWPORTS);
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports_alt", TTRC("3 Viewports (Alt)"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::KEY_3), MENU_VIEW_USE_3_VIEWPORTS_ALT);
-	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/4_viewports", TTRC("4 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_4), MENU_VIEW_USE_4_VIEWPORTS);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/1_viewport", TTRC("1 Viewport"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_1, true), MENU_VIEW_USE_1_VIEWPORT);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports", TTRC("2 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_2, true), MENU_VIEW_USE_2_VIEWPORTS);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports_alt", TTRC("2 Viewports (Alt)"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::KEY_2, true), MENU_VIEW_USE_2_VIEWPORTS_ALT);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports", TTRC("3 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_3, true), MENU_VIEW_USE_3_VIEWPORTS);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports_alt", TTRC("3 Viewports (Alt)"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::KEY_3, true), MENU_VIEW_USE_3_VIEWPORTS_ALT);
+	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/4_viewports", TTRC("4 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_4, true), MENU_VIEW_USE_4_VIEWPORTS);
 	p->add_separator();
 
 	gizmos_menu = memnew(PopupMenu);
@@ -9906,20 +9906,30 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *snap_dialog_vbc = memnew(VBoxContainer);
 	snap_dialog->add_child(snap_dialog_vbc);
 
-	snap_translate = memnew(LineEdit);
-	snap_translate->set_select_all_on_focus(true);
-	snap_translate->set_accessibility_name(TTRC("Translate Snap:"));
-	snap_dialog_vbc->add_margin_child(TTRC("Translate Snap:"), snap_translate);
+	snap_translate = memnew(EditorSpinSlider);
+	snap_translate->set_min(0.0);
+	snap_translate->set_step(0.001);
+	snap_translate->set_max(10.0);
+	snap_translate->set_suffix("m");
+	snap_translate->set_allow_greater(true);
+	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
-	snap_rotate = memnew(LineEdit);
-	snap_rotate->set_select_all_on_focus(true);
-	snap_rotate->set_accessibility_name(TTRC("Rotate Snap (deg.):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Rotate Snap (deg.):"), snap_rotate);
+	snap_rotate = memnew(EditorSpinSlider);
+	snap_rotate->set_min(0.0);
+	snap_rotate->set_step(0.1);
+	snap_rotate->set_max(360);
+	snap_rotate->set_suffix(U"°");
+	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap:"), snap_rotate);
 
-	snap_scale = memnew(LineEdit);
-	snap_scale->set_select_all_on_focus(true);
-	snap_scale->set_accessibility_name(TTRC("Scale Snap (%):"));
-	snap_dialog_vbc->add_margin_child(TTRC("Scale Snap (%):"), snap_scale);
+	snap_scale = memnew(EditorSpinSlider);
+	snap_scale->set_min(0.0);
+	snap_scale->set_step(1.0);
+	snap_scale->set_max(100);
+	snap_scale->set_suffix("%");
+	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
+	snap_dialog_vbc->add_margin_child(TTR("Scale Snap:"), snap_scale);
 
 	/* SETTINGS DIALOG */
 
@@ -9971,58 +9981,36 @@ Node3DEditor::Node3DEditor() {
 	VBoxContainer *xform_vbc = memnew(VBoxContainer);
 	xform_dialog->add_child(xform_vbc);
 
-	Label *l = memnew(Label);
-	l->set_text(TTRC("Translate:"));
-	xform_vbc->add_child(l);
-
-	HBoxContainer *xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
+	HBoxContainer *translate_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Translate:"), translate_hb);
+	HBoxContainer *rotate_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Rotate (deg.):"), rotate_hb);
+	HBoxContainer *scale_hb = memnew(HBoxContainer);
+	xform_vbc->add_margin_child(TTRC("Scale (ratio):"), scale_hb);
 
 	for (int i = 0; i < 3; i++) {
 		xform_translate[i] = memnew(LineEdit);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_translate[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_translate[i]);
-	}
+		translate_hb->add_child(xform_translate[i]);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Rotate (deg.):"));
-	xform_vbc->add_child(l);
-
-	xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
-
-	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_rotate[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_rotate[i]);
-	}
+		rotate_hb->add_child(xform_rotate[i]);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Scale (ratio):"));
-	xform_vbc->add_child(l);
-
-	xform_hbc = memnew(HBoxContainer);
-	xform_vbc->add_child(xform_hbc);
-
-	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_scale[i]->set_select_all_on_focus(true);
-		xform_hbc->add_child(xform_scale[i]);
+		scale_hb->add_child(xform_scale[i]);
 	}
-
-	l = memnew(Label);
-	l->set_text(TTRC("Transform Type"));
-	xform_vbc->add_child(l);
 
 	xform_type = memnew(OptionButton);
 	xform_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	xform_type->set_accessibility_name(TTRC("Transform Type"));
 	xform_type->add_item(TTRC("Pre"));
 	xform_type->add_item(TTRC("Post"));
-	xform_vbc->add_child(xform_type);
+	xform_vbc->add_margin_child(TTRC("Transform Type"), xform_type);
 
 	xform_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Node3DEditor::_xform_dialog_action));
 

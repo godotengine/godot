@@ -584,6 +584,8 @@
 				[/csharp]
 				[/codeblocks]
 				This is the same as [method set_pixelv], but with a two integer arguments instead of a [Vector2i] argument.
+				[b]Note:[/b] Depending on the image's format, the color set here may be clamped or lose precision. Do not assume the color returned by [method get_pixel] to be identical to the one set here; any comparisons will likely need to use an approximation like [method Color.is_equal_approx].
+				[b]Note:[/b] On grayscale image formats, only the red channel of [param color] is used (and alpha if relevant). The green and blue channels are ignored.
 			</description>
 		</method>
 		<method name="set_pixelv">
@@ -609,6 +611,8 @@
 				[/csharp]
 				[/codeblocks]
 				This is the same as [method set_pixel], but with a [Vector2i] argument instead of two integer arguments.
+				[b]Note:[/b] Depending on the image's format, the color set here may be clamped or lose precision. Do not assume the color returned by [method get_pixelv] to be identical to the one set here; any comparisons will likely need to use an approximation like [method Color.is_equal_approx].
+				[b]Note:[/b] On grayscale image formats, only the red channel of [param color] is used (and alpha if relevant). The green and blue channels are ignored.
 			</description>
 		</method>
 		<method name="shrink_x2">

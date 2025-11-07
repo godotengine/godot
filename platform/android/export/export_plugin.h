@@ -41,6 +41,8 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export_platform.h"
 
+class ImageTexture;
+
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
 const String ENV_ANDROID_KEYSTORE_DEBUG_PATH = "GODOT_ANDROID_KEYSTORE_DEBUG_PATH";

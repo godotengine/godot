@@ -435,6 +435,7 @@ void ColorPickerShapeRectangle::_hue_slider_draw() {
 
 void ColorPickerShapeRectangle::_initialize_controls() {
 	sv_square = memnew(Control);
+	sv_square->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	color_picker->shape_container->add_child(sv_square);
 	sv_square->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_input));
 	sv_square->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_draw));
@@ -471,6 +472,7 @@ void ColorPickerShapeRectangle::grab_focus() {
 
 void ColorPickerShapeOKHSRectangle::_initialize_controls() {
 	rectangle_margin = memnew(MarginContainer);
+	rectangle_margin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	color_picker->shape_container->add_child(rectangle_margin);
 
 	Ref<ShaderMaterial> material;
@@ -805,9 +807,6 @@ void ColorPickerShapeWheel::_wheel_uv_draw() {
 }
 
 void ColorPickerShapeWheel::_initialize_controls() {
-	wheel_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(wheel_margin);
-
 	Ref<ShaderMaterial> material;
 	material.instantiate();
 	material->set_shader(ColorPickerShape::wheel_shader);
@@ -815,17 +814,17 @@ void ColorPickerShapeWheel::_initialize_controls() {
 
 	wheel = memnew(Control);
 	wheel->set_material(material);
-	wheel_margin->add_child(wheel);
+	color_picker->shape_container->add_child(wheel);
 	wheel->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeWheel::_wheel_draw));
 
 	wheel_uv = memnew(Control);
-	wheel_margin->add_child(wheel_uv);
+	wheel_uv->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	wheel->add_child(wheel_uv);
 	wheel_uv->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPickerShapeWheel::_reset_wheel_focus));
 	wheel_uv->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeWheel::_wheel_input));
 	wheel_uv->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeWheel::_wheel_uv_draw));
 	connect_shape_focus(wheel_uv);
 
-	controls.append(wheel_margin);
 	controls.append(wheel);
 	controls.append(wheel_uv);
 }
@@ -846,8 +845,7 @@ void ColorPickerShapeWheel::_update_cursor(const Vector2 &p_color_change_vector,
 
 void ColorPickerShapeWheel::update_theme() {
 	const ColorPicker::ThemeCache &theme_cache = color_picker->theme_cache;
-	wheel_margin->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-	wheel_margin->add_theme_constant_override(SNAME("margin_bottom"), 8 * theme_cache.base_scale);
+	wheel->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
 }
 
 void ColorPickerShapeWheel::grab_focus() {
@@ -875,16 +873,13 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 }
 
 void ColorPickerShapeCircle::_initialize_controls() {
-	circle_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(circle_margin);
-
 	Ref<ShaderMaterial> material;
 	material.instantiate();
 	material->set_shader(_get_shader());
 
 	circle = memnew(Control);
 	circle->set_material(material);
-	circle_margin->add_child(circle);
+	color_picker->shape_container->add_child(circle);
 	circle->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeCircle::_circle_draw));
 
 	circle_overlay = memnew(Control);
@@ -900,7 +895,6 @@ void ColorPickerShapeCircle::_initialize_controls() {
 	value_slider->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeCircle::_value_slider_draw));
 	connect_shape_focus(value_slider);
 
-	controls.append(circle_margin);
 	controls.append(circle);
 	controls.append(circle_overlay);
 	controls.append(value_slider);
@@ -908,8 +902,7 @@ void ColorPickerShapeCircle::_initialize_controls() {
 
 void ColorPickerShapeCircle::update_theme() {
 	const ColorPicker::ThemeCache &theme_cache = color_picker->theme_cache;
-	circle_margin->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-	circle_margin->add_theme_constant_override(SNAME("margin_bottom"), 8 * theme_cache.base_scale);
+	circle->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
 	value_slider->set_custom_minimum_size(Size2(theme_cache.h_width, 0));
 }
 

@@ -859,7 +859,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 				if (base->has_node(accum)) {
 					Node *node = base->get_node(accum);
-					ti->set_icon(0, EditorNode::get_singleton()->get_object_icon(node, "Node"));
+					ti->set_icon(0, EditorNode::get_singleton()->get_object_icon(node));
 				}
 
 			} else {

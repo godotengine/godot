@@ -2303,6 +2303,11 @@ RID RichTextLabel::get_focused_accessibility_element() const {
 	return get_accessibility_element();
 }
 
+void RichTextLabel::_prepare_scroll_anchor() {
+	scroll_w = vscroll->get_combined_minimum_size().width;
+	vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
+}
+
 void RichTextLabel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
@@ -2415,6 +2420,10 @@ void RichTextLabel::_notification(int p_what) {
 			_invalidate_accessibility();
 			queue_accessibility_update();
 			queue_redraw();
+		} break;
+
+		case NOTIFICATION_READY: {
+			_prepare_scroll_anchor();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -2588,6 +2597,7 @@ void RichTextLabel::_notification(int p_what) {
 				from_line++;
 			}
 			if (scroll_follow_visible_characters && scroll_active) {
+				scroll_visible = follow_vc_pos > 0;
 				vscroll->set_visible(follow_vc_pos > 0);
 			}
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
@@ -2971,6 +2981,35 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	if (m.is_valid()) {
 		local_mouse_pos = get_local_mouse_position();
 		last_clamped_mouse_pos = local_mouse_pos.clamp(Vector2(), get_size());
+
+		Item *c_item = nullptr;
+		bool outside = false;
+
+		// Update meta hovering.
+		_find_click(main, local_mouse_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
+		Variant meta;
+		ItemMeta *item_meta;
+		ItemMeta *prev_meta = meta_hovering;
+		if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
+			if (meta_hovering != item_meta) {
+				if (meta_hovering) {
+					emit_signal(SNAME("meta_hover_ended"), current_meta);
+				}
+				meta_hovering = item_meta;
+				current_meta = meta;
+				emit_signal(SNAME("meta_hover_started"), meta);
+				if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
+					queue_redraw();
+				}
+			}
+		} else if (meta_hovering) {
+			meta_hovering = nullptr;
+			emit_signal(SNAME("meta_hover_ended"), current_meta);
+			current_meta = false;
+			if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
+				queue_redraw();
+			}
+		}
 	}
 }
 
@@ -3056,32 +3095,6 @@ void RichTextLabel::_update_selection() {
 		selection.active = true;
 		queue_accessibility_update();
 		queue_redraw();
-	}
-
-	// Update meta hovering.
-	_find_click(main, local_mouse_pos, nullptr, nullptr, &c_item, nullptr, &outside, true);
-	Variant meta;
-	ItemMeta *item_meta;
-	ItemMeta *prev_meta = meta_hovering;
-	if (c_item && !outside && _find_meta(c_item, &meta, &item_meta)) {
-		if (meta_hovering != item_meta) {
-			if (meta_hovering) {
-				emit_signal(SNAME("meta_hover_ended"), current_meta);
-			}
-			meta_hovering = item_meta;
-			current_meta = meta;
-			emit_signal(SNAME("meta_hover_started"), meta);
-			if ((item_meta && item_meta->underline == META_UNDERLINE_ON_HOVER) || (prev_meta && prev_meta->underline == META_UNDERLINE_ON_HOVER)) {
-				queue_redraw();
-			}
-		}
-	} else if (meta_hovering) {
-		meta_hovering = nullptr;
-		emit_signal(SNAME("meta_hover_ended"), current_meta);
-		current_meta = false;
-		if (prev_meta->underline == META_UNDERLINE_ON_HOVER) {
-			queue_redraw();
-		}
 	}
 }
 
@@ -3726,9 +3739,8 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 	if (exceeds != scroll_visible) {
 		if (exceeds) {
 			scroll_visible = true;
-			scroll_w = vscroll->get_combined_minimum_size().width;
+			_prepare_scroll_anchor();
 			vscroll->show();
-			vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
 		} else {
 			scroll_visible = false;
 			scroll_w = 0;

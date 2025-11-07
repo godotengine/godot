@@ -5,6 +5,8 @@ Import("env")
 
 env.add_source_files(env.scene_sources, "fog_material.cpp")
 env.add_source_files(env.scene_sources, "importer_mesh.cpp")
+env.add_source_files(env.scene_sources, "joint_limitation_3d.cpp")
+env.add_source_files(env.scene_sources, "joint_limitation_cone_3d.cpp")
 env.add_source_files(env.scene_sources, "mesh_library.cpp")
 env.add_source_files(env.scene_sources, "primitive_meshes.cpp")
 env.add_source_files(env.scene_sources, "skin.cpp")

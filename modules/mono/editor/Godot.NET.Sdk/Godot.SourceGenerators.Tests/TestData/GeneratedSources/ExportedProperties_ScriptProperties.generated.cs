@@ -33,9 +33,17 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @FullPropertyString_Complex = "FullPropertyString_Complex";
         /// <summary>
+        /// Cached name for the 'FullPropertyStaticImport' property.
+        /// </summary>
+        public new static readonly global::Godot.StringName @FullPropertyStaticImport = "FullPropertyStaticImport";
+        /// <summary>
         /// Cached name for the 'LamdaPropertyString' property.
         /// </summary>
         public new static readonly global::Godot.StringName @LamdaPropertyString = "LamdaPropertyString";
+        /// <summary>
+        /// Cached name for the 'LambdaPropertyStaticImport' property.
+        /// </summary>
+        public new static readonly global::Godot.StringName @LambdaPropertyStaticImport = "LambdaPropertyStaticImport";
         /// <summary>
         /// Cached name for the 'PrimaryCtorParameter' property.
         /// </summary>
@@ -44,6 +52,10 @@ partial class ExportedProperties
         /// Cached name for the 'ConstantMath' property.
         /// </summary>
         public new static readonly global::Godot.StringName @ConstantMath = "ConstantMath";
+        /// <summary>
+        /// Cached name for the 'ConstantMathStaticImport' property.
+        /// </summary>
+        public new static readonly global::Godot.StringName @ConstantMathStaticImport = "ConstantMathStaticImport";
         /// <summary>
         /// Cached name for the 'StaticStringAddition' property.
         /// </summary>
@@ -293,9 +305,17 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @_fullPropertyStringComplex = "_fullPropertyStringComplex";
         /// <summary>
+        /// Cached name for the '_fullPropertyStaticImport' field.
+        /// </summary>
+        public new static readonly global::Godot.StringName @_fullPropertyStaticImport = "_fullPropertyStaticImport";
+        /// <summary>
         /// Cached name for the '_lamdaPropertyString' field.
         /// </summary>
         public new static readonly global::Godot.StringName @_lamdaPropertyString = "_lamdaPropertyString";
+        /// <summary>
+        /// Cached name for the '_lambdaPropertyStaticImport' field.
+        /// </summary>
+        public new static readonly global::Godot.StringName @_lambdaPropertyStaticImport = "_lambdaPropertyStaticImport";
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
@@ -325,8 +345,16 @@ partial class ExportedProperties
             this.@FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
+        if (name == PropertyName.@FullPropertyStaticImport) {
+            this.@FullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            return true;
+        }
         if (name == PropertyName.@LamdaPropertyString) {
             this.@LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            return true;
+        }
+        if (name == PropertyName.@LambdaPropertyStaticImport) {
+            this.@LambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
         if (name == PropertyName.@PrimaryCtorParameter) {
@@ -335,6 +363,10 @@ partial class ExportedProperties
         }
         if (name == PropertyName.@ConstantMath) {
             this.@ConstantMath = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            return true;
+        }
+        if (name == PropertyName.@ConstantMathStaticImport) {
+            this.@ConstantMathStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
         if (name == PropertyName.@StaticStringAddition) {
@@ -585,8 +617,16 @@ partial class ExportedProperties
             this.@_fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
+        if (name == PropertyName.@_fullPropertyStaticImport) {
+            this.@_fullPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
+            return true;
+        }
         if (name == PropertyName.@_lamdaPropertyString) {
             this.@_lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            return true;
+        }
+        if (name == PropertyName.@_lambdaPropertyStaticImport) {
+            this.@_lambdaPropertyStaticImport = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
         return base.SetGodotClassPropertyValue(name, value);
@@ -619,8 +659,16 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString_Complex);
             return true;
         }
+        if (name == PropertyName.@FullPropertyStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@FullPropertyStaticImport);
+            return true;
+        }
         if (name == PropertyName.@LamdaPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@LamdaPropertyString);
+            return true;
+        }
+        if (name == PropertyName.@LambdaPropertyStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@LambdaPropertyStaticImport);
             return true;
         }
         if (name == PropertyName.@PrimaryCtorParameter) {
@@ -629,6 +677,10 @@ partial class ExportedProperties
         }
         if (name == PropertyName.@ConstantMath) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMath);
+            return true;
+        }
+        if (name == PropertyName.@ConstantMathStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@ConstantMathStaticImport);
             return true;
         }
         if (name == PropertyName.@StaticStringAddition) {
@@ -879,8 +931,16 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_fullPropertyStringComplex);
             return true;
         }
+        if (name == PropertyName.@_fullPropertyStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_fullPropertyStaticImport);
+            return true;
+        }
         if (name == PropertyName.@_lamdaPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_lamdaPropertyString);
+            return true;
+        }
+        if (name == PropertyName.@_lambdaPropertyStaticImport) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.@_lambdaPropertyStaticImport);
             return true;
         }
         return base.GetGodotClassPropertyValue(name, out value);
@@ -904,10 +964,15 @@ partial class ExportedProperties
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@FullPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_fullPropertyStringComplex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@FullPropertyString_Complex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@_fullPropertyStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@FullPropertyStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_lamdaPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@LamdaPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@_lambdaPropertyStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@LambdaPropertyStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@PrimaryCtorParameter, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@ConstantMath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)3, name: PropertyName.@ConstantMathStaticImport, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@StaticStringAddition, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.@PropertyBoolean, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@PropertyChar, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));

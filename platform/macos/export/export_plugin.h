@@ -39,6 +39,7 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
 

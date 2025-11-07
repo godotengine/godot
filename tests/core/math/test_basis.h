@@ -189,32 +189,6 @@ TEST_CASE("[Basis] Euler conversions") {
 	}
 }
 
-TEST_CASE("[Stress][Basis] Euler conversions") {
-	Vector<EulerOrder> euler_order_to_test;
-	euler_order_to_test.push_back(EulerOrder::XYZ);
-	euler_order_to_test.push_back(EulerOrder::XZY);
-	euler_order_to_test.push_back(EulerOrder::YZX);
-	euler_order_to_test.push_back(EulerOrder::YXZ);
-	euler_order_to_test.push_back(EulerOrder::ZXY);
-	euler_order_to_test.push_back(EulerOrder::ZYX);
-
-	Vector<Vector3> vectors_to_test;
-	// Add 1000 random vectors with weirds numbers.
-	RandomNumberGenerator rng;
-	for (int _ = 0; _ < 1000; _ += 1) {
-		vectors_to_test.push_back(Vector3(
-				rng.randf_range(-1800, 1800),
-				rng.randf_range(-1800, 1800),
-				rng.randf_range(-1800, 1800)));
-	}
-
-	for (int h = 0; h < euler_order_to_test.size(); h += 1) {
-		for (int i = 0; i < vectors_to_test.size(); i += 1) {
-			test_rotation(vectors_to_test[i], euler_order_to_test[h]);
-		}
-	}
-}
-
 TEST_CASE("[Basis] Set axis angle") {
 	Vector3 axis;
 	real_t angle;

@@ -1158,22 +1158,9 @@ void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
 	}
 }
 
-void ScriptEditor::trigger_live_script_reload_all() {
-	if (!pending_auto_reload && auto_reload_running_scripts) {
-		call_deferred(SNAME("_live_auto_reload_running_scripts"));
-		pending_auto_reload = true;
-		reload_all_scripts = true;
-	}
-}
-
 void ScriptEditor::_live_auto_reload_running_scripts() {
 	pending_auto_reload = false;
-	if (reload_all_scripts) {
-		EditorDebuggerNode::get_singleton()->reload_all_scripts();
-	} else {
-		EditorDebuggerNode::get_singleton()->reload_scripts(script_paths_to_reload);
-	}
-	reload_all_scripts = false;
+	EditorDebuggerNode::get_singleton()->reload_scripts(script_paths_to_reload);
 	script_paths_to_reload.clear();
 }
 
@@ -2554,63 +2541,11 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	if (use_external_editor &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
 			p_resource->get_path().is_resource_file()) {
-		String path = EDITOR_GET("text_editor/external/exec_path");
-		String flags = EDITOR_GET("text_editor/external/exec_flags");
-
-		List<String> args;
-		bool has_file_flag = false;
-		String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
-
-		if (flags.size()) {
-			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-
-			flags = flags.replacen("{line}", itos(MAX(p_line + 1, 1)));
-			flags = flags.replacen("{col}", itos(p_col + 1));
-			flags = flags.strip_edges().replace("\\\\", "\\");
-
-			int from = 0;
-			int num_chars = 0;
-			bool inside_quotes = false;
-
-			for (int i = 0; i < flags.size(); i++) {
-				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
-					if (!inside_quotes) {
-						from++;
-					}
-					inside_quotes = !inside_quotes;
-
-				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
-					String arg = flags.substr(from, num_chars);
-					if (arg.contains("{file}")) {
-						has_file_flag = true;
-					}
-
-					// do path replacement here, else there will be issues with spaces and quotes
-					arg = arg.replacen("{project}", project_path);
-					arg = arg.replacen("{file}", script_path);
-					args.push_back(arg);
-
-					from = i + 1;
-					num_chars = 0;
-				} else {
-					num_chars++;
-				}
-			}
+		if (ScriptEditorPlugin::open_in_external_editor(ProjectSettings::get_singleton()->globalize_path(p_resource->get_path()), p_line, p_col)) {
+			return false;
+		} else {
+			ERR_PRINT("Couldn't open external text editor, falling back to the internal editor. Review your `text_editor/external/` editor settings.");
 		}
-
-		// Default to passing script path if no {file} flag is specified.
-		if (!has_file_flag) {
-			args.push_back(script_path);
-		}
-
-		if (!path.is_empty()) {
-			Error err = OS::get_singleton()->create_process(path, args);
-			if (err == OK) {
-				return false;
-			}
-		}
-
-		ERR_PRINT("Couldn't open external text editor, falling back to the internal editor. Review your `text_editor/external/` editor settings.");
 	}
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
@@ -4627,6 +4562,63 @@ void ScriptEditorPlugin::_notification(int p_what) {
 			disconnect("main_screen_changed", callable_mp(this, &ScriptEditorPlugin::_save_last_editor));
 		} break;
 	}
+}
+
+bool ScriptEditorPlugin::open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project) {
+	const String path = EDITOR_GET("text_editor/external/exec_path");
+	if (path.is_empty()) {
+		return false;
+	}
+
+	String flags = EDITOR_GET("text_editor/external/exec_flags");
+
+	List<String> args;
+	bool has_file_flag = false;
+
+	if (!flags.is_empty()) {
+		flags = flags.replacen("{line}", itos(MAX(p_line + 1, 1)));
+		flags = flags.replacen("{col}", itos(p_col + 1));
+		flags = flags.strip_edges().replace("\\\\", "\\");
+
+		int from = 0;
+		int num_chars = 0;
+		bool inside_quotes = false;
+
+		for (int i = 0; i < flags.size(); i++) {
+			if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+				if (!inside_quotes) {
+					from++;
+				}
+				inside_quotes = !inside_quotes;
+
+			} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+				String arg = flags.substr(from, num_chars);
+				if (arg.contains("{file}")) {
+					has_file_flag = true;
+				}
+
+				// Do path replacement here, else there will be issues with spaces and quotes
+				if (p_ignore_project) {
+					arg = arg.replacen("{project}", String());
+				} else {
+					arg = arg.replacen("{project}", ProjectSettings::get_singleton()->get_resource_path());
+				}
+				arg = arg.replacen("{file}", p_path);
+				args.push_back(arg);
+
+				from = i + 1;
+				num_chars = 0;
+			} else {
+				num_chars++;
+			}
+		}
+	}
+
+	// Default to passing script path if no {file} flag is specified.
+	if (!has_file_flag) {
+		args.push_back(p_path);
+	}
+	return OS::get_singleton()->create_process(path, args) == OK;
 }
 
 void ScriptEditorPlugin::edit(Object *p_object) {

@@ -2369,7 +2369,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				for (int i = 0; i < selection_results.size(); i++) {
 					CanvasItem *item = selection_results[i].item;
 
-					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
+					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item);
 					String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(item->get_path()));
 
 					int locked = 0;
@@ -2736,175 +2736,173 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 }
 
 void CanvasItemEditor::_commit_drag() {
-	if (drag_selection.is_empty()) {
-		return;
-	}
-
-	switch (drag_type) {
-		// Confirm the pivot move.
-		case DRAG_PIVOT: {
-			_commit_canvas_item_state(
-					drag_selection,
-					vformat(
-							TTR("Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"),
-							drag_selection.front()->get()->get_name(),
-							drag_selection.front()->get()->_edit_get_pivot().x,
-							drag_selection.front()->get()->_edit_get_pivot().y));
-		} break;
-
-		// Confirm the node rotation.
-		case DRAG_ROTATE: {
-			if (drag_selection.size() != 1) {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Rotate %d CanvasItems"), drag_selection.size()),
-						true);
-			} else {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Rotate CanvasItem \"%s\" to %d degrees"),
-								drag_selection.front()->get()->get_name(),
-								Math::rad_to_deg(drag_selection.front()->get()->_edit_get_rotation())),
-						true);
-			}
-
-			if (key_auto_insert_button->is_pressed()) {
-				_insert_animation_keys(false, true, false, true);
-			}
-		} break;
-
-		// Confirm new anchor position.
-		case DRAG_ANCHOR_TOP_LEFT:
-		case DRAG_ANCHOR_TOP_RIGHT:
-		case DRAG_ANCHOR_BOTTOM_RIGHT:
-		case DRAG_ANCHOR_BOTTOM_LEFT:
-		case DRAG_ANCHOR_ALL: {
-			_commit_canvas_item_state(
-					drag_selection,
-					vformat(TTR("Move CanvasItem \"%s\" Anchor"), drag_selection.front()->get()->get_name()));
-			snap_target[0] = SNAP_TARGET_NONE;
-			snap_target[1] = SNAP_TARGET_NONE;
-		} break;
-
-		// Confirm resize.
-		case DRAG_LEFT:
-		case DRAG_RIGHT:
-		case DRAG_TOP:
-		case DRAG_BOTTOM:
-		case DRAG_TOP_LEFT:
-		case DRAG_TOP_RIGHT:
-		case DRAG_BOTTOM_LEFT:
-		case DRAG_BOTTOM_RIGHT: {
-			const Node2D *node2d = Object::cast_to<Node2D>(drag_selection.front()->get());
-			if (node2d) {
-				// Extends from Node2D.
-				// Node2D doesn't have an actual stored rect size, unlike Controls.
+	if (!drag_selection.is_empty()) {
+		switch (drag_type) {
+			// Confirm the pivot move.
+			case DRAG_PIVOT: {
 				_commit_canvas_item_state(
 						drag_selection,
 						vformat(
-								TTR("Scale Node2D \"%s\" to (%s, %s)"),
+								TTR("Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"),
 								drag_selection.front()->get()->get_name(),
-								Math::snapped(drag_selection.front()->get()->_edit_get_scale().x, 0.01),
-								Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)),
-						true);
-			} else {
-				// Extends from Control.
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(
-								TTR("Resize Control \"%s\" to (%d, %d)"),
-								drag_selection.front()->get()->get_name(),
-								drag_selection.front()->get()->_edit_get_rect().size.x,
-								drag_selection.front()->get()->_edit_get_rect().size.y),
-						true);
-			}
+								drag_selection.front()->get()->_edit_get_pivot().x,
+								drag_selection.front()->get()->_edit_get_pivot().y));
+			} break;
 
-			if (key_auto_insert_button->is_pressed()) {
-				_insert_animation_keys(false, false, true, true);
-			}
-
-			snap_target[0] = SNAP_TARGET_NONE;
-			snap_target[1] = SNAP_TARGET_NONE;
-		} break;
-
-		// Confirm resize.
-		case DRAG_SCALE_BOTH:
-		case DRAG_SCALE_X:
-		case DRAG_SCALE_Y: {
-			if (drag_selection.size() != 1) {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Scale %d CanvasItems"), drag_selection.size()),
-						true);
-			} else {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Scale CanvasItem \"%s\" to (%s, %s)"),
-								drag_selection.front()->get()->get_name(),
-								Math::snapped(drag_selection.front()->get()->_edit_get_scale().x, 0.01),
-								Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)),
-						true);
-			}
-			if (key_auto_insert_button->is_pressed()) {
-				_insert_animation_keys(false, false, true, true);
-			}
-		} break;
-
-		// Confirm the canvas items move.
-		case DRAG_MOVE:
-		case DRAG_MOVE_X:
-		case DRAG_MOVE_Y: {
-			if (transform.affine_inverse().xform(get_viewport()->get_mouse_position()) != drag_from) {
+			// Confirm the node rotation.
+			case DRAG_ROTATE: {
 				if (drag_selection.size() != 1) {
 					_commit_canvas_item_state(
 							drag_selection,
-							vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
+							vformat(TTR("Rotate %d CanvasItems"), drag_selection.size()),
 							true);
 				} else {
 					_commit_canvas_item_state(
 							drag_selection,
+							vformat(TTR("Rotate CanvasItem \"%s\" to %d degrees"),
+									drag_selection.front()->get()->get_name(),
+									Math::rad_to_deg(drag_selection.front()->get()->_edit_get_rotation())),
+							true);
+				}
+
+				if (key_auto_insert_button->is_pressed()) {
+					_insert_animation_keys(false, true, false, true);
+				}
+			} break;
+
+			// Confirm new anchor position.
+			case DRAG_ANCHOR_TOP_LEFT:
+			case DRAG_ANCHOR_TOP_RIGHT:
+			case DRAG_ANCHOR_BOTTOM_RIGHT:
+			case DRAG_ANCHOR_BOTTOM_LEFT:
+			case DRAG_ANCHOR_ALL: {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Move CanvasItem \"%s\" Anchor"), drag_selection.front()->get()->get_name()));
+				snap_target[0] = SNAP_TARGET_NONE;
+				snap_target[1] = SNAP_TARGET_NONE;
+			} break;
+
+			// Confirm resize.
+			case DRAG_LEFT:
+			case DRAG_RIGHT:
+			case DRAG_TOP:
+			case DRAG_BOTTOM:
+			case DRAG_TOP_LEFT:
+			case DRAG_TOP_RIGHT:
+			case DRAG_BOTTOM_LEFT:
+			case DRAG_BOTTOM_RIGHT: {
+				const Node2D *node2d = Object::cast_to<Node2D>(drag_selection.front()->get());
+				if (node2d) {
+					// Extends from Node2D.
+					// Node2D doesn't have an actual stored rect size, unlike Controls.
+					_commit_canvas_item_state(
+							drag_selection,
 							vformat(
-									TTR("Move CanvasItem \"%s\" to (%d, %d)"),
+									TTR("Scale Node2D \"%s\" to (%s, %s)"),
+									drag_selection.front()->get()->get_name(),
+									Math::snapped(drag_selection.front()->get()->_edit_get_scale().x, 0.01),
+									Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)),
+							true);
+				} else {
+					// Extends from Control.
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(
+									TTR("Resize Control \"%s\" to (%d, %d)"),
+									drag_selection.front()->get()->get_name(),
+									drag_selection.front()->get()->_edit_get_rect().size.x,
+									drag_selection.front()->get()->_edit_get_rect().size.y),
+							true);
+				}
+
+				if (key_auto_insert_button->is_pressed()) {
+					_insert_animation_keys(false, false, true, true);
+				}
+
+				snap_target[0] = SNAP_TARGET_NONE;
+				snap_target[1] = SNAP_TARGET_NONE;
+			} break;
+
+			// Confirm resize.
+			case DRAG_SCALE_BOTH:
+			case DRAG_SCALE_X:
+			case DRAG_SCALE_Y: {
+				if (drag_selection.size() != 1) {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(TTR("Scale %d CanvasItems"), drag_selection.size()),
+							true);
+				} else {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(TTR("Scale CanvasItem \"%s\" to (%s, %s)"),
+									drag_selection.front()->get()->get_name(),
+									Math::snapped(drag_selection.front()->get()->_edit_get_scale().x, 0.01),
+									Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)),
+							true);
+				}
+				if (key_auto_insert_button->is_pressed()) {
+					_insert_animation_keys(false, false, true, true);
+				}
+			} break;
+
+			// Confirm the canvas items move.
+			case DRAG_MOVE:
+			case DRAG_MOVE_X:
+			case DRAG_MOVE_Y: {
+				if (transform.affine_inverse().xform(get_viewport()->get_mouse_position()) != drag_from) {
+					if (drag_selection.size() != 1) {
+						_commit_canvas_item_state(
+								drag_selection,
+								vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
+								true);
+					} else {
+						_commit_canvas_item_state(
+								drag_selection,
+								vformat(
+										TTR("Move CanvasItem \"%s\" to (%d, %d)"),
+										drag_selection.front()->get()->get_name(),
+										drag_selection.front()->get()->_edit_get_position().x,
+										drag_selection.front()->get()->_edit_get_position().y),
+								true);
+					}
+				}
+
+				if (key_auto_insert_button->is_pressed()) {
+					_insert_animation_keys(true, false, false, true);
+				}
+
+				// Make sure smart snapping lines disappear.
+				snap_target[0] = SNAP_TARGET_NONE;
+				snap_target[1] = SNAP_TARGET_NONE;
+			} break;
+
+			// Confirm the canvas items move by arrow keys.
+			case DRAG_KEY_MOVE: {
+				if (tool != TOOL_SELECT && tool != TOOL_MOVE) {
+					return;
+				}
+
+				if (drag_selection.size() > 1) {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
+							true);
+				} else if (drag_selection.size() == 1) {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(TTR("Move CanvasItem \"%s\" to (%d, %d)"),
 									drag_selection.front()->get()->get_name(),
 									drag_selection.front()->get()->_edit_get_position().x,
 									drag_selection.front()->get()->_edit_get_position().y),
 							true);
 				}
-			}
+			} break;
 
-			if (key_auto_insert_button->is_pressed()) {
-				_insert_animation_keys(true, false, false, true);
-			}
-
-			// Make sure smart snapping lines disappear.
-			snap_target[0] = SNAP_TARGET_NONE;
-			snap_target[1] = SNAP_TARGET_NONE;
-		} break;
-
-		// Confirm the canvas items move by arrow keys.
-		case DRAG_KEY_MOVE: {
-			if (tool != TOOL_SELECT && tool != TOOL_MOVE) {
-				return;
-			}
-
-			if (drag_selection.size() > 1) {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
-						true);
-			} else if (drag_selection.size() == 1) {
-				_commit_canvas_item_state(
-						drag_selection,
-						vformat(TTR("Move CanvasItem \"%s\" to (%d, %d)"),
-								drag_selection.front()->get()->get_name(),
-								drag_selection.front()->get()->_edit_get_position().x,
-								drag_selection.front()->get()->_edit_get_position().y),
-						true);
-			}
-		} break;
-
-		default:
-			break;
+			default:
+				break;
+		}
 	}
 
 	_reset_drag();
@@ -4245,7 +4243,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
-	const Color key_auto_color = EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
+	const Color key_auto_color = EditorThemeManager::is_dark_icon_and_font() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
@@ -5439,12 +5437,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_adjust_new_node_position));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
 	add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.

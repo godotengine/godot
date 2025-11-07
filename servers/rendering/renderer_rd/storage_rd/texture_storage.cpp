@@ -3542,6 +3542,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 }
 
 void TextureStorage::_update_render_target(RenderTarget *rt) {
+	if (rt->overridden.color.is_valid()) {
+		return;
+	}
+
 	if (rt->texture.is_null()) {
 		//create a placeholder until updated
 		rt->texture = texture_allocate();

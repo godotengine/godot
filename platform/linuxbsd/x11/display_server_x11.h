@@ -164,7 +164,6 @@ class DisplayServerX11 : public DisplayServer {
 	struct WindowData {
 		Window x11_window;
 		Window x11_xim_window;
-		Window parent;
 		::XIC xic;
 		bool ime_active = false;
 		bool ime_in_progress = false;
@@ -201,7 +200,6 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
-		Vector2i last_position_before_fs;
 		bool focused = true;
 		bool minimized = false;
 		bool maximized = false;
@@ -354,7 +352,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool _window_minimize_check(WindowID p_window) const;
 	void _validate_fullscreen_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
-	void _update_actions_hints(WindowID p_window);
+	void _update_motif_wm_hints(WindowID p_window);
 	void _update_wm_state_hints(WindowID p_window);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);

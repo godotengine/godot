@@ -2144,59 +2144,40 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 }
 
 bool Node::is_greater_than(const Node *p_node) const {
+	// parent->get_child(1) > parent->get_child(0) > parent
+
 	ERR_FAIL_NULL_V(p_node, false);
 	ERR_FAIL_COND_V(!data.tree, false);
-	ERR_FAIL_COND_V(!p_node->data.tree, false);
+	ERR_FAIL_COND_V(p_node->data.tree != data.tree, false);
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
 	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
 
 	_update_children_cache();
 
-	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
-	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
+	bool this_is_deeper = this->data.depth > p_node->data.depth;
 
-	const Node *n = this;
-
-	int idx = data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, data.depth, false);
-		this_stack[idx--] = n->get_index();
-		n = n->data.parent;
+	const Node *deep = this;
+	const Node *shallow = p_node;
+	if (!this_is_deeper) {
+		deep = p_node;
+		shallow = this;
 	}
 
-	ERR_FAIL_COND_V(idx != -1, false);
-	n = p_node;
-	idx = p_node->data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
-		that_stack[idx--] = n->get_index();
-
-		n = n->data.parent;
-	}
-	ERR_FAIL_COND_V(idx != -1, false);
-	idx = 0;
-
-	bool res;
-	while (true) {
-		// using -2 since out-of-tree or nonroot nodes have -1
-		int this_idx = (idx >= data.depth) ? -2 : this_stack[idx];
-		int that_idx = (idx >= p_node->data.depth) ? -2 : that_stack[idx];
-
-		if (this_idx > that_idx) {
-			res = true;
-			break;
-		} else if (this_idx < that_idx) {
-			res = false;
-			break;
-		} else if (this_idx == -2) {
-			res = false; // equal
-			break;
-		}
-		idx++;
+	while (deep->data.depth > shallow->data.depth) {
+		deep = deep->data.parent;
 	}
 
-	return res;
+	if (deep == shallow) { // Shallow is ancestor of deep.
+		return this_is_deeper;
+	}
+
+	while (deep->data.parent != shallow->data.parent) {
+		deep = deep->data.parent;
+		shallow = shallow->data.parent;
+	}
+
+	return (deep->get_index() > shallow->get_index()) == this_is_deeper;
 }
 
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
@@ -4191,6 +4172,11 @@ int Node::get_persistent_signal_connection_count() const {
 	return Object::get_persistent_signal_connection_count();
 }
 
+uint32_t Node::get_signal_connection_flags(const StringName &p_signal, const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(0);
+	return Object::get_signal_connection_flags(p_signal, p_callable);
+}
+
 void Node::get_signals_connected_to_this(List<Connection> *p_connections) const {
 	ERR_THREAD_GUARD;
 	Object::get_signals_connected_to_this(p_connections);
@@ -4214,14 +4200,13 @@ void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 
 #ifdef TOOLS_ENABLED
 	// Already under thread guard, don't check again.
-	int old_connection_count = Object::get_persistent_signal_connection_count();
+	uint32_t connection_flags = Object::get_signal_connection_flags(p_signal, p_callable);
 #endif
 
-	Object::disconnect(p_signal, p_callable);
+	[[maybe_unused]] bool changed = Object::_disconnect(p_signal, p_callable);
 
 #ifdef TOOLS_ENABLED
-	int new_connection_count = Object::get_persistent_signal_connection_count();
-	if (old_connection_count != new_connection_count) {
+	if (changed && connection_flags & CONNECT_PERSIST) {
 		_emit_editor_state_changed();
 	}
 #endif

@@ -437,7 +437,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
-	bool reload_all_scripts = false;
 	Vector<String> script_paths_to_reload;
 	void _live_auto_reload_running_scripts();
 
@@ -613,7 +612,6 @@ public:
 	void update_docs_from_script(const Ref<Script> &p_script);
 
 	void trigger_live_script_reload(const String &p_script_path);
-	void trigger_live_script_reload_all();
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 
@@ -644,6 +642,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
+
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;

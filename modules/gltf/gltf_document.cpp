@@ -4427,8 +4427,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
 			bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
 			bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
+			Ref<Texture2D> original_orm_tex = base_material->get_texture(BaseMaterial3D::TEXTURE_ORM);
+			GLTFTextureIndex orm_texture_index = -1;
 			if (has_ao || has_roughness || has_metalness) {
-				Dictionary mrt;
 				Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
 				BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
 				Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
@@ -4546,19 +4547,31 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				}
 				orm_image->generate_mipmaps();
 				orm_texture->set_image(orm_image);
-				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
 					// If they all share the same path, use it for the name.
 					const String path = common_paths.size() == 1 ? *common_paths.begin() : String();
 					_set_material_texture_name(orm_texture, path, mat_name, "_orm");
 					orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
+			} else if (original_orm_tex.is_valid() && original_orm_tex->get_image().is_valid()) {
+				has_ao = true;
+				has_roughness = true;
+				has_metalness = true;
+				Ref<Image> orm_image = original_orm_tex->get_image();
+				orm_image->decompress();
+				orm_image->convert(Image::FORMAT_RGBA8);
+
+				_set_material_texture_name(original_orm_tex, original_orm_tex->get_path(), mat_name, "_orm");
+				orm_texture_index = _set_texture(p_state, original_orm_tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+			}
+			if (orm_texture_index != -1) {
 				if (has_ao) {
 					Dictionary occt;
 					occt["index"] = orm_texture_index;
 					mat_dict["occlusionTexture"] = occt;
 				}
 				if (has_roughness || has_metalness) {
+					Dictionary mrt;
 					mrt["index"] = orm_texture_index;
 					Dictionary extensions = _serialize_texture_transform_uv1(material);
 					if (!extensions.is_empty()) {
@@ -4583,7 +4596,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
 					if (img.is_valid()) {
-						Ref<ImageTexture> img_tex = img;
+						Ref<ImageTexture> img_tex = normal_texture;
 						if (img_tex.is_valid()) {
 							img = img_tex->get_image();
 						}
