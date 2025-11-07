@@ -5292,8 +5292,8 @@ void DisplayServerX11::process_events() {
 				}
 
 				// Check for warp event first
-				if (mouse_mode == MOUSE_MODE_CAPTURED && 
-						event.xmotion.x == windows[focused_window_id].size.width / 2 && 
+				if (mouse_mode == MOUSE_MODE_CAPTURED &&
+						event.xmotion.x == windows[focused_window_id].size.width / 2 &&
 						event.xmotion.y == windows[focused_window_id].size.height / 2) {
 					center = Vector2(event.xmotion.x, event.xmotion.y);
 					break;
@@ -5308,11 +5308,11 @@ void DisplayServerX11::process_events() {
 						if (next_event.type == MotionNotify) {
 							// Check if the *next* event is a warp. If so, stop accumulating.
 							if (mouse_mode == MOUSE_MODE_CAPTURED &&
-								next_event.xmotion.x == windows[focused_window_id].size.width / 2 &&
-								next_event.xmotion.y == windows[focused_window_id].size.height / 2) {
+									next_event.xmotion.x == windows[focused_window_id].size.width / 2 &&
+									next_event.xmotion.y == windows[focused_window_id].size.height / 2) {
 								break;
 							}
-							
+
 							++event_index;
 							event = next_event;
 						} else {
