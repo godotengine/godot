@@ -74,7 +74,7 @@ class RenderingServerDefault : public RenderingServer {
 	uint64_t print_frame_profile_ticks_from = 0;
 	uint32_t print_frame_profile_frame_count = 0;
 
-	mutable CommandQueueMT command_queue;
+	mutable CommandQueueMT command_queue = CommandQueueMT(true);
 
 	Thread::ID server_thread = Thread::MAIN_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
