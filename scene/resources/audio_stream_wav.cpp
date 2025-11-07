@@ -36,6 +36,10 @@
 const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
 
+AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {
+	sample_playback.unref();
+}
+
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	bool is_format_ima_adpcm = base->format == AudioStreamWAV::FORMAT_IMA_ADPCM;
 

@@ -36,7 +36,6 @@
 
 namespace TestAudioStreamSynchronized {
 
-// prevent leak
 void detach_stream_sync(Ref<AudioStreamSynchronized> audio_stream_synchronized, Ref<AudioStreamPlayback> playback_sync = nullptr) {
 	for (int i = 0; i < audio_stream_synchronized->get_stream_count(); i++) {
 		if (audio_stream_synchronized->get_sync_stream(i).is_valid()) {

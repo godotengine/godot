@@ -90,6 +90,8 @@ public:
 	virtual bool get_is_sample() const override;
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+	
+	~AudioStreamPlaybackWAV();
 };
 
 class AudioStreamWAV : public AudioStream {
