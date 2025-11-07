@@ -1193,7 +1193,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
 #ifndef FOG_DISABLED
-	vec4 fog = vec4(0.0);
+	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
 #endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
@@ -1435,6 +1435,9 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 		fog = fog_process(vertex);
+		// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+		fog.rgb *= fog.a;
+		fog.a = 1.0 - fog.a;
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
@@ -1446,19 +1449,17 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 res = vec4(0.0);
 		if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_FOG)) {
 			//must use the full blending equation here to blend fogs
-			float sa = 1.0 - volumetric_fog.a;
-			res.a = fog.a * sa + volumetric_fog.a;
-			if (res.a > 0.0) {
-				res.rgb = (fog.rgb * fog.a * sa + volumetric_fog.rgb) / res.a;
-			}
+			res.a = fog.a * volumetric_fog.a;
+			res.rgb = fog.rgb * volumetric_fog.a + volumetric_fog.rgb;
 		} else {
-			res.a = volumetric_fog.a;
-			if (res.a > 0.0) {
-				res.rgb = volumetric_fog.rgb / res.a;
-			}
+			res = volumetric_fog;
 		}
 		fog = res;
 	}
+#else
+	// Premultiply by opacity and convert opacity to transmittance to match volumetric fog.
+	fog.rgb *= fog.a;
+	fog.a = 1.0 - fog.a;
 #endif //!CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
@@ -2889,8 +2890,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifndef FOG_DISABLED
-	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
-	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	diffuse_buffer.rgb = diffuse_buffer.rgb * fog.a + fog.rgb;
+	specular_buffer.rgb = specular_buffer.rgb * fog.a;
 #endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
@@ -2905,8 +2906,7 @@ void fragment_shader(in SceneData scene_data) {
 #endif //USE_NO_SHADING
 
 #ifndef FOG_DISABLED
-	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	frag_color.rgb = frag_color.rgb * fog.a + fog.rgb;
 #endif //!FOG_DISABLED
 
 #endif //MODE_SEPARATE_SPECULAR
