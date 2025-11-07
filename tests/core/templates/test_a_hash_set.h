@@ -118,6 +118,7 @@ TEST_CASE("[AHashSet] Insert, iterate and remove many strings") {
 	for (int i = 0; i < elem_max; i++) {
 		set.insert(itos(i));
 	}
+	ERR_PRINT_ON;
 
 	//insert order should have been kept
 	int idx = 0;
