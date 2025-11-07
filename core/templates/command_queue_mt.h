@@ -107,6 +107,7 @@ class CommandQueueMT {
 
 	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
+	bool unique_flusher = false;
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
 	ConditionVariable sync_cond_var;
@@ -176,9 +177,17 @@ class CommandQueueMT {
 			// invalidating the pointer due to reallocs.
 			memcpy(cmd_backup, (char *)cmd, size);
 
-			uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
-			((CommandBase *)cmd_backup)->call();
-			WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
+			if (unique_flusher) {
+				// A single thread will pump; the lock is only needed for the command queue itself.
+				lock.temp_unlock();
+				((CommandBase *)cmd_backup)->call();
+				lock.temp_relock();
+			} else {
+				// At least we can unlock during WTP operations.
+				uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(lock);
+				((CommandBase *)cmd_backup)->call();
+				WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
+			}
 
 			// Handle potential realloc due to the command and unlock allowance.
 			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
@@ -266,7 +275,8 @@ public:
 		pump_task_id = p_task_id;
 	}
 
-	CommandQueueMT() {
+	CommandQueueMT(bool p_unique_flusher = false) :
+			unique_flusher(p_unique_flusher) {
 		command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
 	}
 };
