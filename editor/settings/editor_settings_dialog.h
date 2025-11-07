@@ -47,6 +47,8 @@ class TreeItem;
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
+	static inline EditorSettingsDialog *singleton = nullptr;
+
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
@@ -116,6 +118,9 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
+	void _create_setting_override(const String &p_setting, const Variant p_value);
+	void _remove_setting_override(const String &p_setting);
+
 	Label *restart_label = nullptr;
 	TextureRect *restart_icon = nullptr;
 	PanelContainer *restart_container = nullptr;
@@ -131,8 +136,10 @@ protected:
 public:
 	void popup_edit_settings();
 	static void update_navigation_preset();
+	static EditorSettingsDialog *get_singleton() { return singleton; }
 
 	EditorSettingsDialog();
+	~EditorSettingsDialog();
 };
 
 class EditorSettingsPropertyWrapper : public EditorProperty {
@@ -160,8 +167,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static inline Callable restart_request_callback;
-
 	virtual void update_property() override;
 	void setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage);
 };

@@ -225,6 +225,32 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
+void EditorSettingsDialog::_create_setting_override(const String &p_setting, const Variant p_value) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, p_value);
+	ProjectSettings::get_singleton()->save();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
+}
+
+void EditorSettingsDialog::_remove_setting_override(const String &p_setting) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, Variant());
+	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->mark_setting_changed(p_setting);
+	EditorNode::get_singleton()->notify_settings_overrides_changed();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
+}
+
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -235,8 +261,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
-
 			if (_is_in_project_manager()) {
 				return;
 			}
@@ -918,11 +942,15 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_create_setting_override"), &EditorSettingsDialog::_create_setting_override);
+	ClassDB::bind_method(D_METHOD("_remove_setting_override"), &EditorSettingsDialog::_remove_setting_override);
 
 	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
+	singleton = this;
+
 	set_title(TTRC("Editor Settings"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
@@ -1049,6 +1077,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	EditorInspector::add_inspector_plugin(plugin);
 }
 
+EditorSettingsDialog::~EditorSettingsDialog() {
+	singleton = nullptr;
+}
+
 void EditorSettingsPropertyWrapper::_setup_override_info() {
 	override_container = memnew(HBoxContainer);
 
@@ -1108,21 +1140,29 @@ void EditorSettingsPropertyWrapper::_update_override() {
 }
 
 void EditorSettingsPropertyWrapper::_create_override() {
-	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	const Variant setting_value = EDITOR_GET(property);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, setting_value);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->commit_action(false);
+
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, setting_value);
 	ProjectSettings::get_singleton()->save();
 	_update_override();
 }
 
 void EditorSettingsPropertyWrapper::_remove_override() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, ProjectSettings::get_singleton()->get_editor_setting_override(property));
+	undo_redo->commit_action(false);
+
 	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
 	ProjectSettings::get_singleton()->save();
-	EditorSettings::get_singleton()->mark_setting_changed(property);
-	EditorNode::get_singleton()->notify_settings_overrides_changed();
 	_update_override();
-
-	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
-		restart_request_callback.call();
-	}
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {
