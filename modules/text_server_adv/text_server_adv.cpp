@@ -5689,6 +5689,15 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 	if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
 		font_style.set_flag(TextServer::FONT_ITALIC);
 	}
+	if (p_script_code == "Zsye") {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		font_name = "Apple Color Emoji";
+#elif defined(WINDOWS_ENABLED)
+		font_name = "Segoe UI Emoji";
+#else
+		font_name = "Noto Color Emoji";
+#endif
+	}
 
 	String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
