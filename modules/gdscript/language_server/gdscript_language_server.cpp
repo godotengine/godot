@@ -36,6 +36,7 @@
 #include "editor/settings/editor_settings.h"
 
 int GDScriptLanguageServer::port_override = -1;
+bool GDScriptLanguageServer::use_stdio = false;
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
 	// TODO: Move to editor_settings.cpp
@@ -94,12 +95,25 @@ void GDScriptLanguageServer::thread_main(void *p_userdata) {
 }
 
 void GDScriptLanguageServer::start() {
-	host = String(_EDITOR_GET("network/language_server/remote_host"));
-	port = (GDScriptLanguageServer::port_override > -1) ? GDScriptLanguageServer::port_override : (int)_EDITOR_GET("network/language_server/remote_port");
 	use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
 	poll_limit_usec = (int)_EDITOR_GET("network/language_server/poll_limit_usec");
-	if (protocol.start(port, IPAddress(host)) == OK) {
-		EditorNode::get_log()->add_message("--- GDScript language server started on port " + itos(port) + " ---", EditorLog::MSG_TYPE_EDITOR);
+
+	Error err;
+	if (GDScriptLanguageServer::use_stdio) {
+		err = protocol.start_stdio();
+		if (err == OK) {
+			OS::get_singleton()->print("--- GDScript language server started in stdio mode ---\n");
+		}
+	} else {
+		host = String(_EDITOR_GET("network/language_server/remote_host"));
+		port = (GDScriptLanguageServer::port_override > -1) ? GDScriptLanguageServer::port_override : (int)_EDITOR_GET("network/language_server/remote_port");
+		err = protocol.start(port, IPAddress(host));
+		if (err == OK) {
+			EditorNode::get_log()->add_message("--- GDScript language server started on port " + itos(port) + " ---", EditorLog::MSG_TYPE_EDITOR);
+		}
+	}
+
+	if (err == OK) {
 		if (use_thread) {
 			thread_running = true;
 			thread.start(GDScriptLanguageServer::thread_main, this);
@@ -117,7 +131,11 @@ void GDScriptLanguageServer::stop() {
 	}
 	protocol.stop();
 	started = false;
-	EditorNode::get_log()->add_message("--- GDScript language server stopped ---", EditorLog::MSG_TYPE_EDITOR);
+	if (GDScriptLanguageServer::use_stdio) {
+		OS::get_singleton()->print("--- GDScript language server stopped ---\n");
+	} else {
+		EditorNode::get_log()->add_message("--- GDScript language server stopped ---", EditorLog::MSG_TYPE_EDITOR);
+	}
 }
 
 void register_lsp_types() {
