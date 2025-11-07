@@ -164,17 +164,15 @@ void InstanceUniforms::_init_param(Item &r_item, const RendererMaterialStorage::
 	}
 
 	if (r_item.info.hint == PROPERTY_HINT_FLAGS) {
-		// HACK: Detect boolean flags count and prevent overhead.
-		switch (r_item.info.hint_string.length()) {
-			case 3: // "x,y"
-				r_item.flags = 1;
-				break;
-			case 5: // "x,y,z"
-				r_item.flags = 2;
-				break;
-			case 7: // "x,y,z,w"
-				r_item.flags = 3;
-				break;
+		if (r_item.info.hint == PROPERTY_HINT_FLAGS) {
+		    const String &hint = r_item.info.hint_string;
+		    if (!hint.is_empty()) {
+		        int flag_count = hint.count(",") + 1;
+		
+		        r_item.flags = MAX(0, flag_count - 1);
+		    } else {
+		        	r_item.flags = 0;
+		    	}
 		}
 	}
 }
