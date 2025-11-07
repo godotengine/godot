@@ -103,7 +103,7 @@ Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
 class BetsyCompressor : public Object {
 	GDSOFTCLASS(BetsyCompressor, Object);
 
-	mutable CommandQueueMT command_queue;
+	mutable CommandQueueMT command_queue = CommandQueueMT(true);
 	bool exit = false;
 	WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
 

@@ -30,7 +30,8 @@
 
 #include "command_queue_mt.h"
 
-CommandQueueMT::CommandQueueMT() {
+CommandQueueMT::CommandQueueMT(bool p_unique_flusher) :
+		unique_flusher(p_unique_flusher) {
 	command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
 }
 
