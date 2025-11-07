@@ -60,6 +60,7 @@
 #include "tests/core/io/test_stream_peer.h"
 #include "tests/core/io/test_stream_peer_buffer.h"
 #include "tests/core/io/test_stream_peer_gzip.h"
+#include "tests/core/io/test_stream_peer_stdio.h"
 #include "tests/core/io/test_stream_peer_tcp.h"
 #include "tests/core/io/test_tcp_server.h"
 #include "tests/core/io/test_udp_server.h"
