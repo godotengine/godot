@@ -19,14 +19,22 @@ namespace Godot
         public string HintString { get; }
 
         /// <summary>
+        /// Optional usage flag that determines how the property will get used in the engine.
+        /// </summary>
+        public PropertyUsageFlags UsageFlags { get; }
+
+        /// <summary>
         /// Constructs a new ExportAttribute Instance.
         /// </summary>
         /// <param name="hint">The hint for the exported property.</param>
         /// <param name="hintString">A string that may contain additional metadata for the hint.</param>
-        public ExportAttribute(PropertyHint hint = PropertyHint.None, string hintString = "")
+        /// <param name="usageFlags">The usage flags for the exported property.</param>
+        public ExportAttribute(PropertyHint hint = PropertyHint.None, string hintString = "",
+            PropertyUsageFlags usageFlags = PropertyUsageFlags.Default)
         {
             Hint = hint;
             HintString = hintString;
+            UsageFlags = usageFlags;
         }
     }
 }
