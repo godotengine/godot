@@ -2300,6 +2300,11 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
+	// GetWindowRect() returns a zero rect for a minimized window, so we need to get the size in another way.
+	if (wd.minimized) {
+		return Size2(wd.width_with_decorations, wd.height_with_decorations);
+	}
+
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
 		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
@@ -5803,6 +5808,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!window.minimized) {
 					window.width = window_client_rect.size.width;
 					window.height = window_client_rect.size.height;
+					window.width_with_decorations = window_rect.size.width;
+					window.height_with_decorations = window_rect.size.height;
 
 					rect_changed = true;
 				}
