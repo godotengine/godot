@@ -3729,7 +3729,7 @@ void TextEdit::set_editable(bool p_editable) {
 	editable = p_editable;
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TextEdit::is_editable() const {
@@ -6499,7 +6499,7 @@ void TextEdit::set_fit_content_height_enabled(bool p_enabled) {
 		return;
 	}
 	fit_content_height = p_enabled;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TextEdit::is_fit_content_height_enabled() const {
@@ -6511,7 +6511,7 @@ void TextEdit::set_fit_content_width_enabled(bool p_enabled) {
 		return;
 	}
 	fit_content_width = p_enabled;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TextEdit::is_fit_content_width_enabled() const {
@@ -8603,7 +8603,7 @@ void TextEdit::_update_scrollbars() {
 
 	content_size_cache = Vector2i(total_width + 10, MAX(total_rows, 1) * get_line_height());
 	if (fit_content_height || fit_content_width) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 
 	updating_scrolls = true;

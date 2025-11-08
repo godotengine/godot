@@ -280,7 +280,7 @@ void BoxContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -311,7 +311,7 @@ BoxContainer::AlignmentMode BoxContainer::get_alignment() const {
 void BoxContainer::set_vertical(bool p_vertical) {
 	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
 	vertical = p_vertical;
-	update_minimum_size();
+	update_size_bounds();
 	_resort();
 }
 

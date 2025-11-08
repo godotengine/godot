@@ -211,7 +211,7 @@ void ProgressBar::set_show_percentage(bool p_visible) {
 		return;
 	}
 	show_percentage = p_visible;
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -230,7 +230,7 @@ void ProgressBar::set_indeterminate(bool p_indeterminate) {
 	set_process_internal(indeterminate && should_process);
 
 	notify_property_list_changed();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 

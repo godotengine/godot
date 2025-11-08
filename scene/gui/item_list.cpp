@@ -1892,7 +1892,7 @@ void ItemList::force_update_list_size() {
 		}
 	}
 
-	update_minimum_size();
+	update_size_bounds();
 	shape_changed = false;
 }
 

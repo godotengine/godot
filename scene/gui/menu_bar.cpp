@@ -321,7 +321,7 @@ void MenuBar::_notification(int p_what) {
 				}
 			}
 			if (!is_global) {
-				update_minimum_size();
+				update_size_bounds();
 			}
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -330,7 +330,7 @@ void MenuBar::_notification(int p_what) {
 				shape(menu_cache.write[i]);
 			}
 			if (global_menu_tag.is_empty()) {
-				update_minimum_size();
+				update_size_bounds();
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -545,7 +545,7 @@ void MenuBar::_refresh_menu_names() {
 
 	if (dirty && !is_global) {
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -589,7 +589,7 @@ void MenuBar::_popup_changed(ObjectID p_menu) {
 	menu_cache.write[idx].name = menu_name;
 	shape(menu_cache.write[idx]);
 
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -621,7 +621,7 @@ void MenuBar::add_child_notify(Node *p_child) {
 			menu_cache.write[menu_cache.size() - 1].submenu_rid = submenu_rid;
 		}
 	}
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void MenuBar::move_child_notify(Node *p_child) {
@@ -700,7 +700,7 @@ void MenuBar::remove_child_notify(Node *p_child) {
 	p_child->disconnect("about_to_popup", callable_mp(this, &MenuBar::_popup_visibility_changed));
 	p_child->disconnect("popup_hide", callable_mp(this, &MenuBar::_popup_visibility_changed));
 
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void MenuBar::_bind_methods() {
@@ -790,7 +790,7 @@ void MenuBar::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
-		update_minimum_size();
+		update_size_bounds();
 		queue_redraw();
 	}
 }
@@ -802,7 +802,7 @@ Control::TextDirection MenuBar::get_text_direction() const {
 void MenuBar::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
-		update_minimum_size();
+		update_size_bounds();
 		queue_redraw();
 	}
 }
@@ -896,7 +896,7 @@ void MenuBar::set_menu_title(int p_menu, const String &p_title) {
 			nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[p_menu].name));
 		}
 	}
-	update_minimum_size();
+	update_size_bounds();
 }
 
 String MenuBar::get_menu_title(int p_menu) const {
@@ -953,7 +953,7 @@ void MenuBar::set_menu_hidden(int p_menu, bool p_hidden) {
 			nmenu->set_item_hidden(main_menu, item_idx, p_hidden);
 		}
 	}
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool MenuBar::is_menu_hidden(int p_menu) const {

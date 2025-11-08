@@ -79,6 +79,39 @@ Size2 ScrollContainer::get_minimum_size() const {
 	return min_size;
 }
 
+Size2 ScrollContainer::get_maximum_size() const {
+	largest_child_min_size = Size2();
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+		if (!c) {
+			continue;
+		}
+		if (c == h_scroll || c == v_scroll || c == focus_panel) {
+			continue;
+		}
+
+		Size2 child_min_size = c->get_combined_minimum_size();
+
+		largest_child_min_size = largest_child_min_size.max(child_min_size);
+	}
+
+	Size2 max_size = largest_child_min_size;
+
+	Size2 custom_max_size = get_custom_maximum_size();
+	if (custom_max_size.x < max_size.x && custom_max_size.x > 0) {
+		max_size.y += h_scroll->get_minimum_size().y;
+	}
+	if (custom_max_size.y < max_size.y && custom_max_size.y > 0) {
+		max_size.x += v_scroll->get_minimum_size().x;
+	}
+
+	Rect2 margins = _get_margins();
+	max_size += margins.position + margins.size;
+
+	return max_size;
+}
+
 void ScrollContainer::_cancel_drag() {
 	set_process_internal(false);
 	drag_touching_deaccel = false;
@@ -646,7 +679,7 @@ void ScrollContainer::set_horizontal_scroll_mode(ScrollMode p_mode) {
 	}
 
 	horizontal_scroll_mode = p_mode;
-	update_minimum_size();
+	update_size_bounds();
 	queue_sort();
 }
 
@@ -660,7 +693,7 @@ void ScrollContainer::set_vertical_scroll_mode(ScrollMode p_mode) {
 	}
 
 	vertical_scroll_mode = p_mode;
-	update_minimum_size();
+	update_size_bounds();
 	queue_sort();
 }
 

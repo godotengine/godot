@@ -481,7 +481,7 @@ void TabBar::_notification(int p_what) {
 
 			queue_accessibility_update();
 			queue_redraw();
-			update_minimum_size();
+			update_size_bounds();
 
 			[[fallthrough]];
 		}
@@ -787,7 +787,7 @@ void TabBar::set_tab_count(int p_count) {
 
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	notify_property_list_changed();
 }
 
@@ -917,7 +917,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 String TabBar::get_tab_title(int p_tab) const {
@@ -968,7 +968,7 @@ void TabBar::set_tab_language(int p_tab, const String &p_language) {
 		}
 		queue_accessibility_update();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -992,7 +992,7 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 Ref<Texture2D> TabBar::get_tab_icon(int p_tab) const {
@@ -1015,7 +1015,7 @@ void TabBar::set_tab_icon_max_width(int p_tab, int p_width) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int TabBar::get_tab_icon_max_width(int p_tab) const {
@@ -1070,7 +1070,7 @@ void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TabBar::is_tab_disabled(int p_tab) const {
@@ -1094,7 +1094,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TabBar::is_tab_hidden(int p_tab) const {
@@ -1127,7 +1127,7 @@ void TabBar::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 Ref<Texture2D> TabBar::get_tab_button_icon(int p_tab) const {
@@ -1322,7 +1322,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 
 	if (!deselect_enabled && tabs.size() == 1) {
 		if (is_inside_tree()) {
@@ -1353,7 +1353,7 @@ void TabBar::clear_tabs() {
 
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	notify_property_list_changed();
 }
 
@@ -1415,7 +1415,7 @@ void TabBar::remove_tab(int p_idx) {
 
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	notify_property_list_changed();
 
 	if (is_tab_changing && is_inside_tree()) {
@@ -1623,7 +1623,7 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 	}
 
 	queue_accessibility_update();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
@@ -1703,7 +1703,7 @@ void TabBar::set_clip_tabs(bool p_clip_tabs) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TabBar::get_clip_tabs() const {
@@ -1953,7 +1953,7 @@ void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 TabBar::CloseButtonDisplayPolicy TabBar::get_tab_close_display_policy() const {
@@ -1975,7 +1975,7 @@ void TabBar::set_max_tab_width(int p_width) {
 		ensure_tab_visible(current);
 	}
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int TabBar::get_max_tab_width() const {

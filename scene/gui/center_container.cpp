@@ -54,7 +54,7 @@ void CenterContainer::set_use_top_left(bool p_enable) {
 
 	use_top_left = p_enable;
 
-	update_minimum_size();
+	update_size_bounds();
 	queue_sort();
 }
 

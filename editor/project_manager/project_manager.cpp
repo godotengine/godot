@@ -339,13 +339,13 @@ void ProjectManager::_set_main_view_icon(MainViewTab p_id, const Ref<Texture2D> 
 
 	Ref<Texture2D> old_icon = toggle_button->get_button_icon();
 	if (old_icon.is_valid()) {
-		old_icon->disconnect_changed(callable_mp((Control *)toggle_button, &Control::update_minimum_size));
+		old_icon->disconnect_changed(callable_mp((Control *)toggle_button, &Control::update_size_bounds));
 	}
 
 	if (p_icon.is_valid()) {
 		toggle_button->set_button_icon(p_icon);
 		// Make sure the control is updated if the icon is reimported.
-		p_icon->connect_changed(callable_mp((Control *)toggle_button, &Control::update_minimum_size));
+		p_icon->connect_changed(callable_mp((Control *)toggle_button, &Control::update_size_bounds));
 	} else {
 		toggle_button->set_button_icon(Ref<Texture2D>());
 	}
