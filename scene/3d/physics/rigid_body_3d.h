@@ -169,6 +169,8 @@ public:
 	void set_center_of_mass(const Vector3 &p_center_of_mass);
 	const Vector3 &get_center_of_mass() const;
 
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
+
 	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
 	Ref<PhysicsMaterial> get_physics_material_override() const;
 

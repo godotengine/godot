@@ -707,6 +707,28 @@ void JoltBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Variant
 	}
 }
 
+void JoltBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	if (p_mass != mass) {
+		mass = p_mass;
+	}
+
+	if (!(custom_center_of_mass && p_center_of_mass == center_of_mass_custom)) {
+		custom_center_of_mass = true;
+		center_of_mass_custom = p_center_of_mass;
+		_shapes_changed();
+	}
+
+	if (p_inertia != inertia) {
+		inertia = p_inertia;
+	}
+
+	if (p_product_of_inertia != product_of_inertia) {
+		product_of_inertia = p_product_of_inertia;
+	}
+
+	_update_mass_properties();
+}
+
 void JoltBody3D::set_custom_integrator(bool p_enabled) {
 	if (custom_integrator == p_enabled) {
 		return;
