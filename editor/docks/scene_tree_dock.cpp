@@ -38,8 +38,9 @@
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"
+#include "editor/docks/groups_dock.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1351,7 +1352,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					_node_strip_signal_inheritance(node);
-					NodeDock::get_singleton()->set_selection(Vector<Object *>{ node }); // Refresh.
+					SignalsDock::get_singleton()->set_object(node); // Refresh.
+					GroupsDock::get_singleton()->set_selection(Vector<Node *>{ node }); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
 					undo_redo->commit_action();
@@ -2855,7 +2857,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 	InspectorDock::get_singleton()->update(nullptr);
-	NodeDock::get_singleton()->set_selection(Vector<Object *>{});
+	SignalsDock::get_singleton()->set_object(nullptr);
+	GroupsDock::get_singleton()->set_selection(Vector<Node *>());
 }
 
 void SceneTreeDock::_update_script_button() {
