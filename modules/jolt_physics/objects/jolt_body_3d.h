@@ -211,6 +211,7 @@ public:
 
 	void add_contact(const JoltBody3D *p_collider, float p_depth, int p_shape_index, int p_collider_shape_index, const Vector3 &p_normal, const Vector3 &p_position, const Vector3 &p_collider_position, const Vector3 &p_velocity, const Vector3 &p_collider_velocity, const Vector3 &p_impulse);
 
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
 	void reset_mass_properties();
 
 	void apply_force(const Vector3 &p_force, const Vector3 &p_position);

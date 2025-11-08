@@ -405,6 +405,23 @@ const Vector3 &RigidBody3D::get_center_of_mass() const {
 	return center_of_mass;
 }
 
+void RigidBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	ERR_FAIL_COND(p_mass <= 0);
+
+	ERR_FAIL_COND(p_inertia.x < 0);
+	ERR_FAIL_COND(p_inertia.y < 0);
+	ERR_FAIL_COND(p_inertia.z < 0);
+
+	ERR_FAIL_COND(center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM);
+
+	mass = p_mass;
+	center_of_mass = p_center_of_mass;
+	inertia = p_inertia;
+	product_of_inertia = p_product_of_inertia;
+
+	PhysicsServer3D::get_singleton()->body_set_mass_properties(get_rid(), mass, center_of_mass, inertia, product_of_inertia);
+}
+
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
 		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
@@ -694,6 +711,8 @@ void RigidBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody3D::set_center_of_mass);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody3D::get_center_of_mass);
+
+	ClassDB::bind_method(D_METHOD("set_mass_properties", "mass", "center_of_mass", "inertia", "product_of_inertia"), &RigidBody3D::set_mass_properties);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody3D::get_physics_material_override);

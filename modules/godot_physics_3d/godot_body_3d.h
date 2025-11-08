@@ -308,6 +308,7 @@ public:
 
 	void set_space(GodotSpace3D *p_space) override;
 
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
 	void update_mass_properties();
 	void reset_mass_properties();
 

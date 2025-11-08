@@ -83,6 +83,34 @@ void GodotBody3D::_update_transform_dependent() {
 	_inv_inertia_tensor = tb * diag * tbt;
 }
 
+void GodotBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	// Set Mass
+	real_t mass_value = p_mass;
+	ERR_FAIL_COND(mass_value <= 0);
+	mass = mass_value;
+
+	// Set Center of Mass
+	calculate_center_of_mass = false;
+	center_of_mass_local = p_center_of_mass;
+
+	// Sset Inertia
+	inertia = p_inertia;
+	if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
+		calculate_inertia = true;
+		if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+			_mass_properties_changed();
+		}
+	} else {
+		calculate_inertia = false;
+		product_of_inertia = p_product_of_inertia;
+		if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+			_update_local_inertia();
+		}
+	}
+
+	_update_transform_dependent();
+}
+
 void GodotBody3D::update_mass_properties() {
 	// Update shapes and motions.
 
