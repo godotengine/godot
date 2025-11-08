@@ -129,6 +129,16 @@
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
+		<method name="set_mass_properties">
+			<return type="void" />
+			<param index="0" name="mass" type="float" />
+			<param index="1" name="center_of_mass" type="Vector3" />
+			<param index="2" name="inertia" type="Vector3" />
+			<param index="3" name="product_of_inertia" type="Vector3" />
+			<description>
+				Sets all mass properties for the body in a single function call. This is more efficient than setting each property individually and is a good option if the mass properties of an object change over time.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
