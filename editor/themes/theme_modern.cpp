@@ -110,7 +110,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Font colors.
 
-		p_config.font_color = p_config.mono_color_font * Color(1, 1, 1, 0.7);
+		p_config.font_color = p_config.mono_color_font * Color(1, 1, 1, 0.75);
 		p_config.font_secondary_color = p_config.mono_color_font * Color(1, 1, 1, 0.45);
 		p_config.font_focus_color = p_config.mono_color_font;
 		p_config.font_hover_color = p_config.mono_color_font;
@@ -139,7 +139,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Icon colors.
 
-		p_config.icon_normal_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.7 : 0.95);
+		p_config.icon_normal_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.75 : 0.95);
 		p_config.icon_secondary_color = Color(1, 1, 1, p_config.dark_icon_and_font ? 0.45 : 0.6);
 		p_config.icon_focus_color = Color(1, 1, 1);
 		p_config.icon_hover_color = Color(1, 1, 1);
@@ -160,15 +160,15 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_config.surface_low_color = _get_base_color(p_config, p_config.dark_theme ? -0.6 : -0.9);
 		p_config.surface_base_color = _get_base_color(p_config, -0.2);
 		p_config.surface_high_color = _get_base_color(p_config, 0.2, 0.8);
-		p_config.surface_higher_color = _get_base_color(p_config, 0.35, 0.8);
-		p_config.surface_highest_color = _get_base_color(p_config, 0.55, 0.6);
+		p_config.surface_higher_color = _get_base_color(p_config, 0.3, 0.8);
+		p_config.surface_highest_color = _get_base_color(p_config, 0.5, 0.6);
 
 		p_config.button_normal_color = _get_base_color(p_config, 0.35, 0.85);
-		p_config.button_hover_color = _get_base_color(p_config, 0.55, 0.75);
+		p_config.button_hover_color = _get_base_color(p_config, 0.5, 0.75);
 		p_config.button_pressed_color = _get_base_color(p_config, 0.75, 0.75);
 		p_config.button_disabled_color = _get_base_color(p_config, 0.2, 0.75);
 		p_config.button_border_normal_color = _get_base_color(p_config, 0.45, 0.75);
-		p_config.button_border_hover_color = _get_base_color(p_config, 0.65, 0.75);
+		p_config.button_border_hover_color = _get_base_color(p_config, 0.55, 0.75);
 		p_config.button_border_pressed_color = _get_base_color(p_config, 0.85, 0.75);
 
 		p_config.shadow_color = Color(0, 0, 0, p_config.dark_theme ? 0.3 : 0.1);
