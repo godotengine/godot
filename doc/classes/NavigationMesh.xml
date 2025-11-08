@@ -127,6 +127,12 @@
 		<member name="filter_baking_aabb_offset" type="Vector3" setter="set_filter_baking_aabb_offset" getter="get_filter_baking_aabb_offset" default="Vector3(0, 0, 0)">
 			The position offset applied to the [member filter_baking_aabb] [AABB].
 		</member>
+		<member name="tile_baking_enabled" type="bool" setter="set_tile_baking_enabled" getter="is_tile_baking_enabled" default="false">
+			If [code]true[/code], navmesh baking is executed in fixed-size tiles instead of the entire bounds at once. This makes it possible to bake very large areas without running out of memory at the cost of longer bake times.
+		</member>
+		<member name="tile_baking_size" type="float" setter="set_tile_baking_size" getter="get_tile_baking_size" default="30.0">
+			The core size in meters used for each tile when [member tile_baking_enabled] is [code]true[/code]. Values are clamped between 5 and 200 meters to prevent extremely small or extremely large tiles that could cause crashes or long bake times.
+		</member>
 		<member name="filter_ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans" default="false">
 			If [code]true[/code], marks spans that are ledges as non-walkable.
 		</member>
