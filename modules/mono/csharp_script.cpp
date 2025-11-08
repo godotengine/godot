@@ -60,7 +60,7 @@
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
@@ -1030,7 +1030,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		InspectorDock::get_inspector_singleton()->update_tree();
-		NodeDock::get_singleton()->update_lists();
+		SignalsDock::get_singleton()->update_lists();
 	}
 #endif
 }

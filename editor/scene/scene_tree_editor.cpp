@@ -34,7 +34,8 @@
 #include "core/object/script_language.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/groups_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -194,16 +195,14 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_connections();
+		EditorDockManager::get_singleton()->focus_dock(SignalsDock::get_singleton());
 	} else if (p_id == BUTTON_GROUPS) {
 		editor_selection->clear();
 		editor_selection->add_node(n);
 
 		set_selected(n);
 
-		EditorDockManager::get_singleton()->focus_dock(NodeDock::get_singleton());
-		NodeDock::get_singleton()->show_groups();
+		EditorDockManager::get_singleton()->focus_dock(GroupsDock::get_singleton());
 	} else if (p_id == BUTTON_UNIQUE) {
 		bool ask_before_revoking_unique_name = EDITOR_GET("docks/scene_tree/ask_before_revoking_unique_name");
 		revoke_node = n;
