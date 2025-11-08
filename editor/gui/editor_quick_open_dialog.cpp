@@ -235,11 +235,13 @@ void EditorQuickOpenDialog::preview_property() {
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't
 	// create undo/redo actions.
+	property_object->set_block_signals(true);
 	if (Object::cast_to<MultiNodeEdit>(property_object)) {
 		Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, loaded_resource, "", false);
 	} else {
 		property_object->set(property_path, loaded_resource);
 	}
+	property_object->set_block_signals(false);
 }
 
 void EditorQuickOpenDialog::update_property() {
