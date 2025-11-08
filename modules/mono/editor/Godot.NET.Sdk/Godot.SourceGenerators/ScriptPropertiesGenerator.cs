@@ -446,16 +446,6 @@ namespace Godot.SourceGenerators
             var propertySymbol = memberSymbol as IPropertySymbol;
             var fieldSymbol = memberSymbol as IFieldSymbol;
 
-            if (exportAttr != null && propertySymbol != null)
-            {
-                if (propertySymbol.GetMethod == null || propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
-                {
-                    // Exports can be neither read-only nor write-only but the diagnostic errors for properties are already
-                    // reported by ScriptPropertyDefValGenerator.cs so just quit early here.
-                    return null;
-                }
-            }
-
             if (exportToolButtonAttr != null && propertySymbol != null && propertySymbol.GetMethod == null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -622,6 +612,12 @@ namespace Godot.SourceGenerators
 
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
+
+            if (propertySymbol is { IsReadOnly: true } || fieldSymbol is { IsReadOnly: true })
+            {
+                // Read-only variables can only be assigned via code, no need to store them.
+                propUsage |= PropertyUsageFlags.ReadOnly ^ PropertyUsageFlags.Storage;
+            }
 
             return new PropertyInfo(memberVariantType, memberName,
                 hint, hintString, propUsage, exported: true);
