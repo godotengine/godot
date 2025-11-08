@@ -185,6 +185,7 @@ class PopupMenu : public Popup {
 		int item_start_padding = 0;
 		int item_end_padding = 0;
 		int icon_max_width = 0;
+		int gutter_compact = 0;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> checked_disabled;
