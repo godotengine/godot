@@ -718,6 +718,10 @@ bool JoltBody3D::is_sleep_actually_allowed() const {
 }
 
 void JoltBody3D::set_is_sleeping(bool p_enabled) {
+	if (is_static()) {
+		return;
+	}
+
 	if (!in_space()) {
 		sleep_initially = p_enabled;
 	} else {
