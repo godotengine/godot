@@ -254,6 +254,15 @@ void EditorQuickOpenDialog::update_property() {
 			property_object->set(property_path, initial_property_value);
 		}
 	}
+
+	if (!item_selected_callback.is_valid()) {
+		String err_msg = "The callback provided to the Quick Open dialog was invalid.";
+		if (_is_instant_preview_active()) {
+			err_msg += " Try disabling \"Instant Preview\" as a workaround.";
+		}
+		ERR_FAIL_MSG(err_msg);
+	}
+
 	item_selected_callback.call(container->get_selected());
 }
 
