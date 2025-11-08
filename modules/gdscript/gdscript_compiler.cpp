@@ -59,7 +59,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 		if (scr->native.is_valid()) {
 			nc = scr->native.ptr();
 		}
-		scr = scr->_base;
+		scr = scr->base.ptr();
 	}
 
 	ERR_FAIL_NULL_V(nc, false);
@@ -343,7 +343,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
@@ -371,7 +371,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						// Class C++ integer constant.
@@ -407,7 +407,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								return temp;
 							}
 						}
-						scr = scr->_base;
+						scr = scr->base.ptr();
 					}
 				} break;
 
@@ -1051,7 +1051,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 												static_var_data_type = minfo.data_type;
 												break;
 											}
-											scr = scr->_base;
+											scr = scr->base.ptr();
 										}
 									}
 								}
@@ -1320,7 +1320,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								static_var_data_type = minfo.data_type;
 								break;
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 					}
 				}
@@ -2707,7 +2707,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
-	p_script->_base = nullptr;
 	p_script->members.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
@@ -2818,7 +2817,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			}
 
 			p_script->base = base;
-			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
 		} break;
 		default: {

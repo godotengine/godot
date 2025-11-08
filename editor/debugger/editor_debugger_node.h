@@ -93,7 +93,6 @@ private:
 
 	Ref<EditorDebuggerServer> server;
 	TabContainer *tabs = nullptr;
-	Button *debugger_button = nullptr;
 	MenuButton *script_menu = nullptr;
 
 	Ref<Script> stack_script; // Why?!?
@@ -179,10 +178,6 @@ public:
 	void debug_continue();
 
 	void set_script_debug_button(MenuButton *p_button);
-
-	void set_tool_button(Button *p_button) {
-		debugger_button = p_button;
-	}
 
 	String get_var_value(const String &p_var) const;
 	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?

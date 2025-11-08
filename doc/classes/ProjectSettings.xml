@@ -54,11 +54,24 @@
 				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
+		<method name="check_changed_settings_in_group" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="setting_prefix" type="String" />
+			<description>
+				Checks if any settings with the prefix [param setting_prefix] exist in the set of changed settings. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Clears the whole configuration (not recommended, may break things).
+			</description>
+		</method>
+		<method name="get_changed_settings" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [signal settings_changed].
 			</description>
 		</method>
 		<method name="get_global_class_list">
