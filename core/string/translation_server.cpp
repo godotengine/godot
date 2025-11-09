@@ -36,6 +36,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"
+#include "core/variant/typed_array.h"
 
 void TranslationServer::init_locale_info() {
 	// Init locale info.
@@ -489,9 +490,17 @@ String TranslationServer::get_fallback_locale() const {
 	return fallback;
 }
 
+#ifndef DISABLE_DEPRECATED
 PackedStringArray TranslationServer::get_loaded_locales() const {
-	return main_domain->get_loaded_locales();
+	PackedStringArray locales;
+	for (const Ref<Translation> &E : main_domain->get_translations()) {
+		if (!locales.has(E->get_locale())) {
+			locales.push_back(E->get_locale());
+		}
+	}
+	return locales;
 }
+#endif
 
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 	main_domain->add_translation(p_translation);
@@ -501,8 +510,22 @@ void TranslationServer::remove_translation(const Ref<Translation> &p_translation
 	main_domain->remove_translation(p_translation);
 }
 
+#ifndef DISABLE_DEPRECATED
 Ref<Translation> TranslationServer::get_translation_object(const String &p_locale) {
 	return main_domain->get_translation_object(p_locale);
+}
+#endif
+
+TypedArray<Translation> TranslationServer::get_translations() const {
+	return main_domain->get_translations_bind();
+}
+
+TypedArray<Translation> TranslationServer::find_translations(const String &p_locale, bool p_exact) const {
+	return main_domain->find_translations_bind(p_locale, p_exact);
+}
+
+bool TranslationServer::has_translations(const String &p_locale, bool p_exact) const {
+	return main_domain->has_translations(p_locale, p_exact);
 }
 
 void TranslationServer::clear() {
@@ -574,21 +597,27 @@ void TranslationServer::setup() {
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		if (editor_domain->has_translation_for_locale(locale)) {
+		if (editor_domain->has_translations(locale, true)) {
 			return locale;
 		}
 		return "en";
-	} else {
-#else
-	{
-#endif
-		// Look for best matching loaded translation.
-		Ref<Translation> t = main_domain->get_translation_object(locale);
-		if (t.is_null()) {
-			return fallback;
-		}
-		return t->get_locale();
 	}
+#endif
+
+	Ref<Translation> res;
+	int best_score = 0;
+
+	for (const Ref<Translation> &E : main_domain->get_translations()) {
+		int score = TranslationServer::get_singleton()->compare_locales(locale, E->get_locale());
+		if (score > 0 && score >= best_score) {
+			res = E;
+			best_score = score;
+			if (score == 10) {
+				return locale; // Exact match.
+			}
+		}
+	}
+	return res.is_valid() ? res->get_locale() : fallback;
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -674,15 +703,21 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationServer::get_translation_object);
+	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
+#endif
+
+	ClassDB::bind_method(D_METHOD("get_translations"), &TranslationServer::get_translations);
+	ClassDB::bind_method(D_METHOD("find_translations", "locale", "exact"), &TranslationServer::find_translations);
+	ClassDB::bind_method(D_METHOD("has_translations", "locale", "exact"), &TranslationServer::has_translations);
 
 	ClassDB::bind_method(D_METHOD("has_domain", "domain"), &TranslationServer::has_domain);
 	ClassDB::bind_method(D_METHOD("get_or_add_domain", "domain"), &TranslationServer::get_or_add_domain);
 	ClassDB::bind_method(D_METHOD("remove_domain", "domain"), &TranslationServer::remove_domain);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
-
-	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 
 	ClassDB::bind_method(D_METHOD("format_number", "number", "locale"), &TranslationServer::format_number);
 	ClassDB::bind_method(D_METHOD("get_percent_sign", "locale"), &TranslationServer::get_percent_sign);
