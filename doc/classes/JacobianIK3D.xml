@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="JacobianIK3D" inherits="IterateIK3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Pseudo inverse Jacobian matrix based inverse kinematics solver.
+		Jacobian transpose based inverse kinematics solver.
 	</brief_description>
 	<description>
 		[JacobianIK3D] calculates rotations for all joints simultaneously, producing natural and smooth movement. It is particularly suited for biological animations.
