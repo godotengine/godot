@@ -528,8 +528,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	float raw_bmin[3];
 	float raw_bmax[3];
 	rcCalcBounds(verts, nverts, raw_bmin, raw_bmax);
-	const Vector3 raw_bounds_min = Vector3(raw_bmin[0], raw_bmin[1], raw_bmin[2]);
-	const Vector3 raw_bounds_max = Vector3(raw_bmax[0], raw_bmax[1], raw_bmax[2]);
 	AABB baking_bounds(Vector3(raw_bmin[0], raw_bmin[1], raw_bmin[2]), Vector3(raw_bmax[0] - raw_bmin[0], raw_bmax[1] - raw_bmin[1], raw_bmax[2] - raw_bmin[2]));
 	AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
 	if (baking_aabb.has_volume()) {
