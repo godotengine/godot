@@ -585,10 +585,9 @@ void EditorNode::_update_translations() {
 
 	if (main->is_enabled()) {
 		// Check for the exact locale.
-		// `get_potential_translations("zh_CN")` could return translations for "zh".
-		if (main->has_translation_for_locale(main->get_locale_override())) {
+		if (main->has_translation_for_locale(main->get_locale_override(), true)) {
 			// The set of translation resources for the current locale changed.
-			const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+			const HashSet<Ref<Translation>> translations = main->find_translations(main->get_locale_override(), false);
 			if (translations != tracked_translations) {
 				_translation_resources_changed();
 			}
@@ -609,7 +608,7 @@ void EditorNode::_translation_resources_changed() {
 
 	const Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
 	if (main->is_enabled()) {
-		const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
+		const HashSet<Ref<Translation>> translations = main->find_translations(main->get_locale_override(), false);
 		tracked_translations.reserve(translations.size());
 		for (const Ref<Translation> &translation : translations) {
 			translation->connect_changed(callable_mp(this, &EditorNode::_queue_translation_notification));
@@ -966,7 +965,7 @@ void EditorNode::_notification(int p_what) {
 
 			// Remember the selected locale to preview node translations.
 			const String preview_locale = EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "preview_locale", String());
-			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->get_loaded_locales().has(preview_locale)) {
+			if (!preview_locale.is_empty() && TranslationServer::get_singleton()->has_translation_for_locale(preview_locale, true)) {
 				set_preview_locale(preview_locale);
 			}
 
