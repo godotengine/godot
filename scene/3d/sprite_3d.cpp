@@ -68,17 +68,17 @@ void SpriteBase3D::_propagate_color_changed() {
 void SpriteBase3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!pending_update) {
-				_im_update();
-			}
+			_im_update();
+		} break;
 
+		case NOTIFICATION_PARENTED: {
 			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 			if (parent_sprite) {
 				pI = parent_sprite->children.push_back(this);
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_UNPARENTED: {
 			if (parent_sprite) {
 				parent_sprite->children.erase(pI);
 				pI = nullptr;
@@ -417,15 +417,21 @@ Vector3::Axis SpriteBase3D::get_axis() const {
 }
 
 void SpriteBase3D::_im_update() {
+	if (!redraw_needed) {
+		return;
+	}
 	_draw();
+	redraw_needed = false;
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_redraw() {
 	// The 3D equivalent of CanvasItem.queue_redraw().
+	redraw_needed = true;
+	if (!is_inside_tree()) {
+		return;
+	}
 	if (pending_update) {
 		return;
 	}
