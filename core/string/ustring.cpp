@@ -155,7 +155,13 @@ void String::append_latin1(const Span<char> &p_cstr) {
 
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
-		*dst = static_cast<uint8_t>(*src);
+		if (unlikely(*src == '\0')) {
+			// NUL in string is allowed by the unicode standard, but unsupported in our implementation right now.
+			print_unicode_error("Unexpected NUL character", true);
+			*dst = _replacement_char;
+		} else {
+			*dst = static_cast<uint8_t>(*src);
+		}
 	}
 	*dst = 0;
 }
@@ -174,17 +180,19 @@ void String::append_utf32(const Span<char32_t> &p_cstr) {
 	// Copy the string, and check for UTF-32 problems.
 	for (; src < end; ++src, ++dst) {
 		const char32_t chr = *src;
-		if ((chr & 0xfffff800) == 0xd800) {
+		if (unlikely(chr == U'\0')) {
+			// NUL in string is allowed by the unicode standard, but unsupported in our implementation right now.
+			print_unicode_error("Unexpected NUL character", true);
+			*dst = _replacement_char;
+		} else if (unlikely((chr & 0xfffff800) == 0xd800)) {
 			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)chr), true);
 			*dst = _replacement_char;
-			continue;
-		}
-		if (chr > 0x10ffff) {
+		} else if (unlikely(chr > 0x10ffff)) {
 			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)chr), true);
 			*dst = _replacement_char;
-			continue;
+		} else {
+			*dst = chr;
 		}
-		*dst = chr;
 	}
 	*dst = 0;
 }
@@ -1737,7 +1745,11 @@ Error String::append_ascii(const Span<char> &p_range) {
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
 		const uint8_t chr = *src;
-		if (chr > 127) {
+		if (unlikely(chr == '\0')) {
+			// NUL in string is allowed by the unicode standard, but unsupported in our implementation right now.
+			print_unicode_error("Unexpected NUL character", true);
+			*dst = _replacement_char;
+		} else if (unlikely(chr > 127)) {
 			print_unicode_error(vformat("Invalid ASCII codepoint (%x)", (uint32_t)chr), true);
 			decode_failed = true;
 			*dst = _replacement_char;
@@ -5843,6 +5855,15 @@ String String::unquote() const {
 	return substr(1, length() - 2);
 }
 
+// MinGW-GCC false positives because CharStringT::length() is int (so possibly < 0).
+// Don't silence for regular GCC/Clang as this is code that _could_ exhibit actual overflow bugs.
+#ifdef __MINGW32__
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0")
+GODOT_GCC_WARNING_IGNORE("-Warray-bounds")
+GODOT_GCC_WARNING_IGNORE("-Wrestrict")
+#endif
+
 Vector<uint8_t> String::to_ascii_buffer() const {
 	const String *s = this;
 	if (s->is_empty()) {
@@ -5890,6 +5911,10 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 
 	return retval;
 }
+
+#ifdef __MINGW32__
+GODOT_GCC_WARNING_POP
+#endif
 
 Vector<uint8_t> String::to_utf32_buffer() const {
 	const String *s = this;

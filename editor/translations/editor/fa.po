@@ -64,8 +64,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-10 19:04+0000\n"
-"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
+"PO-Revision-Date: 2025-09-25 19:02+0000\n"
+"Last-Translator: \"Mahdi B. Jahani\" <kelbowonl@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -7579,6 +7579,13 @@ msgstr "نام‌هایی که با _ آغاز می‌شوند برای فراد
 msgid "Property: %s"
 msgstr "ویژگی: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"تغییر وضعیت کادر انتخاب برای ویژگی‌های منبع غیرفعال است. به جای آن، ویژگی را "
+"با استفاده از انتخاب‌کننده منبع تغییر دهید."
+
 msgid "Unfavorite Property"
 msgstr "نادلخواه کردن ویژگی"
 
@@ -7934,6 +7941,9 @@ msgstr "سایه‌زن نو..."
 msgid "Size: %s"
 msgstr "اندازه: %s"
 
+msgid "Invalid file or broken link."
+msgstr "فایل نامعتبر یا لینک خراب است."
+
 msgid "Type: %s"
 msgstr "گونه: %s"
 
@@ -7951,6 +7961,9 @@ msgstr "درازا: %0.3f ثانیه"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "تنظیمات پیشرفته همیشه هنگام پویش نمایانده‌اند."
+
+msgid "Event Configured"
+msgstr "رویداد پیکربندی شد"
 
 msgid "Configure"
 msgstr "پیکربندی"
@@ -8632,6 +8645,12 @@ msgstr "نام برچسب نمی‌تواند تهی باشد."
 
 msgid "Tag name can't contain spaces."
 msgstr "نام تگ نمی‌تواند شامل فاصله (space) باشد."
+
+msgid "Tag name can't begin or end with underscore."
+msgstr "نام تگ نمی‌تواند با زیرخط شروع یا تمام شود."
+
+msgid "Tag name can't contain consecutive underscores."
+msgstr "نام تگ نمی‌تواند شامل زیرخط‌های متوالی باشد."
 
 msgid "These characters are not allowed in tags: %s."
 msgstr "این کاراکتر‌ها در برچسب‌ها مجاز نیستند: %s."
@@ -10048,6 +10067,17 @@ msgstr "کاشی پایه"
 msgid "Alternative Tile"
 msgstr "کاشی دگرگزین"
 
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"کاشی انتخاب‌شده:\n"
+"منبع: %d\n"
+"مختصات اطلس: %s\n"
+"جایگزین: %d"
+
 msgid "Rendering"
 msgstr "نماپرداختن"
 
@@ -10140,6 +10170,15 @@ msgstr "برچیدن کاشی"
 msgid "Create tile alternatives"
 msgstr "ساخت کاشی‌های دگرگزین"
 
+msgid "Remove Tiles Outside the Texture"
+msgstr "حذف کاشی‌های خارج از بافت"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "ایجاد کاشی‌ها در نواحی بافت غیرشفاف"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "حذف کاشی‌ها در نواحی کاملاً شفاف بافت"
+
 msgid ""
 "The tile's unique identifier within this TileSet. Each tile stores its source "
 "ID, so changing one may make tiles invalid."
@@ -10147,8 +10186,50 @@ msgstr ""
 "شناسهٔ یکتای کاشی درون این دسته‌کاشی است. هر کاشی آیدی سرچشمهٔ خود را ذخیره "
 "میکند، پس دگرگون کردن یکی از آنها شاید کاشی‌ها را نامعتبر سازد."
 
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"نام قابل‌خواندن برای اطلس. از نام توصیفی در اینجا برای سازمان‌دهی استفاده کنید "
+"(مانند «زمین»، «تزئینات» و غیره)."
+
 msgid "The image from which the tiles will be created."
 msgstr "تصویری که کاشی‌ها از آن ساخته خواهند شد."
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"حاشیه‌های لبه‌های تصویر که نباید به‌عنوان کاشی قابل انتخاب باشند (به پیکسل). "
+"افزایش این مقدار می‌تواند مفید باشد اگر تصویری از نقشه‌کاشی بارگیری کرده‌اید که "
+"حاشیه در لبه‌ها دارد (مثلاً برای ذکر منبع)."
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"فاصله میان هر کاشی در اطلس به پیکسل. افزایش این مقدار می‌تواند مفید باشد اگر "
+"تصویری از نقشه‌کاشی که استفاده می‌کنید شامل راهنماها باشد (مانند خطوط مرزی بین "
+"هر کاشی)."
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"اندازه هر کاشی در اطلس به پیکسل. در اکثر موارد، این مقدار باید با اندازه کاشی "
+"تعریف‌شده در ویژگی TileMap مطابقت داشته باشد (اگرچه الزامی نیست)."
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"اگر علامت زده شود، یک لبه شفاف ۱ پیکسلی به دور هر کاشی اضافه می‌کند تا از نشت "
+"بافت هنگام فعال بودن فیلتر جلوگیری شود. توصیه می‌شود این گزینه فعال باقی بماند "
+"مگر اینکه به مشکلات رندر ناشی از فاصله‌بندی بافت برخورد کرده باشید."
 
 msgid ""
 "Number of columns for the animation grid. If number of columns is lower than "
@@ -10159,6 +10240,23 @@ msgstr ""
 
 msgid "Animation speed in frames per second."
 msgstr "تندی پویانمایی به فریم‌برثانیه."
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"مبدأیی که برای ترسیم کاشی استفاده می‌شود. این می‌تواند برای جابه‌جایی دیداری "
+"کاشی نسبت به کاشی پایه به کار رود."
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "ضریب رنگی که هنگام رندر کاشی استفاده می‌شود."
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr ""
+"جنس مورد استفاده برای این کاشی. این می‌تواند برای اعمال حالت ترکیب متفاوت یا "
+"سایه‌زن‌های سفارشی به یک کاشی به کار رود."
 
 msgid ""
 "The sorting order for this tile. Higher values will make the tile render in "
@@ -10315,6 +10413,16 @@ msgstr ""
 "نام قابل خواندن انسان برای مجموعه صحنه‌ها. از یک نام توصیفی در اینجا برای "
 "اهداف سازماندهی استفاده کنید (مانند «موانع»، «تزئینات» و غیره)."
 
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"شناسه صحنه کاشی در مجموعه. هر کاشی رسم‌شده یک شناسه وابسته دارد، بنابراین "
+"تغییر این ویژگی ممکن است باعث شود نقشه‌کاشی‌ها به‌درستی نمایش داده نشوند."
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "مسیر مطلق به صحنه مرتبط با این کاشی."
+
 msgid "Scenes collection properties:"
 msgstr "ویژگی‌های مجموعه صحنه‌ها:"
 
@@ -10371,6 +10479,12 @@ msgstr "تغییر ارتفاع شکل استوانه"
 
 msgid "Change Separation Ray Shape Length"
 msgstr "دگرش درازای جدایی Ray Shape"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "حذف نقطه ثابت SoftBody3D شماره %d"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "افزودن نقطه ثابت SoftBody3D شماره %d"
 
 msgid "Change Probe Size"
 msgstr "دگرش اندازهٔ کاوَند"
@@ -11019,8 +11133,38 @@ msgstr "نمایش نورپردازی"
 msgid "Display Unshaded"
 msgstr "نمایش بدون سایه‌زنی"
 
+msgid ""
+"Displays directional shadow splits in different colors to make adjusting "
+"split thresholds easier. \n"
+"Red: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, "
+"Yellow: 4th split (furthest from the camera)"
+msgstr ""
+"تقسیم‌های سایه جهت‌دار را با رنگ‌های مختلف نمایش می‌دهد تا تنظیم آستانه‌های تقسیم "
+"آسان‌تر شود.\n"
+"قرمز: تقسیم اول (نزدیک‌ترین به دوربین)، سبز: تقسیم دوم، آبی: تقسیم سوم، زرد: "
+"تقسیم چهارم (دورترین از دوربین)"
+
 msgid "Shadow Atlas"
 msgstr "اطلس سایه"
+
+msgid ""
+"Displays the shadow atlas used for positional (omni/spot) shadow mapping.\n"
+"Requires a visible OmniLight3D or SpotLight3D node with shadows enabled to "
+"have a visible effect."
+msgstr ""
+"اطلس سایه استفاده‌شده برای نگاشت سایه موقعیتی (همه‌جهتی/نقطه‌ای) را نمایش "
+"می‌دهد.\n"
+"برای مشاهده تأثیر، نیاز به یک گره OmniLight3D یا SpotLight3D قابل‌مشاهده با "
+"سایه‌های فعال دارد."
+
+msgid ""
+"Displays the shadow map used for directional shadow mapping.\n"
+"Requires a visible DirectionalLight3D node with shadows enabled to have a "
+"visible effect."
+msgstr ""
+"نقشه سایه استفاده‌شده برای نگاشت سایه جهت‌دار را نمایش می‌دهد.\n"
+"برای مشاهده تأثیر، نیاز به یک گره DirectionalLight3D قابل‌مشاهده با سایه‌های "
+"فعال دارد."
 
 msgid "VoxelGI Albedo"
 msgstr "آلبیدوی واکسل‌جی‌آی"
@@ -11033,6 +11177,16 @@ msgstr "کاوَندهای SDFGI"
 
 msgid "Scene Luminance"
 msgstr "روشنایی صحنه"
+
+msgid ""
+"Displays the scene luminance computed from the 3D buffer. This is used for "
+"Auto Exposure calculation.\n"
+"Requires Auto Exposure to be enabled in CameraAttributes to have a visible "
+"effect."
+msgstr ""
+"روشنایی صحنه محاسبه‌شده از بافر ۳‌بعدی را نمایش می‌دهد. این برای محاسبه نوردهی "
+"خودکار استفاده می‌شود.\n"
+"برای مشاهده تأثیر، نیاز است که نوردهی خودکار در CameraAttributes فعال باشد."
 
 msgid "SSAO"
 msgstr "اس‌اس ای‌او"
@@ -15702,6 +15856,15 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "برداری را برمی‌گرداند که در جهت شکست نور قرار دارد."
 
+msgid ""
+"Step function( vector(edge), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
+msgstr ""
+"تابع گام (بردار(آستانه)، بردار(x)).\n"
+"\n"
+"اگر «x» کوچکتر از «آستانه» باشد ۰٫۰ برمی‌گرداند و در غیر این صورت ۱٫۰."
+
 msgid "2D vector constant."
 msgstr "ثابت بردار دوبعدی."
 
@@ -16408,11 +16571,47 @@ msgstr "ناشناخته"
 msgid "Select an action"
 msgstr "گزینش یک کنش"
 
+msgid "Package segments must be of non-zero length."
+msgstr "بخش‌های بسته باید طول غیرصفر داشته باشند."
+
+msgid "A digit cannot be the first character in a package segment."
+msgstr "یک رقم نمی‌تواند نخستین کاراکتر در بخش بسته باشد."
+
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr "کاراکتر «%s» نمی‌تواند نخستین کاراکتر در بخش بسته باشد."
+
+msgid "The package must have at least one '.' separator."
+msgstr "بسته باید حداقل یک جداکننده «.» داشته باشد."
+
 msgid "Invalid public key for APK expansion."
 msgstr "کلید عمومی نامعتبر برای گسترش APK."
 
 msgid "Invalid package name:"
 msgstr "نام پکیج نامعتبر:"
+
+msgid "\"Use Gradle Build\" is required to enable \"Swipe to dismiss\"."
+msgstr "گزینه «استفاده از ساخت گریدل» برای فعال‌کردن «کشیدن برای بستن» لازم است."
+
+msgid "\"Use Gradle Build\" must be enabled to use the plugins."
+msgstr ""
+"گزینه «استفاده از ساخت گریدل» باید فعال باشد تا بتوان از پلاگین‌ها استفاده کرد."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"گزینه «فشرده‌سازی کتابخانه‌های بومی» تنها زمانی معتبر است که «استفاده از ساخت "
+"گریدل» فعال باشد."
+
+msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
+msgstr ""
+"گزینه «برون‌برد ای‌ای‌بی» تنها زمانی معتبر است که «استفاده از ساخت گریدل» فعال "
+"باشد."
+
+msgid "\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"گزینه «حداقل اس‌دی‌کی» تنها زمانی قابل بازنویسی است که «استفاده از ساخت گریدل» "
+"فعال باشد."
 
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot "
@@ -16420,6 +16619,27 @@ msgid ""
 msgstr ""
 "\"Min SDK\" نمی‌تواند کمتر از %d باشد، زیرا نسخه‌ای است که کتابخانهٔ گودوت به آن "
 "نیاز دارد."
+
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"گزینه «هدف اس‌دی‌کی» تنها زمانی قابل بازنویسی است که «استفاده از ساخت گریدل» "
+"فعال باشد."
+
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"گزینه «هدف اس‌دی‌کی» باید یک عدد صحیح معتبر باشد، اما مقدار «%s» نامعتبر است."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr "نسخه «هدف اس‌دی‌کی» باید برابر یا بزرگ‌تر از نسخه «حداقل اس‌دی‌کی» باشد."
+
+msgid "\"Use Gradle Build\" is required to add custom theme attributes."
+msgstr "گزینه «استفاده از ساخت گریدل» برای افزودن ویژگی‌های سفارشی تم لازم است."
+
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\"."
+msgstr ""
+"برای فعال‌سازی «نمایش در اندروید تی‌وی»، باید «استفاده از ساخت گریدل» فعال باشد."
 
 msgid "\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\"."
 msgstr ""
@@ -16446,12 +16666,42 @@ msgstr "در دستگاه نصب نشد: %s"
 msgid "Running on device..."
 msgstr "در حال اجرا روی دستگاه..."
 
+msgid "Error: There was a problem validating the keystore username and password"
+msgstr "خطا: مشکلی در تأیید نام کاربری و گذرواژه کی‌استور رخ داد"
+
+msgid ""
+"Unable to determine the C# project's TFM, it may be incompatible. The export "
+"template only supports '%s'. Make sure the project targets '%s' or consider "
+"using gradle builds instead."
+msgstr ""
+"امکان تعیین تی‌اف‌ام پروژه سی‌شارپ وجود ندارد، ممکن است ناسازگار باشد. قالب "
+"برون‌برد تنها از «%s» پشتیبانی می‌کند. اطمینان حاصل کنید که پروژه هدف «%s» را "
+"دنبال می‌کند یا به استفاده از ساخت‌های گریدل فکر کنید."
+
 msgid ""
 "C# project targets '%s' but the export template only supports '%s'. Consider "
 "using gradle builds instead."
 msgstr ""
 "پروژهٔ سی.شارپ «%s» را هدف می‌گیرد ولی قالب برون‌برد تنها از «%s» پشتیبانی "
 "می‌کند. به‌جای آن به‌کارگیری ساخت‌های گِرِیدِل را در نظر بگیرید."
+
+msgid "Exporting to Android when using C#/.NET is experimental."
+msgstr "برون‌برد به اندروید هنگام استفاده از سی‌شارپ/دات‌نت آزمایشی است."
+
+msgid "Gradle build is not supported for the Android editor."
+msgstr "ساخت گریدل برای ویراستار اندروید پشتیبانی نمی‌شود."
+
+msgid ""
+"Android build template not installed in the project. Install it from the "
+"Project menu."
+msgstr "قالب ساخت اندروید در پروژه نصب نشده است. آن را از منوی پروژه نصب کنید."
+
+msgid ""
+"Either Debug Keystore, Debug User AND Debug Password settings must be "
+"configured OR none of them."
+msgstr ""
+"تنظیمات کلید ذخیره‌سازی اشکال‌زدایی، کاربر اشکال‌زدایی و رمز عبور اشکال‌زدایی یا "
+"همگی باید پیکربندی شوند یا هیچ‌کدام."
 
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
@@ -16497,6 +16747,9 @@ msgstr "لطفاً در شاخه Android SDK مشخص‌شده در تنظیما
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 "امکان یافتن فرمان apksigner مربوط به build-tools در Android SDK وجود ندارد."
+
+msgid "\"Use Gradle Build\" is required for transparent background on Android"
+msgstr "«استفاده از ساخت گریدل» برای پس‌زمینه شفاف در اندروید لازم است"
 
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
@@ -16551,8 +16804,14 @@ msgstr "در حال تایید APK..."
 msgid "Unable to verify signed apk."
 msgstr "ناتوان در تأیید ای‌پی‌کی امضا شده."
 
+msgid "'apksigner' verification of APK failed."
+msgstr "تأیید «apksigner» برای ای‌پی‌کی شکست خورد."
+
 msgid "Exporting for Android"
 msgstr "در حال برون‌برد برای اندروید"
+
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr "نام پرونده نامعتبر است! بسته برنامه اندروید نیاز به پسوند «*.aab» دارد."
 
 msgid "APK Expansion not compatible with Android App Bundle."
 msgstr "گسترش ای‌پی‌کی با بسته برنامه اندروید سازگار نیست."

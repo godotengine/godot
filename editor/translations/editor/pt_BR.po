@@ -205,13 +205,14 @@
 # Gabriel Benfica Silva <potatobyr@gmail.com>, 2025.
 # Gustavo Ramires <gustavo.nramires@gmail.com>, 2025.
 # Antonio Igor Carvalho <antonioigorcarvalho@gmail.com>, 2025.
+# Caio Dumont <caiodumontfer@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2025-08-13 00:48+0000\n"
-"Last-Translator: Gabriel Rauta Zanette <fupicat@gmail.com>\n"
+"PO-Revision-Date: 2025-09-23 15:23+0000\n"
+"Last-Translator: Caio Dumont <caiodumontfer@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -219,7 +220,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Restaurar"
@@ -7791,6 +7792,13 @@ msgstr "Os nomes que começam com _ são reservados para metadados do editor."
 msgid "Property: %s"
 msgstr "Propriedade: %s"
 
+msgid ""
+"Toggling the checkbox is disabled for Resource properties. Modify the "
+"property using the resource picker instead."
+msgstr ""
+"A ativação da caixa de seleção está desabilitada para propriedades de "
+"recursos. Modifique a propriedade usando o seletor de recursos."
+
 msgid "Unfavorite Property"
 msgstr "Desfavoritar Propriedade"
 
@@ -8148,6 +8156,9 @@ msgstr "Novo Shader..."
 
 msgid "Size: %s"
 msgstr "Tamanho: %s"
+
+msgid "Invalid file or broken link."
+msgstr "Arquivo inválido ou link quebrado."
 
 msgid "Type: %s"
 msgstr "Tipo: %s"

@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
@@ -161,7 +162,6 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	void reserve(U p_size) {
-		ERR_FAIL_COND_MSG(p_size < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		if (p_size > capacity) {
 			if (tight) {
 				capacity = p_size;
@@ -173,6 +173,8 @@ public:
 			}
 			data = (T *)memrealloc(data, capacity * sizeof(T));
 			CRASH_COND_MSG(!data, "Out of memory");
+		} else if (p_size < count) {
+			WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		}
 	}
 

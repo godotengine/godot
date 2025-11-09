@@ -276,16 +276,20 @@ public class GodotEditText extends EditText {
 			return;
 		}
 
+		int cursorStart = p_cursor_start;
+		int cursorEnd = p_cursor_end;
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
-		if (p_cursor_start == -1) { // cursor position not given
+		if (cursorStart == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
 			this.mMaxInputLength = maxInputLength;
-		} else if (p_cursor_end == -1) { // not text selection
-			this.mOriginText = p_existing_text.substring(0, p_cursor_start);
-			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_start);
+		} else if (cursorEnd == -1) { // not text selection
+			cursorStart = Math.min(p_existing_text.length(), cursorStart);
+			this.mOriginText = p_existing_text.substring(0, cursorStart);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - cursorStart);
 		} else {
-			this.mOriginText = p_existing_text.substring(0, p_cursor_end);
-			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
+			cursorEnd = Math.min(p_existing_text.length(), cursorEnd);
+			this.mOriginText = p_existing_text.substring(0, cursorEnd);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - cursorEnd);
 		}
 
 		this.mKeyboardType = p_type;
@@ -293,8 +297,8 @@ public class GodotEditText extends EditText {
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
 		msg.obj = this;
-		msg.arg1 = p_cursor_start;
-		msg.arg2 = p_cursor_end;
+		msg.arg1 = cursorStart;
+		msg.arg2 = cursorEnd;
 		sHandler.sendMessage(msg);
 	}
 

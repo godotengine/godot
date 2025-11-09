@@ -42,13 +42,14 @@
 # Zsolt Levente Deli <delizsoltlevente@gmail.com>, 2025.
 # Dfo <s.daneee@gmail.com>, 2025.
 # therealmate <hellogaming91@gmail.com>, 2025.
+# Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-06-29 22:01+0000\n"
-"Last-Translator: therealmate <hellogaming91@gmail.com>\n"
+"PO-Revision-Date: 2025-09-25 19:02+0000\n"
+"Last-Translator: Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Nincs beállítva"
@@ -236,6 +237,9 @@ msgstr "Bemenet Esemény: Gyorsbillentyű=%s"
 
 msgid " or "
 msgstr " vagy "
+
+msgid "Action has no bound inputs"
+msgstr "A műveletnek nincsenek hozzárendelt bemenetei"
 
 msgid "Accept"
 msgstr "Elfogad"

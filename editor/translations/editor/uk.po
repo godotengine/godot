@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-08 18:51+0000\n"
+"PO-Revision-Date: 2025-09-27 08:07+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -2386,7 +2386,7 @@ msgid "Assets ZIP File"
 msgstr "ZIP файл ресурсів"
 
 msgid "AssetLib"
-msgstr "AssetLib'"
+msgstr "AssetLib"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
@@ -2738,7 +2738,7 @@ msgstr ""
 "системою."
 
 msgid "Synchronize Script Changes"
-msgstr "Синхронізувати зміни у скрипті"
+msgstr "Синхронізувати зміни у сценарії"
 
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in the "
@@ -4395,7 +4395,7 @@ msgid "Error duplicating scene to save it."
 msgstr "Помилка під час дублювання сцени для її збереження."
 
 msgid "Instantiate Script"
-msgstr "Вставити екземпляр скрипту"
+msgstr "Вставити екземпляр сценарію"
 
 msgid "<unknown>"
 msgstr "<невідомий>"
@@ -4516,7 +4516,7 @@ msgid "Attach Script..."
 msgstr "Прикріпити скрипт..."
 
 msgid "Extend Script..."
-msgstr "Розширити сценарій..."
+msgstr "Розширити скрипт..."
 
 msgid "Move Up"
 msgstr "Перемістити вгору"
@@ -4565,7 +4565,7 @@ msgid "Detach the script from the selected node."
 msgstr "Від'єднати скрипт від позначеного вузла."
 
 msgid "Extend the script of the selected node."
-msgstr "Розширити сценарій вибраного вузла."
+msgstr "Розширити скрипт вибраного вузла."
 
 msgid "Extra scene options."
 msgstr "Додаткові параметри сцени."
@@ -5013,7 +5013,7 @@ msgstr ""
 "конфігурацію."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Не вдалося знайти поле скрипту для додатка тут: «%s»."
+msgstr "Не вдалося знайти поле сценарію для додатка тут: «%s»."
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Неможливо завантажити скрипт доповнення зі шляху: '%s'."
@@ -6722,7 +6722,7 @@ msgid "Script path: %s"
 msgstr "Шлях сценарію: %s"
 
 msgid "The script will run in the editor."
-msgstr "Сценарій запуститься в редакторі."
+msgstr "Скрипт запуститься в редакторі."
 
 msgid "The selected class can't be instantiated."
 msgstr "Вибраний клас не може бути створений."
@@ -12920,7 +12920,7 @@ msgstr ""
 "бездіяльності."
 
 msgid "One Shot"
-msgstr "Один знімок"
+msgstr "Один Раз"
 
 msgid "Disconnects the signal after its first emission."
 msgstr "Від'єднує сигнал після його першого видання."
@@ -14886,7 +14886,7 @@ msgid "ConfigFile"
 msgstr "Файл конфігурації"
 
 msgid "Script"
-msgstr "Сценарій"
+msgstr "Скрипт"
 
 msgid "Connections to method:"
 msgstr "З'єднання з методом:"
@@ -14930,7 +14930,7 @@ msgid "Can't drop nodes without an open scene."
 msgstr "Неможливо скинути вузли без відкритої сцени."
 
 msgid "Can't drop nodes because script '%s' does not inherit Node."
-msgstr "Неможливо видалити вузли, оскільки сценарій «%s» не успадковує вузол."
+msgstr "Неможливо видалити вузли, оскільки скрипт «%s» не успадковує вузол."
 
 msgid "Emoji & Symbols"
 msgstr "Емодзі та символи"
@@ -17307,11 +17307,11 @@ msgstr "Змінено режим візуального шейдерів"
 
 msgctxt "Locale"
 msgid "Script:"
-msgstr "Сценарій:"
+msgstr "Скрипт:"
 
 msgctxt "Locale"
 msgid "Script"
-msgstr "Сценарій"
+msgstr "Скрипт"
 
 msgid "Changed Locale Language Filter"
 msgstr "Змінено фільтр локальної мови"
@@ -17710,7 +17710,7 @@ msgid "Step argument is zero!"
 msgstr "Аргумент кроку нуль!"
 
 msgid "Not a script with an instance."
-msgstr "Не сценарій з екземпляром."
+msgstr "Не скрипт з екземпляром."
 
 msgid "Not based on a script."
 msgstr "Не на основі сценарію."
@@ -17723,11 +17723,11 @@ msgstr "Недійсний формат словника екземплярів 
 
 msgid "Invalid instance dictionary format (can't load script at @path)."
 msgstr ""
-"Недійсний формат словника екземпляра (не вдається завантажити сценарій за "
+"Недійсний формат словника екземпляра (не вдається завантажити скрипт за "
 "@path)."
 
 msgid "Invalid instance dictionary format (invalid script at @path)."
-msgstr "Недійсний формат словника екземпляра (недійсний сценарій на @path)."
+msgstr "Недійсний формат словника екземпляра (недійсний скрипт на @path)."
 
 msgid "Invalid instance dictionary (invalid subclasses)."
 msgstr "Недійсний словник екземплярів (недійсні підкласи)."
