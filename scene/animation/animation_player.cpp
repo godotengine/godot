@@ -331,14 +331,13 @@ void AnimationPlayer::_blend_capture(double p_delta) {
 }
 
 void AnimationPlayer::_blend_post_process() {
-	if (!finished_anim.is_empty()) {
-		emit_signal(SceneStringName(animation_finished), finished_anim);
-	}
-
 	if (end_reached) {
 		// If the method track changes current animation, the animation is not finished.
 		if (tmp_from == playback.current.from->animation->get_instance_id()) {
 			if (playback_queue.size()) {
+				if (!finished_anim.is_empty()) {
+					emit_signal(SceneStringName(animation_finished), finished_anim);
+				}
 				String old = playback.assigned;
 				play(playback_queue.front()->get());
 				String new_name = playback.assigned;
@@ -351,6 +350,9 @@ void AnimationPlayer::_blend_post_process() {
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
+					if (!finished_anim.is_empty()) {
+						emit_signal(SceneStringName(animation_finished), finished_anim);
+					}
 					emit_signal(SNAME("current_animation_changed"), "");
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
