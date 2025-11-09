@@ -32,6 +32,7 @@
 
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
+#include "core/variant/typed_array.h"
 
 struct _character_accent_pair {
 	const char32_t character;
@@ -252,27 +253,7 @@ PackedStringArray TranslationDomain::get_loaded_locales() const {
 	return locales;
 }
 
-bool TranslationDomain::has_translation_for_locale(const String &p_locale) const {
-	for (const Ref<Translation> &E : translations) {
-		if (E->get_locale() == p_locale) {
-			return true;
-		}
-	}
-	return false;
-}
-
-// Translation objects that could potentially be used for the given locale.
-HashSet<Ref<Translation>> TranslationDomain::get_potential_translations(const String &p_locale) const {
-	HashSet<Ref<Translation>> res;
-
-	for (const Ref<Translation> &E : translations) {
-		if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
-			res.insert(E);
-		}
-	}
-	return res;
-}
-
+#ifndef DISABLE_DEPRECATED
 Ref<Translation> TranslationDomain::get_translation_object(const String &p_locale) const {
 	Ref<Translation> res;
 	int best_score = 0;
@@ -289,6 +270,7 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 	}
 	return res;
 }
+#endif
 
 void TranslationDomain::add_translation(const Ref<Translation> &p_translation) {
 	ERR_FAIL_COND_MSG(p_translation.is_null(), "Invalid translation provided.");
@@ -301,6 +283,69 @@ void TranslationDomain::remove_translation(const Ref<Translation> &p_translation
 
 void TranslationDomain::clear() {
 	translations.clear();
+}
+
+const HashSet<Ref<Translation>> TranslationDomain::get_translations() const {
+	return translations;
+}
+
+HashSet<Ref<Translation>> TranslationDomain::find_translations(const String &p_locale, bool p_exact) const {
+	HashSet<Ref<Translation>> res;
+	if (p_exact) {
+		for (const Ref<Translation> &E : translations) {
+			if (E->get_locale() == p_locale) {
+				res.insert(E);
+			}
+		}
+	} else {
+		for (const Ref<Translation> &E : translations) {
+			if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
+				res.insert(E);
+			}
+		}
+	}
+	return res;
+}
+
+bool TranslationDomain::has_translation(const Ref<Translation> &p_translation) const {
+	return translations.has(p_translation);
+}
+
+bool TranslationDomain::has_translation_for_locale(const String &p_locale, bool p_exact) const {
+	if (p_exact) {
+		for (const Ref<Translation> &E : translations) {
+			if (E->get_locale() == p_locale) {
+				return true;
+			}
+		}
+	} else {
+		for (const Ref<Translation> &E : translations) {
+			if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+TypedArray<Translation> TranslationDomain::get_translations_bind() const {
+	TypedArray<Translation> res;
+	res.reserve(translations.size());
+	for (const Ref<Translation> &E : translations) {
+		res.push_back(E);
+	}
+	return res;
+}
+
+TypedArray<Translation> TranslationDomain::find_translations_bind(const String &p_locale, bool p_exact) const {
+	const HashSet<Ref<Translation>> &found = find_translations(p_locale, p_exact);
+
+	TypedArray<Translation> res;
+	res.reserve(found.size());
+	for (const Ref<Translation> &E : found) {
+		res.push_back(E);
+	}
+	return res;
 }
 
 StringName TranslationDomain::translate(const StringName &p_message, const StringName &p_context) const {
@@ -459,10 +504,17 @@ StringName TranslationDomain::pseudolocalize(const StringName &p_message) const 
 }
 
 void TranslationDomain::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationDomain::get_translation_object);
+#endif
+
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationDomain::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationDomain::remove_translation);
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
+	ClassDB::bind_method(D_METHOD("get_translations"), &TranslationDomain::get_translations_bind);
+	ClassDB::bind_method(D_METHOD("has_translation_for_locale", "locale", "exact"), &TranslationDomain::has_translation_for_locale);
+	ClassDB::bind_method(D_METHOD("has_translation", "translation"), &TranslationDomain::has_translation);
+	ClassDB::bind_method(D_METHOD("find_translations", "locale", "exact"), &TranslationDomain::find_translations_bind);
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationDomain::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "message_plural", "n", "context"), &TranslationDomain::translate_plural, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_locale_override"), &TranslationDomain::get_locale_override);
