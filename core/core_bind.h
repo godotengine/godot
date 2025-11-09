@@ -75,6 +75,7 @@ public:
 		FILTER_TARGET_RESOURCE_NAME,
 		FILTER_TARGET_RESOURCE_PATH,
 		FILTER_TARGET_RESOURCE_CLASS,
+		FILTER_TARGET_REFERENCE_COUNT,
 	};
 
 	enum FilterComparator {
@@ -83,6 +84,10 @@ public:
 		FILTER_COMP_BEGINS_WITH,
 		FILTER_COMP_ENDS_WITH,
 		FILTER_COMP_CONTAINS,
+		FILTER_COMP_GREATER,
+		FILTER_COMP_LESS,
+		FILTER_COMP_GREATER_OR_EQUAL,
+		FILTER_COMP_LESS_OR_EQUAL,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -91,11 +96,10 @@ public:
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
-	PackedStringArray get_cached_paths();
-	Dictionary get_cached_paths_typed();
-
-	PackedStringArray get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
-	Dictionary get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value);
+	Dictionary get_cached_entries();
+	Dictionary get_cached_paths_infos(const FilterTarget &p_info);
+	Dictionary get_cached_entries_filtered(const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
+	Dictionary get_cached_paths_infos_filtered(const FilterTarget &p_info, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);

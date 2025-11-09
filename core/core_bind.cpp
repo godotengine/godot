@@ -69,20 +69,20 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path) {
 	return res;
 }
 
-PackedStringArray ResourceLoader::get_cached_paths() {
-	return ::ResourceLoader::get_cached_paths();
+Dictionary ResourceLoader::get_cached_entries() {
+	return ::ResourceLoader::get_cached_entries();
 }
 
-Dictionary ResourceLoader::get_cached_paths_typed() {
-	return ::ResourceLoader::get_cached_paths_typed();
+Dictionary ResourceLoader::get_cached_paths_infos(const FilterTarget &p_info) {
+	return ::ResourceLoader::get_cached_paths_infos(::ResourceLoader::FilterTarget(p_info));
 }
 
-PackedStringArray ResourceLoader::get_cached_paths_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
-	return ::ResourceLoader::get_cached_paths_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
+Dictionary ResourceLoader::get_cached_entries_filtered(const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit) {
+	return ::ResourceLoader::get_cached_entries_filtered(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value, p_limit);
 }
 
-Dictionary ResourceLoader::get_cached_paths_typed_by_filter(const FilterTarget &p_target, const FilterComparator &p_comparator, const String &p_value) {
-	return ::ResourceLoader::get_cached_paths_typed_by_filter(::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value);
+Dictionary ResourceLoader::get_cached_paths_infos_filtered(const FilterTarget &p_info, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit) {
+	return ::ResourceLoader::get_cached_paths_infos_filtered(::ResourceLoader::FilterTarget(p_info), ::ResourceLoader::FilterTarget(p_target), ::ResourceLoader::FilterComparator(p_comparator), p_value, p_limit);
 }
 
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, CacheMode p_cache_mode) {
@@ -155,10 +155,10 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &ResourceLoader::load_threaded_get_status, DEFVAL_ARRAY);
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &ResourceLoader::load_threaded_get);
 
-	ClassDB::bind_method(D_METHOD("get_cached_paths"), &ResourceLoader::get_cached_paths);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_typed"), &ResourceLoader::get_cached_paths_typed);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_by_filter", "target", "comparator", "value"), &ResourceLoader::get_cached_paths_by_filter);
-	ClassDB::bind_method(D_METHOD("get_cached_paths_typed_by_filter", "target", "comparator", "value"), &ResourceLoader::get_cached_paths_typed_by_filter);
+	ClassDB::bind_method(D_METHOD("get_cached_entries"), &ResourceLoader::get_cached_entries);
+	ClassDB::bind_method(D_METHOD("get_cached_paths_infos", "info"), &ResourceLoader::get_cached_paths_infos);
+	ClassDB::bind_method(D_METHOD("get_cached_entries_filtered", "target", "comparator", "value", "limit"), &ResourceLoader::get_cached_entries_filtered);
+	ClassDB::bind_method(D_METHOD("get_cached_paths_infos_filtered", "info", "target", "comparator", "value", "limit"), &ResourceLoader::get_cached_paths_infos_filtered);
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
@@ -191,12 +191,17 @@ void ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_NAME);
 	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_PATH);
 	BIND_ENUM_CONSTANT(FILTER_TARGET_RESOURCE_CLASS);
+	BIND_ENUM_CONSTANT(FILTER_TARGET_REFERENCE_COUNT);
 
 	BIND_ENUM_CONSTANT(FILTER_COMP_EQUALS);
 	BIND_ENUM_CONSTANT(FILTER_COMP_NOT_EQUAL);
 	BIND_ENUM_CONSTANT(FILTER_COMP_BEGINS_WITH);
 	BIND_ENUM_CONSTANT(FILTER_COMP_ENDS_WITH);
 	BIND_ENUM_CONSTANT(FILTER_COMP_CONTAINS);
+	BIND_ENUM_CONSTANT(FILTER_COMP_GREATER);
+	BIND_ENUM_CONSTANT(FILTER_COMP_GREATER_OR_EQUAL);
+	BIND_ENUM_CONSTANT(FILTER_COMP_LESS);
+	BIND_ENUM_CONSTANT(FILTER_COMP_LESS_OR_EQUAL);
 }
 
 ////// ResourceSaver //////

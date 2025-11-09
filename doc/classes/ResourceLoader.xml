@@ -32,83 +32,103 @@
 				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
-		<method name="get_cached_paths">
-			<return type="PackedStringArray" />
+		<method name="get_cached_entries">
+			<return type="Dictionary" />
 			<description>
-				Returns a [PackedStringArray] of all cached [Resource] paths.
-				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] count greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
+				Returns the entire contents of the ResourceCache as a [Dictionary] where keys are representing the cached paths [String] and values are the [Resource] objects.
+				[code] { "res://icon.svg", Image() } [/code]
+				[b]Example:[/b] Get all infos and print as JSON
+				[codeblock]
+				var all_entries = ResourceLoader.get_cached_entries()
+				print(JSON.stringify(all_entries, "\t"))
+				[/codeblock]
 			</description>
 		</method>
-		<method name="get_cached_paths_by_filter">
-			<return type="PackedStringArray" />
+		<method name="get_cached_entries_filtered">
+			<return type="Dictionary" />
 			<param index="0" name="target" type="int" enum="ResourceLoader.FilterTarget" />
 			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
-			<param index="2" name="value" type="String" />
+			<param index="2" name="value" type="Variant" />
+			<param index="3" name="limit" type="int" />
 			<description>
-				Returns a [PackedStringArray] of all cached [Resource] paths that match the given filter condition
-				The [param target] selects which attribute is checked, [param comparator] defines how it is compared to [param value].
-				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
-				[b]Examples (GDScript)[/b]
-				All [Image] resources (type hint)
+				Returns filtered entries of the ResourceCache as a [Dictionary] key-value-pairs of [String] and [Resource]
+				[code] SELECT * FROM ResourceCache WHERE (Target) (Comparator) (Value) LIMIT (limit) [/code]
+				[b]Example1:[/b] All [Image] resources (type hint)
 				[codeblock]
-				var img_paths = ResourceLoader.get_cached_paths_by_filter(
+				var img_paths = ResourceLoader.get_cached_entries_filtered(
 					ResourceLoader.FILTER_TARGET_TYPE_HINT,
 					ResourceLoader.FILTER_COMP_EQUALS,
-					"Image")
+					"Image",
+					0)
 				[/codeblock]
-				All resources in the [code]res://assets/[/code] folder:
+				[b]Example2:[/b] All resources in the [code]res://assets/[/code] folder:
 				[codeblock]
-				var in_dir = ResourceLoader.get_cached_paths_by_filter(
+				var in_dir = ResourceLoader.get_cached_entries_filtered(
 					ResourceLoader.FILTER_TARGET_PATH,
 					ResourceLoader.FILTER_COMP_BEGINS_WITH,
-					"res://assets/")
+					"res://assets/",
+					0)
 				[/codeblock]
-				All PNG files (by extension):
+				[b]Example3:[/b] All PNG files (by extension):
 				[codeblock]
-				var pngs = ResourceLoader.get_cached_paths_by_filter(
+				var pngs = ResourceLoader.get_cached_entries_filtered(
 					ResourceLoader.FILTER_TARGET_FILE_EXTENSION,
 					ResourceLoader.FILTER_COMP_EQUALS,
-					"png")
+					"png",
+					0)
 				[/codeblock]
 			</description>
 		</method>
-		<method name="get_cached_paths_typed">
+		<method name="get_cached_paths_infos">
 			<return type="Dictionary" />
+			<param index="0" name="info" type="int" enum="ResourceLoader.FilterTarget" />
 			<description>
-				Returns a [Dictionary] of all cached [Resource] paths as in the form of [code]{ "res://icon.svg": "Image" }[/code]
-				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
+				Returns all entries of the ResourceCache as a [Dictionary] with key-value-pairs of [String] and [Variant]
+				The values depend on the provided [param info].
+				[b]Example:[/b] Get all paths and their type_hint
+				[codeblock]
+				var all_infos = ResourceLoader.get_cached_paths_infos(ResourceLoader.FILTER_TARGET_TYPE_HINT)
+				print(JSON.stringify(all_infos, "\t"))
+				[/codeblock]
 			</description>
 		</method>
-		<method name="get_cached_paths_typed_by_filter">
+		<method name="get_cached_paths_infos_filtered">
 			<return type="Dictionary" />
-			<param index="0" name="target" type="int" enum="ResourceLoader.FilterTarget" />
-			<param index="1" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
-			<param index="2" name="value" type="String" />
+			<param index="0" name="info" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="1" name="target" type="int" enum="ResourceLoader.FilterTarget" />
+			<param index="2" name="comparator" type="int" enum="ResourceLoader.FilterComparator" />
+			<param index="3" name="value" type="Variant" />
+			<param index="4" name="limit" type="int" />
 			<description>
-				Returns a [Dictionary] of cached [Resource] paths that match a single filter condition in the form of { "res://icon.svg": "Image" }
-				The [param target] selects the attribute and [param comparator] defines comparison against [param value].
-				A [Resource] is considered cached when it has a [method RefCounted.get_reference_count] greater than zero. This means the [Resource] must be assigned to attributes/variables of any Godot type like [Node], [Resource] or [Object].
-				[b]Examples (GDScript)[/b]
-				All resources whose path starts with [code]res://[/code], with types included:
+				Returns filtered entries of the ResourceCache as a [Dictionary] with key-value-pairs of [String] and [Variant]
+				The value behind [Variant] depends on the [param info] provided.
+				[code] SELECT Path,Info FROM ResourceCache WHERE (Target) (Comparator) (Value) LIMIT (limit) [/code]
+				[b]Example1:[/b] Select all (Path,TypeHint) where TypeHint equals "Image"
 				[codeblock]
-				var dict1 = ResourceLoader.get_cached_paths_typed_by_filter(
+				var img_paths = ResourceLoader.get_cached_entries_filtered(
 					ResourceLoader.FILTER_TARGET_PATH,
-					ResourceLoader.FILTER_COMP_BEGINS_WITH,
-					"res://")
-				[/codeblock]
-				All resources whose file name contains "Character01":
-				[codeblock]
-				var dict2 = ResourceLoader.get_cached_paths_typed_by_filter(
-					ResourceLoader.FILTER_TARGET_FILE_NAME,
-					ResourceLoader.FILTER_COMP_ENDS_WITH,
-					"Character01")
-				[/codeblock]
-				All resources of class [Image]:
-				[codeblock]
-				var dict3 = ResourceLoader.get_cached_paths_typed_by_filter(
 					ResourceLoader.FILTER_TARGET_TYPE_HINT,
 					ResourceLoader.FILTER_COMP_EQUALS,
-					"Image")
+					"Image",
+				0)
+				[/codeblock]
+				[b]Example2:[/b] Select all (Path,TypeHint) of resources where path begins with [code]res://assets/[/code]:
+				[codeblock]
+				var in_dir = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_TARGET_PATH,
+					ResourceLoader.FILTER_COMP_BEGINS_WITH,
+					"res://assets/",
+					0)
+				[/codeblock]
+				[b]Example3:[/b] Select all (Path,ReferenceCount) of resources with PNG file extension:
+				[codeblock]
+				var pngs = ResourceLoader.get_cached_entries_filtered(
+					ResourceLoader.FILTER_TARGET_REFERENCE_COUNT,
+					ResourceLoader.FILTER_TARGET_FILE_EXTENSION,
+					ResourceLoader.FILTER_COMP_EQUALS,
+					"png",
+					0)
 				[/codeblock]
 			</description>
 		</method>
@@ -284,6 +304,8 @@
 		<constant name="FILTER_TARGET_RESOURCE_CLASS" value="7" enum="FilterTarget">
 			Target attribute is the resource's class name, e.g., [Texture2D], [Script], [AudioStreamMP3].
 		</constant>
+		<constant name="FILTER_TARGET_REFERENCE_COUNT" value="8" enum="FilterTarget">
+		</constant>
 		<constant name="FILTER_COMP_EQUALS" value="0" enum="FilterComparator">
 			Compares for exact equality between the target attribute and the provided value.
 		</constant>
@@ -298,6 +320,14 @@
 		</constant>
 		<constant name="FILTER_COMP_CONTAINS" value="4" enum="FilterComparator">
 			Matches when the target attribute contains the provided value as a substring.
+		</constant>
+		<constant name="FILTER_COMP_GREATER" value="5" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_GREATER_OR_EQUAL" value="7" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_LESS" value="6" enum="FilterComparator">
+		</constant>
+		<constant name="FILTER_COMP_LESS_OR_EQUAL" value="8" enum="FilterComparator">
 		</constant>
 	</constants>
 </class>
