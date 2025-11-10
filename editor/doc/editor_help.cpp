@@ -2914,7 +2914,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			}
 
 			String image_path = bbcode.substr(brk_end + 1, end - brk_end - 1);
-			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent);
+			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent ? RichTextLabel::IMAGE_UNIT_PERCENT : RichTextLabel::IMAGE_UNIT_PIXEL);
 
 			pos = end;
 			tag_stack.push_front("img");

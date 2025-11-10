@@ -1,0 +1,21 @@
+GH-112617
+---------
+Validate extension JSON: API was removed: classes/RichTextLabel/enums/ImageUpdateMask/values/UPDATE_WIDTH_IN_PERCENT
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/10': default_value changed value in new API, from "false" to "0".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/10': type changed value in new API, from "bool" to "enum::RichTextLabel.ImageUnit".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/9': default_value changed value in new API, from "false" to "0".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/9': type changed value in new API, from "bool" to "enum::RichTextLabel.ImageUnit".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/10': default_value changed value in new API, from "false" to "0".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/10': type changed value in new API, from "bool" to "enum::RichTextLabel.ImageUnit".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/11': default_value changed value in new API, from "false" to "0".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/11': type changed value in new API, from "bool" to "enum::RichTextLabel.ImageUnit".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/1': meta changed value in new API, from "int32" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/1': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/2': meta changed value in new API, from "int32" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/2': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/3': meta changed value in new API, from "int32" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/3': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/4': meta changed value in new API, from "int32" to "float".
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments/4': type changed value in new API, from "int" to "float".
+
+Arguments changed from bools to enums for a few methods. Compatibility methods registered.
