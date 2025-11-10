@@ -36,7 +36,7 @@ void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
 
-	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
+	RS::get_singleton()->light_set_param(get_base(), RS::LightParam(p_param), p_value);
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmos();
@@ -54,7 +54,7 @@ real_t Light3D::get_param(Param p_param) const {
 
 void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
-	RS::get_singleton()->light_set_shadow(light, p_enable);
+	RS::get_singleton()->light_set_shadow(get_base(), p_enable);
 
 	update_configuration_warnings();
 }
@@ -65,7 +65,7 @@ bool Light3D::has_shadow() const {
 
 void Light3D::set_negative(bool p_enable) {
 	negative = p_enable;
-	RS::get_singleton()->light_set_negative(light, p_enable);
+	RS::get_singleton()->light_set_negative(get_base(), p_enable);
 }
 
 bool Light3D::is_negative() const {
@@ -74,7 +74,7 @@ bool Light3D::is_negative() const {
 
 void Light3D::set_enable_distance_fade(bool p_enable) {
 	distance_fade_enabled = p_enable;
-	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+	RS::get_singleton()->light_set_distance_fade(get_base(), distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
 	notify_property_list_changed();
 }
 
@@ -84,7 +84,7 @@ bool Light3D::is_distance_fade_enabled() const {
 
 void Light3D::set_distance_fade_begin(real_t p_distance) {
 	distance_fade_begin = p_distance;
-	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+	RS::get_singleton()->light_set_distance_fade(get_base(), distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
 }
 
 real_t Light3D::get_distance_fade_begin() const {
@@ -93,7 +93,7 @@ real_t Light3D::get_distance_fade_begin() const {
 
 void Light3D::set_distance_fade_shadow(real_t p_distance) {
 	distance_fade_shadow = p_distance;
-	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+	RS::get_singleton()->light_set_distance_fade(get_base(), distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
 }
 
 real_t Light3D::get_distance_fade_shadow() const {
@@ -102,7 +102,7 @@ real_t Light3D::get_distance_fade_shadow() const {
 
 void Light3D::set_distance_fade_length(real_t p_length) {
 	distance_fade_length = p_length;
-	RS::get_singleton()->light_set_distance_fade(light, distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
+	RS::get_singleton()->light_set_distance_fade(get_base(), distance_fade_enabled, distance_fade_begin, distance_fade_shadow, distance_fade_length);
 }
 
 real_t Light3D::get_distance_fade_length() const {
@@ -111,7 +111,7 @@ real_t Light3D::get_distance_fade_length() const {
 
 void Light3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;
-	RS::get_singleton()->light_set_cull_mask(light, p_cull_mask);
+	RS::get_singleton()->light_set_cull_mask(get_base(), p_cull_mask);
 }
 
 uint32_t Light3D::get_cull_mask() const {
@@ -124,9 +124,9 @@ void Light3D::set_color(const Color &p_color) {
 	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		Color combined = color.srgb_to_linear();
 		combined *= correlated_color.srgb_to_linear();
-		RS::get_singleton()->light_set_color(light, combined.linear_to_srgb());
+		RS::get_singleton()->light_set_color(get_base(), combined.linear_to_srgb());
 	} else {
-		RS::get_singleton()->light_set_color(light, color);
+		RS::get_singleton()->light_set_color(get_base(), color);
 	}
 	// The gizmo color depends on the light color, so update it.
 	update_gizmos();
@@ -138,7 +138,7 @@ Color Light3D::get_color() const {
 
 void Light3D::set_shadow_reverse_cull_face(bool p_enable) {
 	reverse_cull = p_enable;
-	RS::get_singleton()->light_set_reverse_cull_face_mode(light, reverse_cull);
+	RS::get_singleton()->light_set_reverse_cull_face_mode(get_base(), reverse_cull);
 }
 
 bool Light3D::get_shadow_reverse_cull_face() const {
@@ -147,7 +147,7 @@ bool Light3D::get_shadow_reverse_cull_face() const {
 
 void Light3D::set_shadow_caster_mask(uint32_t p_caster_mask) {
 	shadow_caster_mask = p_caster_mask;
-	RS::get_singleton()->light_set_shadow_caster_mask(light, shadow_caster_mask);
+	RS::get_singleton()->light_set_shadow_caster_mask(get_base(), shadow_caster_mask);
 }
 
 uint32_t Light3D::get_shadow_caster_mask() const {
@@ -189,7 +189,7 @@ PackedStringArray Light3D::get_configuration_warnings() const {
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
-	RS::get_singleton()->light_set_bake_mode(light, RS::LightBakeMode(p_mode));
+	RS::get_singleton()->light_set_bake_mode(get_base(), RS::LightBakeMode(p_mode));
 }
 
 Light3D::BakeMode Light3D::get_bake_mode() const {
@@ -213,7 +213,7 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 	}
 #endif
 
-	RS::get_singleton()->light_set_projector(light, tex_id);
+	RS::get_singleton()->light_set_projector(get_base(), tex_id);
 	update_configuration_warnings();
 }
 
@@ -263,7 +263,7 @@ void Light3D::set_temperature(const float p_temperature) {
 
 	Color combined = color.srgb_to_linear() * correlated_color.srgb_to_linear();
 
-	RS::get_singleton()->light_set_color(light, combined.linear_to_srgb());
+	RS::get_singleton()->light_set_color(get_base(), combined.linear_to_srgb());
 	// The gizmo color depends on the light color, so update it.
 	update_gizmos();
 }
@@ -449,6 +449,7 @@ void Light3D::_bind_methods() {
 
 Light3D::Light3D(RenderingServer::LightType p_type) {
 	type = p_type;
+	RID light;
 	switch (p_type) {
 		case RS::LIGHT_DIRECTIONAL:
 			light = RenderingServer::get_singleton()->directional_light_create();
@@ -463,7 +464,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 		};
 	}
 
-	RS::get_singleton()->instance_set_base(get_instance(), light);
+	set_base(light);
 
 	set_color(Color(1, 1, 1, 1));
 	set_shadow(false);
@@ -505,8 +506,8 @@ Light3D::~Light3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
-	if (light.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(light);
+	if (get_base().is_valid()) {
+		RenderingServer::get_singleton()->free_rid(get_base());
 	}
 }
 
@@ -514,7 +515,7 @@ Light3D::~Light3D() {
 
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
-	RS::get_singleton()->light_directional_set_shadow_mode(light, RS::LightDirectionalShadowMode(p_mode));
+	RS::get_singleton()->light_directional_set_shadow_mode(get_base(), RS::LightDirectionalShadowMode(p_mode));
 	notify_property_list_changed();
 }
 
@@ -524,7 +525,7 @@ DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
 
 void DirectionalLight3D::set_blend_splits(bool p_enable) {
 	blend_splits = p_enable;
-	RS::get_singleton()->light_directional_set_blend_splits(light, p_enable);
+	RS::get_singleton()->light_directional_set_blend_splits(get_base(), p_enable);
 }
 
 bool DirectionalLight3D::is_blend_splits_enabled() const {
@@ -533,7 +534,7 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 
 void DirectionalLight3D::set_sky_mode(SkyMode p_mode) {
 	sky_mode = p_mode;
-	RS::get_singleton()->light_directional_set_sky_mode(light, RS::LightDirectionalSkyMode(p_mode));
+	RS::get_singleton()->light_directional_set_sky_mode(get_base(), RS::LightDirectionalSkyMode(p_mode));
 }
 
 DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
@@ -611,7 +612,7 @@ DirectionalLight3D::DirectionalLight3D() :
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
-	RS::get_singleton()->light_omni_set_shadow_mode(light, RS::LightOmniShadowMode(p_mode));
+	RS::get_singleton()->light_omni_set_shadow_mode(get_base(), RS::LightOmniShadowMode(p_mode));
 }
 
 OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
