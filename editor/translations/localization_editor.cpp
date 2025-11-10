@@ -405,11 +405,6 @@ void LocalizationEditor::_template_generate_open() {
 void LocalizationEditor::_template_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", template_add_builtin->is_pressed());
 	ProjectSettings::get_singleton()->save();
-
-	const PackedStringArray sources = GLOBAL_GET("internationalization/locale/translations_pot_files");
-	if (sources.is_empty()) {
-		template_generate_button->set_disabled(!template_add_builtin->is_pressed());
-	}
 }
 
 void LocalizationEditor::_template_generate(const String &p_file) {
@@ -723,8 +718,6 @@ void LocalizationEditor::update_translations() {
 
 	// New translation parser plugin might extend possible file extensions in template generation.
 	_update_template_source_file_extensions();
-
-	template_generate_button->set_disabled(sources.is_empty() && !template_add_builtin->is_pressed());
 
 	updating_translations = false;
 }
