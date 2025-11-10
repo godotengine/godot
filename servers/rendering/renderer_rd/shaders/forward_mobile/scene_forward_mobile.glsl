@@ -1757,7 +1757,7 @@ void main() {
 				hvec3 l1 = (l1_r + l1_g + l1_b) / half(3.0);
 				hvec3 lightmap_direction = normalize(l1);
 
-				hvec3 L_view = hvec3(mat3(scene_data.view_matrix) * lightmap_direction);
+				hvec3 L_view = hvec3(inverse(lightmaps.data[ofs].normal_xform) * lightmap_direction);
 
 				hvec3 f0 = F0(metallic, specular, albedo);
 
