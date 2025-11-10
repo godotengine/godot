@@ -3211,7 +3211,7 @@ String PopupMenu::_atr(int p_idx, const String &p_text) const {
 	ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(items[p_idx].auto_translate_mode));
 }
 
-void PopupMenu::popup(const Rect2i &p_bounds) {
+void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 	bool native = global_menu.is_valid();
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -3230,7 +3230,7 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 
-		Popup::popup(p_bounds);
+		Popup::_popup_base(p_bounds);
 	}
 }
 
