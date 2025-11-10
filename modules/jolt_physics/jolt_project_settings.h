@@ -39,6 +39,7 @@ enum JoltJointWorldNode : int {
 
 class JoltProjectSettings {
 public:
+	inline static bool apply_gyroscopic_force;
 	inline static int simulation_velocity_steps;
 	inline static int simulation_position_steps;
 	inline static bool use_enhanced_internal_edge_removal_for_bodies;
