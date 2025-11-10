@@ -57,7 +57,7 @@ void EditorBottomPanel::_on_tab_changed(int p_idx) {
 }
 
 void EditorBottomPanel::_theme_changed() {
-	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox("tabbar_background", "BottomPanel")->duplicate();
+	Ref<StyleBox> bottom_tabbar_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox("tabbar_background", "BottomPanel")->duplicate();
 	bottom_tabbar_style->set_content_margin(SIDE_RIGHT, bottom_hbox->get_minimum_size().x + bottom_tabbar_style->get_content_margin(SIDE_LEFT));
 	add_theme_style_override("tabbar_background", bottom_tabbar_style);
 
