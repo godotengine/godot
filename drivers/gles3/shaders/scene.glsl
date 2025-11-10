@@ -2336,7 +2336,7 @@ void main() {
 			vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
 			vec3 lightmap_direction = normalize(l1);
 
-			vec3 L_view = normalize((scene_data.view_matrix * vec4(lightmap_direction, 0.0)).xyz);
+			vec3 L_view = vec3(inverse(lightmap_normal_xform) * lightmap_direction);
 
 			vec3 f0 = F0(metallic, specular, albedo);
 
