@@ -224,7 +224,6 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		p_theme->set_constant("thumb_size", EditorStringName(Editor), p_config.thumb_size);
 		p_theme->set_constant("class_icon_size", EditorStringName(Editor), p_config.class_icon_size);
-		p_theme->set_constant("color_picker_button_height", EditorStringName(Editor), p_config.color_picker_button_height);
 		p_theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), p_config.gizmo_handle_scale);
 
 		p_theme->set_constant("base_margin", EditorStringName(Editor), p_config.base_margin);
@@ -1988,8 +1987,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		editor_inspector_panel->set_content_margin_all(0);
 		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", editor_inspector_panel);
 
-		// Vertical separation between inspector categories and sections.
-		p_theme->set_constant("v_separation", "EditorInspector", 0);
+		// Vertical separation between inspector areas.
+		p_theme->set_type_variation("EditorInspectorContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorInspectorContainer", 0);
+
+		// Vertical separation between inspector properties.
+		p_theme->set_type_variation("EditorPropertyContainer", "VBoxContainer");
+		p_theme->set_constant("separation", "EditorPropertyContainer", p_config.increased_margin * EDSCALE);
 
 		// EditorProperty.
 
@@ -2005,7 +2009,6 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
 		p_theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
-		p_theme->set_constant("v_separation", "EditorProperty", p_config.increased_margin * EDSCALE);
 
 		const Color property_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 		const Color readonly_color = property_color.lerp(p_config.dark_icon_and_font ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
@@ -2021,6 +2024,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		property_group_note_color.a = 0.1;
 		style_property_group_note->set_bg_color(property_group_note_color);
 		p_theme->set_stylebox("bg_group_note", "EditorProperty", style_property_group_note);
+
+		// Make the height for properties uniform.
+		Ref<StyleBoxFlat> inspector_button_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("Button"));
+		Ref<Font> font = p_theme->get_font(SceneStringName(font), SNAME("LineEdit"));
+		int font_size = p_theme->get_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+		p_config.inspector_property_height = inspector_button_style->get_minimum_size().height + font->get_height(font_size);
+		p_theme->set_constant("inspector_property_height", EditorStringName(Editor), p_config.inspector_property_height);
 
 		// EditorInspectorSection.
 
@@ -2382,8 +2392,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
-
-		// TileSet editor.
-		p_theme->set_stylebox("expand_panel", "TileSetEditor", p_config.tree_panel_style);
 	}
+
+	// TileSet editor.
+	p_theme->set_stylebox("expand_panel", "TileSetEditor", p_config.tree_panel_style);
 }
