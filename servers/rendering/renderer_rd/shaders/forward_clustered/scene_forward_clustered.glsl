@@ -1857,7 +1857,7 @@ void fragment_shader(in SceneData scene_data) {
 			ambient_light += sh_light;
 
 			if (lightmaps.data[ofs].specular_intensity > 0.0) {
-				// Fake specular light to create some direct light specular lobes for directional lightmaps.
+				// fake specular light to create some direct light specular lobes for directional lightmaps.
 				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 				vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
 				vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
