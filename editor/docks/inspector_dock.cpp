@@ -764,14 +764,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_spacer();
 
 	backward_button = memnew(Button);
-	backward_button->set_flat(true);
+	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTRC("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
-	forward_button->set_flat(true);
+	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
 	forward_button->set_disabled(true);

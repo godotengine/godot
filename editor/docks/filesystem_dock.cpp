@@ -4261,14 +4261,14 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(nav_hbc);
 
 	button_hist_prev = memnew(Button);
-	button_hist_prev->set_flat(true);
+	button_hist_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
-	button_hist_next->set_flat(true);
+	button_hist_next->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
