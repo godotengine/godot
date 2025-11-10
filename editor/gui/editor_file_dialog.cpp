@@ -71,7 +71,7 @@ void EditorFileDialog::_native_popup() {
 	DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
 }
 
-void EditorFileDialog::popup(const Rect2i &p_rect) {
+void EditorFileDialog::_popup_base(const Rect2i &p_rect) {
 	_update_option_controls();
 
 	bool use_native = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (bool(EDITOR_GET("interface/editor/use_native_file_dialogs")) || OS::get_singleton()->is_sandboxed());
@@ -79,7 +79,7 @@ void EditorFileDialog::popup(const Rect2i &p_rect) {
 		_native_popup();
 	} else {
 		// Show custom file dialog.
-		ConfirmationDialog::popup(p_rect);
+		ConfirmationDialog::_popup_base(p_rect);
 	}
 }
 
