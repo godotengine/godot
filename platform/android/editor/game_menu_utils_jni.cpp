@@ -35,7 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/run/game_view_plugin.h"
 
-static GameViewPlugin *_get_game_view_plugin() {
+_FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
 	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));

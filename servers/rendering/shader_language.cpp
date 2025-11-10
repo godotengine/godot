@@ -9220,8 +9220,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 	stages = &p_functions;
 
-	is_discard_supported = shader_type_identifier == "canvas_item" || shader_type_identifier == "spatial";
-	is_supported_frag_only_funcs = is_discard_supported || shader_type_identifier == "sky";
+	is_discard_supported = shader_type_identifier == "canvas_item" || shader_type_identifier == "spatial" || shader_type_identifier == StringName();
+	is_supported_frag_only_funcs = is_discard_supported || shader_type_identifier == "sky" || shader_type_identifier == StringName();
 
 	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 

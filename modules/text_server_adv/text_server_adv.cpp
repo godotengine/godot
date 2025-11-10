@@ -4446,7 +4446,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 		}
 	}
 
-	for (int i = p_shaped->first_span; i <= p_shaped->last_span; i++) {
+	for (int i = MAX(0, p_shaped->first_span); i <= MIN(p_shaped->last_span, parent->spans.size() - 1); i++) {
 		ShapedTextDataAdvanced::Span span = parent->spans[i];
 		span.start = MAX(p_shaped->start, span.start);
 		span.end = MIN(p_shaped->end, span.end);
@@ -4484,6 +4484,43 @@ void TextServerAdvanced::_shaped_text_clear(const RID &p_shaped) {
 	sd->objects.clear();
 	sd->bidi_override.clear();
 	invalidate(sd, true);
+}
+
+RID TextServerAdvanced::_shaped_text_duplicate(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
+
+	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, RID());
+
+	MutexLock lock(sd->mutex);
+
+	ShapedTextDataAdvanced *new_sd = memnew(ShapedTextDataAdvanced);
+	new_sd->parent = p_shaped;
+	new_sd->start = sd->start;
+	new_sd->end = sd->end;
+	new_sd->text = sd->text;
+	new_sd->hb_buffer = hb_buffer_create();
+	new_sd->utf16 = new_sd->text.utf16();
+	new_sd->script_iter = memnew(ScriptIterator(new_sd->text, 0, new_sd->text.length()));
+	new_sd->orientation = sd->orientation;
+	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
+	new_sd->para_direction = sd->para_direction;
+	new_sd->base_para_direction = sd->base_para_direction;
+	new_sd->line_breaks_valid = sd->line_breaks_valid;
+	new_sd->justification_ops_valid = sd->justification_ops_valid;
+	new_sd->sort_valid = false;
+	new_sd->upos = sd->upos;
+	new_sd->uthk = sd->uthk;
+	new_sd->runs.clear();
+	new_sd->runs_dirty = true;
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		new_sd->extra_spacing[i] = sd->extra_spacing[i];
+	}
+	full_copy(new_sd);
+	new_sd->valid.clear();
+
+	return shaped_owner.make_rid(new_sd);
 }
 
 void TextServerAdvanced::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -4996,6 +5033,14 @@ String TextServerAdvanced::_shaped_get_text(const RID &p_shaped) const {
 	ERR_FAIL_NULL_V(sd, String());
 
 	return sd->text;
+}
+
+bool TextServerAdvanced::_shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->objects.has(p_key);
 }
 
 bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
@@ -5643,6 +5688,15 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 	}
 	if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
 		font_style.set_flag(TextServer::FONT_ITALIC);
+	}
+	if (p_script_code == "Zsye") {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		font_name = "Apple Color Emoji";
+#elif defined(WINDOWS_ENABLED)
+		font_name = "Segoe UI Emoji";
+#else
+		font_name = "Noto Color Emoji";
+#endif
 	}
 
 	String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
