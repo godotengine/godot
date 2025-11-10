@@ -3144,10 +3144,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				confirm_move_to_dir = to_dir;
 
 				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					move_confirm_text = vformat(TTR("Copy %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
 					confirm_to_copy = true;
 				} else {
-					move_confirm_text = vformat(TTR("Move %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
 					confirm_to_copy = false;
 				}
 
