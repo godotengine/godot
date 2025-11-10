@@ -2851,6 +2851,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 							}
 						}
 					}
+				} else {
+					if (_is_branch_selected(c)) {
+						has_sibling_selection = _is_sibling_branch_selected(c);
+					}
 				}
 
 				prev_ofs = root_pos.y + more_prev_ofs + line_pixel_shift;
