@@ -316,3 +316,65 @@ Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 	}
 	return ResourceLoader::load(custom_script);
 }
+
+void PropertyUtils::parse_array_hint_string(const String &p_hint_string, Variant::Type &r_subtype, PropertyHint &r_subtype_hint, String *r_subtype_hint_string) {
+	r_subtype = Variant::NIL;
+	r_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+	if (r_subtype_hint_string) {
+		*r_subtype_hint_string = String();
+	}
+
+	if (p_hint_string.is_empty()) {
+		return;
+	}
+
+	int hint_subtype_separator = p_hint_string.find_char(':');
+	if (hint_subtype_separator >= 0) {
+		String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
+		int slash_pos = subtype_string.find_char('/');
+		if (slash_pos >= 0) {
+			r_subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
+			subtype_string = subtype_string.substr(0, slash_pos);
+		}
+
+		if (r_subtype_hint_string) {
+			*r_subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
+		}
+		r_subtype = Variant::Type(subtype_string.to_int());
+	} else {
+		r_subtype = Variant::get_type_by_name(p_hint_string);
+
+		if (r_subtype == Variant::VARIANT_MAX) {
+			r_subtype = Variant::OBJECT;
+			r_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+			if (r_subtype_hint_string) {
+				*r_subtype_hint_string = p_hint_string;
+			}
+		}
+	}
+}
+
+void PropertyUtils::parse_dictionary_hint_string(const String &p_hint_string, Variant::Type &r_key_subtype, PropertyHint &r_key_subtype_hint, Variant::Type &r_value_subtype, PropertyHint &r_value_subtype_hint, String *r_key_subtype_hint_string, String *r_value_subtype_hint_string) {
+	r_key_subtype = Variant::NIL;
+	r_key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+	if (r_key_subtype_hint_string) {
+		*r_key_subtype_hint_string = String();
+	}
+	r_value_subtype = Variant::NIL;
+	r_value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+	if (r_value_subtype_hint_string) {
+		*r_value_subtype_hint_string = String();
+	}
+	if (p_hint_string.is_empty()) {
+		return;
+	}
+
+	// Missing ; separator is treated as key only.
+	int key_value_separator = p_hint_string.find_char(';');
+	String key_hint_string = p_hint_string.substr(0, key_value_separator);
+	parse_array_hint_string(key_hint_string, r_key_subtype, r_key_subtype_hint, r_key_subtype_hint_string);
+	if (key_value_separator >= 0) {
+		String value_hint_string = p_hint_string.substr(key_value_separator + 1);
+		parse_array_hint_string(value_hint_string, r_value_subtype, r_value_subtype_hint, r_value_subtype_hint_string);
+	}
+}
