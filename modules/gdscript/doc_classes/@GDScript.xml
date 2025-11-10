@@ -317,6 +317,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@display_if">
+			<return type="void" />
+			<param index="0" name="condition" type="String" />
+			<description>
+				Mark any property as exported if the [param condition] is true. [param condition] must be the name of a [bool] property.
+				[codeblock]
+				@export var is_alive = true
+				@export @display_if("is_alive") var health: int
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>

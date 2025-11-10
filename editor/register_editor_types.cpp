@@ -67,6 +67,7 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
+#include "editor/inspector/display_if_editor_plugin.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -225,6 +226,7 @@ void register_editor_types() {
 		EditorPlugins::add_by_type<DebugAdapterServer>();
 	}
 	EditorPlugins::add_by_type<EditorScriptPlugin>();
+	EditorPlugins::add_by_type<DisplayIfEditorPlugin>();
 	EditorPlugins::add_by_type<FontEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();

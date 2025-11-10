@@ -981,6 +981,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 				}
 			}
 		}
+	} else if (p_annotation->name == SNAME("@display_if")) {
 	} else if (p_annotation->name == SNAME("@export_custom")) {
 		switch (p_argument) {
 			case 0: {
