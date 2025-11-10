@@ -284,6 +284,7 @@
 		</member>
 		<member name="animation/compatibility/default_parent_skeleton_in_mesh_instance_3d" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], [member MeshInstance3D.skeleton] will point to the parent node ([code]..[/code]) by default, which was the behavior before Godot 4.6. It's recommended to keep this setting disabled unless the old behavior is needed for compatibility.
+			[b]Note:[/b] If you disable this option in an existing project, it's strongly recommended to use the [code]Project &gt; Tools &gt; Upgrade Project Files...[/code] option to ensure existing scenes do not break.
 		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
