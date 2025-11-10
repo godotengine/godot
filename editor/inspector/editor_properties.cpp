@@ -151,6 +151,7 @@ EditorPropertyVariant::EditorPropertyVariant() {
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVariant::_popup_edit_menu));
 	content->add_child(edit_button);
@@ -409,6 +410,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) :
 	open_big_text = memnew(Button);
 	open_big_text->set_accessibility_name(TTRC("Open Text Edit Dialog"));
 	open_big_text->set_flat(true);
+	open_big_text->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	open_big_text->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
@@ -558,6 +560,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
+	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
 	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyTextEnum::_option_selected));
@@ -565,6 +568,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	edit_button = memnew(Button);
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->set_flat(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_button->hide();
 	default_layout->add_child(edit_button);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_edit_custom_value));
@@ -578,12 +582,14 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	accept_button = memnew(Button);
 	accept_button->set_accessibility_name(TTRC("Accept Custom Value Edit"));
 	accept_button->set_flat(true);
+	accept_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_custom_layout->add_child(accept_button);
 	accept_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_custom_value_accepted));
 
 	cancel_button = memnew(Button);
 	cancel_button->set_accessibility_name(TTRC("Cancel Custom Value Edit"));
 	cancel_button->set_flat(true);
+	cancel_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit_custom_layout->add_child(cancel_button);
 	cancel_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyTextEnum::_custom_value_canceled));
 
@@ -647,6 +653,7 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale_edit = memnew(Button);
 	locale_edit->set_accessibility_name(TTRC("Edit"));
 	locale_edit->set_clip_text(true);
+	locale_edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	locale_hb->add_child(locale_edit);
 	add_focusable(locale);
 	dialog = nullptr;
@@ -818,11 +825,13 @@ EditorPropertyPath::EditorPropertyPath() {
 	toggle_uid->set_accessibility_name(TTRC("Toggle Display UID"));
 	toggle_uid->set_tooltip_text(TTRC("Toggles displaying between path and UID.\nThe UID is the actual value of this property."));
 	toggle_uid->set_pressed(false);
+	toggle_uid->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	path_hb->add_child(toggle_uid);
 	add_focusable(toggle_uid);
 	toggle_uid->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyPath::_toggle_uid_display));
 
 	path_edit = memnew(Button);
+	path_edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	path_edit->set_accessibility_name(TTRC("Edit"));
 	path_hb->add_child(path_edit);
 	add_focusable(path);
@@ -861,6 +870,7 @@ void EditorPropertyClassName::_dialog_created() {
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
 	property->set_clip_text(true);
+	property->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(property);
 	add_focusable(property);
 	property->set_text(selected_type);
@@ -955,6 +965,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
+	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
@@ -1622,6 +1633,7 @@ void EditorPropertyObjectID::setup(const String &p_base_type) {
 
 EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -1648,6 +1660,7 @@ void EditorPropertySignal::update_property() {
 
 EditorPropertySignal::EditorPropertySignal() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -1668,6 +1681,7 @@ void EditorPropertyCallable::update_property() {
 
 EditorPropertyCallable::EditorPropertyCallable() {
 	edit = memnew(Button);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->set_accessibility_name(TTRC("Edit"));
 	add_child(edit);
 	add_focusable(edit);
@@ -2390,6 +2404,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning = memnew(Button);
 	warning->set_text(TTR("Temporary Euler may be changed implicitly!"));
 	warning->set_clip_text(true);
+	warning->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	warning->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_warning_pressed));
 	warning_dialog = memnew(AcceptDialog);
 	add_child(warning_dialog);
@@ -2419,6 +2434,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	edit_button->set_accessibility_name(TTRC("Edit"));
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	default_layout->add_child(edit_button);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_edit_custom_value));
 
@@ -2897,14 +2913,6 @@ void EditorPropertyColor::_popup_closed() {
 	}
 }
 
-void EditorPropertyColor::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
-		} break;
-	}
-}
-
 void EditorPropertyColor::update_property() {
 	picker->set_pick_color(get_edited_property_display_value());
 	const Color color = picker->get_pick_color();
@@ -2938,6 +2946,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker = memnew(ColorPickerButton);
 	add_child(picker);
 	picker->set_flat(true);
+	picker->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created), CONNECT_ONE_SHOT);
 }
@@ -3246,6 +3255,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign = memnew(Button);
 	assign->set_accessibility_name(TTRC("Assign Node"));
 	assign->set_flat(true);
+	assign->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

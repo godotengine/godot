@@ -1434,6 +1434,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	make_unique_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_unique_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
 	make_unique_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	make_unique_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(make_unique_button);
 	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_on_unique_button_pressed));
 
@@ -1443,6 +1444,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_accessibility_name(TTRC("Assign Resource"));
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
+	assign_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
@@ -1462,13 +1464,13 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	quick_load_button = memnew(Button);
-	quick_load_button->set_theme_type_variation(SceneStringName(FlatButton));
+	quick_load_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	quick_load_button->set_tooltip_text(TTRC("Quick Load"));
 	add_child(quick_load_button);
 	quick_load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_QUICKLOAD));
 
 	edit_button = memnew(Button);
-	edit_button->set_theme_type_variation(SceneStringName(FlatButton));
+	edit_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->set_accessibility_name(TTRC("Edit"));
