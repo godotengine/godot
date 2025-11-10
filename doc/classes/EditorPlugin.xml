@@ -587,6 +587,7 @@
 			<param index="0" name="parser" type="EditorTranslationParserPlugin" />
 			<description>
 				Registers a custom translation parser plugin for extracting translatable strings from custom files.
+				[b]Note:[/b] A custom parser added earlier takes precedence over one added later. Processing the same file extension by multiple custom parsers is not supported.
 			</description>
 		</method>
 		<method name="add_undo_redo_inspector_hook_callback">

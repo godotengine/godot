@@ -31,41 +31,15 @@
 #include "template_generator.h"
 
 #include "core/config/project_settings.h"
-#include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
 
 TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin) const {
-	Vector<Vector<String>> raw;
-
-	for (const String &path : p_sources) {
-		Vector<Vector<String>> parsed_from_file;
-
-		const String &extension = path.get_extension();
-		ERR_CONTINUE_MSG(!EditorTranslationParser::get_singleton()->can_parse(extension), vformat("Cannot parse file '%s': unrecognized file extension. Skipping.", path));
-
-		EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(path, &parsed_from_file);
-
-		for (const Vector<String> &entry : parsed_from_file) {
-			ERR_CONTINUE(entry.is_empty());
-
-			const String &msgctxt = (entry.size() > 1) ? entry[1] : String();
-			const String &msgid_plural = (entry.size() > 2) ? entry[2] : String();
-			const String &comment = (entry.size() > 3) ? entry[3] : String();
-			const int source_line = (entry.size() > 4) ? entry[4].to_int() : 0;
-			const String &location = source_line > 0 ? vformat("%s:%d", path, source_line) : path;
-
-			raw.push_back({ entry[0], msgctxt, msgid_plural, comment, location });
-		}
-	}
-
-	if (p_add_builtin) {
-		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
-			raw.push_back({ extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], String(), String() });
-		}
-	}
-
 	MessageMap result;
-	for (const Vector<String> &entry : raw) {
+
+	const Vector<PackedStringArray> entries = EditorTranslationParser::get_singleton()->parse(p_sources, p_add_builtin);
+	for (const Vector<String> &entry : entries) {
+		ERR_FAIL_COND_V(entry.size() != 5, MessageMap());
+
 		const String &msgid = entry[0];
 		const String &msgctxt = entry[1];
 		const String &plural = entry[2];
@@ -75,9 +49,10 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		const Translation::MessageKey key = { msgctxt, msgid };
 		MessageData &mdata = result[key];
 		if (!mdata.plural.is_empty() && !plural.is_empty() && mdata.plural != plural) {
-			WARN_PRINT(vformat(R"(Skipping different plural definitions for msgid "%s" msgctxt "%s": "%s" and "%s")", msgid, msgctxt, mdata.plural, plural));
+			WARN_PRINT(vformat(R"(Skipping different plural definitions for msgid "%s" msgctxt "%s": "%s" and "%s".)", msgid, msgctxt, mdata.plural, plural));
 			continue;
 		}
+
 		mdata.plural = plural;
 		if (!location.is_empty()) {
 			mdata.locations.insert(location);
@@ -86,6 +61,7 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 			mdata.comments.insert(comment);
 		}
 	}
+
 	return result;
 }
 
