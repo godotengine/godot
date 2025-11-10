@@ -131,6 +131,7 @@ public:
 	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
+	String get_editor_language() const;
 
 	bool is_node_3d_snap_enabled() const;
 	real_t get_node_3d_translate_snap() const;

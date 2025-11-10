@@ -496,8 +496,8 @@ Array GDScriptTextDocument::find_symbols(const LSP::TextDocumentPositionParams &
 			if (file_checker->file_exists(path)) {
 				arr.push_back(location.to_json());
 			}
-			r_list.push_back(symbol);
 		}
+		r_list.push_back(symbol);
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		List<const LSP::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);

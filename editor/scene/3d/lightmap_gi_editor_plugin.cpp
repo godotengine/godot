@@ -166,8 +166,8 @@ void LightmapGIEditorPlugin::bake_func_end(uint64_t p_time_started) {
 		tmp_progress = nullptr;
 	}
 
-	const int time_taken = (OS::get_singleton()->get_ticks_msec() - p_time_started) * 0.001;
-	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.", time_taken / 3600, (time_taken % 3600) / 60, time_taken % 60));
+	const int time_taken = OS::get_singleton()->get_ticks_msec() - p_time_started;
+	print_line(vformat("Done baking lightmaps in %02d:%02d:%02d.%02d.", time_taken / 3'600'000, (time_taken % 3'600'000) / 60'000, (time_taken % 60'000) / 1000, (time_taken % 1000) / 10));
 	// Request attention in case the user was doing something else.
 	// Baking lightmaps is likely the editor task that can take the most time,
 	// so only request the attention for baking lightmaps.

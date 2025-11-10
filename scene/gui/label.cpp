@@ -136,6 +136,8 @@ int Label::get_line_height(int p_line) const {
 }
 
 void Label::_shape() const {
+	const String &lang = language.is_empty() ? _get_locale() : language;
+
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -149,7 +151,7 @@ void Label::_shape() const {
 		}
 		paragraphs.clear();
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			txt = txt.substr(0, visible_chars);
 		}
@@ -183,7 +185,7 @@ void Label::_shape() const {
 			ERR_FAIL_COND(font.is_null());
 
 			if (para.dirty) {
-				TS->shaped_text_add_string(para.text_rid, para.text, font->get_rids(), font_size, font->get_opentype_features(), language);
+				TS->shaped_text_add_string(para.text_rid, para.text, font->get_rids(), font_size, font->get_opentype_features(), lang);
 			} else {
 				int spans = TS->shaped_get_span_count(para.text_rid);
 				for (int i = 0; i < spans; i++) {
@@ -657,6 +659,43 @@ PackedStringArray Label::get_configuration_warnings() const {
 		}
 	}
 
+	Ref<FontFile> ff = font;
+	if (ff.is_valid() && ff->is_multichannel_signed_distance_field()) {
+		bool has_settings = settings.is_valid();
+		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+		int outline_size = has_settings ? settings->get_outline_size() : theme_cache.font_outline_size;
+		Vector<LabelSettings::StackedOutlineData> stacked_outline_datas = has_settings ? settings->get_stacked_outline_data() : Vector<LabelSettings::StackedOutlineData>();
+		Vector<LabelSettings::StackedShadowData> stacked_shadow_datas = has_settings ? settings->get_stacked_shadow_data() : Vector<LabelSettings::StackedShadowData>();
+		int max_outline_draw_size = outline_size;
+		if (stacked_outline_datas.size() != 0) {
+			int draw_iterations = stacked_outline_datas.size();
+			for (int j = 0; j < draw_iterations; j++) {
+				int stacked_outline_size = stacked_outline_datas[j].size;
+				if (stacked_outline_size <= 0) {
+					continue;
+				}
+				max_outline_draw_size += stacked_outline_size;
+			}
+		}
+		if (stacked_shadow_datas.size() != 0) {
+			int draw_iterations = stacked_shadow_datas.size();
+			for (int j = 0; j < draw_iterations; j++) {
+				LabelSettings::StackedShadowData stacked_shadow_data = stacked_shadow_datas[j];
+				if (stacked_shadow_data.outline_size > 0) {
+					max_outline_draw_size = MAX(max_outline_draw_size, stacked_shadow_data.outline_size);
+				}
+			}
+		}
+		float scale = (float)font_size / (float)ff->get_msdf_size();
+		float ol = (float)max_outline_draw_size / scale / 4.0;
+		float pxr = (float)ff->get_msdf_pixel_range() / 2.0 - 1.0;
+		float r_pxr = (ol + 1.0) * 2.0;
+
+		if (ol > pxr) {
+			warnings.push_back(vformat(RTR("MSDF font pixel range is too small, some outlines/shadows will not render. Set MSDF pixel range to be at least %d to render all outlines/shadows."), Math::ceil(r_pxr)));
+		}
+	}
+
 	return warnings;
 }
 
@@ -672,15 +711,14 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = atr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
+			const String new_text = atr(text);
+			if (new_text != xl_text) {
+				xl_text = new_text;
+				if (visible_ratio < 1) {
+					visible_chars = get_total_character_count() * visible_ratio;
+				}
 			}
-			xl_text = new_text;
-			if (visible_ratio < 1) {
-				visible_chars = get_total_character_count() * visible_ratio;
-			}
-			text_dirty = true;
+			text_dirty = true; // Language update might change the appearance of some characters.
 
 			queue_accessibility_update();
 			queue_redraw();
@@ -857,6 +895,7 @@ void Label::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			font_dirty = true;
 			queue_redraw();
+			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -1070,6 +1109,7 @@ void Label::set_text(const String &p_string) {
 void Label::_invalidate() {
 	font_dirty = true;
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
@@ -1082,6 +1122,7 @@ void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
 			settings->connect_changed(callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate();
+		update_configuration_warnings();
 	}
 }
 

@@ -37,6 +37,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/material.h"
 #include "scene/resources/world_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
@@ -2600,7 +2601,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(c
 		// Find the adequate neighbor.
 		for (int j = 0; j < TileSet::CELL_NEIGHBOR_MAX; j++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(j);
-			if (tile_set->is_valid_terrain_peering_bit(p_terrain_set, bit)) {
+			if (tile_set->is_existing_neighbor(bit)) {
 				Vector2i neighbor = tile_set->get_neighbor_cell(coords, bit);
 				if (!can_modify_set.has(neighbor)) {
 					can_modify_list.push_back(neighbor);

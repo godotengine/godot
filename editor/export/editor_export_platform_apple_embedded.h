@@ -33,6 +33,7 @@
 #include "plugin_config_apple_embedded.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
@@ -96,6 +97,13 @@ class EditorExportPlatformAppleEmbedded : public EditorExportPlatform {
 protected:
 	void _start_remote_device_poller_thread() {
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+	}
+
+	void _stop_remote_device_poller_thread() {
+		quit_request.set();
+		if (check_for_changes_thread.is_started()) {
+			check_for_changes_thread.wait_to_finish();
+		}
 	}
 
 	int _execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data);

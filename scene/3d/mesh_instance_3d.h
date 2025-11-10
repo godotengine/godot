@@ -49,7 +49,7 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path = NodePath("..");
+	NodePath skeleton_path;
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
@@ -72,6 +72,10 @@ protected:
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
+#ifndef DISABLE_DEPRECATED
+	static inline bool use_parent_skeleton_compat = false;
+#endif
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;

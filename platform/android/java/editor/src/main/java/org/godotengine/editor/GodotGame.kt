@@ -230,6 +230,21 @@ open class GodotGame : BaseGodotGame() {
 		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
 	}
 
+	override fun resetTimeScale() {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_RESET_TIME_SCALE)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun setTimeScale(scale: Double) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_TIME_SCALE)
+			putDouble(KEY_GAME_MENU_ACTION_PARAM1, scale)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
 	override fun embedGameOnPlay(embedded: Boolean) {
 		val actionBundle = Bundle().apply {
 			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_EMBED_GAME_ON_PLAY)

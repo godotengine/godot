@@ -369,7 +369,7 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 	return GetTypeInfo<T>::VARIANT_TYPE;
 }
 
-#define METHOD_CLASS(m_class, m_method_name, m_method_ptr)                                                                                                        \
+#define METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr)                                                                                        \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			vc_method_call(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                                    \
@@ -405,11 +405,11 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 			return vc_get_base_type(m_method_ptr);                                                                                                                \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
-#define CONVERT_METHOD_CLASS(m_class, m_method_name, m_method_ptr)                                                                                                \
+#define CONVERT_METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr)                                                                                \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			vc_convert_method_call<m_class>(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                   \
@@ -445,7 +445,7 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
@@ -459,7 +459,7 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 	call_with_ptr_args_static_method<P...>(method, p_args);
 }
 
-#define STATIC_METHOD_CLASS(m_class, m_method_name, m_method_ptr)                                                                                                 \
+#define STATIC_METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr)                                                                                 \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			vc_static_method_call(m_method_ptr, p_args, p_argcount, r_ret, p_defvals, r_error);                                                                   \
@@ -495,7 +495,7 @@ static _FORCE_INLINE_ void vc_static_ptrcall(void (*method)(P...), const void **
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
@@ -509,7 +509,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 	call_with_ptr_args_static<T, P...>(reinterpret_cast<T *>(p_base), method, p_args);
 }
 
-#define FUNCTION_CLASS(m_class, m_method_name, m_method_ptr, m_const)                                                                                             \
+#define FUNCTION_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr, m_const)                                                                             \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			vc_method_call_static(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                             \
@@ -545,11 +545,11 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
-#define VARARG_CLASS(m_class, m_method_name, m_method_ptr, m_has_return, m_return_type)                                                                           \
+#define VARARG_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr, m_has_return, m_return_type)                                                           \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			m_method_ptr(base, p_args, p_argcount, r_ret, r_error);                                                                                               \
@@ -601,11 +601,11 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
-#define VARARG_CLASS1(m_class, m_method_name, m_method_ptr, m_arg_type)                                                                                           \
+#define VARARG_CLASS1(m_class, m_exposed_name, m_method_name, m_method_ptr, m_arg_type)                                                                           \
 	struct Method_##m_class##_##m_method_name {                                                                                                                   \
 		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
 			m_method_ptr(base, p_args, p_argcount, r_ret, r_error);                                                                                               \
@@ -653,7 +653,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
-			return #m_method_name;                                                                                                                                \
+			return #m_exposed_name;                                                                                                                               \
 		}                                                                                                                                                         \
 	};
 
@@ -1318,11 +1318,50 @@ struct VariantBuiltInMethodInfo {
 
 		return mi;
 	}
+
+	uint32_t get_hash() const {
+		uint32_t hash = hash_murmur3_one_32(is_const);
+		hash = hash_murmur3_one_32(is_static, hash);
+		hash = hash_murmur3_one_32(is_vararg, hash);
+		hash = hash_murmur3_one_32(has_return_type, hash);
+		if (has_return_type) {
+			hash = hash_murmur3_one_32(return_type, hash);
+		}
+		hash = hash_murmur3_one_32(argument_count, hash);
+		for (int i = 0; i < argument_count; i++) {
+			hash = hash_murmur3_one_32(get_argument_type(i), hash);
+		}
+
+		return hash_fmix32(hash);
+	}
 };
 
 typedef AHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
 static BuiltinMethodMap *builtin_method_info;
 static List<StringName> *builtin_method_names;
+
+#ifndef DISABLE_DEPRECATED
+typedef AHashMap<StringName, LocalVector<VariantBuiltInMethodInfo>> BuiltinCompatMethodMap;
+static BuiltinCompatMethodMap *builtin_compat_method_info;
+#endif
+
+template <typename T>
+static void _populate_variant_builtin_method_info(VariantBuiltInMethodInfo &r_imi, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	r_imi.call = T::call;
+	r_imi.validated_call = T::validated_call;
+	r_imi.ptrcall = T::ptrcall;
+
+	r_imi.default_arguments = p_def_args;
+	r_imi.argument_names = p_argnames;
+
+	r_imi.is_const = T::is_const();
+	r_imi.is_static = T::is_static();
+	r_imi.is_vararg = T::is_vararg();
+	r_imi.has_return_type = T::has_return_type();
+	r_imi.return_type = T::get_return_type();
+	r_imi.argument_count = T::get_argument_count();
+	r_imi.get_argument_type = T::get_argument_type;
+}
 
 template <typename T>
 static void register_builtin_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
@@ -1331,21 +1370,8 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 	ERR_FAIL_COND(builtin_method_info[T::get_base_type()].has(name));
 
 	VariantBuiltInMethodInfo imi;
+	_populate_variant_builtin_method_info<T>(imi, p_argnames, p_def_args);
 
-	imi.call = T::call;
-	imi.validated_call = T::validated_call;
-	imi.ptrcall = T::ptrcall;
-
-	imi.default_arguments = p_def_args;
-	imi.argument_names = p_argnames;
-
-	imi.is_const = T::is_const();
-	imi.is_static = T::is_static();
-	imi.is_vararg = T::is_vararg();
-	imi.has_return_type = T::has_return_type();
-	imi.return_type = T::get_return_type();
-	imi.argument_count = T::get_argument_count();
-	imi.get_argument_type = T::get_argument_type;
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
 #endif // DEBUG_ENABLED
@@ -1353,6 +1379,27 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 	builtin_method_info[T::get_base_type()].insert(name, imi);
 	builtin_method_names[T::get_base_type()].push_back(name);
 }
+
+#ifndef DISABLE_DEPRECATED
+template <typename T>
+static void register_builtin_compat_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	StringName name = T::get_name();
+
+	ERR_FAIL_COND(!builtin_method_info[T::get_base_type()].has(name));
+
+	VariantBuiltInMethodInfo imi;
+	_populate_variant_builtin_method_info<T>(imi, p_argnames, p_def_args);
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
+#endif // DEBUG_ENABLED
+
+	if (!builtin_compat_method_info[T::get_base_type()].has(name)) {
+		builtin_compat_method_info[T::get_base_type()].insert(name, LocalVector<VariantBuiltInMethodInfo>());
+	}
+	builtin_compat_method_info[T::get_base_type()][name].push_back(imi);
+}
+#endif
 
 void Variant::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	if (type == Variant::OBJECT) {
@@ -1472,6 +1519,28 @@ Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, 
 	return method->ptrcall;
 }
 
+Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
+
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	if (method && method->get_hash() == p_hash) {
+		return method->ptrcall;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	const LocalVector<VariantBuiltInMethodInfo> *compat_methods = builtin_compat_method_info[p_type].getptr(p_method);
+	if (compat_methods) {
+		for (const VariantBuiltInMethodInfo &imi : *compat_methods) {
+			if (imi.get_hash() == p_hash) {
+				return imi.ptrcall;
+			}
+		}
+	}
+#endif
+
+	return nullptr;
+}
+
 MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
@@ -1564,19 +1633,21 @@ uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
-	uint32_t hash = hash_murmur3_one_32(method->is_const);
-	hash = hash_murmur3_one_32(method->is_static, hash);
-	hash = hash_murmur3_one_32(method->is_vararg, hash);
-	hash = hash_murmur3_one_32(method->has_return_type, hash);
-	if (method->has_return_type) {
-		hash = hash_murmur3_one_32(method->return_type, hash);
-	}
-	hash = hash_murmur3_one_32(method->argument_count, hash);
-	for (int i = 0; i < method->argument_count; i++) {
-		hash = hash_murmur3_one_32(method->get_argument_type(i), hash);
-	}
+	return method->get_hash();
+}
 
-	return hash_fmix32(hash);
+Vector<uint32_t> Variant::get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method) {
+	Vector<uint32_t> method_hashes;
+#ifndef DISABLE_DEPRECATED
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, method_hashes);
+	const LocalVector<VariantBuiltInMethodInfo> *compat_methods = builtin_compat_method_info[p_type].getptr(p_method);
+	if (compat_methods) {
+		for (const VariantBuiltInMethodInfo &imi : *compat_methods) {
+			method_hashes.push_back(imi.get_hash());
+		}
+	}
+#endif
+	return method_hashes;
 }
 
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
@@ -1725,82 +1796,162 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 
 #ifdef DEBUG_ENABLED
 #define bind_method(m_type, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_method, &m_type::m_method);             \
+	METHOD_CLASS(m_type, m_method, m_method, &m_type::m_method);   \
 	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_method(m_type, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_method, &m_type ::m_method);            \
+	METHOD_CLASS(m_type, m_method, m_method, &m_type ::m_method);  \
 	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type::m_method);                    \
+	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
+#else
+#define bind_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type ::m_method);                   \
+	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to::m_method);                     \
+	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to::m_method);           \
 	register_builtin_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to ::m_method);                    \
+	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to ::m_method);          \
 	register_builtin_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_convert_compat_method(m_type_from, m_type_to, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to::m_method);                            \
+	register_builtin_compat_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
+#else
+#define bind_convert_compat_method(m_type_from, m_type_to, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to ::m_method);                           \
+	register_builtin_compat_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_method, m_type::m_method);              \
+	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type::m_method);    \
 	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_method, m_type ::m_method);             \
+	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type ::m_method);   \
 	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_static_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type::m_method);                     \
+	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
+#else
+#define bind_static_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type ::m_method);                    \
+	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_name, m_method);                                 \
+	STATIC_METHOD_CLASS(m_type, m_name, m_name, m_method);                         \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
 #else
 #define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_name, m_method);                                 \
+	STATIC_METHOD_CLASS(m_type, m_name, m_name, m_method);                         \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
 #endif
 
 #ifdef DEBUG_ENABLED
+#define bind_static_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_name, m_method);                                        \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_static_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_name, m_method);                                        \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_ENABLED
 #define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_name, m_method);                                 \
+	METHOD_CLASS(m_type, m_name, m_name, m_method);                         \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
 #else
 #define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_name, m_method);                                 \
+	METHOD_CLASS(m_type, m_name, m_name, m_method);                         \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	METHOD_CLASS(m_type, m_exposed_name, m_name, m_method);                                        \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	METHOD_CLASS(m_type, m_exposed_name, m_name, m_method);                                        \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_name, m_method);                                            \
+	CONVERT_METHOD_CLASS(m_type_from, m_name, m_name, m_method);                                    \
 	register_builtin_method<Method_##m_type_from##_##m_name>(m_arg_names, m_default_args);
 #else
 #define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_name, m_method);                                            \
+	CONVERT_METHOD_CLASS(m_type_from, m_name, m_name, m_method);                                    \
 	register_builtin_method<Method_##m_type_from##_##m_name>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_convert_compat_methodv(m_type_from, m_type_to, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_exposed_name, m_name, m_method);                                                   \
+	register_builtin_compat_method<Method_##m_type_from##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_convert_compat_methodv(m_type_from, m_type_to, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_exposed_name, m_name, m_method);                                                   \
+	register_builtin_compat_method<Method_##m_type_from##_##m_name>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_function(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_method, true);                          \
+	FUNCTION_CLASS(m_type, m_name, m_name, m_method, true);                  \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
 #else
 #define bind_function(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_method, true);                          \
+	FUNCTION_CLASS(m_type, m_name, m_name, m_method, true);                  \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
+#define bind_compat_function(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, true);                                 \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_compat_function(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, true);                                 \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
 #define bind_functionnc(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_method, false);                           \
+	FUNCTION_CLASS(m_type, m_name, m_name, m_method, false);                   \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
 #else
 #define bind_functionnc(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_method, false);                           \
+	FUNCTION_CLASS(m_type, m_name, m_name, m_method, false);                   \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+#define bind_compat_functionnc(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, false);                                  \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_compat_functionnc(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, false);                                  \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
 #define bind_string_method(m_method, m_arg_names, m_default_args) \
@@ -1811,19 +1962,38 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	bind_methodv(String, m_name, m_method, m_arg_names, m_default_args);   \
 	bind_convert_methodv(StringName, String, m_name, m_method, m_arg_names, m_default_args);
 
-#define bind_custom(m_type, m_name, m_method, m_has_return, m_ret_type) \
-	VARARG_CLASS(m_type, m_name, m_method, m_has_return, m_ret_type)    \
+#define bind_string_compat_method(m_exposed_name, m_method, m_arg_names, m_default_args) \
+	bind_compat_method(String, m_exposed_name, m_method, m_arg_names, m_default_args);   \
+	bind_convert_compat_method(StringName, String, m_exposed_name, m_method, m_arg_names, m_default_args);
+
+#define bind_string_compat_methodv(m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
+	bind_compat_methodv(String, m_exposed_name, m_name, m_method, m_arg_names, m_default_args);   \
+	bind_convert_compat_methodv(StringName, String, m_exposed_name, m_name, m_method, m_arg_names, m_default_args);
+
+#define bind_custom(m_type, m_name, m_method, m_has_return, m_ret_type)      \
+	VARARG_CLASS(m_type, m_name, m_name, m_method, m_has_return, m_ret_type) \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), Vector<Variant>());
 
 #define bind_custom1(m_type, m_name, m_method, m_arg_type, m_arg_name) \
-	VARARG_CLASS1(m_type, m_name, m_method, m_arg_type)                \
+	VARARG_CLASS1(m_type, m_name, m_name, m_method, m_arg_type)        \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
+
+#define bind_compat_custom(m_type, m_exposed_name, m_name, m_method, m_has_return, m_ret_type) \
+	VARARG_CLASS(m_type, m_exposed_name, m_name, m_method, m_has_return, m_ret_type)           \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), Vector<Variant>());
+
+#define bind_compat_custom1(m_type, m_exposed_name, m_name, m_method, m_arg_type, m_arg_name) \
+	VARARG_CLASS1(m_type, m_exposed_name, m_name, m_method, m_arg_type)                       \
+	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
 
 static void _register_variant_builtin_methods_string() {
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, Variant::VARIANT_MAX);
 	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
 	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
+#ifndef DISABLE_DEPRECATED
+	builtin_compat_method_info = memnew_arr(BuiltinCompatMethodMap, Variant::VARIANT_MAX);
+#endif
 
 	/* String */
 
@@ -2583,6 +2753,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, sort, sarray(), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedByteArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedByteArray, count, sarray("value"), varray());
@@ -2659,6 +2832,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt32Array, sort, sarray(), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedInt32Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt32Array, count, sarray("value"), varray());
@@ -2683,6 +2859,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt64Array, sort, sarray(), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedInt64Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt64Array, count, sarray("value"), varray());
@@ -2707,6 +2886,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedFloat32Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat32Array, count, sarray("value"), varray());
@@ -2731,6 +2913,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedFloat64Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat64Array, count, sarray("value"), varray());
@@ -2755,6 +2940,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedStringArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedStringArray, count, sarray("value"), varray());
@@ -2779,6 +2967,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, sort, sarray(), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedVector2Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector2Array, count, sarray("value"), varray());
@@ -2803,6 +2994,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector3Array, sort, sarray(), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedVector3Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector3Array, count, sarray("value"), varray());
@@ -2827,6 +3021,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedColorArray, sort, sarray(), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedColorArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
@@ -2851,6 +3048,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, sort, sarray(), varray());
 	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector4Array, duplicate, sarray(), varray());
+#ifndef DISABLE_DEPRECATED
+	bind_compat_method(PackedVector4Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+#endif
 	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector4Array, count, sarray("value"), varray());
@@ -2988,6 +3188,9 @@ void Variant::_unregister_variant_methods() {
 	//clear methods
 	memdelete_arr(builtin_method_names);
 	memdelete_arr(builtin_method_info);
+#ifndef DISABLE_DEPRECATED
+	memdelete_arr(builtin_compat_method_info);
+#endif
 	memdelete_arr(_VariantCall::constant_data);
 	memdelete_arr(_VariantCall::enum_data);
 }

@@ -198,6 +198,7 @@
 			<description>
 				Creates a new compute pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
@@ -416,6 +417,7 @@
 			<description>
 				Creates a new framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
@@ -437,6 +439,7 @@
 			<description>
 				Creates a new multipass framebuffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param textures] is freed.
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
@@ -695,6 +698,7 @@
 			<description>
 				Creates a new index array. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param index_buffer] is freed.
 			</description>
 		</method>
 		<method name="index_buffer_create">
@@ -733,6 +737,7 @@
 			<description>
 				Creates a new render pipeline. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] is freed.
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
@@ -944,6 +949,7 @@
 			<param index="1" name="with_texture" type="RID" />
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture].
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
@@ -958,6 +964,7 @@
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
+				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
 		<method name="texture_get_data">
@@ -1089,6 +1096,7 @@
 			<description>
 				Creates a new uniform set. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when the [param shader] or any of the RIDs in the [param uniforms] is freed.
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
@@ -1106,6 +1114,8 @@
 			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
 			<description>
 				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				This will be freed automatically when any of the [param src_buffers] is freed.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
@@ -1163,6 +1173,7 @@
 		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
 			The main graphics-compute command queue ([code]rid[/code] parameter is ignored).
 			- Vulkan: [code]VkQueue[/code].
+			- D3D12: [code]ID3D12CommandQueue[/code].
 			- Metal: [code]MTLCommandQueue[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
@@ -1171,6 +1182,7 @@
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
 			- Vulkan: [code]VkImage[/code].
+			- D3D12: [code]ID3D12Resource[/code].
 		</constant>
 		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
 			The view of an owned or shared texture.
@@ -2149,7 +2161,17 @@
 		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
 			Input attachment uniform.
 		</constant>
-		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC" value="10" enum="UniformType">
+			Same as UNIFORM_TYPE_UNIFORM_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC" value="11" enum="UniformType">
+			Same as UNIFORM_TYPE_STORAGE_BUFFER but for buffers created with BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT.
+			[b]Note:[/b] This flag is not available to GD users due to being too dangerous (i.e. wrong usage can result in visual glitches).
+			It's exposed in case GD users receive a buffer created with such flag from Godot.
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="12" enum="UniformType">
 			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">

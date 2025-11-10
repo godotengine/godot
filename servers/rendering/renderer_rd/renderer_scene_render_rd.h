@@ -115,14 +115,6 @@ protected:
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
 
-	_FORCE_INLINE_ bool _is_8bit_data_format(RD::DataFormat p_data_format) {
-		return p_data_format >= RD::DATA_FORMAT_R8_UNORM && p_data_format <= RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32;
-	}
-
-	_FORCE_INLINE_ bool _is_10bit_data_format(RD::DataFormat p_data_format) {
-		return p_data_format >= RD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32 && p_data_format <= RD::DATA_FORMAT_A2B10G10R10_SINT_PACK32;
-	}
-
 	// needed for a single argument calls (material and uv2)
 	PagedArrayPool<RenderGeometryInstance *> cull_argument_pool;
 	PagedArray<RenderGeometryInstance *> cull_argument; //need this to exist
@@ -244,9 +236,7 @@ public:
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
 
 	/* render buffers */
-
-	virtual float _render_buffers_get_luminance_multiplier();
-	virtual RD::DataFormat _render_buffers_get_color_format();
+	virtual RD::DataFormat _render_buffers_get_preferred_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual Ref<RenderSceneBuffers> render_buffers_create() override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;

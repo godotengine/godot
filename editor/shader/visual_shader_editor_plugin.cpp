@@ -573,7 +573,7 @@ void VisualShaderGraphPlugin::update_theme() {
 	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
-	if (!EditorThemeManager::is_dark_theme()) {
+	if (!EditorThemeManager::is_dark_icon_and_font()) {
 		// Override the color to white for light themes.
 		vs_msdf_fonts_theme->set_color(SceneStringName(font_color), "GraphNodeTitleLabel", Color(1, 1, 1));
 	}
@@ -2627,6 +2627,10 @@ void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names
 
 void VisualShaderEditor::_update_graph() {
 	if (visual_shader.is_null()) {
+		return;
+	}
+
+	if (!is_inside_tree()) {
 		return;
 	}
 
@@ -5343,12 +5347,18 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			if (is_visible_in_tree()) {
 				_update_graph();
+			} else {
+				theme_dirty = true;
 			}
 			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_files_button();
+			if (theme_dirty && is_visible_in_tree()) {
+				theme_dirty = false;
+				_update_graph();
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6461,8 +6471,8 @@ void VisualShaderEditor::_show_shader_preview() {
 	}
 }
 
-void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void VisualShaderEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void VisualShaderEditor::_toggle_files_pressed() {

@@ -152,7 +152,7 @@ class SceneTreeEditor : public Control {
 	void _tree_process_mode_changed();
 
 	void _move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I);
-	void _move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I);
+	void _move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I, TreeItem *p_correct_prev = nullptr);
 
 	void _node_child_order_changed(Node *p_node);
 	void _node_editor_state_changed(Node *p_node);
@@ -248,6 +248,7 @@ public:
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);
+	void clear_cache();
 
 	inline void update_tree() { _update_tree(); }
 

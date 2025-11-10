@@ -39,7 +39,6 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
 template <typename T>
@@ -739,6 +738,7 @@ protected:
 	void _notification_backward(int p_notification);
 	virtual void _notification_forwardv(int p_notification) {}
 	virtual void _notification_backwardv(int p_notification) {}
+	virtual String _to_string();
 
 	static void _bind_methods();
 	static void _bind_compatibility_methods() {}
@@ -801,6 +801,9 @@ protected:
 	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
+
+	// Internal helper to get the current locale, taking into account the translation domain.
+	String _get_locale() const;
 
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
@@ -917,7 +920,7 @@ public:
 		}
 	}
 
-	virtual String to_string();
+	String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
@@ -970,6 +973,7 @@ public:
 	DEBUG_VIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
 	DEBUG_VIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
 	DEBUG_VIRTUAL int get_persistent_signal_connection_count() const;
+	DEBUG_VIRTUAL uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const;
 	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);

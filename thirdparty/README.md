@@ -274,13 +274,13 @@ Patches:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
+- `Inter*.woff2`:
+  * Upstream: https://github.com/rsms/inter
+  * Version: v4.1 (e3a3d4c57d5ecc01453a575621882a384c1995a3, 2024)
+  * License: OFL-1.1
 - `JetBrainsMono_Regular.woff2`:
   * Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
-  * License: OFL-1.1
-- `NotoSans*.woff2`:
-  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
-  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
   * License: OFL-1.1
 - `NotoSansBengali*.woff2`:
   * Upstream: https://github.com/notofonts/bengali
@@ -323,9 +323,9 @@ Patches:
   * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
   * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
-  * Upstream: https://fonts.google.com/specimen/Open+Sans
-  * Version: 1.10 (downloaded from Google Fonts in February 2021)
-  * License: Apache 2.0
+  * Upstream: https://github.com/googlefonts/opensans
+  * Version: git (bd7e37632246368c60fdcbd374dbf9bad11969b6, 2023)
+  * License: OFL-1.1
 - `Vazirmatn*.woff2`:
   * Upstream: https://github.com/rastikerdar/vazirmatn
   * Version: 33.003 (83629f877e8f084cc07b47030b5d3a0ff06c76ec, 2022)
@@ -340,8 +340,8 @@ for UI.
 
 ## freetype
 
-- Upstream: https://www.freetype.org
-- Version: 2.13.3 (42608f77f20749dd6ddc9e0536788eaad70ea4b5, 2024)
+- Upstream: https://gitlab.freedesktop.org/freetype/freetype
+- Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -436,7 +436,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 11.3.2 (4e3df1c1383481ed5717603d5dd3453a04fb16ba, 2025)
+- Version: 12.1.0 (a790c38b782f9d8e6f0299d2837229e5726fc669, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -654,7 +654,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
+- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -664,7 +664,7 @@ File extracted from upstream release tarball:
 - From `library/` to `thirdparty/mbedtls/library/`:
   - All `.c` and `.h` files
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
-  `lms.c`, `bignum_core_invasive.h`
+    `lms.c`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
@@ -973,6 +973,7 @@ Patches:
 - `0004-errno-include.patch` (GH-108354)
 - `0005-fix-libudev-dbus.patch` (GH-108373)
 - `0006-fix-cs-environ.patch` (GH-109283)
+- `0007-macos-joypad-name.patch` (GH-110500)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.

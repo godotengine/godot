@@ -32,10 +32,12 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/font.h"
+#include "servers/rendering/rendering_server.h"
 
 class CanvasLayer;
 class MultiMesh;
 class StyleBox;
+class SubViewport;
 class Window;
 class World2D;
 
@@ -104,6 +106,7 @@ private:
 	bool visible = true;
 	bool parent_visible_in_tree = false;
 	bool pending_update = false;
+	bool draw_commands_dirty = false;
 	bool top_level = false;
 	bool drawing = false;
 	bool block_transform_notify = false;

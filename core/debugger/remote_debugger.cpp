@@ -62,11 +62,16 @@ public:
 		last_perf_time = pt;
 
 		Array custom_monitor_names = performance->call("get_custom_monitor_names");
+		Array custom_monitor_types = performance->call("get_custom_monitor_types");
+
+		Array custom_monitor_data;
+		custom_monitor_data.push_back(custom_monitor_names);
+		custom_monitor_data.push_back(custom_monitor_types);
 
 		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
 		if (monitor_modification_time > last_monitor_modification_time) {
 			last_monitor_modification_time = monitor_modification_time;
-			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_data);
 		}
 
 		int max = performance->get("MONITOR_MAX");
@@ -668,8 +673,8 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			reload_all_scripts = false;
 		} else if (!script_paths_to_reload.is_empty()) {
 			Array scripts_to_reload;
-			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
-				String path = script_paths_to_reload[i];
+			for (const Variant &v : script_paths_to_reload) {
+				const String &path = v;
 				Error err = OK;
 				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));

@@ -71,7 +71,7 @@ static String _get_indent(const String &p_text) {
 static String _translate_doc_string(const String &p_text) {
 	const String indent = _get_indent(p_text);
 	const String message = p_text.dedent().strip_edges();
-	const String translated = TranslationServer::get_singleton()->doc_translate(message, "");
+	const String translated = TranslationServer::get_singleton()->get_doc_domain()->translate(message, StringName());
 	// No need to restore stripped edges because they'll be stripped again later.
 	return translated.indent(indent);
 }

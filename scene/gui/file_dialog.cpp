@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_dialog.h"
+#include "file_dialog.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -255,8 +256,6 @@ void FileDialog::_notification(int p_what) {
 				_update_favorite_list();
 				_update_recent_list();
 				invalidate(); // Put it here to preview in the editor.
-			} else {
-				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -292,65 +291,15 @@ void FileDialog::_notification(int p_what) {
 }
 
 void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
+	if (p_event.is_null() || p_event->is_released() || p_event->is_echo()) {
+		return;
+	}
 
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && has_focus()) {
-		if (k->is_pressed()) {
-			bool handled = true;
-
-			switch (k->get_keycode()) {
-				case Key::H: {
-					if (k->is_command_or_control_pressed()) {
-						set_show_hidden_files(!show_hidden_files);
-					} else {
-						handled = false;
-					}
-
-				} break;
-				case Key::F: {
-					if (k->is_command_or_control_pressed()) {
-						show_filename_filter_button->set_pressed(!show_filename_filter_button->is_pressed());
-					} else {
-						handled = false;
-					}
-
-				} break;
-				case Key::F5: {
-					invalidate();
-				} break;
-				case Key::BACKSPACE: {
-					_dir_submitted("..");
-				} break;
-#ifdef MACOS_ENABLED
-				// Cmd + Shift + G (matches Finder's "Go To" shortcut).
-				case Key::G: {
-					if (k->is_command_or_control_pressed() && k->is_shift_pressed()) {
-						directory_edit->grab_focus();
-						directory_edit->select_all();
-					} else {
-						handled = false;
-					}
-				} break;
-#endif
-				// Ctrl + L (matches most Windows/Linux file managers' "focus on path bar" shortcut,
-				// plus macOS Safari's "focus on address bar" shortcut).
-				case Key::L: {
-					if (k->is_command_or_control_pressed()) {
-						directory_edit->grab_focus();
-						directory_edit->select_all();
-					} else {
-						handled = false;
-					}
-				} break;
-				default: {
-					handled = false;
-				}
-			}
-
-			if (handled) {
-				set_input_as_handled();
-			}
+	for (const KeyValue<ItemMenu, Ref<Shortcut>> &action : action_shortcuts) {
+		if (action.value->matches_event(p_event)) {
+			_item_menu_id_pressed(action.key);
+			set_input_as_handled();
+			break;
 		}
 	}
 }
@@ -426,8 +375,6 @@ void FileDialog::_post_popup() {
 	} else {
 		file_list->grab_focus(true);
 	}
-
-	set_process_shortcut_input(true);
 
 	// For open dir mode, deselect all items on file dialog open.
 	if (mode == FILE_MODE_OPEN_DIR) {
@@ -765,6 +712,23 @@ void FileDialog::_item_menu_id_pressed(int p_option) {
 			}
 			_push_history();
 		} break;
+
+		case ITEM_MENU_GO_UP: {
+			_dir_submitted("..");
+		} break;
+
+		case ITEM_MENU_TOGGLE_HIDDEN: {
+			set_show_hidden_files(!show_hidden_files);
+		} break;
+
+		case ITEM_MENU_FIND: {
+			show_filename_filter_button->set_pressed(!show_filename_filter_button->is_pressed());
+		} break;
+
+		case ITEM_MENU_FOCUS_PATH: {
+			directory_edit->grab_focus();
+			directory_edit->select_all();
+		} break;
 	}
 }
 
@@ -789,12 +753,14 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 		item_menu->add_item(ETR("Copy Path"), ITEM_MENU_COPY_PATH);
 		if (customization_flags[CUSTOMIZATION_DELETE]) {
 			item_menu->add_item(ETR("Delete"), ITEM_MENU_DELETE);
+			item_menu->set_item_shortcut(-1, action_shortcuts[ITEM_MENU_DELETE]);
 		}
 	} else {
 		if (can_create_folders) {
 			item_menu->add_item(ETR("New Folder..."), ITEM_MENU_NEW_FOLDER);
 		}
 		item_menu->add_item(ETR("Refresh"), ITEM_MENU_REFRESH);
+		item_menu->set_item_shortcut(-1, action_shortcuts[ITEM_MENU_REFRESH]);
 	}
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
@@ -1162,13 +1128,13 @@ void FileDialog::update_filters() {
 		}
 
 		String native_all_name;
+		native_all_name += all_filters;
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
-			native_all_name += all_filters;
+			if (!native_all_name.is_empty()) {
+				native_all_name += ", ";
+			}
+			native_all_name += all_mime;
 		}
-		if (!native_all_name.is_empty()) {
-			native_all_name += ", ";
-		}
-		native_all_name += all_mime;
 
 		if (max_filters < filters.size()) {
 			all_filters += ", ...";
@@ -1183,13 +1149,14 @@ void FileDialog::update_filters() {
 		String desc = filters[i].get_slicec(';', 1).strip_edges();
 		String mime = filters[i].get_slicec(';', 2).strip_edges();
 		String native_name;
+
+		native_name += flt;
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
-			native_name += flt;
+			if (!native_name.is_empty() && !mime.is_empty()) {
+				native_name += ", ";
+			}
+			native_name += mime;
 		}
-		if (!native_name.is_empty() && !mime.is_empty()) {
-			native_name += ", ";
-		}
-		native_name += mime;
 		if (!desc.is_empty()) {
 			filter->add_item(atr(desc) + " (" + flt + ")");
 			processed_filters.push_back(flt + ";" + atr(desc) + " (" + native_name + ");" + mime);
@@ -1247,12 +1214,14 @@ void FileDialog::clear_filters() {
 	invalidate();
 }
 
-void FileDialog::add_filter(const String &p_filter, const String &p_description) {
+void FileDialog::add_filter(const String &p_filter, const String &p_description, const String &p_mime) {
 	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
-	if (p_description.is_empty()) {
+	if (p_description.is_empty() && p_mime.is_empty()) {
 		filters.push_back(p_filter);
-	} else {
+	} else if (p_mime.is_empty()) {
 		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	} else {
+		filters.push_back(vformat("%s ; %s ; %s", p_filter, p_description, p_mime));
 	}
 	update_filters();
 	invalidate();
@@ -2035,7 +2004,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::add_filter, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description", "mime_type"), &FileDialog::add_filter, DEFVAL(""), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &FileDialog::set_filters);
 	ClassDB::bind_method(D_METHOD("get_filters"), &FileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("clear_filename_filter"), &FileDialog::clear_filename_filter);
@@ -2259,11 +2228,19 @@ FileDialog::FileDialog() {
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.
+	set_process_shortcut_input(true);
 	thumbnail_callback = callable_mp(this, &FileDialog::_thumbnail_callback);
 
 	for (int i = 0; i < CUSTOMIZATION_MAX; i++) {
 		customization_flags[i] = true;
 	}
+
+	action_shortcuts[ITEM_MENU_DELETE] = Shortcut::make_from_action("ui_filedialog_delete");
+	action_shortcuts[ITEM_MENU_GO_UP] = Shortcut::make_from_action("ui_filedialog_up_one_level");
+	action_shortcuts[ITEM_MENU_REFRESH] = Shortcut::make_from_action("ui_filedialog_refresh");
+	action_shortcuts[ITEM_MENU_TOGGLE_HIDDEN] = Shortcut::make_from_action("ui_filedialog_show_hidden");
+	action_shortcuts[ITEM_MENU_FIND] = Shortcut::make_from_action("ui_filedialog_find");
+	action_shortcuts[ITEM_MENU_FOCUS_PATH] = Shortcut::make_from_action("ui_filedialog_focus_path");
 
 	show_hidden_files = default_show_hidden_files;
 	display_mode = default_display_mode;
@@ -2290,6 +2267,7 @@ FileDialog::FileDialog() {
 	dir_up = memnew(Button);
 	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(ETR("Go to parent folder."));
+	dir_up->set_shortcut(action_shortcuts[ITEM_MENU_GO_UP]);
 	top_toolbar->add_child(dir_up);
 	dir_up->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_go_up));
 
@@ -2319,6 +2297,7 @@ FileDialog::FileDialog() {
 	refresh_button = memnew(Button);
 	refresh_button->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh_button->set_tooltip_text(ETR("Refresh files."));
+	refresh_button->set_shortcut(action_shortcuts[ITEM_MENU_REFRESH]);
 	top_toolbar->add_child(refresh_button);
 	refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::update_file_list));
 
@@ -2414,6 +2393,7 @@ FileDialog::FileDialog() {
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(ETR("Toggle the visibility of hidden files."));
+	show_hidden->set_shortcut(action_shortcuts[ITEM_MENU_TOGGLE_HIDDEN]);
 	lower_toolbar->add_child(show_hidden);
 	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_hidden_files));
 
@@ -2449,8 +2429,8 @@ FileDialog::FileDialog() {
 	show_filename_filter_button = memnew(Button);
 	show_filename_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_filename_filter_button->set_toggle_mode(true);
-	show_filename_filter_button->set_pressed(false);
 	show_filename_filter_button->set_tooltip_text(ETR("Toggle the visibility of the filter for file names."));
+	show_filename_filter_button->set_shortcut(action_shortcuts[ITEM_MENU_FIND]);
 	lower_toolbar->add_child(show_filename_filter_button);
 	show_filename_filter_button->connect(SceneStringName(toggled), callable_mp(this, &FileDialog::set_show_filename_filter));
 

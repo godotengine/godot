@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/input/input_event.h"
+#include "core/io/resource.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
@@ -196,7 +198,7 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		HashMap<StringName, Node *> children;
-		mutable bool children_cache_dirty = true;
+		mutable bool children_cache_dirty = false;
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
@@ -405,6 +407,7 @@ protected:
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 	void _validate_property(PropertyInfo &p_property) const;
+	virtual String _to_string() override;
 
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
@@ -628,8 +631,6 @@ public:
 	bool is_part_of_edited_scene() const { return false; }
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
-
-	virtual String to_string() override;
 
 	/* NOTIFICATIONS */
 
@@ -874,6 +875,7 @@ public:
 	virtual void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const override;
 	virtual void get_all_signal_connections(List<Connection> *p_connections) const override;
 	virtual int get_persistent_signal_connection_count() const override;
+	virtual uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const override;
 	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
 
 	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;

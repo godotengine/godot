@@ -32,6 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "servers/display/display_server.h"
 
 #ifndef _3D_DISABLED
 class Camera3D;
@@ -400,6 +401,7 @@ private:
 		bool drag_successful = false;
 		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
+		int drag_threshold = 10;
 
 		Window *subwindow_focused = nullptr;
 		Window *currently_dragged_subwindow = nullptr;
@@ -705,6 +707,9 @@ public:
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
+	void set_drag_threshold(int p_threshold);
+	int get_drag_threshold() const;
+
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window();
 
@@ -788,7 +793,9 @@ public:
 #ifndef _3D_DISABLED
 private:
 	// 3D audio, camera, physics, and world.
+#ifndef XR_DISABLED
 	bool use_xr = false;
+#endif // XR_DISABLED
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
@@ -846,8 +853,10 @@ public:
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 
+#ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 	Viewport();

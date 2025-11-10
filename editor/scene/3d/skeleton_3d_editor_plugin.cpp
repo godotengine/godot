@@ -63,8 +63,13 @@ void BonePropertiesEditor::create_editors() {
 	section->get_vbox()->add_child(enabled_checkbox);
 
 	// Position property.
+	EditorPropertyRangeHint large_range_hint;
+	large_range_hint.min = -10000;
+	large_range_hint.max = 10000;
+	large_range_hint.step = 0.001;
+
 	position_property = memnew(EditorPropertyVector3());
-	position_property->setup(-10000, 10000, 0.001, true);
+	position_property->setup(large_range_hint);
 	position_property->set_label("Position");
 	position_property->set_selectable(false);
 	position_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -73,7 +78,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Rotation property.
 	rotation_property = memnew(EditorPropertyQuaternion());
-	rotation_property->setup(-10000, 10000, 0.001, true);
+	rotation_property->setup(large_range_hint);
 	rotation_property->set_label("Rotation");
 	rotation_property->set_selectable(false);
 	rotation_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -82,7 +87,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Scale property.
 	scale_property = memnew(EditorPropertyVector3());
-	scale_property->setup(-10000, 10000, 0.001, true, true);
+	scale_property->setup(large_range_hint, true);
 	scale_property->set_label("Scale");
 	scale_property->set_selectable(false);
 	scale_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
@@ -96,7 +101,7 @@ void BonePropertiesEditor::create_editors() {
 
 	// Transform/Matrix property.
 	rest_matrix = memnew(EditorPropertyTransform3D());
-	rest_matrix->setup(-10000, 10000, 0.001, true);
+	rest_matrix->setup(large_range_hint);
 	rest_matrix->set_label("Transform");
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);
@@ -1469,14 +1474,16 @@ Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled;
+
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
-		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
+		COLOR.rgb = mix(pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb * (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)));
 	}
 	VERTEX = VERTEX;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, POSITION.w, 0.998);
 }
+
 void fragment() {
 	ALBEDO = COLOR.rgb;
 	ALPHA = COLOR.a;

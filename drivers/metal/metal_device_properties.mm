@@ -50,7 +50,9 @@
 
 #import "metal_device_properties.h"
 
-#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+#import "metal_utils.h"
+
+#import "servers/rendering/renderer_rd/effects/metal_fx.h"
 
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
@@ -77,6 +79,28 @@ MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
 
 void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features = {};
+
+	MTLCompileOptions *opts = [MTLCompileOptions new];
+	features.msl_max_version = make_msl_version((opts.languageVersion >> 0x10) & 0xff, (opts.languageVersion >> 0x00) & 0xff);
+	features.msl_target_version = features.msl_max_version;
+	if (String version = OS::get_singleton()->get_environment("GODOT_MTL_TARGET_VERSION"); !version.is_empty()) {
+		if (version != "max") {
+			Vector<String> parts = version.split(".", true, 2);
+			if (parts.size() == 2) {
+				uint32_t major = parts[0].to_int();
+				uint32_t minor = parts[1].to_int();
+				uint32_t msl_version = make_msl_version(major, minor);
+				if (msl_version < MSL_VERSION_23 || msl_version > MSL_VERSION_40) {
+					WARN_PRINT(vformat("GODOT_MTL_TARGET_VERSION: invalid MSL version '%d.%d'", major, minor));
+				} else {
+					print_line(vformat("Override: Targeting Metal version %d.%d", major, minor));
+					features.msl_target_version = msl_version;
+				}
+			} else {
+				WARN_PRINT("GODOT_MTL_TARGET_VERSION: invalid version string format. Expected major.minor or 'max'.");
+			}
+		}
+	}
 
 	features.highestFamily = MTLGPUFamilyApple1;
 	for (MTLGPUFamily family = MTLGPUFamilyApple9; family >= MTLGPUFamilyApple1; --family) {
@@ -123,15 +147,30 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features.argument_buffers_tier = p_device.argumentBuffersSupport;
 	features.supports_image_atomic_32_bit = [p_device supportsFamily:MTLGPUFamilyApple6];
 	features.supports_image_atomic_64_bit = [p_device supportsFamily:MTLGPUFamilyApple9] || ([p_device supportsFamily:MTLGPUFamilyApple8] && [p_device supportsFamily:MTLGPUFamilyMac2]);
-	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
-		features.supports_native_image_atomics = true;
+
+	if (features.msl_target_version >= MSL_VERSION_31) {
+		// Native atomics are only supported on 3.1 and above.
+		if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
+			features.supports_native_image_atomics = true;
+		}
 	}
+
 	if (OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_IMAGE_ATOMICS") == "1") {
 		features.supports_native_image_atomics = false;
 	}
 
+	if (@available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
+		features.supports_residency_sets = true;
+	} else {
+		features.supports_residency_sets = false;
+	}
+
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.needs_arg_encoders = !([p_device supportsFamily:MTLGPUFamilyMetal3] && features.argument_buffers_tier == MTLArgumentBuffersTier2);
+	}
+
+	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
+		features.use_argument_buffers = false;
 	}
 
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
@@ -142,11 +181,6 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		features.metal_fx_temporal = false;
 #endif
 	}
-
-	MTLCompileOptions *opts = [MTLCompileOptions new];
-	features.mslVersionEnum = opts.languageVersion; // By default, Metal uses the most recent language version.
-	features.mslVersionMajor = (opts.languageVersion >> 0x10) & 0xff;
-	features.mslVersionMinor = (opts.languageVersion >> 0x00) & 0xff;
 }
 
 void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {

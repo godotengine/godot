@@ -471,6 +471,10 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 
 void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &p_fallback) {
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
+	if (icon.is_null()) {
+		icon = EditorNode::get_singleton()->get_class_icon("Object");
+		ERR_FAIL_COND(icon.is_null());
+	}
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
 		// Ensures icon scales proportionally on both axes, based on icon height.
@@ -974,7 +978,7 @@ void EditorHelp::_update_doc() {
 	_push_title_font();
 
 	class_desc->add_text(TTR("Class:") + " ");
-	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "Object");
+	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "");
 	class_desc->add_text(nbsp);
 
 	class_desc->push_color(theme_cache.headline_color);
@@ -3315,6 +3319,12 @@ void EditorHelp::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_inside_tree()) {
+				if (is_visible_in_tree()) {
+					_update_doc();
+				} else {
+					update_pending = true;
+				}
+
 				_class_desc_resized(true);
 			}
 			update_toggle_files_button();
@@ -4533,6 +4543,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation("EditorHelpBitContent");
 	content->set_custom_minimum_size(Size2(640 * EDSCALE, content_min_height));
+	content->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	content->set_selection_enabled(p_allow_selection);
 	content->set_context_menu_enabled(p_allow_selection);
 	content->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));

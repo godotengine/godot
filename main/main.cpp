@@ -637,7 +637,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_ENABLED
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
-	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information (Vulkan only). This allows source-level shader debugging with RenderDoc.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
@@ -745,6 +745,13 @@ Error Main::test_setup() {
 #ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 	// From `Main::setup2()`.
 	register_early_core_singletons();
@@ -863,9 +870,11 @@ void Main::test_cleanup() {
 
 #ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -1818,7 +1827,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--editor-pseudolocalization") {
 			editor_pseudolocalization = true;
 #endif // TOOLS_ENABLED
-		} else if (arg == "--profile-gpu") {
+		} else if (arg == "--gpu-profile") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
@@ -3018,6 +3027,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
+
 	register_server_types();
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Modules and Extensions");
@@ -3681,7 +3697,8 @@ void Main::setup_boot_logo() {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+
+		const RenderingServer::SplashStretchMode boot_stretch_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/boot_splash/stretch_mode", PROPERTY_HINT_ENUM, "Disabled,Keep,Keep Width,Keep Height,Cover,Ignore"), 1);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		String boot_logo_path = GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String());
 
@@ -3721,7 +3738,7 @@ void Main::setup_boot_logo() {
 		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
-			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(boot_logo, boot_bg_color, boot_stretch_mode, boot_logo_filter);
 
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
@@ -3735,7 +3752,7 @@ void Main::setup_boot_logo() {
 			MAIN_PRINT("Main: ClearColor");
 			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
-			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(splash, boot_bg_color, RenderingServer::SPLASH_STRETCH_MODE_DISABLED);
 #endif
 		}
 
@@ -4413,6 +4430,9 @@ int Main::start() {
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
+			int drag_threshold = GLOBAL_GET("gui/common/drag_threshold");
+			sml->get_root()->set_drag_threshold(drag_threshold);
+
 			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
 			sml->get_root()->set_use_oversampling(font_oversampling);
 
@@ -4975,9 +4995,11 @@ void Main::cleanup(bool p_force) {
 // Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 #ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 	finalize_physics();
 

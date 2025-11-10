@@ -52,7 +52,6 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
-#include "thirdparty/misc/ok_color_shader.h"
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -253,117 +252,6 @@ void ColorPicker::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
 
 	theme_cache.base_scale = get_theme_default_base_scale();
-}
-
-void ColorPicker::init_shaders() {
-	wheel_shader.instantiate();
-	wheel_shader->set_code(R"(
-// ColorPicker wheel shader.
-
-shader_type canvas_item;
-
-uniform float wheel_radius = 0.42;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
-
-	COLOR = vec4(clamp((abs(fract(((a - TAU) / TAU) + vec3(3.0, 2.0, 1.0) / 3.0) * 6.0 - 3.0) - 1.0), 0.0, 1.0), (b + b2 + b3 + b4) / 4.00);
-}
-)");
-
-	circle_shader.instantiate();
-	circle_shader->set_code(R"(
-// ColorPicker circle shader.
-
-shader_type canvas_item;
-
-uniform float v = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float a = atan(y, x);
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-
-	COLOR = vec4(mix(vec3(1.0), clamp(abs(fract(vec3((a - TAU) / TAU) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - vec3(3.0)) - vec3(1.0), 0.0, 1.0), ((float(sqrt(x * x + y * y)) * 2.0)) / 1.0) * vec3(v), (b + b2 + b3 + b4) / 4.00);
-})");
-
-	circle_ok_color_shader.instantiate();
-	circle_ok_color_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hsl circle shader.
-
-uniform float ok_hsl_l = 1.0;
-
-void fragment() {
-	float x = UV.x - 0.5;
-	float y = UV.y - 0.5;
-	float h = atan(y, x) / (2.0 * M_PI);
-	float s = sqrt(x * x + y * y) * 2.0;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	x += 0.001;
-	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5);
-	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5);
-	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5);
-	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
-})");
-
-	rectangle_ok_color_hs_shader.instantiate();
-	rectangle_ok_color_hs_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hs rectangle shader.
-
-uniform float ok_hsl_l = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float s = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
-	COLOR = vec4(col, 1.0);
-})");
-
-	rectangle_ok_color_hl_shader.instantiate();
-	rectangle_ok_color_hl_shader->set_code(OK_COLOR_SHADER + R"(
-// ColorPicker ok color hl rectangle shader.
-
-uniform float ok_hsl_s = 0.0;
-
-void fragment() {
-	float h = UV.x;
-	float l = 1.0 - UV.y;
-	vec3 col = okhsl_to_srgb(vec3(h, ok_hsl_s, l));
-	COLOR = vec4(col, 1.0);
-})");
-}
-
-void ColorPicker::finish_shaders() {
-	wheel_shader.unref();
-	circle_shader.unref();
-	circle_ok_color_shader.unref();
-	rectangle_ok_color_hs_shader.unref();
-	rectangle_ok_color_hl_shader.unref();
 }
 
 void ColorPicker::set_focus_on_line_edit() {
@@ -2174,7 +2062,7 @@ ColorPicker::ColorPicker() {
 	internal_margin->add_child(real_vbox);
 
 	shape_container = memnew(HBoxContainer);
-	shape_container->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	shape_container->set_alignment(ALIGNMENT_CENTER);
 	real_vbox->add_child(shape_container);
 
 	sample_hbc = memnew(HBoxContainer);

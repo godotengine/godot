@@ -62,9 +62,10 @@ static inline double supportScalar (double coord, const Triple &tent)
     return  (end - coord) / (end - peak);
 }
 
-static inline rebase_tent_result_t
-_solve (Triple tent, Triple axisLimit, bool negative = false)
+static inline void
+_solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative = false)
 {
+  out.reset();
   double axisMin = axisLimit.minimum;
   double axisDef = axisLimit.middle;
   double axisMax = axisLimit.maximum;
@@ -75,14 +76,12 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
   // Mirror the problem such that axisDef <= peak
   if (axisDef > peak)
   {
-    rebase_tent_result_t vec = _solve (_reverse_negate (tent),
-			   _reverse_negate (axisLimit),
-			   !negative);
+    _solve (_reverse_negate (tent), _reverse_negate (axisLimit), out, !negative);
 
-    for (auto &p : vec)
+    for (auto &p : out)
       p = hb_pair (p.first, _reverse_negate (p.second));
 
-    return vec;
+    return;
   }
   // axisDef <= peak
 
@@ -98,7 +97,7 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
    *    axisMin     axisDef    axisMax   lower     upper
    */
   if (axisMax <= lower && axisMax < peak)
-      return rebase_tent_result_t{};  // No overlap
+      return;  // No overlap
 
   /* case 2: Only the peak and outermost bound fall outside the new limit;
    * we keep the deltaset, update peak and outermost bound and scale deltas
@@ -133,18 +132,18 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
     double mult = supportScalar (axisMax, tent);
     tent = Triple{lower, axisMax, axisMax};
 
-    rebase_tent_result_t vec = _solve (tent, axisLimit);
+    _solve (tent, axisLimit, out);
 
-    for (auto &p : vec)
+    for (auto &p : out)
       p = hb_pair (p.first * mult, p.second);
 
-    return vec;
+    return;
   }
 
   // lower <= axisDef <= peak <= axisMax
 
   double gain = supportScalar (axisDef, tent);
-  rebase_tent_result_t out {hb_pair (gain, Triple{})};
+  out.push(hb_pair (gain, Triple{}));
 
   // First, the positive side
 
@@ -362,8 +361,6 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
     out.push (hb_pair (scalar1 - gain, loc1));
     out.push (hb_pair (scalar2 - gain, loc2));
   }
-
-  return out;
 }
 
 static inline TripleDistances _reverse_triple_distances (const TripleDistances &v)
@@ -405,18 +402,21 @@ double renormalizeValue (double v, const Triple &triple,
   return (-v_distance) /total_distance;
 }
 
-rebase_tent_result_t
-rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distances)
+void
+rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distances,
+	     rebase_tent_result_t &out,
+	     rebase_tent_result_t &scratch)
 {
   assert (-1.0 <= axisLimit.minimum && axisLimit.minimum <= axisLimit.middle && axisLimit.middle <= axisLimit.maximum && axisLimit.maximum <= +1.0);
   assert (-2.0 <= tent.minimum && tent.minimum <= tent.middle && tent.middle <= tent.maximum && tent.maximum <= +2.0);
   assert (tent.middle != 0.0);
 
-  rebase_tent_result_t sols = _solve (tent, axisLimit);
+  rebase_tent_result_t &sols = scratch;
+  _solve (tent, axisLimit, sols);
 
   auto n = [&axisLimit, &axis_triple_distances] (double v) { return renormalizeValue (v, axisLimit, axis_triple_distances); };
 
-  rebase_tent_result_t out;
+  out.reset();
   for (auto &p : sols)
   {
     if (!p.first) continue;
@@ -429,6 +429,4 @@ rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distance
     out.push (hb_pair (p.first,
 		       Triple{n (t.minimum), n (t.middle), n (t.maximum)}));
   }
-
-  return out;
 }

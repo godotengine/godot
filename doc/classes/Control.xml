@@ -409,6 +409,12 @@
 				Returns combined minimum size from [member custom_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
+		<method name="get_combined_pivot_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the combined value of [member pivot_offset] and [member pivot_offset_ratio], in pixels. The ratio is multiplied by the control's size.
+			</description>
+		</method>
 		<method name="get_cursor_shape" qualifiers="const">
 			<return type="int" enum="Control.CursorShape" />
 			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
@@ -621,7 +627,7 @@
 			<param index="0" name="hide_focus" type="bool" default="false" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
-				If [param hide_focus] is [code]true[/code], the control will not visually show its focused state. Has no effect if [member ProjectSettings.gui/common/always_show_focus_state] is set to [code]true[/code].
+				If [param hide_focus] is [code]true[/code], the control will not visually show its focused state. Has no effect for [LineEdit] and [TextEdit] when [member ProjectSettings.gui/common/show_focus_state_on_pointer_event] is set to [code]Control Supports Keyboard Input[/code], or for any control when it is set to [code]Always[/code].
 				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
@@ -1090,7 +1096,12 @@
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
-			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
+			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot.
+			The actual offset is the combined value of this property and [member pivot_offset_ratio].
+		</member>
+		<member name="pivot_offset_ratio" type="Vector2" setter="set_pivot_offset_ratio" getter="get_pivot_offset_ratio" default="Vector2(0, 0)">
+			Same as [member pivot_offset], but expressed as uniform vector, where [code]Vector2(0, 0)[/code] is the top-left corner of this control, and [code]Vector2(1, 1)[/code] is its bottom-right corner. Set this property to [code]Vector2(0.5, 0.5)[/code] to pivot around this control's center.
+			The actual offset is the combined value of this property and [member pivot_offset].
 		</member>
 		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
 			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].

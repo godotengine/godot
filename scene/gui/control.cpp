@@ -36,7 +36,6 @@
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -58,6 +57,7 @@ Dictionary Control::_edit_get_state() const {
 	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
 	s["pivot"] = get_pivot_offset();
+	s["pivot_ratio"] = get_pivot_offset_ratio();
 
 	Array anchors = { get_anchor(SIDE_LEFT), get_anchor(SIDE_TOP), get_anchor(SIDE_RIGHT), get_anchor(SIDE_BOTTOM) };
 	s["anchors"] = anchors;
@@ -74,13 +74,14 @@ Dictionary Control::_edit_get_state() const {
 void Control::_edit_set_state(const Dictionary &p_state) {
 	ERR_FAIL_COND(p_state.is_empty() ||
 			!p_state.has("rotation") || !p_state.has("scale") ||
-			!p_state.has("pivot") || !p_state.has("anchors") || !p_state.has("offsets") ||
+			!p_state.has("pivot") || !p_state.has("pivot_ratio") || !p_state.has("anchors") || !p_state.has("offsets") ||
 			!p_state.has("layout_mode") || !p_state.has("anchors_layout_preset"));
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
 	set_scale(state["scale"]);
 	set_pivot_offset(state["pivot"]);
+	set_pivot_offset_ratio(state["pivot_ratio"]);
 
 	Array anchors = state["anchors"];
 
@@ -152,10 +153,11 @@ void Control::_edit_set_pivot(const Point2 &p_pivot) {
 	Vector2 move = Vector2((std::cos(data.rotation) - 1.0) * delta_pivot.x - std::sin(data.rotation) * delta_pivot.y, std::sin(data.rotation) * delta_pivot.x + (std::cos(data.rotation) - 1.0) * delta_pivot.y);
 	set_position(get_position() + move);
 	set_pivot_offset(p_pivot);
+	set_pivot_offset_ratio(Vector2());
 }
 
 Point2 Control::_edit_get_pivot() const {
-	return get_pivot_offset();
+	return get_combined_pivot_offset();
 }
 
 bool Control::_edit_use_pivot() const {
@@ -536,7 +538,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		// If the parent is a container, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
-		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset" || p_property.name == "pivot_offset_ratio") {
 			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "layout_mode") {
 			// Set the layout mode to be disabled with the proper value.
@@ -709,8 +711,8 @@ Size2 Control::get_parent_area_size() const {
 
 Transform2D Control::_get_internal_transform() const {
 	// T(pivot_offset) * R(rotation) * S(scale) * T(-pivot_offset)
-	Transform2D xform(data.rotation, data.scale, 0.0f, data.pivot_offset);
-	xform.translate_local(-data.pivot_offset);
+	Transform2D xform(data.rotation, data.scale, 0.0f, get_combined_pivot_offset());
+	xform.translate_local(-get_combined_pivot_offset());
 	return xform;
 }
 
@@ -1606,6 +1608,23 @@ real_t Control::get_rotation_degrees() const {
 	return Math::rad_to_deg(get_rotation());
 }
 
+void Control::set_pivot_offset_ratio(const Vector2 &p_ratio) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.pivot_offset_ratio == p_ratio) {
+		return;
+	}
+
+	data.pivot_offset_ratio = p_ratio;
+	queue_redraw();
+	_notify_transform();
+	queue_accessibility_update();
+}
+
+Vector2 Control::get_pivot_offset_ratio() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.pivot_offset_ratio;
+}
+
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.pivot_offset == p_pivot) {
@@ -1621,6 +1640,11 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 Vector2 Control::get_pivot_offset() const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
 	return data.pivot_offset;
+}
+
+Vector2 Control::get_combined_pivot_offset() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.pivot_offset + data.pivot_offset_ratio * get_size();
 }
 
 /// Sizes.
@@ -2324,6 +2348,13 @@ bool Control::has_focus(bool p_ignore_hidden_focus) const {
 void Control::grab_focus(bool p_hide_focus) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
+
+	if (get_focus_mode_with_override() == FOCUS_ACCESSIBILITY) {
+		if (!get_tree()->is_accessibility_enabled()) {
+			WARN_PRINT("This control can grab focus only when screen reader is active. Use set_focus_mode() and set_focus_behavior_recursive() to allow a control to get focus. Use get_tree().is_accessibility_enabled() to check screen-reader state.");
+			return;
+		}
+	}
 
 	if (get_focus_mode_with_override() == FOCUS_NONE) {
 		WARN_PRINT("This control can't grab focus. Use set_focus_mode() and set_focus_behavior_recursive() to allow a control to get focus.");
@@ -3523,12 +3554,9 @@ bool Control::is_layout_rtl() const {
 					} else if (proj_root_layout_direction == 2) {
 						data.is_rtl = true;
 					} else if (proj_root_layout_direction == 3) {
-						String locale = OS::get_singleton()->get_locale();
-						data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 					} else {
-						const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
-						String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
-						data.is_rtl = TS->is_locale_right_to_left(locale);
+						data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 					}
 					return data.is_rtl;
 				}
@@ -3539,8 +3567,9 @@ bool Control::is_layout_rtl() const {
 				return data.is_rtl;
 			}
 #endif // TOOLS_ENABLED
+			const StringName domain_name = get_translation_domain();
 			Node *parent_node = get_parent();
-			while (parent_node) {
+			while (parent_node && domain_name == parent_node->get_translation_domain()) {
 				Control *parent_control = Object::cast_to<Control>(parent_node);
 				if (parent_control) {
 					data.is_rtl = parent_control->is_layout_rtl();
@@ -3563,22 +3592,19 @@ bool Control::is_layout_rtl() const {
 				String locale = OS::get_singleton()->get_locale();
 				data.is_rtl = TS->is_locale_right_to_left(locale);
 			} else {
-				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 			} else {
-				String locale = TranslationServer::get_singleton()->get_tool_locale();
-				data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(_get_locale());
 			}
 		} else if (data.layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
 			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
-				const_cast<Control *>(this)->data.is_rtl = true;
+				data.is_rtl = true;
 			} else {
-				String locale = OS::get_singleton()->get_locale();
-				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+				data.is_rtl = TS->is_locale_right_to_left(OS::get_singleton()->get_locale());
 			}
 		} else {
 			data.is_rtl = (data.layout_dir == LAYOUT_DIRECTION_RTL);
@@ -3990,6 +4016,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Control::set_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
+	ClassDB::bind_method(D_METHOD("set_pivot_offset_ratio", "ratio"), &Control::set_pivot_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
 	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
@@ -3998,6 +4025,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Control::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
+	ClassDB::bind_method(D_METHOD("get_pivot_offset_ratio"), &Control::get_pivot_offset_ratio);
+	ClassDB::bind_method(D_METHOD("get_combined_pivot_offset"), &Control::get_combined_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
@@ -4225,6 +4254,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset_ratio"), "set_pivot_offset_ratio", "get_pivot_offset_ratio");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");

@@ -517,7 +517,8 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, lang);
 }
 
 void MenuBar::_refresh_menu_names() {

@@ -247,6 +247,9 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
+        print_warning(
+            "System-provided ENet has its functionality limited to IPv4 only and no DTLS support, unless patched for Godot."
+        )
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
@@ -304,9 +307,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
     if not env["builtin_recastnavigation"]:
-        # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
-        env.Append(LIBS=["Recast"])
+        env.ParseConfig("pkg-config recastnavigation --cflags --libs")
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.

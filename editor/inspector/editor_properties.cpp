@@ -870,6 +870,10 @@ void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
+OptionButton *EditorPropertyEnum::get_option_button() {
+	return options;
+}
+
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
@@ -1476,18 +1480,18 @@ void EditorPropertyInteger::update_property() {
 #endif
 }
 
-void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_prefer_slider, bool p_hide_control, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
-	spin->set_min(p_min);
-	spin->set_max(p_max);
-	spin->set_step(p_step);
-	if (p_hide_control) {
+void EditorPropertyInteger::setup(const EditorPropertyRangeHint &p_range_hint) {
+	spin->set_min(p_range_hint.min);
+	spin->set_max(p_range_hint.max);
+	spin->set_step(Math::round(p_range_hint.step));
+	if (p_range_hint.hide_control) {
 		spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	} else {
-		spin->set_control_state(p_prefer_slider ? EditorSpinSlider::CONTROL_STATE_PREFER_SLIDER : EditorSpinSlider::CONTROL_STATE_DEFAULT);
+		spin->set_control_state(p_range_hint.prefer_slider ? EditorSpinSlider::CONTROL_STATE_PREFER_SLIDER : EditorSpinSlider::CONTROL_STATE_DEFAULT);
 	}
-	spin->set_allow_greater(p_allow_greater);
-	spin->set_allow_lesser(p_allow_lesser);
-	spin->set_suffix(p_suffix);
+	spin->set_allow_greater(p_range_hint.or_greater);
+	spin->set_allow_lesser(p_range_hint.or_less);
+	spin->set_suffix(p_range_hint.suffix);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
@@ -1607,18 +1611,18 @@ void EditorPropertyFloat::update_property() {
 	spin->set_value_no_signal(val);
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_control, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
-	radians_as_degrees = p_radians_as_degrees;
-	spin->set_min(p_min);
-	spin->set_max(p_max);
-	spin->set_step(p_step);
-	if (p_hide_control) {
+void EditorPropertyFloat::setup(const EditorPropertyRangeHint &p_range_hint) {
+	radians_as_degrees = p_range_hint.radians_as_degrees;
+	spin->set_min(p_range_hint.min);
+	spin->set_max(p_range_hint.max);
+	spin->set_step(p_range_hint.step);
+	if (p_range_hint.hide_control) {
 		spin->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 	}
-	spin->set_exp_ratio(p_exp_range);
-	spin->set_allow_greater(p_greater);
-	spin->set_allow_lesser(p_lesser);
-	spin->set_suffix(p_suffix);
+	spin->set_exp_ratio(p_range_hint.exp_range);
+	spin->set_allow_greater(p_range_hint.or_greater);
+	spin->set_allow_lesser(p_range_hint.or_less);
+	spin->set_suffix(p_range_hint.suffix);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
@@ -1698,7 +1702,6 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = CLAMP(val, -1'000'000, 1'000'000);
 
 		emit_changed(get_edited_property(), val);
-		easing_draw->queue_redraw();
 	}
 }
 
@@ -1750,6 +1753,9 @@ void EditorPropertyEasing::_draw_easing() {
 }
 
 void EditorPropertyEasing::update_property() {
+	float val = get_edited_property_value();
+	spin->set_value_no_signal(val);
+
 	easing_draw->queue_redraw();
 }
 
@@ -1757,7 +1763,6 @@ void EditorPropertyEasing::_set_preset(int p_preset) {
 	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
 
 	emit_changed(get_edited_property(), preset_value[p_preset]);
-	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_setup_spin() {
@@ -1767,12 +1772,6 @@ void EditorPropertyEasing::_setup_spin() {
 }
 
 void EditorPropertyEasing::_spin_value_changed(double p_value) {
-	// 0 is a singularity, but both positive and negative values
-	// are otherwise allowed. Enforce 0+ as workaround.
-	if (Math::is_zero_approx(p_value)) {
-		p_value = 0.00001;
-	}
-
 	// Limit to a reasonable value to prevent the curve going into infinity,
 	// which can cause crashes and other issues.
 	p_value = CLAMP(p_value, -1'000'000, 1'000'000);
@@ -1897,17 +1896,17 @@ void EditorPropertyRect2::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyRect2::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 }
 
@@ -1993,14 +1992,14 @@ void EditorPropertyRect2i::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
+void EditorPropertyRect2i::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
 		spin[i]->set_step(1);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(p_range_hint.suffix);
 		spin[i]->set_editing_integer(true);
 	}
 }
@@ -2087,18 +2086,18 @@ void EditorPropertyPlane::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyPlane::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 	}
-	spin[3]->set_suffix(p_suffix);
+	spin[3]->set_suffix(p_range_hint.suffix);
 }
 
 EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
@@ -2238,19 +2237,19 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix, bool p_hide_editor) {
+void EditorPropertyQuaternion::setup(const EditorPropertyRangeHint &p_range_hint, bool p_hide_editor) {
 	for (int i = 0; i < 4; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Quaternion is inherently unitless, however someone may want to use it as
 		// a generic way to store 4 values, so we'll still respect the suffix.
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 
 	for (int i = 0; i < 3; i++) {
@@ -2385,17 +2384,17 @@ void EditorPropertyAABB::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyAABB::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 6; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 }
 
@@ -2465,18 +2464,18 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyTransform2D::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 6; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 3 == 2) {
-			spin[i]->set_suffix(p_suffix);
+			spin[i]->set_suffix(p_range_hint.suffix);
 		}
 	}
 }
@@ -2549,19 +2548,19 @@ void EditorPropertyBasis::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyBasis::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 9; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Basis is inherently unitless, however someone may want to use it as
 		// a generic way to store 9 values, so we'll still respect the suffix.
-		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_suffix(p_range_hint.suffix);
 	}
 }
 
@@ -2640,18 +2639,18 @@ void EditorPropertyTransform3D::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyTransform3D::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 12; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
-			spin[i]->set_suffix(p_suffix);
+			spin[i]->set_suffix(p_range_hint.suffix);
 		}
 	}
 }
@@ -2739,18 +2738,18 @@ void EditorPropertyProjection::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_hide_control, const String &p_suffix) {
+void EditorPropertyProjection::setup(const EditorPropertyRangeHint &p_range_hint) {
 	for (int i = 0; i < 16; i++) {
-		spin[i]->set_min(p_min);
-		spin[i]->set_max(p_max);
-		spin[i]->set_step(p_step);
-		if (p_hide_control) {
+		spin[i]->set_min(p_range_hint.min);
+		spin[i]->set_max(p_range_hint.max);
+		spin[i]->set_step(p_range_hint.step);
+		if (p_range_hint.hide_control) {
 			spin[i]->set_control_state(EditorSpinSlider::CONTROL_STATE_HIDE);
 		}
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
-			spin[i]->set_suffix(p_suffix);
+			spin[i]->set_suffix(p_range_hint.suffix);
 		}
 	}
 }
@@ -3019,11 +3018,16 @@ void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
-	if (p_drag_data["type"] != "nodes") {
+	if (!p_drag_data.has("type") || p_drag_data["type"] != "nodes") {
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
 	if (nodes.size() != 1) {
+		return false;
+	}
+
+	Object *data_root = p_drag_data.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
 		return false;
 	}
 
@@ -3082,7 +3086,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	assign->set_text(target_node->get_name());
-	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
+	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
 void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
@@ -3472,6 +3476,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 	resource_picker->set_base_type(p_base_type);
 	resource_picker->set_resource_owner(p_object);
+	resource_picker->set_property_path(p_path);
 	resource_picker->set_editable(true);
 	resource_picker->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(resource_picker);
@@ -3652,19 +3657,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 	return false;
 }
 
-struct EditorPropertyRangeHint {
-	bool or_greater = true;
-	bool or_less = true;
-	double min = 0.0;
-	double max = 0.0;
-	double step = 1.0;
-	String suffix;
-	bool exp_range = false;
-	bool prefer_slider = false;
-	bool hide_control = true;
-	bool radians_as_degrees = false;
-};
-
 static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step, bool is_int = false) {
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
@@ -3836,10 +3828,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-
-				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-				editor->setup(hint.min, hint.max, hint.step, hint.prefer_slider, hint.hide_control, hint.or_greater, hint.or_less, hint.suffix);
-
+				editor->setup(_parse_range_hint(p_hint, p_hint_text, 1, true));
 				return editor;
 			}
 		} break;
@@ -3864,10 +3853,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 			} else {
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-
-				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
-
+				editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 				return editor;
 			}
 		} break;
@@ -3877,6 +3863,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				Vector<String> option_names;
 				if (p_hint_text.begins_with(";")) {
+					// This is not supported officially. Only for `interface/editor/editor_language`.
 					for (const String &option : p_hint_text.split(";", false)) {
 						options.append(option.get_slicec('/', 0));
 						option_names.append(option.get_slicec('/', 1));
@@ -3930,101 +3917,91 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(p_wide));
-
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians_as_degrees);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_LINK);
 			return editor;
 
 		} break;
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
+			hint.step = Math::round(hint.step);
+			editor->setup(hint, p_hint == PROPERTY_HINT_LINK, true);
 			return editor;
 
 		} break;
 		case Variant::RECT2: {
 			EditorPropertyRect2 *editor = memnew(EditorPropertyRect2(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
 		case Variant::RECT2I: {
 			EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, hint.suffix);
-
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, 1, true));
 			return editor;
 		} break;
 		case Variant::VECTOR3: {
 			EditorPropertyVector3 *editor = memnew(EditorPropertyVector3(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians_as_degrees);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_LINK);
 			return editor;
 
 		} break;
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
+			hint.step = Math::round(hint.step);
+			editor->setup(hint, p_hint == PROPERTY_HINT_LINK, true);
 			return editor;
 
 		} break;
 		case Variant::VECTOR4: {
 			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, p_hint == PROPERTY_HINT_LINK, hint.suffix, hint.radians_as_degrees);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_LINK);
 			return editor;
 
 		} break;
 		case Variant::VECTOR4I: {
 			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
+			hint.step = Math::round(hint.step);
+			editor->setup(hint, p_hint == PROPERTY_HINT_LINK, true);
 			return editor;
 
 		} break;
 		case Variant::TRANSFORM2D: {
 			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
 		case Variant::PLANE: {
 			EditorPropertyPlane *editor = memnew(EditorPropertyPlane(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
 		case Variant::QUATERNION: {
 			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix, p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
 			return editor;
 		} break;
 		case Variant::AABB: {
 			EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
 		case Variant::BASIS: {
 			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
 		case Variant::TRANSFORM3D: {
 			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 
 		} break;
 		case Variant::PROJECTION: {
 			EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-			editor->setup(hint.min, hint.max, hint.step, hint.hide_control, hint.suffix);
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 
 		} break;

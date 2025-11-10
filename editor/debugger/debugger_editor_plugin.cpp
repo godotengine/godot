@@ -55,8 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_bottom_panel()->add_item(TTRC("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
-	debugger->set_tool_button(db);
+	EditorNode::get_bottom_panel()->add_item(TTRC("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
 
 	// Main editor debug menu.
 	debug_menu = p_debug_menu;

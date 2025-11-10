@@ -424,6 +424,7 @@ public:
 	FUNC2(multimesh_set_physics_interpolated, RID, bool)
 	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
+	FUNC1(multimesh_instances_reset_physics_interpolation, RID)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
@@ -693,7 +694,10 @@ public:
 
 	FUNCRIDSPLIT(viewport)
 
+#ifndef XR_DISABLED
 	FUNC2(viewport_set_use_xr, RID, bool)
+#endif // XR_DISABLED
+
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
@@ -814,6 +818,7 @@ public:
 	FUNC2(environment_set_camera_feed_id, RID, int)
 
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
+	FUNC1(environment_set_ssr_half_size, bool)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
@@ -1106,7 +1111,7 @@ public:
 #define ServerName RendererCompositor
 #define server_name RSG::rasterizer
 
-	FUNC4S(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
+	FUNC4S(set_boot_image_with_stretch, const Ref<Image> &, const Color &, RenderingServer::SplashStretchMode, bool)
 
 	/* STATUS INFORMATION */
 

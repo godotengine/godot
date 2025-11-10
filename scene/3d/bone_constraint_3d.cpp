@@ -270,45 +270,6 @@ void BoneConstraint3D::_process_constraint(int p_index, Skeleton3D *p_skeleton, 
 	//
 }
 
-double BoneConstraint3D::symmetrize_angle(double p_angle) {
-	double angle = Math::fposmod(p_angle, Math::TAU);
-	return angle > Math::PI ? angle - Math::TAU : angle;
-}
-
-double BoneConstraint3D::get_roll_angle(const Quaternion &p_rotation, const Vector3 &p_roll_axis) {
-	// Ensure roll axis is normalized.
-	Vector3 roll_axis = p_roll_axis.normalized();
-
-	// Project the quaternion rotation onto the roll axis.
-	// This gives us the component of rotation around that axis.
-	double dot = p_rotation.x * roll_axis.x +
-			p_rotation.y * roll_axis.y +
-			p_rotation.z * roll_axis.z;
-
-	// Create a quaternion representing just the roll component.
-	Quaternion roll_component;
-	roll_component.x = roll_axis.x * dot;
-	roll_component.y = roll_axis.y * dot;
-	roll_component.z = roll_axis.z * dot;
-	roll_component.w = p_rotation.w;
-
-	// Normalize this component.
-	double length = roll_component.length();
-	if (length > CMP_EPSILON) {
-		roll_component = roll_component / length;
-	} else {
-		return 0.0;
-	}
-
-	// Extract the angle.
-	double angle = 2.0 * Math::acos(CLAMP(roll_component.w, -1.0, 1.0));
-
-	// Determine the sign.
-	double direction = (roll_component.x * roll_axis.x + roll_component.y * roll_axis.y + roll_component.z * roll_axis.z > 0) ? 1.0 : -1.0;
-
-	return symmetrize_angle(angle * direction);
-}
-
 BoneConstraint3D::~BoneConstraint3D() {
 	clear_settings();
 }

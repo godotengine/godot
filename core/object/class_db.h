@@ -38,6 +38,7 @@
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_set.h"
 
 #include <type_traits>
@@ -127,14 +128,14 @@ public:
 
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-		HashMap<StringName, int64_t> constant_map;
+		AHashMap<StringName, int64_t> constant_map;
 		struct EnumInfo {
 			List<StringName> constants;
 			bool is_bitfield = false;
 		};
 
 		HashMap<StringName, EnumInfo> enum_map;
-		HashMap<StringName, MethodInfo> signal_map;
+		AHashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
 
@@ -152,7 +153,7 @@ public:
 		List<StringName> dependency_list;
 #endif
 
-		HashMap<StringName, PropertySetGet> property_setget;
+		AHashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;

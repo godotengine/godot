@@ -335,6 +335,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		is_new = true;
 	}
 
+	EditorNode::get_singleton()->update_resource_count(p_node);
+
 	if (!(p_force || I->value.dirty)) {
 		// Nothing to do.
 		return;
@@ -404,7 +406,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 	}
 
-	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node);
 	p_item->set_icon(0, icon);
 	p_item->set_metadata(0, p_node->get_path());
 
@@ -770,20 +772,24 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
 	TreeItem *item = p_I->value.item;
+	TreeItem *previous_item = nullptr;
 	Node *node = p_I->key;
 	int cc = node->get_child_count(false);
 
 	for (int i = 0; i < cc; i++) {
 		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
 		if (CI) {
-			_move_node_item(item, CI);
+			_move_node_item(item, CI, previous_item);
+			previous_item = CI->value.item;
+		} else {
+			previous_item = nullptr;
 		}
 	}
 
 	p_I->value.has_moved_children = false;
 }
 
-void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I) {
+void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I, TreeItem *p_correct_prev) {
 	if (!p_parent) {
 		return;
 	}
@@ -806,13 +812,19 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	}
 
 	if (p_I->value.index != current_node_index) {
-		// If we just re-parented we know our index.
-		if (current_item_index == -1) {
-			current_item_index = item->get_index();
+		bool already_in_correct_location;
+		if (current_item_index >= 0) {
+			// If we just re-parented we know our index.
+			already_in_correct_location = current_item_index == current_node_index;
+		} else if (p_correct_prev) {
+			// It's cheaper to check if we're set up correctly by checking via correct_prev if we can
+			already_in_correct_location = item->get_prev() == p_correct_prev;
+		} else {
+			already_in_correct_location = item->get_index() == current_node_index;
 		}
 
 		// Are we already in the right place?
-		if (current_node_index == current_item_index) {
+		if (already_in_correct_location) {
 			p_I->value.index = current_node_index;
 			return;
 		}
@@ -820,11 +832,14 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		// Are we the first node?
 		if (current_node_index == 0) {
 			// There has to be at least 1 other node, otherwise we would not have gotten here.
-			TreeItem *neighbor_item = p_parent->get_child(0);
+			TreeItem *neighbor_item = p_parent->get_first_child();
 			item->move_before(neighbor_item);
 		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
-			item->move_after(neighbor_item);
+			TreeItem *prev_item = p_correct_prev;
+			if (!prev_item) {
+				prev_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
+			}
+			item->move_after(prev_item);
 		}
 
 		p_I->value.index = current_node_index;
@@ -884,7 +899,6 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node != get_scene_node() && !get_scene_node()->is_ancestor_of(p_node)) {
 		return;
 	}
-
 	node_cache.remove(p_node);
 	_update_if_clean();
 }
@@ -955,7 +969,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -1212,7 +1225,6 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 void SceneTreeEditor::_reset() {
 	// Stop any waiting change to tooltip.
 	update_node_tooltip_delay->stop();
-
 	tree->clear();
 	node_cache.clear();
 }
@@ -1362,6 +1374,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			// Wait for the node to be inspected before triggering the unfolding.
+			tree->add_theme_constant_override("dragging_unfold_wait_msec", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000 * 2);
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 			[[fallthrough]];
 		}
@@ -1728,11 +1742,15 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 	_update_tree();
 }
 
-void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
-	valid_types = p_valid;
+void SceneTreeEditor::clear_cache() {
 	node_cache.force_update = true;
 	callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(false);
 	tree_dirty = true;
+}
+
+void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
+	valid_types = p_valid;
+	clear_cache();
 }
 
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
@@ -1872,6 +1890,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Dictionary drag_data;
 	drag_data["type"] = "nodes";
 	drag_data["nodes"] = objs;
+	drag_data["scene_root"] = get_tree()->get_edited_scene_root();
 
 	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 	emit_signal(SNAME("nodes_dragged"));
@@ -1890,6 +1909,11 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 	Dictionary d = p_data;
 	if (!d.has("type")) {
+		return false;
+	}
+
+	Object *data_root = d.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
 		return false;
 	}
 
@@ -2448,6 +2472,9 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 	HashMap<Node *, CachedNode>::Iterator I = cache.find(p_node);
 	if (I) {
+		if (editor->is_scene_tree_dock) {
+			EditorNode::get_singleton()->update_resource_count(I->key, true);
+		}
 		if (p_recursive) {
 			int cc = p_node->get_child_count(false);
 

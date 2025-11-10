@@ -1123,7 +1123,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
-		if (!info.is_singleton || info.path.get_extension().to_lower() != "gd") {
+		if (!info.is_singleton || !info.path.has_extension("gd")) {
 			continue;
 		}
 		ScriptLanguage::CodeCompletionOption option(info.name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
@@ -3027,7 +3027,7 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 										}
 									}
 								}
-								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 								r_result.insert(option.display, option);
 							}
 						}

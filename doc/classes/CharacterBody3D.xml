@@ -46,7 +46,7 @@
 		<method name="get_last_slide_collision">
 			<return type="KinematicCollision3D" />
 			<description>
-				Returns a [KinematicCollision3D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
+				Returns a [KinematicCollision3D] if a collision occurred. The returned value contains information about the latest collision that occurred during the last call to [method move_and_slide]. Returns [code]null[/code] if no collision occurred. See also [method get_slide_collision].
 			</description>
 		</method>
 		<method name="get_platform_angular_velocity" qualifiers="const">
@@ -77,7 +77,7 @@
 			<return type="KinematicCollision3D" />
 			<param index="0" name="slide_idx" type="int" />
 			<description>
-				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
+				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1). See also [method get_last_slide_collision].
 			</description>
 		</method>
 		<method name="get_slide_collision_count" qualifiers="const">
