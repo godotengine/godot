@@ -1,6 +1,11 @@
 name: 📊 Static Checks
 on:
   workflow_call:
+    inputs:
+      event-name:
+        description: The caller's `github.event_name` value.
+        type: string
+        required: true
 
 jobs:
   static-checks:
@@ -18,20 +23,28 @@ jobs:
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v9
+
+      - name: Get last successful commit
+        id: last-successful-commit
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: ${{ inputs.event-name == 'push' && steps.branch-name.outputs.current_branch || steps.branch-name.outputs.base_ref_branch }}
+
       - name: Get changed files
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
-          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
-          fi
-          files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
-          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          base_sha: ${{ steps.last-successful-commit.outputs.base }} # Compare against last successful commit.
+          separator: '" "' # To account for paths with spaces, ensure our items are split by quotes internally.
+          safe_output: false # Output passed to environment variable to avoid command injection.
 
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
+        env:
+          CHANGED_FILES: '"${{ steps.changed-files.outputs.all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
         with:
           extra_args: --files ${{ env.CHANGED_FILES }}
 
