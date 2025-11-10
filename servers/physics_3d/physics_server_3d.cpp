@@ -797,7 +797,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer3D::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer3D::body_get_param);
 
-	ClassDB::bind_method(D_METHOD("body_set_mass_properties", "body", "mass", "center_of_mass", "inertia", "product_of_inertia"), &PhysicsServer3D::body_reset_mass_properties);
+	ClassDB::bind_method(D_METHOD("body_set_mass_properties", "body", "mass", "center_of_mass", "inertia", "product_of_inertia"), &PhysicsServer3D::body_set_mass_properties);
 	ClassDB::bind_method(D_METHOD("body_reset_mass_properties", "body"), &PhysicsServer3D::body_reset_mass_properties);
 
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer3D::body_set_state);
@@ -1149,6 +1149,7 @@ PhysicsServer3D::PhysicsServer3D() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), 0.1);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_angular", PROPERTY_HINT_RANGE, "0,90,0.1,radians_as_degrees"), Math::deg_to_rad(8.0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/3d/gyroscopic_forces"), false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.01);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.05);
