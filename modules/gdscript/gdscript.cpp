@@ -2747,6 +2747,16 @@ void GDScriptLanguage::frame() {
 }
 
 /* EDITOR FUNCTIONS */
+bool GDScriptLanguage::is_reserved_word(const String &p_word) const {
+	static HashSet<String> reserved_words;
+	if (unlikely(reserved_words.is_empty())) {
+		for (const String &E : get_reserved_words()) {
+			reserved_words.insert(E);
+		}
+	}
+	return reserved_words.has(p_word);
+}
+
 Vector<String> GDScriptLanguage::get_reserved_words() const {
 	// Please keep alphabetical order within categories.
 	static const Vector<String> ret = {
