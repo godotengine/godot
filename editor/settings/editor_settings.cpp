@@ -1077,6 +1077,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/platforms/linuxbsd/prefer_wayland", false, true);
 	set_restart_if_changed("run/platforms/linuxbsd/prefer_wayland", true);
 
+	// Resolution presets
+	Dictionary default_resolutions;
+	default_resolutions[StringName("iPhone 16")] = Size2i(1179, 2556);
+	default_resolutions[StringName("iPad Air 13")] = Size2i(2048, 2732);
+	EDITOR_SETTING(Variant::DICTIONARY, PROPERTY_HINT_NONE, "run/resolution_presets/resolutions", default_resolutions, "");
+
+	// Safe area
+	Dictionary default_safe_areas;
+	default_safe_areas[StringName("iPhone 16.p")] = PackedInt32Array({ 0, 59, 0, 34 });
+	default_safe_areas[StringName("iPhone 16.l")] = PackedInt32Array({ 59, 0, 59, 21 });
+	default_safe_areas[StringName("iPad Air 13.p")] = PackedInt32Array({ 0, 48, 0, 48 });
+	default_safe_areas[StringName("iPad Air 13.l")] = PackedInt32Array({ 48, 0, 48, 0 });
+	EDITOR_SETTING(Variant::DICTIONARY, PROPERTY_HINT_NONE, "run/resolution_presets/safe_areas", default_safe_areas, "")
+
 	/* Network */
 
 	// General

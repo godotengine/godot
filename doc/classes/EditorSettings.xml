@@ -1242,6 +1242,14 @@
 		<member name="run/platforms/linuxbsd/prefer_wayland" type="bool" setter="" getter="">
 			If [code]true[/code], on Linux/BSD, the editor will check for Wayland first instead of X11 (if available).
 		</member>
+		<member name="run/resolution_presets/resolutions" type="Dictionary" setter="" getter="">
+			Custom resolution presets you can choose from in the Game Tab.
+		</member>
+		<member name="run/resolution_presets/safe_areas" type="Dictionary" setter="" getter="">
+			Safe areas for the resolution presets defined in [member run/resolution_presets/resolutions].
+			The key needs to match with the key in [member run/resolution_presets/resolutions] plus a ".l" for landscape or ".p" for portrait.
+			The value is a [PackedInt32Array] with four values: left, top, right, bottom safe area margins in pixels.
+		</member>
 		<member name="run/window_placement/android_window" type="int" setter="" getter="">
 			Specifies how the Play window is launched relative to the Android editor.
 			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
