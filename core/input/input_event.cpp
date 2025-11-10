@@ -158,7 +158,7 @@ void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
 	}
 	command_or_control_autoremap = p_enabled;
 	if (command_or_control_autoremap) {
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			ctrl_pressed = false;
 			meta_pressed = true;
 		} else {
@@ -178,7 +178,7 @@ bool InputEventWithModifiers::is_command_or_control_autoremap() const {
 }
 
 bool InputEventWithModifiers::is_command_or_control_pressed() const {
-	if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+	if (OS::prefer_meta_over_ctrl()) {
 		return meta_pressed;
 	} else {
 		return ctrl_pressed;
@@ -245,7 +245,7 @@ BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
 		mask.set_flag(KeyModifierMask::META);
 	}
 	if (is_command_or_control_autoremap()) {
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			mask.set_flag(KeyModifierMask::META);
 		} else {
 			mask.set_flag(KeyModifierMask::CTRL);

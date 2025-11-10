@@ -1997,7 +1997,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;
@@ -2031,7 +2031,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;
