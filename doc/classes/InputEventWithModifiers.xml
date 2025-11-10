@@ -35,6 +35,9 @@
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
+		<member name="fn_pressed" type="bool" setter="set_fn_pressed" getter="is_fn_pressed" default="false">
+			State of the [kbd]Fn[/kbd] modifier. On Mac keyboard only.
+		</member>
 		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
 			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key.
 		</member>

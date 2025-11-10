@@ -442,8 +442,8 @@ unsigned int KeyMappingMacOS::keycode_get_native_mask(Key p_keycode) {
 	if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
 		mask |= NSEventModifierFlagCommand;
 	}
-	if ((p_keycode & KeyModifierMask::KPAD) != Key::NONE) {
-		mask |= NSEventModifierFlagNumericPad;
+	if ((p_keycode & KeyModifierMask::FN) != Key::NONE) {
+		mask |= NSEventModifierFlagFunction;
 	}
 	return mask;
 }
