@@ -757,18 +757,18 @@ static Vector<ChainBoxData> generate_obbs_aabbs(List<List<Vector2>::Element *> &
 	return obb_aabb_data;
 }
 
-// Returns an array of intersecting aabbs: (aabb1_idx, aabb9_idx)
-static Vector<Vector2i> find_intersections_sweep(const Vector<ChainBoxData> &obb_aabb_data) {
+// Returns an array of intersecting aabbs: (aabb1, aabb9)
+static Vector<Vector<const ChainBoxData *>> find_intersections_sweep(const Vector<ChainBoxData> &obb_aabb_data) {
 	class SweepEvent {
 	public:
 		float x;
 		int type; // type: 0 - start | 1 - end
 		float y1, y2;
-		int index;
+		const ChainBoxData *index;
 
 		SweepEvent() {}
 
-		SweepEvent(float p_x, int p_type, float p_y1, float p_y2, int p_index) :
+		SweepEvent(float p_x, int p_type, float p_y1, float p_y2, const ChainBoxData *p_index) :
 				x(p_x), type(p_type), y1(p_y1), y2(p_y2), index(p_index) {}
 
 		bool operator<(const SweepEvent &p_ev) const { // for sort()
@@ -781,19 +781,19 @@ static Vector<Vector2i> find_intersections_sweep(const Vector<ChainBoxData> &obb
 
 	for (int i = 0; i < obb_aabb_data.size(); ++i) {
 		const Vector4 rect = obb_aabb_data[i].aabb;
-		events.push_back({ (float)rect[0], 0, (float)rect[1], (float)rect[3], i });
-		events.push_back({ (float)rect[2], 1, (float)rect[1], (float)rect[3], i });
+		events.push_back({ (float)rect[0], 0, (float)rect[1], (float)rect[3], &obb_aabb_data[i] });
+		events.push_back({ (float)rect[2], 1, (float)rect[1], (float)rect[3], &obb_aabb_data[i] });
 	}
 	// Sort by x; 'start' comes before 'end' if equal
 	events.sort();
 
 	struct ActiveEntry {
 		float ay1, ay2;
-		int aidx;
+		const ChainBoxData *aidx;
 	};
 
 	Vector<ActiveEntry> active;
-	Vector<Vector2i> result;
+	Vector<Vector<const ChainBoxData *>> result;
 
 	for (SweepEvent event : events) {
 		if (event.type == 0) {
@@ -816,21 +816,32 @@ static Vector<Vector2i> find_intersections_sweep(const Vector<ChainBoxData> &obb
 	return result;
 }
 
-/*
- * Stores the intersecting location for each chain.
- * Each intersection should have a reference to their mono atomic chain they are in as well as the
- * actual node that is colliding in the result.
- */
-struct ChainIntersection {
-	List<List<Vector2>::Element *>::Element *ch1_mono_chain;
-	List<Vector2>::Element *ch1_end_node;
-	List<List<Vector2>::Element *>::Element *ch2_mono_chain;
-	List<Vector2>::Element *ch2_end_node;
-};
+// Find the index of an item based on it's value in a linked list
+static int list_index(List<Vector2> &list, const List<Vector2>::Element *item) {
+	int idx = 0;
+
+	List<Vector2>::Element *iter_node = list.front();
+	while (iter_node) {
+		if (item == iter_node) {
+			return idx;
+		}
+		iter_node = iter_node->next();
+		++idx;
+	}
+
+	return -1;
+}
+
+// Predeclaration to handle the call in recursive_obb_collision_check
+void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_end_node,
+		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_end_node,
+		Vector<const ChainBoxData *> &aabb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &aabb_collisions_mapping,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl);
 
 void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_start, List<Vector2>::Element *ch1_end,
 		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_start, List<Vector2>::Element *ch2_end,
-		Vector<ChainIntersection> &intersections) {
+		Vector<const ChainBoxData *> &aabb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &aabb_collisions_mapping,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl) {
 	// Step 5: Recursively finds the smallest segment pair causing a collision.
 	Vector<Vector2> ch1 = retrieve_list_from_id_range(ch1_start, ch1_end);
 	Vector<Vector2> ch2 = retrieve_list_from_id_range(ch2_start, ch2_end);
@@ -841,7 +852,7 @@ void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_
 	// Collision possible
 	if (len1 == 2 && len2 == 2) {
 		if (non_endpoint_segment_intersection(ch1, ch2)) {
-			intersections.append({ ch1_list, ch1_end, ch2_list, ch2_end }); // Collision found
+			iterative_refinement(ch1_list, ch1_end, ch2_list, ch2_end, aabb_collision, aabb_collisions_mapping, result, mapped_result, mono_chain_lst, pl); // Collision found
 		}
 		return;
 	}
@@ -862,10 +873,12 @@ void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_
 		// Recursively check both halves of Chain 1 against Chain 2
 		recursive_obb_collision_check(ch1_list, ch1_start, mid_node,
 				ch2_list, ch2_start, ch2_end,
-				intersections);
+				aabb_collision, aabb_collisions_mapping,
+				result, mapped_result, mono_chain_lst, pl);
 		recursive_obb_collision_check(ch1_list, mid_node, ch1_end,
 				ch2_list, ch2_start, ch2_end,
-				intersections);
+				aabb_collision, aabb_collisions_mapping,
+				result, mapped_result, mono_chain_lst, pl);
 
 	} else if (len2 > 2) {
 		// Split Chain 2
@@ -878,34 +891,128 @@ void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_
 		// Recursively check Chain 1 against both halves of Chain 2
 		recursive_obb_collision_check(ch1_list, ch1_start, ch1_end,
 				ch2_list, ch2_start, mid_node,
-				intersections);
+				aabb_collision, aabb_collisions_mapping,
+				result, mapped_result, mono_chain_lst, pl);
 		recursive_obb_collision_check(ch1_list, ch1_start, ch1_end,
 				ch2_list, mid_node, ch2_end,
-				intersections);
+				aabb_collision, aabb_collisions_mapping,
+				result, mapped_result, mono_chain_lst, pl);
 	}
 }
 
-Vector<ChainIntersection> find_intersections(List<List<Vector2>::Element *> &mono_chain_lst) {
+// Step 8: Iterative refinement loop
+void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_end_node,
+		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_end_node,
+		Vector<const ChainBoxData *> &aabb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &aabb_collisions_mapping,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl) {
+	// Get the index of the ends of both chains in the original list
+	int ch1_idx = list_index(result, ch1_end_node);
+	int ch2_idx = list_index(result, ch2_end_node);
+	PackedInt64Array edges = {
+		mapped_result[ch1_idx - 1], // First chain edges
+		mapped_result[ch1_idx],
+
+		mapped_result[ch2_idx - 1], // Second chain edges
+		mapped_result[ch2_idx]
+	};
+
+	Vector2i pnt_additions;
+	pnt_additions[0] = find_furthest_perp_point_from_edge(pl, edges[0], edges[1]); // Point addition for the first chain
+	pnt_additions[1] = find_furthest_perp_point_from_edge(pl, edges[2], edges[3]); // Point addition for the first chain
+
+	// Add the points
+	Vector<List<Vector2>::Element *> new_chain_end_nodes; // List that stores if the chain intersects. [first_new_chain, second_new_chain].
+	for (int pnt_i = 0; pnt_i < 2; ++pnt_i) { // 0 = first chain, 1 = second chain
+		int pnt = pnt_additions[pnt_i];
+
+		List<Vector2>::Element *chain_node_to_split;
+		List<List<Vector2>::Element *>::Element *ch_list;
+
+		if (pnt_i == 0) {
+			chain_node_to_split = ch1_end_node;
+			ch_list = ch1_list;
+		} else {
+			chain_node_to_split = ch2_end_node;
+			ch_list = ch2_list;
+		}
+
+		if (pnt != -1) {
+			// Bin-search to find the idx to insert the point
+			int low = 0;
+			int high = mapped_result.size();
+			while (low < high) {
+				int mid = floor((low + high) / 2);
+				if (mapped_result[mid] < pnt) {
+					low = mid + 1;
+				} else {
+					high = mid;
+				}
+			}
+			// Insert the point
+			mapped_result.insert(low, pnt);
+
+			List<Vector2, DefaultAllocator>::Element *insert_node = result.front();
+			for (int i = 0; i < low; ++i) {
+				insert_node = insert_node->next();
+			}
+			result.insert_before(insert_node, pl[pnt]);
+
+			// Add the point as an new split in the monochain
+			mono_chain_lst.insert_before(ch_list->next(), insert_node->prev());
+
+			// Add the two new chains to the list
+			new_chain_end_nodes.push_back(chain_node_to_split->prev()); // low - 1 -> low
+			new_chain_end_nodes.push_back(chain_node_to_split); // low -> low + 1
+		} else {
+			new_chain_end_nodes.push_back(chain_node_to_split);
+			new_chain_end_nodes.push_back(NULL);
+		}
+	}
+	// Check the new chains against chains whose AABBs intersected the unsplit chain's AABB
+	for (int i = 0; i < new_chain_end_nodes.size(); ++i) {
+		List<Vector2>::Element *new_chain = new_chain_end_nodes[i];
+
+		if (new_chain != NULL) {
+			for (const ChainBoxData *colliding_aabb : aabb_collisions_mapping[aabb_collision[i / 2]]) {
+				List<List<Vector2>::Element *>::Element *col_chain = colliding_aabb->chain_end_node;
+				recursive_obb_collision_check(
+						ch1_list, new_chain->prev(), new_chain,
+						col_chain, col_chain->prev()->get(), col_chain->get(),
+						aabb_collision, aabb_collisions_mapping,
+						result, mapped_result, mono_chain_lst, pl);
+			}
+		}
+	}
+}
+
+void find_intersections(List<List<Vector2>::Element *> &mono_chain_lst, List<Vector2> &result, PackedInt64Array &mapped_result, Vector<Vector2> &pl) {
 	Vector<ChainBoxData> obbs_data = generate_obbs_aabbs(mono_chain_lst);
-	Vector<Vector2i> aabb_collisions = find_intersections_sweep(obbs_data); // Use AABBs to avoid costly OBB generation + recursion
+	Vector<Vector<const ChainBoxData *>> aabb_collisions = find_intersections_sweep(obbs_data); // Use AABBs to avoid costly OBB generation + recursion
 
-	// Stores tuples of (ch1_mono_chain, ch1_end_node, ch2_mono_chain, ch2_end_node) for colliding segments
-	Vector<ChainIntersection> intersections;
+	HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> aabb_collisions_mapping;
+	for (Vector<const ChainBoxData *> &collision : aabb_collisions) {
+		aabb_collisions_mapping[collision[0]].push_back(collision[1]);
+		aabb_collisions_mapping[collision[1]].push_back(collision[0]);
+	}
 
-	for (Vector2i &collision : aabb_collisions) {
-		List<List<Vector2>::Element *>::Element *ch1_end_node = obbs_data[collision[0]].chain_end_node;
-		List<List<Vector2>::Element *>::Element *ch2_end_node = obbs_data[collision[1]].chain_end_node;
+	for (Vector<const ChainBoxData *> &collision : aabb_collisions) {
+		List<List<Vector2>::Element *>::Element *ch1_end_node = collision[0]->chain_end_node;
+		List<List<Vector2>::Element *>::Element *ch2_end_node = collision[1]->chain_end_node;
 
 		List<List<Vector2>::Element *>::Element *ch1_start_node = ch1_end_node->prev();
 		List<List<Vector2>::Element *>::Element *ch2_start_node = ch2_end_node->prev();
 
-		PackedVector2Array obb1 = obbs_data[collision[0]].obb;
-		PackedVector2Array obb2 = obbs_data[collision[1]].obb;
+		PackedVector2Array obb1 = collision[0]->obb;
+		PackedVector2Array obb2 = collision[1]->obb;
 
+		Vector<const ChainBoxData *> aabb_collision = { collision[0], collision[1] };
 		// In case the 2 obbs are just 2 lines
 		if (obb1.size() == 2 and obb2.size() == 2) {
 			if (non_endpoint_segment_intersection(obb1, obb2)) {
-				intersections.append({ ch1_start_node, ch1_end_node->get(), ch2_start_node, ch2_end_node->get() }); // Collision found
+				iterative_refinement(ch1_start_node, ch1_end_node->get(),
+						ch2_end_node, ch2_end_node->get(),
+						aabb_collision, aabb_collisions_mapping,
+						result, mapped_result, mono_chain_lst, pl); // Collision found
 			}
 			continue;
 		}
@@ -913,27 +1020,10 @@ Vector<ChainIntersection> find_intersections(List<List<Vector2>::Element *> &mon
 		if (does_polyline_bboxes_collide(obb1, obb2)) {
 			recursive_obb_collision_check(ch1_start_node, ch1_start_node->get(), ch1_end_node->get(),
 					ch2_start_node, ch2_start_node->get(), ch2_end_node->get(),
-					intersections);
+					aabb_collision, aabb_collisions_mapping,
+					result, mapped_result, mono_chain_lst, pl);
 		}
 	}
-
-	return intersections;
-}
-
-// Find the index of an item based on it's value in a linked list
-static int list_index(List<Vector2> &list, const List<Vector2>::Element *item) {
-	int idx = 0;
-
-	List<Vector2>::Element *iter_node = list.front();
-	while (iter_node) {
-		if (item == iter_node) {
-			return idx;
-		}
-		iter_node = iter_node->next();
-		++idx;
-	}
-
-	return -1;
 }
 
 static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float optimization) {
@@ -945,123 +1035,21 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 	}
 	List<List<Vector2>::Element *> mono_chain_lst = generate_mono_chains(result);
 
-	Vector<ChainIntersection> intersections = find_intersections(mono_chain_lst);
-
 	// Result mapped to the original points
 	PackedInt64Array mapped_result;
-	if (intersections.size() > 0) {
-		mapped_result.resize(result.size());
-		int res_idx = 0;
-		List<Vector2>::Element *res_idx_node = result.front();
-		for (int i = 0; i < pl.size(); ++i) {
-			if (pl[i] == res_idx_node->get()) {
-				mapped_result.write[res_idx] = i;
-				++res_idx;
-				res_idx_node = res_idx_node->next();
-			}
+	mapped_result.resize(result.size());
+	int res_idx = 0;
+	List<Vector2>::Element *res_idx_node = result.front();
+	for (int i = 0; i < pl.size(); ++i) {
+		if (pl[i] == res_idx_node->get()) {
+			mapped_result.write[res_idx] = i;
+			++res_idx;
+			res_idx_node = res_idx_node->next();
 		}
 	}
 
-	// Step 8: Iterative refinement loop
-	while (!intersections.is_empty()) {
-		Vector<ChainIntersection> next_intersections; // List of new possible intersections after the current pass
-		for (ChainIntersection &intersection : intersections) {
-			List<List<Vector2>::Element *>::Element *ch1_list = intersection.ch1_mono_chain;
-			List<Vector2>::Element *ch1_end_node = intersection.ch1_end_node;
+	find_intersections(mono_chain_lst, result, mapped_result, pl);
 
-			List<List<Vector2>::Element *>::Element *ch2_list = intersection.ch2_mono_chain;
-			List<Vector2>::Element *ch2_end_node = intersection.ch2_end_node;
-
-			// Get the index of the ends of both chains in the original list
-			int ch1_idx = list_index(result, ch1_end_node);
-			int ch2_idx = list_index(result, ch2_end_node);
-			PackedInt64Array edges = {
-				mapped_result[ch1_idx - 1], // First chain edges
-				mapped_result[ch1_idx],
-
-				mapped_result[ch2_idx - 1], // Second chain edges
-				mapped_result[ch2_idx]
-			};
-
-			Vector2i pnt_additions = { -1, -1 };
-			int res = find_furthest_perp_point_from_edge(pl, edges[0], edges[1]); // Point addition for the first chain
-			if (res != -1) {
-				pnt_additions[0] = res;
-			}
-
-			res = find_furthest_perp_point_from_edge(pl, edges[2], edges[3]); // Point addition for the first chain
-			if (res != -1) {
-				pnt_additions[1] = res;
-			}
-
-			// Add the points
-			Vector<List<Vector2>::Element *> new_chain_end_nodes; // List that stores if the chain intersects. [first_new_chain, second_new_chain].
-			for (int pnt_i = 0; pnt_i < 2; ++pnt_i) { // 0 = first chain, 1 = second chain
-				int pnt = pnt_additions[pnt_i];
-
-				List<Vector2>::Element *chain_node_to_split;
-				List<List<Vector2>::Element *>::Element *ch_list;
-
-				if (pnt_i == 0) {
-					chain_node_to_split = ch1_end_node;
-					ch_list = ch1_list;
-				} else {
-					chain_node_to_split = ch2_end_node;
-					ch_list = ch2_list;
-				}
-
-				if (pnt != -1) {
-					// Bin-search to find the idx to insert the point
-					int low = 0;
-					int high = mapped_result.size();
-					while (low < high) {
-						int mid = floor((low + high) / 2);
-						if (mapped_result[mid] < pnt) {
-							low = mid + 1;
-						} else {
-							high = mid;
-						}
-					}
-					// Insert the point
-					mapped_result.insert(low, pnt);
-
-					List<Vector2, DefaultAllocator>::Element *insert_node = result.front();
-					for (int i = 0; i < low; ++i) {
-						insert_node = insert_node->next();
-					}
-					result.insert_before(insert_node, pl[pnt]);
-
-					// Add the point as an new split in the monochain
-					mono_chain_lst.insert_before(ch_list->next(), insert_node->prev());
-
-					// Add the two new chains to the list
-					new_chain_end_nodes.push_back(chain_node_to_split->prev()); // low - 1 -> low
-					new_chain_end_nodes.push_back(chain_node_to_split); // low -> low + 1
-				} else {
-					new_chain_end_nodes.push_back(chain_node_to_split);
-					new_chain_end_nodes.push_back(NULL);
-				}
-			}
-			// Check if the added point still intersects the other edge
-			for (int chain_i = 0; chain_i < 2; ++chain_i) { // Check the first chain splits
-				if (new_chain_end_nodes[chain_i] != NULL) {
-					List<Vector2>::Element *ch1 = new_chain_end_nodes[chain_i];
-
-					for (int chain_j = 2; chain_j < 4; ++chain_j) { // Check the second chain splits
-						if (new_chain_end_nodes[chain_j] != NULL) {
-							List<Vector2>::Element *ch2 = new_chain_end_nodes[chain_j];
-
-							recursive_obb_collision_check(
-									ch1_list, ch1->prev(), ch1,
-									ch2_list, ch2->prev(), ch2,
-									next_intersections);
-						}
-					}
-				}
-			}
-		}
-		intersections = next_intersections;
-	}
 	// Turn it back into a Vector and return the fixed polygon
 	return retrieve_list_from_id_range(result.front(), result.back());
 }
