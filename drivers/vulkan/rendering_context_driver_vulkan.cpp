@@ -879,11 +879,36 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 	//
 	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
 	//
+	//------------------------------------------------------------------------
+	//TODO: Godot should not use 'VK_MAKE_VERSION' but rather its own function
+	//https://github.com/godotengine/godot/pull/91514#issuecomment-2261019958
 	r_device.workarounds.avoid_compute_after_draw =
 			r_device.vendor == Vendor::VENDOR_QUALCOMM &&
 			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			r_device.name.find("Turnip") < 0;
+
+	// Workaround for the Adreno 5XX family of devices.
+	// Various crashes at 'vkCmdDrawIndexed'.
+	// 'RENDER_GRAPH_REORDER' could not show any performance advantages on low devices.
+	r_device.workarounds.avoid_render_graph_reorder =
+			r_device.vendor == Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x5000000 && // Adreno 5xx
+			p_device_properties.deviceID <= 0x5999999;
+
+#ifdef ANDROID_ENABLED
+	print_line("============ Workarounds ============");
+	print_line("avoid_compute_after_draw: ", r_device.workarounds.avoid_compute_after_draw);
+	print_line("avoid_render_graph_reorder: ", r_device.workarounds.avoid_render_graph_reorder);
+	print_line("-------------------------------------");
+	print_line("name: ", r_device.name);
+	print_line("vendor: ", r_device.vendor);
+	print_line("deviceID: ", p_device_properties.deviceID);
+	uint32_t major = VK_VERSION_MAJOR(p_device_properties.driverVersion);
+	uint32_t minor = VK_VERSION_MINOR(p_device_properties.driverVersion);
+	uint32_t patch = VK_VERSION_PATCH(p_device_properties.driverVersion);
+	print_line("driverVersion: ", vformat("%d.%d.%d", major, minor, patch));
+#endif // ANDROID_ENABLED
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {
