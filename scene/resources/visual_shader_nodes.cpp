@@ -740,11 +740,11 @@ bool VisualShaderNodeTexture::is_input_port_default(int p_port, Shader::Mode p_m
 	return false;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1110,11 +1110,11 @@ String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualSh
 	return code;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1195,11 +1195,11 @@ String VisualShaderNodeCurveXYZTexture::generate_code(Shader::Mode p_mode, Visua
 	return code;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve3d");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1348,11 +1348,11 @@ String VisualShaderNodeTexture2DArray::get_input_port_name(int p_port) const {
 	return VisualShaderNodeSample3D::get_input_port_name(p_port);
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
 	dtp.params.push_back(texture_array);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1405,11 +1405,11 @@ String VisualShaderNodeTexture3D::get_input_port_name(int p_port) const {
 	return VisualShaderNodeSample3D::get_input_port_name(p_port);
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1497,11 +1497,11 @@ String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
 	return "color";
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "cube");
 	dtp.params.push_back(cube_map);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }

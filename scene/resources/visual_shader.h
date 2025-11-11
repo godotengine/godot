@@ -38,6 +38,150 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
+class ShaderGraph : public RefCounted {
+	GDCLASS(ShaderGraph, RefCounted);
+
+	friend class VisualShaderGroup; // For _get,_set and _get_property_list.
+
+public:
+	// TODO: Unify this eventually, but for now this is too much work.
+	// TODO: Rename to ShaderFunction/ShaderStage and make it an enum class.
+	// Keep in sync with VisualShader::Type.
+	enum Type {
+		TYPE_VERTEX,
+		TYPE_FRAGMENT,
+		TYPE_LIGHT,
+		TYPE_START,
+		TYPE_PROCESS,
+		TYPE_COLLIDE,
+		TYPE_START_CUSTOM,
+		TYPE_PROCESS_CUSTOM,
+		TYPE_SKY,
+		TYPE_FOG,
+		TYPE_MAX
+	};
+
+	struct Node {
+		// TODO: Rename to vsnode;
+		Ref<VisualShaderNode> node;
+		Vector2 position;
+		LocalVector<int> prev_connected_nodes;
+		LocalVector<int> next_connected_nodes;
+	};
+
+	struct Connection {
+		int from_node = 0;
+		int from_port = 0;
+		int to_node = 0;
+		int to_port = 0;
+	};
+
+	union ConnectionKey {
+		struct {
+			uint64_t node : 32;
+			uint64_t port : 32;
+		};
+
+		uint64_t key = 0;
+
+		bool operator<(const ConnectionKey &p_key) const {
+			return key < p_key.key;
+		}
+		uint32_t hash() const { return HashMapHasherDefault::hash(key); }
+		bool is_same(const ConnectionKey &p_key) const { return HashMapComparatorDefault<uint64_t>::compare(key, p_key.key); }
+	};
+
+	struct DefaultTextureParam {
+		StringName name;
+		List<Ref<Texture>> params;
+	};
+
+	// TODO: Consider make these constants or one constant and one getter function to get the output node id.
+	// TODO: Maybe move them back to VS since we might need different ones here (GROUP_IN, GROUP_OUT).
+	enum {
+		NODE_ID_INVALID = -1,
+		NODE_ID_OUTPUT = 0,
+	};
+
+	RBMap<int, Node> nodes; // TODO: Does order really matter here? Maybe for serialization?
+	List<Connection> connections; // TODO: Evaluate whether this should be a LocalVector.
+
+	void _node_changed();
+
+protected:
+	static void _bind_methods();
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	Error _write_node(
+			StringBuilder *p_global_code,
+			StringBuilder *p_global_code_per_node,
+			HashMap<Type, StringBuilder> *p_global_code_per_func,
+			StringBuilder &r_code,
+			Vector<ShaderGraph::DefaultTextureParam> &r_def_tex_params,
+			const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_input_connections,
+			const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_output_connections,
+			int p_node,
+			HashSet<int> &r_processed,
+			bool p_for_preview,
+			HashSet<StringName> &r_classes,
+			Type p_type = TYPE_MAX, // Only used for VisualShader.
+			Shader::Mode p_mode = Shader::MODE_MAX // Only used for VisualShader.
+	) const;
+
+	bool _check_reroute_subgraph(int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
+
+	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
+	void set_node_position(int p_id, const Vector2 &p_position);
+	Vector2 get_node_position(int p_id) const;
+	Ref<VisualShaderNode> get_node(int p_id) const;
+	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(int p_id) const {
+		return nodes[p_id].node;
+	}
+	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_node_ids(int p_id) const {
+		return nodes[p_id].next_connected_nodes;
+	}
+	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_node_ids(int p_id) const {
+		return nodes[p_id].prev_connected_nodes;
+	}
+
+	Vector<int> get_node_ids() const;
+	int get_valid_node_id() const;
+	int find_node_id(const Ref<VisualShaderNode> &p_node) const;
+	void remove_node(int p_id);
+	void replace_node(int p_id, const StringName &p_new_class);
+
+	// TODO: Rename this method and evaluate whether it is necessary.
+	bool are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+	// TODO: Rename to does_path_exist_in_graph(int p_src_id, int p_target_id)
+	// TODO: Rename to is_node_reachable(int p_src_id, int p_target_id)
+	// TODO: Or at least: Rename to are_nodes_connected_relatively(...)
+	bool is_nodes_connected_relatively(int p_node, int p_target) const;
+	bool can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+	Error connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	bool is_port_types_compatible(int p_a, int p_b) const;
+
+	void attach_node_to_frame(int p_node, int p_frame);
+	void detach_node_from_frame(int p_node);
+
+	String get_reroute_parameter_name(int p_reroute_node) const;
+
+	// TODO: Maybe change this method to use a return type.
+	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
+
+	// TODO: Implement?
+	String generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
+
+	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
+	// TODO: Implement?
+	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
+};
+
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
@@ -56,18 +200,7 @@ public:
 		TYPE_MAX
 	};
 
-	struct Connection {
-		int from_node = 0;
-		int from_port = 0;
-		int to_node = 0;
-		int to_port = 0;
-	};
-
-	struct DefaultTextureParam {
-		StringName name;
-		List<Ref<Texture>> params;
-	};
-
+	// TODO: Move varying stuff out of here.
 	enum VaryingMode {
 		VARYING_MODE_VERTEX_TO_FRAG_LIGHT,
 		VARYING_MODE_FRAG_TO_LIGHT,
@@ -113,24 +246,21 @@ public:
 	};
 
 private:
-	struct Node {
-		Ref<VisualShaderNode> node;
-		Vector2 position;
-		LocalVector<int> prev_connected_nodes;
-		LocalVector<int> next_connected_nodes;
-	};
-
-	struct Graph {
-		RBMap<int, Node> nodes;
-		List<Connection> connections;
-	} graph[TYPE_MAX];
+	// TODO: Make this a Vector and add graphs dynamically (maybe using a HM)
+	// Refactor idea: Make this Vector<ShaderGraph> with ShaderGraph containing type and graph.
+	// Keep access in constant time!
+	Ref<ShaderGraph> graph[TYPE_MAX];
 
 	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
 
+	// TODO: Move this method.
 	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
+	// TODO: Rename to render modes (rename group too as that is not compat breaking)
 	HashMap<String, int> modes;
+	// TODO: Maybe rename this to render_flags or render_mode_flags (since they are also render modes in textual shaders)
+	// Consistency!!
 	HashSet<StringName> flags;
 
 	bool stencil_enabled = false;
@@ -139,31 +269,34 @@ private:
 	int stencil_reference = 1;
 
 	HashMap<String, Varying> varyings;
+
 #ifdef TOOLS_ENABLED
 	HashMap<String, Variant> preview_params;
 #endif
-	List<Varying> varyings_list;
+	List<Varying> varyings_list; // TODO: Use vector?
 
+	// TODO: Consider moving this to ShaderGraph too. Depends on how the shader code generation is solved for node groups.
 	mutable SafeFlag dirty;
 	void _queue_update();
 
-	union ConnectionKey {
-		struct {
-			uint64_t node : 32;
-			uint64_t port : 32;
-		};
-		uint64_t key = 0;
-
-		uint32_t hash() const { return HashMapHasherDefault::hash(key); }
-		bool is_same(const ConnectionKey &p_key) const { return HashMapComparatorDefault<uint64_t>::compare(key, p_key.key); }
-	};
-
-	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(
+			ShaderGraph::Type p_type,
+			StringBuilder *p_global_code,
+			StringBuilder *p_global_code_per_node,
+			HashMap<ShaderGraph::Type, StringBuilder> *p_global_code_per_func,
+			StringBuilder &r_code, Vector<ShaderGraph::DefaultTextureParam> &r_def_tex_params,
+			const HashMap<ShaderGraph::ConnectionKey,
+					const List<ShaderGraph::Connection>::Element *> &p_input_connections,
+			const HashMap<ShaderGraph::ConnectionKey,
+					const List<ShaderGraph::Connection>::Element *> &p_output_connections,
+			int p_node,
+			HashSet<int> &r_processed,
+			bool p_for_preview,
+			HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
+	// TODO: Check why we need this method. At least rename it (underscore).
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
-
-	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
 
 protected:
 	virtual void _update_shader() const override;
@@ -176,13 +309,11 @@ protected:
 
 	virtual void reset_state() override;
 
+	// TODO: Internal methods?
 public: // internal methods
-	enum {
-		NODE_ID_INVALID = -1,
-		NODE_ID_OUTPUT = 0,
-	};
+	Ref<ShaderGraph> get_graph(int p_type);
 
-	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
+	void add_node(Type p_type, const Ref<VisualShaderNode> &p_vsnode, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
 	int has_node_embeds() const;
 
@@ -206,13 +337,13 @@ public: // internal methods
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
 
 	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].node;
+		return graph[p_type]->nodes[p_id].node;
 	}
 	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_nodes(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].next_connected_nodes;
+		return graph[p_type]->nodes[p_id].next_connected_nodes;
 	}
 	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_nodes(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].prev_connected_nodes;
+		return graph[p_type]->nodes[p_id].prev_connected_nodes;
 	}
 
 	Vector<int> get_node_list(Type p_type) const;
@@ -222,9 +353,11 @@ public: // internal methods
 	void remove_node(Type p_type, int p_id);
 	void replace_node(Type p_type, int p_id, const StringName &p_new_class);
 
+	// TODO: Rename this method and evaluate whether it is necessary.
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 
-	bool is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const;
+	// TODO: Prefix(_) this method and make it private.
+	bool is_nodes_connected_relatively(const ShaderGraph *p_graph, int p_node, int p_target) const;
 	bool can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	Error connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
@@ -237,11 +370,13 @@ public: // internal methods
 	String get_reroute_parameter_name(Type p_type, int p_reroute_node) const;
 
 	void rebuild();
-	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
+	// TODO: Use vector here too.
+	void get_node_connections(Type p_type, List<ShaderGraph::Connection> *r_connections) const;
 
 	void set_mode(Mode p_mode);
 	virtual Mode get_mode() const override;
 
+	// TODO: Move this method.
 	virtual bool is_text_shader() const override;
 
 #ifndef DISABLE_DEPRECATED
@@ -249,7 +384,7 @@ public: // internal methods
 	Vector2 get_graph_offset() const;
 #endif
 
-	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
+	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
 
 	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
 	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
@@ -257,12 +392,10 @@ public: // internal methods
 	VisualShader();
 };
 
-VARIANT_ENUM_CAST(VisualShader::Type)
-VARIANT_ENUM_CAST(VisualShader::VaryingMode)
-VARIANT_ENUM_CAST(VisualShader::VaryingType)
-///
-///
-///
+// TODO: Uncomment before push (this is a temporary intellisense fix)
+VARIANT_ENUM_CAST(VisualShader::Type);
+VARIANT_ENUM_CAST(VisualShader::VaryingMode);
+VARIANT_ENUM_CAST(VisualShader::VaryingType);
 
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
@@ -309,11 +442,13 @@ protected:
 	HashMap<int, Variant> default_input_values;
 	bool simple_decl = true;
 	bool disabled = false;
-	bool closable = false;
+	bool deletable = false;
 
 	static void _bind_methods();
 
 public:
+	static String port_type_to_shader_string(PortType p_type);
+
 	bool is_simple_decl() const;
 
 	virtual String get_caption() const = 0;
@@ -365,7 +500,7 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	bool is_deletable() const;
-	void set_deletable(bool p_closable = true);
+	void set_deletable(bool p_deletable = true);
 
 	void set_frame(int p_node);
 	int get_frame() const;
@@ -373,7 +508,7 @@ public:
 	virtual Vector<StringName> get_editable_properties() const;
 	virtual HashMap<StringName, String> get_editable_properties_names() const;
 
-	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
+	virtual Vector<ShaderGraph::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global_per_node(Shader::Mode p_mode, int p_id) const;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
@@ -387,7 +522,7 @@ public:
 	VisualShaderNode();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNode::PortType)
+VARIANT_ENUM_CAST(VisualShaderNode::PortType);
 
 class VisualShaderNodeCustom : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCustom, VisualShaderNode);
