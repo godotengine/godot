@@ -2325,6 +2325,7 @@ void EditorHelp::_update_doc() {
 			if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
 				class_desc->add_newline();
 				class_desc->add_newline();
+				// See also `EditorHelpBit::parse_symbol()` and `doc/tools/make_rst.py`.
 				_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
 			}
 
@@ -4368,6 +4369,16 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 			symbol_hint = SYMBOL_HINT_ASSIGNABLE;
 		}
 		help_data = _get_property_help_data(class_name, item_name);
+
+		// Add copy note to built-in properties returning `Packed*Array`.
+		const DocData::ClassDoc *cd = EditorHelp::get_doc(class_name);
+		if (cd && !cd->is_script_doc && packed_array_types.has(help_data.doc_type.type)) {
+			if (!help_data.description.is_empty()) {
+				help_data.description += "\n";
+			}
+			// See also `EditorHelp::_update_doc()` and `doc/tools/make_rst.py`.
+			help_data.description += vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), help_data.doc_type.type);
+		}
 	} else if (item_type == "internal_property") {
 		symbol_type = TTR("Internal Property");
 		help_data.description = "[color=<EditorHelpBitCommentColor>][i]" + TTR("This property can only be set in the Inspector.") + "[/i][/color]";
