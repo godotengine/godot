@@ -92,6 +92,12 @@ repos:
         pass_filenames: false
         files: ^(gles3|glsl)_builders\.py$
 
+      - id: validate-includes
+        name: validate-includes
+        language: python
+        entry: python misc/scripts/validate_includes.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
+
       - id: eslint
         name: eslint
         language: node

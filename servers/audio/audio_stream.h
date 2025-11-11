@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/property_list_helper.h"
+#include "scene/property_list_helper.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/audio/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"

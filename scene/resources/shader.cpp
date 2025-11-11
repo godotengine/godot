@@ -39,11 +39,11 @@
 #include "texture.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/doc/editor_help.h"
+#include "editor/doc/editor_help.h" // validator: ignore // FIXME: Legacy include.
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/modules_enabled.gen.h" // For regex. // validator: ignore // FIXME: Legacy include.
 #ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 #endif
 #endif
 

@@ -31,9 +31,9 @@
 #include "camera_android.h"
 
 #include "core/os/os.h"
-#include "platform/android/display_server_android.h"
-#include "platform/android/java_godot_io_wrapper.h"
-#include "platform/android/os_android.h"
+#include "platform/android/display_server_android.h" // validator: ignore // FIXME: Legacy include.
+#include "platform/android/java_godot_io_wrapper.h" // validator: ignore // FIXME: Legacy include.
+#include "platform/android/os_android.h" // validator: ignore // FIXME: Legacy include.
 
 //////////////////////////////////////////////////////////////////////////
 // Helper functions

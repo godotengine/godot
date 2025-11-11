@@ -51,8 +51,8 @@
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation.h"
-#include "main/main.h"
-#include "modules/regex/regex.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"

@@ -40,7 +40,7 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "modules/regex/regex.h"
+#include "modules/regex/regex.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/timer.h"

@@ -30,7 +30,7 @@
 
 #include "shader_baker_export_plugin_platform_vulkan.h"
 
-#include "drivers/vulkan/rendering_shader_container_vulkan.h"
+#include "drivers/vulkan/rendering_shader_container_vulkan.h" // validator: ignore // FIXME: Legacy include.
 
 RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformVulkan::create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) {
 	return memnew(RenderingShaderContainerFormatVulkan);

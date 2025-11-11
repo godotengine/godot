@@ -36,7 +36,7 @@
 #include "core/license.gen.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device.h" // validator: ignore // FIXME: Legacy include.
 
 void Engine::_update_time_scale() {
 	_time_scale = _user_time_scale * _game_time_scale;

@@ -90,7 +90,11 @@ BreakConstructorInitializers: AfterColon
 # BreakInheritanceList: BeforeColon
 # BreakStringLiterals: true
 ColumnLimit: 0
-# CommentPragmas: "^ IWYU pragma:"
+CommentPragmas: |
+  (?x)^(
+    IWYU pragma:
+    validator:
+  )
 # CompactNamespaces: false
 ConstructorInitializerIndentWidth: 8
 ContinuationIndentWidth: 8

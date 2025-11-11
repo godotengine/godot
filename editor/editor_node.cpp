@@ -47,7 +47,7 @@
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/animation/animation_tree.h"
@@ -182,7 +182,7 @@
 #include "editor/shader/shader_baker/shader_baker_export_plugin_platform_metal.h"
 #endif
 
-#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+#include "modules/modules_enabled.gen.h" // For gdscript, mono. // validator: ignore // FIXME: Legacy include.
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"

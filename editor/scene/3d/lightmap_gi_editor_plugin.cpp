@@ -34,7 +34,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
-#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+#include "modules/modules_enabled.gen.h" // For lightmapper_rd. // validator: ignore // FIXME: Legacy include.
 
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {

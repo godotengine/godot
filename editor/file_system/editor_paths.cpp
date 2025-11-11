@@ -35,7 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "main/main.h"
+#include "main/main.h" // validator: ignore // FIXME: Legacy include.
 
 EditorPaths *EditorPaths::singleton = nullptr;
 

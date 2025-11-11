@@ -35,7 +35,7 @@
 #include "scene/resources/mesh.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_scale.h" // validator: ignore // FIXME: Legacy include.
 #endif
 
 #ifdef DEBUG_ENABLED

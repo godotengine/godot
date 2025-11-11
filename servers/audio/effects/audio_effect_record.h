@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/thread.h"
-#include "scene/resources/audio_stream_wav.h"
+#include "scene/resources/audio_stream_wav.h" // validator: ignore // FIXME: Legacy include.
 #include "servers/audio/audio_effect.h"
 #include "servers/audio/audio_server.h"
 
