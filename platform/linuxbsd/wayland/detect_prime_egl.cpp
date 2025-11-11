@@ -33,6 +33,7 @@
 
 #include "detect_prime_egl.h"
 
+#include "core/core_globals.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant.h"
 

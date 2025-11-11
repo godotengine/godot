@@ -31,12 +31,13 @@
 #pragma once
 
 #include "core/object/object_id.h"
-#include "core/os/thread_safe.h"
+#include "core/os/mutex.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/paged_allocator.h"
 #include "core/variant/variant.h"
 
 class Object;
+template <typename T, bool, uint32_t>
+class PagedAllocator;
 
 class CallQueue {
 	friend class MessageQueue;
@@ -52,7 +53,7 @@ public:
 
 	// Needs to be public to be able to define it outside the class.
 	// Needs to lock because there can be multiple of these allocators in several threads.
-	typedef PagedAllocator<Page, true> Allocator;
+	typedef PagedAllocator<Page, true, PAGE_SIZE_BYTES> Allocator;
 
 private:
 	enum {
@@ -89,13 +90,7 @@ private:
 		};
 	};
 
-	_FORCE_INLINE_ void _ensure_first_page() {
-		if (unlikely(pages.is_empty())) {
-			pages.push_back(allocator->alloc());
-			page_bytes.push_back(0);
-			pages_used = 1;
-		}
-	}
+	void _ensure_first_page();
 
 	void _add_page();
 

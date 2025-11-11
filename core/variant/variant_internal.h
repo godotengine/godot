@@ -32,6 +32,7 @@
 
 #include "type_info.h"
 #include "variant.h"
+#include "variant_pools.h"
 
 #include "core/templates/simple_type.h"
 
@@ -235,7 +236,7 @@ public:
 		v->type = Variant::STRING;
 	}
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		v->_data._transform2d = VariantPools::alloc_transform_2d();
 		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
@@ -244,22 +245,22 @@ public:
 		v->type = Variant::QUATERNION;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		v->_data._aabb = VariantPools::alloc_aabb();
 		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._basis = VariantPools::alloc_basis();
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
-		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._transform3d = VariantPools::alloc_transform_3d();
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		v->_data._projection = VariantPools::alloc_projection();
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}

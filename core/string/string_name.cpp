@@ -33,6 +33,7 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/templates/paged_allocator.h"
 
 struct StringName::Table {
 	constexpr static uint32_t TABLE_BITS = 16;
