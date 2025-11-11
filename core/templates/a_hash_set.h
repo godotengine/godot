@@ -35,10 +35,6 @@
 
 #include <initializer_list>
 
-class String;
-class StringName;
-class Variant;
-
 /**
  * An array-based implementation of a hash set. See parent class RawAHashTable for details.
  *
