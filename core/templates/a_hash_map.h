@@ -55,6 +55,19 @@ template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
 class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
+	using Base = RawAHashTable<TKey, Hasher, Comparator>;
+
+	using Base::_capacity_mask;
+	using Base::_get_probe_length;
+	using Base::_get_resize_count;
+	using Base::_hash;
+	using Base::_insert_metadata;
+	using Base::_lookup_idx;
+	using Base::_lookup_idx_with_hash;
+	using Base::_metadata;
+	using Base::_resize_and_rehash;
+	using Base::_size;
+
 protected:
 	const TKey &_get_key(uint32_t p_idx) const override {
 		return _elements[p_idx].key;
