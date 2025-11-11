@@ -249,8 +249,8 @@ public:
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
 
 class EditorScriptCodeCompletionCache;
+class FindInFilesContainer;
 class FindInFilesDialog;
-class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -367,7 +367,7 @@ class ScriptEditor : public PanelContainer {
 	Button *script_forward = nullptr;
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesPanel *find_in_files = nullptr;
+	FindInFilesContainer *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;

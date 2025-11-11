@@ -338,6 +338,7 @@
 		</member>
 		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
 			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
+			[b]Note:[/b] When left empty, the application name is translated using the project translations.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.

@@ -36,6 +36,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -3152,7 +3153,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_centered_labels();
 			message_time = MIN(message_time, 0.001); // Make it disappear.
 
-			Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+			Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 			preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
 
 			const int item_count = display_submenu->get_item_count();
@@ -3230,7 +3231,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				geometry->surface_end();
 
 				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
+				ruler_label->set_text(TranslationServer::get_singleton()->format_number(vformat("%.3f m", distance), _get_locale()));
 
 				Vector3 center = (start_pos + end_pos) / 2;
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
