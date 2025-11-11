@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventJoypadHat" inherits="InputEvent" keywords="gamepad, controller" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents hat inputs from a joypad.
+	</brief_description>
+	<description>
+		Stores information about joystick hat inputs. One [InputEventJoypadHat] represents one hat at a time.
+		This event is only emitted when raw input is enabled for a given joystick; see [Input.set_joy_raw].
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="hat_index" type="int" setter="set_hat_index" getter="get_hat_index" enum="JoyHat" default="0">
+			Hat identifier.
+		</member>
+		<member name="hat_mask" type="int" setter="set_hat_mask" getter="get_hat_mask" enum="HatMask" is_bitfield="true" default="0">
+			Current position of the given hat. The value is one of or a bitwise combination of the [enum HatMask] hat direction masks.
+		</member>
+	</members>
+</class>

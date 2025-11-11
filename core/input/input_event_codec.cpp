@@ -250,6 +250,43 @@ void decode_input_event_mouse_motion(const PackedByteArray &p_data, Ref<InputEve
 	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
 }
 
+void encode_input_event_joypad_hat(const Ref<InputEventJoypadHat> &p_event, PackedByteArray &r_data) {
+	r_data.resize(11);
+
+	uint8_t *data = r_data.ptrw();
+	*data = (uint8_t)InputEventType::JOY_HAT;
+	data++;
+
+	uint8_t hat_mask = 0;
+	hat_mask |= (uint8_t)p_event->get_hat_mask();
+	*data = hat_mask;
+	data++;
+
+	data += encode_uint64(p_event->get_device(), data);
+	*data = (uint8_t)p_event->get_hat_index();
+	data++;
+
+	// Assert we had enough space.
+	DEV_ASSERT(data - r_data.ptrw() >= r_data.size());
+}
+
+void decode_input_event_joypad_hat(const PackedByteArray &p_data, Ref<InputEventJoypadHat> &r_event) {
+	const uint8_t *data = p_data.ptr();
+	DEV_ASSERT(static_cast<InputEventType>(*data) == InputEventType::JOY_HAT);
+	data++; // Skip event type.
+
+	BitField<HatMask> hat_mask = (HatMask)*data;
+	data++;
+	r_event->set_hat_mask(hat_mask);
+	r_event->set_device(decode_uint64(data));
+	data += sizeof(uint64_t);
+	r_event->set_hat_index((JoyHat)*data);
+	data++;
+
+	// Assert we had enough space.
+	DEV_ASSERT(data - p_data.ptr() >= p_data.size());
+}
+
 void encode_input_event_joypad_button(const Ref<InputEventJoypadButton> &p_event, PackedByteArray &r_data) {
 	r_data.resize(11);
 
@@ -409,6 +446,9 @@ bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data)
 		case InputEventType::JOY_BUTTON:
 			encode_input_event_joypad_button(p_event, r_data);
 			break;
+		case InputEventType::JOY_HAT:
+			encode_input_event_joypad_hat(p_event, r_data);
+			break;
 		case InputEventType::MAGNIFY_GESTURE:
 			encode_input_event_gesture_magnify(p_event, r_data);
 			break;
@@ -453,6 +493,12 @@ void decode_input_event(const PackedByteArray &p_data, Ref<InputEvent> &r_event)
 			Ref<InputEventJoypadMotion> event;
 			event.instantiate();
 			decode_input_event_joypad_motion(p_data, event);
+			r_event = event;
+		} break;
+		case InputEventType::JOY_HAT: {
+			Ref<InputEventJoypadHat> event;
+			event.instantiate();
+			decode_input_event_joypad_hat(p_data, event);
 			r_event = event;
 		} break;
 		case InputEventType::PAN_GESTURE: {

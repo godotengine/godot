@@ -131,8 +131,11 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
+	ClassDB::bind_method(D_METHOD("set_joy_raw", "device", "raw"), &Input::set_joy_raw);
+	ClassDB::bind_method(D_METHOD("get_joy_raw", "device"), &Input::get_joy_raw);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
+	ClassDB::bind_method(D_METHOD("get_joy_hat", "device", "hat"), &Input::get_joy_hat);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
 	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
@@ -356,6 +359,10 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
 	return JoyAxis((int)p_value | (p_device << 20));
+}
+
+static JoyHat _combine_device(JoyHat p_value, int p_device) {
+	return JoyHat((int)p_value | (p_device << 20));
 }
 
 static JoyButton _combine_device(JoyButton p_value, int p_device) {
@@ -584,6 +591,21 @@ float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	}
 }
 
+BitField<HatMask> Input::get_joy_hat(int p_device, JoyHat p_hat_index) const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return (HatMask)0;
+	}
+
+	JoyHat c = _combine_device(p_hat_index, p_device);
+	if (_joy_hat.has(c)) {
+		return _joy_hat[c];
+	} else {
+		return (HatMask)0;
+	}
+}
+
 String Input::get_joy_name(int p_idx) {
 	_THREAD_SAFE_METHOD_
 	return joy_names[p_idx].name;
@@ -675,6 +697,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		}
 		for (int i = 0; i < (int)JoyAxis::MAX; i++) {
 			set_joy_axis(p_idx, (JoyAxis)i, 0.0f);
+		}
+		for (int i = 0; i < (int)JoyHat::MAX; i++) {
+			set_joy_hat(p_idx, (JoyHat)i, (HatMask)0);
 		}
 	}
 	joy_names[p_idx] = js;
@@ -924,6 +949,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
 	}
 
+	Ref<InputEventJoypadHat> jh = p_event;
+
+	if (jh.is_valid()) {
+		set_joy_hat(jh->get_device(), jh->get_hat_index(), jh->get_hat_mask());
+	}
+
 	Ref<InputEventGesture> ge = p_event;
 
 	if (ge.is_valid()) {
@@ -985,6 +1016,13 @@ void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	JoyAxis c = _combine_device(p_axis, p_device);
 	_joy_axis[c] = p_value;
 }
+
+void Input::set_joy_hat(int p_device, JoyHat p_hat_index, BitField<HatMask> p_hat_mask) {
+	_THREAD_SAFE_METHOD_
+	JoyHat c = _combine_device(p_hat_index, p_device);
+	_joy_hat[c] = p_hat_mask;
+}
+
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
@@ -1286,6 +1324,7 @@ void Input::release_pressed_events() {
 	key_label_pressed.clear();
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
+	_joy_hat.clear();
 
 	for (KeyValue<StringName, Input::ActionState> &E : action_states) {
 		if (E.value.cache.pressed) {
@@ -1307,7 +1346,8 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 		return;
 	}
 	joy.last_buttons[(size_t)p_button] = p_pressed;
-	if (joy.mapping == -1) {
+
+	if (joy.raw || joy.mapping == -1) {
 		_button_event(p_device, p_button, p_pressed);
 		return;
 	}
@@ -1338,7 +1378,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 	joy.last_axis[(size_t)p_axis] = p_value;
 
-	if (joy.mapping == -1) {
+	if (joy.raw || joy.mapping == -1) {
 		_axis_event(p_device, p_axis, p_value);
 		return;
 	}
@@ -1393,7 +1433,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	}
 }
 
-void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
+void Input::joy_hat(int p_device, JoyHat p_hat, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 
@@ -1415,11 +1455,16 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	map[(size_t)HatDir::LEFT].index = (int)JoyButton::DPAD_LEFT;
 	map[(size_t)HatDir::LEFT].value = 0;
 
+	if (joy.raw) {
+		_hat_event(p_device, p_hat, p_val);
+		return;
+	}
+
 	if (joy.mapping != -1) {
 		_get_mapped_hat_events(map_db[joy.mapping], (HatDir)0, map);
 	}
 
-	int cur_val = joy_names[p_device].hat_current;
+	int cur_val = joy_names[p_device].hat_current[(int)p_hat];
 
 	for (int hat_direction = 0, hat_mask = 1; hat_direction < (int)HatDir::MAX; hat_direction++, hat_mask <<= 1) {
 		if (((int)p_val & hat_mask) != (cur_val & hat_mask)) {
@@ -1432,7 +1477,17 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 		}
 	}
 
-	joy_names[p_device].hat_current = (int)p_val;
+	joy_names[p_device].hat_current[(int)p_hat] = (int)p_val;
+}
+
+void Input::_hat_event(int p_device, JoyHat p_hat, BitField<HatMask> p_hat_mask) {
+	Ref<InputEventJoypadHat> ievent;
+	ievent.instantiate();
+	ievent->set_device(p_device);
+	ievent->set_hat_index(p_hat);
+	ievent->set_hat_mask(p_hat_mask);
+
+	parse_input_event(ievent);
 }
 
 void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
@@ -1835,6 +1890,16 @@ void Input::remove_joy_mapping(const String &p_guid) {
 			}
 		}
 	}
+}
+
+void Input::set_joy_raw(int p_device, bool p_raw) {
+	_THREAD_SAFE_METHOD_
+	joy_names[p_device].raw = p_raw;
+}
+
+bool Input::get_joy_raw(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	return joy_names[p_device].raw;
 }
 
 void Input::_set_joypad_mapping(Joypad &p_js, int p_map_index) {
