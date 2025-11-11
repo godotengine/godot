@@ -59,7 +59,6 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();
-	set_process_shortcut_input(true);
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
@@ -287,19 +286,14 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 }
 
 void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	EditorAcceptDialog::shortcut_input(p_event);
+	if (is_input_handled()) {
+		return;
+	}
+
 	const Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
-
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
-		}
-
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
-		}
 
 		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();

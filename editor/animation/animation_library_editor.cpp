@@ -990,27 +990,6 @@ void AnimationLibraryEditor::_update_editor(Object *p_mixer) {
 	emit_signal("update_editor", p_mixer);
 }
 
-void AnimationLibraryEditor::shortcut_input(const Ref<InputEvent> &p_event) {
-	const Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed()) {
-		bool handled = false;
-
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
-		}
-
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
-		}
-
-		if (handled) {
-			set_input_as_handled();
-		}
-	}
-}
-
 void AnimationLibraryEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_editor", "mixer"), &AnimationLibraryEditor::_update_editor);
 	ADD_SIGNAL(MethodInfo("update_editor"));
@@ -1018,7 +997,6 @@ void AnimationLibraryEditor::_bind_methods() {
 
 AnimationLibraryEditor::AnimationLibraryEditor() {
 	set_title(TTR("Edit Animation Libraries"));
-	set_process_shortcut_input(true);
 
 	file_dialog = memnew(EditorFileDialog);
 	add_child(file_dialog);

@@ -32,16 +32,16 @@
 
 #include "core/io/config_file.h"
 #include "core/templates/vector.h"
+#include "editor/gui/editor_accept_dialog.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
 class AnimationMixer;
 class EditorFileDialog;
 
-class AnimationLibraryEditor : public AcceptDialog {
-	GDCLASS(AnimationLibraryEditor, AcceptDialog)
+class AnimationLibraryEditor : public EditorAcceptDialog {
+	GDCLASS(AnimationLibraryEditor, EditorAcceptDialog)
 
 	enum {
 		LIB_BUTTON_ADD,
@@ -118,7 +118,6 @@ class AnimationLibraryEditor : public AcceptDialog {
 protected:
 	void _notification(int p_what);
 	void _update_editor(Object *p_mixer);
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:
