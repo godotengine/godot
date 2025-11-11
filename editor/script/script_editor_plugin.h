@@ -372,6 +372,10 @@ class ScriptEditor : public PanelContainer {
 
 	WindowWrapper *window_wrapper = nullptr;
 
+#ifdef ANDROID_ENABLED
+	Control *virtual_keyboard_spacer = nullptr;
+#endif
+
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
 	};
