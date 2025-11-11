@@ -156,7 +156,7 @@
 // GODOT BEGINS
 
 // Disable warnings also for non-MSVC compilers
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 // Off by default warnings
 #pragma warning(disable : 4365 4710 4820 5039)
 #else
