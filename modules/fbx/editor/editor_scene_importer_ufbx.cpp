@@ -68,8 +68,8 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 		state->set_allow_geometry_helper_nodes(allow_geometry_helper_nodes);
 	}
 	if (p_options.has("fbx/embedded_image_handling")) {
-		int32_t enum_option = p_options["fbx/embedded_image_handling"];
-		state->set_handle_binary_image(enum_option);
+		const int32_t enum_option = p_options["fbx/embedded_image_handling"];
+		state->set_handle_binary_image_mode((GLTFState::HandleBinaryImageMode)enum_option);
 	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
@@ -97,7 +97,7 @@ void EditorSceneFormatImporterUFBX::get_import_options(const String &p_path,
 	if (p_path.is_empty() || p_path.has_extension("fbx")) {
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/importer", PROPERTY_HINT_ENUM, "ufbx,FBX2glTF"), FBX_IMPORTER_UFBX));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::BOOL, "fbx/allow_geometry_helper_nodes"), false));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), FBXState::HANDLE_BINARY_EXTRACT_TEXTURES));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), FBXState::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "fbx/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 	}
 }
