@@ -34,8 +34,7 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
-#include "core/templates/vmap.h"
-#include "editor/plugins/visual_shader_editor_plugin.h"
+#include "editor/shader/visual_shader_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/item_list.h"
@@ -215,8 +214,8 @@ void VisualShaderGroup::_update_group() {
 	// }
 	HashMap<int, String> code_map;
 	HashSet<int> empty_funcs;
-	VMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
-	VMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
+	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
+	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
 
 	StringBuilder group_code;
 	HashSet<int> processed;
@@ -386,6 +385,7 @@ void VisualShaderGroup::set_input_port_type(int p_id, VisualShaderNode::PortType
 }
 
 VisualShaderGroup::Port VisualShaderGroup::get_input_port(int p_id) const {
+	ERR_FAIL_COND_V(!input_ports.has(p_id), (VisualShaderGroup::Port){});
 	return input_ports[p_id];
 }
 
@@ -434,6 +434,7 @@ void VisualShaderGroup::set_output_port_type(int p_id, VisualShaderNode::PortTyp
 }
 
 VisualShaderGroup::Port VisualShaderGroup::get_output_port(int p_id) const {
+	ERR_FAIL_COND_V(!output_ports.has(p_id), (VisualShaderGroup::Port){});
 	return output_ports[p_id];
 }
 
@@ -579,14 +580,14 @@ int VisualShaderNodeGroup::get_input_port_count() const {
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroup::get_input_port_type(int p_port) const {
-	if (group.is_null()) {
+	if (group.is_null() || p_port < 0 || p_port >= group->get_input_ports().size()) {
 		return PortType();
 	}
 	return group->get_input_port(p_port).type;
 }
 
 String VisualShaderNodeGroup::get_input_port_name(int p_port) const {
-	if (group.is_null()) {
+	if (group.is_null() || p_port < 0 || p_port >= group->get_input_ports().size()) {
 		return String();
 	}
 	return group->get_input_port(p_port).name;
@@ -600,14 +601,14 @@ int VisualShaderNodeGroup::get_output_port_count() const {
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroup::get_output_port_type(int p_port) const {
-	if (group.is_null()) {
+	if (group.is_null() || p_port < 0 || p_port >= group->get_output_ports().size()) {
 		return PortType();
 	}
 	return group->get_output_port(p_port).type;
 }
 
 String VisualShaderNodeGroup::get_output_port_name(int p_port) const {
-	if (group.is_null()) {
+	if (group.is_null() || p_port < 0 || p_port >= group->get_output_ports().size()) {
 		return String();
 	}
 	return group->get_output_port(p_port).name;

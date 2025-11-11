@@ -1731,7 +1731,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			port_icon->set_size_override(Size2(12, 12));
 			p_theme->set_icon("port", "GraphNode", port_icon);
 
-			Ref<ImageTexture> node_group_icon = p_theme->get_icon(SNAME("VisualShaderGroup"), EditorStringName(EditorIcons));
+			Ref<DPITexture> node_group_icon = p_theme->get_icon(SNAME("VisualShaderGroup"), EditorStringName(EditorIcons));
 			node_group_icon->set_size_override(Size2(16, 16));
 			p_theme->set_icon(SNAME("VisualShaderGroup"), EditorStringName(EditorIcons), node_group_icon);
 

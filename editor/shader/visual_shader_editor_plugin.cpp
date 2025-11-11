@@ -1709,6 +1709,9 @@ void VisualShaderEditor::clear_custom_types() {
 }
 
 void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
+	if (p_name.is_valid_ascii_identifier()) {
+		ERR_FAIL_COND_MSG(true, "Custom Visual Shader Node name '" + p_name + "' is not a valid identifier. It must start with a letter or underscore and can only contain letters, digits, and underscores.");
+	}
 	ERR_FAIL_COND(!p_name.is_valid_ascii_identifier());
 	ERR_FAIL_COND(p_type.is_empty() && p_script.is_null());
 
@@ -6885,7 +6888,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	exit_group_button->set_theme_type_variation("FlatButton");
 	exit_group_button->set_tooltip_text(TTR("Exit currently editing group."));
 	exit_group_button->set_visible(false);
-	toolbar->add_child(exit_group_button);
+	toolbar_hflow->add_child(exit_group_button);
 	exit_group_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_exit_group));
 
 	Control *spacer = memnew(Control);

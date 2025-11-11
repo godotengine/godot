@@ -210,8 +210,8 @@ Error ShaderGraph::_write_node(
 		StringBuilder *p_global_code_per_node,
 		HashMap<Type, StringBuilder> *p_global_code_per_func,
 		StringBuilder &r_code, Vector<ShaderGraph::DefaultTextureParam> &r_def_tex_params,
-		const VMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_input_connections,
-		const VMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_output_connections,
+		const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_input_connections,
+		const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_output_connections,
 		int p_node,
 		HashSet<int> &r_processed,
 		bool p_for_preview,
@@ -2191,7 +2191,7 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 int VisualShader::has_node_embeds() const {
 	bool external_embeds = false;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
+		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i]->nodes) {
 			List<PropertyInfo> props;
 			E.value.node->get_property_list(&props);
 			// For classes that inherit from VisualShaderNode, the class properties start at the 12th, and the last value is always 'script'
