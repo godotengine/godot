@@ -202,7 +202,7 @@ static void append_tile_to_accumulator(Vector<Vector3> &p_tile_vertices, const V
 	}
 }
 
-static void compute_tile_definitions(const AABB &p_baking_bounds, float p_cell_size, int p_width_cells, int p_height_cells, int p_walkable_radius, bool p_enable_tiling, float p_tile_size_meters, LocalVector<TileDefinition3D> &r_tiles) {
+static void compute_tile_definitions(const AABB &p_baking_bounds, float p_cell_size, int p_width_cells, int p_height_cells, int p_walkable_radius, int p_minimum_overlap_voxels, bool p_enable_tiling, float p_tile_size_meters, LocalVector<TileDefinition3D> &r_tiles) {
 	r_tiles.clear();
 
 	if (!p_enable_tiling) {
@@ -217,7 +217,7 @@ static void compute_tile_definitions(const AABB &p_baking_bounds, float p_cell_s
 	const int tile_core_span_x = MAX(1, (int)Math::ceil(tile_core_size / p_cell_size));
 	const int tile_core_span_z = MAX(1, (int)Math::ceil(tile_core_size / p_cell_size));
 
-	const int desired_overlap = MAX(p_walkable_radius + 2, 4);
+	const int desired_overlap = MAX(MAX(p_walkable_radius + 2, 4), p_minimum_overlap_voxels);
 	const int overlap_x = MIN(desired_overlap, MAX(1, tile_core_span_x / 2));
 	const int overlap_z = MIN(desired_overlap, MAX(1, tile_core_span_z / 2));
 
@@ -563,8 +563,19 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(NavMeshGenerat
 	}
 	requested_tile_size = CLAMP(requested_tile_size, NAVMESH_TILE_SIZE_MIN_METERS, NAVMESH_TILE_SIZE_MAX_METERS);
 
+	int minimum_overlap_voxels = walkable_radius + 2;
+	if (use_tile_baking && bounds_cfg.cs > 0.0f) {
+		float effective_border_size = p_navigation_mesh->get_border_size();
+		const float recommended_border = (walkable_radius + 3.0f) * bounds_cfg.cs;
+		effective_border_size = MAX(effective_border_size, recommended_border);
+		effective_border_size = MAX(effective_border_size, NAVMESH_TILE_MIN_BORDER_METERS);
+		const int border_voxels = (int)Math::ceil(effective_border_size / bounds_cfg.cs);
+		minimum_overlap_voxels = MAX(minimum_overlap_voxels, border_voxels);
+	}
+	minimum_overlap_voxels = MAX(minimum_overlap_voxels, 4);
+
 	LocalVector<TileDefinition3D> tiles;
-	compute_tile_definitions(baking_bounds, bounds_cfg.cs, bounds_cfg.width, bounds_cfg.height, walkable_radius, use_tile_baking, requested_tile_size, tiles);
+	compute_tile_definitions(baking_bounds, bounds_cfg.cs, bounds_cfg.width, bounds_cfg.height, walkable_radius, minimum_overlap_voxels, use_tile_baking, requested_tile_size, tiles);
 
 	const int tile_count = tiles.size();
 	if (tile_count == 0) {
@@ -631,6 +642,13 @@ Error NavMeshGenerator3D::generator_bake_single_tile(NavMeshGeneratorTask3D *p_g
 	cfg.ch = navigation_mesh->get_cell_height();
 	float effective_border_size = navigation_mesh->get_border_size();
 	if (navigation_mesh->is_tile_baking_enabled()) {
+		// Ensure tiles have enough overlap after Recast erodes by the agent radius.
+		const float cell_size = navigation_mesh->get_cell_size();
+		if (cell_size > 0.0f) {
+			const float walkable_radius_voxels = Math::ceil(navigation_mesh->get_agent_radius() / cell_size);
+			const float recommended_border = (walkable_radius_voxels + 3.0f) * cell_size;
+			effective_border_size = MAX(effective_border_size, recommended_border);
+		}
 		effective_border_size = MAX(effective_border_size, NAVMESH_TILE_MIN_BORDER_METERS);
 	}
 	if (effective_border_size > 0.0f) {
