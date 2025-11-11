@@ -1219,7 +1219,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", ge_panel_style);
 		p_theme->set_stylebox("panel_focus", "GraphEdit", p_config.focus_style);
-		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
+		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.5), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
 		GraphEdit::GridPattern grid_pattern = (GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern"));
@@ -1256,7 +1256,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// GraphEditMinimap.
 		{
-			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0);
+			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.3), 0, 0, 0, 0);
 			style_minimap_bg->set_border_color(p_config.dark_color_3);
 			style_minimap_bg->set_border_width_all(1);
 			p_theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", style_minimap_bg);
@@ -1268,7 +1268,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 				style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
 			} else {
-				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
+				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.1), 0, 0, 0, 0);
 				style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 			}
@@ -1291,7 +1291,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -1.0, 0.9);
+			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -0.5, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
