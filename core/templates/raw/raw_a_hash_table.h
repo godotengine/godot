@@ -47,7 +47,6 @@ static constexpr uint32_t RAHT_INITIAL_CAPACITY = 16;
 static constexpr uint32_t RAHT_EMPTY_HASH = 0;
 static_assert(RAHT_EMPTY_HASH == 0, "RAHT_EMPTY_HASH must always be 0 for the memcpy() optimization.");
 
-
 /**
  * The abstract class behind the AHashMap and AHashSet containers.
  *
@@ -229,6 +228,5 @@ protected:
 	}
 
 public:
-
-	virtual ~RawAHashTable(){}
+	virtual ~RawAHashTable() {}
 };
