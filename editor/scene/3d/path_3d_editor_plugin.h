@@ -148,6 +148,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	bool handle_clicked = false;
 	bool mirror_handle_angle = true;
 	bool mirror_handle_length = true;
+	bool snap_to_collider = true;
 
 	void _create_curve();
 	void _confirm_clear_points();
@@ -157,7 +158,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
-		HANDLE_OPTION_LENGTH
+		HANDLE_OPTION_LENGTH,
+		HANDLE_OPTION_SNAP_COLLIDER
 	};
 
 protected:
@@ -182,4 +184,19 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
+
+private:
+	struct EditData {
+		Vector3 click_ray_dir;
+		Vector3 click_ray_pos;
+		Point2 mouse_pos;
+		bool show_rotation_line = false;
+		Ref<Path3DGizmo> gizmo;
+		int gizmo_handle = 0;
+		bool gizmo_handle_secondary = false;
+		Camera3D *gizmo_camera;
+		bool waiting_point_physics = false;
+		bool waiting_handle_physics = false;
+		bool in_physics_frame = false;
+	} _edit;
 };
