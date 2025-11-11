@@ -417,7 +417,7 @@ public:
 
 	/* Constructors */
 
-	HashSet(const HashSet &p_other) {
+	explicit HashSet(const HashSet &p_other) {
 		_init_from(p_other);
 	}
 
