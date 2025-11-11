@@ -32,17 +32,21 @@
 
 // This implementation is derived from ICU: icu4c/source/extra/scrptrun/scrptrun.cpp
 
+inline constexpr UChar32 ZERO_WIDTH_JOINER = 0x200d;
+inline constexpr UChar32 VARIATION_SELECTOR_15 = 0xfe0e;
+inline constexpr UChar32 VARIATION_SELECTOR_16 = 0xfe0f;
+
 inline bool ScriptIterator::same_script(int32_t p_script_one, int32_t p_script_two) {
 	return p_script_one <= USCRIPT_INHERITED || p_script_two <= USCRIPT_INHERITED || p_script_one == p_script_two;
 }
 
 inline bool ScriptIterator::is_emoji(UChar32 p_c, UChar32 p_next) {
-	if (p_next == 0xFE0E) { // Variation Selector-15
+	if (p_next == VARIATION_SELECTOR_15 && (u_hasBinaryProperty(p_c, UCHAR_EMOJI) || u_hasBinaryProperty(p_c, UCHAR_EXTENDED_PICTOGRAPHIC))) {
 		return false;
-	} else if (p_next == 0xFE0F) { // Variation Selector-16
+	} else if (p_next == VARIATION_SELECTOR_16 && (u_hasBinaryProperty(p_c, UCHAR_EMOJI) || u_hasBinaryProperty(p_c, UCHAR_EXTENDED_PICTOGRAPHIC))) {
 		return true;
 	} else {
-		return u_hasBinaryProperty(p_c, UCHAR_EMOJI) || u_hasBinaryProperty(p_c, UCHAR_EMOJI_PRESENTATION) || u_hasBinaryProperty(p_c, UCHAR_EMOJI_MODIFIER) || u_hasBinaryProperty(p_c, UCHAR_REGIONAL_INDICATOR) || u_hasBinaryProperty(p_c, UCHAR_EXTENDED_PICTOGRAPHIC);
+		return u_hasBinaryProperty(p_c, UCHAR_EMOJI_PRESENTATION) || u_hasBinaryProperty(p_c, UCHAR_EMOJI_MODIFIER) || u_hasBinaryProperty(p_c, UCHAR_REGIONAL_INDICATOR);
 	}
 }
 
@@ -119,8 +123,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 			}
 
 			if (script_code == USCRIPT_SYMBOLS_EMOJI && script_code != sc) {
-				UCharCategory cat = (UCharCategory)u_charType(ch);
-				if ((cat >= U_SPACE_SEPARATOR && cat <= U_CONTROL_CHAR) || (cat >= U_DASH_PUNCTUATION && cat <= U_OTHER_PUNCTUATION) || (cat >= U_INITIAL_PUNCTUATION && cat <= U_FINAL_PUNCTUATION)) {
+				if (ch == VARIATION_SELECTOR_15 || n == VARIATION_SELECTOR_15 || !(is_emoji(ch, n) || ch == ZERO_WIDTH_JOINER || ch == VARIATION_SELECTOR_16 || u_hasBinaryProperty(ch, UCHAR_EXTENDED_PICTOGRAPHIC))) {
 					break;
 				}
 			} else if (same_script(script_code, sc)) {
