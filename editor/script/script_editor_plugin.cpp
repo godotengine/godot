@@ -4079,7 +4079,8 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 }
 
 void ScriptEditor::_start_find_in_files(bool with_replace) {
-	FindInFiles *f = find_in_files->get_finder();
+	FindInFilesPanel *panel = find_in_files->get_panel_for_results(with_replace ? TTR("Replace:") + " " + find_in_files_dialog->get_search_text() : TTR("Find:") + " " + find_in_files_dialog->get_search_text());
+	FindInFiles *f = panel->get_finder();
 
 	f->set_search_text(find_in_files_dialog->get_search_text());
 	f->set_match_case(find_in_files_dialog->is_match_case());
@@ -4089,9 +4090,9 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	f->set_includes(find_in_files_dialog->get_includes());
 	f->set_excludes(find_in_files_dialog->get_excludes());
 
-	find_in_files->set_with_replace(with_replace);
-	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
-	find_in_files->start_search();
+	panel->set_with_replace(with_replace);
+	panel->set_replace_text(find_in_files_dialog->get_replace_text());
+	panel->start_search();
 
 	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
 	find_in_files_button->show();
@@ -4490,12 +4491,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
 	add_child(find_in_files_dialog);
-	find_in_files = memnew(FindInFilesPanel);
+	find_in_files = memnew(FindInFilesContainer);
 	find_in_files_button = EditorNode::get_bottom_panel()->add_item(TTRC("Search Results"), find_in_files, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
 	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
-	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
-	find_in_files->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
+	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
+	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
+	find_in_files->connect("close_button_clicked", callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
 	find_in_files->hide();
 	find_in_files_button->hide();
 
