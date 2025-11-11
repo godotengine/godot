@@ -548,7 +548,7 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 		name->set_text(current->get_name());
 		return;
 	}
-	 
+
 	current->set_name(trimmed_name);
 	_update_presets();
 }
