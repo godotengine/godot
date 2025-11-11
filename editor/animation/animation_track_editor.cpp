@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_bezier_editor.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/docks/inspector_dock.h"
@@ -1836,8 +1837,8 @@ void AnimationTimelineEdit::update_values() {
 
 	editing = true;
 	if (use_fps && animation->get_step() > 0.0) {
-		length->set_value(animation->get_length() / animation->get_step());
 		length->set_step(FPS_DECIMAL);
+		length->set_value(animation->get_length() / animation->get_step());
 		length->set_tooltip_text(TTR("Animation length (frames)"));
 		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
 		if (track_edit) {
@@ -1845,8 +1846,8 @@ void AnimationTimelineEdit::update_values() {
 			track_edit->editor->marker_edit->_update_key_edit();
 		}
 	} else {
-		length->set_value(animation->get_length());
 		length->set_step(SECOND_DECIMAL);
+		length->set_value(animation->get_length());
 		length->set_tooltip_text(TTR("Animation length (seconds)"));
 		time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	}
@@ -2876,7 +2877,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		}
 
 		if (key_idx != -1) {
-			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->track_get_key_time(track, key_idx), SECOND_DECIMAL))) + "\n";
+			String text = TTR("Time (s):") + " " + TranslationServer::get_singleton()->format_number(rtos(Math::snapped(animation->track_get_key_time(track, key_idx), SECOND_DECIMAL)), _get_locale()) + "\n";
 			switch (animation->track_get_type(track)) {
 				case Animation::TYPE_POSITION_3D: {
 					Vector3 t = animation->track_get_key_value(track, key_idx);
@@ -9011,7 +9012,7 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 
 		if (key_idx != -1) {
 			String name = names[key_idx];
-			String text = TTR("Time (s):") + " " + TS->format_number(rtos(Math::snapped(animation->get_marker_time(name), 0.0001))) + "\n";
+			String text = TTR("Time (s):") + " " + TranslationServer::get_singleton()->format_number(rtos(Math::snapped(animation->get_marker_time(name), 0.0001)), _get_locale()) + "\n";
 			text += TTR("Marker:") + " " + name + "\n";
 			return text;
 		}

@@ -578,8 +578,7 @@ void EditorNode::_gdextensions_reloaded() {
 void EditorNode::_update_translations() {
 	Ref<TranslationDomain> main = TranslationServer::get_singleton()->get_main_domain();
 
-	main->clear();
-	TranslationServer::get_singleton()->load_translations();
+	TranslationServer::get_singleton()->load_project_translations(main);
 
 	if (main->is_enabled()) {
 		// Check for the exact locale.
@@ -677,7 +676,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		}
 
 		editor_main_screen->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-		bottom_panel->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+		bottom_panel->_theme_changed();
 		distraction_free->set_button_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		distraction_free->add_theme_style_override(SceneStringName(pressed), theme->get_stylebox(CoreStringName(normal), "FlatMenuButton"));
 
@@ -2919,16 +2918,6 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	}
 }
 
-static bool overrides_external_editor(Object *p_object) {
-	Script *script = Object::cast_to<Script>(p_object);
-
-	if (!script) {
-		return false;
-	}
-
-	return script->get_language()->overrides_external_editor();
-}
-
 void EditorNode::_add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only) {
 	ObjectID id = p_object->get_instance_id();
 	ObjectID history_id = editor_history.get_current();
@@ -3117,15 +3106,17 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 		ObjectID editor_owner_id = editor_owner->get_instance_id();
 		if (main_plugin && !skip_main_plugin) {
-			// Special case if use of external editor is true.
-			Resource *current_res = Object::cast_to<Resource>(current_obj);
-			if (main_plugin->get_plugin_name() == "Script" && current_res && !current_res->is_built_in() && (bool(EDITOR_GET("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			// Special case if current_obj is a script.
+			Script *current_script = Object::cast_to<Script>(current_obj);
+			if (current_script) {
 				if (!changing_scene) {
-					main_plugin->edit(current_obj);
+					// Only update main editor screen if using in-engine editor.
+					if (current_script->is_built_in() || (!bool(EDITOR_GET("text_editor/external/use_external_editor")) && !current_script->get_language()->overrides_external_editor())) {
+						editor_main_screen->select(plugin_index);
+					}
+
+					main_plugin->edit(current_script);
 				}
-			} else if (Object::cast_to<Script>(current_obj)) {
-				editor_main_screen->select(plugin_index);
-				main_plugin->edit(current_obj);
 			} else if (main_plugin != editor_plugin_screen) {
 				// Unedit previous plugin.
 				editor_plugin_screen->edit(nullptr);
@@ -8696,12 +8687,12 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
+	bottom_panel->set_theme_type_variation("BottomPanel");
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
 	log = memnew(EditorLog);
-	Button *output_button = bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
-	log->set_tool_button(output_button);
+	bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
 
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 

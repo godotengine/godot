@@ -2565,9 +2565,10 @@ String OS_Windows::get_system_ca_certificates() {
 		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
 		ERR_CONTINUE(!success);
 		PackedByteArray pba;
-		pba.resize(size);
+		pba.resize(size + 1);
 		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
-		certs += String::ascii(Span((char *)pba.ptr(), size));
+		pba.write[size] = 0;
+		certs += String::ascii(Span((const char *)pba.ptr(), strlen((const char *)pba.ptr())));
 		curr = CertEnumCertificatesInStore(cert_store, curr);
 	}
 	CertCloseStore(cert_store, 0);

@@ -143,16 +143,6 @@ class TextServerAdvanced : public TextServerExtension {
 	GDCLASS(TextServerAdvanced, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
-	struct NumSystemData {
-		HashSet<StringName> lang;
-		String digits;
-		String percent_sign;
-		String exp_l;
-		String exp_u;
-	};
-
-	Vector<NumSystemData> num_systems;
-
 	struct FeatureInfo {
 		StringName name;
 		Variant::Type vtype = Variant::INT;
@@ -173,7 +163,6 @@ class TextServerAdvanced : public TextServerExtension {
 	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
-	void _insert_num_systems_lang();
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
 
@@ -1034,6 +1023,7 @@ public:
 	MODBIND2R(RID, create_shaped_text, Direction, Orientation);
 
 	MODBIND1(shaped_text_clear, const RID &);
+	MODBIND1R(RID, shaped_text_duplicate, const RID &);
 
 	MODBIND2(shaped_text_set_direction, const RID &, Direction);
 	MODBIND1RC(Direction, shaped_text_get_direction, const RID &);
@@ -1062,6 +1052,7 @@ public:
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
+	MODBIND2RC(bool, shaped_text_has_object, const RID &, const Variant &);
 	MODBIND1RC(String, shaped_get_text, const RID &);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
@@ -1118,10 +1109,6 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
 	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
-
-	MODBIND2RC(String, format_number, const String &, const String &);
-	MODBIND2RC(String, parse_number, const String &, const String &);
-	MODBIND1RC(String, percent_sign, const String &);
 
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
 	MODBIND2RC(PackedInt32Array, string_get_character_breaks, const String &, const String &);

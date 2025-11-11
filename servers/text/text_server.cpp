@@ -36,6 +36,10 @@
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifndef DISABLE_DEPRECATED
+#include "core/string/translation_server.h"
+#endif // DISABLE_DEPRECATED
+
 TextServerManager *TextServerManager::singleton = nullptr;
 
 void TextServerManager::_bind_methods() {
@@ -402,6 +406,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_shaped_text", "direction", "orientation"), &TextServer::create_shaped_text, DEFVAL(DIRECTION_AUTO), DEFVAL(ORIENTATION_HORIZONTAL));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_clear", "rid"), &TextServer::shaped_text_clear);
+	ClassDB::bind_method(D_METHOD("shaped_text_duplicate", "rid"), &TextServer::shaped_text_duplicate);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_direction", "shaped", "direction"), &TextServer::shaped_text_set_direction, DEFVAL(DIRECTION_AUTO));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_direction", "shaped"), &TextServer::shaped_text_get_direction);
@@ -430,6 +435,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language", "meta"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length", "baseline"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align", "baseline"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("shaped_text_has_object", "shaped", "key"), &TextServer::shaped_text_has_object);
 	ClassDB::bind_method(D_METHOD("shaped_get_text", "shaped"), &TextServer::shaped_get_text);
 
 	ClassDB::bind_method(D_METHOD("shaped_get_span_count", "shaped"), &TextServer::shaped_get_span_count);
@@ -505,9 +511,11 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_dominant_direction_in_range", "shaped", "start", "end"), &TextServer::shaped_text_get_dominant_direction_in_range);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("format_number", "number", "language"), &TextServer::format_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("parse_number", "number", "language"), &TextServer::parse_number, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("percent_sign", "language"), &TextServer::percent_sign, DEFVAL(""));
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language", "chars_per_line"), &TextServer::string_get_word_breaks, DEFVAL(""), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("string_get_character_breaks", "string", "language"), &TextServer::string_get_character_breaks, DEFVAL(""));
@@ -2106,6 +2114,23 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	}
 	return result;
 }
+
+#ifndef DISABLE_DEPRECATED
+String TextServer::format_number(const String &p_string, const String &p_language) const {
+	const StringName lang = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	return TranslationServer::get_singleton()->format_number(p_string, lang);
+}
+
+String TextServer::parse_number(const String &p_string, const String &p_language) const {
+	const StringName lang = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	return TranslationServer::get_singleton()->parse_number(p_string, lang);
+}
+
+String TextServer::percent_sign(const String &p_language) const {
+	const StringName lang = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	return TranslationServer::get_singleton()->get_percent_sign(lang);
+}
+#endif // DISABLE_DEPRECATED
 
 TypedArray<Vector3i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	TypedArray<Vector3i> ret;
