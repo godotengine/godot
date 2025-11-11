@@ -46,6 +46,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -55,6 +56,8 @@ import android.view.SurfaceView;
 
 import androidx.annotation.Keep;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.InputStream;
 
 /**
@@ -235,7 +238,8 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	}
 
 	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
-		setPreserveEGLContextOnPause(true);
+		boolean shouldPreserveContext = !isProblematicAdrenoGpu();
+		setPreserveEGLContextOnPause(shouldPreserveContext);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
 			case OPENXR:
@@ -282,5 +286,71 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	public void startRenderer() {
 		/* Set the renderer responsible for frame rendering */
 		setRenderer(godotRenderer);
+	}
+
+	/**
+	 * Detects problematic Adreno GPU configurations that have shader corruption issues
+	 * when EGL context is preserved across surface destroy/create cycles.
+	 *
+	 * @return true if this is a problematic Adreno GPU configuration
+	 */
+	private boolean isProblematicAdrenoGpu() {
+		try {
+			String hardware = Build.HARDWARE.toLowerCase();
+			String board = Build.BOARD.toLowerCase();
+			String device = Build.DEVICE.toLowerCase();
+
+			// Known problematic SoCs with Adreno 5XX GPUs:
+			// - msm8953: Snapdragon 625 (Adreno 506)
+			// - msm8937/msm8940: Snapdragon 430/435 (Adreno 505)
+			// - msm8917: Snapdragon 425 (Adreno 505)
+			// - msm8976: Snapdragon 652/653 (Adreno 510)
+			// - msm8956: Snapdragon 650 (Adreno 510)
+			// - msm8996: Snapdragon 820/821 (Adreno 530)
+
+			boolean isProblematicSoc = hardware.contains("qcom") && (
+				hardware.contains("msm8953") ||  // Snapdragon 625 (Adreno 506) - PRIMARY TARGET
+				hardware.contains("msm8937") ||  // Snapdragon 430 (Adreno 505)
+				hardware.contains("msm8940") ||  // Snapdragon 435 (Adreno 505)
+				hardware.contains("msm8917") ||  // Snapdragon 425 (Adreno 505)
+				hardware.contains("msm8976") ||  // Snapdragon 652/653 (Adreno 510)
+				hardware.contains("msm8956") ||  // Snapdragon 650 (Adreno 510)
+				board.contains("msm8953") ||
+				board.contains("msm8937") ||
+				board.contains("msm8940") ||
+				board.contains("msm8917") ||
+				board.contains("msm8976") ||
+				board.contains("msm8956")
+			);
+
+			// Also check for Snapdragon 6XX series on Android 9 and below
+			// as these often have Adreno 5XX GPUs with similar issues
+			if (!isProblematicSoc && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+				try (BufferedReader reader = new BufferedReader(new FileReader("/proc/cpuinfo"))) {
+					String line;
+					while ((line = reader.readLine()) != null) {
+						String lowerLine = line.toLowerCase();
+						if (lowerLine.contains("hardware") && lowerLine.contains("qualcomm")) {
+							if (lowerLine.contains("msm8953") || lowerLine.contains("msm8937") ||
+								lowerLine.contains("msm8940") || lowerLine.contains("msm8917") ||
+								lowerLine.contains("msm8976") || lowerLine.contains("msm8956")) {
+								isProblematicSoc = true;
+								break;
+							}
+						}
+					}
+				} catch (Exception e) {
+					// Ignore errors
+				}
+			}
+
+			if (isProblematicSoc) {
+				return true;
+			}
+
+			return false;
+		} catch (Exception e) {
+			return Build.VERSION.SDK_INT <= Build.VERSION_CODES.P;
+		}
 	}
 }

@@ -102,6 +102,9 @@ public:
 	// Adreno 3XX compatibility.
 	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
 
+	// Adreno 5XX compatibility (Adreno 506/508/509/510/512).
+	bool disable_egl_context_preserve_adreno5 = false; // Set to 'true' to disable EGL context preservation on pause.
+
 	// PowerVR GE 8320 workaround.
 	bool disable_transform_feedback_shader_cache = false;
 

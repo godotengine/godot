@@ -329,6 +329,18 @@ class Godot private constructor(val context: Context) {
 				commandLine.add("--main-pack")
 				commandLine.add(expansionPackPath)
 			}
+
+			if (isProblematicAdrenoGpuForVulkan()) {
+				// Remove any existing --rendering-driver argument
+				val driverIndex = commandLine.indexOf("--rendering-driver")
+				if (driverIndex >= 0 && driverIndex < commandLine.size - 1) {
+					commandLine.removeAt(driverIndex + 1)  // Remove the value
+					commandLine.removeAt(driverIndex)       // Remove the key
+				}
+
+				commandLine.add("--rendering-driver")
+				commandLine.add("opengl3")
+			}
 			if (!nativeLayerInitializeCompleted) {
 				nativeLayerInitializeCompleted = GodotLib.initialize(
 					this,
@@ -934,7 +946,14 @@ class Godot private constructor(val context: Context) {
 			renderingDeviceSource = "CommandLine"
 			renderingDevice = cmdline.get(index + 1)
 		}
-		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		var result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		if (result && isProblematicAdrenoGpuForVulkan()) {
+			Log.w(TAG, "Detected problematic Adreno 5XX GPU. Forcing OpenGL ES instead of Vulkan.")
+			result = false
+			renderingDevice = "opengl3"
+			renderingDeviceSource = "Adreno5XXWorkaround"
+		}
+
 		Log.d(TAG, """usesVulkan(): ${result}
 			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
 			renderer: ${renderer} (${rendererSource})""")
@@ -962,6 +981,52 @@ class Godot private constructor(val context: Context) {
 
 		// Check for api version 1.0
 		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
+	}
+
+	/**
+	 * Detects problematic Adreno 5XX GPU configurations that have critical Vulkan driver bugs.
+	 * These GPUs crash in FinalizeDescriptors when handling descriptor sets for occluded UI elements.
+	 *
+	 * @return true if this is a problematic Adreno 5XX GPU that should not use Vulkan
+	 */
+	private fun isProblematicAdrenoGpuForVulkan(): Boolean {
+		try {
+			val hardware = Build.HARDWARE.lowercase()
+			val board = Build.BOARD.lowercase()
+
+			// Known problematic SoCs with Adreno 5XX GPUs (particularly on Android 9 and below)
+			val isProblematicSoc = hardware.contains("qcom") && (
+				hardware.contains("msm8953") ||  // Snapdragon 625 (Adreno 506)
+				hardware.contains("msm8937") ||  // Snapdragon 430 (Adreno 505)
+				hardware.contains("msm8940") ||  // Snapdragon 435 (Adreno 505)
+				hardware.contains("msm8917") ||  // Snapdragon 425 (Adreno 505)
+				hardware.contains("msm8976") ||  // Snapdragon 652/653 (Adreno 510)
+				hardware.contains("msm8956") ||  // Snapdragon 650 (Adreno 510)
+				hardware.contains("sdm660") ||   // Snapdragon 660 (Adreno 509/512)
+				hardware.contains("sdm636") ||   // Snapdragon 636 (Adreno 509)
+				board.contains("msm8953") ||
+				board.contains("msm8937") ||
+				board.contains("msm8940") ||
+				board.contains("msm8917") ||
+				board.contains("msm8976") ||
+				board.contains("msm8956") ||
+				board.contains("sdm660") ||
+				board.contains("sdm636")
+			)
+
+			if (isProblematicSoc) {
+				Log.w(TAG, "Detected problematic Adreno 5XX SoC for Vulkan (Hardware: ${Build.HARDWARE}, " +
+					"Board: ${Build.BOARD}, Android: ${Build.VERSION.SDK_INT}). " +
+					"Will disable Vulkan and use OpenGL ES to prevent crashes.")
+				return true
+			}
+
+			return false
+		} catch (e: Exception) {
+			Log.e(TAG, "Error detecting GPU type for Vulkan compatibility", e)
+			// Be conservative on Android 9 and below - disable Vulkan on older devices if detection fails
+			return Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+		}
 	}
 
 	private fun setKeepScreenOn(enabled: Boolean) {
