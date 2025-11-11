@@ -1197,47 +1197,67 @@ static const char *script_list[][2] = {
 
 // Plural rules.
 // Reference:
-// - https://github.com/unicode-org/cldr/blob/main/common/supplemental/plurals.xml
+// - https://cgit.git.savannah.gnu.org/cgit/gettext.git/tree/gettext-tools/src/plural-table.c
+// - https://github.com/unicode-org/cldr/blob/release-47/common/supplemental/plurals.xml
 static const char *plural_rules[][2] = {
 	{ "bm bo dz hnj id ig ii in ja jbo jv jw kde kea km ko lkt lo ms my nqo osa root sah ses sg su th to tpi vi wo yo yue zh", "nplurals=1; plural=0;" },
-	{ "am as bn doi fa gu hi kn pcm zu", "nplurals=2; plural=(n==0 || n==1);" },
-	{ "ff hy kab", "nplurals=2; plural=(n > 1);" },
-	{ "ast de en et fi fy gl ia io ji lij nl sc sv sw ur yi", "nplurals=2; plural=(n != 1);" },
-	{ "si", "nplurals=2; plural=(n > 1);" },
-	{ "ak bho csw guw ln mg nso pa ti wa", "nplurals=2; plural=(n > 1);" },
+	{ "af an asa ast az bal bem bez bg brx ca ce cgg chr ckb da de dv ee el en eo es et eu fi fo fur fy gl gsw ha haw he hu ia io it jgo ji jmc ka kaj kcg kk kkj kl ks ksb ku ky lb lg lij mas mgo ml mn mr nah nb nd ne nl nn nnh no nr ny nyn om or os pap ps pt rm rof rwk saq sc sd sdh seh sn so sq ss ssy st sv sw syr ta te teo tig tk tn tr ts ug ur uz ve vo vun wae xh xog yi", "nplurals=2; plural=(n != 1);" },
+	{ "ak bho csw ff fr guw hy kab ln mg nso pa pt_BR si ti wa", "nplurals=2; plural=(n > 1);" },
+	{ "is mk", "nplurals=2; plural=(n%10==1 && n%100!=11);" },
 	{ "tzm", "nplurals=2; plural=(n<=1 || (n>=11 && n<=99));" },
-	{ "af an asa az bal bem bez bg brx ce cgg chr ckb dv ee el eo eu fo fur gsw ha haw hu jgo jmc ka kaj kcg kk kkj kl ks ksb ku ky lb lg mas mgo ml mn mr nah nb nd ne nn nnh no nr ny nyn om or os pap ps rm rof rwk saq sd sdh seh sn so sq ss ssy st syr ta te teo tig tk tn tr ts ug uz ve vo vun wae xh xog", "nplurals=2; plural=(n != 1);" },
-	{ "da", "nplurals=2; plural=(n != 1);" },
-	{ "is", "nplurals=2; plural=(n%10==1 && n%100!=11);" },
-	{ "mk", "nplurals=2; plural=(n%10==1 && n%100!=11);" },
+	{ "am as bn doi fa gu hi kn pcm zu", "nplurals=2; plural=(n==0 || n==1);" },
 	{ "ceb fil tl", "nplurals=2; plural=(n==1 || n==2 || n==3 || (n%10!=4 && n%10!=6 && n%10!=9));" },
-	{ "lv prg", "nplurals=3; plural=(n%10==0 || (n%100>=11 && n%100<=19) ? 0 : n%10==1 && n%100!=11 ? 1 : 2);" },
+	{ "prg", "nplurals=3; plural=(n%10==0 || (n%100>=11 && n%100<=19) ? 0 : n%10==1 && n%100!=11 ? 1 : 2);" },
+	{ "lv", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);" },
+	{ "lt", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+	{ "be hr ru sr uk", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+	{ "bs sh", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);" },
 	{ "lag", "nplurals=3; plural=(n==0 ? 0 : (n==0 || n==1) && n!=0 ? 1 : 2);" },
-	{ "blo", "nplurals=3; plural=(n==0 ? 0 : n==1 ? 1 : 2);" },
-	{ "ksh", "nplurals=3; plural=(n==0 ? 0 : n==1 ? 1 : 2);" },
-	{ "he iw", "nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);" },
-	{ "iu naq sat se sma smi smj smn sms", "nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);" },
+	{ "blo ksh", "nplurals=3; plural=(n==0 ? 0 : n==1 ? 1 : 2);" },
 	{ "shi", "nplurals=3; plural=(n==0 || n==1 ? 0 : n>=2 && n<=10 ? 1 : 2);" },
-	{ "mo ro", "nplurals=3; plural=(n==1 ? 0 : n==0 || (n!=1 && n%100>=1 && n%100<=19) ? 1 : 2);" },
-	{ "bs hr sh sr", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);" },
-	{ "fr", "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2);" },
-	{ "pt", "nplurals=3; plural=((n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2);" },
-	{ "ca it lld pt_PT scn vec", "nplurals=3; plural=(n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2);" },
-	{ "es", "nplurals=3; plural=(n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2);" },
-	{ "gd", "nplurals=4; plural=(n==1 || n==11 ? 0 : n==2 || n==12 ? 1 : (n>=3 && n<=10) || (n>=13 && n<=19) ? 2 : 3);" },
-	{ "sl", "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100>=3 && n%100<=4 ? 2 : 3);" },
+	{ "pl", "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);" },
+	{ "mo", "nplurals=3; plural=(n==1 ? 0 : n==0 || (n!=1 && n%100>=1 && n%100<=19) ? 1 : 2);" },
+	{ "iu iw naq sat se sma smi smj smn sms", "nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);" },
+	{ "cs sk", "nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;" },
+	{ "ro", "nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;" },
+	{ "ga", "nplurals=3; plural=n==1 ? 0 : n==2 ? 1 : 2;" },
+	{ "sl", "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);" },
 	{ "dsb hsb", "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100>=3 && n%100<=4 ? 2 : 3);" },
-	{ "cs sk", "nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);" },
-	{ "pl", "nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);" },
-	{ "be", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);" },
-	{ "lt", "nplurals=3; plural=(n%10==1 && (n%100<11 || n%100>19) ? 0 : n%10>=2 && n%10<=9 && (n%100<11 || n%100>19) ? 1 : 2);" },
-	{ "ru uk", "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);" },
+	{ "gv", "nplurals=4; plural=(n%10==1 ? 0 : n%10==2 ? 1 : n%100==0 || n%100==20 || n%100==40 || n%100==60 || n%100==80 ? 2 : 3);" },
+	{ "gd", "nplurals=4; plural=(n==1 || n==11 ? 0 : n==2 || n==12 ? 1 : (n>=3 && n<=10) || (n>=13 && n<=19) ? 2 : 3);" },
 	{ "br", "nplurals=5; plural=(n%10==1 && n%100!=11 && n%100!=71 && n%100!=91 ? 0 : n%10==2 && n%100!=12 && n%100!=72 && n%100!=92 ? 1 : ((n%10>=3 && n%10<=4) || n%10==9) && (n%100<10 || n%100>19) && (n%100<70 || n%100>79) && (n%100<90 || n%100>99) ? 2 : n!=0 && n%1000000==0 ? 3 : 4);" },
 	{ "mt", "nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n==0 || (n%100>=3 && n%100<=10) ? 2 : n%100>=11 && n%100<=19 ? 3 : 4);" },
-	{ "ga", "nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n>=3 && n<=6 ? 2 : n>=7 && n<=10 ? 3 : 4);" },
-	{ "gv", "nplurals=4; plural=(n%10==1 ? 0 : n%10==2 ? 1 : n%100==0 || n%100==20 || n%100==40 || n%100==60 || n%100==80 ? 2 : 3);" },
 	{ "kw", "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n%100==2 || n%100==22 || n%100==42 || n%100==62 || n%100==82 || (n%1000==0 && ((n%100000>=1000 && n%100000<=20000) || n%100000==40000 || n%100000==60000 || n%100000==80000)) || (n!=0 && n%1000000==100000) ? 2 : n%100==3 || n%100==23 || n%100==43 || n%100==63 || n%100==83 ? 3 : n!=1 && (n%100==1 || n%100==21 || n%100==41 || n%100==61 || n%100==81) ? 4 : 5);" },
 	{ "ar ars", "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);" },
 	{ "cy", "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n==3 ? 3 : n==6 ? 4 : 5);" },
-	{ nullptr, nullptr },
+	{ nullptr, nullptr }
+};
+
+static const struct NumSystemData {
+	const char *locales;
+	const char32_t *digits;
+	const char32_t *percent_sign;
+	const char32_t *exp_l;
+	const char32_t *exp_u;
+} num_system_data[] = {
+	// Eastern Arabic numerals.
+	{ "ar ar_AE ar_BH ar_DJ ar_EG ar_ER ar_IL ar_IQ ar_JO ar_KM ar_KW ar_LB ar_MR ar_OM ar_PS ar_QA ar_SA ar_SD ar_SO ar_SS ar_SY ar_TD ar_YE ckb ckb_IQ ckb_IR sd sd_PK sd_Arab sd_Arab_PK", U"٠١٢٣٤٥٦٧٨٩٫", U"٪", U"اس", U"اس" },
+	// Persian and Urdu numerals.
+	{ "fa fa_AF fa_IR ks ks_IN ks_Arab ks_Arab_IN lrc lrc_IQ lrc_IR mzn mzn_IR pa_PK pa_Arab pa_Arab_PK ps ps_AF ps_PK ur_IN uz_AF uz_Arab uz_Arab_AF", U"۰۱۲۳۴۵۶۷۸۹٫", U"٪", U"اس", U"اس" },
+	// Bengali numerals.
+	{ "as as_IN bn bn_BD bn_IN mni mni_IN mni_Beng mni_Beng_IN", U"০১২৩৪৫৬৭৮৯.", U"%", U"e", U"E" },
+	// Devanagari numerals.
+	{ "mr mr_IN ne ne_IN ne_NP sa sa_IN", U"०१२३४५६७८९.", U"%", U"e", U"E" },
+	// Dzongkha numerals.
+	{ "dz dz_BT", U"༠༡༢༣༤༥༦༧༨༩.", U"%", U"e", U"E" },
+	// Santali numerals.
+	{ "sat sat_IN sat_Olck sat_Olck_IN", U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.", U"%", U"e", U"E" },
+	// Burmese numerals.
+	{ "my my_MM", U"၀၁၂၃၄၅၆၇၈၉.", U"%", U"e", U"E" },
+	// Chakma numerals.
+	{ "ccp ccp_BD ccp_IN", U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.", U"%", U"e", U"E" },
+	// Adlam numerals.
+	{ "ff ff_Adlm_BF ff_Adlm_CM ff_Adlm_GH ff_Adlm_GM ff_Adlm_GN ff_Adlm_GW ff_Adlm_LR ff_Adlm_MR ff_Adlm_NE ff_Adlm_NG ff_Adlm_SL ff_Adlm_SN", U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.", U"%", U"𞤉", U"𞤉" },
+	// End sentinel.
+	{ nullptr, nullptr, nullptr, nullptr, nullptr }
 };

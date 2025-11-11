@@ -77,6 +77,7 @@ void JoltSoftBody3D::_space_changing() {
 	// Note that we should not use `in_space()` as the condition here, since we could have cleared the mesh at this point.
 	if (jolt_body != nullptr) {
 		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
+		jolt_settings->mPosition = JPH::RVec3::sZero(); // We'll be getting the vertices in world space when we re-insert the body so we need to reset the position here.
 		jolt_settings->mSettings = nullptr;
 		jolt_settings->mVertexRadius = JoltProjectSettings::soft_body_point_radius;
 	}
@@ -341,7 +342,7 @@ JoltSoftBody3D::JoltSoftBody3D() :
 		JoltObject3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
 	jolt_settings->mFriction = 1.0f;
-	jolt_settings->mUpdatePosition = false;
+	jolt_settings->mUpdatePosition = true;
 	jolt_settings->mMakeRotationIdentity = false;
 }
 
@@ -606,11 +607,16 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 	// We also discard any scaling, since we have no way of scaling the actual edge lengths.
 	const JPH::Mat44 relative_transform = to_jolt(p_transform.orthonormalized());
 
+	// The translation delta goes to the body's position to avoid vertices getting too far away from it.
+	JPH::BodyInterface &body_iface = space->get_body_iface();
+	body_iface.SetPosition(jolt_body->GetID(), jolt_body->GetPosition() + relative_transform.GetTranslation(), JPH::EActivation::DontActivate);
+
+	// The rotation difference goes to the vertices. We also reset the velocity of these vertices.
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
 	for (JPH::SoftBodyVertex &vertex : physics_vertices) {
-		vertex.mPosition = vertex.mPreviousPosition = relative_transform * vertex.mPosition;
+		vertex.mPosition = vertex.mPreviousPosition = relative_transform.Multiply3x3(vertex.mPosition);
 		vertex.mVelocity = JPH::Vec3::sZero();
 	}
 	wake_up();
@@ -672,11 +678,12 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 	}
 
 	const int mesh_vertex_count = shared->mesh_to_physics.size();
+	const JPH::RVec3 body_position = jolt_body->GetCenterOfMassPosition();
 
 	for (int i = 0; i < mesh_vertex_count; ++i) {
 		const int physics_index = shared->mesh_to_physics[i];
 		if (physics_index >= 0) {
-			const Vector3 vertex = to_godot(physics_vertices[(size_t)physics_index].mPosition);
+			const Vector3 vertex = to_godot(body_position + physics_vertices[(size_t)physics_index].mPosition);
 			const Vector3 normal = normals[(uint32_t)physics_index];
 
 			p_rendering_server_handler->set_vertex(i, vertex);
