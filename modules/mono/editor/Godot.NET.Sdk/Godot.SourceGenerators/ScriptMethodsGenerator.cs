@@ -638,7 +638,7 @@ namespace Godot.SourceGenerators
                                 _ => null
                             };
 
-                            return memberType != null && NullableUtils.IsExportedNonNullableGodotType(m, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2));
+                            return memberType != null && NullableUtils.IsExportedNonNullableGodotType(m, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2), requireNullableContext: false);
                         });
 
                     if (hasExportedNonNullableMembers)
@@ -679,7 +679,7 @@ namespace Godot.SourceGenerators
                     continue;
 
                 // Check if this is an exported non-nullable Godot type
-                if (NullableUtils.IsExportedNonNullableGodotType(memberSymbol, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2)))
+                if (NullableUtils.IsExportedNonNullableGodotType(memberSymbol, memberType, syntaxTree2 => context.GetSemanticModel(syntaxTree2), requireNullableContext: false))
                 {
                     // Check if the containing type is a Godot script class
                     var containingType = memberSymbol.ContainingType;

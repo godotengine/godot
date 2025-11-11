@@ -24,7 +24,7 @@ namespace Godot.SourceGenerators
             return (nullableContext & NullableContext.Enabled) != 0;
         }
 
-        internal static bool IsExportedNonNullableGodotType(ISymbol memberSymbol, ITypeSymbol memberType, Func<SyntaxTree, SemanticModel> semanticModelProvider)
+        internal static bool IsExportedNonNullableGodotType(ISymbol memberSymbol, ITypeSymbol memberType, Func<SyntaxTree, SemanticModel> semanticModelProvider, bool requireNullableContext = true)
         {
             // Check if the member has the [Export] attribute
             bool isExported = memberSymbol.GetAttributes()
@@ -38,7 +38,8 @@ namespace Godot.SourceGenerators
                 return false;
 
             // Check if member has nullable context enabled (either via #nullable or project settings)
-            if (!IsNullableContextEnabledForSymbol(memberSymbol, semanticModelProvider))
+            // This check can be skipped for the suppressor when we just need to identify exported Godot types
+            if (requireNullableContext && !IsNullableContextEnabledForSymbol(memberSymbol, semanticModelProvider))
                 return false;
 
             // If the type is nullable annotated (e.g., Node?), skip it
