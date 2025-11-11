@@ -1287,6 +1287,7 @@
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_EXIT" value="44">
 			Sent when the node loses focus.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
 			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
