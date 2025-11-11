@@ -100,7 +100,7 @@ protected:
 		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
 	}
 
-	_FORCE_INLINE_ virtual const TKey &_get_key(uint32_t idx) const = 0;
+	_FORCE_INLINE_ virtual const TKey &_get_key(uint32_t p_idx) const = 0;
 	_FORCE_INLINE_ virtual void _resize_elements(uint32_t p_new_capacity) = 0;
 	_FORCE_INLINE_ virtual bool _is_elements_valid() const = 0;
 

@@ -56,8 +56,8 @@ template <typename TKey, typename TValue,
 		typename Comparator = HashMapComparatorDefault<TKey>>
 class AHashMap final : RawAHashTable<TKey, Hasher, Comparator> {
 protected:
-	const TKey &_get_key(uint32_t idx) const override {
-		return _elements[idx].key;
+	const TKey &_get_key(uint32_t p_idx) const override {
+		return _elements[p_idx].key;
 	}
 
 	void _resize_elements(uint32_t p_new_capacity) override {
