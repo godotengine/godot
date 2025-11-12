@@ -51,7 +51,7 @@ bool MarginContainerEditorPlugin::handles(Object *p_object) const {
 }
 
 void MarginContainerEditorPlugin::forward_canvas_draw_over_viewport(Control *p_viewport_control) {
-	if (!margin_container) {
+	if (!margin_container || !margin_container->is_visible_in_tree()) {
 		return;
 	}
 
