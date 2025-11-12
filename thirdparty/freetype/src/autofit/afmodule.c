@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -146,7 +146,7 @@
 
       if ( !af_style_classes[ss] )
       {
-        FT_TRACE2(( "af_property_set: Invalid value %d for property `%s'\n",
+        FT_TRACE2(( "af_property_set: Invalid value %u for property `%s'\n",
                     *fallback_script, property_name ));
         return FT_THROW( Invalid_Argument );
       }
@@ -412,6 +412,11 @@
     module->darken_params[6]  = CFF_CONFIG_OPTION_DARKENING_PARAMETER_X4;
     module->darken_params[7]  = CFF_CONFIG_OPTION_DARKENING_PARAMETER_Y4;
 
+#if defined( FT_CONFIG_OPTION_USE_HARFBUZZ )         && \
+    defined( FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC )
+    ft_hb_funcs_init( module );
+#endif
+
     return FT_Err_Ok;
   }
 
@@ -420,6 +425,11 @@
   af_autofitter_done( FT_Module  ft_module )      /* AF_Module */
   {
     FT_UNUSED( ft_module );
+
+#if defined( FT_CONFIG_OPTION_USE_HARFBUZZ )         && \
+    defined( FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC )
+    ft_hb_funcs_done( (AF_Module)ft_module );
+#endif
 
 #ifdef FT_DEBUG_AUTOFIT
     if ( af_debug_hints_rec_->memory )

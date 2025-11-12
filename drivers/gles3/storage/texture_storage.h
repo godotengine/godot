@@ -280,10 +280,10 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_NEAREST_MIPMAP_NEAREST;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				} else {
 					pmin = GL_NEAREST_MIPMAP_LINEAR;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
@@ -297,10 +297,10 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_LINEAR_MIPMAP_NEAREST;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				} else {
 					pmin = GL_LINEAR_MIPMAP_LINEAR;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				}
 			} break;
 			default: {
@@ -642,8 +642,6 @@ public:
 
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); }
-
-	void check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

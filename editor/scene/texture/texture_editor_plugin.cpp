@@ -40,9 +40,9 @@
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/style_box_flat.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
@@ -311,7 +311,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<DPITexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

@@ -35,7 +35,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/io/plist.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -583,13 +583,13 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -602,7 +602,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 						"open \"{temp_dir}/{exe_name}.app\" --args {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
@@ -693,7 +693,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 		{ "is32", "s8mk", false, 16 } //16×16 24-bit RLE + 8-bit uncompressed mask
 	};
 
-	for (uint64_t i = 0; i < std::size(icon_infos); ++i) {
+	for (uint64_t i = 0; i < std_size(icon_infos); ++i) {
 		Ref<Image> copy = p_icon->duplicate();
 		copy->convert(Image::FORMAT_RGBA8);
 		copy->resize(icon_infos[i].size, icon_infos[i].size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
@@ -764,7 +764,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].find("$priv_collection") != -1) {
 			bool section_opened = false;
-			for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+			for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -793,7 +793,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 					if (purposes != 0) {
 						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 						strnew += "\t\t\t\t<array>\n";
-						for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+						for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 							if (purposes & (1 << k)) {
 								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 							}
@@ -1757,7 +1757,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
@@ -1771,15 +1770,21 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
 	Dictionary copyrights = p_preset->get("application/copyright_localized");
 
-	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-	if (translations.size() > 0) {
+	const String project_name = get_project_setting(p_preset, "application/config/name");
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+	const Vector<String> locales = domain->get_loaded_locales();
+
+	if (!locales.is_empty()) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			}
@@ -1816,23 +1821,27 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
-		HashSet<String> languages;
-		for (const String &E : translations) {
-			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid() && tr->get_locale() != "en") {
-				languages.insert(tr->get_locale());
+		for (const String &lang : locales) {
+			if (lang == "en") {
+				continue;
 			}
-		}
 
-		for (const String &lang : languages) {
 			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			if (appnames.has(lang)) {
+
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				const String &name = domain->translate(project_name, String());
+				if (name != project_name) {
+					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+				}
+			} else if (appnames.has(lang)) {
 				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
 			}
+
 			if (microphone_usage_descriptions.has(lang)) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
 			}
@@ -1871,6 +1880,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			}
 		}
 	}
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
 
 	// Now process our template.
 	bool found_binary = false;

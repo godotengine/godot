@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/variant/dictionary.h"
 
-#include <iterator>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -210,6 +208,8 @@ void JoypadSDL::process_events() {
 						device_name,
 						joypads[joy_id].guid,
 						joypad_info);
+
+				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -233,6 +233,12 @@ void JoypadSDL::process_events() {
 				case SDL_EVENT_JOYSTICK_BUTTON_UP:
 				case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 					SKIP_EVENT_FOR_GAMEPAD;
+
+					// Some devices report pressing buttons with indices like 232+, 241+, etc. that are not valid,
+					// so we ignore them here.
+					if (sdl_event.jbutton.button >= (int)JoyButton::MAX) {
+						continue;
+					}
 
 					Input::get_singleton()->joy_button(
 							joy_id,
@@ -293,6 +299,14 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
+	return SDL_GetJoystickFromID(sdl_instance_idx);
+}
+
+SDL_Gamepad *JoypadSDL::Joypad::get_sdl_gamepad() const {
+	return SDL_GetGamepadFromID(sdl_instance_idx);
 }
 
 #endif // SDL_ENABLED

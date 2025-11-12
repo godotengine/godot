@@ -39,14 +39,17 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class CreateDialog;
+class DependencyEditor;
+class DependencyEditorOwners;
+class DependencyRemoveDialog;
 class EditorDirDialog;
 class HBoxContainer;
-class ItemList;
 class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
@@ -165,6 +168,7 @@ private:
 	Button *button_hist_prev = nullptr;
 	LineEdit *current_path_line_edit = nullptr;
 
+	HBoxContainer *toolbar_hbc = nullptr;
 	HBoxContainer *toolbar2_hbc = nullptr;
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
@@ -181,6 +185,8 @@ private:
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
 	DisplayMode old_display_mode;
+
+	bool horizontal = false;
 
 	PopupMenu *file_list_popup = nullptr;
 	PopupMenu *tree_popup = nullptr;
@@ -199,16 +205,20 @@ private:
 	Label *overwrite_dialog_file_list = nullptr;
 
 	ConfirmationDialog *conversion_dialog = nullptr;
+	ConfirmationDialog *move_confirm_dialog = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
 
+	String confirm_move_to_dir;
+	bool confirm_to_copy = false;
+
 	bool always_show_folders = false;
 	int thumbnail_size_setting = 0;
 
-	bool editor_is_dark_theme = false;
+	bool editor_is_dark_icon_and_font = false;
 
 	class FileOrFolder {
 	public:
@@ -252,6 +262,10 @@ private:
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
 	HashSet<String> cached_valid_conversion_targets;
+
+	Vector<String> prev_selection;
+
+	void _update_selection_changed();
 
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
@@ -299,9 +313,11 @@ private:
 	void _folder_removed(const String &p_folder);
 
 	void _resource_created();
+	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm(const String &p_path);
+	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
 	void _convert_dialog_action();
 	Vector<String> _check_existing();

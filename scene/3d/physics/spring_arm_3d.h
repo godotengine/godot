@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);

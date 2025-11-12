@@ -164,6 +164,7 @@ Ref<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
 	if (tweener->subtween->parent_tree != nullptr) {
 		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
 	}
+	subtweens.push_back(p_subtween);
 	append(tweener);
 	return tweener;
 }
@@ -200,6 +201,11 @@ void Tween::kill() {
 	running = false; // For the sake of is_running().
 	valid = false;
 	dead = true;
+
+	// Kill all subtweens of this tween.
+	for (Ref<Tween> &st : subtweens) {
+		st->kill();
+	}
 }
 
 bool Tween::is_running() {
@@ -453,8 +459,8 @@ Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &
 	return ret;
 }
 
-String Tween::to_string() {
-	String ret = Object::to_string();
+String Tween::_to_string() {
+	String ret = Object::_to_string();
 	Node *node = get_bound_node();
 	if (node) {
 		ret += vformat(" (bound to %s)", node->get_name());

@@ -113,7 +113,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			if (player->is_playing()) {
 				{
-					String animname = player->get_assigned_animation();
+					StringName animname = player->get_assigned_animation();
 
 					if (player->has_animation(animname)) {
 						Ref<Animation> anim = player->get_animation(animname);
@@ -229,7 +229,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	if (player->get_autoplay() == current) {
 		//unset
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", "");
+		undo_redo->add_do_method(player, "set_autoplay", StringName());
 		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 		undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -238,7 +238,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	} else {
 		//set
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", current);
+		undo_redo->add_do_method(player, "set_autoplay", StringName(current));
 		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 		undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -564,8 +564,8 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", current);
+		undo_redo->add_do_method(player, "set_autoplay", StringName());
+		undo_redo->add_undo_method(player, "set_autoplay", StringName(current));
 		// Avoid having the autoplay icon linger around if there is only one animation in the player.
 		undo_redo->add_do_method(this, "_animation_player_changed", player);
 	}
@@ -597,7 +597,7 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 }
 
 float AnimationPlayerEditor::_get_editor_step() const {
-	const String current = player->get_assigned_animation();
+	const StringName current = player->get_assigned_animation();
 	const Ref<Animation> anim = player->get_animation(current);
 	ERR_FAIL_COND_V(anim.is_null(), 0.0);
 
@@ -1411,7 +1411,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	};
 
 	updating = true;
-	String current = player->get_assigned_animation();
+	StringName current = player->get_assigned_animation();
 	if (current.is_empty() || !player->has_animation(current)) {
 		updating = false;
 		current = "";
@@ -1460,7 +1460,7 @@ void AnimationPlayerEditor::_animation_finished(const String &p_name) {
 	finishing = true;
 }
 
-void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
+void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name) {
 	if (is_visible_in_tree()) {
 		if (finishing) {
 			finishing = false; // Maybe redundant since it will be false in the AnimationPlayerEditor::_process(), but for safety.

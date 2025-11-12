@@ -1062,9 +1062,9 @@ Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 }
 
 void Animation::_track_update_hash(int p_track) {
-	NodePath track_path = tracks[p_track]->path;
-	TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
-	tracks[p_track]->thash = StringName(String(track_path.get_concatenated_names()) + String(track_path.get_concatenated_subnames()) + itos(track_cache_type)).hash();
+	const NodePath &track_path = tracks[p_track]->path;
+	const TrackType track_cache_type = get_cache_type(tracks[p_track]->type);
+	tracks[p_track]->thash = HashMapHasherDefault::hash(Pair<const NodePath &, TrackType>(track_path, track_cache_type));
 }
 
 Animation::TypeHash Animation::track_get_type_hash(int p_track) const {
@@ -3950,6 +3950,9 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(p_track));
 	if (track_get_type(p_track) == TYPE_VALUE) {
 		p_to_animation->value_track_set_update_mode(dst_track, value_track_get_update_mode(p_track));
+	}
+	if (track_get_type(p_track) == TYPE_AUDIO) {
+		p_to_animation->audio_track_set_use_blend(dst_track, audio_track_is_use_blend(p_track));
 	}
 
 	for (int i = 0; i < track_get_key_count(p_track); i++) {

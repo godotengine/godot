@@ -36,6 +36,7 @@
 #include "servers/navigation_3d/navigation_path_query_result_3d.h"
 
 class Node3D;
+class StandardMaterial3D;
 
 class NavigationAgent3D : public Node {
 	GDCLASS(NavigationAgent3D, Node);

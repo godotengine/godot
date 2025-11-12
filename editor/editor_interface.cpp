@@ -442,6 +442,10 @@ float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
 
+String EditorInterface::get_editor_language() const {
+	return EditorSettings::get_singleton()->get_language();
+}
+
 bool EditorInterface::is_node_3d_snap_enabled() const {
 	return Node3DEditor::get_singleton()->is_snap_enabled();
 }
@@ -846,6 +850,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_method(D_METHOD("get_editor_language"), &EditorInterface::get_editor_language);
 
 	ClassDB::bind_method(D_METHOD("is_node_3d_snap_enabled"), &EditorInterface::is_node_3d_snap_enabled);
 	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);

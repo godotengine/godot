@@ -30,6 +30,7 @@
 
 #include "openxr_composition_layer.h"
 
+#include "../extensions/openxr_composition_layer_extension.h"
 #include "../openxr_api.h"
 #include "../openxr_interface.h"
 
@@ -48,11 +49,7 @@ static const char *HOLE_PUNCH_SHADER_CODE =
 		"\tALBEDO = vec3(0.0, 0.0, 0.0);\n"
 		"}\n";
 
-OpenXRCompositionLayer::OpenXRCompositionLayer(XrCompositionLayerBaseHeader *p_composition_layer) {
-	composition_layer_base_header = p_composition_layer;
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider(composition_layer_base_header));
-	swapchain_state = openxr_layer_provider->get_swapchain_state();
-
+OpenXRCompositionLayer::OpenXRCompositionLayer() {
 	openxr_api = OpenXRAPI::get_singleton();
 	composition_layer_extension = OpenXRCompositionLayerExtension::get_singleton();
 
@@ -65,6 +62,8 @@ OpenXRCompositionLayer::OpenXRCompositionLayer(XrCompositionLayerBaseHeader *p_c
 		openxr_interface->connect("session_begun", callable_mp(this, &OpenXRCompositionLayer::_on_openxr_session_begun));
 		openxr_interface->connect("session_stopping", callable_mp(this, &OpenXRCompositionLayer::_on_openxr_session_stopping));
 	}
+
+	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayer::update_transform));
 
 	set_process_internal(true);
 	set_notify_local_transform(true);
@@ -84,10 +83,8 @@ OpenXRCompositionLayer::~OpenXRCompositionLayer() {
 
 	composition_layer_nodes.erase(this);
 
-	if (openxr_layer_provider != nullptr) {
-		_clear_composition_layer_provider();
-		memdelete(openxr_layer_provider);
-		openxr_layer_provider = nullptr;
+	if (composition_layer_extension && composition_layer.is_valid()) {
+		composition_layer_extension->composition_layer_free(composition_layer);
 	}
 }
 
@@ -112,6 +109,9 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_android_surface"), &OpenXRCompositionLayer::get_android_surface);
 	ClassDB::bind_method(D_METHOD("is_natively_supported"), &OpenXRCompositionLayer::is_natively_supported);
+
+	ClassDB::bind_method(D_METHOD("is_protected_content"), &OpenXRCompositionLayer::is_protected_content);
+	ClassDB::bind_method(D_METHOD("set_protected_content", "protected_content"), &OpenXRCompositionLayer::set_protected_content);
 
 	ClassDB::bind_method(D_METHOD("set_min_filter", "mode"), &OpenXRCompositionLayer::set_min_filter);
 	ClassDB::bind_method(D_METHOD("get_min_filter"), &OpenXRCompositionLayer::get_min_filter);
@@ -150,6 +150,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
@@ -215,38 +216,44 @@ void OpenXRCompositionLayer::_remove_fallback_node() {
 	fallback = nullptr;
 }
 
-void OpenXRCompositionLayer::_setup_composition_layer_provider() {
+void OpenXRCompositionLayer::_setup_composition_layer() {
 	if (use_android_surface || layer_viewport) {
 		if (composition_layer_extension) {
-			composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
+			composition_layer_extension->composition_layer_register(composition_layer);
 			registered = true;
-		}
 
-		// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
-		if (layer_viewport) {
-			// Set our properties on the layer provider, which will create all the necessary resources (ex swap chains).
-			openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+			// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
+			if (layer_viewport) {
+				// Set our properties on the layer provider, which will create all the necessary resources (ex swap chains).
+				composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+			}
 		}
 	}
 }
 
-void OpenXRCompositionLayer::_clear_composition_layer_provider() {
+void OpenXRCompositionLayer::_clear_composition_layer() {
 	if (composition_layer_extension) {
-		composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
+		composition_layer_extension->composition_layer_unregister(composition_layer);
 		registered = false;
-	}
 
-	// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
-	if (!use_android_surface) {
-		// This will reset the viewport and free all the resources (ex swap chains) used by the layer.
-		openxr_layer_provider->set_viewport(RID(), Size2i());
+		// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
+		if (!use_android_surface) {
+			// This will reset the viewport and free all the resources (ex swap chains) used by the layer.
+			composition_layer_extension->composition_layer_set_viewport(composition_layer, RID(), Size2i());
+		}
+	}
+}
+
+void OpenXRCompositionLayer::_viewport_size_changed() {
+	if (layer_viewport && openxr_session_running && composition_layer_extension && is_natively_supported() && is_visible() && is_inside_tree()) {
+		composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 	}
 }
 
 void OpenXRCompositionLayer::_on_openxr_session_begun() {
 	openxr_session_running = true;
 	if (_should_register()) {
-		_setup_composition_layer_provider();
+		_setup_composition_layer();
 	}
 	if (!fallback && _should_use_fallback_node()) {
 		_create_fallback_node();
@@ -258,7 +265,13 @@ void OpenXRCompositionLayer::_on_openxr_session_stopping() {
 	if (fallback && !_should_use_fallback_node()) {
 		_remove_fallback_node();
 	}
-	_clear_composition_layer_provider();
+	_clear_composition_layer();
+}
+
+void OpenXRCompositionLayer::update_transform() {
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_transform(composition_layer, get_transform());
+	}
 }
 
 void OpenXRCompositionLayer::update_fallback_mesh() {
@@ -267,16 +280,6 @@ void OpenXRCompositionLayer::update_fallback_mesh() {
 
 bool OpenXRCompositionLayer::_should_register() {
 	return !registered && openxr_session_running && is_inside_tree() && is_visible() && is_natively_supported();
-}
-
-XrPosef OpenXRCompositionLayer::get_openxr_pose() {
-	Transform3D reference_frame = XRServer::get_singleton()->get_reference_frame();
-	Transform3D transform = reference_frame.inverse() * get_transform();
-	Quaternion quat(transform.basis.orthonormalized());
-	return {
-		{ (float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w },
-		{ (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z }
-	};
 }
 
 bool OpenXRCompositionLayer::is_viewport_in_use(SubViewport *p_viewport) {
@@ -301,12 +304,18 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 		ERR_FAIL_COND_MSG(p_viewport != nullptr, RTR("Cannot set SubViewport on an OpenXR composition layer when using an Android surface."));
 	}
 
+	if (layer_viewport) {
+		layer_viewport->disconnect("size_changed", callable_mp(this, &OpenXRCompositionLayer::_viewport_size_changed));
+	}
+
 	layer_viewport = p_viewport;
 	if (_should_register()) {
-		_setup_composition_layer_provider();
+		_setup_composition_layer();
 	}
 
 	if (layer_viewport) {
+		layer_viewport->connect("size_changed", callable_mp(this, &OpenXRCompositionLayer::_viewport_size_changed));
+
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
 		if (update_mode == SubViewport::UPDATE_WHEN_VISIBLE || update_mode == SubViewport::UPDATE_WHEN_PARENT_VISIBLE) {
 			WARN_PRINT_ONCE("OpenXR composition layers cannot use SubViewports with UPDATE_WHEN_VISIBLE or UPDATE_WHEN_PARENT_VISIBLE. Switching to UPDATE_ALWAYS.");
@@ -316,11 +325,11 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 
 	if (fallback) {
 		_reset_fallback_material();
-	} else if (openxr_session_running && is_visible() && is_inside_tree()) {
+	} else if (openxr_session_running && composition_layer_extension && is_visible() && is_inside_tree()) {
 		if (layer_viewport) {
-			openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+			composition_layer_extension->composition_layer_set_viewport(composition_layer, layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 		} else {
-			openxr_layer_provider->set_viewport(RID(), Size2i());
+			composition_layer_extension->composition_layer_set_viewport(composition_layer, RID(), Size2i());
 		}
 	}
 }
@@ -334,13 +343,17 @@ void OpenXRCompositionLayer::set_use_android_surface(bool p_use_android_surface)
 	if (use_android_surface) {
 		// It's possible that the layer provider is unregistered here (if previously invisible)
 		set_layer_viewport(nullptr);
-		openxr_layer_provider->set_use_android_surface(true, android_surface_size);
+		if (composition_layer_extension) {
+			composition_layer_extension->composition_layer_set_use_android_surface(composition_layer, true, android_surface_size);
+		}
 		// ...and it may not be set up above because of viewport = null, android surface is false, so set it up again:
 		if (_should_register()) {
-			_setup_composition_layer_provider();
+			_setup_composition_layer();
 		}
 	} else {
-		openxr_layer_provider->set_use_android_surface(false, Size2i());
+		if (composition_layer_extension) {
+			composition_layer_extension->composition_layer_set_use_android_surface(composition_layer, false, Size2i());
+		}
 	}
 
 	notify_property_list_changed();
@@ -356,8 +369,8 @@ void OpenXRCompositionLayer::set_android_surface_size(Size2i p_size) {
 	}
 
 	android_surface_size = p_size;
-	if (use_android_surface) {
-		openxr_layer_provider->set_use_android_surface(true, android_surface_size);
+	if (use_android_surface && composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_use_android_surface(composition_layer, true, android_surface_size);
 	}
 }
 
@@ -393,177 +406,211 @@ bool OpenXRCompositionLayer::get_enable_hole_punch() const {
 }
 
 void OpenXRCompositionLayer::set_sort_order(int p_order) {
-	openxr_layer_provider->set_sort_order(p_order);
+	sort_order = p_order;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_sort_order(composition_layer, p_order);
+	}
 	update_configuration_warnings();
 }
 
 int OpenXRCompositionLayer::get_sort_order() const {
-	return openxr_layer_provider->get_sort_order();
+	return sort_order;
 }
 
 void OpenXRCompositionLayer::set_alpha_blend(bool p_alpha_blend) {
-	openxr_layer_provider->set_alpha_blend(p_alpha_blend);
+	alpha_blend = p_alpha_blend;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_alpha_blend(composition_layer, p_alpha_blend);
+	}
 	if (fallback) {
 		_reset_fallback_material();
 	}
 }
 
 bool OpenXRCompositionLayer::get_alpha_blend() const {
-	return openxr_layer_provider->get_alpha_blend();
+	return alpha_blend;
 }
 
 bool OpenXRCompositionLayer::is_natively_supported() const {
 	if (composition_layer_extension && openxr_api) {
-		return composition_layer_extension->is_available(openxr_layer_provider->get_openxr_type());
+		return composition_layer_extension->is_available(_get_openxr_type());
 	}
 	return false;
 }
 
-void OpenXRCompositionLayer::set_min_filter(Filter p_mode) {
-	if (swapchain_state->min_filter == (OpenXRViewportCompositionLayerProvider::Filter)p_mode) {
+void OpenXRCompositionLayer::set_protected_content(bool p_protected_content) {
+	if (protected_content == p_protected_content) {
 		return;
 	}
+	protected_content = p_protected_content;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_protected_content(composition_layer, p_protected_content);
+	}
+}
 
-	swapchain_state->min_filter = (OpenXRViewportCompositionLayerProvider::Filter)p_mode;
-	swapchain_state->dirty = true;
+bool OpenXRCompositionLayer::is_protected_content() const {
+	return protected_content;
+}
+
+void OpenXRCompositionLayer::set_min_filter(Filter p_mode) {
+	if (min_filter == p_mode) {
+		return;
+	}
+	min_filter = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_min_filter(composition_layer, (OpenXRCompositionLayerExtension::Filter)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Filter OpenXRCompositionLayer::get_min_filter() const {
-	return (OpenXRCompositionLayer::Filter)swapchain_state->min_filter;
+	return min_filter;
 }
 
 void OpenXRCompositionLayer::set_mag_filter(Filter p_mode) {
-	if (swapchain_state->mag_filter == (OpenXRViewportCompositionLayerProvider::Filter)p_mode) {
+	if (mag_filter == p_mode) {
 		return;
 	}
-
-	swapchain_state->mag_filter = (OpenXRViewportCompositionLayerProvider::Filter)p_mode;
-	swapchain_state->dirty = true;
+	mag_filter = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_mag_filter(composition_layer, (OpenXRCompositionLayerExtension::Filter)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Filter OpenXRCompositionLayer::get_mag_filter() const {
-	return (OpenXRCompositionLayer::Filter)swapchain_state->mag_filter;
+	return mag_filter;
 }
 
 void OpenXRCompositionLayer::set_mipmap_mode(MipmapMode p_mode) {
-	if (swapchain_state->mipmap_mode == (OpenXRViewportCompositionLayerProvider::MipmapMode)p_mode) {
+	if (mipmap_mode == p_mode) {
 		return;
 	}
-
-	swapchain_state->mipmap_mode = (OpenXRViewportCompositionLayerProvider::MipmapMode)p_mode;
-	swapchain_state->dirty = true;
+	mipmap_mode = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_mipmap_mode(composition_layer, (OpenXRCompositionLayerExtension::MipmapMode)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::MipmapMode OpenXRCompositionLayer::get_mipmap_mode() const {
-	return (OpenXRCompositionLayer::MipmapMode)swapchain_state->mipmap_mode;
+	return mipmap_mode;
 }
 
 void OpenXRCompositionLayer::set_horizontal_wrap(Wrap p_mode) {
-	if (swapchain_state->horizontal_wrap == (OpenXRViewportCompositionLayerProvider::Wrap)p_mode) {
+	if (horizontal_wrap == p_mode) {
 		return;
 	}
-
-	swapchain_state->horizontal_wrap = (OpenXRViewportCompositionLayerProvider::Wrap)p_mode;
-	swapchain_state->dirty = true;
+	horizontal_wrap = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_horizontal_wrap(composition_layer, (OpenXRCompositionLayerExtension::Wrap)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Wrap OpenXRCompositionLayer::get_horizontal_wrap() const {
-	return (OpenXRCompositionLayer::Wrap)swapchain_state->horizontal_wrap;
+	return horizontal_wrap;
 }
 
 void OpenXRCompositionLayer::set_vertical_wrap(Wrap p_mode) {
-	if (swapchain_state->vertical_wrap == (OpenXRViewportCompositionLayerProvider::Wrap)p_mode) {
+	if (vertical_wrap == p_mode) {
 		return;
 	}
-
-	swapchain_state->vertical_wrap = (OpenXRViewportCompositionLayerProvider::Wrap)p_mode;
-	swapchain_state->dirty = true;
+	vertical_wrap = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_vertical_wrap(composition_layer, (OpenXRCompositionLayerExtension::Wrap)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Wrap OpenXRCompositionLayer::get_vertical_wrap() const {
-	return (OpenXRCompositionLayer::Wrap)swapchain_state->vertical_wrap;
+	return vertical_wrap;
 }
 
 void OpenXRCompositionLayer::set_red_swizzle(Swizzle p_mode) {
-	if (swapchain_state->red_swizzle == (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode) {
+	if (red_swizzle == p_mode) {
 		return;
 	}
-
-	swapchain_state->red_swizzle = (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode;
-	swapchain_state->dirty = true;
+	red_swizzle = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_red_swizzle(composition_layer, (OpenXRCompositionLayerExtension::Swizzle)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Swizzle OpenXRCompositionLayer::get_red_swizzle() const {
-	return (OpenXRCompositionLayer::Swizzle)swapchain_state->red_swizzle;
+	return red_swizzle;
 }
 
 void OpenXRCompositionLayer::set_green_swizzle(Swizzle p_mode) {
-	if (swapchain_state->green_swizzle == (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode) {
+	if (green_swizzle == p_mode) {
 		return;
 	}
-
-	swapchain_state->green_swizzle = (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode;
-	swapchain_state->dirty = true;
+	green_swizzle = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_green_swizzle(composition_layer, (OpenXRCompositionLayerExtension::Swizzle)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Swizzle OpenXRCompositionLayer::get_green_swizzle() const {
-	return (OpenXRCompositionLayer::Swizzle)swapchain_state->green_swizzle;
+	return green_swizzle;
 }
 
 void OpenXRCompositionLayer::set_blue_swizzle(Swizzle p_mode) {
-	if (swapchain_state->blue_swizzle == (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode) {
+	if (blue_swizzle == p_mode) {
 		return;
 	}
-
-	swapchain_state->blue_swizzle = (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode;
-	swapchain_state->dirty = true;
+	blue_swizzle = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_blue_swizzle(composition_layer, (OpenXRCompositionLayerExtension::Swizzle)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Swizzle OpenXRCompositionLayer::get_blue_swizzle() const {
-	return (OpenXRCompositionLayer::Swizzle)swapchain_state->blue_swizzle;
+	return blue_swizzle;
 }
 
 void OpenXRCompositionLayer::set_alpha_swizzle(Swizzle p_mode) {
-	if (swapchain_state->alpha_swizzle == (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode) {
+	if (alpha_swizzle == p_mode) {
 		return;
 	}
-
-	swapchain_state->alpha_swizzle = (OpenXRViewportCompositionLayerProvider::Swizzle)p_mode;
-	swapchain_state->dirty = true;
+	alpha_swizzle = p_mode;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_alpha_swizzle(composition_layer, (OpenXRCompositionLayerExtension::Swizzle)p_mode);
+	}
 }
 
 OpenXRCompositionLayer::Swizzle OpenXRCompositionLayer::get_alpha_swizzle() const {
-	return (OpenXRCompositionLayer::Swizzle)swapchain_state->alpha_swizzle;
+	return alpha_swizzle;
 }
 
 void OpenXRCompositionLayer::set_max_anisotropy(float p_value) {
-	if (swapchain_state->max_anisotropy == p_value) {
+	if (max_anisotropy == p_value) {
 		return;
 	}
-
-	swapchain_state->max_anisotropy = p_value;
-	swapchain_state->dirty = true;
+	max_anisotropy = p_value;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_max_anisotropy(composition_layer, p_value);
+	}
 }
 
 float OpenXRCompositionLayer::get_max_anisotropy() const {
-	return swapchain_state->max_anisotropy;
+	return max_anisotropy;
 }
 
-void OpenXRCompositionLayer::set_border_color(Color p_color) {
-	if (swapchain_state->border_color == p_color) {
+void OpenXRCompositionLayer::set_border_color(const Color &p_color) {
+	if (border_color == p_color) {
 		return;
 	}
-
-	swapchain_state->border_color = p_color;
-	swapchain_state->dirty = true;
+	border_color = p_color;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_border_color(composition_layer, p_color);
+	}
 }
 
 Color OpenXRCompositionLayer::get_border_color() const {
-	return swapchain_state->border_color;
+	return border_color;
 }
 
 Ref<JavaObject> OpenXRCompositionLayer::get_android_surface() {
-	return openxr_layer_provider->get_android_surface();
+	if (composition_layer_extension) {
+		return composition_layer_extension->composition_layer_get_android_surface(composition_layer);
+	}
+	return Ref<JavaObject>();
 }
 
 Vector2 OpenXRCompositionLayer::intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const {
@@ -614,7 +661,9 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
 				extension_property_values.merge(extension->get_viewport_composition_layer_extension_property_defaults());
 			}
-			openxr_layer_provider->set_extension_property_values(extension_property_values);
+			if (composition_layer_extension) {
+				composition_layer_extension->composition_layer_set_extension_property_values(composition_layer, extension_property_values);
+			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (fallback) {
@@ -628,26 +677,27 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_natively_supported() && openxr_session_running && is_inside_tree()) {
 				if (is_visible()) {
-					_setup_composition_layer_provider();
+					_setup_composition_layer();
 				} else {
-					_clear_composition_layer_provider();
+					_clear_composition_layer();
 				}
 			}
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			update_transform();
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (layer_viewport && is_viewport_in_use(layer_viewport)) {
-				_clear_composition_layer_provider();
+				_clear_composition_layer();
 			} else if (openxr_session_running && is_visible()) {
-				_setup_composition_layer_provider();
+				_setup_composition_layer();
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			// This will clean up existing resources.
-			_clear_composition_layer_provider();
+			_clear_composition_layer();
 		} break;
 	}
 }
@@ -680,7 +730,9 @@ bool OpenXRCompositionLayer::_get(const StringName &p_property, Variant &r_value
 bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p_value) {
 	extension_property_values[p_property] = p_value;
 
-	openxr_layer_provider->set_extension_property_values(extension_property_values);
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_extension_property_values(composition_layer, extension_property_values);
+	}
 
 	return true;
 }

@@ -50,6 +50,7 @@
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "core/profiling/profiling.h"
 #include "core/register_core_types.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
@@ -487,6 +488,9 @@ void Main::print_help_option(const char *p_option, const char *p_description, CL
 			case CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG:
 				availability_badge = "\u001b[1;94mD";
 				break;
+			case CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE:
+				availability_badge = "\u001b[1;93mX";
+				break;
 			case CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE:
 				availability_badge = "\u001b[1;92mR";
 				break;
@@ -529,6 +533,9 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_ENABLED
 	OS::get_singleton()->print("  \u001b[1;94mD\u001b[0m  Available in editor builds and debug export templates only.\n");
 #endif
+#if defined(OVERRIDE_PATH_ENABLED)
+	OS::get_singleton()->print("  \u001b[1;93mX\u001b[0m  Only available in editor builds, and export templates compiled with `disable_path_overrides=false`.\n");
+#endif
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  \u001b[1;91mE\u001b[0m  Only available in editor builds.\n");
 #endif
@@ -555,17 +562,20 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--quit", "Quit after the first iteration.\n");
 	print_help_option("--quit-after <int>", "Quit after the given number of iterations. Set to 0 to disable.\n");
 	print_help_option("-l, --language <locale>", "Use a specific locale (<locale> being a two-letter code).\n");
-	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
-	print_help_option("--scene <path>", "Path or UID of a scene in the project that should be started.\n");
-	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
-	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
+#if defined(OVERRIDE_PATH_ENABLED)
+	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+	print_help_option("--scene <path>", "Path or UID of a scene in the project that should be started.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+#endif // defined(OVERRIDE_PATH_ENABLED)
 #ifdef DISABLE_DEPRECATED
 	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
 #else
 	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
-#endif
-	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
-	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
+#endif // DISABLE_DEPRECATED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 
 	print_help_option("--audio-driver <driver>", "Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -633,14 +643,16 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_ENABLED
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
-	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information (Vulkan only). This allows source-level shader debugging with RenderDoc.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
 #endif
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
+#endif
 	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
-#if defined(DEBUG_ENABLED)
+#ifdef DEBUG_ENABLED
 	print_help_option("--debug-collisions", "Show collision shapes when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-paths", "Show path lines when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-navigation", "Show navigation polygons when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
@@ -662,10 +674,14 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
+#if defined(OVERRIDE_PATH_ENABLED) || defined(TESTS_ENABLED)
 	print_help_title("Standalone tools");
-	print_help_option("-s, --script <script>", "Run a script.\n");
-	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
-	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+#endif // defined(OVERRIDE_PATH_ENABLED) || defined(TESTS_ENABLED)
+#if defined(OVERRIDE_PATH_ENABLED)
+	print_help_option("-s, --script <script>", "Run a script.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE);
+#endif // defined(OVERRIDE_PATH_ENABLED)
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -740,6 +756,13 @@ Error Main::test_setup() {
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
+
 	// From `Main::setup2()`.
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
@@ -759,7 +782,7 @@ Error Main::test_setup() {
 	if (!locale.is_empty()) {
 		translation_server->set_locale(locale);
 	}
-	translation_server->load_translations();
+	translation_server->load_project_translations(translation_server->get_main_domain());
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
 	// Initialize ThemeDB early so that scene types can register their theme items.
@@ -857,9 +880,11 @@ void Main::test_cleanup() {
 
 #ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -960,10 +985,25 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
+	GodotProfileZone("setup");
 	Thread::make_main_thread();
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
+
+#if !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
+#ifdef MACOS_ENABLED
+	String new_cwd = OS::get_singleton()->get_bundle_resource_dir();
+	if (new_cwd.is_empty() || !new_cwd.is_absolute_path()) {
+		new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
+	}
+#else
+	String new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
+#endif
+	if (!new_cwd.is_empty()) {
+		OS::get_singleton()->set_cwd(new_cwd);
+	}
+#endif
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
@@ -1021,7 +1061,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String audio_driver = "";
 	String project_path = ".";
-	bool upwards = false;
 	String debug_uri = "";
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
@@ -1432,9 +1471,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (arg == "--remote-fs") { // remote filesystem
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (N) {
 				remotefs = N->get();
 				N = N->next();
@@ -1442,8 +1481,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 		} else if (arg == "--remote-fs-password") { // remote filesystem password
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (N) {
 				remotefs_pass = N->get();
 				N = N->next();
@@ -1451,6 +1496,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 		} else if (arg == "--render-thread") { // render thread mode
 
 			if (N) {
@@ -1638,8 +1689,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 #endif // MODULE_GDSCRIPT_ENABLED
 #endif // TOOLS_ENABLED
-		} else if (arg == "--path") { // set path of project to start or edit
 
+		} else if (arg == "--path") { // set path of project to start or edit
+#if defined(OVERRIDE_PATH_ENABLED)
 			if (N) {
 				String p = N->get();
 				if (OS::get_singleton()->set_cwd(p) != OK) {
@@ -1651,8 +1703,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
-		} else if (arg == "-u" || arg == "--upwards") { // scan folders upwards
-			upwards = true;
+#else
+			ERR_PRINT(
+					"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif // defined(OVERRIDE_PATH_ENABLED)
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
 #ifdef TOOLS_ENABLED
@@ -1667,6 +1723,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (arg.ends_with("project.godot")) {
+#if defined(OVERRIDE_PATH_ENABLED)
 			String path;
 			String file = arg;
 			int sep = MAX(file.rfind_char('/'), file.rfind_char('\\'));
@@ -1683,6 +1740,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 			editor = true;
 #endif
+#else
+			ERR_PRINT(
+					"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif // defined(OVERRIDE_PATH_ENABLED)
 		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
 
 			if (N) {
@@ -1723,8 +1786,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (arg == "--main-pack") {
+#if defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) // Note: main-pack is always used on web and can't be disabled.
 			if (N) {
 				main_pack = N->get();
 				N = N->next();
@@ -1732,6 +1795,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
 			debug_uri = "local://";
@@ -1751,14 +1820,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			StringName::set_debug_stringnames(true);
 		} else if (arg == "--debug-mute-audio") {
 			debug_mute_audio = true;
-#endif
+#endif // defined(DEBUG_ENABLED)
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--test-rd-support") {
 			test_rd_support = true;
 		} else if (arg == "--test-rd-creation") {
 			test_rd_creation = true;
-#endif
+#endif // defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--remote-debug") {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (N) {
 				debug_uri = N->get();
 				if (!debug_uri.contains("://")) { // wrong address
@@ -1771,6 +1841,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 		} else if (arg == "--editor-pid") { // not exposed to user
 			if (N) {
 				editor_pid = N->get().to_int();
@@ -1809,7 +1885,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--editor-pseudolocalization") {
 			editor_pseudolocalization = true;
 #endif // TOOLS_ENABLED
-		} else if (arg == "--profile-gpu") {
+		} else if (arg == "--gpu-profile") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
@@ -1913,6 +1989,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
@@ -1930,9 +2007,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 
 	OS::get_singleton()->_in_editor = editor;
-	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
+	if (globals->setup(project_path, main_pack, false, editor) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
 #endif
@@ -2832,6 +2910,7 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 }
 
 Error Main::setup2(bool p_show_boot_logo) {
+	GodotProfileZone("setup2");
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup2");
 
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
@@ -3006,6 +3085,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 #ifndef PHYSICS_2D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 #endif // PHYSICS_2D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::initialize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::initialize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
 
 	register_server_types();
 	{
@@ -3429,7 +3515,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (!locale.is_empty()) {
 			translation_server->set_locale(locale);
 		}
-		translation_server->load_translations();
+		translation_server->load_project_translations(translation_server->get_main_domain());
 		ResourceLoader::load_translation_remaps(); //load remaps for resources
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
@@ -3660,6 +3746,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 }
 
 void Main::setup_boot_logo() {
+	GodotProfileZone("setup_boot_logo");
 	MAIN_PRINT("Main: Load Boot Image");
 
 #if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
@@ -3670,7 +3757,8 @@ void Main::setup_boot_logo() {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+
+		const RenderingServer::SplashStretchMode boot_stretch_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "application/boot_splash/stretch_mode", PROPERTY_HINT_ENUM, "Disabled,Keep,Keep Width,Keep Height,Cover,Ignore"), 1);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 		String boot_logo_path = GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String());
 
@@ -3710,7 +3798,7 @@ void Main::setup_boot_logo() {
 		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
-			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(boot_logo, boot_bg_color, boot_stretch_mode, boot_logo_filter);
 
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
@@ -3724,7 +3812,7 @@ void Main::setup_boot_logo() {
 			MAIN_PRINT("Main: ClearColor");
 			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
-			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+			RenderingServer::get_singleton()->set_boot_image_with_stretch(splash, boot_bg_color, RenderingServer::SPLASH_STRETCH_MODE_DISABLED);
 #endif
 		}
 
@@ -3754,6 +3842,7 @@ static MainTimerSync main_timer_sync;
 // and should move on to `OS::run`, and EXIT_FAILURE otherwise for
 // an early exit with that error code.
 int Main::start() {
+	GodotProfileZone("start");
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
 
 	ERR_FAIL_COND_V(!_start_success, EXIT_FAILURE);
@@ -3816,13 +3905,21 @@ int Main::start() {
 			install_android_build_template = true;
 #endif // TOOLS_ENABLED
 		} else if (E->get() == "--scene") {
+#if defined(OVERRIDE_PATH_ENABLED)
 			E = E->next();
 			if (E) {
 				game_path = ResourceUID::ensure_path(E->get());
 			} else {
 				ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing scene path, aborting.");
 			}
+#else
+			ERR_PRINT(
+					"`--scene` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			return EXIT_FAILURE;
+#endif // defined(OVERRIDE_PATH_ENABLED)
 		} else if (E->get().length() && E->get()[0] != '-' && positional_arg.is_empty() && game_path.is_empty()) {
+#if defined(OVERRIDE_PATH_ENABLED)
 			positional_arg = E->get();
 
 			String scene_path = ResourceUID::ensure_path(E->get());
@@ -3839,6 +3936,12 @@ int Main::start() {
 				// for non-game applications.
 				game_path = scene_path;
 			}
+#else
+			ERR_PRINT(
+					"Scene path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			return EXIT_FAILURE;
+#endif // defined(OVERRIDE_PATH_ENABLED)
 		}
 		// Then parameters that have an argument to the right.
 		else if (E->next()) {
@@ -4043,6 +4146,19 @@ int Main::start() {
 
 #endif // TOOLS_ENABLED
 
+#if defined(OVERRIDE_PATH_ENABLED)
+	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+	if (disable_override) {
+		script = String();
+		game_path = String();
+		main_loop_type = String();
+	}
+#else
+	script = String();
+	game_path = String();
+	main_loop_type = String();
+#endif // defined(OVERRIDE_PATH_ENABLED)
+
 	if (script.is_empty() && game_path.is_empty()) {
 		const String main_scene = GLOBAL_GET("application/run/main_scene");
 		if (main_scene.begins_with("uid://")) {
@@ -4232,7 +4348,7 @@ int Main::start() {
 						// Cache the scene reference before loading it (for cyclic references)
 						Ref<PackedScene> scn;
 						scn.instantiate();
-						scn->set_path(info.path);
+						scn->set_path(ResourceUID::ensure_path(info.path));
 						scn->reload_from_file();
 						ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
@@ -4386,6 +4502,9 @@ int Main::start() {
 
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
+
+			int drag_threshold = GLOBAL_GET("gui/common/drag_threshold");
+			sml->get_root()->set_drag_threshold(drag_threshold);
 
 			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
 			sml->get_root()->set_use_oversampling(font_oversampling);
@@ -4595,6 +4714,8 @@ static uint64_t navigation_process_max = 0;
 // will terminate the program. In case of failure, the OS exit code needs
 // to be set explicitly here (defaults to EXIT_SUCCESS).
 bool Main::iteration() {
+	GodotProfileZone("Main::iteration");
+	GodotProfileZoneGroupedFirst(_profile_zone, "prepare");
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
@@ -4604,10 +4725,10 @@ bool Main::iteration() {
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
-	const int physics_ticks_per_second = Engine::get_singleton()->get_physics_ticks_per_second();
+	const int physics_ticks_per_second = Engine::get_singleton()->get_user_physics_ticks_per_second();
 	const double physics_step = 1.0 / physics_ticks_per_second;
 
-	const double time_scale = Engine::get_singleton()->get_time_scale();
+	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
@@ -4626,7 +4747,7 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	const int max_physics_steps = Engine::get_singleton()->get_max_physics_steps_per_frame();
+	const int max_physics_steps = Engine::get_singleton()->get_user_max_physics_steps_per_frame();
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
 		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
@@ -4640,6 +4761,8 @@ bool Main::iteration() {
 #endif // XR_DISABLED
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+		GodotProfileZone("Physics Step");
+		GodotProfileZoneGroupedFirst(_physics_zone, "setup");
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}
@@ -4652,18 +4775,22 @@ bool Main::iteration() {
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
+		GodotProfileZoneGrouped(_physics_zone, "main loop iteration prepare");
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
 
 #ifndef PHYSICS_3D_DISABLED
+		GodotProfileZoneGrouped(_physics_zone, "PhysicsServer3D::sync");
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
+		GodotProfileZoneGrouped(_physics_zone, "PhysicsServer2D::sync");
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 #endif // PHYSICS_2D_DISABLED
 
+		GodotProfileZoneGrouped(_physics_zone, "physics_process");
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef PHYSICS_3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
@@ -4681,9 +4808,11 @@ bool Main::iteration() {
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 #ifndef NAVIGATION_2D_DISABLED
+		GodotProfileZoneGrouped(_profile_zone, "NavigationServer2D::physics_process");
 		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
+		GodotProfileZoneGrouped(_profile_zone, "NavigationServer3D::physics_process");
 		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
 
@@ -4694,17 +4823,20 @@ bool Main::iteration() {
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 #ifndef PHYSICS_3D_DISABLED
+		GodotProfileZoneGrouped(_profile_zone, "3D physics");
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
+		GodotProfileZoneGrouped(_profile_zone, "2D physics");
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
 #endif // PHYSICS_2D_DISABLED
 
 		message_queue->flush();
 
+		GodotProfileZoneGrouped(_profile_zone, "main loop iteration end");
 		OS::get_singleton()->get_main_loop()->iteration_end();
 
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
@@ -4719,20 +4851,25 @@ bool Main::iteration() {
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
+	GodotProfileZoneGrouped(_profile_zone, "process");
 	if (OS::get_singleton()->get_main_loop()->process(process_step * time_scale)) {
 		exit = true;
 	}
 	message_queue->flush();
 
 #ifndef NAVIGATION_2D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "process 2D navigation");
 	NavigationServer2D::get_singleton()->process(process_step * time_scale);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "process 3D navigation");
 	NavigationServer3D::get_singleton()->process(process_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
 
+	GodotProfileZoneGrouped(_profile_zone, "RenderingServer::sync");
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
+	GodotProfileZoneGrouped(_profile_zone, "RenderingServer::draw");
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
@@ -4756,12 +4893,15 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	GodotProfileZoneGrouped(_profile_zone, "GDExtensionManager::frame");
 	GDExtensionManager::get_singleton()->frame();
 
+	GodotProfileZoneGrouped(_profile_zone, "ScriptServer::frame");
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
 
+	GodotProfileZoneGrouped(_profile_zone, "AudioServer::update");
 	AudioServer::get_singleton()->update();
 
 	if (EngineDebugger::is_active()) {
@@ -4800,6 +4940,7 @@ bool Main::iteration() {
 	iterating--;
 
 	if (movie_writer) {
+		GodotProfileZoneGrouped(_profile_zone, "movie_writer->add_frame");
 		movie_writer->add_frame();
 	}
 
@@ -4826,6 +4967,7 @@ bool Main::iteration() {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
 
+	GodotProfileZoneGrouped(_profile_zone, "OS::add_frame_delay");
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
@@ -4865,6 +5007,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	GodotProfileZone("cleanup");
 	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
@@ -4949,9 +5092,11 @@ void Main::cleanup(bool p_force) {
 // Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 #ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2DManager::finalize_server();
+	NavigationServer2DManager::finalize_server_manager();
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::finalize_server();
+	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 	finalize_physics();
 

@@ -492,7 +492,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				}
 			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
 				const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(name);
-				if (info.path.get_extension().to_lower() != GDScriptLanguage::get_singleton()->get_extension()) {
+				if (!info.path.has_extension(GDScriptLanguage::get_singleton()->get_extension())) {
 					push_error(vformat(R"(Singleton %s is not a GDScript.)", info.name), id);
 					return ERR_PARSE_ERROR;
 				}
@@ -3833,7 +3833,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 }
 
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
-	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, StringLikeVariantComparator> elements;
+	HashMap<Variant, GDScriptParser::ExpressionNode *, HashMapHasherDefault, StringLikeVariantComparator> elements;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];

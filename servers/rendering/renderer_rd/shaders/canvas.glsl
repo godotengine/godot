@@ -407,7 +407,9 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
 
 	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
-		shadow = texture_shadow(shadow_uv);
+		vec2 unit_p = floor(shadow_uv.xy / canvas_data.shadow_pixel_size) * canvas_data.shadow_pixel_size;
+		float depth_sample = texture(sampler2D(shadow_atlas_texture, shadow_sampler), unit_p.xy).r;
+		shadow = step(depth_sample, shadow_uv.z);
 	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
 		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;

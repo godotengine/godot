@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -666,7 +667,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0000001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
@@ -1430,8 +1431,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	int frame_count = frames->get_frame_count(animation);
-	if (animation == StringName() || frame_count == 0) {
+	if (animation == StringName() || frames->get_frame_count(animation) == 0) {
 		stop();
 		return;
 	} else if (!frames->get_animation_names().has(animation)) {
@@ -1441,7 +1441,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 	}
 
 	if (std::signbit(get_playing_speed())) {
-		set_frame_and_progress(frame_count - 1, 1.0);
+		set_frame_and_progress(frames->get_frame_count(animation) - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);
 	}

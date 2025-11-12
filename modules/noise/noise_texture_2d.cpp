@@ -32,6 +32,8 @@
 
 #include "noise.h"
 
+#include "servers/rendering/rendering_server.h"
+
 NoiseTexture2D::NoiseTexture2D() {
 	noise = Ref<Noise>();
 

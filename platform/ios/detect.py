@@ -25,6 +25,7 @@ def get_opts():
 
     return [
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
+        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
@@ -163,7 +164,7 @@ def configure(env: "SConsEnvironment"):
                 "$APPLE_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
-        env.Prepend(CPPEXTPATH=["#thirdparty/spirv-cross"])
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"] and env["simulator"]:
         print_warning("iOS Simulator does not support the Vulkan rendering driver")

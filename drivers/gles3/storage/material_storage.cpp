@@ -1423,6 +1423,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
+		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 		actions.instance_uniform_index_variable = "instance_offset";
@@ -1512,22 +1513,22 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["QUARTER_RES_COLOR"] = "quarter_res_color";
 		actions.renames["RADIANCE"] = "radiance";
 		actions.renames["FOG"] = "custom_fog";
-		actions.renames["LIGHT0_ENABLED"] = "directional_lights.data[0].enabled";
+		actions.renames["LIGHT0_ENABLED"] = "bool(directional_lights.data[0].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT0_DIRECTION"] = "directional_lights.data[0].direction_energy.xyz";
 		actions.renames["LIGHT0_ENERGY"] = "directional_lights.data[0].direction_energy.w";
 		actions.renames["LIGHT0_COLOR"] = "directional_lights.data[0].color_size.xyz";
 		actions.renames["LIGHT0_SIZE"] = "directional_lights.data[0].color_size.w";
-		actions.renames["LIGHT1_ENABLED"] = "directional_lights.data[1].enabled";
+		actions.renames["LIGHT1_ENABLED"] = "bool(directional_lights.data[1].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT1_DIRECTION"] = "directional_lights.data[1].direction_energy.xyz";
 		actions.renames["LIGHT1_ENERGY"] = "directional_lights.data[1].direction_energy.w";
 		actions.renames["LIGHT1_COLOR"] = "directional_lights.data[1].color_size.xyz";
 		actions.renames["LIGHT1_SIZE"] = "directional_lights.data[1].color_size.w";
-		actions.renames["LIGHT2_ENABLED"] = "directional_lights.data[2].enabled";
+		actions.renames["LIGHT2_ENABLED"] = "bool(directional_lights.data[2].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT2_DIRECTION"] = "directional_lights.data[2].direction_energy.xyz";
 		actions.renames["LIGHT2_ENERGY"] = "directional_lights.data[2].direction_energy.w";
 		actions.renames["LIGHT2_COLOR"] = "directional_lights.data[2].color_size.xyz";
 		actions.renames["LIGHT2_SIZE"] = "directional_lights.data[2].color_size.w";
-		actions.renames["LIGHT3_ENABLED"] = "directional_lights.data[3].enabled";
+		actions.renames["LIGHT3_ENABLED"] = "bool(directional_lights.data[3].enabled_bake_mode & DIRECTIONAL_LIGHT_ENABLED)";
 		actions.renames["LIGHT3_DIRECTION"] = "directional_lights.data[3].direction_energy.xyz";
 		actions.renames["LIGHT3_ENERGY"] = "directional_lights.data[3].direction_energy.w";
 		actions.renames["LIGHT3_COLOR"] = "directional_lights.data[3].color_size.xyz";
@@ -1869,7 +1870,7 @@ void MaterialStorage::global_shader_parameter_remove(const StringName &p_name) {
 }
 
 Vector<StringName> MaterialStorage::global_shader_parameter_get_list() const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
+	if (!Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
 		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
 

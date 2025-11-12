@@ -89,6 +89,7 @@ private:
 	static Error _msg_clear_selection(const Array &p_args);
 	static Error _msg_suspend_changed(const Array &p_args);
 	static Error _msg_next_frame(const Array &p_args);
+	static Error _msg_speed_changed(const Array &p_args);
 	static Error _msg_debug_mute_audio(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
 	static Error _msg_set_object_property(const Array &p_args);

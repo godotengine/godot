@@ -2254,6 +2254,7 @@ void TileSetAtlasSourceEditor::init_new_atlases(const Vector<Ref<TileSetAtlasSou
 
 void TileSetAtlasSourceEditor::_update_source_texture() {
 	if (tile_set_atlas_source && tile_set_atlas_source->get_texture() == atlas_source_texture) {
+		_check_outside_tiles();
 		return;
 	}
 
@@ -2272,8 +2273,9 @@ void TileSetAtlasSourceEditor::_update_source_texture() {
 
 void TileSetAtlasSourceEditor::_check_outside_tiles() {
 	ERR_FAIL_NULL(tile_set_atlas_source);
-	outside_tiles_warning->set_visible(!read_only && tile_set_atlas_source->has_tiles_outside_texture());
-	tool_advanced_menu_button->get_popup()->set_item_disabled(tool_advanced_menu_button->get_popup()->get_item_index(ADVANCED_CLEANUP_TILES), !tile_set_atlas_source->has_tiles_outside_texture());
+	bool has_tiles_outside = tile_set_atlas_source->has_tiles_outside_texture();
+	outside_tiles_warning->set_visible(!read_only && has_tiles_outside);
+	tool_advanced_menu_button->get_popup()->set_item_disabled(tool_advanced_menu_button->get_popup()->get_item_index(ADVANCED_CLEANUP_TILES), !has_tiles_outside);
 }
 
 void TileSetAtlasSourceEditor::_cleanup_outside_tiles() {

@@ -30,9 +30,10 @@
 
 #include "debug_adapter_parser.h"
 
-#include "editor/debugger/debug_adapter/debug_adapter_types.h"
+#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
@@ -184,6 +185,20 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 	return Dictionary();
 }
 
+Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &p_args) const {
+	Vector<String> play_args;
+	if (p_args.has("playArgs")) {
+		Variant v = p_args["playArgs"];
+		if (v.get_type() == Variant::ARRAY) {
+			Array arr = v;
+			for (const Variant &arg : arr) {
+				play_args.push_back(String(arg));
+			}
+		}
+	}
+	return play_args;
+}
+
 Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
@@ -193,34 +208,30 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorRunBar::get_singleton()->play_main_scene();
-	} else {
-		int device = args.get("device", -1);
-		int idx = -1;
-		if (platform_string == "android") {
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Android") {
-					idx = i;
-					break;
-				}
-			}
-		} else if (platform_string == "web") {
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Web") {
-					idx = i;
-					break;
-				}
-			}
+		Vector<String> play_args = _extract_play_arguments(args);
+		const String scene = args.get("scene", "main");
+		if (scene == "main") {
+			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
+		} else if (scene == "current") {
+			EditorRunBar::get_singleton()->play_current_scene(false, play_args);
+		} else {
+			EditorRunBar::get_singleton()->play_custom_scene(scene, play_args);
 		}
-
-		if (idx == -1) {
+	} else {
+		// Not limited to Android, iOS, Web.
+		const int platform_idx = EditorExport::get_singleton()->get_export_platform_index_by_name(platform_string);
+		if (platform_idx == -1) {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
 		}
 
-		EditorRunBar *run_bar = EditorRunBar::get_singleton();
-		Error err = platform_string == "android" ? run_bar->start_native_device(device * 10000 + idx) : run_bar->start_native_device(idx);
+		// If it is not passed, would mean first device of this platform.
+		const int device_idx = args.get("device", 0);
+
+		const EditorRunBar *run_bar = EditorRunBar::get_singleton();
+		const int encoded_id = EditorExport::encode_platform_device_id(platform_idx, device_idx);
+		const Error err = run_bar->start_native_device(encoded_id);
 		if (err) {
-			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
+			if (err == ERR_INVALID_PARAMETER) {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
 			} else {
 				return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);

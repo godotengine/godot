@@ -51,8 +51,10 @@ using namespace godot;
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/file_access.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -61,11 +63,17 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides class member".
+
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+
+GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -3277,7 +3285,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 		}
 	}
 
-	for (int i = p_shaped->first_span; i <= p_shaped->last_span; i++) {
+	for (int i = MAX(0, p_shaped->first_span); i <= MIN(p_shaped->last_span, parent->spans.size() - 1); i++) {
 		ShapedTextDataFallback::Span span = parent->spans[i];
 		span.start = MAX(p_shaped->start, span.start);
 		span.end = MIN(p_shaped->end, span.end);
@@ -3314,6 +3322,39 @@ void TextServerFallback::_shaped_text_clear(const RID &p_shaped) {
 	sd->last_span = 0;
 	sd->objects.clear();
 	invalidate(sd);
+}
+
+RID TextServerFallback::_shaped_text_duplicate(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
+
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, RID());
+
+	MutexLock lock(sd->mutex);
+
+	ShapedTextDataFallback *new_sd = memnew(ShapedTextDataFallback);
+	new_sd->parent = p_shaped;
+	new_sd->start = sd->start;
+	new_sd->end = sd->end;
+	new_sd->text = sd->text;
+	new_sd->orientation = sd->orientation;
+	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
+	new_sd->para_direction = sd->para_direction;
+	new_sd->line_breaks_valid = sd->line_breaks_valid;
+	new_sd->justification_ops_valid = sd->justification_ops_valid;
+	new_sd->sort_valid = false;
+	new_sd->upos = sd->upos;
+	new_sd->uthk = sd->uthk;
+	new_sd->runs.clear();
+	new_sd->runs_dirty = true;
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		new_sd->extra_spacing[i] = sd->extra_spacing[i];
+	}
+	full_copy(new_sd);
+	new_sd->valid.clear();
+
+	return shaped_owner.make_rid(new_sd);
 }
 
 void TextServerFallback::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -3822,6 +3863,14 @@ String TextServerFallback::_shaped_get_text(const RID &p_shaped) const {
 	ERR_FAIL_NULL_V(sd, String());
 
 	return sd->text;
+}
+
+bool TextServerFallback::_shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->objects.has(p_key);
 }
 
 bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
@@ -4468,6 +4517,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				}
 
 				bool fb_use_msdf = key.msdf;
+#ifdef MODULE_FREETYPE_ENABLED
 				if (fb_use_msdf) {
 					FontFallback *fd = _get_font_data(sysf.rid);
 					if (fd) {
@@ -4481,6 +4531,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 						}
 					}
 				}
+#endif
 
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
@@ -4812,7 +4863,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			// Text span.
 			int last_non_zero_w = sd->end - 1;
 			if (i == sd->spans.size() - 1) {
-				for (int j = span.end - 1; j > span.start; j--) {
+				for (int j = span.end - 1; j >= span.start; j--) {
 					last_non_zero_w = j;
 					uint32_t idx = (int32_t)sd->text[j - sd->start];
 					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {

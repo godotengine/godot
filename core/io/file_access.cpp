@@ -37,6 +37,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -445,7 +446,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(std::size(stack_buffer)) {
+			capacity(std_size(stack_buffer)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {

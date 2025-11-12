@@ -34,6 +34,8 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/os/time.h"
@@ -203,6 +205,13 @@ Error SceneDebugger::_msg_suspend_changed(const Array &p_args) {
 
 Error SceneDebugger::_msg_next_frame(const Array &p_args) {
 	_next_frame();
+	return OK;
+}
+
+Error SceneDebugger::_msg_speed_changed(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	double time_scale_user = p_args[0];
+	Engine::get_singleton()->set_user_time_scale(time_scale_user);
 	return OK;
 }
 
@@ -528,6 +537,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["clear_selection"] = _msg_clear_selection;
 	message_handlers["suspend_changed"] = _msg_suspend_changed;
 	message_handlers["next_frame"] = _msg_next_frame;
+	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
 	message_handlers["override_cameras"] = _msg_override_cameras;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;

@@ -131,8 +131,16 @@ public:
 
 	enum ItemMenu {
 		ITEM_MENU_COPY_PATH,
+		ITEM_MENU_DELETE,
+		ITEM_MENU_REFRESH,
+		ITEM_MENU_NEW_FOLDER,
 		ITEM_MENU_SHOW_IN_EXPLORER,
 		ITEM_MENU_SHOW_BUNDLE_CONTENT,
+		// Not in the menu, only for shortcuts.
+		ITEM_MENU_GO_UP,
+		ITEM_MENU_TOGGLE_HIDDEN,
+		ITEM_MENU_FIND,
+		ITEM_MENU_FOCUS_PATH,
 	};
 
 	enum Customization {
@@ -144,6 +152,7 @@ public:
 		CUSTOMIZATION_RECENT,
 		CUSTOMIZATION_LAYOUT,
 		CUSTOMIZATION_OVERWRITE_WARNING,
+		CUSTOMIZATION_DELETE,
 		CUSTOMIZATION_MAX
 	};
 
@@ -163,7 +172,10 @@ private:
 	static inline DisplayMode default_display_mode = DISPLAY_THUMBNAILS;
 	bool show_hidden_files = false;
 	bool use_native_dialog = false;
+	bool can_create_folders = true;
 	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
+
+	HashMap<ItemMenu, Ref<Shortcut>> action_shortcuts;
 
 	inline static LocalVector<String> global_favorites;
 	inline static LocalVector<String> global_recents;
@@ -241,6 +253,7 @@ private:
 	FlowContainer *flow_checkbox_options = nullptr;
 	GridContainer *grid_select_options = nullptr;
 
+	ConfirmationDialog *delete_dialog = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *new_dir_name = nullptr;
 	AcceptDialog *mkdirerr = nullptr;
@@ -289,10 +302,12 @@ private:
 	void _item_menu_id_pressed(int p_option);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
 	void _item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_button);
+	void _popup_menu(const Vector2 &p_pos, int p_for_item);
 
 	void _focus_file_text();
 
 	int _get_selected_file_idx();
+	String _get_item_path(int p_idx) const;
 	void _file_list_multi_selected(int p_item, bool p_selected);
 	void _file_list_selected(int p_item);
 	void _file_list_item_activated(int p_item);
@@ -307,6 +322,7 @@ private:
 	void _filename_filter_changed();
 	void _filename_filter_selected();
 	void _file_list_select_first();
+	void _delete_confirm();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
@@ -361,13 +377,19 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _add_filter_bind_compat_111439(const String &p_filter, const String &p_description = "");
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	virtual void set_visible(bool p_visible) override;
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	void popup_file_dialog();
 	void clear_filters();
-	void add_filter(const String &p_filter, const String &p_description = "");
+	void add_filter(const String &p_filter, const String &p_description = "", const String &p_mime = "");
 	void set_filters(const Vector<String> &p_filters);
 	Vector<String> get_filters() const;
 	void clear_filename_filter();

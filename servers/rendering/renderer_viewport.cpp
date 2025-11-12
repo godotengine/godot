@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -192,6 +193,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (scaling_3d_is_not_bilinear && !upscaler_available) {
@@ -199,6 +201,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
 
 			if (use_taa && (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
@@ -731,6 +734,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 }
 
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
+	GodotProfileZoneGroupedFirst(_profile_zone, "prepare viewports");
 	timestamp_vp_map.clear();
 
 #ifndef XR_DISABLED
@@ -748,6 +752,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	}
 
 	if (sorted_active_viewports_dirty) {
+		GodotProfileZoneGrouped(_profile_zone, "_sort_active_viewports");
 		sorted_active_viewports = _sort_active_viewports();
 		sorted_active_viewports_dirty = false;
 	}
@@ -756,11 +761,12 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	//draw viewports
 	RENDER_TIMESTAMP("> Render Viewports");
 
+	GodotProfileZoneGrouped(_profile_zone, "render viewports");
+
 	//determine what is visible
 	draw_viewports_pass++;
 
 	for (int i = sorted_active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
-
 		Viewport *vp = sorted_active_viewports[i];
 
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
@@ -819,6 +825,9 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	int draw_calls_used = 0;
 
 	for (int i = 0; i < sorted_active_viewports.size(); i++) {
+		// TODO Somehow print the index
+		GodotProfileZone("render viewport");
+
 		Viewport *vp = sorted_active_viewports[i];
 
 		if (vp->last_pass != draw_viewports_pass) {
@@ -923,6 +932,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		vertices_drawn += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME];
 		draw_calls_used += vp->render_info.info[RS::VIEWPORT_RENDER_INFO_TYPE_CANVAS][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME];
 	}
+
 	RSG::scene->set_debug_draw_mode(RS::VIEWPORT_DEBUG_DRAW_DISABLED);
 
 	total_objects_drawn = objects_drawn;
@@ -931,6 +941,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 	RENDER_TIMESTAMP("< Render Viewports");
 
+	GodotProfileZoneGrouped(_profile_zone, "rasterizer->blit_render_targets_to_screen");
 	if (p_swap_buffers && !blit_to_screen_list.is_empty()) {
 		for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
 			RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());
@@ -953,6 +964,7 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
 }
 
+#ifndef XR_DISABLED
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
@@ -970,6 +982,7 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 		_configure_3d_render_buffers(viewport);
 	}
 }
+#endif // !XR_DISABLED
 
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);

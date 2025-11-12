@@ -50,6 +50,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -286,7 +287,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
 	advanced_options->set_disabled(false);
-	advanced_options->set_pressed(current->are_advanced_options_enabled());
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	if (parameters->get_edited_object() != current.ptr()) {
@@ -494,11 +494,13 @@ void ProjectExportDialog::_advanced_options_pressed() {
 	if (updating) {
 		return;
 	}
+	EditorSettings::get_singleton()->set_setting("_export_preset_advanced_mode", advanced_options->is_pressed());
+	EditorSettings::get_singleton()->save();
 
 	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_advanced_options_enabled(advanced_options->is_pressed());
+	if (current.is_valid()) {
+		current->notify_property_list_changed();
+	}
 	_update_presets();
 }
 
@@ -584,7 +586,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/contributing/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
+	OS::get_singleton()->shell_open(vformat("%s/engine_details/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
@@ -715,7 +717,6 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
-	preset->set_advanced_options_enabled(current->are_advanced_options_enabled());
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
@@ -1445,6 +1446,7 @@ void ProjectExportDialog::_bind_methods() {
 
 ProjectExportDialog::ProjectExportDialog() {
 	set_title(TTR("Export"));
+	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -1513,6 +1515,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	advanced_options = memnew(CheckButton);
 	advanced_options->set_text(TTR("Advanced Options"));
 	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
+	advanced_options->set_pressed(EDITOR_GET("_export_preset_advanced_mode"));
 	advanced_options->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
 
 	HBoxContainer *preset_configs_container = memnew(HBoxContainer);

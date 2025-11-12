@@ -43,8 +43,7 @@ class ThemeOwner : public Object {
 
 	Node *holder = nullptr;
 
-	Control *owner_control = nullptr;
-	Window *owner_window = nullptr;
+	Node *owner_node = nullptr;
 	ThemeContext *owner_context = nullptr;
 
 	void _owner_context_changed();
@@ -57,8 +56,8 @@ public:
 	// Theme owner node.
 
 	void set_owner_node(Node *p_node);
-	Node *get_owner_node() const;
-	bool has_owner_node() const;
+	Node *get_owner_node() const { return owner_node; }
+	bool has_owner_node() const { return owner_node != nullptr; }
 
 	void set_owner_context(ThemeContext *p_context, bool p_propagate = true);
 

@@ -30,6 +30,7 @@
 
 #include "animation_bezier_editor.h"
 
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -303,6 +304,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 			const int v_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 
+			const String &lang = _get_locale();
+
 			if (has_focus(true)) {
 				draw_rect(Rect2(Point2(), get_size()), focus_color, false, Math::round(EDSCALE));
 			}
@@ -320,6 +323,60 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			Color selected_track_color;
 			subtracks.clear();
 			subtrack_icons.clear();
+
+			// Marker sections.
+			{
+				float scale = timeline->get_zoom_scale();
+				int limit_end = get_size().width - timeline->get_buttons_width();
+
+				PackedStringArray section = editor->get_selected_section();
+				if (section.size() == 2) {
+					StringName start_marker = section[0];
+					StringName end_marker = section[1];
+					double start_time = animation->get_marker_time(start_marker);
+					double end_time = animation->get_marker_time(end_marker);
+
+					// When AnimationPlayer is playing, don't move the preview rect, so it still indicates the playback section.
+					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
+					if (editor->is_marker_moving_selection() && !(player && player->is_playing())) {
+						start_time += editor->get_marker_moving_selection_offset();
+						end_time += editor->get_marker_moving_selection_offset();
+					}
+
+					if (start_time < animation->get_length() && end_time >= 0) {
+						float start_ofs = MAX(0, start_time) - timeline->get_value();
+						float end_ofs = MIN(animation->get_length(), end_time) - timeline->get_value();
+						start_ofs = start_ofs * scale + limit;
+						end_ofs = end_ofs * scale + limit;
+						start_ofs = MAX(start_ofs, limit);
+						end_ofs = MIN(end_ofs, limit_end);
+						Rect2 rect;
+						rect.set_position(Vector2(start_ofs, 0));
+						rect.set_size(Vector2(end_ofs - start_ofs, get_size().height));
+
+						draw_rect(rect, Color(1, 0.1, 0.1, 0.2));
+					}
+				}
+			}
+
+			// Marker overlays.
+			{
+				float scale = timeline->get_zoom_scale();
+				PackedStringArray markers = animation->get_marker_names();
+				for (const StringName marker : markers) {
+					double time = animation->get_marker_time(marker);
+					if (editor->is_marker_selected(marker) && editor->is_marker_moving_selection()) {
+						time += editor->get_marker_moving_selection_offset();
+					}
+					if (time >= 0) {
+						float offset = time - timeline->get_value();
+						offset = offset * scale + limit;
+						Color marker_color = animation->get_marker_color(marker);
+						marker_color.a = 0.2;
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
+					}
+				}
+			}
 
 			RBMap<String, Vector<int>> track_indices;
 			int track_count = animation->get_track_count();
@@ -358,7 +415,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					if (node) {
 						int ofs = 0;
 
-						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 
 						text = node->get_name();
 						ofs += h_separation;
@@ -523,7 +580,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
 						Color c = color;
 						c.a *= 0.5;
-						draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
+
+						const String &formatted = TranslationServer::get_singleton()->format_number(rtos(Math::snapped((iv + 1) * scale, step)), lang);
+						draw_string(font, Point2(limit + 8, i - 2), formatted, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
 					}
 
 					first = false;
@@ -662,8 +721,12 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 							ep.point_rect.size = bezier_icon->get_size();
 							if (is_selected) {
 								draw_texture(selected_icon, ep.point_rect.position);
-								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.0001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
-								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+
+								const String &formatted_offset = TranslationServer::get_singleton()->format_number(rtos(Math::snapped(offset, 0.0001)), lang);
+								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + formatted_offset, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+
+								const String &formatted_value = TranslationServer::get_singleton()->format_number(rtos(Math::snapped(value, 0.001)), lang);
+								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + formatted_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
 							} else {
 								Color track_color = Color(1, 1, 1, 1);
 								if (i != selected_track) {

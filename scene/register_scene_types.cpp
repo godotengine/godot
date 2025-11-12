@@ -52,6 +52,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/color_picker_shape.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
@@ -220,14 +221,20 @@
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/ccd_ik_3d.h"
+#include "scene/3d/chain_ik_3d.h"
 #include "scene/3d/convert_transform_modifier_3d.h"
 #include "scene/3d/copy_transform_modifier_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
+#include "scene/3d/fabr_ik_3d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
+#include "scene/3d/ik_modifier_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/iterate_ik_3d.h"
+#include "scene/3d/jacobian_ik_3d.h"
 #include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
@@ -245,12 +252,14 @@
 #include "scene/3d/retarget_modifier_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
+#include "scene/3d/spline_ik_3d.h"
 #include "scene/3d/spring_bone_collision_3d.h"
 #include "scene/3d/spring_bone_collision_capsule_3d.h"
 #include "scene/3d/spring_bone_collision_plane_3d.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
+#include "scene/3d/two_bone_ik_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
@@ -344,6 +353,12 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/joint_limitation_3d.h"
+#include "scene/resources/3d/joint_limitation_cone_3d.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
@@ -410,11 +425,17 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	GDREGISTER_CLASS(Object);
-
 	GDREGISTER_CLASS(Node);
-	GDREGISTER_VIRTUAL_CLASS(MissingNode);
+	GDREGISTER_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
+
+	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
+
+	GDREGISTER_VIRTUAL_CLASS(Texture);
+	GDREGISTER_VIRTUAL_CLASS(Texture2D);
+
+	GDREGISTER_VIRTUAL_CLASS(Material);
+	GDREGISTER_CLASS(PlaceholderMaterial);
 
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
 	GDREGISTER_CLASS(SubViewport);
@@ -430,7 +451,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HTTPRequest);
 	GDREGISTER_CLASS(Timer);
 	GDREGISTER_CLASS(CanvasLayer);
-	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
 
@@ -438,14 +458,13 @@ void register_scene_types() {
 
 	/* REGISTER GUI */
 
-	GDREGISTER_CLASS(ButtonGroup);
-	GDREGISTER_VIRTUAL_CLASS(BaseButton);
-
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Control);
+	GDREGISTER_VIRTUAL_CLASS(BaseButton);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);
+	GDREGISTER_VIRTUAL_CLASS(Range);
 	GDREGISTER_ABSTRACT_CLASS(ScrollBar);
 	GDREGISTER_CLASS(HScrollBar);
 	GDREGISTER_CLASS(VScrollBar);
@@ -459,10 +478,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
-	GDREGISTER_VIRTUAL_CLASS(Range);
+	GDREGISTER_CLASS(ButtonGroup);
 
 	OS::get_singleton()->yield(); // may take time to init
 
+	GDREGISTER_CLASS(Container);
 	GDREGISTER_CLASS(TextureRect);
 	GDREGISTER_CLASS(ColorRect);
 	GDREGISTER_CLASS(NinePatchRect);
@@ -474,7 +494,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HSeparator);
 	GDREGISTER_CLASS(VSeparator);
 	GDREGISTER_CLASS(TextureButton);
-	GDREGISTER_CLASS(Container);
 	GDREGISTER_CLASS(BoxContainer);
 	GDREGISTER_CLASS(HBoxContainer);
 	GDREGISTER_CLASS(VBoxContainer);
@@ -498,6 +517,9 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(VideoStream);
 
 #ifndef ADVANCED_GUI_DISABLED
+	GDREGISTER_CLASS(AcceptDialog);
+	GDREGISTER_CLASS(ConfirmationDialog);
+
 	GDREGISTER_CLASS(FileDialog);
 
 	GDREGISTER_CLASS(PopupMenu);
@@ -518,9 +540,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RichTextLabel);
 	GDREGISTER_CLASS(RichTextEffect);
 	GDREGISTER_CLASS(CharFXTransform);
-
-	GDREGISTER_CLASS(AcceptDialog);
-	GDREGISTER_CLASS(ConfirmationDialog);
 
 	GDREGISTER_CLASS(SubViewportContainer);
 	GDREGISTER_CLASS(SplitContainer);
@@ -601,17 +620,10 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
-#ifndef XR_DISABLED
-	GDREGISTER_CLASS(XRCamera3D);
-	GDREGISTER_CLASS(XRNode3D);
-	GDREGISTER_CLASS(XRController3D);
-	GDREGISTER_CLASS(XRAnchor3D);
-	GDREGISTER_CLASS(XROrigin3D);
-	GDREGISTER_CLASS(XRBodyModifier3D);
-	GDREGISTER_CLASS(XRHandModifier3D);
-	GDREGISTER_CLASS(XRFaceModifier3D);
-#endif // XR_DISABLED
 	GDREGISTER_CLASS(MeshInstance3D);
+#ifndef DISABLE_DEPRECATED
+	MeshInstance3D::use_parent_skeleton_compat = GLOBAL_GET("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d");
+#endif
 	GDREGISTER_CLASS(OccluderInstance3D);
 	GDREGISTER_ABSTRACT_CLASS(Occluder3D);
 	GDREGISTER_CLASS(ArrayOccluder3D);
@@ -647,10 +659,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
-	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
+	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
+	GDREGISTER_VIRTUAL_CLASS(JointLimitation3D);
+	GDREGISTER_CLASS(JointLimitationCone3D);
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
 	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
@@ -660,6 +674,25 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CopyTransformModifier3D);
 	GDREGISTER_CLASS(ConvertTransformModifier3D);
 	GDREGISTER_CLASS(AimModifier3D);
+	GDREGISTER_ABSTRACT_CLASS(IKModifier3D);
+	GDREGISTER_CLASS(TwoBoneIK3D);
+	GDREGISTER_ABSTRACT_CLASS(ChainIK3D);
+	GDREGISTER_CLASS(SplineIK3D);
+	GDREGISTER_ABSTRACT_CLASS(IterateIK3D);
+	GDREGISTER_CLASS(FABRIK3D);
+	GDREGISTER_CLASS(CCDIK3D);
+	GDREGISTER_CLASS(JacobianIK3D);
+
+#ifndef XR_DISABLED
+	GDREGISTER_CLASS(XRCamera3D);
+	GDREGISTER_CLASS(XRNode3D);
+	GDREGISTER_CLASS(XRController3D);
+	GDREGISTER_CLASS(XRAnchor3D);
+	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(XRBodyModifier3D);
+	GDREGISTER_CLASS(XRHandModifier3D);
+	GDREGISTER_CLASS(XRFaceModifier3D);
+#endif // XR_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -846,10 +879,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
-	GDREGISTER_VIRTUAL_CLASS(Material);
-	GDREGISTER_CLASS(PlaceholderMaterial);
 	GDREGISTER_CLASS(ShaderMaterial);
-	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
 	GDREGISTER_CLASS(CanvasTexture);
 	GDREGISTER_CLASS(CanvasItemMaterial);
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
@@ -893,6 +923,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightOccluder2D);
 	GDREGISTER_CLASS(OccluderPolygon2D);
 	GDREGISTER_CLASS(BackBufferCopy);
+	GDREGISTER_CLASS(CanvasModulate);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1007,8 +1038,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CameraAttributesPhysical);
 	GDREGISTER_CLASS(CameraAttributesPractical);
 	GDREGISTER_CLASS(World2D);
-	GDREGISTER_VIRTUAL_CLASS(Texture);
-	GDREGISTER_VIRTUAL_CLASS(Texture2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
 	GDREGISTER_CLASS(PortableCompressedTexture2D);
@@ -1376,7 +1405,7 @@ void register_scene_types() {
 
 	if (RenderingServer::get_singleton()) {
 		// RenderingServer needs to exist for this to succeed.
-		ColorPicker::init_shaders();
+		ColorPickerShape::init_shaders();
 		GraphEdit::init_shaders();
 	}
 
@@ -1438,7 +1467,7 @@ void unregister_scene_types() {
 
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
-	ColorPicker::finish_shaders();
+	ColorPickerShape::finish_shaders();
 	GraphEdit::finish_shaders();
 	SceneStringNames::free();
 

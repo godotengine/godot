@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy_to_fb.glsl.gen.h"
@@ -58,8 +59,9 @@ private:
 		BLUR_MIPMAP,
 
 		BLUR_MODE_GAUSSIAN_BLUR,
-		BLUR_MODE_GAUSSIAN_GLOW,
-		BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE,
+		BLUR_MODE_GAUSSIAN_GLOW_GATHER,
+		BLUR_MODE_GAUSSIAN_GLOW_DOWNSAMPLE,
+		BLUR_MODE_GAUSSIAN_GLOW_UPSAMPLE,
 		BLUR_MODE_COPY,
 
 		BLUR_MODE_SET_COLOR,
@@ -68,15 +70,16 @@ private:
 	};
 
 	enum {
-		BLUR_FLAG_HORIZONTAL = (1 << 0),
 		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 1),
-		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 2),
 	};
 
 	struct BlurRasterPushConstant {
-		float pixel_size[2];
+		float dest_pixel_size[2];
+		float source_pixel_size[2];
+
+		float pad[2];
 		uint32_t flags;
-		uint32_t pad;
+		float level;
 
 		//glow
 		float glow_strength;
@@ -87,12 +90,7 @@ private:
 		float glow_exposure;
 		float glow_white;
 		float glow_luminance_cap;
-		float glow_auto_exposure_scale;
-
 		float luminance_multiplier;
-		float res1;
-		float res2;
-		float res3;
 	};
 
 	struct BlurRaster {
@@ -100,6 +98,7 @@ private:
 		BlurRasterShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[BLUR_MODE_MAX];
+		RID glow_sampler;
 	} blur_raster;
 
 	// Copy shader
@@ -138,7 +137,7 @@ private:
 		int32_t section[4];
 		int32_t target[2];
 		uint32_t flags;
-		uint32_t pad;
+		float luminance_multiplier;
 		// Glow.
 		float glow_strength;
 		float glow_bloom;
@@ -161,7 +160,7 @@ private:
 		CopyPushConstant push_constant;
 		CopyShaderRD shader;
 		RID shader_version;
-		RID pipelines[COPY_MODE_MAX];
+		PipelineDeferredRD pipelines[COPY_MODE_MAX];
 
 	} copy;
 
@@ -237,7 +236,7 @@ private:
 		CubemapDownsamplerShaderRD compute_shader;
 		CubemapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} cubemap_downsampler;
 
@@ -259,7 +258,7 @@ private:
 		CubemapFilterShaderRD compute_shader;
 		CubemapFilterRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipelines[FILTER_MODE_MAX];
+		PipelineDeferredRD compute_pipelines[FILTER_MODE_MAX];
 		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
 
 		RID uniform_set;
@@ -283,7 +282,7 @@ private:
 		CubemapRoughnessShaderRD compute_shader;
 		CubemapRoughnessRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipeline;
+		PipelineDeferredRD compute_pipeline;
 		PipelineCacheRD raster_pipeline;
 	} roughness;
 
@@ -336,7 +335,8 @@ public:
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, const Rect2i &p_region, const Size2i &p_size, bool p_8bit_dst = false);
 	void gaussian_blur_raster(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_region, const Size2i &p_size);
 	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_scale = 1.0);
-	void gaussian_glow_raster(RID p_source_rd_texture, RID p_half_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_scale = 1.0);
+	void gaussian_glow_downsample_raster(RID p_source_rd_texture, RID p_dest_texture, float p_luminance_multiplier, const Size2i &p_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_threshold = 1.0, float p_hdr_bleed_scale = 1.0);
+	void gaussian_glow_upsample_raster(RID p_source_rd_texture, RID p_dest_texture, RID p_blend_texture, float p_luminance_multiplier, const Size2i &p_source_size, const Size2i &p_dest_size, float p_level, float p_base_strength, bool p_use_debanding);
 
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
 	void make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);

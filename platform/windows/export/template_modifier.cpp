@@ -31,6 +31,8 @@
 #include "template_modifier.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/image.h"
 
 void TemplateModifier::ByteStream::save(uint8_t p_value, Vector<uint8_t> &r_bytes) const {
 	save(p_value, r_bytes, 1);
@@ -217,6 +219,11 @@ TemplateModifier::VersionInfo::VersionInfo() {
 	value_length = 52;
 }
 
+Vector<uint8_t> TemplateModifier::ManifestInfo::save() const {
+	Vector<uint8_t> bytes = manifest.to_utf8_buffer();
+	return bytes;
+}
+
 Vector<uint8_t> TemplateModifier::IconEntry::save() const {
 	Vector<uint8_t> bytes;
 	ByteStream::save(width, bytes);
@@ -347,10 +354,10 @@ uint32_t TemplateModifier::_snap(uint32_t p_value, uint32_t p_size) const {
 	return p_value + (p_value % p_size ? p_size - (p_value % p_size) : 0);
 }
 
-Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info) const {
+Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info, const ManifestInfo &p_manifest_info) const {
 	// 0x04, 0x00 as string length ICON in UTF16 and padding to 32 bits
 	const uint8_t ICON_DIRECTORY_STRING[] = { 0x04, 0x00, 0x49, 0x00, 0x43, 0x00, 0x4f, 0x00, 0x4e, 0x00, 0x00, 0x00 };
-	const uint16_t RT_ENTRY_COUNT = 3;
+	const uint16_t RT_ENTRY_COUNT = 4;
 	const uint32_t icon_count = p_group_icon.images.size();
 
 	ResourceDirectoryTable root_directory_table;
@@ -376,6 +383,12 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 	rt_version_entry.subdirectory = true;
 	resources.append_array(rt_version_entry.save());
 
+	ResourceDirectoryEntry rt_manifest_entry;
+	rt_manifest_entry.id = ResourceDirectoryEntry::MANIFEST;
+	rt_manifest_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE;
+	rt_manifest_entry.subdirectory = true;
+	resources.append_array(rt_manifest_entry.save());
+
 	ResourceDirectoryTable icon_table;
 	icon_table.id_entry_count = icon_count;
 	resources.append_array(icon_table.save());
@@ -395,7 +408,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 		ResourceDirectoryEntry language_icon_entry;
 		language_icon_entry.id = ResourceDirectoryEntry::ENGLISH;
-		language_icon_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + icon_count * 2 + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + i * ResourceDataEntry::SIZE;
+		language_icon_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + icon_count * 2 + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + i * ResourceDataEntry::SIZE;
 		resources.append_array(language_icon_entry.save());
 	}
 
@@ -416,7 +429,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 	ResourceDirectoryEntry group_icon_language_entry;
 	group_icon_language_entry.id = ResourceDirectoryEntry::ENGLISH;
-	group_icon_language_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + icon_count * ResourceDataEntry::SIZE;
+	group_icon_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + icon_count * ResourceDataEntry::SIZE;
 	resources.append_array(group_icon_language_entry.save());
 
 	ResourceDirectoryTable version_table;
@@ -435,8 +448,27 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 	ResourceDirectoryEntry version_language_entry;
 	version_language_entry.id = ResourceDirectoryEntry::ENGLISH;
-	version_language_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 1) * ResourceDataEntry::SIZE;
+	version_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 1) * ResourceDataEntry::SIZE;
 	resources.append_array(version_language_entry.save());
+
+	ResourceDirectoryTable manifest_table;
+	manifest_table.id_entry_count = 1;
+	resources.append_array(manifest_table.save());
+
+	ResourceDirectoryEntry manifest_entry;
+	manifest_entry.id = 1;
+	manifest_entry.data_offset = (7 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 5) * ResourceDirectoryEntry::SIZE;
+	manifest_entry.subdirectory = true;
+	resources.append_array(manifest_entry.save());
+
+	ResourceDirectoryTable manifest_language_table;
+	manifest_language_table.id_entry_count = 1;
+	resources.append_array(manifest_language_table.save());
+
+	ResourceDirectoryEntry manifest_language_entry;
+	manifest_language_entry.id = ResourceDirectoryEntry::ENGLISH;
+	manifest_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 2) * ResourceDataEntry::SIZE;
+	resources.append_array(manifest_language_entry.save());
 
 	Vector<uint8_t> icon_directory_string;
 	icon_directory_string.resize(sizeof(ICON_DIRECTORY_STRING));
@@ -449,6 +481,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 	}
 	data_entries.append(p_group_icon.save());
 	data_entries.append(p_version_info.save());
+	data_entries.append(p_manifest_info.save());
 
 	uint32_t offset = resources.size() + data_entries.size() * ResourceDataEntry::SIZE;
 
@@ -495,6 +528,24 @@ TemplateModifier::VersionInfo TemplateModifier::_create_version_info(const HashM
 	version_info.string_file_info = string_file_info;
 
 	return version_info;
+}
+
+TemplateModifier::ManifestInfo TemplateModifier::_create_manifest_info() const {
+	ManifestInfo manifest_info;
+	manifest_info.manifest = R"MANIFEST(<?xml version="1.0" encoding="utf-8"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+	<application xmlns="urn:schemas-microsoft-com:asm.v3">
+		<windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+			<ws2:longPathAware>true</ws2:longPathAware>
+		</windowsSettings>
+	</application>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'/>
+		</dependentAssembly>
+	</dependency>
+</assembly>)MANIFEST";
+	return manifest_info;
 }
 
 TemplateModifier::GroupIcon TemplateModifier::_create_group_icon(const String &p_icon_path) const {
@@ -594,10 +645,11 @@ Error TemplateModifier::_modify_template(const Ref<EditorExportPreset> &p_preset
 	GroupIcon group_icon = _create_group_icon(p_icon_path);
 
 	VersionInfo version_info = _create_version_info(_get_strings(p_preset));
+	ManifestInfo manifest_info = _create_manifest_info();
 
 	SectionEntry &resources_section_entry = section_entries.write[resource_index];
 	uint32_t old_resources_size_of_raw_data = resources_section_entry.size_of_raw_data;
-	Vector<uint8_t> resources = _create_resources(resources_section_entry.virtual_address, group_icon, version_info);
+	Vector<uint8_t> resources = _create_resources(resources_section_entry.virtual_address, group_icon, version_info, manifest_info);
 	resources_section_entry.virtual_size = resources.size();
 	resources.resize_initialized(_snap(resources.size(), BLOCK_SIZE));
 	resources_section_entry.size_of_raw_data = resources.size();

@@ -432,7 +432,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -1475,6 +1482,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 2, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -1532,7 +1542,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(atlas->size, mipmaps, false, atlas->reflection, i * 6, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = RendererSceneRenderRD::get_singleton()->reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -1804,7 +1814,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 }
 
 RD::DataFormat LightStorage::get_reflection_probe_color_format() {
-	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+	return RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format();
 }
 
 uint32_t LightStorage::get_reflection_probe_color_usage_bits() {

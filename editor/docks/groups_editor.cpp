@@ -204,6 +204,7 @@ void GroupsEditor::_update_tree() {
 	local_root->set_text(0, TTR("Scene Groups"));
 	local_root->set_icon(0, get_editor_theme_icon(SNAME("PackedScene")));
 	local_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+	local_root->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox"), EditorStringName(Editor)));
 	local_root->set_selectable(0, false);
 
 	List<StringName> scene_keys;
@@ -241,6 +242,7 @@ void GroupsEditor::_update_tree() {
 	global_root->set_text(0, TTR("Global Groups"));
 	global_root->set_icon(0, get_editor_theme_icon(SNAME("Environment")));
 	global_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+	global_root->set_custom_stylebox(0, get_theme_stylebox(SNAME("prop_subsection_stylebox"), EditorStringName(Editor)));
 	global_root->set_selectable(0, false);
 
 	for (const StringName &E : keys) {
@@ -515,7 +517,7 @@ void GroupsEditor::_confirm_add() {
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_confirm_rename() {
@@ -566,7 +568,7 @@ void GroupsEditor::_confirm_rename() {
 
 	undo_redo->commit_action();
 
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_confirm_delete() {
@@ -606,7 +608,7 @@ void GroupsEditor::_confirm_delete() {
 	undo_redo->add_undo_method(this, "_update_tree");
 
 	undo_redo->commit_action();
-	tree->grab_focus();
+	tree->grab_focus(true);
 }
 
 void GroupsEditor::_show_add_group_dialog() {

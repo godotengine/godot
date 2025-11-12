@@ -70,6 +70,10 @@ template <typename T>
 class Ref;
 template <typename T>
 class BitField;
+template <typename T>
+class TypedArray;
+template <typename K, typename V>
+class TypedDictionary;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -495,6 +499,10 @@ public:
 	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
 	template <typename T>
 	_FORCE_INLINE_ operator BitField<T>() const { return static_cast<T>(operator uint64_t()); }
+	template <typename T>
+	_FORCE_INLINE_ operator TypedArray<T>() const { return operator Array(); }
+	template <typename K, typename V>
+	_FORCE_INLINE_ operator TypedDictionary<K, V>() const { return operator Dictionary(); }
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -565,6 +573,12 @@ public:
 	template <typename T>
 	_FORCE_INLINE_ Variant(BitField<T> p_bitfield) :
 			Variant(static_cast<uint64_t>(p_bitfield)) {}
+	template <typename T>
+	_FORCE_INLINE_ Variant(const TypedArray<T> &p_typed_array) :
+			Variant(static_cast<const Array &>(p_typed_array)) {}
+	template <typename K, typename V>
+	_FORCE_INLINE_ Variant(const TypedDictionary<K, V> &p_typed_dictionary) :
+			Variant(static_cast<const Dictionary &>(p_typed_dictionary)) {}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
@@ -631,6 +645,7 @@ public:
 
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash);
 
 	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
@@ -645,6 +660,7 @@ public:
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
 	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
+	static Vector<uint32_t> get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method);
 
 	void callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
@@ -884,12 +900,9 @@ Vector<Variant> varray(VarArgs... p_args) {
 	return Vector<Variant>{ p_args... };
 }
 
-struct VariantHasher {
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
-struct VariantComparator {
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
+template <>
+struct HashMapComparatorDefault<Variant> {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 struct StringLikeVariantComparator {

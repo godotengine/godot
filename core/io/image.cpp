@@ -568,13 +568,12 @@ static bool _are_formats_compatible(Image::Format p_format0, Image::Format p_for
 
 void Image::convert(Format p_new_format) {
 	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_new_format));
+	ERR_FAIL_COND_MSG(Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format),
+			"Cannot convert to (or from) compressed formats. Use compress() and decompress() instead.");
 
 	if (data.is_empty() || p_new_format == format) {
 		return;
 	}
-
-	ERR_FAIL_COND_MSG(Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format),
-			"Cannot convert to (or from) compressed formats. Use compress() and decompress() instead.");
 
 	// Includes the main image.
 	const int mipmap_count = get_mipmap_count() + 1;
@@ -584,24 +583,23 @@ void Image::convert(Format p_new_format) {
 		Image new_img(width, height, mipmaps, p_new_format);
 
 		for (int mip = 0; mip < mipmap_count; mip++) {
-			Ref<Image> src_mip = get_image_from_mipmap(mip);
-			Ref<Image> new_mip = new_img.get_image_from_mipmap(mip);
+			int64_t src_mip_ofs, dst_mip_ofs;
+			int w, h;
+			_get_mipmap_offset_and_size(mip, src_mip_ofs, w, h);
+			new_img._get_mipmap_offset_and_size(mip, dst_mip_ofs, w, h);
 
-			for (int y = 0; y < src_mip->height; y++) {
-				for (int x = 0; x < src_mip->width; x++) {
-					new_mip->set_pixel(x, y, src_mip->get_pixel(x, y));
+			uint8_t *dst_mip_ptr = new_img.ptrw() + dst_mip_ofs;
+			const uint8_t *src_mip_ptr = ptr() + src_mip_ofs;
+
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					uint32_t mip_ofs = y * w + x;
+					new_img._set_color_at_ofs(dst_mip_ptr, mip_ofs, _get_color_at_ofs(src_mip_ptr, mip_ofs));
 				}
 			}
-
-			int64_t mip_offset = 0;
-			int64_t mip_size = 0;
-			new_img.get_mipmap_offset_and_size(mip, mip_offset, mip_size);
-
-			memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
 		}
 
 		_copy_internals_from(new_img);
-
 		return;
 	}
 
@@ -4575,14 +4573,18 @@ void Image::renormalize_uint8(uint8_t *p_rgb) {
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
 	n *= 255;
-	p_rgb[0] = CLAMP(int(n.x), 0, 255);
-	p_rgb[1] = CLAMP(int(n.y), 0, 255);
-	p_rgb[2] = CLAMP(int(n.z), 0, 255);
+	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 255);
+	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 255);
+	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 255);
 }
 
 void Image::renormalize_float(float *p_rgb) {
 	Vector3 n(p_rgb[0], p_rgb[1], p_rgb[2]);
+	n *= 2.0;
+	n -= Vector3(1, 1, 1);
 	n.normalize();
+	n += Vector3(1, 1, 1);
+	n *= 0.5;
 	p_rgb[0] = n.x;
 	p_rgb[1] = n.y;
 	p_rgb[2] = n.z;
@@ -4590,7 +4592,11 @@ void Image::renormalize_float(float *p_rgb) {
 
 void Image::renormalize_half(uint16_t *p_rgb) {
 	Vector3 n(Math::half_to_float(p_rgb[0]), Math::half_to_float(p_rgb[1]), Math::half_to_float(p_rgb[2]));
+	n *= 2.0;
+	n -= Vector3(1, 1, 1);
 	n.normalize();
+	n += Vector3(1, 1, 1);
+	n *= 0.5;
 	p_rgb[0] = Math::make_half_float(n.x);
 	p_rgb[1] = Math::make_half_float(n.y);
 	p_rgb[2] = Math::make_half_float(n.z);
@@ -4604,9 +4610,9 @@ void Image::renormalize_uint16(uint16_t *p_rgb) {
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
 	n *= 65535;
-	p_rgb[0] = CLAMP(int(n.x), 0, 65535);
-	p_rgb[1] = CLAMP(int(n.y), 0, 65535);
-	p_rgb[2] = CLAMP(int(n.z), 0, 65535);
+	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 65535);
+	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 65535);
+	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 65535);
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {

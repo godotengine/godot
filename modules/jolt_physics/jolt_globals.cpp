@@ -53,6 +53,9 @@ void *jolt_realloc(void *p_mem, size_t p_old_size, size_t p_new_size) {
 }
 
 void jolt_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_static(p_mem);
 }
 
@@ -61,6 +64,9 @@ void *jolt_aligned_alloc(size_t p_size, size_t p_alignment) {
 }
 
 void jolt_aligned_free(void *p_mem) {
+	if (unlikely(p_mem == nullptr)) {
+		return;
+	}
 	Memory::free_aligned_static(p_mem);
 }
 

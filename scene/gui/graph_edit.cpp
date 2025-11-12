@@ -44,6 +44,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
+#include "scene/resources/material.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 

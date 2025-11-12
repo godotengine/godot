@@ -182,7 +182,7 @@ const char32_t *TranslationDomain::_get_accented_version(char32_t p_character) c
 		return nullptr;
 	}
 
-	for (unsigned int i = 0; i < std::size(_character_to_accented); i++) {
+	for (unsigned int i = 0; i < std_size(_character_to_accented); i++) {
 		if (_character_to_accented[i].character == p_character) {
 			return _character_to_accented[i].accented_character;
 		}
@@ -202,7 +202,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			const StringName r = E->get_message(p_message, p_context);
@@ -225,7 +224,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			const StringName r = E->get_plural_message(p_message, p_message_plural, p_n, p_context);
@@ -246,7 +244,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 PackedStringArray TranslationDomain::get_loaded_locales() const {
 	PackedStringArray locales;
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		const String &locale = E->get_locale();
 		if (!locales.has(locale)) {
 			locales.push_back(locale);
@@ -255,13 +252,20 @@ PackedStringArray TranslationDomain::get_loaded_locales() const {
 	return locales;
 }
 
+bool TranslationDomain::has_translation_for_locale(const String &p_locale) const {
+	for (const Ref<Translation> &E : translations) {
+		if (E->get_locale() == p_locale) {
+			return true;
+		}
+	}
+	return false;
+}
+
 // Translation objects that could potentially be used for the given locale.
 HashSet<Ref<Translation>> TranslationDomain::get_potential_translations(const String &p_locale) const {
 	HashSet<Ref<Translation>> res;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
-
 		if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
 			res.insert(E);
 		}
@@ -274,8 +278,6 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
-
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			res = E;
@@ -289,6 +291,7 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 }
 
 void TranslationDomain::add_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND_MSG(p_translation.is_null(), "Invalid translation provided.");
 	translations.insert(p_translation);
 }
 

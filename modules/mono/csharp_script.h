@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
@@ -433,6 +434,11 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class GDMono;
 
 #ifdef TOOLS_ENABLED
+	Vector<String> pending_file_system_update_paths;
+	bool is_flushing_filesystem_updates = false;
+	void _queue_for_filesystem_update(String p_script_path);
+	void _flush_filesystem_updates();
+
 	EditorPlugin *godotsharp_editor = nullptr;
 
 	static void _editor_init_callback();
@@ -513,9 +519,6 @@ public:
 	}
 	String validate_path(const String &p_path) const override;
 	Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;

@@ -31,16 +31,14 @@
 #pragma once
 
 #include "core/extension/gdextension_interface.h"
+#include "core/object/gdtype.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
-#include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
 template <typename T>
@@ -497,21 +495,18 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
 public:                                                                                                                                     \
-	virtual const StringName *_get_class_namev() const override {                                                                           \
-		return &get_class_static();                                                                                                         \
+	virtual const GDType &_get_typev() const override {                                                                                     \
+		return get_gdtype_static();                                                                                                         \
+	}                                                                                                                                       \
+	static const GDType &get_gdtype_static() {                                                                                              \
+		static GDType *_class_static;                                                                                                       \
+		if (unlikely(!_class_static)) {                                                                                                     \
+			assign_type_static(&_class_static, #m_class, &super_type::get_gdtype_static());                                                 \
+		}                                                                                                                                   \
+		return *_class_static;                                                                                                              \
 	}                                                                                                                                       \
 	static const StringName &get_class_static() {                                                                                           \
-		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
-			assign_class_name_static(#m_class, _class_name_static);                                                                         \
-		}                                                                                                                                   \
-		return _class_name_static;                                                                                                          \
-	}                                                                                                                                       \
-	virtual bool is_class(const String &p_class) const override {                                                                           \
-		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
-			return true;                                                                                                                    \
-		}                                                                                                                                   \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
+		return get_gdtype_static().get_name();                                                                                              \
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
@@ -570,6 +565,7 @@ public:                                              \
                                                      \
 private:
 
+class ClassDB;
 class ScriptInstance;
 
 class Object {
@@ -641,7 +637,7 @@ private:
 		};
 
 		MethodInfo user;
-		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
 	friend struct _ObjectSignalLock;
@@ -651,7 +647,6 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif // DEBUG_ENABLED
-	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _initialize();
@@ -662,16 +657,21 @@ private:
 	bool _block_signals : 1;
 	bool _can_translate : 1;
 	bool _emitting : 1;
+	bool _predelete_ok : 1;
+
+public:
+	bool _is_queued_for_deletion : 1; // Set to true by SceneTree::queue_delete().
+
+private:
 #ifdef TOOLS_ENABLED
 	bool _edited : 1;
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
 	ScriptInstance *script_instance = nullptr;
-	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
-	mutable const StringName *_class_name_ptr = nullptr;
+	mutable const GDType *_gdtype_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -720,6 +720,9 @@ protected:
 		return can_die;
 	}
 
+	// Used in gdvirtual.gen.inc
+	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
+
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
@@ -735,6 +738,7 @@ protected:
 	void _notification_backward(int p_notification);
 	virtual void _notification_forwardv(int p_notification) {}
 	virtual void _notification_backwardv(int p_notification) {}
+	virtual String _to_string();
 
 	static void _bind_methods();
 	static void _bind_compatibility_methods() {}
@@ -777,9 +781,7 @@ protected:
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	virtual const StringName *_get_class_namev() const {
-		return &get_class_static();
-	}
+	virtual const GDType &_get_typev() const { return get_gdtype_static(); }
 
 	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
@@ -787,7 +789,7 @@ protected:
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 
-	friend class ClassDB;
+	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
 	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
@@ -799,6 +801,9 @@ protected:
 	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
 
 	virtual bool _uses_signal_mutex() const;
+
+	// Internal helper to get the current locale, taking into account the translation domain.
+	String _get_locale() const;
 
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
@@ -845,26 +850,25 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_class_name_static(const Span<char> &p_name, StringName &r_target);
+	static void assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type);
 
-	static const StringName &get_class_static() {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			assign_class_name_static("Object", _class_name_static);
+	static const GDType &get_gdtype_static() {
+		static GDType *_class_static;
+		if (unlikely(!_class_static)) {
+			assign_type_static(&_class_static, "Object", nullptr);
 		}
-		return _class_name_static;
+		return *_class_static;
 	}
+
+	const GDType &get_gdtype() const;
+
+	static const StringName &get_class_static() { return get_gdtype_static().get_name(); }
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	virtual bool is_class(const String &p_class) const {
-		if (_extension && _extension->is_class(p_class)) {
-			return true;
-		}
-		return (p_class == "Object");
-	}
+	bool is_class(const String &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	template <typename T>
@@ -916,7 +920,7 @@ public:
 		}
 	}
 
-	virtual String to_string();
+	String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
@@ -924,22 +928,22 @@ public:
 
 	/* SCRIPT */
 
-// When in debug, some non-virtual functions can be overridden for multithreaded guards.
+// When in debug, some non-virtual functions can be overridden.
 #ifdef DEBUG_ENABLED
-#define MTVIRTUAL virtual
+#define DEBUG_VIRTUAL virtual
 #else
-#define MTVIRTUAL
+#define DEBUG_VIRTUAL
 #endif // DEBUG_ENABLED
 
-	MTVIRTUAL void set_script(const Variant &p_script);
-	MTVIRTUAL Variant get_script() const;
+	DEBUG_VIRTUAL void set_script(const Variant &p_script);
+	DEBUG_VIRTUAL Variant get_script() const;
 
-	MTVIRTUAL bool has_meta(const StringName &p_name) const;
-	MTVIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
-	MTVIRTUAL void remove_meta(const StringName &p_name);
-	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
-	MTVIRTUAL void merge_meta_from(const Object *p_src);
+	DEBUG_VIRTUAL bool has_meta(const StringName &p_name) const;
+	DEBUG_VIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
+	DEBUG_VIRTUAL void remove_meta(const StringName &p_name);
+	DEBUG_VIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	DEBUG_VIRTUAL void get_meta_list(List<StringName> *p_list) const;
+	DEBUG_VIRTUAL void merge_meta_from(const Object *p_src);
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -950,9 +954,6 @@ public:
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
-
-	// Some script languages can't control instance creation, so this function eases the process.
-	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance);
 
 	void add_user_signal(const MethodInfo &p_signal);
 
@@ -966,18 +967,19 @@ public:
 		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	MTVIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
-	MTVIRTUAL bool has_signal(const StringName &p_name) const;
-	MTVIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
-	MTVIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
-	MTVIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
-	MTVIRTUAL int get_persistent_signal_connection_count() const;
-	MTVIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
+	DEBUG_VIRTUAL bool has_signal(const StringName &p_name) const;
+	DEBUG_VIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
+	DEBUG_VIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
+	DEBUG_VIRTUAL int get_persistent_signal_connection_count() const;
+	DEBUG_VIRTUAL uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const;
+	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
-	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
-	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
-	MTVIRTUAL bool has_connections(const StringName &p_signal) const;
+	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	DEBUG_VIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
+	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
@@ -996,7 +998,6 @@ public:
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
-	bool _is_queued_for_deletion = false; // Set to true by SceneTree::queue_delete().
 	bool is_queued_for_deletion() const;
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }

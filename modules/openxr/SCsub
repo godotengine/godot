@@ -29,7 +29,7 @@ elif env["platform"] == "linuxbsd":
 
     if env["wayland"] and env["opengl3"]:
         env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_EGL", "XRDEPENDENCIES_USE_GLAD"])
-        env_openxr.Prepend(CPPEXTPATH=["#thirdparty/glad"])
+        env_openxr.Prepend(CPPPATH=["#thirdparty/glad"])
 
     # FIXME: Review what needs to be set for Android and macOS.
     # FreeBSD uses non-standard getenv functions.
@@ -50,7 +50,7 @@ if env["builtin_openxr"]:
     thirdparty_dir = "#thirdparty/openxr"
 
     env_openxr.Prepend(
-        CPPEXTPATH=[
+        CPPPATH=[
             thirdparty_dir,
             thirdparty_dir + "/include",
             thirdparty_dir + "/src",
@@ -66,7 +66,7 @@ if env["builtin_openxr"]:
     if env["disable_exceptions"]:
         env_thirdparty.AppendUnique(CPPDEFINES=["XRLOADER_DISABLE_EXCEPTION_HANDLING", ("JSON_USE_EXCEPTION", 0)])
 
-    env_thirdparty.Append(CPPEXTPATH=[thirdparty_dir + "/src/loader"])
+    env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
 
     # add in external jsoncpp dependency
     thirdparty_jsoncpp_dir = thirdparty_dir + "/src/external/jsoncpp/src/lib_json/"

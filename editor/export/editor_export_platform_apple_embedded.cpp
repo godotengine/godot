@@ -32,7 +32,7 @@
 
 #include "core/io/json.h"
 #include "core/io/plist.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
@@ -321,7 +321,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
-	for (uint64_t i = 0; i < std::size(api_info); ++i) {
+	for (uint64_t i = 0; i < std_size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
 		String hint;
 		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
@@ -338,13 +338,13 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -640,7 +640,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$pbx_locale_build_reference", locale_files);
 	} else if (p_line.contains("$priv_collection")) {
 		bool section_opened = false;
-		for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
+		for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
 			bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 			bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 			bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -669,7 +669,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 				if (purposes != 0) {
 					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 					strnew += "\t\t\t\t<array>\n";
-					for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
+					for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
 						if (purposes & (1 << k)) {
 							strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 						}
@@ -701,7 +701,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		}
 	} else if (p_line.contains("$priv_api_types")) {
 		strnew += "\t<array>\n";
-		for (uint64_t j = 0; j < std::size(api_info); ++j) {
+		for (uint64_t j = 0; j < std_size(api_info); ++j) {
 			int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
 			if (api_access != 0) {
 				strnew += "\t\t<dict>\n";
@@ -1915,42 +1915,51 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
 
-	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-	if (translations.size() > 0) {
+	const String project_name = get_project_setting(p_preset, "application/config/name");
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+	const Vector<String> locales = domain->get_loaded_locales();
+
+	if (!locales.is_empty()) {
 		{
 			String fname = binary_dir + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
 			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
 			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
 		}
 
-		HashSet<String> languages;
-		for (const String &E : translations) {
-			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid() && tr->get_locale() != "en") {
-				languages.insert(tr->get_locale());
+		for (const String &lang : locales) {
+			if (lang == "en") {
+				continue;
 			}
-		}
 
-		for (const String &lang : languages) {
 			String fname = binary_dir + "/" + lang + ".lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			if (appnames.has(lang)) {
+
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				const String &name = domain->translate(project_name, String());
+				if (name != project_name) {
+					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+				}
+			} else if (appnames.has(lang)) {
 				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
 			}
+
 			if (camera_usage_descriptions.has(lang)) {
 				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
 			}
@@ -2799,10 +2808,4 @@ void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_
 }
 
 EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() {
-#ifdef MACOS_ENABLED
-	quit_request.set();
-	if (check_for_changes_thread.is_started()) {
-		check_for_changes_thread.wait_to_finish();
-	}
-#endif
 }

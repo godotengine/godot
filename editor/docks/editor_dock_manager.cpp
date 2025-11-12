@@ -248,8 +248,12 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 	Dictionary dock_drop_data = dock_slot[DOCK_SLOT_LEFT_BL]->get_viewport()->gui_get_drag_data();
 
 	// Check if we are dragging a dock.
-	const String type = dock_drop_data.get("type", "");
-	if (type == "tab_container_tab") {
+	if (dock_drop_data.get("type", "").operator String() != "tab") {
+		return nullptr;
+	}
+
+	const String tab_type = dock_drop_data.get("tab_type", "");
+	if (tab_type == "tab_container_tab") {
 		Node *source_tab_bar = EditorNode::get_singleton()->get_node(dock_drop_data["from_path"]);
 		if (!source_tab_bar) {
 			return nullptr;
@@ -294,20 +298,14 @@ void EditorDockManager::_dock_container_gui_input(const Ref<InputEvent> &p_input
 			return;
 		}
 
-		// Right click context menu.
-		dock_context_popup->set_dock(Object::cast_to<EditorDock>(p_dock_container->get_tab_control(tab_id)));
-		dock_context_popup->set_position(p_dock_container->get_screen_position() + mb->get_position());
-		dock_context_popup->popup();
-	}
-}
+		EditorDock *hovered_dock = Object::cast_to<EditorDock>(p_dock_container->get_tab_control(tab_id));
+		if (hovered_dock == nullptr) {
+			return;
+		}
 
-void EditorDockManager::_bottom_dock_button_gui_input(const Ref<InputEvent> &p_input, EditorDock *p_dock, Button *p_bottom_button) {
-	Ref<InputEventMouseButton> mb = p_input;
-
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		// Right click context menu.
-		dock_context_popup->set_dock(p_dock);
-		dock_context_popup->set_position(p_bottom_button->get_screen_position() + mb->get_position());
+		dock_context_popup->set_dock(hovered_dock);
+		dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + mb->get_position());
 		dock_context_popup->popup();
 	}
 }
@@ -463,8 +461,7 @@ void EditorDockManager::_dock_move_to_bottom(EditorDock *p_dock, bool p_visible)
 	p_dock->update_layout(EditorDock::DOCK_LAYOUT_HORIZONTAL);
 
 	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
-	Button *bottom_button = EditorNode::get_bottom_panel()->add_item(p_dock->get_display_title(), p_dock, p_dock->shortcut, true);
-	bottom_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_bottom_dock_button_gui_input).bind(bottom_button).bind(p_dock));
+	EditorNode::get_bottom_panel()->add_item(p_dock->get_display_title(), p_dock, p_dock->shortcut, true);
 	EditorNode::get_bottom_panel()->make_item_visible(p_dock, p_visible);
 }
 

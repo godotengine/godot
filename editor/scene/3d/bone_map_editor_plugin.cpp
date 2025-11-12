@@ -55,7 +55,7 @@ void BoneMapperButton::fetch_textures() {
 	set_offset(SIDE_BOTTOM, 0);
 
 	// Hack to avoid handle color darkening...
-	set_modulate(EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
+	set_modulate(EditorThemeManager::is_dark_icon_and_font() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25));
 
 	circle = memnew(TextureRect);
 	circle->set_texture(get_editor_theme_icon(SNAME("BoneMapperHandleCircle")));

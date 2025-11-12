@@ -37,6 +37,7 @@
 #include "scene/resources/text_line.h"
 
 class PanelContainer;
+class Timer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
@@ -184,6 +185,7 @@ class PopupMenu : public Popup {
 		int item_start_padding = 0;
 		int item_end_padding = 0;
 		int icon_max_width = 0;
+		int gutter_compact = 0;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> checked_disabled;
@@ -227,6 +229,8 @@ class PopupMenu : public Popup {
 	String _atr(int p_idx, const String &p_text) const;
 
 protected:
+	void _hover_active_submenu_item();
+
 	virtual void _pre_popup() override;
 	virtual Rect2i _popup_adjust_rect() const override;
 

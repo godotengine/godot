@@ -75,7 +75,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 			TreeItem *node_item = tree->create_item(root);
 
 			node_item->set_text(0, Object::cast_to<Node>(connection.signal.get_object())->get_name());
-			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.signal.get_object(), "Node"));
+			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.signal.get_object()));
 			node_item->set_selectable(0, false);
 			node_item->set_editable(0, false);
 
@@ -86,7 +86,7 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 			node_item->set_editable(1, false);
 
 			node_item->set_text(2, Object::cast_to<Node>(connection.callable.get_object())->get_name());
-			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.callable.get_object(), "Node"));
+			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.callable.get_object()));
 			node_item->set_selectable(2, false);
 			node_item->set_editable(2, false);
 		}
@@ -490,7 +490,11 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 				params.push_back(s_param.to_float());
 			}
 			if (valid_floats && params.size() == 3) {
-				params.push_back(1.0);
+				if (fn_name == ".from_rgba8") {
+					params.push_back(255);
+				} else {
+					params.push_back(1.0);
+				}
 			}
 			if (valid_floats && params.size() == 4) {
 				has_added_color = true;
@@ -1238,7 +1242,9 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
+	const CodeEdit *ce = code_editor->get_text_editor();
+	bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, enabled);
 }
 
 void ScriptTextEditor::_on_caret_moved() {
@@ -2842,17 +2848,9 @@ void ScriptTextEditor::_enable_code_editor() {
 	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);
-	warnings_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-	warnings_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	editor_box->add_child(errors_panel);
-	errors_panel->add_theme_font_override(
-			"normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
-	errors_panel->add_theme_font_size_override(
-			"normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
 
 	add_child(context_menu);
@@ -3160,7 +3158,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_function", TTRC("Go to Function..."), KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::F);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::J);
 
-	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::L);
+	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);

@@ -364,8 +364,8 @@ void OpenXRSpatialAnchorCapability::on_instance_created(const XrInstance p_insta
 		if (xr_result != XR_SUCCESS) {
 			// Check for stores for compatibility with beta runtimes.
 			// Lucky for us, related structs and enums are compatible.
-			print_verbose("OpenXR: xrEnumerateSpatialPersistenceScopesEXT is not supported, falling back to xrEnumerateSpatialPersistenceStoresEXT!")
-					xr_result = openxr_api->get_instance_proc_addr("xrEnumerateSpatialPersistenceStoresEXT", (PFN_xrVoidFunction *)&xrEnumerateSpatialPersistenceScopesEXT_ptr);
+			print_verbose("OpenXR: xrEnumerateSpatialPersistenceScopesEXT is not supported, falling back to xrEnumerateSpatialPersistenceStoresEXT!");
+			xr_result = openxr_api->get_instance_proc_addr("xrEnumerateSpatialPersistenceStoresEXT", (PFN_xrVoidFunction *)&xrEnumerateSpatialPersistenceScopesEXT_ptr);
 		}
 		ERR_FAIL_COND(XR_FAILED(xr_result));
 		//EXT_INIT_XR_FUNC(xrEnumerateSpatialPersistenceScopesEXT);

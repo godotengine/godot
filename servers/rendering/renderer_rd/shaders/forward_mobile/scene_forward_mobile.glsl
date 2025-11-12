@@ -1563,7 +1563,7 @@ void main() {
 		indirect_specular_light = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_vec), lod).rgb);
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-		indirect_specular_light *= sc_luminance_multiplier();
+		indirect_specular_light *= REFLECTION_MULTIPLIER;
 		indirect_specular_light *= half(scene_data.IBL_exposure_normalization);
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= half(scene_data.ambient_light_color_energy.a);
@@ -1585,7 +1585,7 @@ void main() {
 #else
 			hvec3 cubemap_ambient = hvec3(textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_dir, MAX_ROUGHNESS_LOD).rgb);
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-			cubemap_ambient *= sc_luminance_multiplier();
+			cubemap_ambient *= REFLECTION_MULTIPLIER;
 			cubemap_ambient *= half(scene_data.IBL_exposure_normalization);
 			ambient_light = mix(ambient_light, cubemap_ambient * half(scene_data.ambient_light_color_energy.a), half(scene_data.ambient_color_sky_mix));
 		}
@@ -2224,6 +2224,28 @@ void main() {
 #endif
 
 	frag_color = out_color;
+
+	if (sc_use_material_debanding()) {
+		// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+		// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+		// NOTE: `gl_FragCoord` is in pixels (i.e. not normalized UV).
+		// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+		// as the final step before quantization from floating point to integer values.
+
+		// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+		// Removed the time component to avoid passing time into this shader.
+		// This dither offset was chosen because it meshes nicely with the no-offset dither that
+		// is used for Viewport debanding.
+		const vec2 dither_offset = vec2(0.535, 8.715);
+		vec3 dither = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy + dither_offset));
+		dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+		// Subtract 0.5 to avoid slightly brightening the whole viewport.
+		// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+		// Assume that this shader always writes to a 10-bit buffer, so divide by 1023 to align
+		// to 10-bit quantization.
+		frag_color.rgb += (dither.rgb - 0.5) / 1023.0;
+	}
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

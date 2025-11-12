@@ -32,9 +32,12 @@
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
 #endif
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -94,7 +97,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < std::size(message_programs); k++) {
+		for (uint64_t k = 0; k < std_size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -776,7 +779,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < std::size(allowed_formats); i++) {
+	for (size_t i = 0; i < std_size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -968,6 +971,8 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 }
 
 void OS_LinuxBSD::run() {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_LinuxBSD::run");
 	if (!main_loop) {
 		return;
 	}

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/input/input_event.h"
+#include "core/io/resource.h"
 #include "core/string/node_path.h"
 #include "core/templates/iterable.h"
 #include "core/variant/typed_array.h"
@@ -132,6 +134,9 @@ public:
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> total_node_count;
 #endif
+	enum {
+		UNIQUE_SCENE_ID_UNASSIGNED = 0
+	};
 
 	void _update_process(bool p_enable, bool p_for_children);
 
@@ -193,7 +198,7 @@ private:
 		Node *parent = nullptr;
 		Node *owner = nullptr;
 		HashMap<StringName, Node *> children;
-		mutable bool children_cache_dirty = true;
+		mutable bool children_cache_dirty = false;
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
@@ -281,6 +286,8 @@ private:
 		mutable bool is_translation_domain_inherited : 1;
 		mutable bool is_translation_domain_dirty : 1;
 
+		int32_t unique_scene_id = UNIQUE_SCENE_ID_UNASSIGNED;
+
 		mutable NodePath *path_cache = nullptr;
 
 	} data;
@@ -308,6 +315,7 @@ private:
 	void _propagate_translation_domain_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
+	void _duplicate_scripts(const Node *p_original, Node *p_copy) const;
 	void _duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const;
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
@@ -400,6 +408,7 @@ protected:
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
 
 	void _validate_property(PropertyInfo &p_property) const;
+	virtual String _to_string() override;
 
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
@@ -527,6 +536,9 @@ public:
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
 
+	void set_unique_scene_id(int32_t p_unique_id);
+	int32_t get_unique_scene_id() const;
+
 	Window *get_window() const;
 	Window *get_non_popup_window() const;
 	Window *get_last_exclusive_window() const;
@@ -620,8 +632,6 @@ public:
 	bool is_part_of_edited_scene() const { return false; }
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
-
-	virtual String to_string() override;
 
 	/* NOTIFICATIONS */
 
@@ -866,6 +876,7 @@ public:
 	virtual void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const override;
 	virtual void get_all_signal_connections(List<Connection> *p_connections) const override;
 	virtual int get_persistent_signal_connection_count() const override;
+	virtual uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const override;
 	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
 
 	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;

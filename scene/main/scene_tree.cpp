@@ -37,6 +37,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
@@ -572,6 +573,7 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 }
 
 void SceneTree::initialize() {
+	GodotProfileZone("SceneTree::initialize");
 	ERR_FAIL_NULL(root);
 	MainLoop::initialize();
 	root->_set_tree(this);
@@ -1690,6 +1692,13 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
+	return change_scene_to_node(new_scene);
+}
+
+Error SceneTree::change_scene_to_node(Node *p_node) {
+	ERR_FAIL_NULL_V_MSG(p_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
+
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
 		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
@@ -1707,7 +1716,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene_id = new_scene->get_instance_id();
+	pending_new_scene_id = p_node->get_instance_id();
 	return OK;
 }
 
@@ -1922,6 +1931,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
 	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
+	ClassDB::bind_method(D_METHOD("change_scene_to_node", "node"), &SceneTree::change_scene_to_node);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 	ClassDB::bind_method(D_METHOD("unload_current_scene"), &SceneTree::unload_current_scene);
@@ -2086,7 +2096,7 @@ SceneTree::SceneTree() {
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
 	root->set_use_taa(use_taa);
 
-	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	root->set_use_debanding(use_debanding);
 
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);

@@ -16,7 +16,7 @@ namespace astc_6x6_hdr
 	{
 		// Important: The Delta ITP colorspace error metric we use internally makes several assumptions about the nature of the HDR RGB inputs supplied to the encoder.
 		// This encoder computes colorspace error in the ICtCp (or more accurately the delta ITP, where CT is scaled by .5 vs. ICtCp to become T) colorspace, so getting this correct is important.
-		// By default the encoder assumes the input is in absolute luminance (in nits or candela per square meter, cd/m²), specified as positive-only linear light RGB, using the REC 709 colorspace gamut (but NOT the sRGB transfer function, i.e. linear light).
+		// By default the encoder assumes the input is in absolute luminance (in nits or candela per square meter, cd/m^2), specified as positive-only linear light RGB, using the REC 709 colorspace gamut (but NOT the sRGB transfer function, i.e. linear light).
 		// If the m_rec2020_bt2100_color_gamut flag is true, the input colorspace is treated as REC 2020/BT.2100 (which is wider than 709).
 		// For SDR/LDR->HDR upconversion, the REC 709 sRGB input should be converted to linear light (sRGB->linear) and the resulting normalized linear RGB values scaled by either 80 or 100 nits (the luminance of a typical SDR monitor). 
 		// SDR upconversion to normalized [0,1] (i.e. non-absolute) luminances may work but is not supported because ITP errors will not be predicted correctly.

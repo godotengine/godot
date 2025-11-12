@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
+#include "scene/resources/shader.h"
 
 class AspectRatioContainer;
 class ColorMode;
@@ -167,11 +168,6 @@ public:
 	};
 
 private:
-	static inline Ref<Shader> wheel_shader;
-	static inline Ref<Shader> circle_shader;
-	static inline Ref<Shader> circle_ok_color_shader;
-	static inline Ref<Shader> rectangle_ok_color_hs_shader;
-	static inline Ref<Shader> rectangle_ok_color_hl_shader;
 	static inline List<Color> preset_cache;
 	static inline List<Color> recent_preset_cache;
 
@@ -432,9 +428,6 @@ public:
 	GridContainer *get_slider_container();
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
-
-	static void init_shaders();
-	static void finish_shaders();
 
 	void add_mode(ColorMode *p_mode);
 	void add_shape(ColorPickerShape *p_shape);

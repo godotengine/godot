@@ -33,8 +33,6 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#include <algorithm>
-
 #define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
@@ -609,6 +607,7 @@ public:
 	struct ShaderStageSPIRVData {
 		ShaderStage shader_stage = SHADER_STAGE_MAX;
 		Vector<uint8_t> spirv;
+		Vector<uint64_t> dynamic_buffers;
 	};
 
 	/*********************/
@@ -628,6 +627,8 @@ public:
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_MAX
 	};
 
@@ -1064,6 +1065,7 @@ public:
 		uint32_t fragment_output_mask = 0;
 		bool is_compute = false;
 		bool has_multiview = false;
+		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;
 

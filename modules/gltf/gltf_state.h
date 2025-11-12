@@ -51,6 +51,14 @@ class GLTFState : public Resource {
 	friend class GLTFDocument;
 	friend class GLTFNode;
 
+public:
+	enum HandleBinaryImageMode {
+		HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+	};
+
 protected:
 	String base_path;
 	String extract_path;
@@ -71,7 +79,7 @@ protected:
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
 
-	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
+	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -133,11 +141,13 @@ public:
 		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
-		return handle_binary_image;
+		return handle_binary_image_mode;
 	}
 	void set_handle_binary_image(int32_t p_handle_binary_image) {
-		handle_binary_image = p_handle_binary_image;
+		handle_binary_image_mode = (HandleBinaryImageMode)p_handle_binary_image;
 	}
+	HandleBinaryImageMode get_handle_binary_image_mode() { return handle_binary_image_mode; }
+	void set_handle_binary_image_mode(HandleBinaryImageMode p_handle_binary_image) { handle_binary_image_mode = p_handle_binary_image; }
 
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
@@ -251,3 +261,5 @@ public:
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
+
+VARIANT_ENUM_CAST(GLTFState::HandleBinaryImageMode);

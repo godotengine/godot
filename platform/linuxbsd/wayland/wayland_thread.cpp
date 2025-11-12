@@ -1622,6 +1622,10 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 	seat_state_update_cursor(ss);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer entered window %d.", ws->id));
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -1645,6 +1649,10 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	pd.pressed_button_mask.clear();
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer left window %d.", id));
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1657,6 +1665,10 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 	pd.position.y = wl_fixed_to_double(surface_y);
 
 	pd.motion_time = time;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
@@ -1704,6 +1716,10 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 
 	pd.button_time = time;
 	pd.button_serial = serial;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
@@ -1723,6 +1739,10 @@ void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointe
 	}
 
 	pd.button_time = time;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
@@ -3037,6 +3057,11 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			// Note that the main thread can still call wl_display_roundtrip as that
 			// method directly handles all events, effectively bypassing this polling
 			// loop and thus the mutex locking, avoiding a deadlock.
+			//
+			// WARNING: Never call `wl_display_roundtrip` inside event handlers or while
+			// this mutex isn't held! `wl_display_roundtrip` manually handles new events
+			// and if not properly gated it _will_ cause potentially stall-inducing race
+			// conditions. Ask me how I know.
 			MutexLock mutex_lock(data->mutex);
 
 			if (wl_display_dispatch_pending(data->wl_display) == -1) {
@@ -3516,7 +3541,7 @@ Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	return Ref<Message>();
 }
 
-void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void WaylandThread::window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id) {
 	ERR_FAIL_COND(windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
@@ -3525,8 +3550,7 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size.width = p_width;
-	ws.rect.size.height = p_height;
+	ws.rect.size = p_size;
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3579,6 +3603,13 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		if (registry.xdg_toplevel_icon_manager) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
 		}
+	}
+
+	if (p_parent_id != DisplayServer::INVALID_WINDOW_ID) {
+		// NOTE: It's important to set the parent ASAP to avoid misunderstandings with
+		// the compositor. For example, niri immediately resizes the window to full
+		// size as soon as it's configured if it's not parented to another toplevel.
+		window_set_parent(p_window_id, p_parent_id);
 	}
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
@@ -4419,8 +4450,6 @@ Error WaylandThread::init() {
 
 	thread_data.wl_display = wl_display;
 
-	events_thread.start(_poll_events_thread, &thread_data);
-
 	wl_registry = wl_display_get_registry(wl_display);
 
 	ERR_FAIL_NULL_V_MSG(wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
@@ -4498,6 +4527,8 @@ Error WaylandThread::init() {
 
 	// Update the cursor.
 	cursor_set_shape(DisplayServer::CURSOR_ARROW);
+
+	events_thread.start(_poll_events_thread, &thread_data);
 
 	initialized = true;
 	return OK;

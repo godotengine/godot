@@ -40,6 +40,8 @@
 
 #include <cstdlib>
 
+class MainLoop;
+
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
@@ -129,6 +131,8 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	static bool prefer_meta_over_ctrl();
 
 	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
 	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
@@ -223,6 +227,7 @@ public:
 
 	void ensure_user_data_dir();
 
+	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
 	virtual MainLoop *get_main_loop() const = 0;
 
 	virtual void yield();

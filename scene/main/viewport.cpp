@@ -272,17 +272,31 @@ void Viewport::_sub_window_update_order() {
 		return;
 	}
 
-	if (!gui.sub_windows[gui.sub_windows.size() - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-		int index = gui.sub_windows.size() - 1;
-
-		while (index > 0 && gui.sub_windows[index - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
-			--index;
+	// Reorder 'always on top' windows.
+	int last_index = gui.sub_windows.size() - 1;
+	for (int index = last_index, insert_index = last_index; index >= 0; index--) {
+		SubWindow sw = gui.sub_windows[index];
+		Window *parent_window = sw.window->get_parent_visible_window();
+		bool parent_is_always_on_top = (parent_window != nullptr) && parent_window->get_flag(Window::FLAG_ALWAYS_ON_TOP);
+		if (sw.window->get_flag(Window::FLAG_ALWAYS_ON_TOP) || (parent_is_always_on_top && sw.window->is_exclusive())) {
+			if (index != insert_index) {
+				gui.sub_windows.remove_at(index);
+				gui.sub_windows.insert(insert_index, sw);
+			}
+			insert_index--;
 		}
+	}
 
-		if (index != (gui.sub_windows.size() - 1)) {
-			SubWindow sw = gui.sub_windows[gui.sub_windows.size() - 1];
-			gui.sub_windows.remove_at(gui.sub_windows.size() - 1);
-			gui.sub_windows.insert(index, sw);
+	// Reorder exclusive children.
+	for (int parent_index = 0; parent_index < gui.sub_windows.size(); parent_index++) {
+		Window *exclusive_child = gui.sub_windows[parent_index].window->get_exclusive_child();
+		if (exclusive_child != nullptr && exclusive_child->is_visible()) {
+			int child_index = _sub_window_find(exclusive_child);
+			if (child_index < parent_index) {
+				SubWindow sw = gui.sub_windows[child_index];
+				gui.sub_windows.remove_at(child_index);
+				gui.sub_windows.insert(parent_index, sw);
+			}
 		}
 	}
 
@@ -534,11 +548,11 @@ void Viewport::_update_viewport_path() {
 }
 
 bool Viewport::_can_hide_focus_state() {
-	return Engine::get_singleton()->is_editor_hint() || !GLOBAL_GET_CACHED(bool, "gui/common/always_show_focus_state");
+	return Engine::get_singleton()->is_editor_hint() || GLOBAL_GET_CACHED(int, "gui/common/show_focus_state_on_pointer_event") < 2;
 }
 
 void Viewport::_on_settings_changed() {
-	if (!gui.hide_focus && _can_hide_focus_state()) {
+	if (!gui.hide_focus || _can_hide_focus_state()) {
 		return;
 	}
 
@@ -1118,7 +1132,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 	stretch_transform = stretch_transform_new;
 	font_oversampling = new_font_oversampling;
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (!use_xr) {
 #endif
 
@@ -1128,7 +1142,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 		}
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	} // if (!use_xr)
 #endif
 
@@ -2002,7 +2016,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
-			if (len > 10) {
+			if (len > gui.drag_threshold) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {
@@ -4122,6 +4136,16 @@ TypedArray<Window> Viewport::get_embedded_subwindows() const {
 	return windows;
 }
 
+void Viewport::set_drag_threshold(int p_threshold) {
+	ERR_MAIN_THREAD_GUARD
+	gui.drag_threshold = p_threshold;
+}
+
+int Viewport::get_drag_threshold() const {
+	ERR_READ_THREAD_GUARD_V(10);
+	return gui.drag_threshold;
+}
+
 void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
@@ -4768,6 +4792,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	}
 }
 
+#ifndef XR_DISABLED
 void Viewport::set_use_xr(bool p_use_xr) {
 	ERR_MAIN_THREAD_GUARD;
 	if (use_xr != p_use_xr) {
@@ -4794,6 +4819,7 @@ bool Viewport::is_using_xr() {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
+#endif // XR_DISABLED
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 	ERR_MAIN_THREAD_GUARD;
@@ -5017,6 +5043,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("get_embedded_subwindows"), &Viewport::get_embedded_subwindows);
 
+	ClassDB::bind_method(D_METHOD("set_drag_threshold", "threshold"), &Viewport::set_drag_threshold);
+	ClassDB::bind_method(D_METHOD("get_drag_threshold"), &Viewport::get_drag_threshold);
+
 	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);
 
@@ -5060,8 +5089,10 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
+#ifndef XR_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
+#endif // XR_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &Viewport::set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &Viewport::get_scaling_3d_mode);
@@ -5088,7 +5119,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+#ifndef XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+#endif // XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 #endif // _3D_DISABLED
@@ -5138,6 +5171,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_embed_subwindows"), "set_embedding_subwindows", "is_embedding_subwindows");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_drag_threshold"), "set_drag_threshold", "get_drag_threshold");
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");

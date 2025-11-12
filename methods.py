@@ -88,15 +88,19 @@ def redirect_emitter(target, source, env):
     Emitter to automatically redirect object/library build files to the `bin/obj` directory,
     retaining subfolder structure. External build files will attempt to retain subfolder
     structure relative to their environment's parent directory, sorted under `bin/obj/external`.
-    If `redirect_build_objects` is `False`, or an external build file isn't relative to the
-    passed environment, this emitter does nothing.
+    If `redirect_build_objects` is `False`, an external build file isn't relative to the passed
+    environment, or a file is being written directly into `bin`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
 
     redirected_targets = []
     for item in target:
-        if base_folder in (path := Path(item.get_abspath()).resolve()).parents:
+        path = Path(item.get_abspath()).resolve()
+
+        if path.parent == base_folder / "bin":
+            pass
+        elif base_folder in path.parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
@@ -725,11 +729,14 @@ def get_compiler_version(env):
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
-                if split[0] == "catalog_productDisplayVersion":
-                    sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                if split[0] == "catalog_productSemanticVersion":
+                    match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
+                    if match is not None:
+                        ret["major"] = int(match.group(1))
+                        ret["minor"] = int(match.group(2))
+                        ret["patch"] = int(match.group(3))
+                        # Semantic suffix (i.e. insiders+11116.177)
+                        ret["metadata2"] = match.group(4)
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":

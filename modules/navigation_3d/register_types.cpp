@@ -49,13 +49,14 @@
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif // DISABLE_DEPRECATED
 
-NavigationServer3D *new_navigation_server_3d() {
+static NavigationServer3D *_createGodotNavigation3DCallback() {
 	return memnew(GodotNavigationServer3D);
 }
 
 void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(_createGodotNavigation3DCallback));
+		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
 
 #ifndef DISABLE_DEPRECATED
 		_nav_mesh_generator = memnew(NavigationMeshGenerator);

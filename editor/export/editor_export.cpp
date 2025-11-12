@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/timer.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -48,7 +49,6 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "advanced_options", preset->are_advanced_options_enabled());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -142,8 +142,18 @@ void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_pla
 	should_reload_presets = true;
 }
 
-int EditorExport::get_export_platform_count() {
+int EditorExport::get_export_platform_count() const {
 	return export_platforms.size();
+}
+
+int EditorExport::get_export_platform_index_by_name(const String &p_name) {
+	for (int j = 0; j < get_export_platform_count(); j++) {
+		Ref<EditorExportPlatform> plat = get_export_platform(j);
+		if (!plat.is_null() && plat->get_name().nocasecmp_to(p_name) == 0) {
+			return j;
+		}
+	}
+	return -1;
 }
 
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
@@ -263,7 +273,6 @@ void EditorExport::load_config() {
 		}
 
 		preset->set_name(config->get_value(section, "name"));
-		preset->set_advanced_options_enabled(config->get_value(section, "advanced_options", false));
 		preset->set_runnable(config->get_value(section, "runnable"));
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 

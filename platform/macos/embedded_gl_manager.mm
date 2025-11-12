@@ -30,10 +30,10 @@
 
 #import "embedded_gl_manager.h"
 
+#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
+
 #import "drivers/gles3/storage/texture_storage.h"
 #import "platform_gl.h"
-
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
 #import <QuartzCore/QuartzCore.h>
 #include <dlfcn.h>

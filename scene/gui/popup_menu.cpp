@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -227,49 +228,50 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	minsize.width += panel->get_offset(SIDE_LEFT) - panel->get_offset(SIDE_RIGHT);
 	minsize.height += panel->get_offset(SIDE_TOP) - panel->get_offset(SIDE_BOTTOM);
 
-	float max_w = 0.0;
-	float icon_w = 0.0;
-	int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width()) + theme_cache.h_separation;
-	int accel_max_w = 0;
-	bool has_check = false;
+	real_t body_max_w = 0.0; // Indentation, text, and submenu arrow.
+	real_t icon_max_w = 0.0;
+	real_t accel_max_w = 0.0;
+	bool has_check_gutter = false;
+	bool gutter_compact = theme_cache.gutter_compact;
 
 	for (int i = 0; i < items.size(); i++) {
-		Size2 item_size;
 		_shape_item(i);
 
-		Size2 icon_size = _get_item_icon_size(i);
-		item_size.height = _get_item_height(i);
-		icon_w = MAX(icon_size.width, icon_w);
-
-		item_size.width += items[i].indent * theme_cache.indent;
+		icon_max_w = MAX(_get_item_icon_size(i).width, icon_max_w);
 
 		if (items[i].checkable_type && !items[i].separator) {
-			has_check = true;
+			has_check_gutter = true;
+			if (items[i].icon.is_valid()) {
+				gutter_compact = false;
+			}
 		}
 
-		item_size.width += items[i].text_buf->get_size().x;
-		item_size.height += theme_cache.v_separation;
-
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
-			int accel_w = theme_cache.h_separation * 2;
-			accel_w += items[i].accel_text_buf->get_size().x;
+			real_t accel_w = theme_cache.h_separation * 2 + items[i].accel_text_buf->get_size().x;
 			accel_max_w = MAX(accel_w, accel_max_w);
 		}
 
+		real_t body_w = items[i].indent * theme_cache.indent + items[i].text_buf->get_size().x;
 		if (items[i].submenu) {
-			item_size.width += theme_cache.submenu->get_width();
+			body_w += theme_cache.submenu->get_width();
 		}
+		body_max_w = MAX(body_max_w, body_w);
 
-		max_w = MAX(max_w, item_size.width);
-
-		minsize.height += item_size.height;
+		minsize.height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
-	int item_side_padding = theme_cache.item_start_padding + theme_cache.item_end_padding;
-	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
+	minsize.width += theme_cache.item_start_padding + body_max_w + accel_max_w + theme_cache.item_end_padding;
 
-	if (has_check) {
-		minsize.width += check_w;
+	const int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width());
+	if (gutter_compact) {
+		minsize.width += MAX(icon_max_w, check_w) + theme_cache.h_separation;
+	} else {
+		if (icon_max_w > 0) {
+			minsize.width += icon_max_w + theme_cache.h_separation;
+		}
+		if (has_check_gutter) {
+			minsize.width += check_w + theme_cache.h_separation;
+		}
 	}
 
 	if (is_inside_tree()) {
@@ -708,6 +710,9 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (!minimum_lifetime_timer->is_stopped()) {
 			// The mouse left the safe area, but came back again, so cancel the auto-closing.
 			minimum_lifetime_timer->stop();
+			if (PopupMenu *parent_pum = Object::cast_to<PopupMenu>(get_parent())) {
+				parent_pum->_hover_active_submenu_item();
+			}
 		}
 
 		if (mouse_over == -1 && !item_clickable_area.has_point(m->get_position())) {
@@ -764,9 +769,12 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 	int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].id >= 0 ? items[over].id : over);
 
 	if (id < 0) {
-		mouse_over = -1;
-		queue_accessibility_update();
-		control->queue_redraw();
+		// Only remove the hover if there's no open submenu, or the mouse is in an item that can't be hovered.
+		if (over >= 0 || !(mouse_over >= 0 && items[mouse_over].submenu && items[mouse_over].submenu->is_visible())) {
+			mouse_over = -1;
+			queue_accessibility_update();
+			control->queue_redraw();
+		}
 		return;
 	}
 
@@ -801,31 +809,29 @@ void PopupMenu::_draw_items() {
 	float display_width = control->get_size().width;
 
 	// Find the widest icon and whether any items have a checkbox, and store the offsets for each.
-	float icon_ofs = 0.0;
-	bool has_check = false;
+	real_t icon_max_w = 0.0;
+	real_t check_max_w = 0.0;
+	bool has_check_gutter = false;
+	bool gutter_compact = theme_cache.gutter_compact;
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].separator) {
 			continue;
 		}
 
-		Size2 icon_size = _get_item_icon_size(i);
-		icon_ofs = MAX(icon_size.width, icon_ofs);
+		icon_max_w = MAX(_get_item_icon_size(i).width, icon_max_w);
 
 		if (items[i].checkable_type) {
-			has_check = true;
+			has_check_gutter = true;
+			if (items[i].icon.is_valid()) {
+				gutter_compact = false;
+			}
 		}
 	}
-	if (icon_ofs > 0.0) {
-		icon_ofs += theme_cache.h_separation;
-	}
-
-	float check_ofs = 0.0;
-	if (has_check) {
+	if (has_check_gutter) {
 		for (int i = 0; i < 4; i++) {
-			check_ofs = MAX(check_ofs, check[i]->get_width());
-			check_ofs = MAX(check_ofs, uncheck[i]->get_width());
+			check_max_w = MAX(check_max_w, check[i]->get_width());
+			check_max_w = MAX(check_max_w, uncheck[i]->get_width());
 		}
-		check_ofs += theme_cache.h_separation;
 	}
 
 	Point2 ofs;
@@ -911,10 +917,11 @@ void PopupMenu::_draw_items() {
 					separator_ofs += icon_size.width + theme_cache.h_separation;
 				}
 			} else {
+				const real_t check_w = (gutter_compact || !has_check_gutter) ? 0 : (check_max_w + theme_cache.h_separation);
 				if (rtl) {
-					icon_pos = Size2(control->get_size().width - item_ofs.x - check_ofs - icon_size.width, item_ofs.y);
+					icon_pos = Size2(control->get_size().width - item_ofs.x - check_w - icon_size.width, item_ofs.y);
 				} else {
-					icon_pos = item_ofs + Size2(check_ofs, 0);
+					icon_pos = item_ofs + Size2(check_w, 0);
 				}
 			}
 
@@ -941,8 +948,16 @@ void PopupMenu::_draw_items() {
 				items[i].text_buf->draw(ci, text_pos, theme_cache.font_separator_color);
 			}
 		} else {
-			item_ofs.x += icon_ofs + check_ofs;
-
+			if (gutter_compact) {
+				item_ofs.x += MAX(icon_max_w, check_max_w) + theme_cache.h_separation;
+			} else {
+				if (icon_max_w > 0) {
+					item_ofs.x += icon_max_w + theme_cache.h_separation;
+				}
+				if (has_check_gutter) {
+					item_ofs.x += check_max_w + theme_cache.h_separation;
+				}
+			}
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
@@ -1017,11 +1032,12 @@ void PopupMenu::_shape_item(int p_idx) const {
 		} else {
 			items.write[p_idx].text_buf->set_direction((TextServer::Direction)items[p_idx].text_direction);
 		}
-		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, items[p_idx].language);
+		const String &lang = items[p_idx].language.is_empty() ? _get_locale() : items[p_idx].language;
+		items.write[p_idx].text_buf->add_string(items.write[p_idx].xl_text, font, font_size, lang);
 
 		items.write[p_idx].accel_text_buf->clear();
 		items.write[p_idx].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size);
+		items.write[p_idx].accel_text_buf->add_string(_get_accel_text(items.write[p_idx]), font, font_size, lang);
 		items.write[p_idx].dirty = false;
 	}
 }
@@ -1079,6 +1095,19 @@ Rect2i PopupMenu::_popup_adjust_rect() const {
 	current.size += Vector2(panel->get_offset(SIDE_LEFT) - panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_TOP) - panel->get_offset(SIDE_BOTTOM)) * get_content_scale_factor();
 
 	return current;
+}
+
+void PopupMenu::_hover_active_submenu_item() {
+	for (int i = 0; i < items.size(); i++) {
+		if (items[i].submenu && items[i].submenu->is_visible()) {
+			if (mouse_over != i) {
+				mouse_over = i;
+				queue_accessibility_update();
+				control->queue_redraw();
+			}
+			return;
+		}
+	}
 }
 
 void PopupMenu::add_child_notify(Node *p_child) {
@@ -1269,7 +1298,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_MOUSE_EXIT: {
-			if (mouse_over >= 0 && (!items[mouse_over].submenu || submenu_over != -1)) {
+			if (mouse_over >= 0 && (!items[mouse_over].submenu || !items[mouse_over].submenu->is_visible())) {
 				mouse_over = -1;
 				queue_accessibility_update();
 				control->queue_redraw();
@@ -3122,6 +3151,7 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_start_padding);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_end_padding);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, icon_max_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, gutter_compact);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked_disabled);
@@ -3228,14 +3258,19 @@ void PopupMenu::_pre_popup() {
 	}
 	real_t popup_scale = MIN(scale.x, scale.y);
 	set_content_scale_factor(popup_scale);
-	Size2 minsize = get_contents_minimum_size() * popup_scale;
-	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-	real_t max_h = get_max_size().height;
-	if (max_h > 0) {
-		minsize.height = MIN(minsize.height, max_h);
+	if (is_wrapping_controls()) {
+		Size2 minsize = get_contents_minimum_size() * popup_scale;
+		Size2 maxsize = get_max_size();
+		if (maxsize.height > 0) {
+			minsize.height = MIN(minsize.height, maxsize.height);
+		}
+		if (maxsize.width > 0) {
+			minsize.width = MIN(minsize.width, maxsize.width);
+		}
+		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+		reset_size(); // Shrinkwraps to min size.
 	}
-	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-	reset_size(); // Shrinkwraps to min size.
 }
 
 void PopupMenu::set_visible(bool p_visible) {
