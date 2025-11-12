@@ -151,6 +151,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
+	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
@@ -1001,6 +1003,19 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	_update_joypad_features(p_device);
 }
 
+bool Input::set_joy_light(int p_device, const Color &p_color) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->set_joy_light(p_color);
+}
+
+bool Input::has_joy_light(int p_device) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad && joypad->has_light;
+}
+
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
 	if (p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
@@ -1498,8 +1513,9 @@ void Input::_update_joypad_features(int p_device) {
 	if (!joypad || joypad->features == nullptr) {
 		return;
 	}
-	// Do something based on the features. For example, we can save the information about
-	// the joypad having motion sensors, LED light, etc.
+	if (joypad->features->has_joy_light()) {
+		joypad->has_light = true;
+	}
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
