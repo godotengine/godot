@@ -253,7 +253,8 @@
 			Maximum number of allowed redirects.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
-			The duration to wait in seconds before a request times out. If [member timeout] is set to [code]0.0[/code] then the request will never time out. For simple requests, such as communication with a REST API, it is recommended that [member timeout] is set to a value suitable for the server response time (e.g. between [code]1.0[/code] and [code]10.0[/code]). This will help prevent unwanted timeouts caused by variation in server response times while still allowing the application to detect when a request has timed out. For larger requests such as file downloads it is suggested the [member timeout] be set to [code]0.0[/code], disabling the timeout functionality. This will help to prevent large transfers from failing due to exceeding the timeout value.
+			The duration to wait before a request times out, in seconds (independent of [member Engine.time_scale]). If [member timeout] is set to [code]0.0[/code], the request will never time out.
+			For simple requests, such as communication with a REST API, it is recommended to set [member timeout] to a value suitable for the server response time (commonly between [code]1.0[/code] and [code]10.0[/code]). This will help prevent unwanted timeouts caused by variation in response times while still allowing the application to detect when a request has timed out. For larger requests such as file downloads, it is recommended to set [member timeout] to [code]0.0[/code], disabling the timeout functionality. This will help prevent large transfers from failing due to exceeding the timeout value.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
