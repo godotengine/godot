@@ -46,20 +46,17 @@ namespace GodotTools.OpenVisualStudio
 
             if (dte == null)
             {
-                // Open a new instance
-                dte = TryVisualStudioLaunch("VisualStudio.DTE.17.0");
+                // Open a new instance, preferring the newest installed VS
+                dte = TryVisualStudioLaunch("VisualStudio.DTE.18.0")   // VS 2026
+                    ?? TryVisualStudioLaunch("VisualStudio.DTE.17.0")  // VS 2022
+                    ?? TryVisualStudioLaunch("VisualStudio.DTE.16.0"); // VS 2019
 
                 if (dte == null)
                 {
-                    // Launch of VS 2022 failed, fallback to 2019
-                    dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
-
-                    if (dte == null)
-                    {
-                        Console.Error.WriteLine("Visual Studio not found");
-                        return 1;
-                    }
+                    Console.Error.WriteLine("Visual Studio not found");
+                    return 1;
                 }
+
 
                 dte.UserControl = true;
 
@@ -188,8 +185,10 @@ namespace GodotTools.OpenVisualStudio
                     if (ppszDisplayName == null)
                         continue;
 
-                    // The digits after the colon are the process ID
-                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-7].0:[0-9]"))
+                    // Match Visual Studio versions 16 (2019), 17 (2022), 18 (2026), or higher
+                    var match = Regex.Match(ppszDisplayName, @"!VisualStudio\.DTE\.(\d+)\.0:[0-9]+");
+
+                    if (!match.Success)
                         continue;
 
                     if (pprot.GetObject(moniker[0], out object ppunkObject) == 0)
