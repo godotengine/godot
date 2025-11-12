@@ -145,6 +145,7 @@ private:
 	CheckBox *deferred = nullptr;
 	CheckBox *one_shot = nullptr;
 	CheckBox *append_source = nullptr;
+	CheckBox *unique = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
@@ -193,6 +194,7 @@ public:
 	bool get_deferred() const;
 	bool get_one_shot() const;
 	bool get_append_source() const;
+	bool get_unique() const;
 	bool is_editing() const;
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
