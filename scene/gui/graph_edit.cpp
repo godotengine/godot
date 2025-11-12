@@ -730,7 +730,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		}
 		graph_element->connect("raise_request", callable_mp(this, &GraphEdit::_ensure_node_order_from).bind(graph_element));
 		graph_element->connect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resize_request).bind(graph_element));
-		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
+		if (connections_layer != nullptr) {
 			graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
 		}
 		graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
