@@ -128,6 +128,10 @@ String GDScriptWarning::get_message() const {
 			return "Integer division. Decimal part will be discarded.";
 		case NARROWING_CONVERSION:
 			return "Narrowing conversion (float is converted to int and loses precision).";
+		case BOOL_TO_NUMBER_IMPLICIT_CONVERSION:
+			return "Implicit cast from bool to number (int/float). If this is intended, cast the bool to the number type using \"int()\" or \"float()\".";
+		case NUMBER_TO_BOOL_IMPLICIT_CONVERSION:
+			return "Implicit cast from number (int/float) to bool. If this is intended, cast the number to the bool type using \"bool()\".";
 		case INT_AS_ENUM_WITHOUT_CAST:
 			return "Integer used when an enum value is expected. If this is intended, cast the integer to the enum type using the \"as\" keyword.";
 		case INT_AS_ENUM_WITHOUT_MATCH:
@@ -228,6 +232,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("ASSERT_ALWAYS_FALSE"),
 		PNAME("INTEGER_DIVISION"),
 		PNAME("NARROWING_CONVERSION"),
+		PNAME("BOOL_TO_NUMBER_IMPLICIT_CONVERSION"),
+		PNAME("NUMBER_TO_BOOL_IMPLICIT_CONVERSION"),
 		PNAME("INT_AS_ENUM_WITHOUT_CAST"),
 		PNAME("INT_AS_ENUM_WITHOUT_MATCH"),
 		PNAME("ENUM_VARIABLE_WITHOUT_DEFAULT"),
