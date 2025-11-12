@@ -200,6 +200,14 @@
 				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
 			</description>
 		</method>
+		<method name="has_joy_light" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad has an LED light that can change colors and/or brightness. See also [method set_joy_light].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
@@ -387,6 +395,16 @@
 			<description>
 				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_joy_light">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the joypad's LED light, if available, to the specified color. Returns [code]true[/code] if the operation was successful. See also [method has_joy_light].
+				[b]Note:[/b] There is no way to get the color of the light from a joypad. If you need to know the assigned color, store it separately.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="set_magnetometer">

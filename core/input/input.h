@@ -83,9 +83,8 @@ public:
 	public:
 		virtual ~JoypadFeatures() {}
 
-		// None at the moment, but later we can add new features like:
-		// virtual bool has_joy_accelerometer() const { return false; }
-		// virtual bool set_joy_accelerometer_enabled(bool p_enable) { return false; }
+		virtual bool has_joy_light() const { return false; }
+		virtual bool set_joy_light(const Color &p_color) { return false; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -184,6 +183,7 @@ private:
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		bool has_light = false;
 		Input::JoypadFeatures *features = nullptr;
 	};
 
@@ -359,6 +359,9 @@ public:
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
+	bool set_joy_light(int p_device, const Color &p_color);
+	bool has_joy_light(int p_device) const;
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
