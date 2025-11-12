@@ -210,7 +210,24 @@ void JoypadSDL::process_events() {
 						joypads[joy_id].guid,
 						joypad_info);
 
+				// Querying more information about the joypad
+
+				int joy_battery_percent;
+				SDL_PowerState joy_power_state = SDL_GetJoystickPowerInfo(joy, &joy_battery_percent);
+				SDL_JoystickConnectionState joy_connection_state = SDL_GetJoystickConnectionState(joy);
+				if (joy_power_state == SDL_POWERSTATE_ERROR) {
+					joy_power_state = SDL_POWERSTATE_UNKNOWN;
+				}
+				if (joy_connection_state == SDL_JOYSTICK_CONNECTION_INVALID) {
+					joy_connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+				}
+
 				Input::get_singleton()->set_joy_features(joy_id, &joypads[joy_id]);
+				// Godot constants are intentionally the same as SDL's
+				Input::get_singleton()->set_joy_device_type(joy_id, static_cast<JoyDeviceType>(SDL_GetJoystickType(joy)));
+				Input::get_singleton()->set_joy_power_state(joy_id, static_cast<JoyPowerState>(joy_power_state));
+				Input::get_singleton()->set_joy_battery_percent(joy_id, joy_battery_percent);
+				Input::get_singleton()->set_joy_connection_state(joy_id, static_cast<JoyConnectionState>(joy_connection_state));
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
@@ -255,6 +272,17 @@ void JoypadSDL::process_events() {
 							(HatMask)sdl_event.jhat.value // Godot hat masks are identical to SDL hat masks, so we can just use them as-is.
 					);
 					break;
+
+				case SDL_EVENT_JOYSTICK_BATTERY_UPDATED: {
+					// Gamepads also can have battery, so no SKIP_EVENT_FOR_GAMEPAD here
+
+					SDL_PowerState joy_power_state = sdl_event.jbattery.state;
+					if (joy_power_state == SDL_POWERSTATE_ERROR) {
+						joy_power_state = SDL_POWERSTATE_UNKNOWN;
+					}
+					Input::get_singleton()->set_joy_power_state(joy_id, static_cast<JoyPowerState>(sdl_event.jbattery.state)); // Godot constants are intentionally the same as SDL's
+					Input::get_singleton()->set_joy_battery_percent(joy_id, sdl_event.jbattery.percent);
+				} break;
 
 				case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 					float axis_value;
@@ -313,6 +341,80 @@ bool JoypadSDL::Joypad::has_joy_light() const {
 bool JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
 	Color linear = p_color.srgb_to_linear();
 	return SDL_SetJoystickLED(get_sdl_joystick(), linear.get_r8(), linear.get_g8(), linear.get_b8());
+}
+
+bool JoypadSDL::Joypad::has_joy_axis(JoyAxis p_axis) const {
+	SDL_Gamepad *gamepad = get_sdl_gamepad();
+	if (gamepad != nullptr) {
+		return SDL_GamepadHasAxis(gamepad, static_cast<SDL_GamepadAxis>(p_axis));
+	}
+
+	SDL_Joystick *joystick = get_sdl_joystick();
+	if (joystick != nullptr) {
+		return (int)p_axis >= 0 && (int)p_axis < SDL_GetNumJoystickAxes(joystick);
+	}
+
+	return false;
+}
+
+bool JoypadSDL::Joypad::has_joy_button(JoyButton p_button) const {
+	SDL_Gamepad *gamepad = get_sdl_gamepad();
+	if (gamepad != nullptr) {
+		return SDL_GamepadHasButton(gamepad, static_cast<SDL_GamepadButton>(p_button));
+	}
+
+	SDL_Joystick *joystick = get_sdl_joystick();
+	if (joystick != nullptr) {
+		return (int)p_button >= 0 && (int)p_button < SDL_GetNumJoystickButtons(joystick);
+	}
+
+	return false;
+}
+
+JoyModel JoypadSDL::Joypad::get_joy_model() const {
+	SDL_Gamepad *gamepad = SDL_GetGamepadFromID(sdl_instance_idx);
+	if (gamepad == nullptr) {
+		return JoyModel::UNKNOWN;
+	}
+
+	// Steam Deck's USB ID (see thirdparty/sdl/joystick/controller_list.h)
+	if (SDL_GetGamepadVendor(gamepad) == 0x28de && SDL_GetGamepadProduct(gamepad) == 0x1205) {
+		return JoyModel::STEAM_DECK;
+	}
+
+	SDL_GamepadType sdl_type = SDL_GetGamepadType(gamepad);
+	switch (sdl_type) {
+		case SDL_GAMEPAD_TYPE_XBOX360:
+			return JoyModel::XBOX360;
+		case SDL_GAMEPAD_TYPE_XBOXONE:
+			return JoyModel::XBOXONE;
+		case SDL_GAMEPAD_TYPE_PS3:
+			return JoyModel::PS3;
+		case SDL_GAMEPAD_TYPE_PS4:
+			return JoyModel::PS4;
+		case SDL_GAMEPAD_TYPE_PS5:
+			return JoyModel::PS5;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+			return JoyModel::SWITCH_PRO;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+			return JoyModel::JOYCON_LEFT;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+			return JoyModel::JOYCON_RIGHT;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+			return JoyModel::JOYCON_PAIR;
+		default:
+			break;
+	}
+
+	String joy_name = String(SDL_GetGamepadName(gamepad)).to_lower();
+
+	if (joy_name.contains("playstation")) {
+		return JoyModel::PLAYSTATION_GENERIC;
+	}
+
+	// Since the gamepad type is valid here and a more concrete scheme hasn't been found,
+	// assume it has ABXY button scheme.
+	return JoyModel::XBOX_GENERIC;
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
