@@ -42,6 +42,12 @@
 #include "core/os/os.h"
 #include "servers/display/display_server.h"
 
+#include "modules/modules_enabled.gen.h" // For gdscript.
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif
+
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
 	int last_perf_time = 0;
@@ -317,6 +323,21 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 			}
 		}
 	}
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+	const BreakOnError break_on_error = GLOBAL_GET("debug/settings/debugger/break_on_error");
+	if (break_on_error >= BREAK_ON_ERROR_ERRORS) {
+		String message = p_descr;
+		if (message.is_empty()) {
+			message = p_err;
+		}
+
+		const bool should_break = break_on_error == BREAK_ON_ERROR_ERRORS_AND_WARNINGS || p_type != ERR_HANDLER_WARNING;
+		if (should_break) {
+			GDScriptLanguage::get_singleton()->debug_break(message, true);
+		}
+	}
+#endif
 }
 
 void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type) {
