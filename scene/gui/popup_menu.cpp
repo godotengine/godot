@@ -839,7 +839,7 @@ void PopupMenu::_draw_items() {
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
 		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
-		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+		ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation / 2;
 
 		_shape_item(i);
 
@@ -1200,7 +1200,8 @@ void PopupMenu::_notification(int p_what) {
 			for (int i = 0; i < items.size(); i++) {
 				const Item &item = items.write[i];
 
-				ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
+				// Avoid discrepancy between min size and drawn items due to rounding.
+				ofs.y += i > 0 ? theme_cache.v_separation : theme_cache.v_separation - (theme_cache.v_separation / 2);
 
 				Point2 item_ofs = ofs;
 				if (item.accessibility_item_element.is_null()) {
