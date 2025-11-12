@@ -39,19 +39,22 @@
 #define TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 
-#ifndef TRACY_CALLSTACK
-#define TRACY_CALLSTACK 0
-#endif
-
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
 #define GodotProfileZone(m_zone_name) ZoneScopedN(m_zone_name)
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
+#ifndef TRACY_CALLSTACK
+#define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                                                                       \
+	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                                                                                  \
+	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
+	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), true)
+#else
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                                                                       \
 	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                                                                                  \
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
+#endif
 
 void godot_init_profiler();
 
