@@ -57,7 +57,6 @@ namespace GodotTools.OpenVisualStudio
                     return 1;
                 }
 
-
                 dte.UserControl = true;
 
                 try
