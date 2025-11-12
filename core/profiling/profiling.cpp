@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main_ios.mm                                                           */
+/*  profiling.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,51 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#include "profiling.h"
 
-#include "core/profiling/profiling.h"
-#import "drivers/apple_embedded/godot_app_delegate.h"
-#import "drivers/apple_embedded/main_utilities.h"
-#include "main/main.h"
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
+}
+#elif defined(GODOT_USE_PERFETTO)
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-#import <UIKit/UIKit.h>
-#include <cstdio>
+void godot_init_profiler() {
+	perfetto::TracingInitArgs args;
 
-static OS_IOS *os = nullptr;
+	args.backends |= perfetto::kSystemBackend;
 
-int apple_embedded_main(int argc, char **argv) {
-#if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+	perfetto::Tracing::Initialize(args);
+	perfetto::TrackEvent::Register();
+}
+#else
+void godot_init_profiler() {
+	// Stub
+}
 #endif
-
-	change_to_launch_dir(argv);
-
-	os = new OS_IOS();
-
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	argc = process_args(argc, argv, fargv);
-
-	godot_init_profiler();
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
-	}
-
-	os->initialize_modules();
-
-	return os->get_exit_code();
-}
-
-void apple_embedded_finish() {
-	Main::cleanup();
-	delete os;
-}

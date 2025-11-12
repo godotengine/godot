@@ -202,6 +202,14 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
 opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
+opts.Add(("profiler_path", "Path to the Profiler framework. Only tracy and perfetto are supported at the moment.", ""))
+opts.Add(
+    BoolVariable(
+        "profiler_sample_callstack",
+        "Profile random samples application-wide using a callstack based sampler.",
+        False,
+    )
+)
 
 # Advanced options
 opts.Add(
