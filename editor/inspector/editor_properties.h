@@ -34,7 +34,6 @@
 
 class CheckBox;
 class ColorPickerButton;
-class ConfirmationDialog;
 class CreateDialog;
 class EditorFileDialog;
 class EditorLocaleDialog;
@@ -42,6 +41,7 @@ class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MenuButton;
+class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
@@ -95,16 +95,12 @@ class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
 
-	bool monospaced = false;
 	bool updating = false;
 	bool string_name = false;
 	void _text_changed(const String &p_string);
 	void _text_submitted(const String &p_string);
-	void _update_theme();
 
 protected:
-	void _notification(int p_what);
-
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
@@ -112,27 +108,21 @@ public:
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
 	void set_secret(bool p_enabled);
-	void set_monospaced(bool p_monospaced);
 	EditorPropertyText();
 };
 
 class EditorPropertyMultilineText : public EditorProperty {
 	GDCLASS(EditorPropertyMultilineText, EditorProperty);
-
 	TextEdit *text = nullptr;
 
 	AcceptDialog *big_text_dialog = nullptr;
 	TextEdit *big_text = nullptr;
 	Button *open_big_text = nullptr;
 
-	bool expression = false;
-	bool monospaced = false;
-	bool wrap_lines = true;
-
 	void _big_text_changed();
 	void _text_changed();
 	void _open_big_text();
-	void _update_theme();
+	bool expression = false;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -140,13 +130,6 @@ protected:
 
 public:
 	virtual void update_property() override;
-
-	void set_monospaced(bool p_monospaced);
-	bool get_monospaced();
-
-	void set_wrap_lines(bool p_wrap_lines);
-	bool get_wrap_lines();
-
 	EditorPropertyMultilineText(bool p_expression = false);
 };
 
@@ -323,8 +306,6 @@ private:
 	int expansion_rows = 0;
 	const uint32_t HOVERED_INDEX_NONE = UINT32_MAX;
 	uint32_t hovered_index = HOVERED_INDEX_NONE;
-	bool dragging = false;
-	bool dragging_value_to_set = false;
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
@@ -669,6 +650,7 @@ class EditorPropertyColor : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 
 public:
 	virtual void update_property() override;
