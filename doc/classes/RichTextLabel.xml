@@ -120,7 +120,7 @@
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, calling this method before the document is fully loaded returns a value for the loaded part of the document, starting from [code]0[/code]. After the node is ready, it always returns at least [code]1[/code], even if the text is empty. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
