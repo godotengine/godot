@@ -97,6 +97,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
 		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
 		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.base_color.lerp(p_config.mono_color_inv, 0.3) * Color(1, 1, 1, 0.8));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
 #endif
