@@ -104,6 +104,62 @@ enum class JoyButton {
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
+// See SDL_GamepadType
+enum class JoyModel {
+	INVALID = -1,
+	XBOX_GENERIC = 0,
+	PLAYSTATION_GENERIC = 1,
+	NINTENDO_GENERIC = 2,
+	XBOX360 = 3,
+	XBOXONE = 4,
+	STEAM_DECK = 5,
+	PS3 = 6,
+	PS4 = 7,
+	PS5 = 8,
+	SWITCH_PRO = 9,
+	JOYCON_LEFT = 10,
+	JOYCON_RIGHT = 11,
+	JOYCON_PAIR = 12,
+};
+
+enum class JoyScheme {
+	INVALID = -1,
+	XBOX = 0,
+	PLAYSTATION = 1,
+	NINTENDO = 2,
+	JOYCON_HORIZONTAL = 3,
+};
+
+// See SDL_JoystickType (which is not the same as SDL_GamepadType)
+enum class JoyDeviceType {
+	UNKNOWN = 0,
+	GAMEPAD = 1,
+	WHEEL = 2,
+	ARCADE_STICK = 3,
+	FLIGHT_STICK = 4,
+	DANCE_PAD = 5,
+	GUITAR = 6,
+	DRUM_KIT = 7,
+	ARCADE_PAD = 8,
+	THROTTLE = 9,
+};
+
+// See SDL_PowerState
+enum class JoyPowerState {
+	UNKNOWN = 0,
+	ON_BATTERY = 1,
+	NO_BATTERY = 2,
+	CHARGING = 3,
+	FULL_BATTERY = 4,
+};
+
+// See SDL_JoystickConnectionState
+enum class JoyConnectionState {
+	UNKNOWN = 0,
+	WIRED = 1,
+	WIRELESS = 2,
+};
+
 enum class MIDIMessage {
 	NONE = 0,
 	NOTE_OFF = 0x8,

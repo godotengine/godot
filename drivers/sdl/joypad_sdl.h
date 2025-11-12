@@ -62,6 +62,8 @@ private:
 		bool supports_force_feedback = false;
 		uint64_t ff_effect_timestamp = 0;
 
+		JoyModel get_joy_model() const;
+
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};
