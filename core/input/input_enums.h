@@ -104,6 +104,64 @@ enum class JoyButton {
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
+// See also SDL_GamepadType. JoyModel enum is not the same as SDL_GamepadType,
+// but if new entries in SDL_GamepadType appear in the future, they should
+// be added here as well.
+enum class JoyModel {
+	UNKNOWN = 0,
+	XBOX_GENERIC = 1,
+	PLAYSTATION_GENERIC = 2,
+	NINTENDO_GENERIC = 3,
+	XBOX360 = 4,
+	XBOXONE = 5,
+	STEAM_DECK = 6,
+	PS3 = 7,
+	PS4 = 8,
+	PS5 = 9,
+	SWITCH_PRO = 10,
+	JOYCON_LEFT = 11,
+	JOYCON_RIGHT = 12,
+	JOYCON_PAIR = 13,
+};
+
+enum class JoyScheme {
+	UNKNOWN = 0,
+	XBOX = 1,
+	PLAYSTATION = 2,
+	NINTENDO = 3,
+	JOYCON_HORIZONTAL = 4,
+};
+
+// See SDL_JoystickType (which is not the same as SDL_GamepadType).
+enum class JoyDeviceType {
+	UNKNOWN = 0,
+	GAMEPAD = 1,
+	WHEEL = 2,
+	ARCADE_STICK = 3,
+	FLIGHT_STICK = 4,
+	DANCE_PAD = 5,
+	GUITAR = 6,
+	DRUM_KIT = 7,
+	ARCADE_PAD = 8,
+	THROTTLE = 9,
+};
+
+// See SDL_PowerState. SDL_POWERSTATE_ERROR equivalent was omitted for simplicity.
+enum class JoyPowerState {
+	UNKNOWN = 0,
+	ON_BATTERY = 1,
+	NO_BATTERY = 2,
+	CHARGING = 3,
+	FULL_BATTERY = 4,
+};
+
+// See SDL_JoystickConnectionState. SDL_JOYSTICK_CONNECTION_INVALID equivalent was omitted for simplicity.
+enum class JoyConnectionState {
+	UNKNOWN = 0,
+	WIRED = 1,
+	WIRELESS = 2,
+};
+
 enum class MIDIMessage {
 	NONE = 0,
 	NOTE_OFF = 0x8,
