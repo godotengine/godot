@@ -2821,7 +2821,11 @@ void ScriptEditor::apply_scripts() const {
 
 void ScriptEditor::reload_scripts(bool p_refresh_only) {
 	// Call deferred to make sure it runs on the main thread.
-	callable_mp(this, &ScriptEditor::_reload_scripts).call_deferred(p_refresh_only);
+	if (!Thread::is_main_thread()) {
+		callable_mp(this, &ScriptEditor::_reload_scripts).call_deferred(p_refresh_only);
+		return;
+	}
+	_reload_scripts(p_refresh_only);
 }
 
 void ScriptEditor::_reload_scripts(bool p_refresh_only) {
