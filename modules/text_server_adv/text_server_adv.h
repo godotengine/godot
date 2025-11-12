@@ -703,8 +703,8 @@ class TextServerAdvanced : public TextServerExtension {
 		int current_priority = 0;
 		uint32_t current_index = 0;
 		uint32_t font_count = 0;
-		const String *language;
-		const String *script_code;
+		String language;
+		String script_code;
 		bool color = false;
 		LocalVector<Pair<RID, int>> unprocessed_fonts;
 		LocalVector<RID> fonts;
@@ -712,8 +712,8 @@ class TextServerAdvanced : public TextServerExtension {
 
 		FontPriorityList(const TextServerAdvanced *p_text_server, const Array &p_fonts, const String &p_language, const String &p_script_code, bool p_color) {
 			text_server = p_text_server;
-			language = &p_language;
-			script_code = &p_script_code;
+			language = p_language;
+			script_code = p_script_code;
 			font_count = p_fonts.size();
 			color = p_color;
 
@@ -738,7 +738,7 @@ class TextServerAdvanced : public TextServerExtension {
 			if (color && text_server->_font_is_color(p_font)) {
 				return 0;
 			}
-			return text_server->_font_is_script_supported(p_font, *script_code) ? (text_server->_font_is_language_supported(p_font, *language) ? 0 : 1) : 2;
+			return text_server->_font_is_script_supported(p_font, script_code) ? (text_server->_font_is_language_supported(p_font, language) ? 0 : 1) : 2;
 		}
 
 		RID operator[](uint32_t p_index) {
@@ -767,11 +767,13 @@ class TextServerAdvanced : public TextServerExtension {
 			return RID();
 		}
 	};
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
+	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, const String &p_language, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
 	_FORCE_INLINE_ void _add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
+
+	String os_locale;
 
 	Mutex ft_mutex;
 
