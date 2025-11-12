@@ -236,15 +236,7 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
-	} else if (rendering_device_name.left(13) == "Adreno (TM) 5") {
-		// Adreno 5XX Compatibility (Adreno 506, 508, 509, 510, 512)
-		// These GPUs have shader object lifecycle issues when EGL context is preserved
-		// but surface is destroyed and recreated (e.g., when UI is occluded).
-		// This is particularly problematic on Android 9 with Snapdragon 625 (Adreno 506).
-		// Disabling EGL context preservation forces full context recreation and prevents
-		// shader object corruption crashes.
-		disable_egl_context_preserve_adreno5 = true;
-	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
+	} else if (rendering_device_name.contains("PowerVR")) {
 		disable_transform_feedback_shader_cache = true;
 	}
 

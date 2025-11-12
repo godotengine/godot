@@ -31,10 +31,8 @@
 @file:JvmName("VkThread")
 package org.godotengine.godot.vulkan
 
-import android.os.Build
 import android.util.Log
-import java.io.BufferedReader
-import java.io.FileReader
+import org.godotengine.godot.utils.isProblematicAdrenoGpu
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -46,40 +44,6 @@ import kotlin.concurrent.withLock
 internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vkRenderer: VkRenderer) : Thread(TAG) {
 	companion object {
 		private val TAG = VkThread::class.java.simpleName
-
-		private fun isProblematicAdrenoGpu(): Boolean {
-			try {
-				val hardware = Build.HARDWARE.lowercase()
-				val board = Build.BOARD.lowercase()
-
-				val isProblematicSoc = hardware.contains("qcom") && (
-					hardware.contains("msm8953") ||  // Snapdragon 625 (Adreno 506)
-					hardware.contains("msm8937") ||  // Snapdragon 430 (Adreno 505)
-					hardware.contains("msm8940") ||  // Snapdragon 435 (Adreno 505)
-					hardware.contains("msm8917") ||  // Snapdragon 425 (Adreno 505)
-					hardware.contains("msm8976") ||  // Snapdragon 652/653 (Adreno 510)
-					hardware.contains("msm8956") ||  // Snapdragon 650 (Adreno 510)
-					hardware.contains("sdm660") ||   // Snapdragon 660 (Adreno 509/512)
-					hardware.contains("sdm636") ||   // Snapdragon 636 (Adreno 509)
-					board.contains("msm8953") ||
-					board.contains("msm8937") ||
-					board.contains("msm8940") ||
-					board.contains("msm8917") ||
-					board.contains("msm8976") ||
-					board.contains("msm8956") ||
-					board.contains("sdm660") ||
-					board.contains("sdm636")
-				)
-
-				if (isProblematicSoc) {
-					return true
-				}
-
-				return false
-			} catch (e: Exception) {
-				return Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
-			}
-		}
 
 		private val shouldForceRestartOnSurfaceLoss = isProblematicAdrenoGpu()
 	}
