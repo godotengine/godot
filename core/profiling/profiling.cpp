@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_bottom_panel.h                                                 */
+/*  profiling.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "profiling.h"
 
-#include "scene/gui/tab_container.h"
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
+}
+#elif defined(GODOT_USE_PERFETTO)
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-class Button;
-class ConfigFile;
-class EditorToaster;
-class HBoxContainer;
+void godot_init_profiler() {
+	perfetto::TracingInitArgs args;
 
-class EditorBottomPanel : public TabContainer {
-	GDCLASS(EditorBottomPanel, TabContainer);
+	args.backends |= perfetto::kSystemBackend;
 
-	HBoxContainer *bottom_hbox = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	Button *pin_button = nullptr;
-	Button *expand_button = nullptr;
-
-	bool lock_panel_switching = false;
-	LocalVector<Control *> bottom_docks;
-	LocalVector<Ref<Shortcut>> dock_shortcuts;
-	HashMap<String, int> dock_offsets;
-
-	LocalVector<Button *> legacy_buttons;
-	void _on_button_visibility_changed(Button *p_button, Control *p_control);
-
-	void _repaint();
-	void _on_tab_changed(int p_idx);
-	void _pin_button_toggled(bool p_pressed);
-	void _expand_button_toggled(bool p_pressed);
-	void _update_center_split_offset();
-
-protected:
-	void _notification(int p_what);
-
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
-
-public:
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
-
-	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
-	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true, bool p_ignore_lock = false);
-	void move_item_to_end(Control *p_item);
-	void hide_bottom_panel();
-	void toggle_last_opened_bottom_panel();
-	void set_expanded(bool p_expanded);
-	void _theme_changed();
-
-	void set_bottom_panel_offset(int p_offset);
-	int get_bottom_panel_offset();
-
-	EditorBottomPanel();
-	~EditorBottomPanel();
-};
+	perfetto::Tracing::Initialize(args);
+	perfetto::TrackEvent::Register();
+}
+#else
+void godot_init_profiler() {
+	// Stub
+}
+#endif

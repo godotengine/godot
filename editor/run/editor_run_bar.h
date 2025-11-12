@@ -121,7 +121,7 @@ public:
 	bool is_playing() const;
 	String get_playing_scene() const;
 
-	Error start_native_device(int p_device_id);
+	Error start_native_device(int p_device_id) const;
 
 	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
 	void stop_child_process(OS::ProcessID p_pid);

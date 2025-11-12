@@ -3170,10 +3170,10 @@ void CanvasItemEditor::_draw_smart_snapping() {
 }
 
 void CanvasItemEditor::_draw_rulers() {
-	Color bg_color = get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor));
+	Color bg_color = get_theme_color(SNAME("ruler_color"), EditorStringName(Editor));
 	Color graduation_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)).lerp(bg_color, 0.5);
 	Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
-	font_color.a = 0.8;
+	font_color.a = 0.9;
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
 	real_t ruler_tick_scale = ruler_width_scaled / 15.0;
 	const String lang = _get_locale();
