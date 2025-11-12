@@ -412,7 +412,7 @@ void RigidBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_
 	ERR_FAIL_COND(p_inertia.y < 0);
 	ERR_FAIL_COND(p_inertia.z < 0);
 
-	ERR_FAIL_COND(center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM);
+	center_of_mass_mode = CENTER_OF_MASS_MODE_CUSTOM;
 
 	mass = p_mass;
 	center_of_mass = p_center_of_mass;
