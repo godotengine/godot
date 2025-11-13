@@ -676,7 +676,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		}
 
 		editor_main_screen->add_theme_style_override(SceneStringName(panel), theme->get_stylebox(SNAME("Content"), EditorStringName(EditorStyles)));
-		bottom_panel->_theme_changed();
+		callable_mp(bottom_panel, &EditorBottomPanel::_theme_changed).call_deferred();
 		distraction_free->set_button_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		distraction_free->add_theme_style_override(SceneStringName(pressed), theme->get_stylebox(CoreStringName(normal), "FlatMenuButton"));
 
