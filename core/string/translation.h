@@ -41,6 +41,13 @@ class Translation : public Resource {
 	RES_BASE_EXTENSION("translation");
 
 public:
+	enum HintType {
+		HINT_PLURAL,
+		HINT_COMMENTS,
+		HINT_LOCATIONS,
+		HINT_MAX
+	};
+
 	struct MessageKey {
 		StringName msgctxt;
 		StringName msgid;
@@ -59,6 +66,9 @@ private:
 	String locale = "en";
 
 	HashMap<MessageKey, Vector<StringName>, MessageKey> translation_map;
+
+	// These are not mandatory for i18n, but essential for tools.
+	HashMap<MessageKey, String, MessageKey> *hint_maps[HINT_MAX] = {};
 
 	mutable PluralRules *plural_rules_cache = nullptr;
 	String plural_rules_override;
@@ -93,8 +103,13 @@ public:
 	void set_plural_rules_override(const String &p_rules);
 	String get_plural_rules_override() const;
 
+	String get_hint(const StringName &p_src_text, const StringName &p_context, HintType p_type) const;
+	void set_hint(const StringName &p_src_text, const StringName &p_context, HintType p_type, const String &p_value);
+
 	// This method is not exposed to scripting intentionally. It is only used by TranslationLoaderPO and tests.
 	int get_nplurals() const;
 
 	~Translation();
 };
+
+VARIANT_ENUM_CAST(Translation::HintType);

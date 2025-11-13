@@ -214,6 +214,47 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(messages.size() == 0);
 }
 
+TEST_CASE("[Translation] Hints") {
+	Ref<Translation> translation;
+	translation.instantiate();
+
+	// Hints can only be set for existing messages.
+	ERR_PRINT_OFF;
+	translation->set_hint("Hello", StringName(), Translation::HINT_COMMENTS, "A friendly greeting");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_COMMENTS).is_empty());
+	ERR_PRINT_ON;
+
+	translation->add_message("Hello", "Hello");
+	translation->set_hint("Hello", StringName(), Translation::HINT_COMMENTS, "A friendly greeting");
+	translation->set_hint("Hello", StringName(), Translation::HINT_LOCATIONS, "test.tscn");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_COMMENTS) == "A friendly greeting");
+	CHECK(translation->get_hint("Hello", StringName(), Translation::HINT_LOCATIONS) == "test.tscn");
+
+	translation->add_message("Letter", "Letter", "Alphabet");
+	translation->set_hint("Letter", "Alphabet", Translation::HINT_LOCATIONS, "alphabet.gd:42");
+	CHECK(translation->get_hint("Letter", "Alphabet", Translation::HINT_LOCATIONS) == "alphabet.gd:42");
+
+	// How the hints are saved.
+	const Dictionary d = translation->call("_get_messages");
+	CHECK(d.has(0)); // The integer key constant is internal, not exposed.
+	const Dictionary expected = {
+		{
+				StringName("Hello"),
+				Dictionary{
+						{ Translation::HINT_COMMENTS, "A friendly greeting" },
+						{ Translation::HINT_LOCATIONS, "test.tscn" },
+				},
+		},
+		{
+				Array{ StringName("Alphabet"), StringName("Letter") },
+				Dictionary{
+						{ Translation::HINT_LOCATIONS, "alphabet.gd:42" },
+				},
+		}
+	};
+	CHECK(d[0] == expected);
+}
+
 TEST_CASE("[TranslationCSV] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
 
