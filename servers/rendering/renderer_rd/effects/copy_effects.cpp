@@ -358,7 +358,7 @@ CopyEffects::~CopyEffects() {
 	singleton = nullptr;
 }
 
-void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one) {
+void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one, bool p_sanitize_inf_nan) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -379,6 +379,10 @@ void CopyEffects::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, cons
 
 	if (p_alpha_to_one) {
 		copy.push_constant.flags |= COPY_FLAG_ALPHA_TO_ONE;
+	}
+
+	if (p_sanitize_inf_nan) {
+		copy.push_constant.flags |= COPY_FLAG_SANITIZE_INF_NAN;
 	}
 
 	copy.push_constant.section[0] = p_rect.position.x;
