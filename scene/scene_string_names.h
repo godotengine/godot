@@ -156,6 +156,11 @@ public:
 	const StringName state_started = "state_started";
 	const StringName state_finished = "state_finished";
 
+	const StringName item_edited = "item_edited";
+	const StringName check_propagated_to_item = "check_propagated_to_item";
+
+	const StringName timeout = "timeout";
+
 	const StringName FlatButton = "FlatButton";
 };
 

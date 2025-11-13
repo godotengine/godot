@@ -161,11 +161,11 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	for (const KeyValue<String, FoundLibInfo> &E : libs_found) {
 		if (E.value.count == 0) {
 			if (get_export_platform().is_valid()) {
-				get_export_platform()->add_message(EditorExportPlatform::EXPORT_MESSAGE_WARNING, TTR("GDExtension"), vformat(TTR("No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for your platform: %s"), E.key, p_path, String(", ").join(features_vector)));
+				get_export_platform()->add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("GDExtension"), vformat(TTR("No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for your platform: %s"), E.key, p_path, String(", ").join(features_vector)));
 			}
 		} else if (E.value.count > 1) {
 			if (get_export_platform().is_valid()) {
-				get_export_platform()->add_message(EditorExportPlatform::EXPORT_MESSAGE_WARNING, TTR("GDExtension"), vformat(TTR("Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."), E.key, p_path, String(", ").join(E.value.libs)));
+				get_export_platform()->add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("GDExtension"), vformat(TTR("Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."), E.key, p_path, String(", ").join(E.value.libs)));
 			}
 		}
 	}

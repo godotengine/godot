@@ -4935,6 +4935,8 @@ bool Main::iteration() {
 
 	bool exit = false;
 
+	ResourceLoader::_poll_async_pck_install();
+
 	// process all our active interfaces
 #ifndef XR_DISABLED
 	GodotProfileZoneGrouped(_profile_zone, "xr_server->_process");
