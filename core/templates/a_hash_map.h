@@ -477,6 +477,10 @@ public:
 	}
 
 	// Inserts an element without checking if it already exists.
+	//
+	// SAFETY: In dev builds, the insertions are checked and causes a crash on bad use.
+	// In release builds, the insertions are not checked, but bad use will cause duplicate
+	// keys, which also affect iterators. Bad use does not cause undefined behavior.
 	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
