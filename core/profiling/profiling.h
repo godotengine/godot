@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/typedefs.h"
 #include "profiling.gen.h"
 
 // This header provides profiling primitives (implemented as macros) for various backends.
@@ -46,8 +45,19 @@
 #if defined(GODOT_USE_TRACY)
 // Use the tracy profiler.
 
+#include "core/string/ustring.h"
+
 #define TRACY_ENABLE
+
 #include <tracy/Tracy.hpp>
+
+namespace Internal {
+inline const char *intern_string(const char *p_name) {
+	return p_name;
+}
+const char *intern_string(const String &p_name);
+const char *intern_string(const CharString &p_name);
+} //namespace Internal
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
@@ -66,11 +76,29 @@
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
 
+// Fully Dynamic Custom source location, and naming.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line)       \
+	const char *__godot_tracy_##m_varname##_name = Internal::intern_string(m_zone_name); \
+	const char *__godot_tracy_##m_varname##_func = Internal::intern_string(m_function);  \
+	const char *__godot_tracy_##m_varname##_file = Internal::intern_string(m_file);      \
+	tracy::ScopedZone __godot_tracy_##m_varname = tracy::ScopedZone(                     \
+			static_cast<uint32_t>(m_line),                                               \
+			__godot_tracy_##m_varname##_file, strlen(__godot_tracy_##m_varname##_file),  \
+			__godot_tracy_##m_varname##_func, strlen(__godot_tracy_##m_varname##_func),  \
+			__godot_tracy_##m_varname##_name, strlen(__godot_tracy_##m_varname##_name),  \
+			0x478cbf, /* godot_logo_blue */                                              \
+			-1, true);
+
+#define GodotProfileZoneRename(m_varname, m_zone_name)                                   \
+	const char *__godot_tracy_##m_varname##_name = Internal::intern_string(m_zone_name); \
+	ZoneNameV(__godot_tracy_##zone_##m_varname, __godot_tracy_##m_varname##_name, strlen(__godot_tracy_##m_varname##_name))
+
 // Memory allocation
 #define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
 
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 #elif defined(GODOT_USE_PERFETTO)
 // Use the perfetto profiler.
@@ -94,6 +122,7 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileFrameMark // TODO
 #define GodotProfileZone(m_zone_name) TRACE_EVENT("godot", m_zone_name);
+#define GodotProfileZoneRename(m_varname, m_zone_name) // TODO
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);                    \
 	PerfettoGroupedEventEnder __godot_perfetto_zone_##m_group_name
@@ -104,17 +133,23 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line) \\ TODO
+
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 #else
 // No profiling; all macros are stubs.
 
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 // Tell the profiling backend that a new frame has started.
 #define GodotProfileFrameMark
 // Defines a profile zone from here to the end of the scope.
 #define GodotProfileZone(m_zone_name)
+// Rename an existing zone
+#define GodotProfileZoneRename(m_varname, m_zone_name)
 // Defines a profile zone group. The first profile zone starts immediately,
 // and ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)
@@ -128,4 +163,10 @@ void godot_init_profiler();
 // Tell the profiling backend that an allocation was freed.
 // There must be a one to one correspondence of GodotProfileAlloc and GodotProfileFree calls.
 #define GodotProfileFree(m_ptr)
+
+// Define a zone with custom source information, for scripting, unique utf8
+// If m_zone_name is const char *, it must be a string literal.
+// If m_zone_name is String or CharString, there are no requirements to its lifetime.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line)
+
 #endif

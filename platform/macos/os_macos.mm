@@ -1144,6 +1144,7 @@ void OS_MacOS_NSApp::start_main() {
 	}
 
 	terminate();
+	godot_cleanup_profiler();
 }
 
 void OS_MacOS_NSApp::terminate() {
