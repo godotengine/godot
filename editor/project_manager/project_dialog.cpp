@@ -272,6 +272,7 @@ void ProjectDialog::_validate_path() {
 
 		if (is_subdirectory_or_equal) {
 			_set_message(TTRC("Cannot duplicate a project into itself."), MESSAGE_ERROR, target_path_input_type);
+			return;
 		}
 	}
 }
