@@ -295,7 +295,6 @@ void BaseButton::set_pressed(bool p_pressed) {
 		}
 		button_group->emit_signal(SceneStringName(pressed), this);
 	}
-	
 	_toggled(status.pressed);
 }
 
