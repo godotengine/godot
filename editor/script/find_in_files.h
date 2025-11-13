@@ -262,6 +262,7 @@ class FindInFilesContainer : public MarginContainer {
 		PANEL_CLOSE_ALL,
 	};
 
+	void _on_theme_changed();
 	void _on_tab_close_pressed(int p_tab);
 	void _update_bar_visibility();
 	void _bar_menu_option(int p_option);
@@ -276,7 +277,6 @@ class FindInFilesContainer : public MarginContainer {
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
 	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
