@@ -407,7 +407,7 @@ public:
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
-	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
+	void remove(const Iterator &p_iter) {
 		if (p_iter) {
 			erase(p_iter->key);
 		}

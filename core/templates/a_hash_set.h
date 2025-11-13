@@ -280,7 +280,7 @@ public:
 		TKey *end = nullptr;
 	};
 
-	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
+	void remove(const Iterator &p_iter) {
 		if (p_iter) {
 			erase(*p_iter);
 		}
