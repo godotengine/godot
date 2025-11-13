@@ -33,10 +33,6 @@
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
 
-class String;
-class StringName;
-class Variant;
-
 struct RawAHashTableMetadata {
 	uint32_t hash;
 	uint32_t element_idx;
