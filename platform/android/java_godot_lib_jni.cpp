@@ -141,6 +141,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 		}
 		delete godot_java;
 	}
+	godot_cleanup_profiler();
 }
 
 extern "C" {
