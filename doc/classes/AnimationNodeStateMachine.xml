@@ -169,7 +169,13 @@
 	</methods>
 	<members>
 		<member name="allow_transition_to_self" type="bool" setter="set_allow_transition_to_self" getter="is_allow_transition_to_self" default="false">
-			If [code]true[/code], allows teleport to the self state with [method AnimationNodeStateMachinePlayback.travel]. When the reset option is enabled in [method AnimationNodeStateMachinePlayback.travel], the animation is restarted. If [code]false[/code], nothing happens on the teleportation to the self state.
+			If [code]true[/code], allows to travel to the self state with [method AnimationNodeStateMachinePlayback.travel] as restart. When the reset option is enabled in [method AnimationNodeStateMachinePlayback.travel], the animation is restarted. If [code]false[/code], nothing happens on the traveling to the self state.
+		</member>
+		<member name="default_teleport_xfade_curve" type="Curve" setter="set_default_teleport_xfade_curve" getter="get_default_teleport_xfade_curve">
+			The default ease curve for better control over cross-fade  between the current state and the next state which is the target of the teleportation. See also [method AnimationNodeStateMachinePlayback.travel].
+		</member>
+		<member name="default_teleport_xfade_time" type="float" setter="set_default_teleport_xfade_time" getter="get_default_teleport_xfade_time" default="0.0">
+			The default time to cross-fade between the current state and the next state which is the target of the teleportation. See also [method AnimationNodeStateMachinePlayback.travel].
 		</member>
 		<member name="reset_ends" type="bool" setter="set_reset_ends" getter="are_ends_reset" default="false">
 			If [code]true[/code], treat the cross-fade to the start and end nodes as a blend with the RESET animation.

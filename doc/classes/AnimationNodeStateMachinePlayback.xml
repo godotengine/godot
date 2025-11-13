@@ -107,9 +107,13 @@
 			<return type="void" />
 			<param index="0" name="to_node" type="StringName" />
 			<param index="1" name="reset_on_teleport" type="bool" default="true" />
+			<param index="2" name="teleport_xfade_time" type="float" default="-1.0" />
+			<param index="3" name="teleport_xfade_curve" type="Curve" default="null" />
 			<description>
 				Transitions from the current state to another one, following the shortest path.
 				If the path does not connect from the current state, the animation will play after the state teleports.
+				If [param teleport_xfade_time] is less than [code]0[/code], the teleportation uses the value of [member AnimationNodeStateMachine.default_teleport_xfade_time] instead.
+				If [param teleport_xfade_curve] is [code]null[/code], the teleportation uses the value of [member AnimationNodeStateMachine.default_teleport_xfade_curve] instead.
 				If [param reset_on_teleport] is [code]true[/code], the animation is played from the beginning when the travel cause a teleportation.
 			</description>
 		</method>

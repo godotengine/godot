@@ -99,3 +99,10 @@ Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/method
 Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
 
 Duplicate method made const. Compatibility methods registered.
+
+
+GH-112709
+---------
+Validate extension JSON: Error: Field 'classes/AnimationNodeStateMachinePlayback/methods/travel/arguments': size changed value in new API, from 2 to 4.
+
+Optional argument added. Compatibility method registered.
