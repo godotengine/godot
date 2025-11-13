@@ -151,14 +151,16 @@ String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_
 	return vformat(TTR("Select %s"), p_base_types[0]);
 }
 
-void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback) {
+void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching) {
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
 	property_object = nullptr;
 	property_path = "";
 	item_selected_callback = p_item_selected_callback;
+	allow_type_switching = p_allow_type_switching;
 
+	is_cycling_items = false;
 	container->init(p_base_types);
 	container->set_instant_preview_toggle_visible(false);
 	_finish_dialog_setup(p_base_types);
@@ -173,6 +175,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 	property_path = p_path;
 	item_selected_callback = p_item_selected_callback;
 	initial_property_value = property_object->get(property_path);
+	allow_type_switching = false;
 
 	// Reset this, so that the property isn't updated immediately upon opening
 	// the window.
@@ -184,6 +187,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 }
 
 void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_base_types) {
+	set_process_shortcut_input(allow_type_switching);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 	set_title(get_dialog_title(p_base_types));
 	popup_centered_clamped(Size2(780, 650) * EDSCALE, 0.8f);
@@ -292,6 +296,55 @@ void EditorQuickOpenDialog::cancel_pressed() {
 	}
 	container->cleanup();
 	search_box->clear();
+}
+
+void EditorQuickOpenDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	// If the user is cycling through items (with up/down arrows), confirm selection when releasing the keys.
+	Ref<InputEventWithModifiers> iewm = p_event;
+	if (is_cycling_items && iewm.is_valid() && p_event->is_released() && iewm->get_modifiers_mask().is_empty()) {
+		ok_pressed();
+		return;
+	}
+
+	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	Vector<StringName> new_base_types;
+	if (EditorSettings *settings = EditorSettings::get_singleton()) {
+		if (settings->is_shortcut("editor/quick_open", p_event)) {
+			new_base_types.push_back("Resource");
+		} else if (settings->is_shortcut("editor/quick_open_scene", p_event)) {
+			new_base_types.push_back("PackedScene");
+		} else if (settings->is_shortcut("editor/quick_open_script", p_event)) {
+			new_base_types.push_back("Script");
+		}
+	}
+
+	if (new_base_types.size() != 1) {
+		return;
+	}
+
+	// Check if we're already showing this dialog type.
+	const Vector<StringName> &current_base_types = container->get_base_types();
+	if (current_base_types.size() == 1 && current_base_types[0] == new_base_types[0]) {
+		// Already showing the requested dialog type, move next.
+		Ref<InputEventKey> down_event = memnew(InputEventKey);
+		down_event->set_keycode(Key::DOWN);
+		down_event->set_pressed(true);
+		container->handle_search_box_input(down_event);
+		is_cycling_items = true;
+	} else {
+		// Switch to the new dialog type.
+		container->init(new_base_types);
+		container->set_instant_preview_toggle_visible(false);
+		is_cycling_items = false;
+		set_title(get_dialog_title(new_base_types));
+		search_box->clear();
+		search_box->grab_focus();
+	}
+
+	set_input_as_handled();
 }
 
 void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
@@ -1027,6 +1080,10 @@ String QuickOpenResultContainer::get_selected_path() const {
 	String path = ResourceUID::get_singleton()->get_id_path(candidates[selection_index].uid);
 	ERR_FAIL_COND_V_MSG(path.is_empty(), "", "Failed to get selected file path.");
 	return path;
+}
+
+const Vector<StringName> &QuickOpenResultContainer::get_base_types() const {
+	return base_types;
 }
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
