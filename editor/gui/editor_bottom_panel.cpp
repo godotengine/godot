@@ -238,7 +238,7 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control 
 }
 
 EditorBottomPanel::EditorBottomPanel() {
-	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_gui_input).bind(this));
+	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_popup).bind(this));
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);
