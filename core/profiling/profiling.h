@@ -66,6 +66,10 @@
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
 
+// Memory allocation
+#define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr) TracyFree(m_ptr)
+
 void godot_init_profiler();
 
 #elif defined(GODOT_USE_PERFETTO)
@@ -98,6 +102,8 @@ struct PerfettoGroupedEventEnder {
 	__godot_perfetto_zone_##m_group_name._end_now();       \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
 
+#define GodotProfileAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr)
 void godot_init_profiler();
 
 #else
@@ -117,5 +123,9 @@ void godot_init_profiler();
 // Replace the profile zone group's current profile zone.
 // The new zone ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name)
-
+// Tell the profiling backend that an allocation happened, with its location and size.
+#define GodotProfileAlloc(m_ptr, m_size)
+// Tell the profiling backend that an allocation was freed.
+// There must be a one to one correspondence of GodotProfileAlloc and GodotProfileFree calls.
+#define GodotProfileFree(m_ptr)
 #endif
