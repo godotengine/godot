@@ -271,6 +271,12 @@ void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_
 	_start_main(p_state, p_reset);
 }
 
+void AnimationNodeStateMachinePlayback::teleport(const StringName &p_state, bool p_reset, float p_xfade, const Ref<Curve> &p_curve) {
+	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
+	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
+	_start_main(p_state, p_reset, p_xfade, p_curve);
+}
+
 void AnimationNodeStateMachinePlayback::next() {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	_next_main();
@@ -289,12 +295,14 @@ void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, 
 	teleport_xfade_curve = p_teleport_curve;
 }
 
-void AnimationNodeStateMachinePlayback::_start_main(const StringName &p_state, bool p_reset) {
+void AnimationNodeStateMachinePlayback::_start_main(const StringName &p_state, bool p_reset, float p_xfade, const Ref<Curve> &p_curve) {
 	travel_request = StringName();
 	path.clear();
 	reset_request = p_reset;
 	start_request = p_state;
 	stop_request = false;
+	teleport_xfade_time = p_xfade;
+	teleport_xfade_curve = p_curve;
 }
 
 void AnimationNodeStateMachinePlayback::_next_main() {
@@ -421,7 +429,7 @@ void AnimationNodeStateMachinePlayback::_start_children(AnimationTree *p_tree, A
 			if (p_test_only) {
 				playback = playback->duplicate();
 			}
-			playback->_start_main(temp_path[i], i == temp_path.size() - 1 ? reset_request : false);
+			playback->_start_main(temp_path[i], i == temp_path.size() - 1 ? reset_request : false, teleport_xfade_time, teleport_xfade_curve);
 		}
 		reset_request = false;
 	}
@@ -728,6 +736,11 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
+	// Get teleport xfade info.
+	bool clear_fade = true;
+	teleport_xfade_time = std::signbit(teleport_xfade_time) ? p_state_machine->default_teleport_xfade_time : teleport_xfade_time;
+	teleport_xfade_curve = teleport_xfade_curve.is_null() ? p_state_machine->default_teleport_xfade_curve : teleport_xfade_curve;
+
 	// Check seek to 0 (means reset) by parent AnimationNode.
 	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
 		if (p_state_machine->state_machine_type != AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED || is_end() || !playing) {
@@ -774,6 +787,15 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 		}
 		// Teleport to start.
 		if (p_state_machine->states.has(start_request)) {
+			if (current != start_request && teleport_xfade_time > 0) {
+				// Need to retrieve current state here.
+				fading_from = current;
+				fadeing_from_nti = current_nti;
+				fading_pos = 0;
+				fading_time = teleport_xfade_time;
+				current_curve = teleport_xfade_curve;
+				clear_fade = false;
+			}
 			_start(p_state_machine);
 		} else {
 			StringName node = start_request;
@@ -781,12 +803,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 		}
 	}
 
-	bool clear_fade = true;
 	if (travel_request != StringName()) {
-		// Get teleport xfade info before _travel_children() since we need to propagate it to child GroupedStateMachinePlayback.
-		teleport_xfade_time = std::signbit(teleport_xfade_time) ? p_state_machine->default_teleport_xfade_time : teleport_xfade_time;
-		teleport_xfade_curve = teleport_xfade_curve.is_null() ? p_state_machine->default_teleport_xfade_curve : teleport_xfade_curve;
-
 		// Fix path.
 		String travel_target = _validate_path(p_state_machine, travel_request);
 		Vector<String> travel_path = travel_target.split("/");
@@ -810,20 +827,18 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(Animatio
 			// Can't travel, then teleport.
 			if (p_state_machine->states.has(temp_travel_request)) {
 				path.clear();
-				if (current != temp_travel_request || reset_request_on_teleport) {
-					if (!reset_request && !Math::is_zero_approx(teleport_xfade_time)) {
-						// Need to retrieve current state here.
-						fading_from = current;
-						fadeing_from_nti = current_nti;
-						fading_pos = 0;
-						fading_time = teleport_xfade_time;
-						current_curve = teleport_xfade_curve;
-						clear_fade = fading_time <= 0; // If both teleport_xfade_time and p_state_machine->default_teleport_xfade_time are less than or equal 0, clear fade.
-					}
-					_set_current(p_state_machine, temp_travel_request);
-					reset_request = reset_request_on_teleport;
-					teleport_request = true;
+				if (current != temp_travel_request && teleport_xfade_time > 0) {
+					// Need to retrieve current state here.
+					fading_from = current;
+					fadeing_from_nti = current_nti;
+					fading_pos = 0;
+					fading_time = teleport_xfade_time;
+					current_curve = teleport_xfade_curve;
+					clear_fade = false;
 				}
+				_set_current(p_state_machine, temp_travel_request);
+				reset_request = reset_request_on_teleport;
+				teleport_request = true;
 			} else {
 				ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
 			}
@@ -1224,6 +1239,7 @@ Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachinePlayback::_get
 
 void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("travel", "to_node", "reset_on_teleport", "teleport_xfade_time", "teleport_xfade_curve"), &AnimationNodeStateMachinePlayback::travel, DEFVAL(true), DEFVAL(-1.0), DEFVAL(Ref<Curve>()));
+	ClassDB::bind_method(D_METHOD("teleport", "node", "reset", "xfade_time", "xfade_curve"), &AnimationNodeStateMachinePlayback::teleport, DEFVAL(true), DEFVAL(-1.0), DEFVAL(Ref<Curve>()));
 	ClassDB::bind_method(D_METHOD("start", "node", "reset"), &AnimationNodeStateMachinePlayback::start, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("next"), &AnimationNodeStateMachinePlayback::next);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimationNodeStateMachinePlayback::stop);

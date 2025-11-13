@@ -93,6 +93,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 		Ref<Texture2D> play_icon_start;
 		Ref<Texture2D> play_icon_travel;
+		Ref<Texture2D> play_icon_teleport;
 		Ref<Texture2D> play_icon_auto;
 
 		Ref<Texture2D> animation_icon;

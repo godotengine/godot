@@ -302,7 +302,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	void _clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started);
 	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true, float p_teleport_xfade = -1.0, const Ref<Curve> &p_teleport_curve = Ref<Curve>());
-	void _start_main(const StringName &p_state, bool p_reset = true);
+	void _start_main(const StringName &p_state, bool p_reset = true, float p_xfade = 0.0, const Ref<Curve> &p_curve = Ref<Curve>()); // Default xfade should be 0.0, to distinguish start() and teleport().
 	void _next_main();
 	void _stop_main();
 
@@ -344,6 +344,7 @@ protected:
 
 public:
 	void travel(const StringName &p_state, bool p_reset_on_teleport = true, float p_teleport_xfade = -1.0, const Ref<Curve> &p_teleport_curve = Ref<Curve>());
+	void teleport(const StringName &p_state, bool p_reset = true, float p_xfade = -1.0, const Ref<Curve> &p_curve = Ref<Curve>());
 	void start(const StringName &p_state, bool p_reset = true);
 	void next();
 	void stop();
