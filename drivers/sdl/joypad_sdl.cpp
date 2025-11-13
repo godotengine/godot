@@ -282,6 +282,17 @@ void JoypadSDL::process_events() {
 							static_cast<JoyButton>(sdl_event.gbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
 							sdl_event.gbutton.down);
 					break;
+
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+					Input::get_singleton()->set_joy_touchpad_finger(
+							joy_id,
+							sdl_event.gtouchpad.touchpad,
+							sdl_event.gtouchpad.finger,
+							sdl_event.gtouchpad.pressure,
+							Vector2(sdl_event.gtouchpad.x, sdl_event.gtouchpad.y));
+					break;
 			}
 		}
 	}
@@ -300,6 +311,10 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+int JoypadSDL::Joypad::get_joy_num_touchpads() const {
+	return SDL_GetNumGamepadTouchpads(get_sdl_gamepad());
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {

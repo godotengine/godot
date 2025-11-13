@@ -147,6 +147,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_position", "device", "touchpad", "finger"), &Input::get_joy_touchpad_finger_position);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_pressure", "device", "touchpad", "finger"), &Input::get_joy_touchpad_finger_pressure);
+	ClassDB::bind_method(D_METHOD("get_joy_touchpad_fingers", "device", "touchpad"), &Input::get_joy_touchpad_fingers);
+	ClassDB::bind_method(D_METHOD("get_joy_num_touchpads", "device"), &Input::get_joy_num_touchpads);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
@@ -737,6 +741,43 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
+Vector2 Input::get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_touch.has(p_device) || !joy_touch[p_device].touchpad_fingers.has(p_touchpad) || !joy_touch[p_device].touchpad_fingers[p_touchpad].has(p_finger)) {
+		return Vector2();
+	}
+	return joy_touch[p_device].touchpad_fingers[p_touchpad][p_finger].position;
+}
+
+float Input::get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_touch.has(p_device) || !joy_touch[p_device].touchpad_fingers.has(p_touchpad) || !joy_touch[p_device].touchpad_fingers[p_touchpad].has(p_finger)) {
+		return 0.0f;
+	}
+	return joy_touch[p_device].touchpad_fingers[p_touchpad][p_finger].pressure;
+}
+
+TypedArray<int> Input::get_joy_touchpad_fingers(int p_device, int p_touchpad) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_touch.has(p_device) || !joy_touch[p_device].touchpad_fingers.has(p_touchpad)) {
+		return TypedArray<int>();
+	}
+
+	TypedArray<int> result;
+	for (auto &i : joy_touch[p_device].touchpad_fingers[p_touchpad]) {
+		result.append(i.key);
+	}
+	return result;
+}
+
+int Input::get_joy_num_touchpads(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (!joy_touch.has(p_device)) {
+		return 0;
+	}
+	return joy_touch[p_device].num_touchpads;
+}
+
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
@@ -999,6 +1040,16 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	}
 	joypad->features = p_features;
 	_update_joypad_features(p_device);
+}
+
+void Input::set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, float p_pressure, Vector2 p_value) {
+	_THREAD_SAFE_METHOD_
+	if (p_pressure > 0.0f) {
+		joy_touch[p_device].touchpad_fingers[p_touchpad][p_finger] = TouchpadFingerInfo{ p_value, p_pressure };
+	} else {
+		joy_touch[p_device].touchpad_fingers[p_touchpad].erase(p_finger);
+	}
+	// TODO: event
 }
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
@@ -1498,8 +1549,9 @@ void Input::_update_joypad_features(int p_device) {
 	if (!joypad || joypad->features == nullptr) {
 		return;
 	}
-	// Do something based on the features. For example, we can save the information about
-	// the joypad having motion sensors, LED light, etc.
+	if (joypad->features->get_joy_num_touchpads() > 0) {
+		joy_touch[p_device].num_touchpads = joypad->features->get_joy_num_touchpads();
+	}
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
