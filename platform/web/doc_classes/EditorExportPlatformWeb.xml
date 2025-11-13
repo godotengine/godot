@@ -12,6 +12,27 @@
 		<link title="Web documentation index">$DOCS_URL/tutorials/platform/web/index.html</link>
 	</tutorials>
 	<members>
+		<member name="async/initial_install_mode" type="int" setter="" getter="">
+			Determines the initial install mode.
+			- [b]Install Everything:[/b] Default behavior. Godot will download and install every exported resource before launching the game.
+			- [b]Only Install Required Resources:[/b] Async behavior. Use this setting to speed up considerably the loading time of your game. There is some important quirks to know about this mode, please read the note below.
+			[b]Note:[/b] About "Only Install Required Resources":
+			Godot will only download and install resources:
+			- Detected as essential to start the game by the export process.
+			- Those specified by filters or manually.
+			Developers need to call [method ResourceLoader.load_threaded_request] in order for Godot to download and install non-initial resources. Otherwise, Godot will fail to load the resource, and your game may not run as expected.
+		</member>
+		<member name="async/initial_install_only_required_resources/filters_to_exclude" type="String" setter="" getter="">
+			Filters to remove resources included by [member async/initial_install_only_required_resources/filters_to_include].
+			(comma-separated, e.g. [code]*.json, *.txt, docs/*[/code])
+		</member>
+		<member name="async/initial_install_only_required_resources/filters_to_include" type="String" setter="" getter="">
+			Filters to add resources to the initial install, even if they aren't detected as essential to start the game by the export process.
+			(comma-separated, e.g. [code]*.json, *.txt, docs/*[/code])
+		</member>
+		<member name="async/initial_install_only_required_resources/forced_resources" type="PackedStringArray" setter="" getter="">
+			Specify the resources to add to the initial install, even if they aren't detected as essential to start the game by the export process.
+		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
 			File path to the custom export template used for debug builds. If left empty, the default template is used.
 		</member>

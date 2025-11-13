@@ -103,6 +103,7 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
+	friend class Main;
 	friend class LoadToken;
 	friend class CoreBind::ResourceLoader;
 
@@ -148,6 +149,8 @@ private:
 
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
+	static void _poll_async_pck_install();
+
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -182,6 +185,7 @@ private:
 		String local_path;
 		String type_hint;
 		float progress = 0.0f;
+		float progress_async_pck_install = 0.0f;
 		float max_reported_progress = 0.0f;
 		uint64_t last_progress_check_main_thread_frame = UINT64_MAX;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
@@ -195,6 +199,8 @@ private:
 		bool need_wait : 1;
 		bool in_progress_check : 1; // Measure against recursion cycles in progress reporting. Cycles are not expected, but can happen due to how it's currently implemented.
 		bool use_sub_threads : 1;
+		bool is_async_pck : 1;
+		bool is_async_pck_installing : 1;
 
 		struct ResourceChangedConnection {
 			Resource *source = nullptr;
@@ -207,7 +213,9 @@ private:
 				awaited(false),
 				need_wait(true),
 				in_progress_check(false),
-				use_sub_threads(false) {}
+				use_sub_threads(false),
+				is_async_pck(false),
+				is_async_pck_installing(false) {}
 	};
 	static void _run_load_task(void *p_userdata);
 

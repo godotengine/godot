@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource.h"
 #include "core/io/resource_importer.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -271,9 +273,12 @@ ResourceLoader::LoadToken::~LoadToken() {
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
-	load_nesting++;
+	ERR_FAIL_COND_V_MSG(
+			OS::get_singleton()->async_pck_is_supported() && OS::get_singleton()->async_pck_is_file_installable(p_original_path) && !OS::get_singleton()->async_pck_is_file_installed(p_original_path),
+			Ref<Resource>(),
+			vformat(R"*("%s" is an AsyncPCK file that needs to be downloaded first before use. You need to call `ResourceLoader.load_threaded_request()` and wait for the file to load first.)*", p_original_path));
 
-	print_verbose(vformat("Loading resource: %s", p_path));
+	load_nesting++;
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -538,6 +543,12 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 	bool ignoring_cache = p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || p_cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 
+	LoadThreadMode thread_mode =
+#ifdef THREADS_ENABLED
+			p_thread_mode;
+#else
+			LOAD_THREAD_FROM_CURRENT;
+#endif // THREADS_ENABLED
 	Ref<LoadToken> load_token;
 	bool must_not_register = false;
 	ThreadLoadTask *load_task_ptr = nullptr;
@@ -581,7 +592,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 			load_task.local_path = local_path;
 			load_task.type_hint = p_type_hint;
 			load_task.cache_mode = p_cache_mode;
-			load_task.use_sub_threads = p_thread_mode == LOAD_THREAD_DISTRIBUTE;
+			load_task.use_sub_threads = thread_mode == LOAD_THREAD_DISTRIBUTE;
 			if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE) {
 				Ref<Resource> existing = ResourceCache::get_ref(local_path);
 				if (existing.is_valid()) {
@@ -618,7 +629,7 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		// the token anymore so it's released.
 		load_task_ptr->load_token->reference();
 
-		if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
+		if (thread_mode == LOAD_THREAD_FROM_CURRENT) {
 			// The current thread may happen to be a thread from the pool.
 			WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->get_caller_task_id();
 			if (tid != WorkerThreadPool::INVALID_TASK_ID) {
@@ -631,7 +642,15 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 		}
 	} // MutexLock(thread_load_mutex).
 
-	if (p_thread_mode == LOAD_THREAD_FROM_CURRENT) {
+	if (thread_mode == LOAD_THREAD_FROM_CURRENT) {
+		if (OS::get_singleton()->async_pck_is_supported() && OS::get_singleton()->async_pck_is_file_installable(p_path) && !OS::get_singleton()->async_pck_is_file_installed(p_path)) {
+			OS::get_singleton()->async_pck_install_file(p_path);
+			load_task_ptr->is_async_pck = true;
+			load_task_ptr->is_async_pck_installing = true;
+			load_task_ptr->status = THREAD_LOAD_IN_PROGRESS;
+			return load_token;
+		}
+
 		_run_load_task(load_task_ptr);
 	}
 
@@ -693,7 +712,20 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 
 		status = load_task_ptr->status;
 		if (r_progress) {
-			*r_progress = _dependency_get_progress(local_path);
+			if (load_task_ptr->is_async_pck) {
+#ifdef THREADS_ENABLED
+				if (load_task_ptr->is_async_pck_installing) {
+					*r_progress = (float)load_task_ptr->progress_async_pck_install / 2.0f;
+				} else {
+					*r_progress = 0.5 + _dependency_get_progress(local_path);
+				}
+#else
+				// There's no dependency progress possible, as the actual load must be done is sync.
+				*r_progress = load_task_ptr->progress_async_pck_install;
+#endif // THREADS_ENABLED
+			} else {
+				*r_progress = _dependency_get_progress(local_path);
+			}
 		}
 
 		// Support userland polling in a loop on the main thread.
@@ -719,6 +751,11 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		*r_error = OK;
 	}
 
+	if (OS::get_singleton()->async_pck_is_supported() && OS::get_singleton()->async_pck_is_file_installable(p_path) && !OS::get_singleton()->async_pck_is_file_installed(p_path)) {
+		*r_error = FAILED;
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat(R"*("%s" is an AsyncPCK file that needs to be downloaded first before use. You need to call `ResourceLoader.load_threaded_request()` and wait for the file to load first.)*", p_path));
+	}
+
 	Ref<Resource> res;
 	{
 		MutexLock thread_load_lock(thread_load_mutex);
@@ -734,6 +771,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		LoadToken *load_token = user_load_tokens[p_path];
 		DEV_ASSERT(load_token->user_rc >= 1);
 
+#ifdef THREADS_ENABLED
 		// Support userland requesting on the main thread before the load is reported to be complete.
 		if (Thread::is_main_thread() && !load_token->local_path.is_empty()) {
 			ThreadLoadTask *load_task_ptr;
@@ -762,6 +800,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 				}
 			}
 		}
+#endif // THREADS_ENABLED
 
 		res = _load_complete_inner(*load_token, r_error, thread_load_lock);
 
@@ -941,6 +980,26 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 	}
 
 	return resource;
+}
+
+void ResourceLoader::_poll_async_pck_install() {
+	for (KeyValue<String, ThreadLoadTask> &KV : thread_load_tasks) {
+		if (!KV.value.is_async_pck || !KV.value.is_async_pck_installing) {
+			continue;
+		}
+
+		Dictionary status = OS::get_singleton()->async_pck_install_file_get_status(KV.value.local_path);
+		KV.value.progress_async_pck_install = (float)status["progress_ratio"];
+
+		if (status["status"] == "STATUS_ERROR") {
+			KV.value.is_async_pck_installing = false;
+			KV.value.resource = Ref<Resource>();
+			KV.value.status = THREAD_LOAD_FAILED;
+		} else if (status["status"] == "STATUS_INSTALLED") {
+			KV.value.is_async_pck_installing = false;
+			_run_load_task(&KV.value);
+		}
+	}
 }
 
 bool ResourceLoader::_ensure_load_progress() {

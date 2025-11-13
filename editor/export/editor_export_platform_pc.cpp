@@ -152,7 +152,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	if (!DirAccess::exists(p_path.get_base_dir())) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
 	}
 
@@ -168,7 +168,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), vformat(TTR("Template file not found: \"%s\"."), template_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -196,7 +196,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		}
 	}
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
 		return err;
 	}
 
@@ -218,7 +218,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
 			return ERR_INVALID_PARAMETER;
 		}
 
@@ -244,13 +244,13 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 				if (err == OK) {
 					err = da->copy_dir(src_path, target_path, -1, true);
 					if (err != OK) {
-						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+						add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
 					}
 				}
 			} else {
 				err = da->copy(src_path, target_path);
 				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
 				}
 				if (err == OK) {
 					err = sign_shared_object(p_preset, p_debug, target_path);

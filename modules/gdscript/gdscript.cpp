@@ -2940,22 +2940,43 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 	return "";
 }
 
-void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *r_dependencies, bool p_add_types) {
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
 
-	String source = file->get_as_utf8_string();
-	if (source.is_empty()) {
-		return;
-	}
-
+	Error err;
 	GDScriptParser parser;
-	if (OK != parser.parse(source, p_path, false)) {
+
+	if (p_path.ends_with(".gd")) {
+		String source = file->get_as_utf8_string();
+		if (source.is_empty()) {
+			return;
+		}
+		err = parser.parse(source, p_path, false);
+	} else {
+		// Path ends with ".gdc".
+		PackedByteArray source;
+		uint64_t source_size = FileAccess::get_size(p_path);
+		source.resize(source_size);
+		uint64_t actual_size = file->get_buffer(source.ptrw(), FileAccess::get_size(p_path));
+		if (source_size != actual_size) {
+			source.resize(actual_size);
+		}
+
+		err = parser.parse_binary(source, p_path);
+	}
+
+	if (err != OK) {
 		return;
 	}
 
-	for (const String &E : parser.get_dependencies()) {
-		p_dependencies->push_back(E);
+	GDScriptAnalyzer analyzer(&parser);
+	if (OK != analyzer.analyze()) {
+		return;
+	}
+
+	for (const String &dependency : parser.get_dependencies()) {
+		r_dependencies->push_back(dependency);
 	}
 }
 

@@ -30,6 +30,44 @@
 
 const GodotRuntime = {
 	$GodotRuntime: {
+		_getConfigFileAsJsonCallback: null,
+
+		getConfigFileFromString: function (pConfigFileDataAsString) {
+			if (pConfigFileDataAsString.length == 0) {
+				return null;
+			}
+			if (GodotRuntime._getConfigFileAsJsonCallback == null) {
+				GodotRuntime.error('Could not get config file as JSON, callback not yet set.');
+				return null;
+			}
+			globalThis['GodotRuntime'] = GodotRuntime;
+			globalThis['HEAPU32'] = HEAPU32;
+			globalThis['HEAPU8'] = HEAPU8;
+			globalThis['HEAP8'] = HEAP8;
+
+			let configFileDataPtr = GodotRuntime.allocString(pConfigFileDataAsString);
+			const configFilePtr = GodotRuntime._getConfigFileAsJsonCallback(configFileDataPtr);
+			GodotRuntime.free(configFileDataPtr);
+			configFileDataPtr = 0;
+
+			if (configFilePtr === 0) {
+				GodotRuntime.error('configFilePtr is nullptr');
+				return null;
+			}
+			const configFile = GodotRuntime.parseString(configFilePtr);
+
+			if (configFile.length === 0) {
+				GodotRuntime.error('configFile is empty', configFile);
+				return null;
+			}
+			const configFileJson = JSON.parse(configFile);
+
+			GodotRuntime.free(configFileDataPtr);
+			configFileDataPtr = 0;
+
+			return configFileJson;
+		},
+
 		/*
 		 * Functions
 		 */
@@ -128,6 +166,12 @@ const GodotRuntime = {
 		stringToHeap: function (p_str, p_ptr, p_len) {
 			return stringToUTF8Array(p_str, HEAP8, p_ptr, p_len);
 		},
+	},
+
+	godot_js_runtime_set_get_config_file_as_json_cb__proxy: 'async',
+	godot_js_runtime_set_get_config_file_as_json_cb__sig: 'pp',
+	godot_js_runtime_set_get_config_file_as_json_cb: function (pCallbackPtr) {
+		GodotRuntime._getConfigFileAsJsonCallback = GodotRuntime.get_func(pCallbackPtr);
 	},
 };
 autoAddDeps(GodotRuntime, '$GodotRuntime');
