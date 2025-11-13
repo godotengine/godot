@@ -33,6 +33,16 @@
 #include "core/typedefs.h"
 #include "profiling.gen.h"
 
+// This header provides profiling primitives (implemented as macros) for various backends.
+// See the "No profiling" branch at the bottom for a short description of the functions.
+
+// To configure / use the profiler, use the --profiler_path and other --profiler_* arguments
+// when compiling Godot. You can also find details in the SCSub file (in this folder).
+
+// Note: It is highly recommended to avoid including this header in other header files.
+//       Prefer including it in .cpp files only. The reason is that we want to keep
+//       the recompile cost of changing the profiler as low as possible.
+
 #if defined(GODOT_USE_TRACY)
 // Use the tracy profiler.
 
@@ -95,10 +105,17 @@ void godot_init_profiler();
 
 void godot_init_profiler();
 
+// Tell the profiling backend that a new frame has started.
 #define GodotProfileFrameMark
+// Defines a profile zone from here to the end of the scope.
 #define GodotProfileZone(m_zone_name)
+// Defines a profile zone group. The first profile zone starts immediately,
+// and ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)
+// End the profile zone group's current profile zone now.
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name)
+// Replace the profile zone group's current profile zone.
+// The new zone ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name)
 
 #endif
