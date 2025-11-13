@@ -716,6 +716,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		"text_editor/theme/highlighting/comment_color",
 		"text_editor/theme/highlighting/doc_comment_color",
 		"text_editor/theme/highlighting/string_color",
+		"text_editor/theme/highlighting/string_placeholder_color",
 		"text_editor/theme/highlighting/background_color",
 		"text_editor/theme/highlighting/text_color",
 		"text_editor/theme/highlighting/line_number_color",
@@ -1711,6 +1712,7 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_color"] = Color(0.4, 0.4, 0.4);
 	colors["text_editor/theme/highlighting/doc_comment_color"] = Color(0.5, 0.6, 0.7);
 	colors["text_editor/theme/highlighting/string_color"] = Color(0.94, 0.43, 0.75);
+	colors["text_editor/theme/highlighting/string_placeholder_color"] = Color(1, 0.75, 0.4);
 	colors["text_editor/theme/highlighting/background_color"] = Color(0.13, 0.12, 0.15);
 	colors["text_editor/theme/highlighting/completion_background_color"] = Color(0.17, 0.16, 0.2);
 	colors["text_editor/theme/highlighting/completion_selected_color"] = Color(0.26, 0.26, 0.27);
