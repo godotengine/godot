@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  os_ios.mm                                                             */
+/*  virtual_controller.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_ios.h"
+#pragma once
 
-#import "display_server_ios.h"
-#include <iostream>
+#include "core/object/class_db.h"
 
-#ifdef IOS_ENABLED
+class VirtualController : public Object {
+	GDCLASS(VirtualController, Object);
 
-OS_IOS *OS_IOS::get_singleton() {
-	return (OS_IOS *)OS_AppleEmbedded::get_singleton();
-}
+protected:
+	static void _bind_methods();
 
-OS_IOS::OS_IOS() :
-		OS_AppleEmbedded() {
-	DisplayServerIOS::register_ios_driver();
-}
-
-OS_IOS::~OS_IOS() {}
-
-String OS_IOS::get_name() const {
-	return "iOS";
-}
-
-void OS_IOS::start() {
-	OS_AppleEmbedded::start();
-
-	if (virtual_controller) {
-		virtual_controller->update_state();
-		std::cout << "SHOW VIRTUAL CONTROLLER\n";
-	}
-}
-
-void OS_IOS::deinitialize_modules() {
-	if (virtual_controller) {
-		memdelete(virtual_controller);
-	}
-	OS_AppleEmbedded::deinitialize_modules();
-}
-
-void OS_IOS::initialize_joypads() {
-	OS_AppleEmbedded::initialize_joypads();
-
-	std::cout << "CREATE VIRTUAL CONTROLLER\n";
-
-	virtual_controller = memnew(IOSVirtualController);
-}
-
-VirtualController *OS_IOS::get_virtual_controller() const {
-	return virtual_controller;
-}
-
-void OS_IOS::controller_connected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_connected();
-	}
-}
-
-void OS_IOS::controller_disconnected() const {
-	if (virtual_controller) {
-		virtual_controller->controller_disconnected();
-	}
-}
-
-#endif // IOS_ENABLED
+public:
+	virtual void enable() = 0;
+	virtual void disable() = 0;
+	virtual bool is_enabled() = 0;
+	virtual void set_enabled_left_thumbstick(bool p_enabled) = 0;
+	virtual bool is_enabled_left_thumbstick() = 0;
+	virtual void set_enabled_right_thumbstick(bool p_enabled) = 0;
+	virtual bool is_enabled_right_thumbstick() = 0;
+	virtual void set_enabled_button_a(bool p_enabled) = 0;
+	virtual bool is_enabled_button_a() = 0;
+	virtual void set_enabled_button_b(bool p_enabled) = 0;
+	virtual bool is_enabled_button_b() = 0;
+	virtual void set_enabled_button_x(bool p_enabled) = 0;
+	virtual bool is_enabled_button_x() = 0;
+	virtual void set_enabled_button_y(bool p_enabled) = 0;
+	virtual bool is_enabled_button_y() = 0;
+};
