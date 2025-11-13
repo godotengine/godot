@@ -426,7 +426,7 @@ void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
 void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
 
-	if (p_tool == 2) {
+	if (p_tool == 3) {
 		Vector<Vector2> bl_points;
 		for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 			bl_points.push_back(blend_space->get_blend_point_position(i));
