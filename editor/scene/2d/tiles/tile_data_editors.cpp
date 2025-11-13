@@ -1114,9 +1114,9 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_PAINT) {
-			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
-			for (int i = 0; i < line.size(); i++) {
-				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
+			Iterable<Geometry2D::BresenhamIterator> bresenham = Geometry2D::bresenham_iter(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
+			for (const Vector2i &c : bresenham) {
+				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(c);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					TileMapCell cell;
 					cell.source_id = 0;
@@ -2202,9 +2202,9 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_PAINT_TERRAIN_SET) {
-			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
-			for (int i = 0; i < line.size(); i++) {
-				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
+			Iterable<Geometry2D::BresenhamIterator> bresenham = Geometry2D::bresenham_iter(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
+			for (const Vector2i &c : bresenham) {
+				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(c);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					int terrain_set = drag_painted_value;
 					TileMapCell cell;
@@ -2236,9 +2236,9 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 		} else if (drag_type == DRAG_TYPE_PAINT_TERRAIN_BITS) {
 			int terrain_set = Dictionary(drag_painted_value)["terrain_set"];
 			int terrain = Dictionary(drag_painted_value)["terrain"];
-			Vector<Vector2i> line = Geometry2D::bresenham_line(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
-			for (int i = 0; i < line.size(); i++) {
-				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(line[i]);
+			Iterable<Geometry2D::BresenhamIterator> bresenham = Geometry2D::bresenham_iter(p_tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_pos, true), p_tile_atlas_view->get_atlas_tile_coords_at_pos(mm->get_position(), true));
+			for (const Vector2i &c : bresenham) {
+				Vector2i coords = p_tile_set_atlas_source->get_tile_at_coords(c);
 				if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					TileMapCell cell;
 					cell.source_id = 0;

@@ -79,8 +79,8 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 			for (int k = 0; k < 3; k++) {
 				int l = k == 0 ? 2 : k - 1;
-				Vector<Point2i> points = Geometry2D::bresenham_line(v[k], v[l]);
-				for (Point2i point : points) {
+				Iterable<Geometry2D::BresenhamIterator> bresenham = Geometry2D::bresenham_iter(v[k], v[l]);
+				for (const Point2i &point : bresenham) {
 					src_bitmap->set_bitv(point, true);
 				}
 			}
