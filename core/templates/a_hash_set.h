@@ -59,15 +59,15 @@ class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_size;
 
 protected:
-	const TKey &_get_key(uint32_t p_idx) const override {
+	virtual const TKey &_get_key(uint32_t p_idx) const override {
 		return _elements[p_idx];
 	}
 
-	void _resize_elements(uint32_t p_new_capacity) override {
+	virtual void _resize_elements(uint32_t p_new_capacity) override {
 		_elements = reinterpret_cast<TKey *>(Memory::realloc_static(_elements, sizeof(TKey) * p_new_capacity));
 	}
 
-	bool _is_elements_valid() const override {
+	virtual bool _is_elements_valid() const override {
 		return _elements != nullptr;
 	}
 
@@ -441,7 +441,7 @@ public:
 		_size = 0;
 	}
 
-	~AHashSet() override {
+	virtual ~AHashSet() override {
 		reset();
 	}
 };

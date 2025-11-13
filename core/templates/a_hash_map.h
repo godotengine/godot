@@ -69,15 +69,15 @@ class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_size;
 
 protected:
-	const TKey &_get_key(uint32_t p_idx) const override {
+	virtual const TKey &_get_key(uint32_t p_idx) const override {
 		return _elements[p_idx].key;
 	}
 
-	void _resize_elements(uint32_t p_new_capacity) override {
+	virtual void _resize_elements(uint32_t p_new_capacity) override {
 		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * p_new_capacity));
 	}
 
-	bool _is_elements_valid() const override {
+	virtual bool _is_elements_valid() const override {
 		return _elements != nullptr;
 	}
 
@@ -578,7 +578,7 @@ public:
 		_size = 0;
 	}
 
-	~AHashMap() override {
+	virtual ~AHashMap() override {
 		reset();
 	}
 };
