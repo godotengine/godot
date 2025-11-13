@@ -32,7 +32,7 @@
 
 #include "core/string/print_string.h"
 #include "core/templates/pair.h"
-#include "core/templates/raw/raw_a_hash_table.h"
+#include "core/templates/raw_a_hash_table.h"
 
 #include <initializer_list>
 
