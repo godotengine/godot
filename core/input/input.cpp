@@ -159,6 +159,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Input::warp_mouse);
 	ClassDB::bind_method(D_METHOD("action_press", "action", "strength"), &Input::action_press, DEFVAL(1.f));
 	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
+	ClassDB::bind_method(D_METHOD("set_action_disabled", "action", "disable"), &Input::set_action_disabled);
+	ClassDB::bind_method(D_METHOD("is_action_disabled", "action"), &Input::is_action_disabled);
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Input::set_default_cursor_shape, DEFVAL(CURSOR_ARROW));
 	ClassDB::bind_method(D_METHOD("get_current_cursor_shape"), &Input::get_current_cursor_shape);
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
@@ -1139,6 +1141,26 @@ void Input::action_release(const StringName &p_action) {
 	action_state.api_strength = 0.0;
 }
 
+void Input::set_action_disabled(const StringName &p_action, bool p_disable) {
+	ERR_FAIL_COND_MSG(!InputMap::get_singleton()->has_action(p_action), InputMap::get_singleton()->suggest_actions(p_action));
+
+	// Create or retrieve existing action.
+	ActionState &action_state = action_states[p_action];
+	action_state.disabled = p_disable;
+	_update_action_cache(p_action, action_state);
+}
+
+bool Input::is_action_disabled(const StringName &p_action) {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	if (!E) {
+		return false;
+	}
+
+	return E->value.disabled;
+}
+
 void Input::set_emulate_touch_from_mouse(bool p_emulate) {
 	emulate_touch_from_mouse = p_emulate;
 }
@@ -1476,13 +1498,15 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 	r_action_state.cache.strength = 0.0;
 	r_action_state.cache.raw_strength = 0.0;
 
-	int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size() + 1; // +1 comes from InputEventAction.
-	for (const KeyValue<int, ActionState::DeviceState> &kv : r_action_state.device_states) {
-		const ActionState::DeviceState &device_state = kv.value;
-		for (int i = 0; i < max_event; i++) {
-			r_action_state.cache.pressed = r_action_state.cache.pressed || device_state.pressed[i];
-			r_action_state.cache.strength = MAX(r_action_state.cache.strength, device_state.strength[i]);
-			r_action_state.cache.raw_strength = MAX(r_action_state.cache.raw_strength, device_state.raw_strength[i]);
+	if (!r_action_state.disabled) {
+		int max_event = InputMap::get_singleton()->action_get_events(p_action_name)->size() + 1; // +1 comes from InputEventAction.
+		for (const KeyValue<int, ActionState::DeviceState> &kv : r_action_state.device_states) {
+			const ActionState::DeviceState &device_state = kv.value;
+			for (int i = 0; i < max_event; i++) {
+				r_action_state.cache.pressed = r_action_state.cache.pressed || device_state.pressed[i];
+				r_action_state.cache.strength = MAX(r_action_state.cache.strength, device_state.strength[i]);
+				r_action_state.cache.raw_strength = MAX(r_action_state.cache.raw_strength, device_state.raw_strength[i]);
+			}
 		}
 	}
 

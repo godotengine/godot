@@ -122,6 +122,7 @@ private:
 		ObjectID pressed_event_id;
 		ObjectID released_event_id;
 		bool exact = true;
+		bool disabled = false;
 
 		struct DeviceState {
 			bool pressed[MAX_EVENT] = { false };
@@ -368,6 +369,8 @@ public:
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
+	void set_action_disabled(const StringName &p_action, bool p_disable);
+	bool is_action_disabled(const StringName &p_action);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
 	bool is_emulating_touch_from_mouse() const;
