@@ -40,6 +40,7 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/import_dock.h"
 #include "editor/docks/scene_tree_dock.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -2556,6 +2557,23 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			ImportDock::get_singleton()->reimport_resources(p_selected);
 		} break;
 
+		case FILE_MENU_DOCUMENTATION: {
+			for (const String &selected : p_selected) {
+				if (!selected.ends_with("/")) {
+					String file_type = EditorFileSystem::get_singleton()->get_file_type(selected);
+					if (ClassDB::class_exists(file_type)) {
+						if (file_type == "GDScript") {
+							Ref<Script> script_base = ResourceLoader::load(selected);
+							ScriptEditor::get_singleton()->goto_help("class_name:" + script_base->get_doc_class_name());
+						} else {
+							ScriptEditor::get_singleton()->goto_help("class_name:" + file_type);
+						}
+					}
+				}
+			}
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		} break;
+
 		case FILE_MENU_NEW_FOLDER: {
 			String directory = current_path;
 			if (!directory.ends_with("/")) {
@@ -3435,6 +3453,23 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (root_path_not_selected) {
 		p_popup->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTRC("Move/Duplicate To..."), FILE_MENU_MOVE);
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_MENU_REMOVE);
+	}
+
+	if (p_paths.size() > 1 || root_path_not_selected) {
+		if (!all_folders) {
+			bool has_built_in = false;
+			for (const String &filename : filenames) {
+				String file_type = EditorFileSystem::get_singleton()->get_file_type(filename);
+				if (ClassDB::class_exists(file_type)) {
+					has_built_in = true;
+					break;
+				}
+			}
+			if (has_built_in) {
+				p_popup->add_separator();
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Class Documentation"), FILE_MENU_DOCUMENTATION);
+			}
+		}
 	}
 
 	// Only add a separator if we have actually placed any options in the menu since the last separator.
