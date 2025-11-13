@@ -131,7 +131,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	}
 
 	// Panel
+
 	theme->set_stylebox(SceneStringName(panel), "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+
+	// BaseButton
+
+	theme->set_sound("hover_sound", "BaseButton", Ref<AudioStream>());
+	theme->set_sound("focus_sound", "BaseButton", Ref<AudioStream>());
+	theme->set_sound("pressed_sound", "BaseButton", Ref<AudioStream>());
+	theme->set_sound("pressed_disabled_sound", "BaseButton", Ref<AudioStream>());
 
 	// Button
 
@@ -435,6 +443,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("clear", "LineEdit", icons["line_edit_clear"]);
 
+	theme->set_sound("focus_sound", "LineEdit", Ref<AudioStream>());
+	theme->set_sound("text_changed_sound", "LineEdit", Ref<AudioStream>());
+	theme->set_sound("text_submitted_sound", "LineEdit", Ref<AudioStream>());
+	theme->set_sound("text_change_rejected_sound", "LineEdit", Ref<AudioStream>());
+
 	// ProgressBar
 
 	theme->set_stylebox("background", "ProgressBar", make_flat_stylebox(style_disabled_color, 2, 2, 2, 2, 6));
@@ -478,6 +491,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
 	theme->set_constant("wrap_offset", "TextEdit", 10);
+
+	theme->set_sound("focus_sound", "TextEdit", Ref<AudioStream>());
+	theme->set_sound("text_changed_sound", "TextEdit", Ref<AudioStream>());
 
 	// CodeEdit
 
@@ -576,6 +592,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> style_slider_grabber = make_flat_stylebox(style_progress_color, 4, 4, 4, 4, 4);
 	const Ref<StyleBoxFlat> style_slider_grabber_highlight = make_flat_stylebox(style_focus_color, 4, 4, 4, 4, 4);
 
+	// Slider
+
+	theme->set_sound("focus_sound", "Slider", Ref<AudioStream>());
+	theme->set_sound("drag_started_sound", "Slider", Ref<AudioStream>());
+	theme->set_sound("drag_ended_sound", "Slider", Ref<AudioStream>());
+	theme->set_sound("value_changed_sound", "Slider", Ref<AudioStream>());
+
 	// HSlider
 
 	theme->set_stylebox("slider", "HSlider", style_slider);
@@ -645,6 +668,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 #ifndef DISABLE_DEPRECATED
 	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
 #endif
+
+	theme->set_sound("focus_sound", "SpinBox", Ref<AudioStream>());
+	theme->set_sound("pressed_sound", "SpinBox", Ref<AudioStream>());
+	theme->set_sound("pressed_disabled_sound", "SpinBox", Ref<AudioStream>());
 
 	// ScrollContainer
 
@@ -774,6 +801,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_end_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
 	theme->set_constant("gutter_compact", "PopupMenu", 1);
+
+	theme->set_sound("item_hovered_sound", "PopupMenu", Ref<AudioStream>());
+	theme->set_sound("item_activated_sound", "PopupMenu", Ref<AudioStream>());
+	theme->set_sound("item_activated_disabled_sound", "PopupMenu", Ref<AudioStream>());
 
 	// GraphNode
 
@@ -926,6 +957,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("scrollbar_h_separation", "Tree", Math::round(4 * scale));
 	theme->set_constant("scrollbar_v_separation", "Tree", Math::round(4 * scale));
 
+	theme->set_sound("focus_sound", "Tree", Ref<AudioStream>());
+	theme->set_sound("item_hovered_sound", "Tree", Ref<AudioStream>());
+	theme->set_sound("item_selected_sound", "Tree", Ref<AudioStream>());
+
 	// ItemList
 
 	theme->set_stylebox(SceneStringName(panel), "ItemList", make_flat_stylebox(style_normal_color));
@@ -953,6 +988,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
 
 	theme->set_constant("outline_size", "ItemList", 0);
+
+	theme->set_sound("focus_sound", "ItemList", Ref<AudioStream>());
+	theme->set_sound("item_hovered_sound", "ItemList", Ref<AudioStream>());
+	theme->set_sound("item_selected_sound", "ItemList", Ref<AudioStream>());
+	theme->set_sound("item_selected_disabled_sound", "ItemList", Ref<AudioStream>());
 
 	// TabContainer
 
@@ -1042,6 +1082,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("icon_max_width", "TabBar", 0);
 	theme->set_constant("outline_size", "TabBar", 0);
 	theme->set_constant("hover_switch_wait_msec", "TabBar", 500);
+
+	theme->set_sound("hover_sound", "TabBar", Ref<AudioStream>());
+	theme->set_sound("focus_sound", "TabBar", Ref<AudioStream>());
+	theme->set_sound("pressed_sound", "TabBar", Ref<AudioStream>());
+	theme->set_sound("pressed_disabled_sound", "TabBar", Ref<AudioStream>());
 
 	// Separators
 
@@ -1318,6 +1363,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("outline_size", "FoldableContainer", 0);
 	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
+
+	theme->set_sound("focus_sound", "FoldableContainer", Ref<AudioStream>());
+	theme->set_sound("expanded_sound", "FoldableContainer", Ref<AudioStream>());
+	theme->set_sound("folded_sound", "FoldableContainer", Ref<AudioStream>());
 
 	// Visual Node Ports
 

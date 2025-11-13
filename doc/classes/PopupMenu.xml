@@ -787,6 +787,15 @@
 		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
 			[Texture2D] icon for the unchecked checkbox items when they are disabled.
 		</theme_item>
+		<theme_item name="item_activated_disabled_sound" data_type="sound" type="AudioStream">
+			Played when a disabled item is attempted to be activated.
+		</theme_item>
+		<theme_item name="item_activated_sound" data_type="sound" type="AudioStream">
+			Played when an item is activated.
+		</theme_item>
+		<theme_item name="item_hovered_sound" data_type="sound" type="AudioStream">
+			Played when an item is hovered. (Disabled items do not play a hover sound.)
+		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] displayed when the [PopupMenu] item is hovered.
 		</theme_item>

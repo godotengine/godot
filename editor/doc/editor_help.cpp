@@ -1426,6 +1426,7 @@ void EditorHelp::_update_doc() {
 		data_type_names["font_size"] = TTR("Font Sizes");
 		data_type_names["icon"] = TTR("Icons");
 		data_type_names["style"] = TTR("Styles");
+		data_type_names["audio"] = TTR("Audios");
 
 		for (const DocData::ThemeItemDoc &theme_item : cd.theme_properties) {
 			if (theme_data_type != theme_item.data_type) {

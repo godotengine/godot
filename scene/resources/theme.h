@@ -34,6 +34,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+#include "servers/audio/audio_stream.h"
 
 class Theme : public Resource {
 	GDCLASS(Theme, Resource);
@@ -52,6 +53,7 @@ public:
 	using ThemeFontSizeMap = HashMap<StringName, int>;
 	using ThemeColorMap = HashMap<StringName, Color>;
 	using ThemeConstantMap = HashMap<StringName, int>;
+	using ThemeSoundMap = HashMap<StringName, Ref<AudioStream>>;
 
 	enum DataType {
 		DATA_TYPE_COLOR,
@@ -60,6 +62,7 @@ public:
 		DATA_TYPE_FONT_SIZE,
 		DATA_TYPE_ICON,
 		DATA_TYPE_STYLEBOX,
+		DATA_TYPE_SOUND,
 		DATA_TYPE_MAX
 	};
 
@@ -80,6 +83,8 @@ private:
 	Vector<String> _get_color_type_list() const;
 	Vector<String> _get_constant_list(const String &p_theme_type) const;
 	Vector<String> _get_constant_type_list() const;
+	Vector<String> _get_sound_list(const String &p_theme_type) const;
+	Vector<String> _get_sound_type_list() const;
 
 	Vector<String> _get_theme_item_list(DataType p_data_type, const String &p_theme_type) const;
 	Vector<String> _get_theme_item_type_list(DataType p_data_type) const;
@@ -103,6 +108,7 @@ protected:
 	HashMap<StringName, ThemeFontSizeMap> font_size_map;
 	HashMap<StringName, ThemeColorMap> color_map;
 	HashMap<StringName, ThemeConstantMap> constant_map;
+	HashMap<StringName, ThemeSoundMap> sound_map;
 	HashMap<StringName, StringName> variation_map;
 	HashMap<StringName, List<StringName>> variation_base_map;
 
@@ -203,6 +209,18 @@ public:
 	void remove_constant_type(const StringName &p_theme_type);
 	void rename_constant_type(const StringName &p_old_theme_type, const StringName &p_theme_type);
 	void get_constant_type_list(List<StringName> *p_list) const;
+
+	void set_sound(const StringName &p_name, const StringName &p_theme_type, const Ref<AudioStream> &p_sound);
+	Ref<AudioStream> get_sound(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_sound(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_sound_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
+	void rename_sound(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
+	void clear_sound(const StringName &p_name, const StringName &p_theme_type);
+	void get_sound_list(StringName p_theme_type, List<StringName> *p_list) const;
+	void add_sound_type(const StringName &p_theme_type);
+	void remove_sound_type(const StringName &p_theme_type);
+	void rename_sound_type(const StringName &p_old_theme_type, const StringName &p_theme_type);
+	void get_sound_type_list(List<StringName> *p_list) const;
 
 	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value);
 	Variant get_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const;

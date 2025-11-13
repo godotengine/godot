@@ -1699,6 +1699,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/gui_theme_bus"), "Master");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type.web", PROPERTY_HINT_ENUM, "Stream,Sample"), 1);
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);

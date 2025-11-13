@@ -3164,9 +3164,15 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed()) {
 					if (c.selected && p_button == MouseButton::LEFT) {
 						p_item->deselect(col);
+						if (is_inside_tree()) {
+							get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+						}
 						emit_signal(SNAME("multi_selected"), p_item, col, false);
 					} else {
 						p_item->select(col);
+						if (is_inside_tree()) {
+							get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+						}
 						emit_signal(SNAME("multi_selected"), p_item, col, true);
 						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 					}
@@ -3174,6 +3180,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					if (select_mode == SELECT_MULTI && p_mod->is_shift_pressed() && selected_item && selected_item != p_item) {
 						bool inrange = false;
 
+						if (is_inside_tree()) {
+							get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+						}
 						select_single_item(p_item, root, col, selected_item, &inrange);
 						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 					} else {
@@ -3190,6 +3199,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 								select_single_item(p_item, root, col);
 							}
 
+							if (is_inside_tree()) {
+								get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+							}
 							emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 						}
 					}
@@ -3548,8 +3560,14 @@ void Tree::_go_left() {
 		selected_button = -1;
 		if (select_mode == SELECT_MULTI) {
 			selected_col--;
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+			}
 			emit_signal(SNAME("cell_selected"));
 		} else {
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+			}
 			selected_item->select(selected_col - 1);
 		}
 	}
@@ -3575,8 +3593,14 @@ void Tree::_go_right() {
 		selected_button = -1;
 		if (select_mode == SELECT_MULTI) {
 			selected_col++;
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+			}
 			emit_signal(SNAME("cell_selected"));
 		} else {
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+			}
 			selected_item->select(selected_col + 1);
 		}
 	}
@@ -3604,6 +3628,9 @@ void Tree::_go_up() {
 		}
 
 		selected_item = prev;
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+		}
 		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
@@ -3612,6 +3639,9 @@ void Tree::_go_up() {
 		}
 		if (!prev) {
 			return; // Do nothing.
+		}
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
 		}
 		prev->select(col);
 	}
@@ -3645,10 +3675,16 @@ void Tree::_shift_select_range(TreeItem *new_item) {
 			if (in_range || at_range_edge) {
 				if (!item->is_selected(selected_col) && item->is_selectable(selected_col)) {
 					item->select(selected_col);
+					if (is_inside_tree()) {
+						get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+					}
 					emit_signal(SNAME("multi_selected"), item, selected_col, true);
 				}
 			} else if (item->is_selected(selected_col)) {
 				item->deselect(selected_col);
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+				}
 				emit_signal(SNAME("multi_selected"), item, selected_col, false);
 			}
 		}
@@ -3680,6 +3716,9 @@ void Tree::_go_down() {
 		}
 
 		selected_item = next;
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
+		}
 		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
@@ -3688,6 +3727,9 @@ void Tree::_go_down() {
 		}
 		if (!next) {
 			return; // Do nothing.
+		}
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(get_theme_audio(SNAME("focus_sound")));
 		}
 		next->select(col);
 	}
@@ -3923,8 +3965,14 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			// Bring up editor if possible.
 			if (selected_item && selected_col != -1 && selected_button != -1) {
 				const TreeItem::Cell &c = selected_item->cells[selected_col];
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+				}
 				emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 			} else if (!edit_selected()) {
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(theme_cache.item_selected_sound);
+				}
 				emit_signal(SNAME("item_activated"));
 				incr_search.clear();
 			}
@@ -4338,6 +4386,13 @@ void Tree::_determine_hovered_item() {
 	bool header_hover_needs_redraw = cache.hover_header_row && cache.hover_header_column != old_header_column;
 	// Mouse has moved between header and "main" areas.
 	bool whole_needs_redraw = cache.hover_header_row != old_header_row;
+
+	if (cache.hover_item != nullptr && (header_hover_needs_redraw || item_hover_needs_redraw)) {
+		// Play sound if the hover state has changed, but don't play it when unhovering.
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(theme_cache.item_hovered_sound);
+		}
+	}
 
 	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
 		queue_redraw();
@@ -6802,6 +6857,9 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_pressed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, title_button_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Tree, item_hovered_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Tree, item_selected_sound);
 
 	ADD_CLASS_DEPENDENCY("HScrollBar");
 	ADD_CLASS_DEPENDENCY("HSlider");

@@ -7,6 +7,7 @@
 		The [AudioStreamPlayer] node plays an audio stream non-positionally. It is ideal for user interfaces, menus, or background music.
 		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the same time is also supported, see [member max_polyphony].
 		If you need to play audio at a specific position, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead.
+		To keep playing audio after freeing the node using the [AudioStreamPlayer] or after changing scenes, use [method SceneTree.create_audio_stream_player] instead.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>

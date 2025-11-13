@@ -7655,6 +7655,8 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, word_highlighted_color);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TextEdit, text_changed_sound);
+
 	/* Settings. */
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), 3);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/text_edit_undo_stack_max_size", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 1024);
@@ -9062,6 +9064,10 @@ void TextEdit::_text_changed() {
 }
 
 void TextEdit::_emit_text_changed() {
+	if (is_inside_tree()) {
+		get_tree()->play_theme_sound(theme_cache.text_changed_sound);
+	}
+
 	emit_signal(SceneStringName(text_changed));
 	text_changed_dirty = false;
 }

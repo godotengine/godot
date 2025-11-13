@@ -208,6 +208,9 @@ void SpinBox::_range_click_timeout() {
 			if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 				new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 			}
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(is_editable() ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+			}
 			set_value(new_value);
 		}
 
@@ -278,6 +281,10 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 					if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 						new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 					}
+					if (is_inside_tree()) {
+						const bool disabled = mouse_on_up_button ? state_cache.up_button_disabled : state_cache.down_button_disabled;
+						get_tree()->play_theme_sound(disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+					}
 					set_value(new_value);
 				}
 				state_cache.up_button_pressed = mouse_on_up_button;
@@ -294,17 +301,27 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				line_edit->grab_focus(true);
 				if (mouse_on_up_button || mouse_on_down_button) {
+					if (is_inside_tree()) {
+						const bool disabled = mouse_on_up_button ? state_cache.up_button_disabled : state_cache.down_button_disabled;
+						get_tree()->play_theme_sound(disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+					}
 					set_value(mouse_on_up_button ? get_max() : get_min());
 				}
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->is_editing()) {
+					if (is_inside_tree()) {
+						get_tree()->play_theme_sound(state_cache.up_button_disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+					}
 					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
+					if (is_inside_tree()) {
+						get_tree()->play_theme_sound(state_cache.down_button_disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+					}
 					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
@@ -699,6 +716,9 @@ void SpinBox::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, field_and_buttons_separator, "field_and_buttons_separator");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, up_down_buttons_separator, "up_down_buttons_separator");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, SpinBox, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, SpinBox, pressed_disabled_sound);
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 }

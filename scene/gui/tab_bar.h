@@ -179,6 +179,10 @@ private:
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
+
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
 	} theme_cache;
 
 	Timer *hover_switch_delay = nullptr;
