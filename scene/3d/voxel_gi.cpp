@@ -225,6 +225,8 @@ void VoxelGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &VoxelGIData::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &VoxelGIData::_get_data);
 
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &VoxelGIData::create_placeholder);
+
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_range", PROPERTY_HINT_RANGE, "1,8,0.01"), "set_dynamic_range", "get_dynamic_range");
@@ -264,6 +266,16 @@ VoxelGIData::~VoxelGIData() {
 }
 
 //////////////////////
+
+PlaceholderVoxelGIData::PlaceholderVoxelGIData() {
+	probe = RS::get_singleton()->voxel_gi_create();
+}
+
+PlaceholderVoxelGIData::~PlaceholderVoxelGIData() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	RS::get_singleton()->free_rid(probe);
+}
+
 //////////////////////
 
 void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
@@ -535,6 +547,12 @@ float VoxelGI::_get_camera_exposure_normalization() {
 
 AABB VoxelGI::get_aabb() const {
 	return AABB(-size / 2, size);
+}
+
+Ref<Resource> VoxelGIData::create_placeholder() const {
+	Ref<PlaceholderVoxelGIData> data;
+	data.instantiate();
+	return data;
 }
 
 PackedStringArray VoxelGI::get_configuration_warnings() const {

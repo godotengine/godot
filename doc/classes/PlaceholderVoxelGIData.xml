@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaceholderVoxelGIData" inherits="VoxelGIData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Placeholder class for [VoxelGIData].
+	</brief_description>
+	<description>
+		This class is used when loading a project that uses a [VoxelGIData] subclass, if the project was exported in dedicated server mode. In this mode, only the resource reference is kept, with no actual voxel data. This allows reducing the exported PCK's size significantly.
+		[b]Note:[/b] This is not intended to be used as an actual resource for rendering.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

@@ -23,6 +23,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderVoxelGIData]).
+			</description>
+		</method>
 		<method name="get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<description>

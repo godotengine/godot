@@ -33,6 +33,7 @@
 #include "scene/3d/visual_instance_3d.h"
 
 class CameraAttributes;
+class PlaceholderVoxelGIData;
 
 class VoxelGIData : public Resource {
 	GDCLASS(VoxelGIData, Resource);
@@ -88,10 +89,22 @@ public:
 	void set_use_two_bounces(bool p_enable);
 	bool is_using_two_bounces() const;
 
+	Ref<Resource> create_placeholder() const;
+
 	virtual RID get_rid() const override;
 
 	VoxelGIData();
 	~VoxelGIData();
+};
+
+class PlaceholderVoxelGIData : public VoxelGIData {
+	GDCLASS(PlaceholderVoxelGIData, VoxelGIData);
+
+	RID probe;
+
+public:
+	PlaceholderVoxelGIData();
+	~PlaceholderVoxelGIData();
 };
 
 class VoxelGI : public VisualInstance3D {
