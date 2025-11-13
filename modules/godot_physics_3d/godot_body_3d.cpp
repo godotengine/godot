@@ -59,7 +59,7 @@ void GodotBody3D::_update_local_inertia() {
 	inertia_tensor_local[1][0] = -product_of_inertia.z;
 
 	principal_inertia_axes_local = Basis();
-	Vector3 principal_inertia = Vector3();
+	Vector3 principal_inertia;
 
 	// Compute the principal axes and moments of inertia.
 	if (!eigen_value_symmetric(inertia_tensor_local, principal_inertia_axes_local, principal_inertia)) {

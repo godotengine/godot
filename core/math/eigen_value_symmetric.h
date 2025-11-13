@@ -31,23 +31,22 @@
 #pragma once
 
 #include "core/math/basis.h"
-#include "core/math/math_funcs.h"
-#include "core/math/vector3.h"
 
 // This code is simply a re-implementation of the same function from Jolt Physics,
 // but using Godot's Vector3 and Basis structures
-bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &out_eig_val) {
+bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_eig_val) {
 	const int MAX_SWEEPS = 50;
 	const int N = 3;
 
-	Basis a = in_matrix;
+	Basis a = p_matrix;
 
-	Vector3 b, z;
+	Vector3 b;
+	Vector3 z;
 
 	for (int ip = 0; ip < N; ++ip) {
 		// Initialize b and output to diagonal of a
 		b[ip] = a[ip][ip];
-		out_eig_val[ip] = a[ip][ip];
+		r_eig_val[ip] = a[ip][ip];
 
 		// reset z
 		z[ip] = 0.0;
@@ -73,8 +72,8 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 		for (int ip = 0; ip < N - 1; ++ip) {
 			for (int iq = ip + 1; iq < N; ++iq) {
 				real_t &a_pq = a[ip][iq];
-				real_t &eigval_p = out_eig_val[ip];
-				real_t &eigval_q = out_eig_val[iq];
+				real_t &eigval_p = r_eig_val[ip];
+				real_t &eigval_q = r_eig_val[iq];
 
 				real_t abs_a_pq = Math::abs(a_pq);
 				real_t g = 100.0 * abs_a_pq;
@@ -91,7 +90,7 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 						t = a_pq / h;
 					} else {
 						real_t theta = 0.5 * h / a_pq; // Warning: Can become infinite if a(ip, iq) is very small which may trigger an invalid float exception
-						t = 1.0 / (Math::abs(theta) + sqrt(1.0 + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
+						t = 1.0 / (Math::abs(theta) + Math::sqrt(1.0 + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
 						if (theta < 0.0f) {
 							t = -t;
 						}
@@ -109,11 +108,11 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 					eigval_p -= h;
 					eigval_q += h;
 
-#define GODOT_EVS_ROTATE(a, i, j, k, l) \
-	g = a[i][j],                        \
-	h = a[k][l],                        \
-	a[i][j] = g - s * (h + g * tau),    \
-	a[k][l] = h + s * (g - h * tau)
+#define GODOT_EVS_ROTATE(m_a, m_i, m_j, m_k, m_l) \
+	g = m_a[m_i][m_j];                            \
+	h = m_a[m_k][m_l];                            \
+	m_a[m_i][m_j] = g - s * (h + g * tau);        \
+	m_a[m_k][m_l] = h + s * (g - h * tau);
 
 					int j;
 					for (j = 0; j < ip; ++j) {
@@ -126,7 +125,7 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 						GODOT_EVS_ROTATE(a, ip, j, iq, j);
 					}
 					for (j = 0; j < N; ++j) {
-						GODOT_EVS_ROTATE(out_eig_vec, j, ip, j, iq);
+						GODOT_EVS_ROTATE(r_eig_vec, j, ip, j, iq);
 					}
 
 #undef GODOT_EVS_ROTATE
@@ -136,7 +135,7 @@ bool eigen_value_symmetric(const Basis &in_matrix, Basis &out_eig_vec, Vector3 &
 		// Update eigenvalues with the sum of ta_pq and reinitialize z
 		for (int ip = 0; ip < N; ++ip) {
 			b[ip] += z[ip];
-			out_eig_val[ip] = b[ip];
+			r_eig_val[ip] = b[ip];
 			z[ip] = 0.0;
 		}
 	}
