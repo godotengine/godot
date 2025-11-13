@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -1267,14 +1268,6 @@ void FindInFilesPanel::_bind_methods() {
 //-----------------------------------------------------------------------------
 
 FindInFilesContainer::FindInFilesContainer() {
-	const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
-	if (bottom_panel_style.is_valid()) {
-		add_theme_constant_override("margin_top", -bottom_panel_style->get_margin(SIDE_TOP));
-		add_theme_constant_override("margin_left", -bottom_panel_style->get_margin(SIDE_LEFT));
-		add_theme_constant_override("margin_right", -bottom_panel_style->get_margin(SIDE_RIGHT));
-		add_theme_constant_override("margin_bottom", -bottom_panel_style->get_margin(SIDE_BOTTOM));
-	}
-
 	_tabs = memnew(TabContainer);
 	_tabs->set_tabs_visible(false);
 	add_child(_tabs);
@@ -1292,6 +1285,8 @@ FindInFilesContainer::FindInFilesContainer() {
 	_tabs_context_menu->add_item(TTRC("Close Tabs to the Right"), PANEL_CLOSE_RIGHT);
 	_tabs_context_menu->add_item(TTRC("Close All Tabs"), PANEL_CLOSE_ALL);
 	_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FindInFilesContainer::_bar_menu_option));
+
+	EditorNode::get_bottom_panel()->connect(SceneStringName(theme_changed), callable_mp(this, &FindInFilesContainer::_on_theme_changed));
 }
 
 FindInFilesPanel *FindInFilesContainer::_create_new_panel() {
@@ -1348,30 +1343,15 @@ void FindInFilesContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("close_button_clicked"));
 }
 
-void FindInFilesContainer::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
-			if (bottom_panel_style.is_valid()) {
-				const int margin_top = -bottom_panel_style->get_margin(SIDE_TOP);
-				const int margin_left = -bottom_panel_style->get_margin(SIDE_LEFT);
-				const int margin_right = -bottom_panel_style->get_margin(SIDE_RIGHT);
-				const int margin_bottom = -bottom_panel_style->get_margin(SIDE_BOTTOM);
-
-				if (get_theme_constant("margin_top") != margin_top) {
-					add_theme_constant_override("margin_top", margin_top);
-				}
-				if (get_theme_constant("margin_left") != margin_left) {
-					add_theme_constant_override("margin_left", margin_left);
-				}
-				if (get_theme_constant("margin_right") != margin_right) {
-					add_theme_constant_override("margin_right", margin_right);
-				}
-				if (get_theme_constant("margin_bottom") != margin_bottom) {
-					add_theme_constant_override("margin_bottom", margin_bottom);
-				}
-			}
-		} break;
+void FindInFilesContainer::_on_theme_changed() {
+	const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+	if (bottom_panel_style.is_valid()) {
+		begin_bulk_theme_override();
+		add_theme_constant_override("margin_top", -bottom_panel_style->get_margin(SIDE_TOP));
+		add_theme_constant_override("margin_left", -bottom_panel_style->get_margin(SIDE_LEFT));
+		add_theme_constant_override("margin_right", -bottom_panel_style->get_margin(SIDE_RIGHT));
+		add_theme_constant_override("margin_bottom", -bottom_panel_style->get_margin(SIDE_BOTTOM));
+		end_bulk_theme_override();
 	}
 }
 
