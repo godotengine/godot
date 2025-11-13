@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  profiling.cpp                                                         */
+/*  char_intern.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,30 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include "profiling.h"
 
-#if defined(GODOT_USE_TRACY)
+class [[nodiscard]] CharIntern {
+	struct Table;
 
-void godot_init_profiler() {
-	CharIntern::setup();
+	struct _Data {
+		Variant src;
+		CharString utf8;
 
-	// Send our first event to tracy; otherwise it doesn't start collecting data.
-	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
-	FrameMark;
-}
-#elif defined(GODOT_USE_PERFETTO)
-PERFETTO_TRACK_EVENT_STATIC_STORAGE();
+		uint32_t hash = 0;
+		_Data *prev = nullptr;
+		_Data *next = nullptr;
+		_Data() {}
+	};
 
-void godot_init_profiler() {
-	perfetto::TracingInitArgs args;
+	static inline bool configured = false;
 
-	args.backends |= perfetto::kSystemBackend;
+public:
+	static void setup();
+	static const char *intern(const char *p_name) { return p_name; }
+	static const char *intern(const String &p_name);
+	static const char *intern(const CharString &p_name);
 
-	perfetto::Tracing::Initialize(args);
-	perfetto::TrackEvent::Register();
-}
-#else
-void godot_init_profiler() {
-	// Stub
-}
-#endif
+	CharIntern() = default;
+	~CharIntern() = default;
+};

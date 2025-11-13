@@ -46,12 +46,18 @@
 #if defined(GODOT_USE_TRACY)
 // Use the tracy profiler.
 
+#include "char_intern.h"
+
 #define TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+
+// wanted for relaying gdscript source information to tracy
+typedef tracy::SourceLocationData SourceLocationData;
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
 #define GodotProfileZone(m_zone_name) ZoneScopedN(m_zone_name)
+#define GodotProfileZoneRename(m_zone_name) ZoneName(m_zone_name.ptr(), m_zone_name.size())
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
 #ifndef TRACY_CALLSTACK
@@ -65,6 +71,28 @@
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
+#define GodotProfileZoneGroupedRename(m_group_name, m_zone_name) ZoneNameV(__godot_tracy_zone_##m_group_name, m_zone_name.ptr(), m_zone_name.size())
+
+// FIXME: I'm still trying to figure out whether I want to make another internment like thing for the source location
+//   data or what.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color) \
+	auto *__godot_tracy_sld_##m_varname = new SourceLocationData{                           \
+		CharIntern::intern(m_zone_name),                                                    \
+		CharIntern::intern(m_function),                                                     \
+		CharIntern::intern(m_file),                                                         \
+		static_cast<uint32_t>(m_line),                                                      \
+		tracy::Color::DarkTurquoise                                                         \
+	};                                                                                      \
+	auto __godot_tracy_zone_##m_varname = tracy::ScopedZone(__godot_tracy_sld_##m_varname)
+
+#define GodotProfileZoneDynamic(m_varname, m_zone_name) \
+	GodotProfileZoneScript(                             \
+			m_varname,                                  \
+			CharIntern::intern(m_zone_name),            \
+			CharIntern::intern(TracyFunction),          \
+			CharIntern::intern(TracyFile),              \
+			static_cast<uint32_t>(TracyLine),           \
+			tracy::Color::DarkTurquoise)
 
 void godot_init_profiler();
 
@@ -90,6 +118,7 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileFrameMark // TODO
 #define GodotProfileZone(m_zone_name) TRACE_EVENT("godot", m_zone_name);
+#define GodotProfileZoneRename(m_zone_name) // TODO
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);                    \
 	PerfettoGroupedEventEnder __godot_perfetto_zone_##m_group_name
@@ -97,6 +126,10 @@ struct PerfettoGroupedEventEnder {
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
 	__godot_perfetto_zone_##m_group_name._end_now();       \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
+#define GodotProfileZoneGroupedRename(m_group_name, m_zone_name) \\ TODO
+
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color) \\ TODO
+#define GodotProfileZoneDynamic(m_varname, m_zone_name) \\TODO
 
 void godot_init_profiler();
 
@@ -109,6 +142,8 @@ void godot_init_profiler();
 #define GodotProfileFrameMark
 // Defines a profile zone from here to the end of the scope.
 #define GodotProfileZone(m_zone_name)
+// Rename an existing zone
+#define GodotProfileZoneRename(m_zone_name)
 // Defines a profile zone group. The first profile zone starts immediately,
 // and ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)
@@ -117,5 +152,14 @@ void godot_init_profiler();
 // Replace the profile zone group's current profile zone.
 // The new zone ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name)
+// Rename a grouped zone
+#define GodotProfileZoneGroupedRename(m_group_name, m_zone_name)
+
+// Define a zone with custom source information, for scripting, unique utf8
+// strings will be copied and stored for the duration of the program.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color)
+// Define a zone who's name changes dynamically, unique utf8 strings will be
+// copied and stored for the duration of the program.
+#define GodotProfileZoneDynamic(m_varname, m_zone_name)
 
 #endif
