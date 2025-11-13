@@ -1708,7 +1708,15 @@ void SpriteFramesEditor::_edit() {
 	if (!animated_sprite) {
 		return;
 	}
-	edit(animated_sprite->call("get_sprite_frames"));
+	Ref<SpriteFrames> p_frames = animated_sprite->call("get_sprite_frames");
+	edit(p_frames);
+	if (p_frames.is_null()) {
+		EditorPlugin *editor_plugin = EditorNode::get_singleton()->get_editor_data().get_editor_by_name("SpriteFrames");
+		if (editor_plugin) {
+			// When clearing SpriteFrames directly on the EditInspector, we need to manually hide the EditPlugin.
+			editor_plugin->make_visible(false);
+		}
+	}
 }
 
 void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
