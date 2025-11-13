@@ -498,7 +498,7 @@
 			<return type="int" />
 			<description>
 				Returns a hashed 32-bit integer value representing the array and its contents.
-				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, arrays with different hash values are guaranteed to be different.
+				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, arrays with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="insert">
