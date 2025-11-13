@@ -253,6 +253,18 @@ Vector<String> Translation::get_translated_message_list() const {
 	return msgstrs;
 }
 
+Vector<String> Translation::get_plural_forms(const StringName &p_src_text, const StringName &p_context) const {
+	Vector<String> plural_forms;
+	const Vector<StringName> *msgstrs = translation_map.getptr({ p_context, p_src_text });
+	if (msgstrs) {
+		plural_forms.reserve_exact(msgstrs->size());
+		for (const StringName &msgstr : *msgstrs) {
+			plural_forms.push_back(msgstr);
+		}
+	}
+	return plural_forms;
+}
+
 void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
 
@@ -428,6 +440,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_message", "src_message", "context"), &Translation::has_message);
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
+	ClassDB::bind_method(D_METHOD("get_plural_forms", "src_message", "context"), &Translation::get_plural_forms);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages", "messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);

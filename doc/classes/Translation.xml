@@ -100,6 +100,15 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_plural_forms" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<description>
+				Returns the array of plural translations for a given message. The array is empty on failure.
+				[b]Note:[/b] The message should be added by [method add_plural_message], otherwise the behavior is undefined.
+			</description>
+		</method>
 		<method name="get_plural_message" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="src_message" type="StringName" />

@@ -100,6 +100,7 @@ public:
 	virtual void get_message_list(List<MessageKey> *r_messages) const;
 	virtual int get_message_count() const;
 	virtual Vector<String> get_translated_message_list() const;
+	virtual Vector<String> get_plural_forms(const StringName &p_src_text, const StringName &p_context) const;
 
 	void set_plural_rules_override(const String &p_rules);
 	String get_plural_rules_override() const;
