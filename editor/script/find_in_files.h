@@ -195,6 +195,7 @@ protected:
 private:
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
+	void _on_theme_changed();
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
