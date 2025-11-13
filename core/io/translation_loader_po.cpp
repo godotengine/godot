@@ -130,6 +130,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					}
 					if (!plural_msg.is_empty()) {
 						translation->add_plural_message(msg_id, plural_msg, msg_context);
+						translation->set_hint(msg_id, msg_context, Translation::HINT_PLURAL, msg_id_plural);
 					}
 				}
 			}
@@ -150,6 +151,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 		Status status = STATUS_NONE;
 
 		String msg_id;
+		String msg_id_plural;
 		String msg_str;
 		String msg_context;
 		Vector<String> msgs_plural;
@@ -190,6 +192,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					} else if (status == STATUS_READING_PLURAL) {
 						ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 						translation->add_plural_message(msg_id, msgs_plural, msg_context);
+						translation->set_hint(msg_id, msg_context, Translation::HINT_PLURAL, msg_id_plural);
 					}
 				}
 				msg_context = "";
@@ -204,8 +207,6 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				} else if (status != STATUS_READING_ID) {
 					ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Unexpected 'msgid_plural', was expecting 'msgid' before 'msgid_plural' while parsing: %s:%d.", path, line));
 				}
-				// We don't record the message in "msgid_plural" itself as tr_n(), TTRN(), RTRN() interfaces provide the plural string already.
-				// We just have to reset variables related to plurals for "msgstr[]" later on.
 				l = l.substr(12).strip_edges();
 				plural_index = -1;
 				msgs_plural.clear();
@@ -221,6 +222,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 						} else if (status == STATUS_READING_PLURAL) {
 							ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 							translation->add_plural_message(msg_id, msgs_plural, msg_context);
+							translation->set_hint(msg_id, msg_context, Translation::HINT_PLURAL, msg_id_plural);
 						}
 					}
 				} else if (config.is_empty()) {
@@ -241,6 +243,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					msg_context = "";
 				}
 				msg_id = "";
+				msg_id_plural = "";
 				msg_str = "";
 				skip_this = skip_next;
 				skip_next = false;
@@ -298,9 +301,13 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				msg_str += l;
 			} else if (status == STATUS_READING_CONTEXT) {
 				msg_context += l;
-			} else if (status == STATUS_READING_PLURAL && plural_index >= 0) {
-				ERR_FAIL_COND_V_MSG(plural_index >= plural_forms, Ref<Resource>(), vformat("Unexpected plural form while parsing: %s:%d.", path, line));
-				msgs_plural.write[plural_index] = msgs_plural[plural_index] + l;
+			} else if (status == STATUS_READING_PLURAL) {
+				if (plural_index >= 0) {
+					ERR_FAIL_COND_V_MSG(plural_index >= plural_forms, Ref<Resource>(), vformat("Unexpected plural form while parsing: %s:%d.", path, line));
+					msgs_plural.write[plural_index] = msgs_plural[plural_index] + l;
+				} else {
+					msg_id_plural += l;
+				}
 			}
 
 			line++;
@@ -319,6 +326,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			if (!skip_this && !msg_id.is_empty()) {
 				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 				translation->add_plural_message(msg_id, msgs_plural, msg_context);
+				translation->set_hint(msg_id, msg_context, Translation::HINT_PLURAL, msg_id_plural);
 			}
 		}
 	}

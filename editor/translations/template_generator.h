@@ -36,18 +36,10 @@
 class TranslationTemplateGenerator {
 	static inline TranslationTemplateGenerator *singleton = nullptr;
 
-	struct MessageData {
-		String plural;
-		HashSet<String> locations;
-		HashSet<String> comments;
-	};
+	Ref<Translation> parse(const Vector<String> &p_sources, bool p_add_builtin) const;
 
-	using MessageMap = HashMap<Translation::MessageKey, MessageData, Translation::MessageKey>;
-
-	MessageMap parse(const Vector<String> &p_sources, bool p_add_builtin) const;
-
-	void _write_to_pot(Ref<FileAccess> p_file, const MessageMap &p_map) const;
-	void _write_to_csv(Ref<FileAccess> p_file, const MessageMap &p_map) const;
+	void _write_to_pot(Ref<FileAccess> p_file, const Ref<Translation> &p_template) const;
+	void _write_to_csv(Ref<FileAccess> p_file, const Ref<Translation> &p_template) const;
 
 public:
 	static TranslationTemplateGenerator *get_singleton();

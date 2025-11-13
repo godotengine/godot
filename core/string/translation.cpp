@@ -227,16 +227,20 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 }
 
 Vector<String> Translation::_get_message_list() const {
-	List<StringName> msgstrs;
-	get_message_list(&msgstrs);
+	List<MessageKey> keys;
+	get_message_list(&keys);
 
-	Vector<String> keys;
-	keys.resize(msgstrs.size());
-	int idx = 0;
-	for (const StringName &msgstr : msgstrs) {
-		keys.write[idx++] = msgstr;
+	Vector<String> messages;
+	messages.reserve_exact(keys.size());
+	for (const MessageKey &key : keys) {
+		if (key.msgctxt.is_empty()) {
+			messages.push_back(key.msgid);
+		} else {
+			// Separated by the EOT character. Compatible with the MO file format.
+			messages.push_back(vformat("%s\x04%s", key.msgctxt, key.msgid));
+		}
 	}
-	return keys;
+	return messages;
 }
 
 Vector<String> Translation::get_translated_message_list() const {
@@ -321,14 +325,13 @@ void Translation::erase_message(const StringName &p_src_text, const StringName &
 	}
 }
 
-void Translation::get_message_list(List<StringName> *r_messages) const {
+bool Translation::has_message(const StringName &p_src_text, const StringName &p_context) const {
+	return translation_map.has({ p_context, p_src_text });
+}
+
+void Translation::get_message_list(List<MessageKey> *r_messages) const {
 	for (const KeyValue<MessageKey, Vector<StringName>> &E : translation_map) {
-		if (E.key.msgctxt.is_empty()) {
-			r_messages->push_back(E.key.msgid);
-		} else {
-			// Separated by the EOT character. Compatible with the MO file format.
-			r_messages->push_back(vformat("%s\x04%s", E.key.msgctxt, E.key.msgid));
-		}
+		r_messages->push_back(E.key);
 	}
 }
 
@@ -422,6 +425,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_message", "src_message", "context"), &Translation::has_message);
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
