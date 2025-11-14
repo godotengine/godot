@@ -57,6 +57,7 @@ private:
 	bool _is_active() const;
 
 	Vector<AudioFrame> _get_volume_vector();
+	Vector2 speaker_position = Vector2(0, 0);
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -75,6 +76,9 @@ protected:
 public:
 	void set_stream(Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_stream() const;
+
+	Vector2 get_speaker_position();
+	void set_speaker_position(Vector2 p_position);
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
