@@ -457,3 +457,27 @@ void JoltShapedObject3D::set_shape_disabled(int p_index, bool p_disabled) {
 
 	_shapes_changed();
 }
+
+bool JoltShapedObject3D::is_shape_set_as_one_way_collision(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), false);
+	return shapes[p_index].is_set_as_one_way_collision();
+}
+
+void JoltShapedObject3D::set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin) {
+	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	JoltShapeInstance3D &shape = shapes[p_index];
+
+	if (shape.is_set_as_one_way_collision() == p_enabled && shape.get_one_way_collision_margin() == p_margin) {
+		return;
+	}
+
+	shape.set_as_one_way_collision(p_enabled, p_margin);
+
+	//_shapes_changed(); // TODO check
+}
+
+real_t JoltShapedObject3D::get_shape_one_way_collision_margin(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)shapes.size(), 0.0f);
+	return shapes[p_index].get_one_way_collision_margin();
+}
