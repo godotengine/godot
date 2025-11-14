@@ -245,6 +245,11 @@ double ENetConnection::pop_statistic(HostStatistic p_stat) {
 	return ret;
 }
 
+int ENetConnection::get_max_peers() const {
+	ERR_FAIL_NULL_V_MSG(host, 0, "The ENetConnection instance isn't currently active.");
+	return host->peerCount;
+}
+
 int ENetConnection::get_max_channels() const {
 	ERR_FAIL_NULL_V_MSG(host, 0, "The ENetConnection instance isn't currently active.");
 	return host->channelLimit;
@@ -386,6 +391,7 @@ void ENetConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dtls_client_setup", "hostname", "client_options"), &ENetConnection::dtls_client_setup, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("refuse_new_connections", "refuse"), &ENetConnection::refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("pop_statistic", "statistic"), &ENetConnection::pop_statistic);
+	ClassDB::bind_method(D_METHOD("get_max_peers"), &ENetConnection::get_max_peers);
 	ClassDB::bind_method(D_METHOD("get_max_channels"), &ENetConnection::get_max_channels);
 	ClassDB::bind_method(D_METHOD("get_local_port"), &ENetConnection::get_local_port);
 	ClassDB::bind_method(D_METHOD("get_peers"), &ENetConnection::_get_peers);
