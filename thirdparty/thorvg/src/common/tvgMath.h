@@ -88,7 +88,7 @@ bool operator==(const Matrix& lhs, const Matrix& rhs);
 static inline bool rightAngle(const Matrix& m)
 {
    auto radian = fabsf(tvg::atan2(m.e21, m.e11));
-   if (radian < FLOAT_EPSILON || tvg::equal(radian, MATH_PI2) || tvg::equal(radian, MATH_PI)) return true;
+   if (tvg::zero(radian) || tvg::zero(radian - MATH_PI2) || tvg::zero(radian - MATH_PI)) return true;
    return false;
 }
 
