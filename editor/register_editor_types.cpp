@@ -152,8 +152,6 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorFileDialog);
 	GDREGISTER_CLASS(EditorSettings);
 	GDREGISTER_ABSTRACT_CLASS(EditorToaster);
-	GDREGISTER_CLASS(EditorNode3DGizmo);
-	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
 	GDREGISTER_CLASS(EditorResourceTooltipPlugin);
@@ -174,8 +172,6 @@ void register_editor_types() {
 	register_exporter_types();
 
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneFormatImporter);
-	GDREGISTER_CLASS(EditorScenePostImportPlugin);
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
@@ -190,10 +186,16 @@ void register_editor_types() {
 	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
 
-	GDREGISTER_CLASS(EditorScenePostImport);
 	GDREGISTER_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
+
+	// 3D editor foundational classes.
+	GDREGISTER_CLASS(EditorNode3DGizmo);
+	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
+	GDREGISTER_CLASS(EditorSceneFormatImporter);
+	GDREGISTER_CLASS(EditorScenePostImportPlugin);
+	GDREGISTER_CLASS(EditorScenePostImport);
 
 	// Required to document import options in the class reference.
 	GDREGISTER_CLASS(ResourceImporterBitMap);
@@ -211,42 +213,27 @@ void register_editor_types() {
 	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
 	GDREGISTER_CLASS(ResourceImporterWAV);
 
-	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
+	// This list is alphabetized, and plugins that depend on Node2D or Node3D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();
 	EditorPlugins::add_by_type<AudioStreamEditorPlugin>();
 	EditorPlugins::add_by_type<AudioStreamRandomizerEditorPlugin>();
 	EditorPlugins::add_by_type<BitMapEditorPlugin>();
-	EditorPlugins::add_by_type<BoneMapEditorPlugin>();
-	EditorPlugins::add_by_type<Camera3DEditorPlugin>();
 	EditorPlugins::add_by_type<ControlEditorPlugin>();
-	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<CurveEditorPlugin>();
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorPlugins::add_by_type<DebugAdapterServer>();
 	}
 	EditorPlugins::add_by_type<EditorScriptPlugin>();
 	EditorPlugins::add_by_type<FontEditorPlugin>();
-	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
-	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();
 	EditorPlugins::add_by_type<GradientEditorPlugin>();
 	EditorPlugins::add_by_type<GradientTexture2DEditorPlugin>();
 	EditorPlugins::add_by_type<InputEventEditorPlugin>();
-	EditorPlugins::add_by_type<LightmapGIEditorPlugin>();
 	EditorPlugins::add_by_type<MarginContainerEditorPlugin>();
 	EditorPlugins::add_by_type<MaterialEditorPlugin>();
-	EditorPlugins::add_by_type<MeshEditorPlugin>();
-	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
-	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
-	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
-	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
-	EditorPlugins::add_by_type<Path3DEditorPlugin>();
-	EditorPlugins::add_by_type<PhysicalBone3DEditorPlugin>();
-	EditorPlugins::add_by_type<Polygon3DEditorPlugin>();
 	EditorPlugins::add_by_type<ResourcePreloaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderFileEditorPlugin>();
-	EditorPlugins::add_by_type<Skeleton3DEditorPlugin>();
 	EditorPlugins::add_by_type<SpriteFramesEditorPlugin>();
 	EditorPlugins::add_by_type<StyleBoxEditorPlugin>();
 	EditorPlugins::add_by_type<SubViewportPreviewEditorPlugin>();
@@ -256,28 +243,47 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<TextureRegionEditorPlugin>();
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
 	EditorPlugins::add_by_type<ToolButtonEditorPlugin>();
-	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
-#ifndef DISABLE_DEPRECATED
-	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
-#endif
 
-	// 2D
+	// Node2D-based editor plugins.
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
-	EditorPlugins::add_by_type<CollisionPolygon2DEditorPlugin>();
-	EditorPlugins::add_by_type<CollisionShape2DEditorPlugin>();
 	EditorPlugins::add_by_type<CPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<LightOccluder2DEditorPlugin>();
 	EditorPlugins::add_by_type<Line2DEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
-	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	// 2D physics editor plugins.
+	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
+	EditorPlugins::add_by_type<CollisionPolygon2DEditorPlugin>();
+	EditorPlugins::add_by_type<CollisionShape2DEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
+#endif
+
+	// 3D editor plugins.
+	EditorPlugins::add_by_type<BoneMapEditorPlugin>();
+	EditorPlugins::add_by_type<Camera3DEditorPlugin>();
+	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
+	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
+	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();
+	EditorPlugins::add_by_type<LightmapGIEditorPlugin>();
+	EditorPlugins::add_by_type<MeshEditorPlugin>();
+	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
+	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
+	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
+	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
+	EditorPlugins::add_by_type<Path3DEditorPlugin>();
+	EditorPlugins::add_by_type<Polygon3DEditorPlugin>();
+	EditorPlugins::add_by_type<Skeleton3DEditorPlugin>();
+	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
+	// 3D physics editor plugins.
+	EditorPlugins::add_by_type<PhysicalBone3DEditorPlugin>();
+#ifndef DISABLE_DEPRECATED
+	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
 #endif
 
 	// For correct doc generation.
