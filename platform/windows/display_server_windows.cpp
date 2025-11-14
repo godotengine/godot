@@ -7565,6 +7565,9 @@ DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_drive
 							String(" or ").join(drivers)),
 					"Unable to initialize video driver");
 		}
+
+		memdelete(ds);
+		return nullptr;
 	}
 	return ds;
 }
