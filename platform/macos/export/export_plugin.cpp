@@ -1775,9 +1775,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	const StringName domain_name = "godot.project_name_localization";
 	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
 	TranslationServer::get_singleton()->load_project_translations(domain);
-	const Vector<String> locales = domain->get_loaded_locales();
+	const HashSet<Ref<Translation>> translations = domain->get_translations();
 
-	if (!locales.is_empty()) {
+	if (!translations.is_empty()) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
@@ -1821,10 +1821,13 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
-		for (const String &lang : locales) {
-			if (lang == "en") {
+		HashSet<String> locales = { "en" };
+		for (const Ref<Translation> &translation : translations) {
+			const String lang = translation->get_locale();
+			if (locales.has(lang)) {
 				continue;
 			}
+			locales.insert(lang);
 
 			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 			tmp_app_dir->make_dir_recursive(fname);

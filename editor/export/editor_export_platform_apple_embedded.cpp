@@ -1924,9 +1924,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	const StringName domain_name = "godot.project_name_localization";
 	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
 	TranslationServer::get_singleton()->load_project_translations(domain);
-	const Vector<String> locales = domain->get_loaded_locales();
+	const HashSet<Ref<Translation>> &translations = domain->get_translations();
 
-	if (!locales.is_empty()) {
+	if (!translations.is_empty()) {
 		{
 			String fname = binary_dir + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
@@ -1939,10 +1939,13 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
 		}
 
-		for (const String &lang : locales) {
-			if (lang == "en") {
+		HashSet<String> locales = { "en" };
+		for (const Ref<Translation> &translation : translations) {
+			const String lang = translation->get_locale();
+			if (locales.has(lang)) {
 				continue;
 			}
+			locales.insert(lang);
 
 			String fname = binary_dir + "/" + lang + ".lproj";
 			tmp_app_path->make_dir_recursive(fname);

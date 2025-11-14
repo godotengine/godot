@@ -47,15 +47,22 @@ void EditorTranslationPreviewMenu::_prepare() {
 
 	add_separator();
 
-	const Vector<String> locales = TranslationServer::get_singleton()->get_loaded_locales();
-	if (locales.is_empty()) {
+	const HashSet<Ref<Translation>> translations = TranslationServer::get_singleton()->get_main_domain()->get_translations();
+	if (translations.is_empty()) {
 		add_item(TTRC("No Translations Configured"));
 		set_item_tooltip(-1, TTRC("You can add translations in the Project Settings."));
 		set_item_disabled(-1, true);
 		return;
 	}
 
-	for (const String &locale : locales) {
+	HashSet<String> locales;
+	for (const Ref<Translation> &translation : translations) {
+		const String locale = translation->get_locale();
+		if (locales.has(locale)) {
+			continue;
+		}
+		locales.insert(locale);
+
 		const String name = TranslationServer::get_singleton()->get_locale_name(locale);
 		add_radio_check_item(name == locale ? name : name + " [" + locale + "]");
 		set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
