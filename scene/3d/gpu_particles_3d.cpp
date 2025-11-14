@@ -880,7 +880,7 @@ GPUParticles3D::GPUParticles3D() {
 	RS::get_singleton()->particles_set_mode(particles, RS::PARTICLES_MODE_3D);
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
-	set_emitting(true);
+	set_emitting(false);
 	set_one_shot(false);
 	set_seed(Math::rand());
 	set_amount_ratio(1.0);
