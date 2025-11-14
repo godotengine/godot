@@ -76,6 +76,8 @@ class Skeleton3D : public Node3D {
 #endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::SKELETON_3D;
+
 	enum ModifierCallbackModeProcess {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
@@ -160,6 +162,7 @@ private:
 	HashSet<SkinReference *> skin_bindings;
 	void _skin_changed();
 
+	LocalVector<BonePoseBackup> bones_backup;
 	mutable LocalVector<Bone> bones;
 	mutable bool process_order_dirty = false;
 
@@ -267,6 +270,7 @@ public:
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
 	void set_bone_pose(int p_bone, const Transform3D &p_pose);
+	void set_bone_pose_components(int p_bone, const Vector3 &p_position, const Quaternion &p_rotation, const Vector3 &p_scale);
 	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
 	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);

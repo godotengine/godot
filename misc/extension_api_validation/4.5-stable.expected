@@ -99,3 +99,11 @@ Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/method
 Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
 
 Duplicate method made const. Compatibility methods registered.
+
+
+GH-112308
+---------
+Validate extension JSON: Error: Field 'classes/Animation/methods/get_length/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/Animation/methods/set_length/arguments/0': meta changed value in new API, from "float" to "double".
+
+Return type and parameter changed from real_t to double to match internals. No compatibility methods registered because it breaks C# builds.

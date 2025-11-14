@@ -811,10 +811,8 @@ void AnimationPlayerEditor::_update_animation_blend() {
 
 	blend_editor.tree->clear();
 
-	String current = animation->get_item_text(animation->get_selected());
+	StringName current = animation->get_item_text(animation->get_selected());
 
-	List<StringName> anims;
-	player->get_animation_list(&anims);
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends = true;
 
@@ -823,7 +821,7 @@ void AnimationPlayerEditor::_update_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (const StringName &to : anims) {
+	for (const StringName &to : player->get_sorted_animation_list()) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -1020,7 +1018,7 @@ void AnimationPlayerEditor::_update_player() {
 		return;
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
@@ -1144,7 +1142,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 		}
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 	library->clear();
 
@@ -1478,7 +1476,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 		}
 
 		// Determine the read-only status of the animation's library and the libraries as a whole.
-		List<StringName> libraries;
+		LocalVector<StringName> libraries;
 		player->get_animation_library_list(&libraries);
 
 		bool current_animation_library_is_readonly = false;
