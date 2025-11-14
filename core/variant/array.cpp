@@ -308,13 +308,14 @@ Error Array::resize(int p_new_size) {
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
 	Error err = _p->array.resize_initialized(p_new_size);
-	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
-		Variant *write = _p->array.ptrw();
-		for (int i = old_size; i < p_new_size; i++) {
-			VariantInternal::initialize(&write[i], variant_type);
-		}
+	if (err || p_new_size <= old_size || variant_type == Variant::NIL || variant_type == Variant::OBJECT) {
+		return err;
 	}
-	return err;
+	Variant *write = _p->array.ptrw();
+	for (int i = old_size; i < p_new_size; i++) {
+		VariantInternal::initialize(&write[i], variant_type);
+	}
+	return OK;
 }
 
 Error Array::reserve(int p_new_size) {
