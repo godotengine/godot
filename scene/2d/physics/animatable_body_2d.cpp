@@ -71,6 +71,7 @@ void AnimatableBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
+	_on_physics_callback();
 }
 
 void AnimatableBody2D::_notification(int p_what) {
