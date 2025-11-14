@@ -226,7 +226,9 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
+#ifndef _2D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_2d_override(enable);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
@@ -415,6 +417,7 @@ Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
 	return OK;
 }
 
+#ifndef _2D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -430,6 +433,7 @@ Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
@@ -540,7 +544,9 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+#ifndef _2D_DISABLED
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
 #endif // _3D_DISABLED
@@ -567,10 +573,12 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
 	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
+#ifndef _2D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 }
 
@@ -1639,14 +1647,18 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
 	if (camera_first_override) {
+#ifndef _2D_DISABLED
 		_reset_camera_2d();
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 		_reset_camera_3d();
 #endif // _3D_DISABLED
 
 		camera_first_override = false;
 	} else if (p_enabled) {
+#ifndef _2D_DISABLED
 		_update_view_2d();
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 		Window *root = SceneTree::get_singleton()->get_root();
@@ -2466,7 +2478,9 @@ void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_ev
 	view_2d_offset.x -= scroll.x / view_2d_zoom;
 	view_2d_offset.y -= scroll.y / view_2d_zoom;
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
 // A very shallow copy of the same function inside CanvasItemEditor.
@@ -2489,9 +2503,12 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 		view_2d_offset = view_offset_int + (view_offset_frac * closest_zoom_factor).round() / closest_zoom_factor;
 	}
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
+#ifndef _2D_DISABLED
 void RuntimeNodeSelect::_reset_camera_2d() {
 	camera_first_override = true;
 	Window *root = SceneTree::get_singleton()->get_root();
@@ -2521,6 +2538,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 
 	_queue_selection_update();
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
