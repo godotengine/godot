@@ -41,6 +41,9 @@ class AudioStreamPlayerInternal;
 class AudioStreamPlayer2D : public Node2D {
 	GDCLASS(AudioStreamPlayer2D, Node2D);
 
+protected:
+	AudioStreamPlayerInternal *internal = nullptr;
+
 private:
 	enum {
 		MAX_OUTPUTS = 8,
@@ -53,8 +56,6 @@ private:
 		int bus_index = 0;
 		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
 	};
-
-	AudioStreamPlayerInternal *internal = nullptr;
 
 	SafeNumeric<float> setplay{ -1.0 };
 	Ref<AudioStreamPlayback> setplayback;
@@ -90,6 +91,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	void _play_internal(Ref<AudioStreamPlayback> stream_playback, double p_from_pos = 0.0);
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_autoplay_enabled_bind_compat_86907();

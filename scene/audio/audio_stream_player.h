@@ -48,9 +48,10 @@ public:
 		MIX_TARGET_CENTER
 	};
 
-private:
+protected:
 	AudioStreamPlayerInternal *internal = nullptr;
 
+private:
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _set_playing(bool p_enable);
@@ -66,6 +67,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	void _play_internal(Ref<AudioStreamPlayback> stream_playback, double p_from_pos = 0.0);
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_autoplay_enabled_bind_compat_86907();
