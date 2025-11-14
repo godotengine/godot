@@ -252,11 +252,15 @@ protected:
 
 	virtual void _make_all_joints_dirty() override;
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index) override;
+	void _clear_joints(int p_index);
 	virtual void _update_joints(int p_index) override;
 	virtual void _make_simulation_dirty(int p_index) override;
+	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index) override;
 
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta) override;
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, TwoBoneIK3DSetting *p_setting, const Vector3 &p_destination, const Vector3 &p_pole_destination);
+
+	Transform3D _get_bone_global_rest(Skeleton3D *p_skeleton, int p_bone, int p_root) const;
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -306,6 +310,11 @@ public:
 	Vector3 get_pole_direction_vector(int p_index) const;
 
 	bool is_valid(int p_index) const; // Helper for editor and validation.
+
+#ifdef TOOLS_ENABLED
+	Vector3 get_root_bone_vector(int p_index) const;
+	Vector3 get_middle_bone_vector(int p_index) const;
+#endif // TOOLS_ENABLED
 
 	~TwoBoneIK3D();
 };
