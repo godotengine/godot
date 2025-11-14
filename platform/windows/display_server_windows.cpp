@@ -2273,6 +2273,21 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 
 	MoveWindow(wd.hWnd, rect.left, rect.top, w, h, TRUE);
+
+	const int current_screen = window_get_current_screen(p_window);
+	const Size2i screen_size = screen_get_size(current_screen);
+	// Assume a taskbar height of 40 pixels (the default on Windows 10/11),
+	// and that the taskbar is located at the top or bottom of the screen
+	// (this is always the case on Windows 11).
+	// TODO: Scale this according to the Windows display scale setting,
+	// or, even better, query this information using Windows APIs somehow.
+	constexpr int taskbar_height = 40;
+	const Size2i decoration_size = window_get_size_with_decorations(p_window) - window_get_size(p_window);
+
+	if (p_size.width > (screen_size.width - decoration_size.width) || p_size.height > (screen_size.height - decoration_size.height - taskbar_height)) {
+		// Maximize the window if it's too small to fit on the current screen.
+		window_set_mode(WINDOW_MODE_MAXIMIZED, p_window);
+	}
 }
 
 Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
