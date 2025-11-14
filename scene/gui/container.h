@@ -36,8 +36,11 @@ class Container : public Control {
 	GDCLASS(Container, Control);
 
 	bool pending_sort = false;
+	bool update_min_size_requested = false;
+
 	void _sort_children();
 	void _child_minsize_changed();
+	void _update_and_resort();
 
 protected:
 	enum class SortableVisibilityMode {
