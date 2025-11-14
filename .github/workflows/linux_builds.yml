@@ -39,6 +39,7 @@ jobs:
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
+            clang-tidy: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
@@ -113,6 +114,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 2 # 2 needed for Get changed files; no trivial way to conditionally use 1
+
+      # Keep in sync with static_checks.yml
+      - name: Get changed files
+        if: matrix.clang-tidy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
+          fi
+          files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       - name: Setup dependencies
         run: |
@@ -176,9 +192,15 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} compiledb=yes
           platform: linuxbsd
           target: ${{ matrix.target }}
+
+      - name: Style checks via pre-commit
+        if: matrix.clang-tidy
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ env.CHANGED_FILES }} --hook-stage manual clang-tidy
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
