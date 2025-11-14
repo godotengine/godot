@@ -141,17 +141,19 @@ class EditorSettingsPropertyWrapper : public EditorProperty {
 	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
 
 	String property;
+	PropertyHint hint;
+	String hint_text;
+	uint32_t usage;
+
 	EditorProperty *editor_property = nullptr;
 
-	BoxContainer *container = nullptr;
-
-	HBoxContainer *override_info = nullptr;
-	Label *override_label = nullptr;
+	HBoxContainer *override_container = nullptr;
+	TextureRect *override_icon = nullptr;
+	EditorProperty *override_editor_property = nullptr;
 	Button *goto_button = nullptr;
 	Button *remove_button = nullptr;
 
-	bool requires_restart = false;
-
+	void _setup_override_info();
 	void _update_override();
 	void _create_override();
 	void _remove_override();
@@ -163,7 +165,7 @@ public:
 	static inline Callable restart_request_callback;
 
 	virtual void update_property() override;
-	void setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart);
+	void setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage);
 };
 
 class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {
