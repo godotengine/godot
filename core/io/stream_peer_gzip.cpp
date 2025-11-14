@@ -40,9 +40,6 @@ void StreamPeerGZIP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerGZIP::clear);
 }
 
-StreamPeerGZIP::StreamPeerGZIP() {
-}
-
 StreamPeerGZIP::~StreamPeerGZIP() {
 	_close();
 }
