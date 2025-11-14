@@ -436,7 +436,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
 	if (os_android) {
 		String name = jstring_to_string(p_name, env);
-		Input::get_singleton()->joy_connection_changed(p_device, p_connected, name);
+		Input *input = Input::get_singleton();
+		if (input) {
+			input->joy_connection_changed(p_device, p_connected, name);
+		}
 	}
 }
 
