@@ -126,6 +126,7 @@ void NoiseTexture3D::_thread_done(const TypedArray<Image> &p_data) {
 }
 
 void NoiseTexture3D::_thread_function(void *p_ud) {
+	Thread::set_name("NoiseTexture3D");
 	NoiseTexture3D *tex = static_cast<NoiseTexture3D *>(p_ud);
 	callable_mp(tex, &NoiseTexture3D::_thread_done).call_deferred(tex->_generate_texture());
 }
