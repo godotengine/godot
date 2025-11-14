@@ -910,7 +910,7 @@
 			<return type="void" />
 			<param index="0" name="active" type="bool" />
 			<description>
-				Activates or deactivates the 2D physics server. If [param active] is [code]false[/code], then the physics server will not do anything in its physics step.
+				If [param active] is [code]false[/code], disables physics steps performed by the physics server, which affects [RigidBody2D] nodes. Manual stepping and collisions (e.g. with [method PhysicsBody2D.move_and_collide]) will still function normally.
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">

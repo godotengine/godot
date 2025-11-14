@@ -1000,7 +1000,7 @@
 			<return type="void" />
 			<param index="0" name="active" type="bool" />
 			<description>
-				Activates or deactivates the 3D physics engine.
+				If [param active] is [code]false[/code], disables physics steps performed by the physics server, which affects [RigidBody3D] nodes. Manual stepping and collisions (e.g. with [method PhysicsBody3D.move_and_collide]) will still function normally.
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
