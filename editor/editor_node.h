@@ -454,6 +454,8 @@ private:
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
 
+	bool select_current_scene_file_requested = false;
+
 	HashSet<Ref<Translation>> tracked_translations;
 	bool pending_translation_notification = false;
 
@@ -592,6 +594,7 @@ private:
 
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
+	void _nav_to_selected_scene();
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
