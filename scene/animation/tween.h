@@ -122,7 +122,7 @@ private:
 
 	bool is_bound = false;
 	bool started = false;
-	bool running = true;
+	bool running = false;
 	bool in_step = false;
 	bool dead = false;
 	bool valid = false;
