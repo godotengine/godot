@@ -37,22 +37,37 @@
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
+	class EditMenus : public HBoxContainer {
+		MenuButton *edit_menu = nullptr;
+		MenuButton *search_menu = nullptr;
+		MenuButton *goto_menu = nullptr;
+		PopupMenu *bookmarks_menu = nullptr;
+		PopupMenu *highlighter_menu = nullptr;
+
+		TextEditor *_get_active_editor();
+		void _edit_option(int p_op);
+		void _prepare_edit_menu();
+		void _update_highlighter_menu();
+		void _change_syntax_highlighter(int p_idx);
+		void _update_bookmark_list();
+		void _bookmark_item_pressed(int p_idx);
+
+	public:
+		EditMenus();
+	};
+
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
-private:
 	CodeTextEditor *code_editor = nullptr;
 
 	Ref<Resource> edited_res;
 	bool editor_enabled = false;
 
-	HBoxContainer *edit_hb = nullptr;
-	MenuButton *edit_menu = nullptr;
-	PopupMenu *highlighter_menu = nullptr;
-	MenuButton *search_menu = nullptr;
-	PopupMenu *bookmarks_menu = nullptr;
+	static inline EditMenus *edit_menus = nullptr;
 	PopupMenu *context_menu = nullptr;
 
 	GotoLinePopup *goto_line_popup = nullptr;
+	LocalVector<Ref<EditorSyntaxHighlighter>> highlighters;
 
 	enum {
 		EDIT_UNDO,
@@ -97,18 +112,12 @@ protected:
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
-	void _prepare_edit_menu();
 
-	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
-	void _change_syntax_highlighter(int p_idx);
 	void _load_theme_settings();
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	void _validate_script();
-
-	void _update_bookmark_list();
-	void _bookmark_item_pressed(int p_idx);
 
 public:
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
@@ -118,7 +127,7 @@ public:
 	virtual Ref<Texture2D> get_theme_icon() override;
 	virtual Ref<Resource> get_edited_resource() const override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
-	virtual void enable_editor(Control *p_shortcut_context = nullptr) override;
+	virtual void enable_editor() override;
 	virtual void reload_text() override;
 	virtual void apply_code() override;
 	virtual bool is_unsaved() override;
@@ -147,7 +156,6 @@ public:
 	void update_toggle_files_button() override;
 
 	virtual Control *get_edit_menu() override;
-	virtual void clear_edit_menu() override;
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) override;
 
 	virtual void validate() override;
