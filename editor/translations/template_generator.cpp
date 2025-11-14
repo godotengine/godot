@@ -34,7 +34,7 @@
 #include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
 
-TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin) const {
+Ref<Translation> TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin) const {
 	Vector<Vector<String>> raw;
 
 	for (const String &path : p_sources) {
@@ -71,7 +71,13 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		}
 	}
 
-	MessageMap result;
+	// To remove duplicates.
+	HashSet<String> locations;
+	HashSet<String> comments;
+
+	Ref<Translation> tpl;
+	tpl.instantiate();
+
 	for (const Vector<String> &entry : raw) {
 		const String &msgid = entry[0];
 		const String &msgctxt = entry[1];
@@ -79,31 +85,45 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		const String &comment = entry[3];
 		const String &location = entry[4];
 
-		const Translation::MessageKey key = { msgctxt, msgid };
-		MessageData &mdata = result[key];
-		if (!mdata.plural.is_empty() && !plural.is_empty() && mdata.plural != plural) {
-			WARN_PRINT(vformat(R"(Skipping different plural definitions for msgid "%s" msgctxt "%s": "%s" and "%s")", msgid, msgctxt, mdata.plural, plural));
-			continue;
+		if (tpl->has_message(msgid, msgctxt)) {
+			const String &existing_plural = tpl->get_hint(msgid, msgctxt, Translation::HINT_PLURAL);
+			if (!existing_plural.is_empty() && !plural.is_empty() && existing_plural != plural) {
+				WARN_PRINT(vformat(R"(Skipping different plural definitions for msgid "%s" msgctxt "%s": "%s" and "%s")", msgid, msgctxt, existing_plural, plural));
+				continue;
+			}
+		} else if (plural.is_empty()) {
+			tpl->add_message(msgid, StringName(), msgctxt);
+		} else {
+			tpl->add_plural_message(msgid, { StringName() }, msgctxt);
+			tpl->set_hint(msgid, msgctxt, Translation::HINT_PLURAL, plural);
 		}
-		mdata.plural = plural;
-		if (!location.is_empty()) {
-			mdata.locations.insert(location);
+
+		if (!location.is_empty() && !locations.has(location)) {
+			locations.insert(location);
+
+			const String &existing_references = tpl->get_hint(msgid, msgctxt, Translation::HINT_LOCATIONS);
+			const String value = existing_references.is_empty() ? location : existing_references + "\n" + location;
+			tpl->set_hint(msgid, msgctxt, Translation::HINT_LOCATIONS, value);
 		}
-		if (!comment.is_empty()) {
-			mdata.comments.insert(comment);
+
+		if (!comment.is_empty() && !comments.has(comment)) {
+			comments.insert(comment);
+
+			const String &existing_comments = tpl->get_hint(msgid, msgctxt, Translation::HINT_COMMENTS);
+			const String value = existing_comments.is_empty() ? comment : existing_comments + "\n" + comment;
+			tpl->set_hint(msgid, msgctxt, Translation::HINT_COMMENTS, value);
 		}
 	}
-	return result;
+	return tpl;
 }
 
 void TranslationTemplateGenerator::generate(const String &p_file) {
 	const Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	const bool add_builtin = GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot");
 
-	const MessageMap &map = parse(files, add_builtin);
-	if (map.is_empty()) {
+	const Ref<Translation> &tpl = parse(files, add_builtin);
+	if (tpl->get_message_count()) {
 		WARN_PRINT_ED(TTR("No translatable strings found."));
-		return;
 	}
 
 	Error err;
@@ -112,9 +132,9 @@ void TranslationTemplateGenerator::generate(const String &p_file) {
 
 	const String ext = p_file.get_extension().to_lower();
 	if (ext == "pot") {
-		_write_to_pot(file, map);
+		_write_to_pot(file, tpl);
 	} else if (ext == "csv") {
-		_write_to_csv(file, map);
+		_write_to_csv(file, tpl);
 	} else {
 		ERR_FAIL_MSG("Unrecognized translation template file extension: " + ext);
 	}
@@ -146,7 +166,7 @@ static void _write_pot_field(Ref<FileAccess> p_file, const String &p_name, const
 	}
 }
 
-void TranslationTemplateGenerator::_write_to_pot(Ref<FileAccess> p_file, const MessageMap &p_map) const {
+void TranslationTemplateGenerator::_write_to_pot(Ref<FileAccess> p_file, const Ref<Translation> &p_template) const {
 	const String project_name = GLOBAL_GET("application/config/name").operator String().replace("\n", "\\n");
 	const Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	String extracted_files;
@@ -170,77 +190,71 @@ void TranslationTemplateGenerator::_write_to_pot(Ref<FileAccess> p_file, const M
 			"\"Content-Transfer-Encoding: 8-bit\\n\"\n";
 	p_file->store_string(header);
 
-	for (const KeyValue<Translation::MessageKey, MessageData> &E : p_map) {
+	List<Translation::MessageKey> keys;
+	p_template->get_message_list(&keys);
+
+	for (const Translation::MessageKey &key : keys) {
 		// Put the blank line at the start, to avoid a double at the end when closing the file.
 		p_file->store_line("");
 
 		// Write comments.
-		bool is_first_comment = true;
-		for (const String &comment : E.value.comments) {
-			if (is_first_comment) {
-				p_file->store_line("#. TRANSLATORS: " + comment.replace("\n", "\n#. "));
+		const Vector<String> comment_lines = p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_COMMENTS).split("\n");
+		for (int i = 0; i < comment_lines.size(); i++) {
+			const String &comment = comment_lines[i].replace("\n", "\n#. ");
+			if (i == 0) {
+				p_file->store_line("#. TRANSLATORS: " + comment);
 			} else {
-				p_file->store_line("#. " + comment.replace("\n", "\n#. "));
+				p_file->store_line("#. " + comment);
 			}
-			is_first_comment = false;
 		}
 
 		// Write file locations.
-		for (const String &location : E.value.locations) {
+		const Vector<String> locations = p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_LOCATIONS).split("\n");
+		for (const String &location : locations) {
 			p_file->store_line("#: " + location.trim_prefix("res://").replace("\n", "\\n"));
 		}
 
 		// Write context.
-		const String msgctxt = E.key.msgctxt;
-		if (!msgctxt.is_empty()) {
-			p_file->store_line("msgctxt " + msgctxt.json_escape().quote());
+		if (!key.msgctxt.is_empty()) {
+			p_file->store_line("msgctxt " + String(key.msgctxt).json_escape().quote());
 		}
 
 		// Write msgid.
-		_write_pot_field(p_file, "msgid", E.key.msgid);
+		_write_pot_field(p_file, "msgid", key.msgid);
 
 		// Write msgid_plural.
-		if (E.value.plural.is_empty()) {
+		const String &msgid_plural = p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_PLURAL);
+		if (msgid_plural.is_empty()) {
 			p_file->store_line("msgstr \"\"");
 		} else {
-			_write_pot_field(p_file, "msgid_plural", E.value.plural);
+			_write_pot_field(p_file, "msgid_plural", msgid_plural);
 			p_file->store_line("msgstr[0] \"\"");
 			p_file->store_line("msgstr[1] \"\"");
 		}
 	}
 }
 
-static String _join_strings(const HashSet<String> &p_strings) {
-	String result;
-	bool is_first = true;
-	for (const String &s : p_strings) {
-		if (!is_first) {
-			result += '\n';
-		}
-		result += s;
-		is_first = false;
-	}
-	return result;
-}
+void TranslationTemplateGenerator::_write_to_csv(Ref<FileAccess> p_file, const Ref<Translation> &p_template) const {
+	List<Translation::MessageKey> keys;
+	p_template->get_message_list(&keys);
 
-void TranslationTemplateGenerator::_write_to_csv(Ref<FileAccess> p_file, const MessageMap &p_map) const {
 	// Avoid adding unnecessary columns.
 	bool context_used = false;
 	bool plural_used = false;
 	bool comments_used = false;
 	bool locations_used = false;
 	{
-		for (const KeyValue<Translation::MessageKey, MessageData> &E : p_map) {
-			if (!context_used && !E.key.msgctxt.is_empty()) {
+		for (const Translation::MessageKey &key : keys) {
+			if (!context_used && !key.msgctxt.is_empty()) {
 				context_used = true;
 			}
-			if (!plural_used && !E.value.plural.is_empty()) {
+			if (!plural_used && !p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_PLURAL).is_empty()) {
 				plural_used = true;
 			}
-			if (!comments_used && !E.value.comments.is_empty()) {
+			if (!comments_used && !p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_COMMENTS).is_empty()) {
 				comments_used = true;
 			}
-			if (!locations_used && !E.value.locations.is_empty()) {
+			if (!locations_used && !p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_LOCATIONS).is_empty()) {
 				locations_used = true;
 			}
 		}
@@ -261,19 +275,19 @@ void TranslationTemplateGenerator::_write_to_csv(Ref<FileAccess> p_file, const M
 	}
 	p_file->store_csv_line(header);
 
-	for (const KeyValue<Translation::MessageKey, MessageData> &E : p_map) {
-		Vector<String> line = { E.key.msgid };
+	for (const Translation::MessageKey &key : keys) {
+		Vector<String> line = { key.msgid };
 		if (context_used) {
-			line.push_back(E.key.msgctxt);
+			line.push_back(key.msgctxt);
 		}
 		if (plural_used) {
-			line.push_back(E.value.plural);
+			line.push_back(p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_PLURAL));
 		}
 		if (comments_used) {
-			line.push_back(_join_strings(E.value.comments));
+			line.push_back(p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_COMMENTS));
 		}
 		if (locations_used) {
-			line.push_back(_join_strings(E.value.locations));
+			line.push_back(p_template->get_hint(key.msgid, key.msgctxt, Translation::HINT_LOCATIONS));
 		}
 		p_file->store_csv_line(line);
 	}
