@@ -2106,8 +2106,7 @@ render_mode unshaded;
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
 void fragment() {
-	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
-	COLOR.rgb = c.rgb;
+	COLOR = textureLod(screen_texture, SCREEN_UV, 0.0);
 }
 )");
 		default_clip_children_material = material_storage->material_allocate();
