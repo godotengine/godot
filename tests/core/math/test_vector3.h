@@ -217,6 +217,82 @@ TEST_CASE("[Vector3] Operators") {
 	constexpr Vector3 int1 = Vector3(4, 5, 9);
 	constexpr Vector3 int2 = Vector3(1, 2, 3);
 
+	Vector3 vector_add_assignment = Vector3(1, 2, 3);
+	vector_add_assignment += Vector3(1, 1, 1);
+	CHECK_MESSAGE(
+			vector_add_assignment == Vector3(2, 3, 4),
+			"Vector3 addition assignment should behave as expected.");
+
+	Vector3 vector_sub_assignment = Vector3(1, 2, 3);
+	vector_sub_assignment -= Vector3(1, 1, 1);
+	CHECK_MESSAGE(
+			vector_sub_assignment == Vector3(0, 1, 2),
+			"Vector3 subtraction assignment should behave as expected.");
+
+	Vector3 vector_mult_assignment = Vector3(1, 2, 3);
+	vector_mult_assignment *= Vector3(1, 2, 3);
+	CHECK_MESSAGE(
+			vector_mult_assignment == Vector3(1, 4, 9),
+			"Vector3 multiplication assignment should behave component-wise.");
+
+	Vector3 vector_div_assignment = Vector3(1, 4, 9);
+	vector_div_assignment /= Vector3(1, 2, 3);
+	CHECK_MESSAGE(
+			vector_div_assignment == Vector3(1, 2, 3),
+			"Vector3 division assignment should behave component-wise.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 1) != Vector3(0, 0, 1),
+			"Vector3 not equals should behave as expected.");
+
+	CHECK_MESSAGE(
+			Vector3(0, 1, 1) < Vector3(1, 0, 0),
+			"Vector3 less than operator checks x-axis first for compairson.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 0, 1) < Vector3(1, 1, 0),
+			"Vector3 less than operator checks y-axis after x axis for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 0) < Vector3(1, 1, 1),
+			"Vector3 less than operator checks z-axis last for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 0, 0) > Vector3(0, 1, 1),
+			"Vector3 greater than operator checks x-axis first for compairson.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 0) > Vector3(1, 0, 1),
+			"Vector3 greater than operator checks y-axis after x axis for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 1) > Vector3(1, 1, 0),
+			"Vector3 greater than operator checks z-axis last for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(0, 1, 1) <= Vector3(1, 0, 0),
+			"Vector3 less than or equal to operator checks x-axis first for compairson.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 0, 1) <= Vector3(1, 1, 0),
+			"Vector3 less than or equal to operator checks y-axis after x axis for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 0) <= Vector3(1, 1, 1),
+			"Vector3 less than or equal to operator checks z-axis last for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 0, 0) >= Vector3(0, 1, 1),
+			"Vector3 greater than or equal to operator checks x-axis first for compairson.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 0) >= Vector3(1, 0, 1),
+			"Vector3 greater than or equal to operator checks y-axis after x axis for comparison.");
+
+	CHECK_MESSAGE(
+			Vector3(1, 1, 1) >= Vector3(1, 1, 0),
+			"Vector3 greater than or equal to operator checks z-axis last for comparison.");
+
 	CHECK_MESSAGE(
 			(decimal1 + decimal2).is_equal_approx(Vector3(3.5, 8.3, 13.4)),
 			"Vector3 addition should behave as expected.");
