@@ -1,0 +1,5 @@
+GDTEST_OK
+~~ WARNING at line 10: (IMPLICIT_FUNCTION_OVERRIDE) The method "base_method()" overrides "OverBaseClass::base_method()" but does not have the @override annotation.
+~~ WARNING at line 14: (IMPLICIT_FUNCTION_OVERRIDE) The method "inner_base_method()" overrides "InnerClass::inner_base_method()" but does not have the @override annotation.
+~~ WARNING at line 19: (IMPLICIT_FUNCTION_OVERRIDE) The method "_physics_process()" overrides "Node::_physics_process()" but does not have the @override annotation.
+@override_warns
