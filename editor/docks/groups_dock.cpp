@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  node_dock.h                                                           */
+/*  groups_dock.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "groups_dock.h"
 
-#include "editor/docks/editor_dock.h"
-#include "groups_editor.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/themes/editor_scale.h"
 
-class ConfigFile;
-class ConnectionsDock;
+void GroupsDock::set_object(Object *p_object) {
+	groups->set_current(Object::cast_to<Node>(p_object));
 
-class NodeDock : public EditorDock {
-	GDCLASS(NodeDock, EditorDock);
+	if (p_object) {
+		groups->show();
+		select_a_node->hide();
+	} else {
+		groups->hide();
+		select_a_node->show();
+	}
+}
 
-	Button *connections_button = nullptr;
-	Button *groups_button = nullptr;
+GroupsDock::GroupsDock() {
+	singleton = this;
+	set_name(TTRC("Groups"));
+	set_icon_name("Groups");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_groups", TTRC("Open Groups Dock")));
+	set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
-	ConnectionsDock *connections = nullptr;
-	GroupsEditor *groups = nullptr;
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
 
-	HBoxContainer *mode_hb = nullptr;
+	groups = memnew(GroupsEditor);
+	main_vb->add_child(groups);
+	groups->set_v_size_flags(SIZE_EXPAND_FILL);
+	groups->hide();
 
-	Label *select_a_node = nullptr;
+	select_a_node = memnew(Label);
+	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
+	select_a_node->set_text(TTRC("Select a single node to edit its groups."));
+	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
+	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	main_vb->add_child(select_a_node);
+}
 
-private:
-	inline static NodeDock *singleton = nullptr;
-
-public:
-	static NodeDock *get_singleton() { return singleton; }
-
-protected:
-	void _notification(int p_what);
-
-	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
-	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
-
-public:
-	void set_object(Object *p_object);
-
-	void show_groups();
-	void show_connections();
-
-	void update_lists();
-
-	NodeDock();
-	~NodeDock();
-};
+GroupsDock::~GroupsDock() {
+	singleton = nullptr;
+}
