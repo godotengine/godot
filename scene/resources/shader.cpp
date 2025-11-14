@@ -68,8 +68,8 @@ void Shader::_recompile() {
 	set_code(get_code());
 }
 
-void Shader::set_path(const String &p_path, bool p_take_over) {
-	Resource::set_path(p_path, p_take_over);
+void Shader::set_path(const String &p_path, bool p_take_over, bool p_lock_cache) {
+	Resource::set_path(p_path, p_take_over, p_lock_cache);
 
 	if (shader_rid.is_valid()) {
 		RS::get_singleton()->shader_set_path_hint(shader_rid, p_path);
