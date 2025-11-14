@@ -666,6 +666,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
+	void _store_snap_states();
 
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
