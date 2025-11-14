@@ -293,7 +293,7 @@
 			<description>
 				Finds the first descendant of this node whose [member name] matches [param pattern], returning [code]null[/code] if no match is found. The matching is done against node names, [i]not[/i] their paths, through [method String.match]. As such, it is case-sensitive, [code]"*"[/code] matches zero or more characters, and [code]"?"[/code] matches any single character.
 				If [param recursive] is [code]false[/code], only this node's direct children are checked. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. Internal children are also included in the search (see [code]internal[/code] parameter in [method add_child]).
-				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked.
+				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked. This would exclude [member SceneTree.root], orphans without parents, and new children whose [member owner] was never set.
 				[b]Note:[/b] This method can be very slow. Consider storing a reference to the found node in a variable. Alternatively, use [method get_node] with unique names (see [member unique_name_in_owner]).
 				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
 			</description>
@@ -308,7 +308,7 @@
 				Finds all descendants of this node whose names match [param pattern], returning an empty [Array] if no match is found. The matching is done against node names, [i]not[/i] their paths, through [method String.match]. As such, it is case-sensitive, [code]"*"[/code] matches zero or more characters, and [code]"?"[/code] matches any single character.
 				If [param type] is not empty, only ancestors inheriting from [param type] are included (see [method Object.is_class]).
 				If [param recursive] is [code]false[/code], only this node's direct children are checked. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. Internal children are also included in the search (see [code]internal[/code] parameter in [method add_child]).
-				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked.
+				If [param owned] is [code]true[/code], only descendants with a valid [member owner] node are checked. This would exclude [member SceneTree.root], orphans without parents, and new children whose [member owner] was never set.
 				[b]Note:[/b] This method can be very slow. Consider storing references to the found nodes in a variable.
 				[b]Note:[/b] To find a single descendant node matching a pattern, see [method find_child].
 			</description>
