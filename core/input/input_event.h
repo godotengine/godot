@@ -90,8 +90,6 @@ public:
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 
 	virtual InputEventType get_type() const { return InputEventType::INVALID; }
-
-	InputEvent() {}
 };
 
 class InputEventFromWindow : public InputEvent {
@@ -105,8 +103,6 @@ protected:
 public:
 	void set_window_id(int64_t p_id);
 	int64_t get_window_id() const;
-
-	InputEventFromWindow() {}
 };
 
 class InputEventWithModifiers : public InputEventFromWindow {
@@ -147,8 +143,6 @@ public:
 
 	virtual String as_text() const override;
 	virtual String _to_string() override;
-
-	InputEventWithModifiers() {}
 };
 
 class InputEventKey : public InputEventWithModifiers {
@@ -205,8 +199,6 @@ public:
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
 	InputEventType get_type() const final override { return InputEventType::KEY; }
-
-	InputEventKey() {}
 };
 
 class InputEventMouse : public InputEventWithModifiers {
@@ -229,8 +221,6 @@ public:
 
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
-
-	InputEventMouse() {}
 };
 
 class InputEventMouseButton : public InputEventMouse {
@@ -266,8 +256,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
-
-	InputEventMouseButton() {}
 };
 
 class InputEventMouseMotion : public InputEventMouse {
@@ -313,8 +301,6 @@ public:
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
 	InputEventType get_type() const final override { return InputEventType::MOUSE_MOTION; }
-
-	InputEventMouseMotion() {}
 };
 
 class InputEventJoypadMotion : public InputEvent {
@@ -343,8 +329,6 @@ public:
 	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value, int p_device = -1);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
-
-	InputEventJoypadMotion() {}
 };
 
 class InputEventJoypadButton : public InputEvent {
@@ -376,8 +360,6 @@ public:
 	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index, int p_device = -1);
 
 	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
-
-	InputEventJoypadButton() {}
 };
 
 class InputEventScreenTouch : public InputEventFromWindow {
@@ -407,8 +389,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
-
-	InputEventScreenTouch() {}
 };
 
 class InputEventScreenDrag : public InputEventFromWindow {
@@ -461,8 +441,6 @@ public:
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
 	InputEventType get_type() const final override { return InputEventType::SCREEN_DRAG; }
-
-	InputEventScreenDrag() {}
 };
 
 class InputEventAction : public InputEvent {
@@ -498,8 +476,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::ACTION; }
-
-	InputEventAction() {}
 };
 
 class InputEventGesture : public InputEventWithModifiers {
@@ -531,8 +507,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
-
-	InputEventMagnifyGesture() {}
 };
 
 class InputEventPanGesture : public InputEventGesture {
@@ -551,8 +525,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
-
-	InputEventPanGesture() {}
 };
 
 class InputEventMIDI : public InputEvent {
@@ -599,8 +571,6 @@ public:
 	virtual String _to_string() override;
 
 	InputEventType get_type() const final override { return InputEventType::MIDI; }
-
-	InputEventMIDI() {}
 };
 
 class InputEventShortcut : public InputEvent {

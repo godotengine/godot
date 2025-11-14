@@ -772,9 +772,6 @@ void TextEdit::_notification(int p_what) {
 			bool rtl = is_layout_rtl();
 			int lines_drawn = 0;
 
-			RID selection_start;
-			RID selection_end;
-
 			for (int i = 0; i < text.size(); i++) {
 				text.update_accessibility(i, ae);
 				const Ref<TextParagraph> &ac_buf = text.get_line_data(i);

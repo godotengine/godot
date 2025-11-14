@@ -376,8 +376,6 @@ public:
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1); // Import either a png or jpg from a pointer.
 	Image(const char **p_xpm); // Import an XPM image.
 
-	~Image() {}
-
 	AlphaMode detect_alpha() const;
 	bool is_invisible() const;
 

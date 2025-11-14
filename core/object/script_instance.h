@@ -93,5 +93,5 @@ public:
 	virtual const Variant get_rpc_config() const;
 
 	virtual ScriptLanguage *get_language() = 0;
-	virtual ~ScriptInstance();
+	virtual ~ScriptInstance() {}
 };

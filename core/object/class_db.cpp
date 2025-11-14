@@ -93,8 +93,6 @@ public:
 		class_name = p_class_name;
 	}
 
-	~PlaceholderExtensionInstance() {}
-
 	void set(const StringName &p_name, const Variant &p_value, bool &r_valid) {
 		r_valid = is_runtime_property(p_name);
 		if (r_valid) {

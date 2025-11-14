@@ -165,9 +165,6 @@ public:
 		bool is_runtime = false;
 		// The bool argument indicates the need to postinitialize.
 		Object *(*creation_func)(bool) = nullptr;
-
-		ClassInfo() {}
-		~ClassInfo() {}
 	};
 
 	template <typename T>

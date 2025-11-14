@@ -43,8 +43,6 @@ class AStar3D : public RefCounted {
 	friend class AStar2D;
 
 	struct Point {
-		Point() {}
-
 		int64_t id = 0;
 		Vector3 pos;
 		real_t weight_scale = 0;
@@ -167,7 +165,6 @@ public:
 	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
-	AStar3D() {}
 	~AStar3D();
 };
 
@@ -226,7 +223,4 @@ public:
 
 	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
-
-	AStar2D() {}
-	~AStar2D() {}
 };

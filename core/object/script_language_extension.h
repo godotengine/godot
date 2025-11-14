@@ -214,8 +214,6 @@ public:
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
-
-	ScriptExtension() {}
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;

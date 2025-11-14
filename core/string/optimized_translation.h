@@ -99,6 +99,4 @@ public:
 
 	virtual void get_message_list(List<StringName> *r_messages) const override;
 	virtual int get_message_count() const override;
-
-	OptimizedTranslation() {}
 };

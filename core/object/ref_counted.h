@@ -51,7 +51,6 @@ public:
 	int get_reference_count() const;
 
 	RefCounted();
-	~RefCounted() {}
 };
 
 template <typename T>
@@ -237,8 +236,6 @@ public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
 	void set_ref(const Ref<RefCounted> &p_ref);
-
-	WeakRef() {}
 };
 
 template <typename T>
