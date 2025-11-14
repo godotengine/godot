@@ -197,7 +197,8 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 #endif
 
 uint multimesh_stride() {
-	uint stride = sc_multimesh_format_2d() ? 2 : 3;
+	uint stride = sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_2D ? 2 : 0;
+	stride += sc_multimesh_format() == MULTIMESH_FORMAT_TRANSFORM_3D ? 3 : 0;
 	stride += sc_multimesh_has_color() ? 1 : 0;
 	stride += sc_multimesh_has_custom_data() ? 1 : 0;
 	return stride;
@@ -274,6 +275,7 @@ void vertex_shader(in vec3 vertex,
 		in uint scene_directional_light_count,
 		out vec4 screen_position_output) {
 	vec4 instance_custom = vec4(0.0);
+	vec4 instance_color = vec4(0.0);
 #if defined(COLOR_USED)
 	vec4 color_highp = color_attrib;
 #endif
@@ -298,7 +300,7 @@ void vertex_shader(in vec3 vertex,
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
 
-	if (sc_multimesh()) {
+	if (sc_multimesh_format() != MULTIMESH_FORMAT_NONE) {
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
@@ -349,15 +351,25 @@ void vertex_shader(in vec3 vertex,
 		uint stride = multimesh_stride();
 		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
 
-		if (sc_multimesh_format_2d()) {
-			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-			offset += 2;
-		} else {
-			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], transforms.data[offset + 2], vec4(0.0, 0.0, 0.0, 1.0));
-			offset += 3;
+		switch (sc_multimesh_format()) {
+			case MULTIMESH_FORMAT_TRANSFORM_2D:
+				matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+				offset += 2;
+				break;
+			case MULTIMESH_FORMAT_TRANSFORM_3D:
+				matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], transforms.data[offset + 2], vec4(0.0, 0.0, 0.0, 1.0));
+				offset += 3;
+				break;
+			case MULTIMESH_FORMAT_TRANSFORM_SKIP:
+				matrix = mat4(1.0);
+				break;
+			case MULTIMESH_FORMAT_NONE:
+			default:
+				break;
 		}
 
 		if (sc_multimesh_has_color()) {
+			instance_color = transforms.data[offset];
 #ifdef COLOR_USED
 			color_highp *= transforms.data[offset];
 #endif
@@ -447,7 +459,7 @@ void vertex_shader(in vec3 vertex,
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_multimesh()) {
+	if (sc_multimesh_format() != MULTIMESH_FORMAT_NONE) {
 		modelview = modelview * matrix;
 
 		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;

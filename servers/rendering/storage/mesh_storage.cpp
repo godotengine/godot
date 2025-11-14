@@ -56,7 +56,8 @@ void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instanc
 		mmi->_use_custom_data = p_use_custom_data;
 		mmi->_num_instances = p_instances;
 
-		mmi->_vf_size_xform = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		mmi->_vf_size_xform = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 0;
+		mmi->_vf_size_xform += p_transform_format == RS::MULTIMESH_TRANSFORM_3D ? 12 : 0;
 		mmi->_vf_size_color = p_use_colors ? 4 : 0;
 		mmi->_vf_size_data = p_use_custom_data ? 4 : 0;
 
@@ -464,59 +465,61 @@ void RendererMeshStorage::update_interpolation_frame(bool p_process) {
 				// Test for cache friendliness versus doing branchless.
 				for (int n = 0; n < num; n++) {
 					// Transform.
-					if (use_lerp) {
-						for (int i = 0; i < mmi->_vf_size_xform; i++) {
-							pf_int[i] = Math::lerp(pf_prev[i], pf_curr[i], f);
+					if (mmi->_vf_size_xform != 0) {
+						if (use_lerp) {
+							for (int i = 0; i < mmi->_vf_size_xform; i++) {
+								pf_int[i] = Math::lerp(pf_prev[i], pf_curr[i], f);
+							}
+						} else {
+							// Silly swizzling, this will slow things down.
+							// No idea why it is using this format...
+							// ... maybe due to the shader.
+							tp.basis.rows[0][0] = pf_prev[0];
+							tp.basis.rows[0][1] = pf_prev[1];
+							tp.basis.rows[0][2] = pf_prev[2];
+							tp.basis.rows[1][0] = pf_prev[4];
+							tp.basis.rows[1][1] = pf_prev[5];
+							tp.basis.rows[1][2] = pf_prev[6];
+							tp.basis.rows[2][0] = pf_prev[8];
+							tp.basis.rows[2][1] = pf_prev[9];
+							tp.basis.rows[2][2] = pf_prev[10];
+							tp.origin.x = pf_prev[3];
+							tp.origin.y = pf_prev[7];
+							tp.origin.z = pf_prev[11];
+
+							tc.basis.rows[0][0] = pf_curr[0];
+							tc.basis.rows[0][1] = pf_curr[1];
+							tc.basis.rows[0][2] = pf_curr[2];
+							tc.basis.rows[1][0] = pf_curr[4];
+							tc.basis.rows[1][1] = pf_curr[5];
+							tc.basis.rows[1][2] = pf_curr[6];
+							tc.basis.rows[2][0] = pf_curr[8];
+							tc.basis.rows[2][1] = pf_curr[9];
+							tc.basis.rows[2][2] = pf_curr[10];
+							tc.origin.x = pf_curr[3];
+							tc.origin.y = pf_curr[7];
+							tc.origin.z = pf_curr[11];
+
+							TransformInterpolator::interpolate_transform_3d(tp, tc, tr, f);
+
+							pf_int[0] = tr.basis.rows[0][0];
+							pf_int[1] = tr.basis.rows[0][1];
+							pf_int[2] = tr.basis.rows[0][2];
+							pf_int[4] = tr.basis.rows[1][0];
+							pf_int[5] = tr.basis.rows[1][1];
+							pf_int[6] = tr.basis.rows[1][2];
+							pf_int[8] = tr.basis.rows[2][0];
+							pf_int[9] = tr.basis.rows[2][1];
+							pf_int[10] = tr.basis.rows[2][2];
+							pf_int[3] = tr.origin.x;
+							pf_int[7] = tr.origin.y;
+							pf_int[11] = tr.origin.z;
 						}
-					} else {
-						// Silly swizzling, this will slow things down.
-						// No idea why it is using this format...
-						// ... maybe due to the shader.
-						tp.basis.rows[0][0] = pf_prev[0];
-						tp.basis.rows[0][1] = pf_prev[1];
-						tp.basis.rows[0][2] = pf_prev[2];
-						tp.basis.rows[1][0] = pf_prev[4];
-						tp.basis.rows[1][1] = pf_prev[5];
-						tp.basis.rows[1][2] = pf_prev[6];
-						tp.basis.rows[2][0] = pf_prev[8];
-						tp.basis.rows[2][1] = pf_prev[9];
-						tp.basis.rows[2][2] = pf_prev[10];
-						tp.origin.x = pf_prev[3];
-						tp.origin.y = pf_prev[7];
-						tp.origin.z = pf_prev[11];
 
-						tc.basis.rows[0][0] = pf_curr[0];
-						tc.basis.rows[0][1] = pf_curr[1];
-						tc.basis.rows[0][2] = pf_curr[2];
-						tc.basis.rows[1][0] = pf_curr[4];
-						tc.basis.rows[1][1] = pf_curr[5];
-						tc.basis.rows[1][2] = pf_curr[6];
-						tc.basis.rows[2][0] = pf_curr[8];
-						tc.basis.rows[2][1] = pf_curr[9];
-						tc.basis.rows[2][2] = pf_curr[10];
-						tc.origin.x = pf_curr[3];
-						tc.origin.y = pf_curr[7];
-						tc.origin.z = pf_curr[11];
-
-						TransformInterpolator::interpolate_transform_3d(tp, tc, tr, f);
-
-						pf_int[0] = tr.basis.rows[0][0];
-						pf_int[1] = tr.basis.rows[0][1];
-						pf_int[2] = tr.basis.rows[0][2];
-						pf_int[4] = tr.basis.rows[1][0];
-						pf_int[5] = tr.basis.rows[1][1];
-						pf_int[6] = tr.basis.rows[1][2];
-						pf_int[8] = tr.basis.rows[2][0];
-						pf_int[9] = tr.basis.rows[2][1];
-						pf_int[10] = tr.basis.rows[2][2];
-						pf_int[3] = tr.origin.x;
-						pf_int[7] = tr.origin.y;
-						pf_int[11] = tr.origin.z;
+						pf_prev += mmi->_vf_size_xform;
+						pf_curr += mmi->_vf_size_xform;
+						pf_int += mmi->_vf_size_xform;
 					}
-
-					pf_prev += mmi->_vf_size_xform;
-					pf_curr += mmi->_vf_size_xform;
-					pf_int += mmi->_vf_size_xform;
 
 					// Color.
 					if (mmi->_vf_size_color == 4) {

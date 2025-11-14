@@ -2798,6 +2798,11 @@
 				  - Position + Vertex color: 16 floats (12 floats for Transform3D, 4 floats for Color)
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
+				None:
+				  - Position: 0 floats (0 floats for TransformNone)
+				  - Position + Vertex color: 4 floats (0 floats for TransformNone, 4 floats for Color)
+				  - Position + Custom data: 4 floats (0 floats for TransformNone, 4 floats of custom data)
+				  - Position + Vertex color + Custom data: 8 floats (0 floats for TransformNone, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
 				Instance transforms are in row-major order. Specifically:
 				- For [Transform2D] the float-order is: [code](x.x, y.x, padding_float, origin.x, x.y, y.y, padding_float, origin.y)[/code].
@@ -4806,6 +4811,8 @@
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
 			Use [Transform3D] to store MultiMesh transform.
+		</constant>
+		<constant name="MULTIMESH_TRANSFORM_SKIP" value="2" enum="MultimeshTransformFormat">
 		</constant>
 		<constant name="MULTIMESH_INTERP_QUALITY_FAST" value="0" enum="MultimeshPhysicsInterpolationQuality">
 			MultiMesh physics interpolation favors speed over quality.

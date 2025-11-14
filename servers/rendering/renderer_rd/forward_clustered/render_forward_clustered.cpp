@@ -417,8 +417,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		RID xforms_uniform_set = surf->owner->transforms_uniform_set;
 
 		SceneShaderForwardClustered::ShaderSpecialization pipeline_specialization = p_params->base_specialization;
-		pipeline_specialization.multimesh = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH);
-		pipeline_specialization.multimesh_format_2d = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
+		pipeline_specialization.multimesh_format = (surf->owner->base_flags >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK;
 		pipeline_specialization.multimesh_has_color = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
 
@@ -568,7 +567,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 			if (surf->owner->base_flags & INSTANCE_DATA_FLAG_PARTICLES) {
 				particles_storage->particles_get_instance_buffer_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
-			} else if (surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) {
+			} else if ((surf->owner->base_flags >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK) {
 				mesh_storage->_multimesh_get_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
 			} else {
 				push_constant.multimesh_motion_vectors_current_offset = 0;
@@ -849,8 +848,8 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		instance_data.set_uv_scale(uv_scale);
 
 		scene_state.curr_gpu_ptr[p_render_list][i + p_offset] = instance_data;
-
-		const bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
+		const bool cant_repeat =
+				((instance_data.flags >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK) || inst->mesh_instance.is_valid();
 
 		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && inst->mirror == prev_surface->owner->mirror && repeats < RenderElementInfo::MAX_REPEATS) {
 			//this element is the same as the previous one, count repeats to draw it using instancing
@@ -1042,7 +1041,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				bool transform_changed = inst->transform_status == GeometryInstanceForwardClustered::TransformStatus::MOVED;
 				bool has_mesh_instance = inst->mesh_instance.is_valid();
 				bool uses_particles = inst->base_flags & INSTANCE_DATA_FLAG_PARTICLES;
-				bool is_multimesh_with_motion = !uses_particles && (inst->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
+				bool is_multimesh_with_motion = !uses_particles && ((inst->base_flags >> INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT) & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_MASK) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
 				bool is_dynamic = transform_changed || has_mesh_instance || uses_particles || is_multimesh_with_motion;
 				if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
 					uses_motion = is_dynamic;
@@ -4304,10 +4303,17 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 
 	bool store_transform = true;
 	if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
-
-		if (mesh_storage->multimesh_get_transform_format(ginstance->data->base) == RS::MULTIMESH_TRANSFORM_2D) {
-			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+		switch (mesh_storage->multimesh_get_transform_format(ginstance->data->base)) {
+			case RS::MULTIMESH_TRANSFORM_SKIP:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_SKIP << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_2D:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_2D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
+			case RS::MULTIMESH_TRANSFORM_3D:
+			default:
+				ginstance->base_flags |= RS::MULTIMESH_FORMAT_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
+				break;
 		}
 		if (mesh_storage->multimesh_uses_colors(ginstance->data->base)) {
 			ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
@@ -4323,7 +4329,7 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 
 	} else if (ginstance->data->base_type == RS::INSTANCE_PARTICLES) {
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_PARTICLES;
-		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+		ginstance->base_flags |= RS::MULTIMESH_TRANSFORM_3D << INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_SHIFT;
 
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
 		ginstance->base_flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
