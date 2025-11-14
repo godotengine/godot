@@ -226,7 +226,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 		}
 
 		//bones
-		if ((uint32_t)p_indices.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
+		if ((uint32_t)p_bones.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
 			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
 			vd.offset = base_offset * sizeof(float);
