@@ -1,0 +1,62 @@
+diff --git a/thirdparty/embree/common/sys/sysinfo.cpp b/thirdparty/embree/common/sys/sysinfo.cpp
+index f3046d89f2..07701e9efe 100644
+--- a/thirdparty/embree/common/sys/sysinfo.cpp
++++ b/thirdparty/embree/common/sys/sysinfo.cpp
+@@ -672,7 +672,7 @@ namespace embree
+     static int nThreads = -1;
+     if (nThreads != -1) return nThreads;
+ 
+-#if defined(__MACOSX__) || defined(__ANDROID__)
++#if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OPEN_HARMONY__)
+     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
+     assert(nThreads);
+ #elif defined(__EMSCRIPTEN__)
+diff --git a/thirdparty/embree/common/sys/thread.cpp b/thirdparty/embree/common/sys/thread.cpp
+index 8b072067e6..6ff5228e5f 100644
+--- a/thirdparty/embree/common/sys/thread.cpp
++++ b/thirdparty/embree/common/sys/thread.cpp
+@@ -161,7 +161,7 @@ namespace embree
+ /// Linux Platform
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+-#if defined(__LINUX__) && !defined(__ANDROID__)
++#if defined(__LINUX__) && !defined(__ANDROID__) && !defined(__OPEN_HARMONY__)
+ 
+ #include <fstream>
+ #include <sstream>
+@@ -257,7 +257,7 @@ namespace embree
+ /// Android Platform
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) || defined(__OPEN_HARMONY__)
+ 
+ namespace embree
+ {
+@@ -396,7 +396,7 @@ namespace embree
+     pthread_attr_destroy(&attr);
+ 
+     /* set affinity */
+-#if defined(__LINUX__) && !defined(__ANDROID__)
++#if defined(__LINUX__) && !defined(__ANDROID__) && !defined(__OPEN_HARMONY__)
+     if (threadID >= 0) {
+       cpu_set_t cset;
+       CPU_ZERO(&cset);
+@@ -411,7 +411,7 @@ namespace embree
+       CPU_SET(threadID, &cset);
+       pthread_setaffinity_np(*tid, sizeof(cset), &cset);
+     }
+-#elif defined(__ANDROID__)
++#elif defined(__ANDROID__) || defined(__OPEN_HARMONY__)
+     if (threadID >= 0) {
+       cpu_set_t cset;
+       CPU_ZERO(&cset);
+@@ -439,6 +439,8 @@ namespace embree
+   void destroyThread(thread_t tid) {
+ #if defined(__ANDROID__)
+     FATAL("Can't destroy threads on Android."); // pthread_cancel not implemented.
++#elif defined(__OPEN_HARMONY__)
++    FATAL("Can't destroy threads on OpenHarmony."); // pthread_cancel not implemented.
+ #else
+     pthread_cancel(*(pthread_t*)tid);
+     delete (pthread_t*)tid;

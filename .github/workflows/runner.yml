@@ -35,6 +35,11 @@ jobs:
     needs: static-checks
     uses: ./.github/workflows/macos_builds.yml
 
+  openharmony-build:
+    name: 🫟️ OpenHarmony
+    needs: static-checks
+    uses: ./.github/workflows/openharmony_builds.yml
+
   windows-build:
     name: 🏁 Windows
     needs: static-checks
