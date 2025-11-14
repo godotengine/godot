@@ -107,6 +107,7 @@ public:
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
+	static void _append_khr_texture_transform_ext_json_pointer(PackedStringArray &p_split_json_pointer, const String &p_texture_name, const bool p_is_offset);
 	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);
 	int _get_component_type_size(const GLTFAccessor::GLTFComponentType p_component_type);
