@@ -39,7 +39,6 @@
 class AddMetadataDialog;
 class AcceptDialog;
 class EditorInspector;
-class EditorValidationPanel;
 class HSeparator;
 class LineEdit;
 class MarginContainer;
@@ -823,9 +822,6 @@ class EditorInspector : public ScrollContainer {
 	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	AddMetadataDialog *add_meta_dialog = nullptr;
-	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
