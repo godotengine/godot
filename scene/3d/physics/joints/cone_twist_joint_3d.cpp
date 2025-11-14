@@ -34,6 +34,9 @@ void ConeTwistJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &ConeTwistJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &ConeTwistJoint3D::get_param);
 
+	ClassDB::bind_method(D_METHOD("get_applied_force"), &ConeTwistJoint3D::get_applied_force);
+	ClassDB::bind_method(D_METHOD("get_applied_torque"), &ConeTwistJoint3D::get_applied_torque);
+
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "swing_span", PROPERTY_HINT_RANGE, "-180,180,0.1,radians_as_degrees"), "set_param", "get_param", PARAM_SWING_SPAN);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,radians_as_degrees"), "set_param", "get_param", PARAM_TWIST_SPAN);
 
@@ -62,6 +65,14 @@ void ConeTwistJoint3D::set_param(Param p_param, real_t p_value) {
 real_t ConeTwistJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
+}
+
+float ConeTwistJoint3D::get_applied_force() const {
+	return PhysicsServer3D::get_singleton()->cone_twist_joint_get_applied_force(get_rid());
+}
+
+float ConeTwistJoint3D::get_applied_torque() const {
+	return PhysicsServer3D::get_singleton()->cone_twist_joint_get_applied_torque(get_rid());
 }
 
 void ConeTwistJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
