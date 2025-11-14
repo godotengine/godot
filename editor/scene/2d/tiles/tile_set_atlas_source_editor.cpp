@@ -798,6 +798,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 			ADD_TILE_DATA_EDITOR(group, vformat(TTR("Custom Data %d"), i), editor_name);
 		} else {
 			ADD_TILE_DATA_EDITOR(group, prop_name, editor_name);
+			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		}
 
 		// If the type of the edited property has been changed, delete the
@@ -857,6 +858,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	tile_data_editor_dropdown_button->set_visible(is_visible);
 	if (tile_data_editors_tree->get_selected()) {
 		tile_data_editor_dropdown_button->set_text(tile_data_editors_tree->get_selected()->get_text(0));
+		tile_data_editor_dropdown_button->set_auto_translate_mode(tile_data_editors_tree->get_selected()->get_auto_translate_mode(0));
 	} else {
 		tile_data_editor_dropdown_button->set_text(TTR("Select a property editor"));
 	}
@@ -879,6 +881,7 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	} else if (tools_button_group->get_pressed_button() == tool_paint_button && tile_data_editors_tree->get_selected()) {
 		property = tile_data_editors_tree->get_selected()->get_metadata(0);
 		tile_data_editor_dropdown_button->set_text(tile_data_editors_tree->get_selected()->get_text(0));
+		tile_data_editor_dropdown_button->set_auto_translate_mode(tile_data_editors_tree->get_selected()->get_auto_translate_mode(0));
 	}
 
 	// Hide all editors but the current one.
