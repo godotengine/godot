@@ -141,7 +141,6 @@ public:
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();
 
-	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
 };
 
