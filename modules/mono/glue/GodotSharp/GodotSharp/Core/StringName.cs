@@ -79,7 +79,7 @@ namespace Godot
         /// </summary>
         public StringName()
         {
-            // Store input string (used to create NodePath)
+            // Store input string (used to create this StringName)
             _inputString = string.Empty;
             // Store output string (outputted by ToString())
             _outputString = string.Empty;
