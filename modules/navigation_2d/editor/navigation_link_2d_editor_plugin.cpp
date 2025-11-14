@@ -64,14 +64,15 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			// Start position
-			if (xform.xform(node->get_start_position()).distance_to(mb->get_position()) < grab_threshold) {
+			if (xform.xform(node->get_start_position()).distance_squared_to(mb->get_position()) < grab_threshold_squared) {
 				start_grabbed = true;
 				original_start_position = node->get_start_position();
 
@@ -81,7 +82,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 			}
 
 			// End position
-			if (xform.xform(node->get_end_position()).distance_to(mb->get_position()) < grab_threshold) {
+			if (xform.xform(node->get_end_position()).distance_squared_to(mb->get_position()) < grab_threshold_squared) {
 				end_grabbed = true;
 				original_end_position = node->get_end_position();
 
