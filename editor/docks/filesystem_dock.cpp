@@ -852,6 +852,7 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 	if (item && tree_update_id == p_update_id && p_small_preview.is_valid()) {
 		item->set_icon(0, p_small_preview);
 	}
+	_update_file_list(true); // So we can see thumbnail creation in real-time, it'll eventually use the cached thumbnail, no worries.
 }
 
 void FileSystemDock::_toggle_file_display() {
