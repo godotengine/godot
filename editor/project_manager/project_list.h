@@ -63,7 +63,7 @@ class ProjectListItemControl : public HBoxContainer {
 	bool icon_needs_reload = true;
 	bool is_selected = false;
 	bool is_hovering = false;
-	bool is_favourite = false;
+	bool is_favorite = false;
 
 	void _update_favorite_button_focus_color();
 	void _favorite_button_pressed();
