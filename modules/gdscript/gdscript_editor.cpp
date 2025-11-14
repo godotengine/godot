@@ -1290,6 +1290,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							List<MethodInfo> signals;
 							scr->get_script_signal_list(&signals);
 							for (const MethodInfo &E : signals) {
+								if (E.name.begins_with("_")) {
+									continue;
+								}
 								int location = p_recursion_depth + _get_signal_location(scr, E.name);
 								ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
 								r_result.insert(option.display, option);
@@ -1383,6 +1386,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						List<MethodInfo> signals;
 						ClassDB::get_signal_list(type, &signals);
 						for (const MethodInfo &E : signals) {
+							if (E.name.begins_with("_")) {
+								continue;
+							}
 							int location = p_recursion_depth + _get_signal_location(type, StringName(E.name));
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL, location);
 							r_result.insert(option.display, option);

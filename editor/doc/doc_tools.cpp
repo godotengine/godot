@@ -660,6 +660,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			if (signal_list.size()) {
 				for (const MethodInfo &mi : signal_list) {
+					if (mi.name.is_empty() || mi.name[0] == '_') {
+						continue; // Hidden, don't count.
+					}
+
 					DocData::MethodDoc signal;
 					signal.name = mi.name;
 					for (const PropertyInfo &arginfo : mi.arguments) {
