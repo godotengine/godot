@@ -58,11 +58,13 @@ class PanelContainer;
 class ProceduralSkyMaterial;
 class SubViewport;
 class SubViewportContainer;
+class TextureRect;
 class VSeparator;
 class VSplitContainer;
 class ViewportNavigationControl;
 class WorldEnvironment;
 class MeshInstance3D;
+class GeometryInstance3D;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -109,6 +111,9 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
+
+	static constexpr uint32_t SELECTION_OUTLINE_LAYER = 20;
+
 	enum {
 		VIEW_TOP,
 		VIEW_BOTTOM,
@@ -255,6 +260,20 @@ private:
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;
 	Camera3D *camera = nullptr;
+
+	SubViewport *selection_buffer_viewport = nullptr;
+	Camera3D *selection_buffer_camera = nullptr;
+	TextureRect *outline_compositor = nullptr;
+	Ref<Shader> selection_buffer_shader;
+	Ref<ShaderMaterial> selection_buffer_material_active;
+	Ref<ShaderMaterial> selection_buffer_material_selected;
+	HashMap<ObjectID, Vector<RID>> selection_id_instances;
+	HashMap<ObjectID, Vector<RID>> cached_outline_instances;
+	HashMap<ObjectID, Vector<RID>> cached_base_rids;
+	HashMap<ObjectID, bool> cached_outline_is_active;
+	HashSet<ObjectID> current_outlined_nodes;
+	bool outline_update_pending = false;
+
 	bool transforming = false;
 	bool orthogonal;
 	bool auto_orthogonal;
@@ -497,6 +516,7 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
+	bool gizmos_visible = true;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _preview_camera_property_changed();
@@ -530,7 +550,7 @@ private:
 
 	void _project_settings_changed();
 
-	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal);
+	Transform3D _compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, const Basis &p_relative_basis, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal, bool p_relative);
 
 	void _reset_transform(TransformType p_type);
 
@@ -553,6 +573,21 @@ private:
 
 	void _set_lock_view_rotation(bool p_lock_rotation);
 	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
+
+	void _init_outline();
+	void _create_outline_shaders();
+	void _create_outline_compositor();
+	void _queue_update_outline();
+	void _deferred_update_outline();
+	void _update_outline();
+	void _update_outline_material(Ref<ShaderMaterial> p_material);
+	void _create_selection_buffer_instances(Node3D *p_node, bool p_is_active, RID p_scenario);
+	void _hide_aabb_instances(const HashMap<Node *, Object *> &p_selection);
+	void _sync_selection_buffer_camera();
+	void _clear_outline();
+	void _clear_cached_outline_for_node(Node3D *p_node);
+	void _find_geometry_instances_recursive(Node *p_node, List<GeometryInstance3D *> &r_list);
+	void _update_selected_item_aabb(Node3D *p_node);
 
 protected:
 	void _notification(int p_what);
@@ -672,6 +707,7 @@ public:
 
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
+		TOOL_OPT_RELATIVE_TRANSFORM,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_MAX
 
@@ -763,6 +799,7 @@ private:
 		MENU_TOOL_SCALE,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
+		MENU_TOOL_RELATIVE_TRANSFORM,
 		MENU_TOOL_USE_SNAP,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
@@ -847,6 +884,7 @@ private:
 	Ref<Environment> viewport_environment;
 
 	Node3D *selected = nullptr;
+	Node3D *active_node = nullptr;
 
 	Node3DEditorViewport *freelook_viewport = nullptr;
 
@@ -856,6 +894,7 @@ private:
 	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
 	bool gizmos_dirty = false;
+	HashSet<Node3D *> previous_selection;
 
 	static Node3DEditor *singleton;
 
@@ -964,6 +1003,8 @@ protected:
 public:
 	static Node3DEditor *get_singleton() { return singleton; }
 
+	bool outline_enabled = true;
+
 	static Size2i get_camera_viewport_size(Camera3D *p_camera);
 
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
@@ -977,7 +1018,8 @@ public:
 
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
-	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
+	void set_local_coords_enabled(bool p_on);
+	bool is_relative_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_RELATIVE_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
@@ -994,6 +1036,7 @@ public:
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
 	void update_gizmo_opacity();
+	void update_outlines_all_viewports();
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
@@ -1017,6 +1060,7 @@ public:
 
 	VSplitContainer *get_shader_split();
 
+	Node3D *get_active_node() { return active_node; }
 	Node3D *get_single_selected_node() { return selected; }
 	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
 	bool is_subgizmo_selected(int p_id);
