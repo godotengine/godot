@@ -622,6 +622,22 @@ _ALWAYS_INLINE_ float db_to_linear(float p_db) {
 	return exp(p_db * (float)0.11512925464970228420089957273422);
 }
 
+// log(2) / 12
+const double LOG_SEMITONE = 0.05776226504666210911810267678818;
+_ALWAYS_INLINE_ double semitones_to_pitch_scale(double semitones) {
+	return exp(LOG_SEMITONE * semitones);
+}
+_ALWAYS_INLINE_ float semitones_to_pitch_scale(float semitones) {
+	return exp((float)LOG_SEMITONE * semitones);
+}
+
+_ALWAYS_INLINE_ double pitch_scale_to_semitones(double pitch_scale) {
+	return log(pitch_scale) / LOG_SEMITONE;
+}
+_ALWAYS_INLINE_ float pitch_scale_to_semitones(float pitch_scale) {
+	return log(pitch_scale) / (float)LOG_SEMITONE;
+}
+
 _ALWAYS_INLINE_ double round(double p_val) {
 	return std::round(p_val);
 }
