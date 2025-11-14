@@ -3113,6 +3113,13 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 #endif // DEBUG_ENABLED
 
+	bool lhs_is_stringy = left_type.kind == GDScriptParser::DataType::BUILTIN && (left_type.builtin_type == Variant::STRING || left_type.builtin_type == Variant::STRING_NAME);
+	bool rhs_is_meta_class = right_type.kind == GDScriptParser::DataType::CLASS && right_type.is_meta_type;
+	if (lhs_is_stringy && p_binary_op->variant_op == Variant::OP_IN && rhs_is_meta_class) {
+		// TODO: Some script members presence could be determined here.
+		return;
+	}
+
 	if (p_binary_op->left_operand->is_constant && p_binary_op->right_operand->is_constant) {
 		p_binary_op->is_constant = true;
 		if (p_binary_op->variant_op < Variant::OP_MAX) {
