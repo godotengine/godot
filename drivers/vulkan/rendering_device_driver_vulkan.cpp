@@ -1815,6 +1815,23 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_persistent_map_advance(BufferID p_b
 	return buf_info->persistent_ptr + buf_info->frame_idx * buf_info->size;
 }
 
+uint64_t RenderingDeviceDriverVulkan::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
+	uint64_t mask = 0u;
+	uint64_t shift = 0u;
+
+	for (const BufferID &buf : p_buffers) {
+		const BufferInfo *buf_info = (const BufferInfo *)buf.id;
+		if (!buf_info->is_dynamic()) {
+			continue;
+		}
+		mask |= buf_info->frame_idx << shift;
+		// We can encode the frame index in 2 bits since frame_count won't be > 4.
+		shift += 2UL;
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverVulkan::buffer_flush(BufferID p_buffer) {
 	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
 
@@ -2525,19 +2542,23 @@ bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFor
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) {
 	// Pre-bookkeep.
 	VertexFormatInfo *vf_info = VersatileResource::allocate<VertexFormatInfo>(resources_allocator);
 
-	vf_info->vk_bindings.resize(p_vertex_attribs.size());
+	vf_info->vk_bindings.reserve(p_vertex_bindings.size());
+	for (const VertexAttributeBindingsMap::KV &E : p_vertex_bindings) {
+		const VertexAttributeBinding &binding = E.value;
+		VkVertexInputBindingDescription vk_binding = {};
+		vk_binding.binding = E.key;
+		vk_binding.stride = binding.stride;
+		vk_binding.inputRate = binding.frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+		vf_info->vk_bindings.push_back(vk_binding);
+	}
 	vf_info->vk_attributes.resize(p_vertex_attribs.size());
 	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
-		vf_info->vk_bindings[i] = {};
-		vf_info->vk_bindings[i].binding = i;
-		vf_info->vk_bindings[i].stride = p_vertex_attribs[i].stride;
-		vf_info->vk_bindings[i].inputRate = p_vertex_attribs[i].frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
 		vf_info->vk_attributes[i] = {};
-		vf_info->vk_attributes[i].binding = i;
+		vf_info->vk_attributes[i].binding = p_vertex_attribs[i].binding;
 		vf_info->vk_attributes[i].location = p_vertex_attribs[i].location;
 		vf_info->vk_attributes[i].format = RD_TO_VK_FORMAT[p_vertex_attribs[i].format];
 		vf_info->vk_attributes[i].offset = p_vertex_attribs[i].offset;
@@ -5097,14 +5118,22 @@ void RenderingDeviceDriverVulkan::command_render_draw_indirect_count(CommandBuff
 	vkCmdDrawIndirectCount(command_buffer->vk_command_buffer, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
-void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
+void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-
 	VkBuffer *vk_buffers = ALLOCA_ARRAY(VkBuffer, p_binding_count);
+	uint64_t *vk_offsets = ALLOCA_ARRAY(uint64_t, p_binding_count);
 	for (uint32_t i = 0; i < p_binding_count; i++) {
+		const BufferInfo *buf_info = (const BufferInfo *)p_buffers[i].id;
+		uint64_t offset = p_offsets[i];
+		if (buf_info->is_dynamic()) {
+			uint64_t frame_idx = p_dynamic_offsets & 0x3; // Assuming max 4 frames.
+			p_dynamic_offsets >>= 2;
+			offset += frame_idx * buf_info->size;
+		}
 		vk_buffers[i] = ((const BufferInfo *)p_buffers[i].id)->vk_buffer;
+		vk_offsets[i] = offset;
 	}
-	vkCmdBindVertexBuffers(command_buffer->vk_command_buffer, 0, p_binding_count, vk_buffers, p_offsets);
+	vkCmdBindVertexBuffers(command_buffer->vk_command_buffer, 0, p_binding_count, vk_buffers, vk_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {
