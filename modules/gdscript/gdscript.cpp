@@ -409,10 +409,21 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 
 	if (top->native.is_valid()) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
+			String errMsg = vformat("Script inherits from native type '%s', so it can't be assigned to an object of type: '%s'", top->native->get_name(), p_this->get_class());
 			if (EngineDebugger::is_active()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, errMsg);
 			}
-			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be assigned to an object of type '" + p_this->get_class() + "'" + ".");
+			ERR_FAIL_V_MSG(nullptr, errMsg);
+		}
+
+		// To allow for future serialization optimizations (i.e. not saving the script path), final scripts may not be attached to objects with different base types.
+		// See discussion on https://github.com/godotengine/godot/pull/109263
+		if (this->_is_final && this->get_instance_base_type() != p_this->get_class_name()) {
+			String errMsg = vformat("Cannot set object script. Script '%s' is final, and the base type '%s' does not match the object's base type '%s'.", this->get_path(), this->get_instance_base_type(), p_this->get_class_name());
+			if (EngineDebugger::is_active()) {
+				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, errMsg);
+			}
+			ERR_FAIL_V_MSG(nullptr, errMsg);
 		}
 	}
 
