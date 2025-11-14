@@ -1,0 +1,42 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.software.xr.api.openxr"
+        android:required="false" />
+
+    <!-- 6dof motion controllers -->
+    <uses-feature android:name="android.hardware.xr.input.controller" android:required="false" />
+
+    <!-- Eye tracking -->
+    <uses-feature android:name="android.hardware.xr.input.eye_tracking" android:required="false" />
+    <uses-permission android:name="android.permission.EYE_TRACKING_FINE" />
+
+    <!-- Hand tracking -->
+    <uses-feature android:name="android.hardware.xr.input.hand_tracking" android:required="false" />
+    <uses-permission android:name="android.permission.HAND_TRACKING" />
+
+    <application>
+        <uses-native-library android:name="libopenxr.google.so" android:required="false" />
+
+        <property
+            android:name="android.window.PROPERTY_XR_BOUNDARY_TYPE_RECOMMENDED"
+            android:value="XR_BOUNDARY_TYPE_NO_RECOMMENDATION" />
+
+        <activity
+            android:name=".GodotXRGame"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
+            </intent-filter>
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED" />
+        </activity>
+    </application>
+
+</manifest>
