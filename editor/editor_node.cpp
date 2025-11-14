@@ -7810,6 +7810,7 @@ void EditorNode::notify_settings_overrides_changed() {
 HashMap<String, Variant> EditorNode::get_initial_settings() {
 	HashMap<String, Variant> settings;
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
+	settings["audio/general/3d_volume_db_affects_attenuation"] = false;
 	return settings;
 }
 
