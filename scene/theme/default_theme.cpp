@@ -773,6 +773,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_start_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("item_end_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
+	theme->set_constant("gutter_compact", "PopupMenu", 1);
 
 	// GraphNode
 

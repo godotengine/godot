@@ -33,11 +33,13 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
@@ -801,11 +803,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
-	String simplified_path = p_path.simplify_path();
-	if (simplified_path.begins_with("uid://")) {
-		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
-	}
+	const String simplified_path = simplify_path(p_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
@@ -1773,8 +1771,11 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 	Vector<String> string_table;
 
-	String package_name = p_preset->get("package/name");
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const String project_name = get_project_name(p_preset, p_preset->get("package/name"));
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
 
 	for (uint32_t i = 0; i < string_count; i++) {
 		uint32_t offset = decode_uint32(&r_manifest[string_table_begins + i * 4]);
@@ -1782,23 +1783,23 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 
 		String str = _parse_string(&r_manifest[offset], string_flags & UTF8_FLAG);
 
-		if (str.begins_with("godot-project-name")) {
-			if (str == "godot-project-name") {
-				//project name
-				str = get_project_name(p_preset, package_name);
+		if (str == "godot-project-name") {
+			str = project_name;
+		} else if (str.begins_with("godot-project-name")) {
+			String lang = str.substr(str.rfind_char('-') + 1).replace_char('-', '_');
 
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				str = domain->translate(project_name, String());
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1).replace_char('-', '_');
-				if (appnames.has(lang)) {
-					str = appnames[lang];
-				} else {
-					str = get_project_name(p_preset, package_name);
-				}
+				str = appnames.get(lang, project_name);
 			}
 		}
 
 		string_table.push_back(str);
 	}
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
 
 	//write a new string table, but use 16 bits
 	Vector<uint8_t> ret;
@@ -2345,7 +2346,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const bool use_wifi_for_remote_debug = EDITOR_GET("export/android/use_wifi_for_remote_debug");
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	const bool use_reverse = devices[p_device - 1].api_level >= 21 && !use_wifi_for_remote_debug;
+	const bool use_reverse = !use_wifi_for_remote_debug;
 
 	if (use_reverse) {
 		p_debug_flags.set_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
@@ -2425,7 +2426,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	if (use_remote) {
 		if (use_reverse) {
-			static const char *const msg = "--- Device API >= 21; debugging over USB ---";
+			static const char *const msg = "--- Debugging over USB ---";
 			EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 			print_line(String(msg).to_upper());
 
@@ -2469,7 +2470,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				print_line("Reverse result2: " + itos(rv));
 			}
 		} else {
-			static const char *const api_version_msg = "--- Device API < 21; debugging over Wi-Fi ---";
+			static const char *const api_version_msg = "--- Debugging over Wi-Fi ---";
 			static const char *const manual_override_msg = "--- Wi-Fi remote debug enabled in project settings; debugging over Wi-Fi ---";
 
 			const char *const msg = use_wifi_for_remote_debug ? manual_override_msg : api_version_msg;

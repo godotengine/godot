@@ -103,8 +103,10 @@ public:
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
 		DUPLICATE_USE_INSTANTIATION = 8,
+		DUPLICATE_INTERNAL_STATE = 16,
+		DUPLICATE_DEFAULT = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION,
 #ifdef TOOLS_ENABLED
-		DUPLICATE_FROM_EDITOR = 16,
+		DUPLICATE_FROM_EDITOR = 32,
 #endif
 	};
 
@@ -315,6 +317,7 @@ private:
 	void _propagate_translation_domain_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
+	void _duplicate_scripts(const Node *p_original, Node *p_copy) const;
 	void _duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const;
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;

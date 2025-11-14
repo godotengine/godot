@@ -412,6 +412,7 @@ class EditorInspectorCategory : public Control {
 	void _handle_menu_option(int p_option);
 	void _popup_context_menu(const Point2i &p_position);
 	void _update_icon();
+	void _theme_changed();
 
 protected:
 	static void _bind_methods();

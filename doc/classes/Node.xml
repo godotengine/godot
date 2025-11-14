@@ -282,6 +282,7 @@
 			<description>
 				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
+				[b]Note:[/b] By default, this method will duplicate only properties marked for serialization (i.e. using [constant @GlobalScope.PROPERTY_USAGE_STORAGE], or in GDScript, [annotation @GDScript.@export]). If you want to duplicate all properties, use [constant DUPLICATE_INTERNAL_STATE].
 			</description>
 		</method>
 		<method name="find_child" qualifiers="const">
@@ -1037,7 +1038,7 @@
 	</methods>
 	<members>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
-			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
+			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for translation template generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
 		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
@@ -1165,6 +1166,7 @@
 		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 			Notification received when the node is about to exit a [SceneTree]. See [method _exit_tree].
 			This notification is received [i]after[/i] the related [signal tree_exiting] signal.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" deprecated="This notification is no longer sent by the engine. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.">
 		</constant>
@@ -1380,6 +1382,16 @@
 		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
 			Duplicate using [method PackedScene.instantiate]. If the node comes from a scene saved on disk, reuses [method PackedScene.instantiate] as the base for the duplicated node and its children.
 		</constant>
+		<constant name="DUPLICATE_INTERNAL_STATE" value="16" enum="DuplicateFlags">
+			Duplicate also non-serializable variables (i.e. without [constant @GlobalScope.PROPERTY_USAGE_STORAGE]).
+		</constant>
+		<constant name="DUPLICATE_DEFAULT" value="15" enum="DuplicateFlags">
+			Duplicate using default flags. This constant is useful to add or remove a single flag.
+			[codeblock]
+			# Duplicate non-exported variables.
+			var dupe = duplicate(DUPLICATE_DEFAULT | DUPLICATE_INTERNAL_STATE)
+			[/codeblock]
+		</constant>
 		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
 			The node will not be internal.
 		</constant>
@@ -1397,7 +1409,7 @@
 		</constant>
 		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
 			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
-			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
+			String parsing for translation template generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
 		</constant>
 	</constants>
 </class>

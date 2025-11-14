@@ -235,6 +235,7 @@ class VisualShaderEditor : public ShaderEditor {
 	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
+	bool theme_dirty = false;
 	bool pending_update_preview = false;
 	bool shader_error = false;
 	AcceptDialog *code_preview_window = nullptr;

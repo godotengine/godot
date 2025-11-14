@@ -277,7 +277,6 @@ void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
 void style_button(Button *p_button) {
 	p_button->set_flat(true);
 	p_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	p_button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 }
 
 QuickOpenResultContainer::QuickOpenResultContainer() {
@@ -1021,7 +1020,6 @@ void QuickOpenResultContainer::_bind_methods() {
 QuickOpenResultItem::QuickOpenResultItem() {
 	set_focus_mode(FocusMode::FOCUS_NONE);
 	_set_enabled(false);
-	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	list_item = memnew(QuickOpenResultListItem);
 	list_item->hide();

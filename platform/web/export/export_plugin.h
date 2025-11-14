@@ -42,6 +42,8 @@
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 
+class ImageTexture;
+
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);
 

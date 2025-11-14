@@ -67,7 +67,7 @@ class Skeleton3D : public Node3D {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;
@@ -224,7 +224,6 @@ public:
 	// Skeleton creation API
 	uint64_t get_version() const;
 	int add_bone(const String &p_name);
-	void remove_bone(int p_bone);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  pot_generator.h                                                       */
+/*  editor_plugin_list.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,35 +30,22 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
+#include "editor/plugins/editor_plugin.h"
 
-//#define DEBUG_POT
+class Control;
+class InputEvent;
 
-class POTGenerator {
-	static POTGenerator *singleton;
-
-	struct MsgidData {
-		String ctx;
-		String plural;
-		HashSet<String> locations;
-		HashSet<String> comments;
-	};
-	// Store msgid as key and the additional data around the msgid - if it's under a context, has plurals and its file locations.
-	HashMap<String, Vector<MsgidData>> all_translation_strings;
-
-	void _write_to_pot(const String &p_file);
-	void _write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural);
-	void _add_new_msgid(const String &p_msgid, const String &p_context, const String &p_plural, const String &p_location, const String &p_comment);
-
-#ifdef DEBUG_POT
-	void _print_all_translation_strings();
-#endif
+class EditorPluginList {
+	LocalVector<EditorPlugin *> plugins_list;
 
 public:
-	static POTGenerator *get_singleton();
-	void generate_pot(const String &p_file);
+	bool forward_gui_input(const Ref<InputEvent> &p_event) const;
+	void forward_canvas_draw_over_viewport(Control *p_overlay) const;
+	void forward_canvas_force_draw_over_viewport(Control *p_overlay) const;
+	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool p_serve_when_force_input_enabled) const;
+	void forward_3d_draw_over_viewport(Control *p_overlay) const;
+	void forward_3d_force_draw_over_viewport(Control *p_overlay) const;
 
-	~POTGenerator();
+	void add_plugin(EditorPlugin *p_plugin);
+	void remove_plugin(EditorPlugin *p_plugin);
 };

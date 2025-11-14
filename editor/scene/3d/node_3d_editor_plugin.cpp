@@ -36,6 +36,7 @@
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -44,10 +45,12 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/audio_stream_player_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/camera_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/chain_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/cpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/decal_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/fog_volume_gizmo_plugin.h"
@@ -75,6 +78,7 @@
 #include "editor/scene/3d/gizmos/reflection_probe_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/spring_bone_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/sprite_base_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/two_bone_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
@@ -1764,28 +1768,33 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = EditorNode::get_singleton();
-		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
-		if (!force_input_forwarding_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_3d_gui_input(camera, p_event, true);
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-				return;
-			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+
+		switch (en->get_editor_plugins_force_input_forwarding()->forward_3d_gui_input(camera, p_event, true)) {
+			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
+				// Continue processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_STOP: {
+				return; // Stop processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_CUSTOM: {
 				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-			}
+			} break;
 		}
-	}
-	{
-		EditorNode *en = EditorNode::get_singleton();
-		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
-		if (!over_plugin_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_3d_gui_input(camera, p_event, false);
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-				return;
-			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+
+		switch (en->get_editor_plugins_over()->forward_3d_gui_input(camera, p_event, false)) {
+			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
+				// Continue processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_STOP: {
+				return; // Stop processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_CUSTOM: {
 				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-			}
+			} break;
 		}
 	}
 
@@ -3150,7 +3159,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_centered_labels();
 			message_time = MIN(message_time, 0.001); // Make it disappear.
 
-			Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+			Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 			preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
 
 			const int item_count = display_submenu->get_item_count();
@@ -3228,7 +3237,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				geometry->surface_end();
 
 				float distance = start_pos.distance_to(end_pos);
-				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
+				ruler_label->set_text(TranslationServer::get_singleton()->format_number(vformat("%.3f m", distance), _get_locale()));
 
 				Vector3 center = (start_pos + end_pos) / 2;
 				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
@@ -3610,15 +3619,8 @@ static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Text
 }
 
 void Node3DEditorViewport::_draw() {
-	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
-	if (!over_plugin_list->is_empty()) {
-		over_plugin_list->forward_3d_draw_over_viewport(surface);
-	}
-
-	EditorPluginList *force_over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->is_empty()) {
-		force_over_plugin_list->forward_3d_force_draw_over_viewport(surface);
-	}
+	EditorNode::get_singleton()->get_editor_plugins_over()->forward_3d_draw_over_viewport(surface);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_3d_force_draw_over_viewport(surface);
 
 	if (surface->has_focus() || rotation_control->has_focus()) {
 		Size2 size = surface->get_size();
@@ -9237,6 +9239,8 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {

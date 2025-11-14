@@ -49,6 +49,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -151,6 +152,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+	godot_init_profiler();
+
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 

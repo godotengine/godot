@@ -797,6 +797,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					d2["is_static"] = Variant::is_builtin_method_static(type, method_name);
 					d2["hash"] = Variant::get_builtin_method_hash(type, method_name);
 
+					Vector<uint32_t> compat_hashes = Variant::get_builtin_method_compatibility_hashes(type, method_name);
+					Array compatibility;
+					if (compat_hashes.size()) {
+						for (int j = 0; j < compat_hashes.size(); j++) {
+							compatibility.push_back(compat_hashes[j]);
+						}
+					}
+					if (compatibility.size() > 0) {
+						d2["hash_compatibility"] = compatibility;
+					}
+
 					Vector<Variant> default_args = Variant::get_builtin_method_default_arguments(type, method_name);
 
 					Array arguments;

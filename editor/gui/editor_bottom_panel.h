@@ -30,51 +30,39 @@
 
 #pragma once
 
-#include "scene/gui/panel_container.h"
+#include "scene/gui/tab_container.h"
 
 class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
-class VBoxContainer;
-class ScrollContainer;
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+class EditorBottomPanel : public TabContainer {
+	GDCLASS(EditorBottomPanel, TabContainer);
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
-	Vector<BottomPanelItem> items;
-	bool lock_panel_switching = false;
-
-	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
-	Button *left_button = nullptr;
-	Button *right_button = nullptr;
-	ScrollContainer *button_scroll = nullptr;
-	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
-	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	bool lock_panel_switching = false;
+	LocalVector<Control *> bottom_docks;
+	LocalVector<Ref<Shortcut>> dock_shortcuts;
+	HashMap<String, int> dock_offsets;
+
+	LocalVector<Button *> legacy_buttons;
+	void _on_button_visibility_changed(Button *p_button, Control *p_control);
+
+	void _repaint();
+	void _on_tab_changed(int p_idx);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
-	void _scroll(bool p_right);
-	void _update_scroll_buttons();
-	void _update_disabled_buttons();
-	void _ensure_control_visible(ObjectID p_id);
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
+	void _update_center_split_offset();
 
 protected:
 	void _notification(int p_what);
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
@@ -87,6 +75,11 @@ public:
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
+	void _theme_changed();
+
+	void set_bottom_panel_offset(int p_offset);
+	int get_bottom_panel_offset();
 
 	EditorBottomPanel();
+	~EditorBottomPanel();
 };

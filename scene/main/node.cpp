@@ -279,7 +279,13 @@ void Node::_notification(int p_notification) {
 				ERR_PRINT("Attempted to free a node that is currently added to the SceneTree from a thread. This is not permitted, use queue_free() instead. Node has not been freed.");
 				return;
 			}
-
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && data.tree && this == data.tree->get_edited_scene_root()) {
+				cancel_free();
+				ERR_PRINT(vformat("Something attempted to free the root Node of a scene (\"%s\"). This is not supported inside the editor, so the Node was not freed.", get_name()));
+				return;
+			}
+#endif
 			if (data.owner) {
 				_clean_up_owner();
 			}
@@ -2144,59 +2150,40 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 }
 
 bool Node::is_greater_than(const Node *p_node) const {
+	// parent->get_child(1) > parent->get_child(0) > parent
+
 	ERR_FAIL_NULL_V(p_node, false);
 	ERR_FAIL_COND_V(!data.tree, false);
-	ERR_FAIL_COND_V(!p_node->data.tree, false);
+	ERR_FAIL_COND_V(p_node->data.tree != data.tree, false);
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
 	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
 
 	_update_children_cache();
 
-	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
-	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
+	bool this_is_deeper = this->data.depth > p_node->data.depth;
 
-	const Node *n = this;
-
-	int idx = data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, data.depth, false);
-		this_stack[idx--] = n->get_index();
-		n = n->data.parent;
+	const Node *deep = this;
+	const Node *shallow = p_node;
+	if (!this_is_deeper) {
+		deep = p_node;
+		shallow = this;
 	}
 
-	ERR_FAIL_COND_V(idx != -1, false);
-	n = p_node;
-	idx = p_node->data.depth - 1;
-	while (n) {
-		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
-		that_stack[idx--] = n->get_index();
-
-		n = n->data.parent;
-	}
-	ERR_FAIL_COND_V(idx != -1, false);
-	idx = 0;
-
-	bool res;
-	while (true) {
-		// using -2 since out-of-tree or nonroot nodes have -1
-		int this_idx = (idx >= data.depth) ? -2 : this_stack[idx];
-		int that_idx = (idx >= p_node->data.depth) ? -2 : that_stack[idx];
-
-		if (this_idx > that_idx) {
-			res = true;
-			break;
-		} else if (this_idx < that_idx) {
-			res = false;
-			break;
-		} else if (this_idx == -2) {
-			res = false; // equal
-			break;
-		}
-		idx++;
+	while (deep->data.depth > shallow->data.depth) {
+		deep = deep->data.parent;
 	}
 
-	return res;
+	if (deep == shallow) { // Shallow is ancestor of deep.
+		return this_is_deeper;
+	}
+
+	while (deep->data.parent != shallow->data.parent) {
+		deep = deep->data.parent;
+		shallow = shallow->data.parent;
+	}
+
+	return (deep->get_index() > shallow->get_index()) == this_is_deeper;
 }
 
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
@@ -2951,6 +2938,10 @@ Node *Node::duplicate(int p_flags) const {
 
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
+	if (p_flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
+
 	_duplicate_properties(this, this, dupe, p_flags);
 
 	if (p_flags & DUPLICATE_SIGNALS) {
@@ -2970,6 +2961,10 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	Node *dupe = _duplicate(flags, &r_duplimap);
 
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
+	if (flags & DUPLICATE_SCRIPTS) {
+		_duplicate_scripts(this, dupe);
+	}
 
 	_duplicate_properties(this, this, dupe, flags);
 
@@ -3043,6 +3038,20 @@ void Node::_emit_editor_state_changed() {
 }
 #endif
 
+void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
+	bool is_valid = false;
+	Variant scr = p_original->get(CoreStringName(script), &is_valid);
+	if (is_valid) {
+		p_copy->set(CoreStringName(script), scr);
+	}
+
+	for (int i = 0; i < p_original->get_child_count(false); i++) {
+		Node *copy_child = p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
+		_duplicate_scripts(p_original->get_child(i, false), copy_child);
+	}
+}
+
 // Duplicate node's properties.
 // This has to be called after nodes have been duplicated since there might be properties
 // of type Node that can be updated properly only if duplicated node tree is complete.
@@ -3050,15 +3059,8 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 	List<PropertyInfo> props;
 	p_original->get_property_list(&props);
 	const StringName &script_property_name = CoreStringName(script);
-	if (p_flags & DUPLICATE_SCRIPTS) {
-		bool is_valid = false;
-		Variant scr = p_original->get(script_property_name, &is_valid);
-		if (is_valid) {
-			p_copy->set(script_property_name, scr);
-		}
-	}
 	for (const PropertyInfo &E : props) {
-		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+		if (!(p_flags & DUPLICATE_INTERNAL_STATE) && !(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
 		const StringName name = E.name;
@@ -3838,7 +3840,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_DEFAULT));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
@@ -3988,6 +3990,8 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANTIATION);
+	BIND_ENUM_CONSTANT(DUPLICATE_INTERNAL_STATE);
+	BIND_ENUM_CONSTANT(DUPLICATE_DEFAULT);
 
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);

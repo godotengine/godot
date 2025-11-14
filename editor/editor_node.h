@@ -65,7 +65,6 @@ class Window;
 class AudioStreamImportSettingsDialog;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
-class DependencyEditor;
 class DependencyErrorDialog;
 class DockSplitContainer;
 class DynamicFontImportSettingsDialog;
@@ -421,7 +420,6 @@ private:
 
 	DependencyErrorDialog *dependency_error = nullptr;
 	HashMap<String, HashSet<String>> dependency_errors;
-	DependencyEditor *dependency_fixer = nullptr;
 	OrphanResourcesDialog *orphan_resources = nullptr;
 	ConfirmationDialog *open_imported = nullptr;
 	Button *new_inherited_button = nullptr;
@@ -465,6 +463,7 @@ private:
 
 	Ref<Resource> saving_resource;
 	HashSet<Ref<Resource>> saving_resources_in_path;
+	HashMap<Ref<Resource>, List<Node *>> resource_count; // Keeps track of linked Resources from a Scene.
 
 	uint64_t update_spinner_step_msec = 0;
 	uint64_t update_spinner_step_frame = 0;
@@ -719,6 +718,8 @@ private:
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
 
+	void _bottom_panel_resized();
+
 protected:
 	friend class FileSystemDock;
 
@@ -744,6 +745,7 @@ public:
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
+	static DockSplitContainer *get_center_split() { return singleton->center_split; }
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
@@ -809,6 +811,13 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
+	bool is_resource_internal_to_scene(Ref<Resource> p_resource);
+	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, bool p_subresources = false, bool p_allow_external = false);
+	void update_resource_count(Node *p_node, bool p_remove = false);
+	void update_node_reference(const Variant &p_value, Node *p_node, bool p_remove = false);
+	void clear_node_reference(Ref<Resource> p_res);
+	int get_resource_count(Ref<Resource> p_res);
+	List<Node *> get_resource_node_list(Ref<Resource> p_res);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
@@ -843,7 +852,6 @@ public:
 	String get_preview_locale() const;
 	void set_preview_locale(const String &p_locale);
 
-	void fix_dependencies(const String &p_for_file);
 	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
@@ -1024,35 +1032,6 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
-};
-
-class EditorPluginList : public Object {
-	GDSOFTCLASS(EditorPluginList, Object);
-
-private:
-	Vector<EditorPlugin *> plugins_list;
-
-public:
-	void set_plugins_list(Vector<EditorPlugin *> p_plugins_list) {
-		plugins_list = p_plugins_list;
-	}
-
-	Vector<EditorPlugin *> &get_plugins_list() {
-		return plugins_list;
-	}
-
-	void make_visible(bool p_visible);
-	void edit(Object *p_object);
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_canvas_draw_over_viewport(Control *p_overlay);
-	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
-	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
-	void forward_3d_draw_over_viewport(Control *p_overlay);
-	void forward_3d_force_draw_over_viewport(Control *p_overlay);
-	void add_plugin(EditorPlugin *p_plugin);
-	void remove_plugin(EditorPlugin *p_plugin);
-	void clear();
-	bool is_empty();
 };
 
 struct EditorProgressBG {

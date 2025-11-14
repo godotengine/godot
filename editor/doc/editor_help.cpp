@@ -471,6 +471,10 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 
 void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &p_fallback) {
 	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
+	if (icon.is_null()) {
+		icon = EditorNode::get_singleton()->get_class_icon("Object");
+		ERR_FAIL_COND(icon.is_null());
+	}
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
 		// Ensures icon scales proportionally on both axes, based on icon height.
@@ -2321,6 +2325,7 @@ void EditorHelp::_update_doc() {
 			if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
 				class_desc->add_newline();
 				class_desc->add_newline();
+				// See also `EditorHelpBit::parse_symbol()` and `doc/tools/make_rst.py`.
 				_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
 			}
 
@@ -4364,6 +4369,16 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 			symbol_hint = SYMBOL_HINT_ASSIGNABLE;
 		}
 		help_data = _get_property_help_data(class_name, item_name);
+
+		// Add copy note to built-in properties returning `Packed*Array`.
+		const DocData::ClassDoc *cd = EditorHelp::get_doc(class_name);
+		if (cd && !cd->is_script_doc && packed_array_types.has(help_data.doc_type.type)) {
+			if (!help_data.description.is_empty()) {
+				help_data.description += "\n";
+			}
+			// See also `EditorHelp::_update_doc()` and `doc/tools/make_rst.py`.
+			help_data.description += vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), help_data.doc_type.type);
+		}
 	} else if (item_type == "internal_property") {
 		symbol_type = TTR("Internal Property");
 		help_data.description = "[color=<EditorHelpBitCommentColor>][i]" + TTR("This property can only be set in the Inspector.") + "[/i][/color]";

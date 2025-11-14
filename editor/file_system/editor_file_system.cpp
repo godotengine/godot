@@ -3085,13 +3085,19 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			return err;
 		}
 
-		// Roll a new uid for this copied .import file to avoid conflict.
-		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
-
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
 		cfg.instantiate();
 		cfg->load(p_from + ".import");
+		String importer_name = cfg->get_value("remap", "importer");
+
+		if (importer_name == "keep" || importer_name == "skip") {
+			err = da->copy(p_from + ".import", p_to + ".import");
+			return err;
+		}
+
+		// Roll a new uid for this copied .import file to avoid conflict.
+		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
 		err = cfg->save(p_to + ".import");
 		if (err != OK) {
@@ -3414,24 +3420,17 @@ Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
 	}
 
-	Ref<Resource> res;
-	bool can_retry = true;
-	bool retry = true;
-	while (retry) {
-		retry = false;
-
-		res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, can_retry);
-
-		if (res.is_null() && can_retry) {
-			can_retry = false;
-			Error err = singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false);
-			if (err == OK) {
-				retry = true;
-			}
-		}
+	// Fail silently. Hopefully the resource is not yet imported.
+	Ref<Resource> res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, true);
+	if (res.is_valid()) {
+		return res;
 	}
 
-	return res;
+	// Retry after importing the resource.
+	if (singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false) != OK) {
+		return Ref<Resource>();
+	}
+	return p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, false);
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
