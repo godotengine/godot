@@ -73,7 +73,7 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			_update_favorite_button_focus_color();
-			if (is_favourite) {
+			if (is_favorite) {
 				favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
 			} else {
 				favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Unfavorite")));
@@ -298,7 +298,7 @@ void ProjectListItemControl::set_selected(bool p_selected) {
 }
 
 void ProjectListItemControl::set_is_favorite(bool p_favorite) {
-	is_favourite = p_favorite;
+	is_favorite = p_favorite;
 	if (p_favorite) {
 		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
 	} else {
@@ -945,7 +945,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	// If it is in the list but doesn't exist anymore, it is marked as missing.
 
 	bool should_be_in_list = _config.has_section(dir_path);
-	bool is_favourite = _config.get_value(dir_path, "favorite", false);
+	bool is_favorite = _config.get_value(dir_path, "favorite", false);
 
 	bool was_selected = _selected_project_paths.has(dir_path);
 
@@ -962,7 +962,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 	if (should_be_in_list) {
 		// Recreate it with updated info
 
-		Item item = load_project_data(dir_path, is_favourite);
+		Item item = load_project_data(dir_path, is_favorite);
 
 		_projects.push_back(item);
 		_create_project_item_control(_projects.size() - 1);
