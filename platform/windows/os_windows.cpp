@@ -1678,6 +1678,21 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Windows::get_cwd() const {
+	const DWORD size = GetCurrentDirectoryW(0, nullptr);
+
+	Char16String buffer;
+	buffer.resize((int)size);
+	if (GetCurrentDirectoryW(size, (wchar_t *)buffer.ptrw()) == 0) {
+		return OS::get_cwd();
+	}
+
+	String result;
+	result.parse_utf16(buffer.ptr());
+
+	return result;
+}
+
 Vector<String> OS_Windows::get_system_fonts() const {
 	if (!dwrite_init) {
 		return Vector<String>();
