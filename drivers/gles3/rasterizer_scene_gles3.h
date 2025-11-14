@@ -150,7 +150,7 @@ class RasterizerCanvasGLES3;
 
 class RasterizerSceneGLES3 : public RendererSceneRender {
 private:
-	static RasterizerSceneGLES3 *singleton;
+	static inline RasterizerSceneGLES3 *singleton = nullptr;
 	RS::ViewportDebugDraw debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 	uint64_t scene_pass = 0;
 
