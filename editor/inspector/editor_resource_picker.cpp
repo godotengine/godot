@@ -459,11 +459,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
-			Ref<Resource> unique_resource = edited_resource->duplicate();
-			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
+			for (int i = 0; i < EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size(); i++) {
+				Ref<Resource> unique_resource = edited_resource->duplicate();
+				ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
-			edited_resource = unique_resource;
-			_resource_changed();
+				edited_resource = unique_resource;
+				_resource_changed();
+			}
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
@@ -717,7 +719,12 @@ String EditorResourcePicker::_get_owner_path() const {
 	if (res && !res->is_built_in()) {
 		return res->get_path();
 	}
-	// TODO: It would be nice to handle deeper Resource nesting.
+
+	Ref<Resource> parent_res = _has_parent_resource();
+	if (parent_res.is_valid()) {
+		return parent_res->get_path();
+	}
+
 	return String();
 }
 
@@ -1294,63 +1301,70 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 }
 
 void EditorResourcePicker::_duplicate_selected_resources() {
+	List<Ref<Resource>> selection_resource;
+
 	for (TreeItem *item = duplicate_resources_tree->get_root(); item; item = item->get_next_in_tree()) {
 		if (!item->is_checked(0)) {
 			continue;
 		}
+		for (int i = 0; i < EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list().size(); i++) {
+			Array meta = item->get_metadata(0);
+			Ref<Resource> res = meta[0];
+			Ref<Resource> unique_resource = res->duplicate();
+			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
+			meta[0] = unique_resource;
 
-		Array meta = item->get_metadata(0);
-		Ref<Resource> res = meta[0];
-		Ref<Resource> unique_resource = res->duplicate();
-		ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
-		meta[0] = unique_resource;
-
-		if (meta.size() == 1) { // Root.
-			edited_resource = unique_resource;
-			continue;
-		}
-		Array parent_meta = item->get_parent()->get_metadata(0);
-		Ref<Resource> parent = parent_meta[0];
-		Variant::Type property_type = parent->get(meta[1]).get_type();
-
-		if (property_type == Variant::OBJECT) {
-			parent->set(meta[1], unique_resource);
-			continue;
-		}
-
-		Variant property = parent->get(meta[1]);
-
-		if (!parent_meta.has(property)) {
-			property = property.duplicate();
-			parent->set(meta[1], property);
-			parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
-		}
-
-		if (property_type == Variant::ARRAY) {
-			Array arr = property;
-			arr[meta[2]] = unique_resource;
-			continue;
-		}
-
-		Dictionary dict = property;
-		LocalVector<Variant> keys = dict.get_key_list();
-
-		if (meta[2].get_type() == Variant::OBJECT) {
-			if (keys.has(meta[2])) {
-				//It's a key.
-				dict[unique_resource] = dict[meta[2]];
-				dict.erase(meta[2]);
-				parent_meta.push_back(unique_resource);
-			} else {
-				// If key has been erased, use last appended Resource key instead.
-				Variant key = keys.has(meta[3]) ? meta[3] : parent_meta.back();
-				dict[key] = unique_resource;
+			if (meta.size() == 1) { // Root.
+				edited_resource = unique_resource;
+				selection_resource.push_back(unique_resource);
+				continue;
 			}
-		} else {
-			dict[meta[2]] = unique_resource;
+			Array parent_meta = item->get_parent()->get_metadata(0);
+			Ref<Resource> parent = parent_meta[0];
+			Variant::Type property_type = parent->get(meta[1]).get_type();
+
+			if (property_type == Variant::OBJECT) {
+				parent->set(meta[1], unique_resource);
+				continue;
+			}
+
+			Variant property = parent->get(meta[1]);
+
+			if (!parent_meta.has(property)) {
+				property = property.duplicate();
+				parent->set(meta[1], property);
+				parent_meta.push_back(property); // Append Duplicated Type so we can check if it's already been duplicated.
+			}
+
+			if (property_type == Variant::ARRAY) {
+				Array arr = property;
+				arr[meta[2]] = unique_resource;
+				continue;
+			}
+
+			Dictionary dict = property;
+			LocalVector<Variant> keys = dict.get_key_list();
+
+			if (meta[2].get_type() == Variant::OBJECT) {
+				if (keys.has(meta[2])) {
+					//It's a key.
+					dict[unique_resource] = dict[meta[2]];
+					dict.erase(meta[2]);
+					parent_meta.push_back(unique_resource);
+				} else {
+					// If key has been erased, use last appended Resource key instead.
+					Variant key = keys.has(meta[3]) ? meta[3] : parent_meta.back();
+					dict[key] = unique_resource;
+				}
+			} else {
+				dict[meta[2]] = unique_resource;
+			}
 		}
 	}
-	_resource_changed();
+	for (Ref<Resource> R : selection_resource) {
+		edited_resource = R;
+		_resource_changed();
+	}
 }
 
 bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
@@ -1393,7 +1407,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	return false;
 }
 
-Ref<Resource> EditorResourcePicker::_has_parent_resource() {
+Ref<Resource> EditorResourcePicker::_has_parent_resource() const {
 	Node *current_node = this->get_parent();
 	while (current_node != nullptr) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(current_node);
