@@ -237,6 +237,9 @@ class ConnectionsDock : public VBoxContainer {
 		SLOT_MENU_DISCONNECT,
 	};
 
+	VBoxContainer *holder = nullptr;
+	Label *select_a_node = nullptr;
+
 	Object *selected_object = nullptr;
 	ConnectionsDockTree *tree = nullptr;
 
@@ -282,7 +285,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_object(Object *p_obj);
+	void set_selection(const Vector<Object *> &p_objects);
 	void update_tree();
 
 	ConnectionsDock();
