@@ -165,6 +165,7 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
+	_FORCE_INLINE_ Vector3 round_to_decimal(uint8_t precision) const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;
@@ -271,6 +272,10 @@ Vector3 Vector3::ceil() const {
 
 Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
+}
+
+Vector3 Vector3::round_to_decimal(uint8_t precision) const {
+	return Vector3(Math::round_to_decimal(x, precision), Math::round_to_decimal(y, precision), Math::round_to_decimal(z, precision));
 }
 
 Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
