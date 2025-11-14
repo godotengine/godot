@@ -94,7 +94,7 @@ class GDScriptCache {
 
 	static GDScriptCache *singleton;
 
-	bool cleared = false;
+	bool clearing = false;
 
 public:
 	static const int BINARY_MUTEX_TAG = 2;
