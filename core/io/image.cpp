@@ -2597,28 +2597,6 @@ void Image::initialize_data(const char **p_xpm) {
 		line++;
 	}
 }
-#define DETECT_ALPHA_MAX_THRESHOLD 254
-#define DETECT_ALPHA_MIN_THRESHOLD 2
-
-#define DETECT_ALPHA(m_value)                          \
-	{                                                  \
-		uint8_t value = m_value;                       \
-		if (value < DETECT_ALPHA_MIN_THRESHOLD)        \
-			bit = true;                                \
-		else if (value < DETECT_ALPHA_MAX_THRESHOLD) { \
-			detected = true;                           \
-			break;                                     \
-		}                                              \
-	}
-
-#define DETECT_NON_ALPHA(m_value) \
-	{                             \
-		uint8_t value = m_value;  \
-		if (value > 0) {          \
-			detected = true;      \
-			break;                \
-		}                         \
-	}
 
 bool Image::is_invisible() const {
 	int w, h;
@@ -2704,49 +2682,63 @@ bool Image::is_invisible() const {
 }
 
 Image::AlphaMode Image::detect_alpha() const {
-	int64_t len = data.size();
+	ERR_FAIL_COND_V_MSG(is_compressed(), ALPHA_NONE, "Alpha detection is not implemented for compressed image formats.");
 
-	if (len == 0) {
-		return ALPHA_NONE;
+	AlphaMode mode = ALPHA_NONE;
+	const int pixel_count = width * height;
+
+	// Return early if the format doesn't have an alpha channel.
+	if ((get_format_component_mask(format) & 0x8) == 0) {
+		return mode;
 	}
-
-	int w, h;
-	_get_mipmap_offset_and_size(1, len, w, h);
-
-	const uint8_t *r = data.ptr();
-	const unsigned char *data_ptr = r;
-
-	bool bit = false;
-	bool detected = false;
 
 	switch (format) {
+		// Faster, but works only for specific formats.
 		case FORMAT_LA8: {
-			for (int i = 0; i < (len >> 1); i++) {
-				DETECT_ALPHA(data_ptr[(i << 1) + 1]);
-			}
+			const uint16_t *pixels = reinterpret_cast<const uint16_t *>(data.ptr());
 
+			for (int p = 0; p < pixel_count; p++) {
+				uint8_t alpha = (pixels[p] & 0xFF00) >> 8;
+
+				if (alpha < 2) {
+					mode = ALPHA_BIT;
+				} else if (alpha < 254) {
+					mode = ALPHA_BLEND;
+					break;
+				}
+			}
 		} break;
 		case FORMAT_RGBA8: {
-			for (int i = 0; i < (len >> 2); i++) {
-				DETECT_ALPHA(data_ptr[(i << 2) + 3])
+			const uint32_t *pixels = reinterpret_cast<const uint32_t *>(data.ptr());
+
+			for (int p = 0; p < pixel_count; p++) {
+				uint8_t alpha = (pixels[p] & 0xFF000000) >> 24;
+
+				if (alpha < 2) {
+					mode = ALPHA_BIT;
+				} else if (alpha < 254) {
+					mode = ALPHA_BLEND;
+					break;
+				}
 			}
+		} break;
 
-		} break;
-		case FORMAT_DXT3:
-		case FORMAT_DXT5: {
-			detected = true;
-		} break;
 		default: {
-		}
+			// Slower, but works for any format.
+			for (int p = 0; p < pixel_count; p++) {
+				const float alpha = get_pixel(p % width, p / width).a;
+
+				if (alpha < 0.001f) {
+					mode = ALPHA_BIT;
+				} else if (alpha < 0.999f) {
+					mode = ALPHA_BLEND;
+					break;
+				}
+			}
+		} break;
 	}
 
-	if (detected) {
-		return ALPHA_BLEND;
-	} else if (bit) {
-		return ALPHA_BIT;
-	} else {
-		return ALPHA_NONE;
-	}
+	return mode;
 }
 
 Error Image::load(const String &p_path) {
