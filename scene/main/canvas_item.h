@@ -41,6 +41,20 @@ class SubViewport;
 class Window;
 class World2D;
 
+class CanvasItemGizmo : public RefCounted {
+	GDCLASS(CanvasItemGizmo, RefCounted);
+
+public:
+	virtual void create() = 0;
+	virtual void transform() = 0;
+	virtual void clear() = 0;
+	virtual void redraw() = 0;
+	virtual void free() = 0;
+
+	CanvasItemGizmo();
+	virtual ~CanvasItemGizmo() {}
+};
+
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
 
@@ -260,6 +274,10 @@ public:
 #endif // DEBUG_ENABLED
 
 	void update_draw_order();
+
+	/* GIZMOS */
+	// TODO: actually implement this.
+	void remove_gizmo(Ref<CanvasItemGizmo> p_gizmo) {}
 
 	/* VISIBILITY */
 
