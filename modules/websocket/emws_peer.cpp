@@ -141,6 +141,13 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	int read = 0;
 	Error err = in_buffer.read_packet(packet_buffer.ptrw(), packet_buffer.size(), &was_string, read);
+
+#ifdef WEB_ENABLED
+	if (err == ERR_UNAVAILABLE) {
+		return ERR_UNAVAILABLE;
+	}
+#endif
+
 	ERR_FAIL_COND_V(err != OK, err);
 
 	*r_buffer = packet_buffer.ptr();
