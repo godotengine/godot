@@ -98,6 +98,20 @@ void CollisionObject::_notification(int p_what) {
 			}
 
 		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (debug_shapes_count > 0 && is_inside_tree()) {
+				for (Map<uint32_t, ShapeData>::Element *E = shapes.front(); E; E = E->next()) {
+					ShapeData &shapedata = E->get();
+					const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
+					for (int i = 0; i < shapedata.shapes.size(); i++) {
+						if (shapes[i].fti_instance_debug_shape.is_valid()) {
+							VS::get_singleton()->fti_instance_reset(shapes[i].fti_instance_debug_shape);
+						}
+					}
+				}
+			}
+
+		} break;
 	}
 }
 
@@ -237,14 +251,20 @@ void CollisionObject::_update_debug_shapes() {
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
 				ShapeData::ShapeBase &s = shapes[i];
 				if (s.shape.is_null() || shapedata.disabled) {
-					if (s.debug_shape.is_valid()) {
-						VS::get_singleton()->free(s.debug_shape);
+					if (s.fti_instance_debug_shape.is_valid()) {
+						VS::get_singleton()->free(s.fti_instance_debug_shape);
+						s.fti_instance_debug_shape = RID();
 						s.debug_shape = RID();
 						--debug_shapes_count;
 					}
 				}
-				if (!s.debug_shape.is_valid()) {
-					s.debug_shape = RID_PRIME(VS::get_singleton()->instance_create());
+
+				bool needs_fti_reset = false;
+
+				if (!s.fti_instance_debug_shape.is_valid()) {
+					needs_fti_reset = true;
+					s.fti_instance_debug_shape = RID_PRIME(VS::get_singleton()->fti_instance_create());
+					s.debug_shape = VS::get_singleton()->fti_instance_get_instance(s.fti_instance_debug_shape);
 					VS::get_singleton()->instance_set_scenario(s.debug_shape, get_world()->get_scenario());
 
 					if (!s.shape->is_connected("changed", this, "_shape_changed")) {
@@ -256,8 +276,12 @@ void CollisionObject::_update_debug_shapes() {
 
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
 				VS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
-				VS::get_singleton()->instance_set_transform(s.debug_shape, get_global_transform() * shapedata.xform);
+				VS::get_singleton()->fti_instance_set_transform(s.fti_instance_debug_shape, get_global_transform() * shapedata.xform);
 				VS::get_singleton()->instance_set_portal_mode(s.debug_shape, VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
+
+				if (needs_fti_reset) {
+					VS::get_singleton()->fti_instance_reset(s.fti_instance_debug_shape);
+				}
 			}
 		}
 	}
@@ -270,8 +294,9 @@ void CollisionObject::_clear_debug_shapes() {
 		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shapes[i];
-			if (s.debug_shape.is_valid()) {
-				VS::get_singleton()->free(s.debug_shape);
+			if (s.fti_instance_debug_shape.is_valid()) {
+				VS::get_singleton()->free(s.fti_instance_debug_shape);
+				s.fti_instance_debug_shape = RID();
 				s.debug_shape = RID();
 				if (s.shape.is_valid() && s.shape->is_connected("changed", this, "_shape_changed")) {
 					s.shape->disconnect("changed", this, "_shape_changed");
@@ -290,7 +315,7 @@ void CollisionObject::_on_transform_changed() {
 			ShapeData &shapedata = E->get();
 			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				VS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
+				VS::get_singleton()->fti_instance_set_transform(shapes[i].fti_instance_debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
 	}
@@ -496,8 +521,11 @@ void CollisionObject::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
 		PhysicsServer::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
 
-	if (s.debug_shape.is_valid()) {
-		VS::get_singleton()->free(s.debug_shape);
+	if (s.fti_instance_debug_shape.is_valid()) {
+		VS::get_singleton()->free(s.fti_instance_debug_shape);
+		s.fti_instance_debug_shape = RID();
+		s.debug_shape = RID();
+
 		if (s.shape.is_valid() && s.shape->is_connected("changed", this, "_shape_changed")) {
 			s.shape->disconnect("changed", this, "_shape_changed");
 		}
