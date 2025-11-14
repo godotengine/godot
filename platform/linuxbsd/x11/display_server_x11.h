@@ -235,6 +235,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
+	void _create_xic(WindowData &wd);
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, Window p_parent_window);
 
 	String internal_clipboard;
@@ -245,7 +246,7 @@ class DisplayServerX11 : public DisplayServer {
 	int xmblen = 0;
 	unsigned long last_timestamp = 0;
 	::Time last_keyrelease_time = 0;
-	::XIM xim;
+	::XIM xim = nullptr;
 	::XIMStyle xim_style;
 
 	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
@@ -257,6 +258,8 @@ class DisplayServerX11 : public DisplayServer {
 	static void _xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
 			::XIMPreeditCaretCallbackStruct *call_data);
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
+			::XPointer call_data);
+	static void _xim_instantiate_callback(::Display *display, ::XPointer client_data,
 			::XPointer call_data);
 
 	Point2i last_mouse_pos;
