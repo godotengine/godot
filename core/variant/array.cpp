@@ -126,6 +126,11 @@ void Array::clear() {
 	_p->array.clear();
 }
 
+void Array::reset() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	_p->array.reset();
+}
+
 bool Array::operator==(const Array &p_array) const {
 	return recursive_equal(p_array, 0);
 }
