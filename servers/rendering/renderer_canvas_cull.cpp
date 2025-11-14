@@ -63,6 +63,11 @@ void RendererCanvasCull::_dependency_deleted(const RID &p_dependency, Dependency
 
 	if (p_dependency == item->material) {
 		_canvas_cull_singleton->canvas_item_set_material(item->self, RID());
+	} else if (item->commands && item->commands->type == Item::Command::TYPE_PARTICLES) {
+		Item::CommandParticles *particle_cmd = static_cast<Item::CommandParticles *>(item->commands);
+		if (p_dependency == particle_cmd->particles) {
+			particle_cmd->particles = RID();
+		}
 	}
 	_canvas_cull_singleton->_item_queue_update(item, true);
 }
@@ -1789,11 +1794,13 @@ void RendererCanvasCull::canvas_item_add_particles(RID p_item, RID p_particles, 
 	Item::CommandParticles *part = canvas_item->alloc_command<Item::CommandParticles>();
 	ERR_FAIL_NULL(part);
 	part->particles = p_particles;
-
 	part->texture = p_texture;
 
 	//take the chance and request processing for them, at least once until they become visible again
 	RSG::particles_storage->particles_request_process(p_particles);
+
+	// Need to update instance uniforms.
+	_item_queue_update(canvas_item, true);
 }
 
 void RendererCanvasCull::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture) {
@@ -2547,8 +2554,24 @@ void RendererCanvasCull::_update_dirty_item(Item *p_item) {
 			RSG::material_storage->material_update_dependency(material, &p_item->dependency_tracker);
 		}
 
+		bool is_particles = p_item->commands && p_item->commands->type == Item::Command::TYPE_PARTICLES;
+		const Item::CommandParticles *particles_cmd = is_particles ? static_cast<const Item::CommandParticles *>(p_item->commands) : nullptr;
+
+		if (is_particles && particles_cmd->particles.is_valid()) {
+			RSG::utilities->base_update_dependency(particles_cmd->particles, &p_item->dependency_tracker);
+			RID process_material = RSG::particles_storage->particles_get_process_material(particles_cmd->particles);
+			if (process_material.is_valid()) {
+				p_item->instance_uniforms.materials_append(process_material);
+				RSG::material_storage->material_update_dependency(process_material, &p_item->dependency_tracker);
+			}
+		}
+
 		if (p_item->instance_uniforms.materials_finish(p_item->self)) {
 			p_item->instance_allocated_shader_uniforms_offset = p_item->instance_uniforms.location();
+		}
+
+		if (is_particles && particles_cmd->particles.is_valid()) {
+			RSG::particles_storage->particles_set_instance_uniform_offset(particles_cmd->particles, p_item->instance_uniforms.location());
 		}
 
 		p_item->dependency_tracker.update_end();

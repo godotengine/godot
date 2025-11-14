@@ -148,27 +148,29 @@ void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 }
 
 void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
-#ifdef TOOLS_ENABLED
-	if (process_material.is_valid()) {
+	if (Engine::get_singleton()->is_editor_hint() && process_material.is_valid()) {
 		if (Ref<ParticleProcessMaterial>(process_material).is_valid()) {
 			process_material->disconnect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
+			process_material->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
 	}
-#endif
 
 	process_material = p_material;
 	RID material_rid;
 	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
-#ifdef TOOLS_ENABLED
-		if (Ref<ParticleProcessMaterial>(process_material).is_valid()) {
+		if (Engine::get_singleton()->is_editor_hint() && Ref<ParticleProcessMaterial>(process_material).is_valid()) {
 			process_material->connect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
+			process_material->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
-#endif
 	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warnings();
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		notify_property_list_changed();
+	}
 }
 
 void GPUParticles3D::set_speed_scale(double p_scale) {
