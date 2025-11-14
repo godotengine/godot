@@ -151,10 +151,10 @@ void RoomManager::_preview_camera_update() {
 	Ref<World> world = get_world();
 	RID scenario = world->get_scenario();
 
-	if (_godot_preview_camera_ID != (ObjectID)-1) {
+	if (_godot_preview_camera_ID.is_valid()) {
 		Camera *cam = ObjectDB::get_instance<Camera>(_godot_preview_camera_ID);
 		if (!cam) {
-			_godot_preview_camera_ID = (ObjectID)-1;
+			_godot_preview_camera_ID = ObjectID();
 		} else {
 			// get camera position and direction
 			Vector3 camera_pos = cam->get_global_transform().origin;
@@ -197,7 +197,7 @@ void RoomManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint()) {
-				set_process_internal(_godot_preview_camera_ID != (ObjectID)-1);
+				set_process_internal(_godot_preview_camera_ID.is_valid());
 #ifdef TOOLS_ENABLED
 				// note this mechanism may fail to work correctly if the user creates two room managers,
 				// but should not create major problems as it is just used to auto update when portals etc
@@ -347,7 +347,7 @@ void RoomManager::set_preview_camera_path(const NodePath &p_path) {
 
 	resolve_preview_camera_path();
 
-	bool camera_on = _godot_preview_camera_ID != (ObjectID)-1;
+	bool camera_on = _godot_preview_camera_ID.is_valid();
 
 	// make sure the cached camera planes are invalid, this will
 	// force an update to the visual server on the next internal_process
@@ -1947,7 +1947,7 @@ bool RoomManager::resolve_preview_camera_path() {
 		_godot_preview_camera_ID = camera->get_instance_id();
 		return true;
 	}
-	_godot_preview_camera_ID = -1;
+	_godot_preview_camera_ID = ObjectID();
 	return false;
 }
 
