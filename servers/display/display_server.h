@@ -270,6 +270,7 @@ public:
 
 	virtual bool is_dark_mode_supported() const { return false; }
 	virtual bool is_dark_mode() const { return false; }
+	virtual Dictionary get_system_icon_theme() const { return Dictionary(); }
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); }
 	virtual Color get_base_color() const { return Color(0, 0, 0, 0); }
 	virtual void set_system_theme_change_callback(const Callable &p_callable) {}
@@ -858,6 +859,7 @@ public:
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
+	virtual void set_themed_icons(const Dictionary &p_icons) {}
 
 	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback);
 	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon);
