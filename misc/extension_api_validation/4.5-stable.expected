@@ -99,3 +99,11 @@ Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/method
 Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
 
 Duplicate method made const. Compatibility methods registered.
+
+
+GH-108369
+---------
+Validate extension JSON: Error: Field 'native_structures/CaretInfo': format changed value in new API, from "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction" to "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction = TextServer::DIRECTION_AUTO;TextServer::Direction trailing_direction = TextServer::DIRECTION_AUTO".
+Validate extension JSON: Error: Field 'native_structures/Glyph': format changed value in new API, from "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0" to "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0;int span_index = -1".
+
+Updated existing native structures to match actual definitions.

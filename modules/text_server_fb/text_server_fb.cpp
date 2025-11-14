@@ -155,6 +155,10 @@ void TextServerFallback::_free_rid(const RID &p_rid) {
 			shaped_owner.free(p_rid);
 		}
 		memdelete(sd);
+	} else if (list_owner.owns(p_rid)) {
+		DrawList *dc = list_owner.get_or_null(p_rid);
+		list_owner.free(p_rid);
+		memdelete(dc);
 	}
 }
 
@@ -2835,11 +2839,18 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 #endif
 }
 
-void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+void TextServerFallback::_font_add_glyph_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	DrawList *list = list_owner.get_or_null(p_list);
+	ERR_FAIL_NULL(list);
+
+	_imp_font_add_glyph_to_draw_list(p_font, p_layer, list, p_transform, p_size, p_pos, p_index, p_color, p_oversampling);
+}
+
+void TextServerFallback::_imp_font_add_glyph_to_draw_list(const RID &p_font, int64_t p_layer, TextServerFallback::DrawList *p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
 	if (p_index == 0) {
 		return; // Non visual character, skip.
 	}
-	FontFallback *fd = _get_font_data(p_font_rid);
+	FontFallback *fd = _get_font_data(p_font);
 	ERR_FAIL_NULL(fd);
 
 	MutexLock lock(fd->mutex);
@@ -2938,10 +2949,19 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Point2 cpos = p_pos;
 					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					GlyphDrawCall ret;
+					ret.layer = p_layer;
+					ret.texture = texture;
+					ret.dst_rect = Rect2(cpos, csize);
+					ret.src_rect = fgl.uv_rect;
+					ret.modulate = modulate;
+					ret.transform = p_transform;
+					ret.data = Vector3i(0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					ret.draw_type = DRAW_CALL_MSDF;
+					p_list->calls.push_back(ret);
 				} else {
 					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+					double scale = _font_get_scale(p_font, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
@@ -2970,22 +2990,33 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 						csize /= oversampling_factor;
 					}
 					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+					GlyphDrawCall ret;
+					ret.layer = p_layer;
+					ret.texture = texture;
+					ret.dst_rect = Rect2(cpos, csize);
+					ret.src_rect = fgl.uv_rect;
+					ret.modulate = modulate;
+					ret.transform = p_transform;
+					ret.draw_type = lcd_aa ? DRAW_CALL_LCD : DRAW_CALL_NORMAL;
+					p_list->calls.push_back(ret);
 				}
 			}
 		}
 	}
 }
 
-void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+void TextServerFallback::_font_add_glyph_outline_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	DrawList *list = list_owner.get_or_null(p_list);
+	ERR_FAIL_NULL(list);
+
+	_imp_font_add_glyph_outline_to_draw_list(p_font, p_layer, list, p_transform, p_size, p_outline_size, p_pos, p_index, p_color, p_oversampling);
+}
+
+void TextServerFallback::_imp_font_add_glyph_outline_to_draw_list(const RID &p_font, int64_t p_layer, TextServerFallback::DrawList *p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
 	if (p_index == 0) {
 		return; // Non visual character, skip.
 	}
-	FontFallback *fd = _get_font_data(p_font_rid);
+	FontFallback *fd = _get_font_data(p_font);
 	ERR_FAIL_NULL(fd);
 
 	MutexLock lock(fd->mutex);
@@ -3080,10 +3111,19 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					Point2 cpos = p_pos;
 					cpos += fgl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = fgl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					GlyphDrawCall ret;
+					ret.layer = p_layer;
+					ret.texture = texture;
+					ret.dst_rect = Rect2(cpos, csize);
+					ret.src_rect = fgl.uv_rect;
+					ret.modulate = modulate;
+					ret.transform = p_transform;
+					ret.data = Vector3i(p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
+					ret.draw_type = DRAW_CALL_MSDF;
+					p_list->calls.push_back(ret);
 				} else {
 					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
+					double scale = _font_get_scale(p_font, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
@@ -3112,14 +3152,34 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 						csize /= oversampling_factor;
 					}
 					cpos += gpos;
-					if (lcd_aa) {
-						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate);
-					} else {
-						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, false, false);
-					}
+					GlyphDrawCall ret;
+					ret.layer = p_layer;
+					ret.texture = texture;
+					ret.dst_rect = Rect2(cpos, csize);
+					ret.src_rect = fgl.uv_rect;
+					ret.modulate = modulate;
+					ret.transform = p_transform;
+					ret.draw_type = lcd_aa ? DRAW_CALL_LCD : DRAW_CALL_NORMAL;
+					p_list->calls.push_back(ret);
 				}
 			}
 		}
+	}
+}
+
+void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	if (RenderingServer::get_singleton() != nullptr) {
+		DrawList dl;
+		_imp_font_add_glyph_to_draw_list(p_font_rid, 0, &dl, Transform2D(), p_size, p_pos, p_index, p_color, p_oversampling);
+		_imp_draw_list_draw(&dl, p_canvas);
+	}
+}
+
+void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	if (RenderingServer::get_singleton() != nullptr) {
+		DrawList dl;
+		_imp_font_add_glyph_outline_to_draw_list(p_font_rid, 0, &dl, Transform2D(), p_size, p_outline_size, p_pos, p_index, p_color, p_oversampling);
+		_imp_draw_list_draw(&dl, p_canvas);
 	}
 }
 
@@ -3254,6 +3314,187 @@ Dictionary TextServerFallback::_font_supported_variation_list(const RID &p_font_
 	FontForSizeFallback *ffsd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), Dictionary());
 	return fd->supported_varaitions;
+}
+
+/*************************************************************************/
+/* Draw list interface                                                   */
+/*************************************************************************/
+
+RID TextServerFallback::_create_draw_list() {
+	_THREAD_SAFE_METHOD_
+	DrawList *list = memnew(DrawList);
+	return list_owner.make_rid(list);
+}
+
+void TextServerFallback::_draw_list_sort(const RID &p_dc) {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+	list->calls.sort_custom<GlyphDrawCallCompare>();
+}
+
+void TextServerFallback::_draw_list_reserve(const RID &p_dc, int64_t p_new_items) {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+	list->calls.reserve(list->calls.size() + p_new_items);
+}
+
+void TextServerFallback::_draw_list_add_hexbox(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Vector2 &p_pos, int64_t p_index, int64_t p_size, const Color &p_modulate) const {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+
+	GlyphDrawCall dc;
+	dc.draw_type = TextServer::DRAW_CALL_HEX;
+	dc.layer = p_layer;
+	dc.transform = p_transform;
+	dc.data = Vector2i(p_index, p_size);
+	dc.modulate = p_modulate;
+	dc.dst_rect.position = p_pos;
+
+	list->calls.push_back(dc);
+}
+
+void TextServerFallback::_draw_list_add_rect(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Rect2 &p_rect, bool p_filled, const Color &p_modulate) const {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+
+	GlyphDrawCall dc;
+	dc.draw_type = TextServer::DRAW_CALL_RECT;
+	dc.layer = p_layer;
+	dc.transform = p_transform;
+	dc.data = p_filled;
+	dc.modulate = p_modulate;
+	dc.dst_rect = p_rect;
+
+	list->calls.push_back(dc);
+}
+
+void TextServerFallback::_draw_list_add_line(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Point2 &p_start, const Point2 &p_end, float p_width, float p_dash, const Color &p_modulate) const {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+
+	GlyphDrawCall dc;
+	dc.draw_type = TextServer::DRAW_CALL_LINE;
+	dc.layer = p_layer;
+	dc.transform = p_transform;
+	dc.data = Vector2(p_dash, p_width);
+	dc.modulate = p_modulate;
+	dc.dst_rect.position = p_start;
+	dc.src_rect.position = p_end;
+
+	list->calls.push_back(dc);
+}
+
+void TextServerFallback::_draw_list_add_texture(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, RID p_texture, const Rect2 &p_dst_rect, const Color &p_modulate) const {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+
+	GlyphDrawCall dc;
+	dc.draw_type = TextServer::DRAW_CALL_IMAGE;
+	dc.layer = p_layer;
+	dc.texture = p_texture;
+	dc.transform = p_transform;
+	dc.modulate = p_modulate;
+	dc.dst_rect = p_dst_rect;
+
+	list->calls.push_back(dc);
+}
+
+void TextServerFallback::_draw_list_add_custom(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Callable &p_callback) const {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+
+	GlyphDrawCall dc;
+	dc.draw_type = TextServer::DRAW_CALL_CUSTOM;
+	dc.layer = p_layer;
+	dc.data = p_callback;
+	dc.transform = p_transform;
+
+	list->calls.push_back(dc);
+}
+
+void TextServerFallback::_imp_draw_list_draw(TextServerFallback::DrawList *p_list, const RID &p_ci) const {
+	for (const GlyphDrawCall &dc : p_list->calls) {
+		RenderingServer::get_singleton()->canvas_item_add_set_transform(p_ci, dc.transform);
+		if (dc.draw_type == TextServer::DRAW_CALL_MSDF) {
+			RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_ci, dc.dst_rect, dc.texture, dc.src_rect, dc.modulate, dc.data.operator Vector3().x, dc.data.operator Vector3().y, dc.data.operator Vector3().z);
+		} else if (dc.draw_type == TextServer::DRAW_CALL_LCD) {
+			RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_ci, dc.dst_rect, dc.texture, dc.src_rect, dc.modulate);
+		} else if (dc.draw_type == TextServer::DRAW_CALL_NORMAL) {
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_ci, dc.dst_rect, dc.texture, dc.src_rect, dc.modulate, false, false);
+		} else if (dc.draw_type == TextServer::DRAW_CALL_CUSTOM) {
+			const Callable &cb = dc.data.operator Callable();
+			if (cb.is_valid()) {
+				if (cb.get_argument_count() == 1) {
+					cb.call(p_ci);
+#ifndef DISABLE_DEPRECATED
+				} else if (cb.get_argument_count() == 0) {
+					cb.call();
+#endif
+				}
+			}
+		} else if (dc.draw_type == TextServer::DRAW_CALL_IMAGE) {
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_ci, dc.dst_rect, dc.texture, false, dc.modulate, false);
+		} else if (dc.draw_type == TextServer::DRAW_CALL_HEX) {
+			TS->draw_hex_code_box(p_ci, dc.data.operator Vector2i().y, dc.dst_rect.position, dc.data.operator Vector2i().x, dc.modulate);
+		} else if (dc.draw_type == TextServer::DRAW_CALL_RECT) {
+			if (dc.data.operator bool()) {
+				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, dc.dst_rect, dc.modulate, false);
+			} else {
+				Vector<Vector2> points;
+				points.resize(5);
+				points.write[0] = dc.dst_rect.position;
+				points.write[1] = dc.dst_rect.position + Vector2(dc.dst_rect.size.x, 0);
+				points.write[2] = dc.dst_rect.position + dc.dst_rect.size;
+				points.write[3] = dc.dst_rect.position + Vector2(0, dc.dst_rect.size.y);
+				points.write[4] = dc.dst_rect.position;
+
+				Vector<Color> colors = { dc.modulate };
+
+				RenderingServer::get_singleton()->canvas_item_add_polyline(p_ci, points, colors, -1.0, false);
+			}
+		} else if (dc.draw_type == TextServer::DRAW_CALL_LINE) {
+			float dash = dc.data.operator Vector2().x;
+			if (dash <= 0.0) {
+				RenderingServer::get_singleton()->canvas_item_add_line(p_ci, dc.dst_rect.position, dc.src_rect.position, dc.modulate, dc.data.operator Vector2().y, false);
+			} else {
+				float length = (dc.src_rect.position - dc.dst_rect.position).length();
+				Vector2 step = dash * (dc.src_rect.position - dc.dst_rect.position).normalized();
+
+				if (length < dash || step == Vector2()) {
+					RenderingServer::get_singleton()->canvas_item_add_line(p_ci, dc.dst_rect.position, dc.src_rect.position, dc.modulate, dc.data.operator Vector2().y, false);
+					return;
+				}
+
+				int steps = Math::ceil(length / dash);
+				if (steps % 2 == 0) {
+					steps--;
+				}
+
+				Point2 off = dc.dst_rect.position + (dc.src_rect.position - dc.dst_rect.position).normalized() * (length - steps * dash) / 2.0;
+
+				Vector<Vector2> points;
+				points.resize(steps + 1);
+				for (int i = 0; i < steps; i += 2) {
+					points.write[i] = (i == 0) ? dc.dst_rect.position : off;
+					points.write[i + 1] = (i == steps - 1) ? dc.src_rect.position : (off + step);
+					off += step * 2;
+				}
+
+				Vector<Color> colors = { dc.modulate };
+
+				RenderingServer::get_singleton()->canvas_item_add_multiline(p_ci, points, colors, dc.data.operator Vector2().y, false);
+			}
+		}
+	}
+}
+
+void TextServerFallback::_draw_list_draw(const RID &p_dc, const RID &p_ci, bool p_free) {
+	DrawList *list = list_owner.get_or_null(p_dc);
+	ERR_FAIL_NULL(list);
+	_imp_draw_list_draw(list, p_ci);
+	if (p_free) {
+		_free_rid(p_dc);
+	}
 }
 
 /*************************************************************************/

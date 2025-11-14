@@ -169,6 +169,15 @@ public:
 	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
+	void add_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void add_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+
+	void add_line_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void add_line_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+
+	void add_dropcap_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void add_dropcap_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+
 	int hit_test(const Point2 &p_coords) const;
 
 	bool is_dirty();

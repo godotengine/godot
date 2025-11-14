@@ -122,6 +122,15 @@ public:
 	};
 
 private:
+	enum TEDrawStep {
+		DRAW_STEP_BACKGROUND,
+		DRAW_STEP_BACKGROUND_BORDER,
+		DRAW_STEP_TEXT_OUTLINE,
+		DRAW_STEP_TEXT,
+		DRAW_STEP_FOREGROUND,
+		DRAW_STEP_MAX,
+	};
+
 	struct GutterInfo {
 		GutterType type = GutterType::GUTTER_TYPE_STRING;
 		String name = "";
@@ -657,9 +666,6 @@ private:
 	bool draw_spaces = false;
 
 	RID accessibility_text_root_element_nl;
-
-	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
-	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
 
 	/* Theme. */
 	Ref<StyleBox> _get_current_stylebox() const;

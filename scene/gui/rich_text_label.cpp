@@ -919,9 +919,11 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 	}
 }
 
-int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs, RID p_list, int p_layer) {
 	ERR_FAIL_NULL_V(p_frame, 0);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), 0);
+
+	int first_layer = DRAW_STEP_MAX * p_layer;
 
 	Vector2 off;
 
@@ -934,7 +936,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		return 0;
 	}
 
-	RID ci = get_canvas_item();
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
 
@@ -950,9 +951,9 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	bool skip_dc = (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
 	if (!skip_dc) {
 		if (l.dc_ol_size > 0) {
-			l.text_buf->draw_dropcap_outline(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_ol_size, l.dc_ol_color);
+			l.text_buf->add_dropcap_outline_to_draw_list(DRAW_STEP_OUTLINE, p_list, Transform2D(), p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_ol_size, l.dc_ol_color);
 		}
-		l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
+		l.text_buf->add_dropcap_to_draw_list(DRAW_STEP_TEXT, p_list, Transform2D(), p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
 	}
 
 	const Ref<TextParagraph> &text_buf = l.text_buf_disp.is_valid() ? l.text_buf_disp : l.text_buf;
@@ -1020,20 +1021,20 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			Color font_shadow_color = p_font_shadow_color * Color(1, 1, 1, font_color.a);
 			if (rtl) {
 				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
-					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+					l.text_prefix->add_outline_to_draw_list(DRAW_STEP_SHADOW_OUTLINE, p_list, Transform2D(), p_ofs + Vector2(off.x + length, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
 				}
 				if (outline_size > 0 && font_outline_color.a != 0.0) {
-					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x + length, 0), outline_size, font_outline_color);
+					l.text_prefix->add_outline_to_draw_list(DRAW_STEP_OUTLINE, p_list, Transform2D(), p_ofs + Vector2(off.x + length, 0), outline_size, font_outline_color);
 				}
-				l.text_prefix->draw(ci, p_ofs + Vector2(off.x + length, 0), font_color);
+				l.text_prefix->add_to_draw_list(DRAW_STEP_TEXT, p_list, Transform2D(), p_ofs + Vector2(off.x + length, 0), font_color);
 			} else {
 				if (p_shadow_outline_size > 0 && font_shadow_color.a != 0.0) {
-					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
+					l.text_prefix->add_outline_to_draw_list(DRAW_STEP_SHADOW_OUTLINE, p_list, Transform2D(), p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0) + p_shadow_ofs, p_shadow_outline_size, font_shadow_color);
 				}
 				if (outline_size > 0 && font_outline_color.a != 0.0) {
-					l.text_prefix->draw_outline(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), outline_size, font_outline_color);
+					l.text_prefix->add_outline_to_draw_list(DRAW_STEP_OUTLINE, p_list, Transform2D(), p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), outline_size, font_outline_color);
 				}
-				l.text_prefix->draw(ci, p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), font_color);
+				l.text_prefix->add_to_draw_list(DRAW_STEP_TEXT, p_list, Transform2D(), p_ofs + Vector2(off.x - l.text_prefix->get_size().x, 0), font_color);
 			}
 		}
 
@@ -1090,10 +1091,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								if (img->pad) {
 									Size2 pad_size = rect.size.min(img->image->get_size());
 									Vector2 pad_off = (rect.size - pad_size) / 2;
-									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
+									TS->draw_list_add_texture(p_list, first_layer + DRAW_STEP_TEXT, Transform2D(), img->image->get_rid(), Rect2(p_ofs + rect.position + off + pad_off, pad_size), img->color);
 									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off + pad_off, pad_size));
 								} else {
-									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off, rect.size), false, img->color);
+									TS->draw_list_add_texture(p_list, first_layer + DRAW_STEP_TEXT, Transform2D(), img->image->get_rid(), Rect2(p_ofs + rect.position + off, rect.size), img->color);
 									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off, rect.size));
 								}
 							} break;
@@ -1124,22 +1125,22 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 										if (row % 2 == 0) {
 											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
+												TS->draw_list_add_rect(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), true, c);
 											}
 										} else {
 											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
+												TS->draw_list_add_rect(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), true, c);
 											}
 										}
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), bc, false);
+											TS->draw_list_add_rect(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), false, bc);
 										}
 									}
 
 									for (int j = 0; j < (int)frame->lines.size(); j++) {
-										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs, p_list, p_layer + 1);
 									}
 									idx++;
 								}
@@ -1239,7 +1240,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (ul_started && new_ul_color != ul_color_prev) {
 							float y_off = upos;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-							draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+							TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, ul_color);
 							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							ul_color = new_ul_color;
 							ul_color_prev = new_ul_color;
@@ -1253,13 +1254,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						ul_started = false;
 						float y_off = upos;
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-						draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+						TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, ul_color);
 					}
 					if (_find_hint(it, nullptr) && underline_hint) {
 						if (dot_ul_started && font_color != dot_ul_color_prev) {
 							float y_off = upos;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-							draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+							TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, MAX(2.0, underline_width * 2), dot_ul_color);
 							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
 							dot_ul_color_prev = font_color;
 							dot_ul_color = font_color;
@@ -1275,7 +1276,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						dot_ul_started = false;
 						float y_off = upos;
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-						draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+						TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, MAX(2.0, underline_width * 2), dot_ul_color);
 					}
 					Color user_st_color = Color(0, 0, 0, 0);
 					if (_find_strikethrough(it, &user_st_color)) {
@@ -1289,7 +1290,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (st_started && new_st_color != st_color_prev) {
 							float y_off = -l_ascent + l_size.y / 2;
 							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-							draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+							TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_FOREGROUND, Transform2D(), st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, st_color);
 							st_start = p_ofs + Vector2(off_step.x, off_step.y);
 							st_color = new_st_color;
 							st_color_prev = new_st_color;
@@ -1303,7 +1304,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						st_started = false;
 						float y_off = -l_ascent + l_size.y / 2;
 						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-						draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+						TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_FOREGROUND, Transform2D(), st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, st_color);
 					}
 				}
 				if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) {
@@ -1436,27 +1437,25 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 					Vector2 char_off = char_xform.get_origin();
 					Transform2D char_reverse_xform;
+					Transform2D char_final_xform;
 					if (step == DRAW_STEP_TEXT) {
 						if (selected && use_selected_font_color) {
 							font_color = theme_cache.font_selected_color;
 						}
 
 						char_reverse_xform.set_origin(-char_off);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						draw_set_transform_matrix(char_final_xform);
+						char_final_xform = char_xform * char_reverse_xform;
 					} else if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW) {
 						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 
 						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						char_final_xform = char_xform * char_reverse_xform;
 						char_final_xform.columns[2] += p_shadow_ofs;
-						draw_set_transform_matrix(char_final_xform);
 					} else if (step == DRAW_STEP_OUTLINE) {
 						font_color = font_outline_color * Color(1, 1, 1, font_color.a);
 
 						char_reverse_xform.set_origin(-char_off);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						draw_set_transform_matrix(char_final_xform);
+						char_final_xform = char_xform * char_reverse_xform;
 					}
 
 					// Draw glyphs.
@@ -1468,16 +1467,16 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
-										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+										TS->font_add_glyph_to_draw_list(frid, step, p_list, char_final_xform, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
 									} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-										TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+										TS->draw_list_add_hexbox(p_list, first_layer + DRAW_STEP_TEXT, char_final_xform, fx_offset + char_off, gl, glyphs[i].font_size, font_color);
 									}
 								} else if (step == DRAW_STEP_SHADOW_OUTLINE && frid != RID()) {
-									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									TS->font_add_glyph_outline_to_draw_list(frid, step, p_list, char_final_xform, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
 								} else if (step == DRAW_STEP_SHADOW && frid != RID()) {
-									TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									TS->font_add_glyph_to_draw_list(frid, step, p_list, char_final_xform, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
 								} else if (step == DRAW_STEP_OUTLINE && frid != RID()) {
-									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
+									TS->font_add_glyph_outline_to_draw_list(frid, step, p_list, char_final_xform, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
 								}
 							}
 						}
@@ -1488,24 +1487,23 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								ul_started = false;
 								float y_off = upos;
 								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-								draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+								TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, ul_color);
 							}
 							if (dot_ul_started) {
 								dot_ul_started = false;
 								float y_off = upos;
 								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-								draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+								TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, MAX(2.0, underline_width * 2), dot_ul_color);
 							}
 							if (st_started) {
 								st_started = false;
 								float y_off = -l_ascent + l_size.y / 2;
 								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-								draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+								TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_FOREGROUND, Transform2D(), st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, st_color);
 							}
 						}
 						off_step.x += glyphs[i].advance;
 					}
-					draw_set_transform_matrix(Transform2D());
 				}
 				// Draw boxes.
 				if (step == DRAW_STEP_BACKGROUND || step == DRAW_STEP_FOREGROUND) {
@@ -1522,7 +1520,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								if (last_color.a > 0.0) {
 									Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
 									Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+									TS->draw_list_add_rect(p_list, first_layer + step, Transform2D(), Rect2(rect_off, rect_size), true, last_color);
 								}
 								if (color.a > 0.0) {
 									box_start = off_step.x;
@@ -1534,7 +1532,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							if (last_color.a > 0.0) {
 								Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
 								Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+								TS->draw_list_add_rect(p_list, first_layer + step, Transform2D(), Rect2(rect_off, rect_size), true, last_color);
 							}
 							last_color = Color(0, 0, 0, 0);
 						}
@@ -1548,7 +1546,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				if (last_color.a > 0.0) {
 					Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
 					Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+					TS->draw_list_add_rect(p_list, first_layer + step, Transform2D(), Rect2(rect_off, rect_size), true, last_color);
 				}
 			}
 			if (step == DRAW_STEP_BACKGROUND) {
@@ -1557,7 +1555,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_start, sel_end);
 					for (int i = 0; i < sel.size(); i++) {
 						Rect2 rect = Rect2(sel[i].x + p_ofs.x + off.x, p_ofs.y + off.y - l_ascent, sel[i].y - sel[i].x, l_size.y); // Note: use "off" not "off_step", selection is relative to the line start.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_bg);
+						TS->draw_list_add_rect(p_list, first_layer + step, Transform2D(), rect, true, selection_bg);
 					}
 				}
 			}
@@ -1566,19 +1564,19 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					ul_started = false;
 					float y_off = upos;
 					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-					draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+					TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, ul_color);
 				}
 				if (dot_ul_started) {
 					dot_ul_started = false;
 					float y_off = upos;
 					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-					draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+					TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_BACKGROUND, Transform2D(), dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, MAX(2.0, underline_width * 2), dot_ul_color);
 				}
 				if (st_started) {
 					st_started = false;
 					float y_off = -l_ascent + l_size.y / 2;
 					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
-					draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+					TS->draw_list_add_line(p_list, first_layer + DRAW_STEP_FOREGROUND, Transform2D(), st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), underline_width, 0.0, st_color);
 				}
 			}
 		}
@@ -2647,10 +2645,11 @@ void RichTextLabel::_notification(int p_what) {
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
 			int processed_glyphs = 0;
+			RID draw_list = TS->create_draw_list();
 			while (ofs.y < size.height - v_limit && from_line < to_line) {
 				MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 
-				int drawn_lines = _draw_line(main, from_line, ofs, text_rect.size.x, vsep, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs);
+				int drawn_lines = _draw_line(main, from_line, ofs, text_rect.size.x, vsep, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs, draw_list, 0);
 				visible_line_count += drawn_lines;
 				if (drawn_lines > 0) {
 					visible_paragraph_count++;
@@ -2662,6 +2661,9 @@ void RichTextLabel::_notification(int p_what) {
 				scroll_visible = follow_vc_pos > 0;
 				vscroll->set_visible(follow_vc_pos > 0);
 			}
+			TS->draw_list_sort(draw_list);
+			TS->draw_list_draw(draw_list, ci, true);
+
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
 				RID ae;
 				if (keyboard_focus_frame && keyboard_focus_item) {

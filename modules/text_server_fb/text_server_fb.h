@@ -488,11 +488,16 @@ class TextServerFallback : public TextServerExtension {
 		Vector<Glyph> glyphs_logical;
 	};
 
+	struct DrawList {
+		LocalVector<GlyphDrawCall> calls;
+	};
+
 	// Common data.
 
 	mutable RID_PtrOwner<FontFallbackLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
+	mutable RID_PtrOwner<DrawList> list_owner;
 
 	_FORCE_INLINE_ FontFallback *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
@@ -594,6 +599,10 @@ class TextServerFallback : public TextServerExtension {
 	void _generate_runs(ShapedTextDataFallback *p_sd) const;
 	void _realign(ShapedTextDataFallback *p_sd) const;
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
+
+	void _imp_font_add_glyph_to_draw_list(const RID &p_font, int64_t p_layer, TextServerFallback::DrawList *p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const;
+	void _imp_font_add_glyph_outline_to_draw_list(const RID &p_font, int64_t p_layer, TextServerFallback::DrawList *p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const;
+	void _imp_draw_list_draw(TextServerFallback::DrawList *p_list, const RID &p_ci) const;
 
 	Mutex ft_mutex;
 
@@ -785,6 +794,9 @@ public:
 	MODBIND7C(font_draw_glyph, const RID &, const RID &, int64_t, const Vector2 &, int64_t, const Color &, float);
 	MODBIND8C(font_draw_glyph_outline, const RID &, const RID &, int64_t, int64_t, const Vector2 &, int64_t, const Color &, float);
 
+	MODBIND9C(font_add_glyph_to_draw_list, const RID &, int64_t, const RID &, const Transform2D &, int64_t, const Vector2 &, int64_t, const Color &, float);
+	MODBIND10C(font_add_glyph_outline_to_draw_list, const RID &, int64_t, const RID &, const Transform2D &, int64_t, int64_t, const Vector2 &, int64_t, const Color &, float);
+
 	MODBIND2RC(bool, font_is_language_supported, const RID &, const String &);
 	MODBIND3(font_set_language_support_override, const RID &, const String &, bool);
 	MODBIND2R(bool, font_get_language_support_override, const RID &, const String &);
@@ -805,6 +817,18 @@ public:
 
 	MODBIND1(reference_oversampling_level, double);
 	MODBIND1(unreference_oversampling_level, double);
+
+	/* Draw list interface */
+
+	MODBIND0R(RID, create_draw_list);
+	MODBIND1(draw_list_sort, const RID &);
+	MODBIND2(draw_list_reserve, const RID &, int64_t);
+	MODBIND7C(draw_list_add_hexbox, const RID &, int64_t, const Transform2D &, const Vector2 &, int64_t, int64_t, const Color &);
+	MODBIND6C(draw_list_add_rect, const RID &, int64_t, const Transform2D &, const Rect2 &, bool, const Color &);
+	MODBIND8C(draw_list_add_line, const RID &, int64_t, const Transform2D &, const Point2 &, const Point2 &, float, float, const Color &);
+	MODBIND6C(draw_list_add_texture, const RID &, int64_t, const Transform2D &, RID, const Rect2 &, const Color &);
+	MODBIND4C(draw_list_add_custom, const RID &, int64_t, const Transform2D &, const Callable &);
+	MODBIND3(draw_list_draw, const RID &, const RID &, bool);
 
 	/* Shaped text buffer interface */
 

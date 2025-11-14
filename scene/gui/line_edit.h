@@ -84,6 +84,11 @@ public:
 	};
 
 private:
+	enum LEDrawStep {
+		DRAW_STEP_OUTLINE,
+		DRAW_STEP_TEXT,
+	};
+
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 	bool editing = false;

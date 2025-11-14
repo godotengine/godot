@@ -1342,9 +1342,8 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 	return draw_executing_lines;
 }
 
-void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+void CodeEdit::_main_gutter_draw_callback(RID p_ci, int p_line, int p_gutter, const Rect2 &p_region) {
 	bool hovering = get_hovered_gutter() == Vector2i(main_gutter, p_line);
-	RID ci = get_text_canvas_item();
 	if (draw_breakpoints && theme_cache.breakpoint_icon.is_valid()) {
 		bool breakpointed = is_line_breakpointed(p_line);
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
@@ -1359,7 +1358,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(padding, padding);
 			icon_region.size -= Point2(padding, padding) * 2;
-			theme_cache.breakpoint_icon->draw_rect(ci, icon_region, false, use_color);
+			theme_cache.breakpoint_icon->draw_rect(p_ci, icon_region, false, use_color);
 		}
 	}
 
@@ -1378,7 +1377,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(horizontal_padding, 0);
 			icon_region.size -= Point2(horizontal_padding * 1.1, vertical_padding);
-			theme_cache.bookmark_icon->draw_rect(ci, icon_region, false, use_color);
+			theme_cache.bookmark_icon->draw_rect(p_ci, icon_region, false, use_color);
 		}
 	}
 
@@ -1389,7 +1388,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		Rect2 icon_region = p_region;
 		icon_region.position += Point2(horizontal_padding, vertical_padding);
 		icon_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
-		theme_cache.executing_line_icon->draw_rect(ci, icon_region, false, theme_cache.executing_line_color);
+		theme_cache.executing_line_icon->draw_rect(p_ci, icon_region, false, theme_cache.executing_line_color);
 	}
 }
 
@@ -1532,7 +1531,7 @@ int CodeEdit::get_line_numbers_min_digits() const {
 	return line_numbers_min_digits;
 }
 
-void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+void CodeEdit::_line_number_draw_callback(RID p_ci, int p_line, int p_gutter, const Rect2 &p_region) {
 	if (!Rect2(Vector2(0, 0), get_size()).intersects(p_region)) {
 		return;
 	}
@@ -1571,7 +1570,7 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 		number_color = theme_cache.line_number_color;
 	}
 
-	TS->shaped_text_draw(text_rid, get_text_canvas_item(), ofs, -1, -1, number_color);
+	TS->shaped_text_draw(text_rid, p_ci, ofs, -1, -1, number_color);
 }
 
 void CodeEdit::_clear_line_number_text_cache() {
@@ -1594,13 +1593,12 @@ bool CodeEdit::is_drawing_fold_gutter() const {
 	return is_gutter_drawn(fold_gutter);
 }
 
-void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
+void CodeEdit::_fold_gutter_draw_callback(RID p_ci, int p_line, int p_gutter, Rect2 p_region) {
 	if (!can_fold_line(p_line) && !is_line_folded(p_line)) {
 		set_line_gutter_clickable(p_line, fold_gutter, false);
 		return;
 	}
 	set_line_gutter_clickable(p_line, fold_gutter, true);
-	RID ci = get_text_canvas_item();
 
 	int horizontal_padding = p_region.size.x / 10;
 	int vertical_padding = p_region.size.y / 6;
@@ -1614,17 +1612,17 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 		Color region_icon_color = theme_cache.folded_code_region_color;
 		region_icon_color.a = MAX(region_icon_color.a, 0.4f);
 		if (can_fold) {
-			theme_cache.can_fold_code_region_icon->draw_rect(ci, p_region, false, region_icon_color);
+			theme_cache.can_fold_code_region_icon->draw_rect(p_ci, p_region, false, region_icon_color);
 		} else {
-			theme_cache.folded_code_region_icon->draw_rect(ci, p_region, false, region_icon_color);
+			theme_cache.folded_code_region_icon->draw_rect(p_ci, p_region, false, region_icon_color);
 		}
 		return;
 	}
 	if (can_fold) {
-		theme_cache.can_fold_icon->draw_rect(ci, p_region, false, theme_cache.code_folding_color);
+		theme_cache.can_fold_icon->draw_rect(p_ci, p_region, false, theme_cache.code_folding_color);
 		return;
 	}
-	theme_cache.folded_icon->draw_rect(ci, p_region, false, theme_cache.code_folding_color);
+	theme_cache.folded_icon->draw_rect(p_ci, p_region, false, theme_cache.code_folding_color);
 }
 
 /* Line Folding */

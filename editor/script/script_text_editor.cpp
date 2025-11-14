@@ -526,16 +526,15 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 	return result;
 }
 
-void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+void ScriptTextEditor::_inline_object_draw(RID p_ci, const Dictionary &p_info, const Rect2 &p_rect) {
 	if (_is_valid_color_info(p_info)) {
 		Rect2 col_rect = p_rect.grow(-4);
 		if (color_alpha_texture.is_null()) {
 			color_alpha_texture = inline_color_picker->get_theme_icon("sample_bg", "ColorPicker");
 		}
-		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
-		RS::get_singleton()->canvas_item_add_rect(text_ci, p_rect.grow(-3), Color(1, 1, 1));
-		color_alpha_texture->draw_rect(text_ci, col_rect);
-		RS::get_singleton()->canvas_item_add_rect(text_ci, col_rect, Color(p_info["color"]));
+		RS::get_singleton()->canvas_item_add_rect(p_ci, p_rect.grow(-3), Color(1, 1, 1));
+		color_alpha_texture->draw_rect(p_ci, col_rect);
+		RS::get_singleton()->canvas_item_add_rect(p_ci, col_rect, Color(p_info["color"]));
 	}
 }
 

@@ -218,7 +218,7 @@ protected:
 
 	bool _is_valid_color_info(const Dictionary &p_info);
 	Array _inline_object_parse(const String &p_text);
-	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_object_draw(RID p_ci, const Dictionary &p_info, const Rect2 &p_rect);
 	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
 	void _picker_color_changed(const Color &p_color);
