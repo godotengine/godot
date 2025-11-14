@@ -92,6 +92,7 @@ class SceneState : public RefCounted {
 
 	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved);
 	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	void _add_inheritance_to_connections_owned_by(Node *p_owner, Node *p_node) const;
 
 	String path;
 
@@ -144,7 +145,6 @@ public:
 	int find_node_by_path(const NodePath &p_node) const;
 	Variant get_property_value(int p_node, const StringName &p_property, bool &r_found, bool &r_node_deferred) const;
 	bool is_node_in_group(int p_node, const StringName &p_group) const;
-	bool is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const;
 
 	void set_bundled_scene(const Dictionary &p_dictionary);
 	Dictionary get_bundled_scene() const;
