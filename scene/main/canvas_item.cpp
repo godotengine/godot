@@ -49,6 +49,10 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
+CanvasItemGizmo::CanvasItemGizmo() {
+}
+
+
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
