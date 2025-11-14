@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
 class Node;
@@ -100,6 +101,7 @@ private:
 	static void generator_parse_geometry_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node, bool p_recurse_children);
 	static void generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node);
 	static void generator_bake_from_source_geometry_data(NavMeshGeneratorTask3D *p_generator_task);
+	static Error generator_bake_single_tile(NavMeshGeneratorTask3D *p_generator_task, const Vector<float> &p_source_geometry_vertices, const Vector<int> &p_source_geometry_indices, const Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> &p_projected_obstructions, const AABB &p_bake_bounds, Vector<Vector3> &r_nav_vertices, Vector<Vector<int>> &r_nav_polygons, int p_tile_index, int p_tile_count);
 
 	static bool generator_emit_callback(const Callable &p_callback);
 
