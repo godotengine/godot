@@ -30,6 +30,7 @@
 
 #include "scene_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
@@ -2179,7 +2180,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, 2);
+			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, MAX(1, Math::ceil(2.0 / (float)GLOBAL_GET("display/window/stretch/scale"))));
 		}
 	}
 
@@ -2321,6 +2322,11 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
 	selection_list->reset_size();
 	selection_list->popup();
+
+	selection_list->set_content_scale_factor(1);
+	selection_list->set_min_size(selection_list->get_contents_minimum_size());
+	selection_list->reset_size();
+
 	// FIXME: Ugly hack that stops the popup from hiding when the button is released.
 	selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
 }
