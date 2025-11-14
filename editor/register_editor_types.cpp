@@ -32,6 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
+#include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_randomizer_editor_plugin.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
@@ -47,11 +48,13 @@
 #include "editor/export/editor_export_platform_pc.h"
 #include "editor/export/editor_export_plugin.h"
 #include "editor/export/register_exporters.h"
+#include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/gui/progress_dialog.h"
 #include "editor/import/3d/resource_importer_obj.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
@@ -74,6 +77,10 @@
 #include "editor/inspector/input_event_editor_plugin.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
+#include "editor/project_manager/engine_update_label.h"
+#include "editor/project_manager/project_dialog.h"
+#include "editor/project_manager/project_list.h"
+#include "editor/project_manager/quick_settings_dialog.h"
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
 #include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
 #include "editor/scene/2d/line_2d_editor_plugin.h"
@@ -194,6 +201,15 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
+
+	GDREGISTER_INTERNAL_CLASS(EditorAssetLibrary);
+	GDREGISTER_INTERNAL_CLASS(EngineUpdateLabel);
+	GDREGISTER_INTERNAL_CLASS(DependencyRemoveDialog);
+	GDREGISTER_INTERNAL_CLASS(ProgressDialog);
+	GDREGISTER_INTERNAL_CLASS(ProjectDialog);
+	GDREGISTER_INTERNAL_CLASS(ProjectList);
+	GDREGISTER_INTERNAL_CLASS(ProjectListItemControl);
+	GDREGISTER_INTERNAL_CLASS(QuickSettingsDialog);
 
 	// Required to document import options in the class reference.
 	GDREGISTER_CLASS(ResourceImporterBitMap);
