@@ -250,11 +250,29 @@ int ENetConnection::get_max_channels() const {
 	return host->channelLimit;
 }
 
+IPAddress ENetConnection::get_local_address() const {
+	ERR_FAIL_NULL_V_MSG(host, IPAddress(), "The ENetConnection instance isn't currently active.");
+	ERR_FAIL_COND_V_MSG(!(host->socket), IPAddress(), "The ENetConnection instance isn't currently bound.");
+	ENetAddress address;
+	ERR_FAIL_COND_V_MSG(enet_socket_get_address(host->socket, &address), IPAddress(), "Unable to get socket address.");
+
+	IPAddress out;
+#ifdef GODOT_ENET
+	out.set_ipv6((uint8_t *)&(address.host));
+	if (out == IPAddress("::")) {
+		return IPAddress("*");
+	}
+#else
+	out.set_ipv4((uint8_t *)&(address.host));
+#endif
+	return out;
+}
+
 int ENetConnection::get_local_port() const {
 	ERR_FAIL_NULL_V_MSG(host, 0, "The ENetConnection instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(!(host->socket), 0, "The ENetConnection instance isn't currently bound.");
 	ENetAddress address;
-	ERR_FAIL_COND_V_MSG(enet_socket_get_address(host->socket, &address), 0, "Unable to get socket address");
+	ERR_FAIL_COND_V_MSG(enet_socket_get_address(host->socket, &address), 0, "Unable to get socket address.");
 	return address.port;
 }
 
@@ -387,6 +405,7 @@ void ENetConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("refuse_new_connections", "refuse"), &ENetConnection::refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("pop_statistic", "statistic"), &ENetConnection::pop_statistic);
 	ClassDB::bind_method(D_METHOD("get_max_channels"), &ENetConnection::get_max_channels);
+	ClassDB::bind_method(D_METHOD("get_local_address"), &ENetConnection::get_local_address);
 	ClassDB::bind_method(D_METHOD("get_local_port"), &ENetConnection::get_local_port);
 	ClassDB::bind_method(D_METHOD("get_peers"), &ENetConnection::_get_peers);
 	ClassDB::bind_method(D_METHOD("socket_send", "destination_address", "destination_port", "packet"), &ENetConnection::socket_send);
