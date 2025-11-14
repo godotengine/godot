@@ -1325,7 +1325,7 @@ void SpriteFramesEditor::_animation_loop_changed() {
 }
 
 void SpriteFramesEditor::_animation_speed_resized() {
-	anim_speed->update_minimum_size();
+	anim_speed->update_size_bounds();
 }
 
 void SpriteFramesEditor::_animation_speed_changed(double p_value) {

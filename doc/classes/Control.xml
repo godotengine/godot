@@ -117,6 +117,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_get_maximum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns the maximum size for this control. Alternative to [member custom_maximum_size] for controlling maximum size via code. The actual maximum size will be the max value of these two (in each axis separately).
+				If not overridden, defaults to [constant Vector2.ZERO].
+				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its maximum size (e.g. [ScrollContainer]).
+			</description>
+		</method>
 		<method name="_get_minimum_size" qualifiers="virtual const">
 			<return type="Vector2" />
 			<description>
@@ -403,6 +411,13 @@
 				Returns [member offset_left] and [member offset_top]. See also [member position].
 			</description>
 		</method>
+		<method name="get_combined_maximum_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns combined maximum size from [member custom_maximum_size] and [method get_maximum_size].
+				[b]Note:[/b] This method will always return a size greater than or equal to that returned by [method get_combined_minimum_size].
+			</description>
+		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -448,6 +463,12 @@
 				Returns the position and size of the control relative to the containing canvas. See [member global_position] and [member size].
 				[b]Note:[/b] If the node itself or any parent [CanvasItem] between the node and the canvas have a non default rotation or skew, the resulting size is likely not meaningful.
 				[b]Note:[/b] Setting [member Viewport.gui_snap_controls_to_pixels] to [code]true[/code] can lead to rounding inaccuracies between the displayed control and the returned [Rect2].
+			</description>
+		</method>
+		<method name="get_maximum_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the maximum size for this control. See [member custom_maximum_size].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
@@ -963,7 +984,13 @@
 				If [param keep_offsets] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
-		<method name="update_minimum_size">
+		<method name="update_minimum_size" deprecated="Use [method update_size_bounds] instead.">
+			<return type="void" />
+			<description>
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member custom_minimum_size] directly calls this method automatically.
+			</description>
+		</method>
+		<method name="update_size_bounds">
 			<return type="void" />
 			<description>
 				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member custom_minimum_size] directly calls this method automatically.
@@ -1017,6 +1044,11 @@
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
+		</member>
+		<member name="custom_maximum_size" type="Vector2" setter="set_custom_maximum_size" getter="get_custom_maximum_size" default="Vector2(0, 0)">
+			The maximum size of the node's bounding rectangle. If set to a value greater than [code](0, 0)[/code], the node's bounding rectangle will never exceed this size. A value of [code](0, 0)[/code] means there is no maximum size.
+					[b]Note:[/b] This property is only accessible in code and not in the Inspector.
+					[b]Note:[/b] Not all [Control] subtypes handle this gracefully, which may lead to unexpected behavior if the control's contents exceed this size.
 		</member>
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than [code](0, 0)[/code], the node's bounding rectangle will always have at least this size. Note that [Control] nodes have their internal minimum size returned by [method get_minimum_size]. It depends on the control's contents, like text, textures, or style boxes. The actual minimum size is the maximum value of this property and the internal minimum size (see [method get_combined_minimum_size]).
@@ -1189,9 +1221,10 @@
 				Emitted when the node receives an [InputEvent].
 			</description>
 		</signal>
-		<signal name="minimum_size_changed">
+		<signal name="minimum_size_changed" deprecated="Use [signal size_bounds_changed] instead.">
 			<description>
 				Emitted when the node's minimum size changes.
+				[b]Note:[/b] This is also emitted when the node's maximum size changes.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
@@ -1215,6 +1248,11 @@
 		<signal name="resized">
 			<description>
 				Emitted when the control changes size.
+			</description>
+		</signal>
+		<signal name="size_bounds_changed">
+			<description>
+				Emitted when the node's minimum or maximum size changes.
 			</description>
 		</signal>
 		<signal name="size_flags_changed">

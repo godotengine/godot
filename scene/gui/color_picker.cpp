@@ -2475,7 +2475,7 @@ void ColorPickerButton::_update_picker() {
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
 		popup->connect("tree_exiting", callable_mp(this, &ColorPickerButton::_modal_closed));
-		picker->connect(SceneStringName(minimum_size_changed), callable_mp((Window *)popup, &Window::reset_size));
+		picker->connect(SceneStringName(size_bounds_changed), callable_mp((Window *)popup, &Window::reset_size));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		picker->set_edit_intensity(edit_intensity);

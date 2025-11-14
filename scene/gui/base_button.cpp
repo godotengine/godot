@@ -274,7 +274,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool BaseButton::is_disabled() const {

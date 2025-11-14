@@ -55,7 +55,7 @@ void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
 
 	stretch_margin[p_side] = p_size;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int TextureProgressBar::get_stretch_margin(Side p_side) const {
@@ -70,7 +70,7 @@ void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 
 	nine_patch_stretch = p_stretch;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	notify_property_list_changed();
 }
 
@@ -174,7 +174,7 @@ void TextureProgressBar::_set_texture(Ref<Texture2D> *p_destination, const Ref<T
 }
 
 void TextureProgressBar::_texture_changed() {
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 

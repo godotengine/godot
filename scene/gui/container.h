@@ -37,7 +37,7 @@ class Container : public Control {
 
 	bool pending_sort = false;
 	void _sort_children();
-	void _child_minsize_changed();
+	void _child_size_bounds_changed();
 
 protected:
 	enum class SortableVisibilityMode {

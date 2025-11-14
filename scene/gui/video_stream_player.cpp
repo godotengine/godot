@@ -225,7 +225,7 @@ void VideoStreamPlayer::texture_changed(const Ref<Texture2D> &p_texture) {
 	queue_redraw();
 
 	if (!expand) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -244,7 +244,7 @@ void VideoStreamPlayer::set_expand(bool p_expand) {
 
 	expand = p_expand;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool VideoStreamPlayer::has_expand() const {
@@ -320,7 +320,7 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	queue_redraw();
 
 	if (!expand) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 

@@ -96,6 +96,7 @@ private:
 
 protected:
 	Size2 get_minimum_size() const override;
+	Size2 get_maximum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
 	void _reposition_children();

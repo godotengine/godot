@@ -99,7 +99,7 @@ void TextureRect::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_RESIZED: {
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 	}
 }
@@ -178,7 +178,7 @@ bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
 
 void TextureRect::_texture_changed() {
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
@@ -197,7 +197,7 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 Ref<Texture2D> TextureRect::get_texture() const {
@@ -211,7 +211,7 @@ void TextureRect::set_expand_mode(ExpandMode p_mode) {
 
 	expand_mode = p_mode;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 TextureRect::ExpandMode TextureRect::get_expand_mode() const {
