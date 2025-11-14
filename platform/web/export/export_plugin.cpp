@@ -87,7 +87,15 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzCloseCurrentFile(pkg);
 
 		//write
-		String dst = p_dir.path_join(file.replace("godot", p_name));
+		String dst;
+		// We cannot rename some files.
+		if (likely(!file.begins_with("godot") || (!file.ends_with(".dwarf.wasm") && !file.ends_with(".dwarf.wasm.dwp")))) {
+			String new_file_name = file.replace("godot", p_name);
+			dst = p_dir.path_join(file.replace("godot", p_name));
+		} else {
+			dst = p_dir.path_join(file);
+		}
+
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
