@@ -2769,7 +2769,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			p_rt->push_cell();
 			p_rt->set_cell_row_background_color(code_bg_color, Color(code_bg_color, 0.99));
-			p_rt->set_cell_padding(Rect2(10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE));
+			p_rt->set_cell_padding(Rect2(1 * EDSCALE, 10 * EDSCALE, 1 * EDSCALE, 10 * EDSCALE));
 			p_rt->push_color(code_dark_color);
 
 			bool codeblock_printed = false;
