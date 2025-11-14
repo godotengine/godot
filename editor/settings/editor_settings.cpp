@@ -1898,24 +1898,54 @@ String EditorSettings::get_language() const {
 
 // Shortcuts
 
-void EditorSettings::_add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut) {
-	shortcuts[p_name] = p_shortcut;
+void EditorSettings::_add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	shortcuts[p_path] = p_shortcut;
 }
 
-void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
-	shortcuts[p_name] = p_shortcut;
-	shortcuts[p_name]->set_meta("customized", true);
+void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	Array use_events = p_shortcut->get_events();
+	if (shortcuts.has(p_path)) {
+		Ref<Shortcut> existing = shortcuts.get(p_path);
+		if (!existing->has_meta("original")) {
+			// Loaded from editor settings, but plugin not loaded yet.
+			// Keep the events from editor settings but still override the shortcut in the shortcuts map
+			use_events = existing->get_events();
+		} else if (!Shortcut::is_event_array_equal(existing->get_events(), existing->get_meta("original"))) {
+			// Shortcut exists and is customized - don't override with default.
+			return;
+		}
+	}
+
+	p_shortcut->set_meta("original", p_shortcut->get_events());
+	p_shortcut->set_events(use_events);
+	if (p_shortcut->get_name().is_empty()) {
+		String shortcut_name = p_path.get_slicec('/', 1);
+		if (shortcut_name.is_empty()) {
+			shortcut_name = p_path;
+		}
+		p_shortcut->set_name(shortcut_name);
+	}
+	shortcuts[p_path] = p_shortcut;
+	shortcuts[p_path]->set_meta("customized", true);
 }
 
-bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
+void EditorSettings::remove_shortcut(const String &p_path) {
+	shortcuts.erase(p_path);
+}
+
+bool EditorSettings::is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const {
+	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_path);
+	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_path + ".");
 
 	return E->value->matches_event(p_event);
 }
 
-Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
-	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_name);
+bool EditorSettings::has_shortcut(const String &p_path) const {
+	return get_shortcut(p_path).is_valid();
+}
+
+Ref<Shortcut> EditorSettings::get_shortcut(const String &p_path) const {
+	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_path);
 	if (SC) {
 		return SC->value;
 	}
@@ -1924,30 +1954,40 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	// Use the first item in the action list for the shortcut event, since a shortcut can only have 1 linked event.
 
 	Ref<Shortcut> sc;
-	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_path);
 	if (builtin_override) {
 		sc.instantiate();
 		sc->set_events_list(&builtin_override->value);
-		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_path));
 	}
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_path);
 		if (builtin_default) {
 			sc.instantiate();
 			sc->set_events_list(&builtin_default->value);
-			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_path));
 		}
 	}
 
 	if (sc.is_valid()) {
 		// Add the shortcut to the list.
-		shortcuts[p_name] = sc;
+		shortcuts[p_path] = sc;
 		return sc;
 	}
 
 	return Ref<Shortcut>();
+}
+
+Vector<String> EditorSettings::_get_shortcut_list() {
+	List<String> shortcut_list;
+	get_shortcut_list(&shortcut_list);
+	Vector<String> ret;
+	for (const String &shortcut : shortcut_list) {
+		ret.push_back(shortcut);
+	}
+	return ret;
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
@@ -2201,6 +2241,13 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
 	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);
+
+	ClassDB::bind_method(D_METHOD("add_shortcut", "path", "shortcut"), &EditorSettings::add_shortcut);
+	ClassDB::bind_method(D_METHOD("remove_shortcut", "path"), &EditorSettings::remove_shortcut);
+	ClassDB::bind_method(D_METHOD("is_shortcut", "path", "event"), &EditorSettings::is_shortcut);
+	ClassDB::bind_method(D_METHOD("has_shortcut", "path"), &EditorSettings::has_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut", "path"), &EditorSettings::get_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut_list"), &EditorSettings::_get_shortcut_list);
 
 	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
 	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);
