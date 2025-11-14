@@ -317,6 +317,20 @@ void BetsyCompressor::finish() {
 	}
 }
 
+void ensure_betsy_exists() {
+	betsy_mutex.lock();
+	if (betsy == nullptr) {
+		betsy = memnew(BetsyCompressor);
+		betsy->init();
+	}
+	betsy_mutex.unlock();
+}
+
+BetsyCompressor *BetsyCompressor::get_singleton() {
+	ensure_betsy_exists();
+	return betsy;
+}
+
 // Helper functions.
 
 static int get_next_multiple(int n, int m) {
@@ -841,15 +855,6 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					OS::get_singleton()->get_ticks_msec() - start_time));
 
 	return OK;
-}
-
-void ensure_betsy_exists() {
-	betsy_mutex.lock();
-	if (betsy == nullptr) {
-		betsy = memnew(BetsyCompressor);
-		betsy->init();
-	}
-	betsy_mutex.unlock();
 }
 
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
