@@ -223,6 +223,10 @@ struct [[nodiscard]] Vector3 {
 
 	constexpr Vector3() :
 			x(0), y(0), z(0) {}
+	constexpr Vector3(const Vector3 &) = default;
+	constexpr Vector3 &operator=(const Vector3 &) = default;
+	constexpr explicit Vector3(real_t p_x_y_and_z) :
+			x(p_x_y_and_z), y(p_x_y_and_z), z(p_x_y_and_z) {}
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
