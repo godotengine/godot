@@ -110,6 +110,4 @@ public:
 	void set_pseudolocalization_suffix(const String &p_suffix);
 
 	StringName pseudolocalize(const StringName &p_message) const;
-
-	TranslationDomain();
 };

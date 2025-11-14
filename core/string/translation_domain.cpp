@@ -501,6 +501,3 @@ void TranslationDomain::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::Type::STRING, "pseudolocalization_prefix"), "set_pseudolocalization_prefix", "get_pseudolocalization_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::STRING, "pseudolocalization_suffix"), "set_pseudolocalization_suffix", "get_pseudolocalization_suffix");
 }
-
-TranslationDomain::TranslationDomain() {
-}
