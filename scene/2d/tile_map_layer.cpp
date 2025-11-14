@@ -1635,10 +1635,7 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 					if (scene_as_control) {
 						scene_as_control->set_position(tile_set->map_to_local(r_cell_data.coords) + scene_as_control->get_position());
 					} else if (scene_as_node2d) {
-						Transform2D xform;
-						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
-						scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
-						_set_scene_transformed_alternative(c.alternative_tile, scene_as_node2d);
+						_set_scene_transform_with_alternative(scene_as_node2d, tile_set->map_to_local(r_cell_data.coords), c.alternative_tile);
 					}
 #ifdef TOOLS_ENABLED
 					RenderingServer *rs = RenderingServer::get_singleton();
@@ -1706,47 +1703,23 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 }
 #endif // DEBUG_ENABLED
 
-void TileMapLayer::_set_scene_transformed_alternative(const int p_alternative_id, Node2D *p_scene) {
+void TileMapLayer::_set_scene_transform_with_alternative(Node2D *p_scene, const Vector2 &p_cell_position, const int p_alternative_id) {
 	// Determine the transformations based on the alternative ID.
 	bool transform_flip_h = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H;
 	bool transform_flip_v = p_alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V;
 	bool transform_transpose = p_alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
 
-	double scene_rotation = 0.0;
-	Vector2 scene_scale = p_scene->get_scale();
+	int axis_h = transform_transpose ? 1 : 0;
+	int axis_v = 1 - axis_h;
 
-	// Determine the scene rotation and scale based on the transformation flags.
-	if (!transform_flip_h && !transform_flip_v && !transform_transpose) {
-		scene_rotation = 0.0;
-		scene_scale.x = 1;
-	} else if (transform_flip_h && !transform_flip_v && transform_transpose) {
-		scene_rotation = 90.0;
-		scene_scale.x = 1;
-	} else if (transform_flip_h && transform_flip_v && !transform_transpose) {
-		scene_rotation = 180.0;
-		scene_scale.x = 1;
-	} else if (!transform_flip_h && transform_flip_v && transform_transpose) {
-		scene_rotation = 270.0;
-		scene_scale.x = 1;
-	} else if (transform_flip_h && !transform_flip_v && !transform_transpose) {
-		scene_rotation = 0.0;
-		scene_scale.x = -1;
-	} else if (transform_flip_h && transform_flip_v && transform_transpose) {
-		scene_rotation = 90.0;
-		scene_scale.x = -1;
-	} else if (!transform_flip_h && transform_flip_v && !transform_transpose) {
-		scene_rotation = 180.0;
-		scene_scale.x = -1;
-	} else if (!transform_flip_h && !transform_flip_v && transform_transpose) {
-		scene_rotation = 270.0;
-		scene_scale.x = -1;
-	}
+	Transform2D xform;
+	xform[axis_h].x = transform_flip_h ? -1.0f : 1.0f;
+	xform[axis_h].y = 0.0f;
+	xform[axis_v].x = 0.0f;
+	xform[axis_v].y = transform_flip_v ? -1.0f : 1.0f;
+	xform.set_origin(p_cell_position);
 
-	// Apply the transformations to the scene.
-	double current_rotation = p_scene->get_rotation_degrees() + scene_rotation;
-	Vector2 current_scale = p_scene->get_scale() + scene_scale;
-	p_scene->set_rotation_degrees(current_rotation);
-	p_scene->set_scale(current_scale);
+	p_scene->set_transform(xform * p_scene->get_transform());
 }
 
 /////////////////////////////////////////////////////////////////////
