@@ -32,12 +32,12 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/theme_owner.h"
 #include "servers/display/display_server.h"
 
 class Font;
 class Shortcut;
 class StyleBox;
-class ThemeOwner;
 class ThemeContext;
 
 class Window : public Viewport {
@@ -193,7 +193,7 @@ private:
 
 	static Window *focused_window;
 
-	ThemeOwner *theme_owner = nullptr;
+	ThemeOwner theme_owner;
 	Ref<Theme> theme;
 	StringName theme_type_variation;
 

@@ -287,4 +287,74 @@ Callable create_custom_callable_static_function_pointer(
 #define callable_mp_static(M) create_custom_callable_static_function_pointer(#M, M)
 #else
 #define callable_mp_static(M) create_custom_callable_static_function_pointer(M)
-#endif
+#endif // DEBUG_ENABLED
+
+// SUBJECT VERSION
+
+/**
+ * Callable for a static method that operates on a given Object.
+ * Other than normal static method pointer callables, this one
+ * can be connected multiple times, as long as the object it operates
+ * on is different.
+ * Does not support additional arguments or return values at the moment.
+ */
+template <typename T>
+class CallableCustomStaticMethodpointerWithSubject : public CallableCustomMethodPointerBase {
+	struct Data {
+		T *instance;
+		uint64_t object_id;
+		void (*method)(T *);
+	} data;
+
+public:
+	virtual ObjectID get_object() const override {
+		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
+			return ObjectID();
+		}
+		return data.instance->get_instance_id();
+	}
+
+	virtual int get_argument_count(bool &r_is_valid) const override {
+		r_is_valid = true;
+		return 0;
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		if (p_argcount != 0) {
+			r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			return;
+		}
+		r_call_error.error = Callable::CallError::CALL_OK;
+
+		(data.method)(data.instance);
+	}
+
+	CallableCustomStaticMethodpointerWithSubject(T *p_subject, void (*p_method)(T *)) {
+		memset(&data, 0, sizeof(Data)); // Clear beforehand, may have padding bytes.
+		data.instance = p_subject;
+		data.object_id = p_subject->get_instance_id();
+		data.method = p_method;
+		_setup((uint32_t *)&data, sizeof(Data));
+	}
+};
+
+template <typename T>
+Callable create_custom_callable_static_function_pointer_with_subject(
+		T *p_instance,
+#ifdef DEBUG_ENABLED
+		const char *p_func_text,
+#endif // DEBUG_ENABLED
+		void (*p_method)(T *)) {
+	typedef CallableCustomStaticMethodpointerWithSubject<T> CCMPWS; // Messes with memnew otherwise.
+	CCMPWS *ccmpws = memnew(CCMPWS(p_instance, p_method));
+#ifdef DEBUG_ENABLED
+	ccmpws->set_text(p_func_text + 1); // Try to get rid of the ampersand.
+#endif // DEBUG_ENABLED
+	return Callable(ccmpws);
+}
+
+#ifdef DEBUG_ENABLED
+#define callable_mp_static_with_subject(I, M) create_custom_callable_static_function_pointer_with_subject(I, #M, M)
+#else
+#define callable_mp_static_with_subject(I, M) create_custom_callable_static_function_pointer_with_subject(I, M)
+#endif // DEBUG_ENABLED
