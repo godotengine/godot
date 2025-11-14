@@ -761,6 +761,8 @@ class EditorInspector : public ScrollContainer {
 	int update_scroll_request;
 
 	bool updating_theme = false;
+	bool multi_node_duplication = false;
+	List<Node *> selected_nodes_for_duplication;
 
 	struct DocCacheInfo {
 		String doc_path;
