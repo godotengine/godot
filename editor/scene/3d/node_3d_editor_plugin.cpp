@@ -1502,6 +1502,17 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 	}
 
+	if (_is_arcball_mode_enabled() && !p_highlight_only && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+		// we only want to arcball when rotate tool is active and didn't click on a specific rotation ring
+		_edit.mode = TRANSFORM_ROTATE;
+		_compute_edit(p_screenpos);
+		_edit.plane = TRANSFORM_VIEW;
+
+		// figure out of we're arcballing or using the traditional way
+		_edit.rotation_behavior = _determine_rotation_behavior();
+		return true;
+	}
+
 	if (p_highlight_only) {
 		spatial_editor->select_gizmo_highlight_axis(-1);
 	}
@@ -1577,6 +1588,100 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 	}
 }
 
+Vector3 Node3DEditorViewport::_arcball_project_to_sphere(const Vector2 &p_point, real_t p_radius) const {
+	// convert screen coordinates to normalized coordinates (-1 to 1)
+	Vector2 viewport_size = get_size();
+	Vector2 normalized = Vector2(
+			(2.0 * p_point.x / viewport_size.x) - 1.0,
+			1.0 - (2.0 * p_point.y / viewport_size.y));
+
+	real_t length_squared = normalized.length_squared();
+	real_t radius_squared = p_radius * p_radius;
+
+	// make sure it doesn't misbehave if we click outside the virtual sphere or near the edges
+	Vector3 result;
+	if (length_squared <= radius_squared * 0.5) {
+		// we're dragging on the sphere
+		result = Vector3(normalized.x, normalized.y, Math::sqrt(radius_squared - length_squared));
+	} else {
+		// we're outside sphere, project to edge (hyperbolic sheet)
+		// https://raw.org/code/trackball-rotation-using-quaternions/
+		real_t z = radius_squared * 0.5 / Math::sqrt(length_squared);
+		result = Vector3(normalized.x, normalized.y, z);
+	}
+
+	return result.normalized();
+}
+
+Quaternion Node3DEditorViewport::_arcball_compute_rotation(const Vector2 &p_from, const Vector2 &p_to, real_t p_radius) const {
+	Vector3 from_sphere = _arcball_project_to_sphere(p_from, p_radius);
+	Vector3 to_sphere = _arcball_project_to_sphere(p_to, p_radius);
+
+	// ensure vectors are properly normalized
+	from_sphere = from_sphere.normalized();
+	to_sphere = to_sphere.normalized();
+
+	Vector3 axis = from_sphere.cross(to_sphere);
+	real_t axis_length = axis.length();
+
+	if (axis_length < CMP_EPSILON) {
+		// no rotation or vectors are parallel/antiparallel
+		return Quaternion();
+	}
+
+	// calculate angle using dot product, clamped to avoid numerical errors
+	real_t dot_product = CLAMP(from_sphere.dot(to_sphere), -1.0, 1.0);
+	real_t angle = Math::acos(dot_product);
+
+	// make sure the axis is normalized and valid
+	axis = axis.normalized();
+	if (!axis.is_normalized() || Math::is_nan(axis.x) || Math::is_nan(axis.y) || Math::is_nan(axis.z)) {
+		return Quaternion();
+	}
+
+	// create rotation in camera-local coordinate system
+	return Quaternion(axis, angle);
+}
+
+bool Node3DEditorViewport::_is_arcball_mode_enabled() const {
+	return int(EDITOR_GET("editors/3d/rotation/rotation_gizmo_mode")) == ROTATION_GIZMO_ARCBALL;
+}
+
+bool Node3DEditorViewport::_is_arcball_invert_enabled() const {
+	return EDITOR_GET("editors/3d/rotation/arcball_invert");
+}
+
+Node3DEditorViewport::RotationBehavior Node3DEditorViewport::_determine_rotation_behavior() const {
+	if (!_is_arcball_mode_enabled()) {
+		return ROTATION_BEHAVIOR_TRADITIONAL;
+	}
+
+	// we need to figure out if we're dragging on the rotation gizmo or outside of it
+
+	// get the origin of the gizmo in 3D space
+	Vector3 gizmo_center = spatial_editor->get_gizmo_transform().origin;
+	// project it to a 2D position on the screen
+	Vector2 gizmo_center_2d = camera->unproject_position(gizmo_center);
+
+	// we know the radius of the gizmo because this is set in "editors/3d/manipulator_gizmo_size"
+	real_t gizmo_radius_3d = gizmo_scale * GIZMO_CIRCLE_SIZE;
+
+	// grab a point on the edge of the sphere
+	Vector3 gizmo_edge_3d = gizmo_center + camera->get_global_transform().basis.get_column(0).normalized() * gizmo_radius_3d;
+	// convert that to a 2d point again
+	Vector2 gizmo_edge_2d = camera->unproject_position(gizmo_edge_3d);
+	// so now we can have the radius in 2D
+	real_t gizmo_radius_2d = gizmo_center_2d.distance_to(gizmo_edge_2d);
+
+	// and we can check whether or not we started dragging inside or outside the gizmo
+	real_t mouse_distance = _edit.mouse_pos.distance_to(gizmo_center_2d);
+
+	if (mouse_distance > gizmo_radius_2d) {
+		return ROTATION_BEHAVIOR_TRADITIONAL;
+	} else {
+	} // we're dragging inside the gizmo, so we want to arcball
+	return ROTATION_BEHAVIOR_ARCBALL;
+  
 void Node3DEditorViewport::_reset_transform(TransformType p_type) {
 	List<Node *> selection = editor_selection->get_full_selected_node_list();
 	if (selection.is_empty()) {
@@ -5497,6 +5602,12 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		_compute_edit(_edit.mouse_pos);
 		_edit.instant = instant;
 		_edit.snap = spatial_editor->is_snap_enabled();
+
+		// Determine rotation behavior once at the start of the transformation
+		if (p_mode == TRANSFORM_ROTATE) {
+			_edit.rotation_behavior = _determine_rotation_behavior();
+		}
+
 		_edit.initial_click_vector = Vector3();
 		_edit.previous_rotation_vector = Vector3();
 		_edit.accumulated_rotation_angle = 0.0;
@@ -5765,88 +5876,157 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 				plane = Plane(_get_camera_normal(), _edit.center);
 			}
 
-			Vector3 local_axis;
-			Vector3 global_axis;
-			switch (_edit.plane) {
-				case TRANSFORM_VIEW:
-					// local_axis unused
-					global_axis = plane.normal;
-					break;
-				case TRANSFORM_X_AXIS:
-					local_axis = Vector3(1, 0, 0);
-					break;
-				case TRANSFORM_Y_AXIS:
-					local_axis = Vector3(0, 1, 0);
-					break;
-				case TRANSFORM_Z_AXIS:
-					local_axis = Vector3(0, 0, 1);
-					break;
-				case TRANSFORM_YZ:
-				case TRANSFORM_XZ:
-				case TRANSFORM_XY:
-					break;
+			switch (_edit.rotation_behavior) {
+				case ROTATION_BEHAVIOR_ARCBALL: {
+					// Arcball rotation using camera-relative screen coordinates
+					Vector2 mouse_delta = _edit.mouse_pos - _edit.original_mouse_pos;
+
+					// get camera transform for proper coordinate mapping
+					Transform3D camera_transform = camera->get_global_transform();
+					Vector3 camera_right = camera_transform.basis.get_column(0).normalized();
+					Vector3 camera_up = camera_transform.basis.get_column(1).normalized();
+
+					// Scale factor for responsiveness - smaller values = more sensitive
+					real_t sensitivity = 0.005;
+
+					// invert or not?
+					real_t invert_factor = _is_arcball_invert_enabled() ? -1.0 : 1.0;
+
+					// make the 2 rotation components based on moving mouse up/down and left/right
+					real_t horizontal_angle = invert_factor * mouse_delta.x * sensitivity;
+					real_t vertical_angle = invert_factor * mouse_delta.y * sensitivity;
+
+					// make separate rotations for each axis
+					Quaternion horizontal_rotation = Quaternion(camera_up, horizontal_angle);
+					Quaternion vertical_rotation = Quaternion(camera_right, vertical_angle);
+
+					// now combine the two rotations, we want horizontal first to make it feel natural
+					Quaternion combined_rotation = horizontal_rotation * vertical_rotation;
+
+					// convert back to axis-angle for apply_transform
+					Vector3 final_axis;
+					real_t final_angle;
+					combined_rotation.get_axis_angle(final_axis, final_angle);
+
+					// final checks
+					if (final_axis.length() > CMP_EPSILON && final_axis.is_normalized() &&
+							!Math::is_nan(final_axis.x) && !Math::is_nan(final_axis.y) && !Math::is_nan(final_axis.z)) {
+						String msg = vformat(TTR("Arcball Rotating %s degrees."), String::num(Math::rad_to_deg(final_angle), snap_step_decimals));
+						if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							msg += TTR(" (Snapping not supported in arcball mode)");
+						}
+						set_message(msg);
+						apply_transform(final_axis, final_angle);
+					}
+				} break;
+
+				case ROTATION_BEHAVIOR_TRADITIONAL: {
+					Vector3 local_axis;
+					Vector3 global_axis;
+
+					switch (_edit.plane) {
+						case TRANSFORM_VIEW:
+							global_axis = plane.normal;
+							break;
+						case TRANSFORM_X_AXIS:
+							local_axis = Vector3(1, 0, 0);
+							break;
+						case TRANSFORM_Y_AXIS:
+							local_axis = Vector3(0, 1, 0);
+							break;
+						case TRANSFORM_Z_AXIS:
+							local_axis = Vector3(0, 0, 1);
+							break;
+						case TRANSFORM_YZ:
+						case TRANSFORM_XZ:
+						case TRANSFORM_XY:
+							break;
+					}
+
+					if (_edit.plane != TRANSFORM_VIEW) {
+						global_axis = spatial_editor->get_gizmo_transform().basis.xform(local_axis).normalized();
+					}
+
+					Vector3 intersection;
+					if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
+						break;
+					}
+
+					Vector3 click;
+					if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
+						break;
+					}
+
+					static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
+					bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
+					Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
+
+					if (_edit.initial_click_vector == Vector3()) {
+						_edit.initial_click_vector = (click - _edit.center).normalized();
+						_edit.previous_rotation_vector = current_rotation_vector;
+						_edit.accumulated_rotation_angle = 0.0;
+						_edit.display_rotation_angle = 0.0;
+					}
+
+					static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
+					bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
+
+					double angle = 0.0f;
+					if (axis_is_orthogonal) {
+						_edit.show_rotation_line = false;
+						Vector3 projection_axis = plane.normal.cross(global_axis);
+						Vector3 delta = intersection - click;
+						float projection = delta.dot(projection_axis);
+						angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
+					} else {
+						_edit.show_rotation_line = true;
+						Vector3 click_axis = (click - _edit.center).normalized();
+						angle = click_axis.signed_angle_to(current_rotation_vector, global_axis);
+					}
+
+					if (_edit.previous_rotation_vector != Vector3()) {
+						double delta_angle = _edit.previous_rotation_vector.signed_angle_to(current_rotation_vector, global_axis);
+						_edit.accumulated_rotation_angle += delta_angle;
+					}
+					_edit.previous_rotation_vector = current_rotation_vector;
+
+					bool snapping = _edit.snap || spatial_editor->is_snap_enabled();
+					if (snapping) {
+						snap = spatial_editor->get_rotate_snap();
+						_edit.display_rotation_angle = Math::deg_to_rad(Math::snapped(Math::rad_to_deg(_edit.accumulated_rotation_angle), snap));
+					} else {
+						_edit.display_rotation_angle = _edit.accumulated_rotation_angle;
+					}
+					angle = Math::snapped(Math::rad_to_deg(angle), snap);
+					set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
+					angle = Math::deg_to_rad(angle);
+
+					double angle = 0.0f;
+					if (axis_is_orthogonal) {
+						_edit.show_rotation_line = false;
+						Vector3 projection_axis = plane.normal.cross(global_axis);
+						Vector3 delta = intersection - click;
+						float projection = delta.dot(projection_axis);
+						angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
+					} else {
+						_edit.show_rotation_line = true;
+						Vector3 click_axis = (click - _edit.center).normalized();
+						Vector3 current_axis = (intersection - _edit.center).normalized();
+						angle = click_axis.signed_angle_to(current_axis, global_axis);
+					}
+
+					if (_edit.snap || spatial_editor->is_snap_enabled()) {
+						snap = spatial_editor->get_rotate_snap();
+					}
+					angle = Math::snapped(Math::rad_to_deg(angle), snap);
+					set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
+					angle = Math::deg_to_rad(angle);
+
+					bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
+					Vector3 compute_axis = local_coords ? local_axis : global_axis;
+					apply_transform(compute_axis, angle);
+				} break;
 			}
-
-			if (_edit.plane != TRANSFORM_VIEW) {
-				global_axis = spatial_editor->get_gizmo_transform().basis.xform(local_axis).normalized();
-			}
-
-			Vector3 intersection;
-			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-				break;
-			}
-
-			Vector3 click;
-			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-				break;
-			}
-
-			Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
-
-			if (_edit.initial_click_vector == Vector3()) {
-				_edit.initial_click_vector = (click - _edit.center).normalized();
-				_edit.previous_rotation_vector = current_rotation_vector;
-				_edit.accumulated_rotation_angle = 0.0;
-				_edit.display_rotation_angle = 0.0;
-			}
-
-			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(85.0f));
-			bool axis_is_orthogonal = Math::abs(plane.normal.dot(global_axis)) < orthogonal_threshold;
-
-			double angle = 0.0f;
-			if (axis_is_orthogonal) {
-				_edit.show_rotation_line = false;
-				Vector3 projection_axis = plane.normal.cross(global_axis);
-				Vector3 delta = intersection - click;
-				float projection = delta.dot(projection_axis);
-				angle = (projection * (Math::PI / 2.0f)) / (gizmo_scale * GIZMO_CIRCLE_SIZE);
-			} else {
-				_edit.show_rotation_line = true;
-				Vector3 click_axis = (click - _edit.center).normalized();
-				angle = click_axis.signed_angle_to(current_rotation_vector, global_axis);
-			}
-
-			if (_edit.previous_rotation_vector != Vector3()) {
-				double delta_angle = _edit.previous_rotation_vector.signed_angle_to(current_rotation_vector, global_axis);
-				_edit.accumulated_rotation_angle += delta_angle;
-			}
-			_edit.previous_rotation_vector = current_rotation_vector;
-
-			bool snapping = _edit.snap || spatial_editor->is_snap_enabled();
-			if (snapping) {
-				snap = spatial_editor->get_rotate_snap();
-				_edit.display_rotation_angle = Math::deg_to_rad(Math::snapped(Math::rad_to_deg(_edit.accumulated_rotation_angle), snap));
-			} else {
-				_edit.display_rotation_angle = _edit.accumulated_rotation_angle;
-			}
-			angle = Math::snapped(Math::rad_to_deg(angle), snap);
-			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
-			angle = Math::deg_to_rad(angle);
-
-			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
-
-			Vector3 compute_axis = local_coords ? local_axis : global_axis;
-			apply_transform(compute_axis, angle);
 		} break;
 		default: {
 		}
@@ -5928,6 +6108,8 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.accumulated_rotation_angle = 0.0;
 	_edit.display_rotation_angle = 0.0;
 	_edit.gizmo_initiated = false;
+	// Reset rotation behavior to ensure clean state for next operation
+	_edit.rotation_behavior = ROTATION_BEHAVIOR_TRADITIONAL;
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
