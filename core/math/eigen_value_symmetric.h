@@ -95,7 +95,7 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 							t = -t;
 						}
 					}
-					real_t c = 1.0 / sqrt(1.0 + t * t);
+					real_t c = 1.0 / Math::sqrt(1.0 + t * t);
 					real_t s = t * c;
 					real_t tau = s / (1.0 + c);
 					h = t * a_pq;
