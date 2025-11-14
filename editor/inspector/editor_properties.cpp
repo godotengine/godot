@@ -3172,13 +3172,17 @@ void EditorPropertyNodePath::update_property() {
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains_char('@')) {
+	String new_text = target_node->get_name();
+	if (new_text.contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(String(p));
 		return;
 	}
 
-	assign->set_text(target_node->get_name());
+	if (p.get_subname_count() > 0) {
+		new_text += ":" + p.get_concatenated_subnames();
+	}
+	assign->set_text(new_text);
 	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
