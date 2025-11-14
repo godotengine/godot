@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/os/mutex.h"
 #include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 #include "servers/text/text_server.h"
@@ -185,6 +186,7 @@ class FontFile : public Font {
 	RES_BASE_EXTENSION("fontdata");
 
 	// Font source data.
+	mutable Mutex data_mutex;
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
 	mutable PackedByteArray data;
