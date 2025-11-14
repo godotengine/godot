@@ -261,7 +261,6 @@ private:
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	void _error_activated();
-	void _error_selected();
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
