@@ -53,7 +53,8 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	if (p_errorexp && p_errorexp[0]) {
 		err_str = String::utf8(p_errorexp).replace("[", "[lb]");
 	} else {
-		err_str = vformat("[url]%s:%d[/url] - %s", String::utf8(p_file).replace("[", "[lb]"), p_line, String::utf8(p_error).replace("[", "[lb]"));
+		const String path = String::utf8(p_file).replace("[", "[lb]");
+		err_str = vformat("[url]%s:%d[/url] - %s", path, p_line, path);
 	}
 
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
@@ -220,6 +221,14 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 			// Relative path. Convert to absolute, using executable path as reference.
 			path = path.trim_prefix("./").trim_prefix(".\\");
 			path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
+		} else if (!FileAccess::exists(path)) {
+			// The file does not exist. Try on GitHub instead.
+			String branch = "master";
+			if (!str_compare(GODOT_VERSION_STATUS, "stable")) {
+				branch = vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+			}
+			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d", branch, path, line + 1));
+			return;
 		}
 
 		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
