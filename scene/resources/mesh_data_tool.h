@@ -36,6 +36,7 @@ class MeshDataTool : public RefCounted {
 	GDCLASS(MeshDataTool, RefCounted);
 
 	uint64_t format = 0;
+	Mesh::PrimitiveType primitive_type = Mesh::PRIMITIVE_TRIANGLES;
 	struct Vertex {
 		Vector3 vertex;
 		Color color;

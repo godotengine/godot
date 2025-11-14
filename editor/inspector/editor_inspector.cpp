@@ -4599,7 +4599,7 @@ void EditorInspector::update_tree() {
 					if (node != nullptr) {
 						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
 					}
-					ep->set_deletable(_default == Variant());
+					ep->set_deletable(_default == Variant() && !all_read_only);
 				} else {
 					ep->set_deletable(deletable_properties);
 				}
