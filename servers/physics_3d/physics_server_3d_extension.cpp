@@ -259,6 +259,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_set_param, "body", "param", "value");
 	GDVIRTUAL_BIND(_body_get_param, "body", "param");
 
+	GDVIRTUAL_BIND(_body_set_mass_properties, "body", "mass", "center_of_mass", "inertia", "product_of_inertia");
 	GDVIRTUAL_BIND(_body_reset_mass_properties, "body");
 
 	GDVIRTUAL_BIND(_body_set_state, "body", "state", "value");

@@ -349,8 +349,17 @@ void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
 }
 
+void RigidBody3D::set_product_of_inertia(const Vector3 &p_product_of_inertia) {
+	product_of_inertia = p_product_of_inertia;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_PROD_INERTIA, product_of_inertia);
+}
+
 const Vector3 &RigidBody3D::get_inertia() const {
 	return inertia;
+}
+
+const Vector3 &RigidBody3D::get_product_of_inertia() const {
+	return product_of_inertia;
 }
 
 void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
@@ -394,6 +403,23 @@ void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 
 const Vector3 &RigidBody3D::get_center_of_mass() const {
 	return center_of_mass;
+}
+
+void RigidBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	ERR_FAIL_COND(p_mass <= 0);
+
+	ERR_FAIL_COND(p_inertia.x < 0);
+	ERR_FAIL_COND(p_inertia.y < 0);
+	ERR_FAIL_COND(p_inertia.z < 0);
+
+	center_of_mass_mode = CENTER_OF_MASS_MODE_CUSTOM;
+
+	mass = p_mass;
+	center_of_mass = p_center_of_mass;
+	inertia = p_inertia;
+	product_of_inertia = p_product_of_inertia;
+
+	PhysicsServer3D::get_singleton()->body_set_mass_properties(get_rid(), mass, center_of_mass, inertia, product_of_inertia);
 }
 
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
@@ -677,11 +703,16 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody3D::set_inertia);
 	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody3D::get_inertia);
 
+	ClassDB::bind_method(D_METHOD("set_product_of_inertia", "product_of_inertia"), &RigidBody3D::set_product_of_inertia);
+	ClassDB::bind_method(D_METHOD("get_product_of_inertia"), &RigidBody3D::get_product_of_inertia);
+
 	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidBody3D::set_center_of_mass_mode);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidBody3D::get_center_of_mass_mode);
 
 	ClassDB::bind_method(D_METHOD("set_center_of_mass", "center_of_mass"), &RigidBody3D::set_center_of_mass);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &RigidBody3D::get_center_of_mass);
+
+	ClassDB::bind_method(D_METHOD("set_mass_properties", "mass", "center_of_mass", "inertia", "product_of_inertia"), &RigidBody3D::set_mass_properties);
 
 	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody3D::set_physics_material_override);
 	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody3D::get_physics_material_override);
@@ -768,6 +799,7 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom"), "set_center_of_mass_mode", "get_center_of_mass_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "product_of_inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_product_of_inertia", "get_product_of_inertia");
 	ADD_GROUP("Deactivation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
