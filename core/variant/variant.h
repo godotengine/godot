@@ -546,7 +546,8 @@ public:
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
 
-	Variant(std::initializer_list<Variant> p_init);
+	// Deleted to prevent ambiguous code. Explicitly convert Array to Variant instead.
+	Variant(std::initializer_list<Variant> p_init) = delete;
 	Variant(const Array &p_array);
 	Variant(const PackedByteArray &p_byte_array);
 	Variant(const PackedInt32Array &p_int32_array);

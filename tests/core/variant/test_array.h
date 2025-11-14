@@ -36,13 +36,13 @@
 
 namespace TestArray {
 TEST_CASE("[Array] initializer list") {
-	Array arr = { 0, 1, "test", true, { 0.0, 1.0 } };
+	Array arr = { 0, 1, "test", true, Array{ 0.0, 1.0 } };
 	CHECK(arr.size() == 5);
 	CHECK(arr[0] == Variant(0));
 	CHECK(arr[1] == Variant(1));
 	CHECK(arr[2] == Variant("test"));
 	CHECK(arr[3] == Variant(true));
-	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+	CHECK(arr[4] == Variant(Array{ 0.0, 1.0 }));
 
 	arr = { "reassign" };
 	CHECK(arr.size() == 1);
@@ -434,7 +434,7 @@ TEST_CASE("[Array] slice()") {
 
 TEST_CASE("[Array] Duplicate array") {
 	// a = [1, [2, 2], {3: 3}]
-	Array a = { 1, { 2, 2 }, Dictionary({ { 3, 3 } }) };
+	Array a = { 1, Array{ 2, 2 }, Dictionary({ { 3, 3 } }) };
 
 	// Deep copy
 	Array deep_a = a.duplicate(true);
@@ -497,7 +497,7 @@ TEST_CASE("[Array] Duplicate recursive array") {
 
 TEST_CASE("[Array] Hash array") {
 	// a = [1, [2, 2], {3: 3}]
-	Array a = { 1, { 2, 2 }, Dictionary({ { 3, 3 } }) };
+	Array a = { 1, Array{ 2, 2 }, Dictionary({ { 3, 3 } }) };
 	uint32_t original_hash = a.hash();
 
 	a.push_back(1);
@@ -562,12 +562,12 @@ TEST_CASE("[Array] Flat comparison") {
 
 TEST_CASE("[Array] Nested array comparison") {
 	// a1 = [[[1], 2], 3]
-	Array a1 = { { { 1 }, 2 }, 3 };
+	Array a1 = { Array{ Array{ 1 }, 2 }, 3 };
 
 	Array a2 = a1.duplicate(true);
 
 	// other_a = [[[1, 0], 2], 3]
-	Array other_a = { { { 1, 0 }, 2 }, 3 };
+	Array other_a = { Array{ Array{ 1, 0 }, 2 }, 3 };
 
 	// test both operator== and operator!=
 	CHECK_EQ(a1, a1); // compare self
