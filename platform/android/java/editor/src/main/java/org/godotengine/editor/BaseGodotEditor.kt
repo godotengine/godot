@@ -69,11 +69,7 @@ import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isNativeXRDevice
-import org.godotengine.godot.xr.HybridMode
-import org.godotengine.godot.xr.getHybridAppLaunchMode
-import org.godotengine.godot.xr.HYBRID_APP_PANEL_CATEGORY
-import org.godotengine.godot.xr.HYBRID_APP_IMMERSIVE_CATEGORY
+import org.godotengine.openxr.vendors.utils.*
 import kotlin.math.min
 
 /**
@@ -743,12 +739,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			return isNativeXRDevice(applicationContext)
 		}
 
-		if (featureTag == "horizonos") {
-			return BuildConfig.FLAVOR == "horizonos"
-		}
-
-		if (featureTag == "picoos") {
-			return BuildConfig.FLAVOR == "picoos"
+		if (featureTag == BuildConfig.FLAVOR) {
+			return true
 		}
 
         return super.supportsFeature(featureTag)
