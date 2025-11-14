@@ -115,9 +115,8 @@ void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
-	image = p_image;
-	if (image.is_valid()) {
+void NoiseTexture2D::_update_now(const Ref<Image> &p_image) const {
+	if (p_image.is_valid()) {
 		if (texture.is_valid()) {
 			RID new_texture = RS::get_singleton()->texture_2d_create(p_image);
 			RS::get_singleton()->texture_replace(texture, new_texture);
@@ -126,6 +125,10 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 		}
 		RS::get_singleton()->texture_set_path(texture, get_path());
 	}
+}
+
+void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
+	_update_now(p_image);
 	emit_changed();
 }
 
@@ -152,7 +155,7 @@ void NoiseTexture2D::_queue_update() {
 	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
 }
 
-Ref<Image> NoiseTexture2D::_generate_texture() {
+Ref<Image> NoiseTexture2D::_generate_texture() const {
 	// Prevent memdelete due to unref() on other thread.
 	Ref<Noise> ref_noise = noise;
 
@@ -180,7 +183,7 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 	return new_image;
 }
 
-Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {
+Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) const {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 
@@ -198,6 +201,9 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 }
 
 void NoiseTexture2D::_update_texture() {
+	if (!update_queued) {
+		return;
+	}
 	bool use_thread = true;
 #ifndef THREADS_ENABLED
 	use_thread = false;
@@ -392,5 +398,24 @@ RID NoiseTexture2D::get_rid() const {
 }
 
 Ref<Image> NoiseTexture2D::get_image() const {
-	return image;
+	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
+	if (update_queued) {
+		if (use_thread) {
+			if (!noise_thread.is_started()) {
+				Ref<Image> new_image = _generate_texture();
+				_update_now(new_image);
+			} else {
+				noise_thread.wait_to_finish();
+			}
+
+		} else {
+			Ref<Image> new_image = _generate_texture();
+			_update_now(new_image);
+		}
+		update_queued = false;
+	}
+	return texture.is_valid() ? RS::get_singleton()->texture_2d_get(texture) : Ref<Image>();
 }
