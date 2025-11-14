@@ -88,11 +88,26 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
 		if (existing.is_valid()) {
-			if (p_take_over) {
+			if (existing.ptr() == this) {
+			} else if (p_take_over) {
 				existing->path_cache = String();
 				ResourceCache::resources.erase(p_path);
 			} else {
-				ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+				if (existing->get_reference_count() <= 1) {
+					existing->path_cache = String();
+					ResourceCache::resources.erase(p_path);
+				} else {
+#ifdef TOOLS_ENABLED
+					if (path_cache.is_empty()) {
+						existing->path_cache = String();
+						ResourceCache::resources.erase(p_path);
+					} else {
+						ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+					}
+#else
+					ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+#endif
+				}
 			}
 		}
 
