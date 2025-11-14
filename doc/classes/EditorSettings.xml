@@ -1110,6 +1110,15 @@
 		<member name="interface/inspector/integer_drag_speed" type="float" setter="" getter="">
 			Base speed for increasing/decreasing integer values by dragging them in the inspector.
 		</member>
+		<member name="interface/inspector/zoom_drag_speed" type="float" setter="" getter="">
+			Base speed for increasing/decreasing zoom levels by dragging in the inspector.
+		</member>
+		<member name="interface/inspector/invert_drag_zoom_y" type="bool" setter="" getter="">
+			If [code]true[/code], inverts the Y axis when dragging numeric values in the inspector to zoom in and out.
+		</member>
+		<member name="interface/inspector/max_drag_zoom_out_value_no_min_max" type="float" setter="" getter="">
+			The maximum value for zooming out when dragging numeric values in the inspector. This only applies to properties that don't define a minimum or maximum value.
+		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>
