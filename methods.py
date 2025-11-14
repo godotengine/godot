@@ -1,6 +1,7 @@
 import atexit
 import contextlib
 import glob
+import hashlib
 import math
 import os
 import re
@@ -9,6 +10,7 @@ import sys
 import textwrap
 import zlib
 from collections import OrderedDict
+from collections.abc import Iterable
 from io import StringIO, TextIOBase
 from pathlib import Path
 from typing import Generator, List, Optional, Union, cast
@@ -21,25 +23,125 @@ base_folder = Path(__file__).resolve().parent
 
 compiler_version_cache = None
 
-# Listing all the folders we have converted
-# for SCU in scu_builders.py
-_scu_folders = set()
+scu_limit = 0
 
 
-def set_scu_folders(scu_folders):
-    global _scu_folders
-    _scu_folders = scu_folders
+def set_scu_limit(p_scu_limit):
+    global scu_limit
+    scu_limit = p_scu_limit
 
 
-def add_source_files_orig(self, sources, files, allow_gen=False):
-    # Convert string to list of absolute paths (including expanding wildcard)
-    if isinstance(files, str):
-        # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
-        # They should instead be added manually.
-        skip_gen_cpp = "*" in files
-        files = self.Glob(files)
-        if skip_gen_cpp and not allow_gen:
-            files = [f for f in files if not str(f).endswith(".gen.cpp")]
+def add_source_files(self, sources, files, allow_gen=False):
+    # Simplify handling by making sure files is always some list.
+    if not isinstance(files, Iterable) or isinstance(files, str):
+        files = [files]
+    else:
+        files = list(files)
+
+    for i in reversed(range(len(files))):
+        orig_file = files[i]
+        # Convert string to list of absolute paths (including expanding wildcard)
+        if isinstance(orig_file, str):
+            # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
+            # They should instead be added manually.
+            skip_gen_cpp = "*" in orig_file
+            files_globbed = self.Glob(orig_file)
+            if skip_gen_cpp and not allow_gen:
+                files_globbed = [f for f in files_globbed if not str(f).endswith(".gen.cpp")]
+            # Replace string with the actual globbed files.
+            files = files[:i] + files_globbed + files[i + 1 :]
+
+    if not files:
+        return
+
+    def is_compatible_path(path: str):
+        if not (path.endswith(".cpp") or path.endswith(".c") or path.endswith(".cc")):
+            return False
+        if "thirdparty/" in path:
+            allowed = [
+                "accesskit",
+                "amd-fsr",
+                "amd-fsr2",
+                "angle",
+                # "astcenc",
+                # "basis_universal",
+                "brotli",
+                "certs",
+                "clipper2",
+                "cvtt",
+                "d3d12ma",
+                "directx_headers",
+                "doctest",
+                # "embree",
+                "enet",
+                # "etcpak",
+                "fonts",
+                "freetype",
+                "glad",
+                # "glslang",
+                "graphite",
+                "grisu2",
+                "harfbuzz",
+                "icu4c",
+                "jolt_physics",
+                "jpeg-compressor",
+                "libbacktrace",
+                # "libjpeg-turbo",
+                # "libktx",
+                # "libogg",
+                # "libpng",
+                # "libtheora",
+                # "libvorbis",
+                # "libwebp",
+                "linuxbsd_headers",
+                # "manifold",
+                # "mbedtls",
+                "meshoptimizer",
+                "mingw-std-threads",
+                "minimp3",
+                # "miniupnpc",
+                # "minizip",
+                # "misc",
+                "msdfgen",
+                "openxr",
+                # "pcre2",
+                # "recastnavigation",
+                "rvo2",
+                "sdl",
+                "smaa",
+                "spirv-cross",
+                "spirv-reflect",
+                "swappy-frame-pacing",
+                # "thorvg",
+                "tinyexr",
+                "ufbx",
+                # "vhacd",
+                "volk",
+                "vulkan",
+                "wayland",
+                "wayland-protocols",
+                # "wslay",
+                "xatlas",
+                # "zlib",
+                "zstd",
+            ]
+            return any(f"thirdparty/{a}" in path for a in allowed)
+        return True
+
+    if scu_limit > 0 and len(files) > 1:
+        paths = [f.get_abspath() for f in files]
+        # TODO Simply split out those that are not compatible
+        if not any(not is_compatible_path(p) for p in paths):
+            # TODO Split by SCU limit
+            file_contents = "\n".join([f'#include "{p}"' for p in paths])
+            filehash = hashlib.md5(file_contents.encode("UTF-8")).hexdigest()
+
+            # TODO Find a better place to put this
+            scu_file = self.File(f"#bin/obj/scu/scu_{filehash}.gen.cpp")
+            Path(str(scu_file)).parent.mkdir(exist_ok=True, parents=True)
+            Path(str(scu_file)).write_text(file_contents)
+            sources.append(self.Object(scu_file))
+            return
 
     # Add each path as compiled Object following environment (self) configuration
     for file in files:
@@ -49,37 +151,6 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
             continue
         sources.append(obj)
 
-
-def add_source_files_scu(self, sources, files, allow_gen=False):
-    if self["scu_build"] and isinstance(files, str):
-        if "*." not in files:
-            return False
-
-        # If the files are in a subdirectory, we want to create the scu gen
-        # files inside this subdirectory.
-        subdir = os.path.dirname(files)
-        subdir = subdir if subdir == "" else subdir + "/"
-        section_name = self.Dir(subdir).tpath
-        section_name = section_name.replace("\\", "/")  # win32
-        # if the section name is in the hash table?
-        # i.e. is it part of the SCU build?
-        global _scu_folders
-        if section_name not in (_scu_folders):
-            return False
-
-        # Add all the gen.cpp files in the SCU directory
-        add_source_files_orig(self, sources, subdir + ".scu/scu_*.gen.cpp", True)
-        return True
-    return False
-
-
-# Either builds the folder using the SCU system,
-# or reverts to regular build.
-def add_source_files(self, sources, files, allow_gen=False):
-    if not add_source_files_scu(self, sources, files, allow_gen):
-        # Wraps the original function when scu build is not active.
-        add_source_files_orig(self, sources, files, allow_gen)
-        return False
     return True
 
 

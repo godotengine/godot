@@ -57,7 +57,6 @@ _helper_module("misc.utility.color", "misc/utility/color.py")
 import gles3_builders
 import glsl_builders
 import methods
-import scu_builders
 from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
@@ -665,7 +664,7 @@ if env["scu_build"]:
     if read_scu_limit != 0:
         max_includes_per_scu = read_scu_limit
 
-    methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
+    methods.set_scu_limit(max_includes_per_scu)
 
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
