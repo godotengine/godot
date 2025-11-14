@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "servers/display/display_server.h"
 
 const String GODOT_PROJECT_NAME_XML_STRING = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->

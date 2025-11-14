@@ -4446,7 +4446,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 		}
 	}
 
-	for (int i = p_shaped->first_span; i <= p_shaped->last_span; i++) {
+	for (int i = MAX(0, p_shaped->first_span); i <= MIN(p_shaped->last_span, parent->spans.size() - 1); i++) {
 		ShapedTextDataAdvanced::Span span = parent->spans[i];
 		span.start = MAX(p_shaped->start, span.start);
 		span.end = MIN(p_shaped->end, span.end);
@@ -4484,6 +4484,43 @@ void TextServerAdvanced::_shaped_text_clear(const RID &p_shaped) {
 	sd->objects.clear();
 	sd->bidi_override.clear();
 	invalidate(sd, true);
+}
+
+RID TextServerAdvanced::_shaped_text_duplicate(const RID &p_shaped) {
+	_THREAD_SAFE_METHOD_
+
+	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, RID());
+
+	MutexLock lock(sd->mutex);
+
+	ShapedTextDataAdvanced *new_sd = memnew(ShapedTextDataAdvanced);
+	new_sd->parent = p_shaped;
+	new_sd->start = sd->start;
+	new_sd->end = sd->end;
+	new_sd->text = sd->text;
+	new_sd->hb_buffer = hb_buffer_create();
+	new_sd->utf16 = new_sd->text.utf16();
+	new_sd->script_iter = memnew(ScriptIterator(new_sd->text, 0, new_sd->text.length()));
+	new_sd->orientation = sd->orientation;
+	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
+	new_sd->para_direction = sd->para_direction;
+	new_sd->base_para_direction = sd->base_para_direction;
+	new_sd->line_breaks_valid = sd->line_breaks_valid;
+	new_sd->justification_ops_valid = sd->justification_ops_valid;
+	new_sd->sort_valid = false;
+	new_sd->upos = sd->upos;
+	new_sd->uthk = sd->uthk;
+	new_sd->runs.clear();
+	new_sd->runs_dirty = true;
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		new_sd->extra_spacing[i] = sd->extra_spacing[i];
+	}
+	full_copy(new_sd);
+	new_sd->valid.clear();
+
+	return shaped_owner.make_rid(new_sd);
 }
 
 void TextServerAdvanced::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
@@ -4996,6 +5033,14 @@ String TextServerAdvanced::_shaped_get_text(const RID &p_shaped) const {
 	ERR_FAIL_NULL_V(sd, String());
 
 	return sd->text;
+}
+
+bool TextServerAdvanced::_shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const {
+	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, false);
+
+	MutexLock lock(sd->mutex);
+	return sd->objects.has(p_key);
 }
 
 bool TextServerAdvanced::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) {
@@ -5643,6 +5688,15 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 	}
 	if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
 		font_style.set_flag(TextServer::FONT_ITALIC);
+	}
+	if (p_script_code == "Zsye") {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		font_name = "Apple Color Emoji";
+#elif defined(WINDOWS_ENABLED)
+		font_name = "Segoe UI Emoji";
+#else
+		font_name = "Noto Color Emoji";
+#endif
 	}
 
 	String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
@@ -7455,258 +7509,6 @@ double TextServerAdvanced::_shaped_text_get_underline_thickness(const RID &p_sha
 	return sd->uthk;
 }
 
-void TextServerAdvanced::_insert_num_systems_lang() {
-	// Eastern Arabic numerals.
-	{
-		NumSystemData ar;
-		ar.lang.insert(StringName("ar")); // Arabic
-		ar.lang.insert(StringName("ar_AE"));
-		ar.lang.insert(StringName("ar_BH"));
-		ar.lang.insert(StringName("ar_DJ"));
-		ar.lang.insert(StringName("ar_EG"));
-		ar.lang.insert(StringName("ar_ER"));
-		ar.lang.insert(StringName("ar_IL"));
-		ar.lang.insert(StringName("ar_IQ"));
-		ar.lang.insert(StringName("ar_JO"));
-		ar.lang.insert(StringName("ar_KM"));
-		ar.lang.insert(StringName("ar_KW"));
-		ar.lang.insert(StringName("ar_LB"));
-		ar.lang.insert(StringName("ar_MR"));
-		ar.lang.insert(StringName("ar_OM"));
-		ar.lang.insert(StringName("ar_PS"));
-		ar.lang.insert(StringName("ar_QA"));
-		ar.lang.insert(StringName("ar_SA"));
-		ar.lang.insert(StringName("ar_SD"));
-		ar.lang.insert(StringName("ar_SO"));
-		ar.lang.insert(StringName("ar_SS"));
-		ar.lang.insert(StringName("ar_SY"));
-		ar.lang.insert(StringName("ar_TD"));
-		ar.lang.insert(StringName("ar_YE"));
-		ar.lang.insert(StringName("ckb")); // Central Kurdish
-		ar.lang.insert(StringName("ckb_IQ"));
-		ar.lang.insert(StringName("ckb_IR"));
-		ar.lang.insert(StringName("sd")); // Sindhi
-		ar.lang.insert(StringName("sd_PK"));
-		ar.lang.insert(StringName("sd_Arab"));
-		ar.lang.insert(StringName("sd_Arab_PK"));
-		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
-		ar.percent_sign = U"٪";
-		ar.exp_l = U"اس";
-		ar.exp_u = U"اس";
-		num_systems.push_back(ar);
-	}
-
-	// Persian and Urdu numerals.
-	{
-		NumSystemData pr;
-		pr.lang.insert(StringName("fa")); // Persian
-		pr.lang.insert(StringName("fa_AF"));
-		pr.lang.insert(StringName("fa_IR"));
-		pr.lang.insert(StringName("ks")); // Kashmiri
-		pr.lang.insert(StringName("ks_IN"));
-		pr.lang.insert(StringName("ks_Arab"));
-		pr.lang.insert(StringName("ks_Arab_IN"));
-		pr.lang.insert(StringName("lrc")); // Northern Luri
-		pr.lang.insert(StringName("lrc_IQ"));
-		pr.lang.insert(StringName("lrc_IR"));
-		pr.lang.insert(StringName("mzn")); // Mazanderani
-		pr.lang.insert(StringName("mzn_IR"));
-		pr.lang.insert(StringName("pa_PK")); // Panjabi
-		pr.lang.insert(StringName("pa_Arab"));
-		pr.lang.insert(StringName("pa_Arab_PK"));
-		pr.lang.insert(StringName("ps")); // Pushto
-		pr.lang.insert(StringName("ps_AF"));
-		pr.lang.insert(StringName("ps_PK"));
-		pr.lang.insert(StringName("ur_IN")); // Urdu
-		pr.lang.insert(StringName("uz_AF")); // Uzbek
-		pr.lang.insert(StringName("uz_Arab"));
-		pr.lang.insert(StringName("uz_Arab_AF"));
-		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
-		pr.percent_sign = U"٪";
-		pr.exp_l = U"اس";
-		pr.exp_u = U"اس";
-		num_systems.push_back(pr);
-	}
-
-	// Bengali numerals.
-	{
-		NumSystemData bn;
-		bn.lang.insert(StringName("as")); // Assamese
-		bn.lang.insert(StringName("as_IN"));
-		bn.lang.insert(StringName("bn")); // Bengali
-		bn.lang.insert(StringName("bn_BD"));
-		bn.lang.insert(StringName("bn_IN"));
-		bn.lang.insert(StringName("mni")); // Manipuri
-		bn.lang.insert(StringName("mni_IN"));
-		bn.lang.insert(StringName("mni_Beng"));
-		bn.lang.insert(StringName("mni_Beng_IN"));
-		bn.digits = U"০১২৩৪৫৬৭৮৯.";
-		bn.percent_sign = U"%";
-		bn.exp_l = U"e";
-		bn.exp_u = U"E";
-		num_systems.push_back(bn);
-	}
-
-	// Devanagari numerals.
-	{
-		NumSystemData mr;
-		mr.lang.insert(StringName("mr")); // Marathi
-		mr.lang.insert(StringName("mr_IN"));
-		mr.lang.insert(StringName("ne")); // Nepali
-		mr.lang.insert(StringName("ne_IN"));
-		mr.lang.insert(StringName("ne_NP"));
-		mr.lang.insert(StringName("sa")); // Sanskrit
-		mr.lang.insert(StringName("sa_IN"));
-		mr.digits = U"०१२३४५६७८९.";
-		mr.percent_sign = U"%";
-		mr.exp_l = U"e";
-		mr.exp_u = U"E";
-		num_systems.push_back(mr);
-	}
-
-	// Dzongkha numerals.
-	{
-		NumSystemData dz;
-		dz.lang.insert(StringName("dz")); // Dzongkha
-		dz.lang.insert(StringName("dz_BT"));
-		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
-		dz.percent_sign = U"%";
-		dz.exp_l = U"e";
-		dz.exp_u = U"E";
-		num_systems.push_back(dz);
-	}
-
-	// Santali numerals.
-	{
-		NumSystemData sat;
-		sat.lang.insert(StringName("sat")); // Santali
-		sat.lang.insert(StringName("sat_IN"));
-		sat.lang.insert(StringName("sat_Olck"));
-		sat.lang.insert(StringName("sat_Olck_IN"));
-		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
-		sat.percent_sign = U"%";
-		sat.exp_l = U"e";
-		sat.exp_u = U"E";
-		num_systems.push_back(sat);
-	}
-
-	// Burmese numerals.
-	{
-		NumSystemData my;
-		my.lang.insert(StringName("my")); // Burmese
-		my.lang.insert(StringName("my_MM"));
-		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
-		my.percent_sign = U"%";
-		my.exp_l = U"e";
-		my.exp_u = U"E";
-		num_systems.push_back(my);
-	}
-
-	// Chakma numerals.
-	{
-		NumSystemData ccp;
-		ccp.lang.insert(StringName("ccp")); // Chakma
-		ccp.lang.insert(StringName("ccp_BD"));
-		ccp.lang.insert(StringName("ccp_IN"));
-		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
-		ccp.percent_sign = U"%";
-		ccp.exp_l = U"e";
-		ccp.exp_u = U"E";
-		num_systems.push_back(ccp);
-	}
-
-	// Adlam numerals.
-	{
-		NumSystemData ff;
-		ff.lang.insert(StringName("ff")); // Fulah
-		ff.lang.insert(StringName("ff_Adlm_BF"));
-		ff.lang.insert(StringName("ff_Adlm_CM"));
-		ff.lang.insert(StringName("ff_Adlm_GH"));
-		ff.lang.insert(StringName("ff_Adlm_GM"));
-		ff.lang.insert(StringName("ff_Adlm_GN"));
-		ff.lang.insert(StringName("ff_Adlm_GW"));
-		ff.lang.insert(StringName("ff_Adlm_LR"));
-		ff.lang.insert(StringName("ff_Adlm_MR"));
-		ff.lang.insert(StringName("ff_Adlm_NE"));
-		ff.lang.insert(StringName("ff_Adlm_NG"));
-		ff.lang.insert(StringName("ff_Adlm_SL"));
-		ff.lang.insert(StringName("ff_Adlm_SN"));
-		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
-		ff.percent_sign = U"%";
-		ff.exp_l = U"𞤉";
-		ff.exp_u = U"𞤉";
-		num_systems.push_back(ff);
-	}
-}
-
-String TextServerAdvanced::_format_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
-
-	String res = p_string;
-	for (int i = 0; i < num_systems.size(); i++) {
-		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits.is_empty()) {
-				return p_string;
-			}
-			res = res.replace("e", num_systems[i].exp_l);
-			res = res.replace("E", num_systems[i].exp_u);
-			char32_t *data = res.ptrw();
-			for (int j = 0; j < res.length(); j++) {
-				if (data[j] >= 0x30 && data[j] <= 0x39) {
-					data[j] = num_systems[i].digits[data[j] - 0x30];
-				} else if (data[j] == '.' || data[j] == ',') {
-					data[j] = num_systems[i].digits[10];
-				}
-			}
-			break;
-		}
-	}
-	return res;
-}
-
-String TextServerAdvanced::_parse_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
-
-	String res = p_string;
-	for (int i = 0; i < num_systems.size(); i++) {
-		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits.is_empty()) {
-				return p_string;
-			}
-			res = res.replace(num_systems[i].exp_l, "e");
-			res = res.replace(num_systems[i].exp_u, "E");
-			char32_t *data = res.ptrw();
-			for (int j = 0; j < res.length(); j++) {
-				if (data[j] == num_systems[i].digits[10]) {
-					data[j] = '.';
-				} else {
-					for (int k = 0; k < 10; k++) {
-						if (data[j] == num_systems[i].digits[k]) {
-							data[j] = 0x30 + k;
-						}
-					}
-				}
-			}
-			break;
-		}
-	}
-	return res;
-}
-
-String TextServerAdvanced::_percent_sign(const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
-
-	for (int i = 0; i < num_systems.size(); i++) {
-		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].percent_sign.is_empty()) {
-				return "%";
-			}
-			return num_systems[i].percent_sign;
-		}
-	}
-	return "%";
-}
-
 int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
 #ifndef ICU_STATIC_DATA
 	if (!icu_data_loaded) {
@@ -8262,7 +8064,6 @@ void TextServerAdvanced::_update_settings() {
 }
 
 TextServerAdvanced::TextServerAdvanced() {
-	_insert_num_systems_lang();
 	_insert_feature_sets();
 	_bmp_create_font_funcs();
 	_update_settings();

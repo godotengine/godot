@@ -35,12 +35,14 @@
 #include "template_modifier.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 

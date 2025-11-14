@@ -363,6 +363,28 @@ void EditorSettings::_set_initialized() {
 	initialized = true;
 }
 
+static LocalVector<String> _get_skipped_locales() {
+	// Skip locales if Text server lack required features.
+	LocalVector<String> locales_to_skip;
+	if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
+		locales_to_skip.push_back("ar"); // Arabic.
+		locales_to_skip.push_back("fa"); // Persian.
+		locales_to_skip.push_back("ur"); // Urdu.
+	}
+	if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
+		locales_to_skip.push_back("he"); // Hebrew.
+	}
+	if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
+		locales_to_skip.push_back("bn"); // Bengali.
+		locales_to_skip.push_back("hi"); // Hindi.
+		locales_to_skip.push_back("ml"); // Malayalam.
+		locales_to_skip.push_back("si"); // Sinhala.
+		locales_to_skip.push_back("ta"); // Tamil.
+		locales_to_skip.push_back("te"); // Telugu.
+	}
+	return locales_to_skip;
+}
+
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
@@ -381,36 +403,18 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint = ";en/[en] English";
-		String host_lang = OS::get_singleton()->get_locale();
+		String lang_hint;
+		const String host_lang = OS::get_singleton()->get_locale();
 
-		// Skip locales if Text server lack required features.
-		Vector<String> locales_to_skip;
-		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
-			locales_to_skip.push_back("ar"); // Arabic
-			locales_to_skip.push_back("fa"); // Persian
-			locales_to_skip.push_back("ur"); // Urdu
-		}
-		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
-			locales_to_skip.push_back("he"); // Hebrew
-		}
-		if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
-			locales_to_skip.push_back("bn"); // Bengali
-			locales_to_skip.push_back("hi"); // Hindi
-			locales_to_skip.push_back("ml"); // Malayalam
-			locales_to_skip.push_back("si"); // Sinhala
-			locales_to_skip.push_back("ta"); // Tamil
-			locales_to_skip.push_back("te"); // Telugu
-		}
-
+		// Skip locales which we can't render properly.
+		const LocalVector<String> locales_to_skip = _get_skipped_locales();
 		if (!locales_to_skip.is_empty()) {
 			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
 		}
 
-		String best;
+		String best = "en";
 		int best_score = 0;
 		for (const String &locale : get_editor_locales()) {
-			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slicec('_', 0);
 			if (locales_to_skip.has(lang_code)) {
@@ -427,11 +431,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 				best_score = score;
 			}
 		}
-		if (best_score == 0) {
-			best = "en";
-		}
+		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
-		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", best, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
 	// Asset library
@@ -714,6 +716,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		"text_editor/theme/highlighting/comment_color",
 		"text_editor/theme/highlighting/doc_comment_color",
 		"text_editor/theme/highlighting/string_color",
+		"text_editor/theme/highlighting/string_placeholder_color",
 		"text_editor/theme/highlighting/background_color",
 		"text_editor/theme/highlighting/text_color",
 		"text_editor/theme/highlighting/line_number_color",
@@ -895,6 +898,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_joint", Color(0.8, 0.9, 0.6), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_collision", Color(0.6, 0.8, 0.9), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_inside_collision", Color(0.9, 0.6, 0.8), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/ik_chain", Color(0.6, 0.9, 0.8), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	_initial_set("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -1329,7 +1333,7 @@ fail:
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
-	String lang = _EDITOR_GET("interface/editor/editor_language");
+	String lang = get_language();
 	if (p_initial_setup) {
 		String lang_ov = Main::get_locale_override();
 		if (!lang_ov.is_empty()) {
@@ -1560,9 +1564,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 		}
 	}
 	project_metadata->set_value(p_section, p_key, p_data);
-
-	Error err = project_metadata->save(path);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + path + "'.");
+	project_metadata_dirty = true;
 }
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const {
@@ -1574,6 +1576,16 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 		ERR_FAIL_COND_V_MSG(err != OK && err != ERR_FILE_NOT_FOUND, p_default, "Cannot load project metadata from file '" + path + "'.");
 	}
 	return project_metadata->get_value(p_section, p_key, p_default);
+}
+
+void EditorSettings::save_project_metadata() {
+	if (!project_metadata_dirty) {
+		return;
+	}
+	const String path = _get_project_metadata_path();
+	Error err = project_metadata->save(path);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save project metadata to file '" + path + "'.");
+	project_metadata_dirty = false;
 }
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
@@ -1700,6 +1712,7 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_color"] = Color(0.4, 0.4, 0.4);
 	colors["text_editor/theme/highlighting/doc_comment_color"] = Color(0.5, 0.6, 0.7);
 	colors["text_editor/theme/highlighting/string_color"] = Color(0.94, 0.43, 0.75);
+	colors["text_editor/theme/highlighting/string_placeholder_color"] = Color(1, 0.75, 0.4);
 	colors["text_editor/theme/highlighting/background_color"] = Color(0.13, 0.12, 0.15);
 	colors["text_editor/theme/highlighting/completion_background_color"] = Color(0.17, 0.16, 0.2);
 	colors["text_editor/theme/highlighting/completion_selected_color"] = Color(0.26, 0.26, 0.27);
@@ -1851,6 +1864,37 @@ float EditorSettings::get_auto_display_scale() {
 #endif // defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
+String EditorSettings::get_language() const {
+	const String language = has_setting("interface/editor/editor_language") ? get("interface/editor/editor_language") : "auto";
+	if (language != "auto") {
+		return language;
+	}
+
+	if (auto_language.is_empty()) {
+		// Skip locales which we can't render properly.
+		const LocalVector<String> locales_to_skip = _get_skipped_locales();
+		const String host_lang = OS::get_singleton()->get_locale();
+
+		String best = "en";
+		int best_score = 0;
+		for (const String &locale : get_editor_locales()) {
+			// Test against language code without regional variants (e.g. ur_PK).
+			String lang_code = locale.get_slicec('_', 0);
+			if (locales_to_skip.has(lang_code)) {
+				continue;
+			}
+
+			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+			if (score > 0 && score >= best_score) {
+				best = locale;
+				best_score = score;
+			}
+		}
+		auto_language = best;
+	}
+	return auto_language;
+}
+
 // Shortcuts
 
 void EditorSettings::_add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut) {
@@ -1955,7 +1999,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;
@@ -1989,7 +2033,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;

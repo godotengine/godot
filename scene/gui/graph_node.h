@@ -44,11 +44,13 @@ class GraphNode : public GraphElement {
 		int type_left = 0;
 		Color color_left = Color(1, 1, 1, 1);
 		Ref<Texture2D> custom_port_icon_left;
+		Variant metadata_left;
 
 		bool enable_right = false;
 		int type_right = 0;
 		Color color_right = Color(1, 1, 1, 1);
 		Ref<Texture2D> custom_port_icon_right;
+		Variant metadata_right;
 
 		bool draw_stylebox = true;
 	};
@@ -150,6 +152,9 @@ public:
 	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
 	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
 
+	void set_slot_metadata_left(int p_slot_index, const Variant &p_value);
+	Variant get_slot_metadata_left(int p_slot_index) const;
+
 	bool is_slot_enabled_right(int p_slot_index) const;
 	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
@@ -161,6 +166,9 @@ public:
 
 	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
 	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
+
+	void set_slot_metadata_right(int p_slot_index, const Variant &p_value);
+	Variant get_slot_metadata_right(int p_slot_index) const;
 
 	bool is_slot_draw_stylebox(int p_slot_index) const;
 	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);

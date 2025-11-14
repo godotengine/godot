@@ -54,11 +54,24 @@
 				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
+		<method name="check_changed_settings_in_group" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="setting_prefix" type="String" />
+			<description>
+				Checks if any settings with the prefix [param setting_prefix] exist in the set of changed settings. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Clears the whole configuration (not recommended, may break things).
+			</description>
+		</method>
+		<method name="get_changed_settings" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [signal settings_changed].
 			</description>
 		</method>
 		<method name="get_global_class_list">
@@ -325,6 +338,7 @@
 		</member>
 		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
 			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
+			[b]Note:[/b] When left empty, the application name is translated using the project translations.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
@@ -3503,6 +3517,10 @@
 		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
+		</member>
+		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
+			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.

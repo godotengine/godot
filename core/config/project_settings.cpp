@@ -283,6 +283,13 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
+	// Early return if value hasn't changed (unless it's being deleted)
+	if (p_value.get_type() != Variant::NIL) {
+		if (props.has(p_name) && props[p_name].variant == p_value) {
+			return true;
+		}
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
@@ -304,7 +311,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			_version++;
-			_queue_changed();
+			_queue_changed(p_name);
 			return true;
 		}
 
@@ -350,7 +357,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	_version++;
-	_queue_changed();
+	_queue_changed(p_name);
 	return true;
 }
 
@@ -526,12 +533,18 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void ProjectSettings::_queue_changed() {
-	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+void ProjectSettings::_queue_changed(const StringName &p_name) {
+	changed_settings.insert(p_name);
+
+	if (!MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
 		return;
 	}
-	is_changed = true;
-	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+
+	// Only queue the deferred call once per frame.
+	if (!is_changed) {
+		is_changed = true;
+		callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+	}
 }
 
 void ProjectSettings::_emit_changed() {
@@ -539,7 +552,12 @@ void ProjectSettings::_emit_changed() {
 		return;
 	}
 	is_changed = false;
+
+	// Emit the general settings_changed signal to indicate changes are complete.
 	emit_signal("settings_changed");
+
+	// Clear the changed settings after emitting the signal
+	changed_settings.clear();
 }
 
 bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
@@ -632,9 +650,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
  *    are running from source code.
- *    If not found and `p_upwards` is true (--upwards passed by the user), look for
- *    project files in parent folders up to the system root (used to run a game
- *    from command line while in a subfolder).
+ *    If not found and `p_upwards` is true, look for project files in parent folders
+ *    up to the system root (used to run a game from command line while in a subfolder).
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
@@ -731,7 +748,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #endif
 
 	// Try to use the filesystem for files, according to OS.
-	// (Only Android -when reading from pck- and iOS use this.)
+	// (Only Android -when reading from PCK-.)
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -804,6 +821,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			break;
 		}
 
+#if defined(OVERRIDE_PATH_ENABLED)
 		if (p_upwards) {
 			// Try to load settings ascending through parent directories
 			d->change_dir("..");
@@ -812,6 +830,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 			current_dir = d->get_current_dir();
 		} else {
+#else
+		{
+#endif
 			break;
 		}
 	}
@@ -829,12 +850,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+#ifdef OVERRIDE_ENABLED
 	if (err == OK && !p_ignore_override) {
-		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
-		if (!custom_settings.is_empty()) {
-			_load_settings_text(custom_settings);
+		bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+		if (!disable_override) {
+			String custom_settings = GLOBAL_GET("application/config/project_settings_override");
+			if (!custom_settings.is_empty()) {
+				_load_settings_text(custom_settings);
+			}
 		}
 	}
+#endif
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
@@ -1352,6 +1378,23 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	}
 }
 
+PackedStringArray ProjectSettings::get_changed_settings() const {
+	PackedStringArray arr;
+	for (const StringName &setting : changed_settings) {
+		arr.push_back(setting);
+	}
+	return arr;
+}
+
+bool ProjectSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
+	for (const StringName &setting : changed_settings) {
+		if (String(setting).begins_with(p_setting_prefix)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ProjectSettings::refresh_global_class_list() {
 	// This is called after mounting a new PCK file to pick up class changes.
 	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
@@ -1548,6 +1591,9 @@ void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
+	// Change tracking methods
+	ClassDB::bind_method(D_METHOD("get_changed_settings"), &ProjectSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &ProjectSettings::check_changed_settings_in_group);
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 
@@ -1595,7 +1641,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
 	GLOBAL_DEF_BASIC("application/config/version", "");
 	GLOBAL_DEF_INTERNAL(PropertyInfo(Variant::STRING, "application/config/tags"), PackedStringArray());

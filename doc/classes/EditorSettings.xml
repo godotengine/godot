@@ -456,6 +456,9 @@
 		<member name="editors/3d_gizmos/gizmo_colors/gridmap_grid" type="Color" setter="" getter="">
 			The 3D editor gizmo color for the [GridMap] grid.
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/ik_chain" type="Color" setter="" getter="">
+			The 3D editor gizmo color for the [IKModifier3D] guides.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
@@ -880,7 +883,7 @@
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
-			The language to use for the editor interface.
+			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
@@ -1642,6 +1645,10 @@
 		</member>
 		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
 			The script editor's color for strings (single-line and multi-line).
+		</member>
+		<member name="text_editor/theme/highlighting/string_placeholder_color" type="Color" setter="" getter="">
+			The script editor's color for string placeholders, such as [code]%s[/code] and [code]{_}[/code]. Refer to the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings documentation[/url] for more details.
+			[b]Note:[/b] Only the default [code]{_}[/code] placeholder patterns are highlighted for the [method String.format] method. Custom patterns still appear as plain strings.
 		</member>
 		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
 			The script editor's color for operators ([code]( ) [ ] { } + - * /[/code], ...).

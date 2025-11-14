@@ -8,7 +8,7 @@
  * be used to parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2005-2024 by
+ * Copyright (C) 2005-2025 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,

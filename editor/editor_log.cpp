@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/tab_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
@@ -200,19 +201,29 @@ void EditorLog::_load_state() {
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
-	Ref<RegExMatch> uri_match = RegEx(R"(^([a-zA-Z][a-zA-Z0-9+.-]*):(?://)?(.+?)(?::([0-9]+))?$)").search(p_meta);
-	if (uri_match.is_null()) {
+	if (!p_meta.contains_char(':')) {
 		return;
 	}
+	const PackedStringArray parts = p_meta.rsplit(":", true, 1);
+	String path = parts[0];
+	const int line = parts[1].to_int() - 1;
 
-	String scheme = uri_match->get_string(1);
-	if (scheme == "res") {
-		String file = uri_match->get_string(2);
-		int line = (int)uri_match->get_string(3).to_int();
-		if (ResourceLoader::exists(file)) {
-			Ref<Resource> res = ResourceLoader::load(file);
-			ScriptEditor::get_singleton()->edit(res, line - 1, 0);
+	if (path.begins_with("res://")) {
+		if (ResourceLoader::exists(path)) {
+			const Ref<Resource> res = ResourceLoader::load(path);
+			ScriptEditor::get_singleton()->edit(res, line, 0);
 			InspectorDock::get_singleton()->edit_resource(res);
+		}
+	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
+		// Godot source file. Try to open it in external editor.
+		if (path.begins_with("./") || path.begins_with(".\\")) {
+			// Relative path. Convert to absolute, using executable path as reference.
+			path = path.trim_prefix("./").trim_prefix(".\\");
+			path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
+		}
+
+		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
+			OS::get_singleton()->shell_open(path);
 		}
 	} else {
 		OS::get_singleton()->shell_open(p_meta);
@@ -223,7 +234,7 @@ void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_button_icon(Ref<Texture2D>());
+	_set_dock_tab_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -274,8 +285,13 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 }
 
-void EditorLog::set_tool_button(Button *p_tool_button) {
-	tool_button = p_tool_button;
+void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
+	// This is the sole reason to include "tab_container.h" here.
+	TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
+	if (parent) {
+		int idx = parent->get_tab_idx_from_control(this);
+		parent->set_tab_icon(idx, p_icon);
+	}
 }
 
 void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -401,7 +417,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" ERROR: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
@@ -410,7 +426,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" WARNING: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project

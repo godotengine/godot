@@ -249,8 +249,8 @@ public:
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
 
 class EditorScriptCodeCompletionCache;
+class FindInFilesContainer;
 class FindInFilesDialog;
-class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -367,7 +367,7 @@ class ScriptEditor : public PanelContainer {
 	Button *script_forward = nullptr;
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesPanel *find_in_files = nullptr;
+	FindInFilesContainer *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
@@ -437,7 +437,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
-	bool reload_all_scripts = false;
 	Vector<String> script_paths_to_reload;
 	void _live_auto_reload_running_scripts();
 
@@ -452,7 +451,6 @@ class ScriptEditor : public PanelContainer {
 	void _scene_saved_callback(const String &p_path);
 	void _mark_built_in_scripts_as_saved(const String &p_parent_path);
 
-	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
@@ -613,7 +611,6 @@ public:
 	void update_docs_from_script(const Ref<Script> &p_script);
 
 	void trigger_live_script_reload(const String &p_script_path);
-	void trigger_live_script_reload_all();
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 
@@ -644,6 +641,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
+
 	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;

@@ -121,7 +121,7 @@ bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char 
 	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &error);
 	if (dbus_error_is_set(&error)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			ERR_PRINT(vformat("Error opening D-Bus connection: %s", error.message));
+			ERR_PRINT(vformat("Error opening D-Bus connection: %s", String::utf8(error.message)));
 		}
 		dbus_error_free(&error);
 		unsupported = true;
@@ -141,7 +141,7 @@ bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char 
 	dbus_message_unref(message);
 	if (dbus_error_is_set(&error)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			ERR_PRINT(vformat("Failed to read %s in %s, due to error on D-Bus communication: %s", p_key, p_namespace, String::utf8(error.message)));
 		}
 		dbus_error_free(&error);
 		dbus_connection_unref(bus);
@@ -532,7 +532,7 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 	cd.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
 	dbus_bus_add_match(monitor_connection, cd.filter.utf8().get_data(), &err);
 	if (dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+		ERR_PRINT(vformat("Failed to add DBus match: %s", String::utf8(err.message)));
 		dbus_error_free(&err);
 		return false;
 	}
@@ -553,7 +553,7 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 	dbus_message_unref(message);
 
 	if (!reply || dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
+		ERR_PRINT(vformat("Failed to call remote method PickColor, due to DBus error: %s", String::utf8(err.message)));
 		dbus_error_free(&err);
 		dbus_bus_remove_match(monitor_connection, cd.filter.utf8().get_data(), &err);
 		return false;
@@ -569,14 +569,14 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 				if (String::utf8(new_path) != path) {
 					dbus_bus_remove_match(monitor_connection, cd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
+						ERR_PRINT(vformat("Failed to remove DBus match: %s", String::utf8(err.message)));
 						dbus_error_free(&err);
 						return false;
 					}
 					cd.filter = String::utf8(new_path);
 					dbus_bus_add_match(monitor_connection, cd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+						ERR_PRINT(vformat("Failed to add DBus match: %s", String::utf8(err.message)));
 						dbus_error_free(&err);
 						return false;
 					}
@@ -723,7 +723,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	fd.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
 	dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 	if (dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+		ERR_PRINT(vformat("Failed to add DBus match: %s", String::utf8(err.message)));
 		dbus_error_free(&err);
 		return FAILED;
 	}
@@ -765,7 +765,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	dbus_message_unref(message);
 
 	if (!reply || dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
+		ERR_PRINT(vformat("Failed to call remote method %s, due to DBus error: %s", method, String::utf8(err.message)));
 		dbus_error_free(&err);
 		dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 		return FAILED;
@@ -781,14 +781,14 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 				if (String::utf8(new_path) != path) {
 					dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
+						ERR_PRINT(vformat("Failed to remove DBus match: %s", String::utf8(err.message)));
 						dbus_error_free(&err);
 						return FAILED;
 					}
 					fd.filter = String::utf8(new_path);
 					dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+						ERR_PRINT(vformat("Failed to add DBus match: %s", String::utf8(err.message)));
 						dbus_error_free(&err);
 						return FAILED;
 					}

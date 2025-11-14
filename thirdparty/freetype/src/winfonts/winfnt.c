@@ -4,7 +4,7 @@
  *
  *   FreeType font driver for Windows FNT/FON files
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  * Copyright 2003 Huw D M Davies for Codeweavers
  * Copyright 2007 Dmitry Timoshkov for Codeweavers
@@ -1031,7 +1031,7 @@
       goto Exit;
     }
 
-    FT_TRACE1(( "FNT_Load_Glyph: glyph index %d\n", glyph_index ));
+    FT_TRACE1(( "FNT_Load_Glyph: glyph index %u\n", glyph_index ));
 
     if ( glyph_index > 0 )
       glyph_index--;                           /* revert to real index */

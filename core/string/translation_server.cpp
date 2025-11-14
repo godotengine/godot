@@ -117,6 +117,26 @@ void TranslationServer::init_locale_info() {
 		}
 		idx++;
 	}
+
+	// Init number systems.
+	num_system_map.clear();
+	idx = 0;
+	while (num_system_data[idx].locales != nullptr) {
+		const NumSystemData &nsd = num_system_data[idx];
+
+		// These fields must not be empty.
+		DEV_ASSERT(nsd.percent_sign && nsd.percent_sign[0] != '\0');
+		DEV_ASSERT(nsd.digits && nsd.digits[0] != '\0');
+		DEV_ASSERT(nsd.exp_l && nsd.exp_l[0] != '\0');
+		DEV_ASSERT(nsd.exp_u && nsd.exp_u[0] != '\0');
+		DEV_ASSERT(strlen(nsd.digits) == 11);
+
+		const Vector<String> locales = String(nsd.locales).split(" ");
+		for (const String &l : locales) {
+			num_system_map[l] = idx;
+		}
+		idx++;
+	}
 }
 
 TranslationServer::Locale::operator String() const {
@@ -217,6 +237,66 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 			}
 		}
 	}
+}
+
+String TranslationServer::format_number(const String &p_string, const String &p_locale) const {
+	ERR_FAIL_COND_V(p_locale.is_empty(), p_string);
+	if (!num_system_map.has(p_locale)) {
+		return p_string;
+	}
+
+	int index = num_system_map[p_locale];
+	const NumSystemData &nsd = num_system_data[index];
+
+	String res = p_string;
+	res = res.replace("e", nsd.exp_l);
+	res = res.replace("E", nsd.exp_u);
+	char32_t *data = res.ptrw();
+	for (int j = 0; j < res.length(); j++) {
+		if (data[j] >= 0x30 && data[j] <= 0x39) {
+			data[j] = nsd.digits[data[j] - 0x30];
+		} else if (data[j] == '.' || data[j] == ',') {
+			data[j] = nsd.digits[10];
+		}
+	}
+	return res;
+}
+
+String TranslationServer::parse_number(const String &p_string, const String &p_locale) const {
+	ERR_FAIL_COND_V(p_locale.is_empty(), p_string);
+	if (!num_system_map.has(p_locale)) {
+		return p_string;
+	}
+
+	int index = num_system_map[p_locale];
+	const NumSystemData &nsd = num_system_data[index];
+
+	String res = p_string;
+	res = res.replace(nsd.exp_l, "e");
+	res = res.replace(nsd.exp_u, "E");
+	char32_t *data = res.ptrw();
+	for (int j = 0; j < res.length(); j++) {
+		if (data[j] == nsd.digits[10]) {
+			data[j] = '.';
+		} else {
+			for (int k = 0; k < 10; k++) {
+				if (data[j] == nsd.digits[k]) {
+					data[j] = 0x30 + k;
+				}
+			}
+		}
+	}
+	return res;
+}
+
+String TranslationServer::get_percent_sign(const String &p_locale) const {
+	ERR_FAIL_COND_V(p_locale.is_empty(), "%");
+	if (!num_system_map.has(p_locale)) {
+		return "%";
+	}
+
+	int index = num_system_map[p_locale];
+	return num_system_data[index].percent_sign;
 }
 
 String TranslationServer::standardize_locale(const String &p_locale, bool p_add_defaults) const {
@@ -604,6 +684,10 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 
+	ClassDB::bind_method(D_METHOD("format_number", "number", "locale"), &TranslationServer::format_number);
+	ClassDB::bind_method(D_METHOD("get_percent_sign", "locale"), &TranslationServer::get_percent_sign);
+	ClassDB::bind_method(D_METHOD("parse_number", "number", "locale"), &TranslationServer::parse_number);
+
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("reload_pseudolocalization"), &TranslationServer::reload_pseudolocalization);
@@ -611,7 +695,10 @@ void TranslationServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 }
 
-void TranslationServer::load_translations() {
+void TranslationServer::load_project_translations(Ref<TranslationDomain> p_domain) {
+	DEV_ASSERT(p_domain.is_valid());
+
+	p_domain->clear();
 	const String prop = "internationalization/locale/translations";
 	if (!ProjectSettings::get_singleton()->has_setting(prop)) {
 		return;
@@ -620,7 +707,7 @@ void TranslationServer::load_translations() {
 	for (const String &path : translations) {
 		Ref<Translation> tr = ResourceLoader::load(path);
 		if (tr.is_valid()) {
-			add_translation(tr);
+			p_domain->add_translation(tr);
 		}
 	}
 }

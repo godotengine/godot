@@ -1695,6 +1695,10 @@ void EditorInspectorCategory::_bind_methods() {
 
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorCategory::_theme_changed));
+		} break;
+
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
@@ -1706,13 +1710,6 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_MENU);
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_CONTEXT_MENU, callable_mp(this, &EditorInspectorCategory::_accessibility_action_menu));
-		} break;
-
-		case NOTIFICATION_THEME_CHANGED: {
-			EditorInspector::initialize_category_theme(theme_cache, this);
-			menu_icon_dirty = true;
-			_update_icon();
-			update_minimum_size();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1895,6 +1892,13 @@ void EditorInspectorCategory::_update_icon() {
 	if (icon.is_null() && !info.name.is_empty()) {
 		icon = EditorNode::get_singleton()->get_class_icon(info.name);
 	}
+}
+
+void EditorInspectorCategory::_theme_changed() {
+	// This needs to be done via the signal, as it's fired before the minimum since is updated.
+	EditorInspector::initialize_category_theme(theme_cache, this);
+	menu_icon_dirty = true;
+	_update_icon();
 }
 
 void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
@@ -3778,6 +3782,10 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 }
 
 bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName &p_property) {
+	if (!EditorFeatureProfileManager::get_singleton()) {
+		return false;
+	}
+
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
 		return false;
@@ -3868,7 +3876,7 @@ void EditorInspector::update_tree() {
 	// or if the whole object should be considered read-only.
 	bool draw_warning = false;
 	bool all_read_only = false;
-	if (is_inside_tree()) {
+	if (is_inside_tree() && EditorNode::get_singleton()) {
 		if (object->has_method("_is_read_only")) {
 			all_read_only = object->call("_is_read_only");
 		}
@@ -5149,7 +5157,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (bool(object->call("_dont_undo_redo"))) {
+	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
@@ -5171,11 +5179,22 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
+		Variant::Type type = p_value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
+			}
+			// We'll use Editor Selection to get the currently edited Node.
+			Node *N = Object::cast_to<Node>(object);
+			if (N && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+				// Perhaps an inefficient way of updating the resource count.
+				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 			}
 		}
 
@@ -5225,7 +5244,20 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 
 		Resource *r = Object::cast_to<Resource>(object);
+
 		if (r) {
+			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
+			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
+			for (Node *N : shared_nodes) {
+				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+					// Perhaps an inefficient way of updating the resource count.
+					// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
+				}
+			}
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
 				bool next = p_value;
@@ -5636,8 +5668,9 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			ERR_FAIL_NULL(EditorFeatureProfileManager::get_singleton());
-			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
+			if (EditorFeatureProfileManager::get_singleton()) {
+				EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
+			}
 			set_process(is_visible_in_tree());
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));

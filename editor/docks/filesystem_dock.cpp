@@ -43,6 +43,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/dependency_editor.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/gui/editor_dir_dialog.h"
@@ -1879,6 +1880,10 @@ void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 	_try_duplicate_item(to_duplicate, p_path);
 }
 
+void FileSystemDock::_move_confirm() {
+	_move_operation_confirm(confirm_move_to_dir, confirm_to_copy);
+}
+
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 	overwrite_dialog->hide();
 	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
@@ -2741,6 +2746,10 @@ void FileSystemDock::_resource_created() {
 	EditorNode::get_singleton()->save_resource_as(Ref<Resource>(r), fpath);
 }
 
+void FileSystemDock::_script_or_shader_created(const Ref<Resource> &p_resource) {
+	EditorNode::get_singleton()->push_item(p_resource.ptr());
+}
+
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
 	if (searched_tokens.is_empty()) {
 		// Register the uncollapsed paths before they change.
@@ -3131,11 +3140,19 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.is_empty()) {
+				String move_confirm_text;
+				confirm_move_to_dir = to_dir;
+
 				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					_move_operation_confirm(to_dir, true);
+					move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					confirm_to_copy = true;
 				} else {
-					_move_operation_confirm(to_dir);
+					move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					confirm_to_copy = false;
 				}
+
+				move_confirm_dialog->set_text(move_confirm_text);
+				move_confirm_dialog->popup_centered();
 			}
 		} else if (favorite) {
 			// Add the files from favorites.
@@ -4428,9 +4445,12 @@ FileSystemDock::FileSystemDock() {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTRC("Create Script"));
 	add_child(make_script_dialog);
+	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
 
 	make_shader_dialog = memnew(ShaderCreateDialog);
 	add_child(make_shader_dialog);
+	make_shader_dialog->connect("shader_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
+	make_shader_dialog->connect("shader_include_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
@@ -4441,6 +4461,10 @@ FileSystemDock::FileSystemDock() {
 	add_child(conversion_dialog);
 	conversion_dialog->set_ok_button_text(TTRC("Convert"));
 	conversion_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_convert_dialog_action));
+
+	move_confirm_dialog = memnew(ConfirmationDialog);
+	add_child(move_confirm_dialog);
+	move_confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_move_confirm));
 
 	uncollapsed_paths_before_search = Vector<String>();
 

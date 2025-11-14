@@ -170,7 +170,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			if (property_name == "script" && property_value.get_type() == Variant::OBJECT && !property_value.is_null()) {
 				// Parse built-in script.
 				Ref<Script> s = Object::cast_to<Script>(property_value);
-				if (!s->is_built_in()) {
+				if (s.is_null() || !s->is_built_in()) {
 					continue;
 				}
 
