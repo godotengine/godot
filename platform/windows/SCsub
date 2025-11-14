@@ -69,8 +69,12 @@ def arrange_program_clean(prog):
 
 
 env["BUILDERS"]["RES"].emitter = redirect_emitter
-res_file = "godot_res.rc"
-res_target = "godot_res" + env["OBJSUFFIX"]
+if env.editor_build:
+    res_file = "godot_res.rc"
+    res_target = "godot_res" + env["OBJSUFFIX"]
+else:
+    res_file = "godot_res_template.rc"
+    res_target = "godot_res_template" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 env.Depends(res_obj, "#core/version_generated.gen.h")
 
@@ -94,8 +98,12 @@ if env.msvc:
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
-    res_wrap_file = "godot_res_wrap.rc"
-    res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+    if env.editor_build:
+        res_wrap_file = "godot_res_wrap.rc"
+        res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+    else:
+        res_wrap_file = "godot_res_wrap_template.rc"
+        res_wrap_target = "godot_res_wrap_template" + env["OBJSUFFIX"]
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
     env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
 
