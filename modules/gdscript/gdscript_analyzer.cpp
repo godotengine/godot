@@ -1476,6 +1476,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 #ifdef DEBUG_ENABLED
 							if (member.variable->datatype.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
 								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+							} else if ((member.variable->datatype.builtin_type == Variant::INT || member.variable->datatype.builtin_type == Variant::FLOAT) && return_datatype.builtin_type == Variant::BOOL) {
+								parser->push_warning(member.variable, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+							} else if (member.variable->datatype.builtin_type == Variant::BOOL && (return_datatype.builtin_type == Variant::INT || return_datatype.builtin_type == Variant::FLOAT)) {
+								parser->push_warning(member.variable, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 							}
 #endif // DEBUG_ENABLED
 						}
@@ -1502,6 +1506,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 #ifdef DEBUG_ENABLED
 						if (member.variable->datatype.builtin_type == Variant::FLOAT && setter_function->parameters[0]->datatype.builtin_type == Variant::INT) {
 							parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
+						} else if ((member.variable->datatype.builtin_type == Variant::INT || member.variable->datatype.builtin_type == Variant::FLOAT) && setter_function->parameters[0]->datatype.builtin_type == Variant::BOOL) {
+							parser->push_warning(member.variable, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+						} else if (member.variable->datatype.builtin_type == Variant::BOOL && (setter_function->parameters[0]->datatype.builtin_type == Variant::INT || setter_function->parameters[0]->datatype.builtin_type == Variant::FLOAT)) {
+							parser->push_warning(member.variable, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 						}
 #endif // DEBUG_ENABLED
 					}
@@ -1699,6 +1707,10 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 #ifdef DEBUG_ENABLED
 			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
 				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
+			} else if ((argument_info.type == Variant::INT || argument_info.type == Variant::FLOAT) && value.get_type() == Variant::BOOL) {
+				parser->push_warning(argument, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+			} else if (argument_info.type == Variant::BOOL && (value.get_type() == Variant::INT || value.get_type() == Variant::FLOAT)) {
+				parser->push_warning(argument, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 			}
 #endif // DEBUG_ENABLED
 
@@ -2167,6 +2179,10 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 #ifdef DEBUG_ENABLED
 			} else if (specified_type.builtin_type == Variant::INT && initializer_type.builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_assignable->initializer, GDScriptWarning::NARROWING_CONVERSION);
+			} else if ((specified_type.builtin_type == Variant::INT || specified_type.builtin_type == Variant::FLOAT) && initializer_type.builtin_type == Variant::BOOL) {
+				parser->push_warning(p_assignable->initializer, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+			} else if (specified_type.builtin_type == Variant::BOOL && (initializer_type.builtin_type == Variant::INT || initializer_type.builtin_type == Variant::FLOAT)) {
+				parser->push_warning(p_assignable->initializer, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 #endif // DEBUG_ENABLED
 			}
 		}
@@ -2580,6 +2596,10 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 #ifdef DEBUG_ENABLED
 		} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
 			parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
+		} else if ((expected_type.builtin_type == Variant::INT || expected_type.builtin_type == Variant::FLOAT) && result.builtin_type == Variant::BOOL) {
+			parser->push_warning(p_return, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+		} else if (expected_type.builtin_type == Variant::BOOL && (result.builtin_type == Variant::INT || result.builtin_type == Variant::FLOAT)) {
+			parser->push_warning(p_return, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 #endif // DEBUG_ENABLED
 		}
 	}
@@ -2760,6 +2780,10 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 #ifdef DEBUG_ENABLED
 	if (p_type.builtin_type == Variant::INT && value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_expression, GDScriptWarning::NARROWING_CONVERSION);
+	} else if ((p_type.builtin_type == Variant::INT || p_type.builtin_type == Variant::FLOAT) && value_type.builtin_type == Variant::BOOL) {
+		parser->push_warning(p_expression, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+	} else if (p_type.builtin_type == Variant::BOOL && (value_type.builtin_type == Variant::INT || value_type.builtin_type == Variant::FLOAT)) {
+		parser->push_warning(p_expression, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 	}
 #endif // DEBUG_ENABLED
 
@@ -3038,6 +3062,10 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 #ifdef DEBUG_ENABLED
 	if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::INT && assigned_value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NARROWING_CONVERSION);
+	} else if (assignee_type.is_hard_type() && (assignee_type.builtin_type == Variant::INT || assignee_type.builtin_type == Variant::FLOAT) && assigned_value_type.builtin_type == Variant::BOOL) {
+		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION);
+	} else if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::BOOL && (assigned_value_type.builtin_type == Variant::INT || assigned_value_type.builtin_type == Variant::FLOAT)) {
+		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION);
 	}
 	// Check for assignment with operation before assignment.
 	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
@@ -3382,6 +3410,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						} else {
 							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
 								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
+							} else if ((par_type.builtin_type == Variant::INT || par_type.builtin_type == Variant::FLOAT) && arg_type.builtin_type == Variant::BOOL && (builtin_type != Variant::INT && builtin_type != Variant::FLOAT)) {
+								parser->push_warning(p_call, GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION, function_name);
+							} else if (par_type.builtin_type == Variant::BOOL && (arg_type.builtin_type == Variant::INT || arg_type.builtin_type == Variant::FLOAT) && builtin_type != Variant::BOOL) {
+								parser->push_warning(p_call, GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION, function_name);
 							}
 #endif // DEBUG_ENABLED
 						}
@@ -5985,6 +6017,10 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 #ifdef DEBUG_ENABLED
 		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && par_type.builtin_type == Variant::INT && arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == Variant::FLOAT) {
 			parser->push_warning(p_call->arguments[i], GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
+		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && (par_type.builtin_type == Variant::INT || par_type.builtin_type == Variant::FLOAT) && arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == Variant::BOOL) {
+			parser->push_warning(p_call->arguments[i], GDScriptWarning::BOOL_TO_NUMBER_IMPLICIT_CONVERSION, p_call->function_name);
+		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && par_type.builtin_type == Variant::BOOL && arg_type.kind == GDScriptParser::DataType::BUILTIN && (arg_type.builtin_type == Variant::INT || arg_type.builtin_type == Variant::FLOAT)) {
+			parser->push_warning(p_call->arguments[i], GDScriptWarning::NUMBER_TO_BOOL_IMPLICIT_CONVERSION, p_call->function_name);
 #endif // DEBUG_ENABLED
 		}
 	}

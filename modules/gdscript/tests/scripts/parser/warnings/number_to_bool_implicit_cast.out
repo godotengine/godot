@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 5: (NUMBER_TO_BOOL_IMPLICIT_CAST) Implicit cast from number (int/float) to bool. If this is intended, cast the number to the bool type using "bool()".
