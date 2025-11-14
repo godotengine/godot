@@ -481,6 +481,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t len = f->get_32();
 			Dictionary d; //last bit means shared
 			len &= 0x7FFFFFFF;
+			d.reserve(len);
 			for (uint32_t i = 0; i < len; i++) {
 				Variant key;
 				Error err = parse_variant(key);

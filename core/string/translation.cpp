@@ -58,6 +58,7 @@ void _check_for_incompatibility(const String &p_msgctxt, const String &p_msgid) 
 
 Dictionary Translation::_get_messages() const {
 	Dictionary d;
+	d.reserve(translation_map.size());
 	for (const KeyValue<MessageKey, Vector<StringName>> &E : translation_map) {
 		const Array &storage_key = { E.key.msgctxt, E.key.msgid };
 
@@ -73,7 +74,7 @@ Dictionary Translation::_get_messages() const {
 
 void Translation::_set_messages(const Dictionary &p_messages) {
 	translation_map.clear();
-
+	translation_map.reserve(p_messages.size());
 	for (const KeyValue<Variant, Variant> &kv : p_messages) {
 		switch (kv.key.get_type()) {
 			// Old version, no context or plural support.
