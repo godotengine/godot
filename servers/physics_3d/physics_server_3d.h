@@ -32,6 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
+#include "core/variant/native_ptr.h"
 
 constexpr int MAX_CONTACTS_REPORTED_3D_MAX = 4096;
 
@@ -122,11 +123,24 @@ class PhysicsRayQueryParameters3D;
 class PhysicsPointQueryParameters3D;
 class PhysicsShapeQueryParameters3D;
 
+struct PhysicsServer3DExtensionRayResult {
+	Vector3 position;
+	Vector3 normal;
+	RID rid;
+	ObjectID collider_id;
+	Object *collider = nullptr;
+	int shape = 0;
+	int face_index = -1;
+};
+
+GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionRayResult)
+
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
+	bool _intersect_ray_extension(const Ref<PhysicsRayQueryParameters3D> &p_ray_query, GDExtensionPtr<PhysicsServer3DExtensionRayResult> r_result);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
@@ -152,15 +166,7 @@ public:
 		bool pick_ray = false;
 	};
 
-	struct RayResult {
-		Vector3 position;
-		Vector3 normal;
-		RID rid;
-		ObjectID collider_id;
-		Object *collider = nullptr;
-		int shape = 0;
-		int face_index = -1;
-	};
+	typedef PhysicsServer3DExtensionRayResult RayResult;
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
 
