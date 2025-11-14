@@ -482,7 +482,6 @@ private:
 	HashSet<String> textfile_extensions;
 	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
-	HashSet<EditorFileDialog *> editor_file_dialogs;
 
 	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 	PrintHandlerList print_handler;
@@ -522,8 +521,6 @@ private:
 
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
-	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
-	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 	static void _file_access_close_error_notify(const String &p_str);
 	static void _file_access_close_error_notify_impl(const String &p_str);
