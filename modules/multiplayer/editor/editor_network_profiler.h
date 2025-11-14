@@ -70,6 +70,12 @@ private:
 	LineEdit *outgoing_bandwidth_text = nullptr;
 	Tree *replication_display = nullptr;
 
+	Label *up_label = nullptr;
+	Label *down_label = nullptr;
+
+	int incoming_bandwidth = 0;
+	int outgoing_bandwidth = 0;
+
 	HashMap<ObjectID, RPCNodeInfo> rpc_data;
 	HashMap<ObjectID, SyncInfo> sync_data;
 	HashMap<ObjectID, NodeInfo> node_data;
