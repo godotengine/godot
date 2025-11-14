@@ -1260,6 +1260,7 @@ GodotSpace3D::GodotSpace3D() {
 	body_linear_velocity_sleep_threshold = GLOBAL_GET("physics/3d/sleep_threshold_linear");
 	body_angular_velocity_sleep_threshold = GLOBAL_GET("physics/3d/sleep_threshold_angular");
 	body_time_to_sleep = GLOBAL_GET("physics/3d/time_before_sleep");
+	body_apply_gyroscopic_force = GLOBAL_GET("physics/3d/gyroscopic_forces");
 	solver_iterations = GLOBAL_GET("physics/3d/solver/solver_iterations");
 	contact_recycle_radius = GLOBAL_GET("physics/3d/solver/contact_recycle_radius");
 	contact_max_separation = GLOBAL_GET("physics/3d/solver/contact_max_separation");
