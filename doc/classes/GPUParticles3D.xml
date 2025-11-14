@@ -39,6 +39,15 @@
 				[b]Note:[/b] [method emit_particle] is only supported on the Forward+ and Mobile rendering methods, not Compatibility.
 			</description>
 		</method>
+		<method name="generate_emission_points">
+			<return type="void" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="emission_amount" type="int" />
+			<param index="2" name="emission_source" type="int" />
+			<description>
+				Generates emission points on the mesh, taking a number of emission points and the emission sources. See [enum EmissionSources].
+			</description>
+		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
 			<return type="Mesh" />
 			<param index="0" name="pass" type="int" />
@@ -222,6 +231,15 @@
 		<constant name="TRANSFORM_ALIGN_Y_TO_VELOCITY" value="2" enum="TransformAlign">
 		</constant>
 		<constant name="TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY" value="3" enum="TransformAlign">
+		</constant>
+		<constant name="SURFACE_POINTS" value="0" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points to the surface of the mesh.
+		</constant>
+		<constant name="SURFACE_POINTS_AND_NORMAL" value="1" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points and normals to the surface of the mesh.
+		</constant>
+		<constant name="VOLUME" value="2" enum="EmissionSources">
+			When using [method generate_emission_points], sets the particles spawn points to a position inside the mesh.
 		</constant>
 	</constants>
 </class>
