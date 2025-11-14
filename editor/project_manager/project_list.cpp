@@ -71,7 +71,13 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
-			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			_update_favorite_button_focus_color();
+			if (is_favourite) {
+				favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+			} else {
+				favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Unfavorite")));
+			}
 
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
@@ -135,6 +141,9 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (is_hovering) {
 				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
+			if (has_focus()) {
+				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			}
 
 			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
 		} break;
@@ -185,6 +194,13 @@ void ProjectListItemControl::_accessibility_action_blur(const Variant &p_data) {
 			pl->ensure_project_visible(idx);
 			pl->deselect_project(idx);
 		}
+	}
+}
+void ProjectListItemControl::_update_favorite_button_focus_color() {
+	if (favorite_button->has_focus()) {
+		favorite_button->set_self_modulate(favorite_focus_color);
+	} else {
+		favorite_button->set_self_modulate(Color(1.0, 1.0, 1.0, 1.0));
 	}
 }
 
@@ -282,7 +298,12 @@ void ProjectListItemControl::set_selected(bool p_selected) {
 }
 
 void ProjectListItemControl::set_is_favorite(bool p_favorite) {
-	favorite_button->set_modulate(p_favorite ? Color(1, 1, 1, 1) : Color(1, 1, 1, 0.2));
+	is_favourite = p_favorite;
+	if (p_favorite) {
+		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+	} else {
+		favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Unfavorite")));
+	}
 }
 
 void ProjectListItemControl::set_is_missing(bool p_missing) {
@@ -336,6 +357,8 @@ ProjectListItemControl::ProjectListItemControl() {
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite_box->add_child(favorite_button);
 	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+	favorite_button->connect(SceneStringName(focus_entered), callable_mp(this, &ProjectListItemControl::_update_favorite_button_focus_color));
+	favorite_button->connect(SceneStringName(focus_exited), callable_mp(this, &ProjectListItemControl::_update_favorite_button_focus_color));
 
 	project_icon = memnew(TextureRect);
 	project_icon->set_name("ProjectIcon");
@@ -949,7 +972,6 @@ int ProjectList::refresh_project(const String &dir_path) {
 		for (int i = 0; i < _projects.size(); ++i) {
 			if (_projects[i].path == dir_path) {
 				if (was_selected) {
-					select_project(i);
 					ensure_project_visible(i);
 				}
 				_load_project_icon(i);
@@ -974,7 +996,8 @@ int ProjectList::get_index(const ProjectListItemControl *p_control) const {
 
 void ProjectList::ensure_project_visible(int p_index) {
 	const Item &item = _projects[p_index];
-	ensure_control_visible(item.control);
+	// Since follow focus is enabled.
+	item.control->grab_focus();
 }
 
 void ProjectList::_create_project_item_control(int p_index) {
@@ -1077,6 +1100,26 @@ void ProjectList::_list_item_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			emit_signal(SNAME(SIGNAL_PROJECT_ASK_OPEN));
 		}
 	}
+
+	Ref<InputEventKey> kev = p_ev;
+
+	if (kev.is_valid() && kev->is_pressed()) {
+		switch (kev->get_keycode()) {
+			case Key::E: {
+				_on_explore_pressed(clicked_project.path);
+				accept_event();
+			} break;
+			case Key::F: {
+				if (kev->is_command_or_control_pressed()) {
+					return; // Focus the search box by the ProjectManager.
+				}
+				_on_favorite_pressed(p_hb);
+				accept_event();
+			} break;
+			default: {
+			} break;
+		}
+	}
 }
 
 void ProjectList::_on_favorite_pressed(Node *p_hb) {
@@ -1096,13 +1139,12 @@ void ProjectList::_on_favorite_pressed(Node *p_hb) {
 
 	sort_projects();
 
-	if (item.favorite) {
-		for (int i = 0; i < _projects.size(); ++i) {
-			if (_projects[i].path == item.path) {
-				ensure_project_visible(i);
-				break;
-			}
-		}
+	// As controls are sorted, the calls are delayed in case follow focus does not take effect.
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		callable_mp((ScrollContainer *)this, &ScrollContainer::ensure_control_visible).call_deferred(control);
+	} else {
+		// Do not follow the control when toggling.
+		callable_mp(this, &ProjectList::ensure_project_visible).call_deferred(index);
 	}
 
 	update_dock_menu();
@@ -1372,6 +1414,8 @@ void ProjectList::_bind_methods() {
 }
 
 ProjectList::ProjectList() {
+	set_follow_focus(true);
+
 	project_list_vbox = memnew(VBoxContainer);
 	project_list_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(project_list_vbox);
