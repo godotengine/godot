@@ -337,6 +337,7 @@ struct ObjectGDExtension {
 	GDExtensionClassFreePropertyList2 free_property_list2;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
+	GDExtensionClassIsValidPropertyValue is_valid_property_value;
 	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
@@ -667,6 +668,7 @@ private:
 	bool _edited : 1;
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
+	virtual bool _is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const;
 #endif
 	ScriptInstance *script_instance = nullptr;
 	HashMap<StringName, Variant> metadata;
@@ -950,6 +952,7 @@ public:
 	bool is_edited() const;
 	// This function is used to check when something changed beyond a point, it's used mainly for generating previews.
 	uint32_t get_edited_version() const;
+	virtual bool is_valid_property_value(const StringName &p_path, const Variant &p_value, String &p_error_message) const;
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);

@@ -214,6 +214,7 @@ private:
 protected:
 	bool has_borders = false;
 	bool can_override = false;
+	bool has_unsaved_value = false;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -230,6 +231,10 @@ protected:
 
 	void _accessibility_action_menu(const Variant &p_data);
 	void _accessibility_action_click(const Variant &p_data);
+
+	bool is_unsaved() { return has_unsaved_value; }
+	void mark_unsaved() { has_unsaved_value = true; }
+	void clean_unsaved() { has_unsaved_value = false; }
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
