@@ -626,6 +626,8 @@ public:
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const = 0;
 
+	virtual uint32_t soft_body_get_point_count(RID p_body) const = 0;
+
 	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) = 0;
 	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) = 0;
 	virtual void soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;

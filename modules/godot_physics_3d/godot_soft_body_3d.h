@@ -168,6 +168,7 @@ public:
 	bool is_vertex_pinned(int p_index) const;
 
 	uint32_t get_node_count() const;
+	uint32_t get_vertex_count() const;
 	real_t get_node_inv_mass(uint32_t p_node_index) const;
 	Vector3 get_node_position(uint32_t p_node_index) const;
 	Vector3 get_node_velocity(uint32_t p_node_index) const;
