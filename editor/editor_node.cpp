@@ -4197,7 +4197,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("global://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4293,6 +4293,10 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	if (p_addon.begins_with("res://")) {
+		return addon_name_to_plugin.has(p_addon);
+	}
+
+	if (p_addon.begins_with("global://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 
@@ -9129,6 +9133,12 @@ EditorNode::EditorNode() {
 	add_child(system_theme_timer);
 	system_theme_timer->set_owner(get_owner());
 	system_theme_timer->set_autostart(true);
+
+	const String config_dir = EditorPaths::get_singleton()->get_config_dir();
+	const String global_res_dir = config_dir.path_join("global_resources");
+	String filename;
+	filename = vformat("%d.%d", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+	ProjectSettings::get_singleton()->set_global_resource_path(global_res_dir.path_join(filename));
 }
 
 EditorNode::~EditorNode() {

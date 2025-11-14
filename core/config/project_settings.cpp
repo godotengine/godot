@@ -65,6 +65,18 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+String ProjectSettings::get_global_resource_path() {
+	if (global_resource_path != "") {
+		return global_resource_path;
+	}
+
+	return get_resource_path();
+}
+
+void ProjectSettings::set_global_resource_path(const String &p_path) {
+	global_resource_path = p_path;
+}
+
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
