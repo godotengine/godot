@@ -252,6 +252,7 @@ public:
 		pump_task_id = p_task_id;
 	}
 
-	CommandQueueMT();
-	~CommandQueueMT();
+	CommandQueueMT() {
+		command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
+	}
 };
