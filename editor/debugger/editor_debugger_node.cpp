@@ -309,6 +309,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 		server.unref();
 	}
+	EditorRunBar::get_singleton()->stop_playing();
 
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -323,6 +324,12 @@ void EditorDebuggerNode::stop(bool p_force) {
 }
 
 void EditorDebuggerNode::_notification(int p_what) {
+	if (broken) {
+		broken = false;
+		stop();
+		return;
+	}
+
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!EditorThemeManager::is_generated_theme_outdated()) {
@@ -563,6 +570,9 @@ void EditorDebuggerNode::_break_state_changed() {
 	const bool can_debug = get_current_debugger()->is_debuggable();
 	if (breaked) { // Show debugger.
 		EditorNode::get_bottom_panel()->make_item_visible(this);
+		if (!can_debug) {
+			broken = true;
+		}
 	}
 
 	// Update script menu.
