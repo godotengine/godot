@@ -418,7 +418,7 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 	return hash_build.as_string().sha1_text();
 }
 
-static const char *shader_file_header = "GDSC";
+static const uint32_t shader_file_header = make_fourcc("GDSC");
 static const uint32_t cache_file_version = 4;
 
 String ShaderRD::_get_cache_file_relative_path(Version *p_version, int p_group, const String &p_api_name) {
@@ -449,9 +449,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		return false;
 	}
 
-	char header[5] = { 0, 0, 0, 0, 0 };
-	f->get_buffer((uint8_t *)header, 4);
-	ERR_FAIL_COND_V(header != String(shader_file_header), false);
+	ERR_FAIL_COND_V(f->get_32() != shader_file_header, false);
 
 	uint32_t file_version = f->get_32();
 	if (file_version != cache_file_version) {
@@ -1022,7 +1020,7 @@ PackedByteArray ShaderRD::save_shader_cache_bytes(const LocalVector<int> &p_vari
 	bytes.resize(total_size);
 
 	uint8_t *bytes_ptr = bytes.ptrw();
-	memcpy(bytes_ptr, shader_file_header, 4);
+	memcpy(bytes_ptr, &shader_file_header, 4);
 	bytes_ptr += 4;
 
 	*(uint32_t *)(bytes_ptr) = cache_file_version;
