@@ -36,7 +36,7 @@
 JPH::ShapeRefC JoltSeparationRayShape3D::_build() const {
 	ERR_FAIL_COND_V_MSG(length <= 0.0f, nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. Its length must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
 
-	const JoltCustomRayShapeSettings shape_settings(length, slide_on_slope);
+	const JoltCustomRayShapeSettings shape_settings(length, stops_motion, separate_along_ray);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
 
@@ -46,7 +46,8 @@ JPH::ShapeRefC JoltSeparationRayShape3D::_build() const {
 Variant JoltSeparationRayShape3D::get_data() const {
 	Dictionary data;
 	data["length"] = length;
-	data["slide_on_slope"] = slide_on_slope;
+	data["stops_motion"] = stops_motion;
+	data["separate_along_ray"] = separate_along_ray;
 	return data;
 }
 
@@ -58,18 +59,23 @@ void JoltSeparationRayShape3D::set_data(const Variant &p_data) {
 	const Variant maybe_length = data.get("length", Variant());
 	ERR_FAIL_COND(maybe_length.get_type() != Variant::FLOAT);
 
-	const Variant maybe_slide_on_slope = data.get("slide_on_slope", Variant());
-	ERR_FAIL_COND(maybe_slide_on_slope.get_type() != Variant::BOOL);
+	const Variant maybe_stops_motion = data.get("stops_motion", Variant());
+	ERR_FAIL_COND(maybe_stops_motion.get_type() != Variant::BOOL);
+
+	const Variant maybe_separate_along_ray = data.get("separate_along_ray", Variant());
+	ERR_FAIL_COND(maybe_separate_along_ray.get_type() != Variant::BOOL);
 
 	const float new_length = maybe_length;
-	const bool new_slide_on_slope = maybe_slide_on_slope;
+	const bool new_stops_motion = maybe_stops_motion;
+	const bool new_separate_along_ray = maybe_separate_along_ray;
 
-	if (unlikely(new_length == length && new_slide_on_slope == slide_on_slope)) {
+	if (unlikely(new_length == length && new_stops_motion == stops_motion && new_separate_along_ray == separate_along_ray)) {
 		return;
 	}
 
 	length = new_length;
-	slide_on_slope = new_slide_on_slope;
+	stops_motion = new_stops_motion;
+	separate_along_ray = new_separate_along_ray;
 
 	destroy();
 }
@@ -81,5 +87,5 @@ AABB JoltSeparationRayShape3D::get_aabb() const {
 }
 
 String JoltSeparationRayShape3D::to_string() const {
-	return vformat("{length=%f slide_on_slope=%s}", length, slide_on_slope);
+	return vformat("{length=%f stops_motion=%s separate_along_ray=%s}", length, stops_motion, separate_along_ray);
 }
