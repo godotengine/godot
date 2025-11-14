@@ -31,6 +31,7 @@
 #include "velocity_tracker_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 void VelocityTracker3D::set_track_physics_step(bool p_track_physics_step) {
 	physics_step = p_track_physics_step;
