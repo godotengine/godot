@@ -1815,7 +1815,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 						continue;
 					}
 					Ref<VisualShaderNodeCustom> custom_node = vsnode;
-					if (custom_node.is_null() || custom_node->get_script() != p_script) {
+					if (custom_node.is_null() || custom_node->get_script() != (Variant)p_script) {
 						continue;
 					}
 					need_rebuild = true;
@@ -1927,7 +1927,7 @@ void VisualShaderEditor::_resources_removed() {
 								continue;
 							}
 							Ref<VisualShaderNodeCustom> custom_node = vsnode;
-							if (custom_node.is_null() || custom_node->get_script() != scr) {
+							if (custom_node.is_null() || custom_node->get_script() != (Variant)scr) {
 								continue;
 							}
 							visual_shader->remove_node(type, node_id);
@@ -2270,7 +2270,7 @@ void VisualShaderEditor::_update_options_menu() {
 	Color unsupported_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	Color supported_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 
-	static bool low_driver = GLOBAL_GET("rendering/renderer/rendering_method") == "gl_compatibility";
+	static bool low_driver = GLOBAL_GET("rendering/renderer/rendering_method") == Variant("gl_compatibility");
 
 	HashMap<String, TreeItem *> folders;
 
