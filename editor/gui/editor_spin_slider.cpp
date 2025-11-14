@@ -34,12 +34,38 @@
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
+void EditorSpinSlider::_value_changed(double p_value) {
+	unbounded_value = p_value;
+}
+
+void EditorSpinSlider::set_unbounded_value_no_signal(double p_val) {
+	double bounded_value = p_val;
+	if (Math::is_nan(p_val)) {
+		bounded_value = 0.5 * (get_min() + get_max());
+	} else if (Math::is_inf(p_val)) {
+		bounded_value = (p_val < 0.0) ? get_min() : get_max();
+	}
+
+	set_value_no_signal(bounded_value);
+	unbounded_value = p_val;
+	queue_redraw();
+}
+
+void EditorSpinSlider::set_valid(bool p_valid) {
+	valid = p_valid;
+	queue_redraw();
+}
+
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	String value = get_text_value() + suffix;
+	String value = get_text_value(true) + suffix;
+	if (!valid) {
+		value += "\n" + TTR("The property value is out of range.");
+	}
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
 		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
@@ -51,8 +77,9 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return value;
 }
 
-String EditorSpinSlider::get_text_value() const {
-	return TranslationServer::get_singleton()->format_number(editing_integer ? itos(get_value()) : String::num(get_value(), Math::range_step_decimals(get_step())), _get_locale());
+String EditorSpinSlider::get_text_value(bool p_unbounded) const {
+	const double value = p_unbounded ? unbounded_value : get_value();
+	return TranslationServer::get_singleton()->format_number(editing_integer ? itos(value) : String::num(value, Math::range_step_decimals(get_step())), _get_locale());
 }
 
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
@@ -328,12 +355,17 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
-	String numstr = get_text_value();
+	String numstr = get_text_value(true);
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
 	Color fc = get_theme_color(read_only ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
 	Color lc = get_theme_color(read_only ? SNAME("read_only_label_color") : SNAME("label_color"));
+
+	if (!valid) {
+		fc = get_theme_color("error_color", EditorStringName(Editor));
+		lc = fc;
+	}
 
 	if (flat && !label.is_empty()) {
 		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
@@ -394,6 +426,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
 			}
+			if (!valid) {
+				c = fc;
+			}
 			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
 			if (rtl) {
 				updown_offset += updown2->get_width();
@@ -443,6 +478,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 				grabber->reset_size();
 				grabber->set_position(grabber_rect.get_center() - grabber->get_size() * 0.5);
+				grabber->set_modulate(valid ? Color(1, 1, 1) : fc);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse(grabber->get_global_position() + grabber_rect.size);
