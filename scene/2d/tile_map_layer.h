@@ -443,8 +443,7 @@ private:
 	HashMap<Vector2i, Ref<DebugQuadrant>> debug_quadrant_map;
 	bool _debug_was_cleaned_up = true;
 	void _debug_update(bool p_force_cleanup);
-	void _debug_quadrants_update_cell(CellData &r_cell_data);
-	void _get_debug_quadrant_for_cell(const Vector2i &p_coords);
+	void _debug_full_update();
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
