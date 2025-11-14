@@ -63,20 +63,21 @@
 			Requires [member affect_navigation_mesh] to be enabled.
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
-			Sets the obstacle height used in 2D avoidance. 2D avoidance using agent's ignore obstacles that are below or above them.
+			Sets the obstacle height used in 2D avoidance. 2D avoidance using agents ignore obstacles that are below or above them.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.0">
 			Sets the avoidance radius for the obstacle.
 		</member>
 		<member name="use_3d_avoidance" type="bool" setter="set_use_3d_avoidance" getter="get_use_3d_avoidance" default="false">
-			If [code]true[/code] the obstacle affects 3D avoidance using agent's with obstacle [member radius].
-			If [code]false[/code] the obstacle affects 2D avoidance using agent's with both obstacle [member vertices] as well as obstacle [member radius].
+			If [code]true[/code] the obstacle affects 3D avoidance using agents with obstacle [member radius].
+			If [code]false[/code] the obstacle affects 2D avoidance using agents with both obstacle [member vertices] as well as obstacle [member radius].
 		</member>
 		<member name="velocity" type="Vector3" setter="set_velocity" getter="get_velocity" default="Vector3(0, 0, 0)">
-			Sets the wanted velocity for the obstacle so other agent's can better predict the obstacle if it is moved with a velocity regularly (every frame) instead of warped to a new position. Does only affect avoidance for the obstacles [member radius]. Does nothing for the obstacles static vertices.
+			The wanted velocity for the obstacle, used by other agents to better predict the obstacle if it is moved with a velocity regularly (every frame), instead of warped to a new position.
+			[b]Note:[/b] This property only affects avoidance for the obstacle's [member radius]. Does nothing for the obstacle's static vertices.
 		</member>
 		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
-			The outline vertices of the obstacle. If the vertices are winded in clockwise order agents will be pushed in by the obstacle, else they will be pushed out. Outlines can not be crossed or overlap. Should the vertices using obstacle be warped to a new position agent's can not predict this movement and may get trapped inside the obstacle.
+			The outline vertices of the obstacle. If the vertices are winded in clockwise order, agents will be pushed in by the obstacle, otherwise they will be pushed out. Outlines cannot be crossed or overlap. If the obstacle is warped to a new position, agents cannot predict this movement and may get trapped inside the obstacle.
 		</member>
 	</members>
 </class>
