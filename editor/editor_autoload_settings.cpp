@@ -32,6 +32,7 @@
 
 #include "core/global_constants.h"
 #include "core/project_settings.h"
+#include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "project_settings_editor.h"
@@ -698,25 +699,27 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	name = "autoload/" + name;
 
-	UndoRedo *undo_redo = EditorNode::get_undo_redo();
+	if (!EditorFileSystem::get_singleton()->doing_first_scan()) {
+		UndoRedo *undo_redo = EditorNode::get_undo_redo();
 
-	undo_redo->create_action(TTR("Add AutoLoad"));
-	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
+		undo_redo->create_action(TTR("Add AutoLoad"));
+		// Singleton autoloads are represented with a leading "*" in their path.
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
 
-	if (ProjectSettings::get_singleton()->has_setting(name)) {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
-	} else {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+		if (ProjectSettings::get_singleton()->has_setting(name)) {
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
+		} else {
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+		}
+
+		undo_redo->add_do_method(this, "update_autoload");
+		undo_redo->add_undo_method(this, "update_autoload");
+
+		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
+		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
+
+		undo_redo->commit_action();
 	}
-
-	undo_redo->add_do_method(this, "update_autoload");
-	undo_redo->add_undo_method(this, "update_autoload");
-
-	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
-	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
-
-	undo_redo->commit_action();
 
 	return true;
 }
