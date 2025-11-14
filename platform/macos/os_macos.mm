@@ -50,6 +50,7 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 
+#include <AVFAudio/AVFAudio.h>
 #include <dlfcn.h>
 #include <libproc.h>
 #import <mach-o/dyld.h>
@@ -107,32 +108,63 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 11.0, *)) {
-		if (p_name == "macos.permission.RECORD_SCREEN") {
+	String record_screen_permission_name = "macos.permission.RECORD_SCREEN";
+	String record_audio_permission_name = "macos.permission.RECORD_AUDIO";
+
+	if (p_name == record_screen_permission_name) {
+		if (@available(macOS 11.0, *)) {
 			if (CGPreflightScreenCaptureAccess()) {
 				return true;
 			} else {
 				CGRequestScreenCaptureAccess();
 				return false;
 			}
+		} else {
+			return true;
 		}
-	} else {
-		if (p_name == "macos.permission.RECORD_SCREEN") {
+	} else if (p_name == record_audio_permission_name) {
+		if (@available(macOS 14.0, *)) {
+			AVAudioApplicationRecordPermission permission = [AVAudioApplication sharedInstance].recordPermission;
+			if (permission == AVAudioApplicationRecordPermissionGranted) {
+				// Permission already granted, you can start recording.
+				return true;
+			} else if (permission == AVAudioApplicationRecordPermissionDenied) {
+				// Permission denied, or not yet granted.
+				return false;
+			} else {
+				// Request the permission, but for now return false as documented.
+				[AVAudioApplication requestRecordPermissionWithCompletionHandler:^(BOOL granted) {
+					get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), p_name, granted);
+				}];
+			}
+		} else {
 			return true;
 		}
 	}
+
 	return false;
 }
 
 Vector<String> OS_MacOS::get_granted_permissions() const {
+	String record_screen_permission_name = "macos.permission.RECORD_SCREEN";
+	String record_audio_permission_name = "macos.permission.RECORD_AUDIO";
+
 	Vector<String> ret;
 
 	if (@available(macOS 11.0, *)) {
 		if (CGPreflightScreenCaptureAccess()) {
-			ret.push_back("macos.permission.RECORD_SCREEN");
+			ret.push_back(record_screen_permission_name);
 		}
 	} else {
-		ret.push_back("macos.permission.RECORD_SCREEN");
+		ret.push_back(record_screen_permission_name);
+	}
+
+	if (@available(macOS 14.0, *)) {
+		if ([AVAudioApplication sharedInstance].recordPermission == AVAudioApplicationRecordPermissionGranted) {
+			ret.push_back(record_audio_permission_name);
+		}
+	} else {
+		ret.push_back(record_audio_permission_name);
 	}
 
 	if (is_sandboxed()) {
