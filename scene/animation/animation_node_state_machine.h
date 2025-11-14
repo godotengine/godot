@@ -138,6 +138,9 @@ private:
 
 	Vector<Transition> transitions;
 
+	float default_teleport_xfade_time = 0.0;
+	Ref<Curve> default_teleport_xfade_curve;
+
 	StringName playback = "playback";
 	bool updating_transitions = false;
 
@@ -207,6 +210,11 @@ public:
 	void set_reset_ends(bool p_enable);
 	bool are_ends_reset() const;
 
+	void set_default_teleport_xfade_time(float p_time);
+	float get_default_teleport_xfade_time() const;
+	void set_default_teleport_xfade_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_default_teleport_xfade_curve() const;
+
 	bool can_edit_node(const StringName &p_name) const;
 
 	void set_graph_offset(const Vector2 &p_offset);
@@ -260,7 +268,9 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		bool is_reset = false;
 	};
 
-	Ref<AnimationNodeStateMachineTransition> default_transition;
+	float teleport_xfade_time = -1.0;
+	Ref<Curve> teleport_xfade_curve;
+
 	String base_path;
 
 	AnimationNode::NodeTimeInfo current_nti;
@@ -291,8 +301,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	void _clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _signal_state_change(AnimationTree *p_animation_tree, const StringName &p_state, bool p_started);
-	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true);
-	void _start_main(const StringName &p_state, bool p_reset = true);
+	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true, float p_teleport_xfade = -1.0, const Ref<Curve> &p_teleport_curve = Ref<Curve>());
+	void _start_main(const StringName &p_state, bool p_reset = true, float p_xfade = 0.0, const Ref<Curve> &p_curve = Ref<Curve>()); // Default xfade should be 0.0, to distinguish start() and teleport().
 	void _next_main();
 	void _stop_main();
 
@@ -327,8 +337,14 @@ class AnimationNodeStateMachinePlayback : public Resource {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _travel_bind_compat_112709(const StringName &p_state, bool p_reset_on_teleport = true);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
-	void travel(const StringName &p_state, bool p_reset_on_teleport = true);
+	void travel(const StringName &p_state, bool p_reset_on_teleport = true, float p_teleport_xfade = -1.0, const Ref<Curve> &p_teleport_curve = Ref<Curve>());
+	void teleport(const StringName &p_state, bool p_reset = true, float p_xfade = -1.0, const Ref<Curve> &p_curve = Ref<Curve>());
 	void start(const StringName &p_state, bool p_reset = true);
 	void next();
 	void stop();

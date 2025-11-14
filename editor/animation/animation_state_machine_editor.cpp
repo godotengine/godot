@@ -247,9 +247,12 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
 			if (node_rects[i].play.has_point(mb->get_position())) { //edit name
-				if (play_mode->get_selected() == 1 || !playback->is_playing()) {
+				if (!playback->is_playing() || play_mode->get_selected() == 1) {
 					// Start
 					playback->start(node_directory + String(node_rects[i].node_name));
+				} else if (play_mode->get_selected() == 2) {
+					// Teleport
+					playback->teleport(node_directory + String(node_rects[i].node_name));
 				} else {
 					// Travel
 					playback->travel(node_directory + String(node_rects[i].node_name));
@@ -1663,7 +1666,8 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			play_mode->clear();
 			play_mode->add_icon_item(theme_cache.play_icon_travel, TTR("Travel"));
-			play_mode->add_icon_item(theme_cache.play_icon_start, TTR("Immediate"));
+			play_mode->add_icon_item(theme_cache.play_icon_start, TTR("Start"));
+			play_mode->add_icon_item(theme_cache.play_icon_teleport, TTR("Teleport"));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -2008,6 +2012,7 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_start, "Play", "EditorIcons");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_travel, "PlayTravel", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_teleport, "PlayTeleport", "EditorIcons");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_auto, "AutoPlay", "EditorIcons");
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, animation_icon, "Animation", "EditorIcons");
