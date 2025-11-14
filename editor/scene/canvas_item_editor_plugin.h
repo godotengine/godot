@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/2d/canvas_item_editor_gizmos.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
@@ -610,6 +611,17 @@ public:
 
 	EditorSelection *editor_selection = nullptr;
 
+	/* GIZMOS */
+
+	// TODO: actually implement this.
+	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo) {return false;};
+	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() {return Ref<EditorCanvasItemGizmo>();};
+	int get_current_hover_gizmo_handle(bool &r_secondary) const { r_secondary = false; return -1; }
+	bool is_subgizmo_selected(int p_id) {return false;};
+	Vector<int> get_subgizmo_selection() {return Vector<int>();};
+	void update_transform_gizmo() {};
+	void update_all_gizmos() {};
+
 	CanvasItemEditor();
 };
 
@@ -677,6 +689,9 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
+
+
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
