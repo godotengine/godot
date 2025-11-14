@@ -207,7 +207,7 @@ NodePath IterateIK3D::get_target_node(int p_index) const {
 
 void IterateIK3D::set_joint_rotation_axis(int p_index, int p_joint, RotationAxis p_axis) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	joint_settings[p_joint]->rotation_axis = p_axis;
 	Skeleton3D *sk = get_skeleton();
@@ -215,10 +215,7 @@ void IterateIK3D::set_joint_rotation_axis(int p_index, int p_joint, RotationAxis
 		_validate_axis(sk, p_index, p_joint);
 	}
 	notify_property_list_changed();
-	iterate_settings[p_index]->simulation_dirty = true; // Snapping to planes is needed in the initialization, so need to restructure.
-#ifdef TOOLS_ENABLED
-	update_gizmos();
-#endif // TOOLS_ENABLED
+	_make_simulation_dirty(p_index); // Snapping to planes is needed in the initialization, so need to restructure.
 }
 
 SkeletonModifier3D::RotationAxis IterateIK3D::get_joint_rotation_axis(int p_index, int p_joint) const {
@@ -230,17 +227,14 @@ SkeletonModifier3D::RotationAxis IterateIK3D::get_joint_rotation_axis(int p_inde
 
 void IterateIK3D::set_joint_rotation_axis_vector(int p_index, int p_joint, const Vector3 &p_vector) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	joint_settings[p_joint]->rotation_axis_vector = p_vector;
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		_validate_axis(sk, p_index, p_joint);
 	}
-	iterate_settings[p_index]->simulation_dirty = true; // Snapping to planes is needed in the initialization, so need to restructure.
-#ifdef TOOLS_ENABLED
-	update_gizmos();
-#endif // TOOLS_ENABLED
+	_make_simulation_dirty(p_index); // Snapping to planes is needed in the initialization, so need to restructure.
 }
 
 Vector3 IterateIK3D::get_joint_rotation_axis_vector(int p_index, int p_joint) const {
@@ -259,7 +253,7 @@ Quaternion IterateIK3D::get_joint_limitation_space(int p_index, int p_joint, con
 
 void IterateIK3D::set_joint_limitation(int p_index, int p_joint, const Ref<JointLimitation3D> &p_limitation) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	_unbind_joint_limitation(p_index, p_joint);
 	joint_settings[p_joint]->limitation = p_limitation;
@@ -277,7 +271,7 @@ Ref<JointLimitation3D> IterateIK3D::get_joint_limitation(int p_index, int p_join
 
 void IterateIK3D::set_joint_limitation_right_axis(int p_index, int p_joint, SecondaryDirection p_direction) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	joint_settings[p_joint]->limitation_right_axis = p_direction;
 	notify_property_list_changed();
@@ -293,7 +287,7 @@ IKModifier3D::SecondaryDirection IterateIK3D::get_joint_limitation_right_axis(in
 
 void IterateIK3D::set_joint_limitation_right_axis_vector(int p_index, int p_joint, const Vector3 &p_vector) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	joint_settings[p_joint]->limitation_right_axis_vector = p_vector;
 	_update_joint_limitation(p_index, p_joint);
@@ -308,7 +302,7 @@ Vector3 IterateIK3D::get_joint_limitation_right_axis_vector(int p_index, int p_j
 
 void IterateIK3D::set_joint_limitation_rotation_offset(int p_index, int p_joint, const Quaternion &p_offset) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	joint_settings[p_joint]->limitation_rotation_offset = p_offset;
 	_update_joint_limitation(p_index, p_joint);
@@ -350,7 +344,7 @@ void IterateIK3D::_validate_axis(Skeleton3D *p_skeleton, int p_index, int p_join
 	if (p_joint < (int)iterate_settings[p_index]->joints.size() - 1) {
 		fwd = p_skeleton->get_bone_rest(iterate_settings[p_index]->joints[p_joint + 1].bone).origin;
 	} else if (iterate_settings[p_index]->extend_end_bone) {
-		fwd = get_bone_axis(iterate_settings[p_index]->end_bone.bone, iterate_settings[p_index]->end_bone_direction);
+		fwd = IKModifier3D::get_bone_axis(p_skeleton, iterate_settings[p_index]->end_bone.bone, iterate_settings[p_index]->end_bone_direction, mutable_bone_axes);
 		if (fwd.is_zero_approx()) {
 			return;
 		}
@@ -393,10 +387,9 @@ void IterateIK3D::_bind_methods() {
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 }
 
-void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
+void IterateIK3D::_clear_joints(int p_index) {
 	IterateIK3DSetting *setting = iterate_settings[p_index];
-	cached_space = p_skeleton->get_global_transform_interpolated();
-	if (!setting->simulation_dirty) {
+	if (!setting) {
 		return;
 	}
 	_unbind_joint_limitations(p_index);
@@ -408,35 +401,27 @@ void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	}
 	setting->solver_info_list.clear();
 	setting->solver_info_list.resize_initialized(setting->joints.size());
-	setting->chain.clear();
-	bool extend_end_bone = setting->extend_end_bone && setting->end_bone_length > 0;
-	for (uint32_t i = 0; i < setting->joints.size(); i++) {
-		setting->chain.push_back(p_skeleton->get_bone_global_pose(setting->joints[i].bone).origin);
-		bool last = i == setting->joints.size() - 1;
-		if (last && extend_end_bone && setting->end_bone_length > 0) {
-			Vector3 axis = get_bone_axis(setting->end_bone.bone, setting->end_bone_direction);
-			if (axis.is_zero_approx()) {
-				continue;
-			}
-			setting->solver_info_list[i] = memnew(IKModifier3DSolverInfo);
-			setting->solver_info_list[i]->forward_vector = snap_vector_to_plane(setting->joint_settings[i]->get_rotation_axis_vector(), axis.normalized());
-			setting->solver_info_list[i]->length = setting->end_bone_length;
-			setting->chain.push_back(p_skeleton->get_bone_global_pose(setting->joints[i].bone).xform(axis * setting->end_bone_length));
-		} else if (!last) {
-			Vector3 axis = p_skeleton->get_bone_rest(setting->joints[i + 1].bone).origin;
-			if (axis.is_zero_approx()) {
-				continue; // Means always we need to check solver info, but `!solver_info` means that the bone is zero length, so IK should skip it in the all process.
-			}
-			setting->solver_info_list[i] = memnew(IKModifier3DSolverInfo);
-			setting->solver_info_list[i]->forward_vector = snap_vector_to_plane(setting->joint_settings[i]->get_rotation_axis_vector(), axis.normalized());
-			setting->solver_info_list[i]->length = axis.length();
-		}
-	}
 	_bind_joint_limitations(p_index);
+}
 
-	setting->init_current_joint_rotations(p_skeleton);
+void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	if (!setting) {
+		return;
+	}
+	cached_space = p_skeleton->get_global_transform_interpolated();
+	if (setting->simulation_dirty) {
+		_clear_joints(p_index);
+		setting->init_joints(p_skeleton, mutable_bone_axes);
+		setting->simulation_dirty = false;
+	}
 
-	setting->simulation_dirty = false;
+	if (mutable_bone_axes) {
+#ifdef TOOLS_ENABLED
+		_update_mutable_info();
+#endif // TOOLS_ENABLED
+		_update_bone_axis(p_skeleton, p_index);
+	}
 	setting->simulated = false;
 }
 
@@ -446,6 +431,63 @@ void IterateIK3D::_make_simulation_dirty(int p_index) {
 		return;
 	}
 	setting->simulation_dirty = true;
+#ifdef TOOLS_ENABLED
+	if (!mutable_bone_axes) {
+		_make_gizmo_dirty();
+	}
+#endif // TOOLS_ENABLED
+}
+
+void IterateIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
+#ifdef TOOLS_ENABLED
+	bool changed = false;
+#endif // TOOLS_ENABLED
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	const LocalVector<BoneJoint> &joints = setting->joints;
+	const LocalVector<IKModifier3DSolverInfo *> &solver_info_list = setting->solver_info_list;
+	int len = (int)solver_info_list.size() - 1;
+	for (int j = 0; j < len; j++) {
+		IterateIK3DJointSetting *joint_setting = setting->joint_settings[j];
+		if (!joint_setting || !solver_info_list[j]) {
+			continue;
+		}
+		Vector3 axis = p_skeleton->get_bone_pose(joints[j + 1].bone).origin;
+		if (axis.is_zero_approx()) {
+			continue;
+		}
+		// Less computing.
+#ifdef TOOLS_ENABLED
+		if (!changed) {
+			Vector3 old_v = solver_info_list[j]->forward_vector;
+			solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+			changed = changed || !old_v.is_equal_approx(solver_info_list[j]->forward_vector);
+			float old_l = solver_info_list[j]->length;
+			solver_info_list[j]->length = axis.length();
+			changed = changed || !Math::is_equal_approx(old_l, solver_info_list[j]->length);
+		} else {
+			solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+			solver_info_list[j]->length = axis.length();
+		}
+#else
+		solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+		solver_info_list[j]->length = axis.length();
+#endif // TOOLS_ENABLED
+	}
+	if (setting->extend_end_bone && len >= 0) {
+		IterateIK3DJointSetting *joint_setting = setting->joint_settings[len];
+		if (joint_setting && solver_info_list[len]) {
+			Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, setting->end_bone.bone, setting->end_bone_direction, mutable_bone_axes);
+			if (!axis.is_zero_approx()) {
+				solver_info_list[len]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
+				solver_info_list[len]->length = setting->end_bone_length;
+			}
+		}
+	}
+#ifdef TOOLS_ENABLED
+	if (changed) {
+		_make_gizmo_dirty();
+	}
+#endif // TOOLS_ENABLED
 }
 
 void IterateIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
@@ -505,7 +547,7 @@ void IterateIK3D::_solve_iteration(double p_delta, Skeleton3D *p_skeleton, Itera
 void IterateIK3D::_update_joint_limitation(int p_index, int p_joint) {
 	ERR_FAIL_INDEX(p_index, (int)iterate_settings.size());
 	iterate_settings[p_index]->simulated = false;
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size()); // p_joint is unused directly, but need to identify bound index.
 #ifdef TOOLS_ENABLED
 	update_gizmos();
@@ -514,7 +556,7 @@ void IterateIK3D::_update_joint_limitation(int p_index, int p_joint) {
 
 void IterateIK3D::_bind_joint_limitation(int p_index, int p_joint) {
 	ERR_FAIL_INDEX(p_index, (int)iterate_settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	if (joint_settings[p_joint]->limitation.is_valid()) {
 		joint_settings[p_joint]->limitation->connect_changed(callable_mp(this, &IterateIK3D::_update_joint_limitation).bind(p_index, p_joint));
@@ -523,7 +565,7 @@ void IterateIK3D::_bind_joint_limitation(int p_index, int p_joint) {
 
 void IterateIK3D::_unbind_joint_limitation(int p_index, int p_joint) {
 	ERR_FAIL_INDEX(p_index, (int)iterate_settings.size());
-	LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
 	if (joint_settings[p_joint]->limitation.is_valid()) {
 		joint_settings[p_joint]->limitation->disconnect_changed(callable_mp(this, &IterateIK3D::_update_joint_limitation).bind(p_index, p_joint));
@@ -545,6 +587,30 @@ void IterateIK3D::_unbind_joint_limitations(int p_index) {
 		}
 	}
 }
+
+#ifdef TOOLS_ENABLED
+Vector3 IterateIK3D::get_bone_vector(int p_index, int p_joint) const {
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return Vector3();
+	}
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3());
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	if (!setting) {
+		return Vector3();
+	}
+	const LocalVector<BoneJoint> &joints = setting->joints;
+	ERR_FAIL_INDEX_V(p_joint, (int)joints.size(), Vector3());
+	const LocalVector<IKModifier3DSolverInfo *> &solver_info_list = setting->solver_info_list;
+	if (p_joint >= (int)solver_info_list.size() || !solver_info_list[p_joint]) {
+		if (p_joint == (int)joints.size() - 1) {
+			return IKModifier3D::get_bone_axis(skeleton, setting->end_bone.bone, setting->end_bone_direction, mutable_bone_axes) * setting->end_bone_length;
+		}
+		return mutable_bone_axes ? skeleton->get_bone_pose(joints[p_joint + 1].bone).origin : skeleton->get_bone_rest(joints[p_joint + 1].bone).origin;
+	}
+	return solver_info_list[p_joint]->forward_vector * solver_info_list[p_joint]->length;
+}
+#endif // TOOLS_ENABLED
 
 IterateIK3D::~IterateIK3D() {
 	for (uint32_t i = 0; i < iterate_settings.size(); i++) {

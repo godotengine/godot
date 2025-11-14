@@ -191,7 +191,7 @@ void BoneConstraint3D::set_apply_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->apply_bone <= -1 || settings[p_index]->apply_bone >= sk->get_bone_count()) {
-			WARN_PRINT("apply bone index out of range!");
+			WARN_PRINT("Apply bone index out of range!");
 			settings[p_index]->apply_bone = -1;
 		} else {
 			settings[p_index]->apply_bone_name = sk->get_bone_name(settings[p_index]->apply_bone);

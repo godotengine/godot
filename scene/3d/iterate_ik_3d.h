@@ -228,6 +228,38 @@ public:
 			cache_current_vectors(p_skeleton);
 		}
 
+		void init_joints(Skeleton3D *p_skeleton, bool p_mutable_bone_axes) {
+			chain.clear();
+			bool extends_end = extend_end_bone && end_bone_length > 0;
+			for (uint32_t i = 0; i < joints.size(); i++) {
+				chain.push_back(p_skeleton->get_bone_global_pose(joints[i].bone).origin);
+				bool last = i == joints.size() - 1;
+				if (last && extends_end) {
+					Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, end_bone.bone, end_bone_direction, p_mutable_bone_axes);
+					if (axis.is_zero_approx()) {
+						continue;
+					}
+					if (!solver_info_list[i]) {
+						solver_info_list[i] = memnew(IKModifier3DSolverInfo);
+					}
+					solver_info_list[i]->forward_vector = snap_vector_to_plane(joint_settings[i]->get_rotation_axis_vector(), axis.normalized());
+					solver_info_list[i]->length = end_bone_length;
+					chain.push_back(p_skeleton->get_bone_global_pose(joints[i].bone).xform(axis * end_bone_length));
+				} else if (!last) {
+					Vector3 axis = p_skeleton->get_bone_rest(joints[i + 1].bone).origin;
+					if (axis.is_zero_approx()) {
+						continue;
+					}
+					if (!solver_info_list[i]) {
+						solver_info_list[i] = memnew(IKModifier3DSolverInfo);
+					}
+					solver_info_list[i]->forward_vector = snap_vector_to_plane(joint_settings[i]->get_rotation_axis_vector(), axis.normalized());
+					solver_info_list[i]->length = axis.length();
+				}
+			}
+			init_current_joint_rotations(p_skeleton);
+		}
+
 		~IterateIK3DSetting() {
 			for (uint32_t i = 0; i < joint_settings.size(); i++) {
 				if (joint_settings[i]) {
@@ -256,7 +288,10 @@ protected:
 
 	virtual void _validate_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const override;
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index) override;
+	void _clear_joints(int p_index); // Connect signal with the IterateIK3D node so it shouldn't be included by struct IterateIK3DSetting.
+
 	virtual void _make_simulation_dirty(int p_index) override;
+	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index) override;
 
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta) override;
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, IterateIK3DSetting *p_setting, const Vector3 &p_target_destination);
@@ -310,6 +345,10 @@ public:
 
 	// Helper.
 	Quaternion get_joint_limitation_space(int p_index, int p_joint, const Vector3 &p_forward) const;
+
+#ifdef TOOLS_ENABLED
+	virtual Vector3 get_bone_vector(int p_index, int p_joint) const override;
+#endif // TOOLS_ENABLED
 
 	~IterateIK3D();
 };
