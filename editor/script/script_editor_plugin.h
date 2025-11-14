@@ -501,8 +501,6 @@ class ScriptEditor : public PanelContainer {
 
 	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
 
-	void _tree_changed();
-
 	void _split_dragged(float);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -520,7 +518,6 @@ class ScriptEditor : public PanelContainer {
 	void _history_forward();
 	void _history_back();
 
-	bool waiting_update_names;
 	bool lock_history = false;
 
 	void _help_class_open(const String &p_class);
