@@ -30,9 +30,11 @@
 
 package org.godotengine.godot.io.file
 
+import android.content.ContentResolver
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.core.net.toUri
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.StorageScope
 import java.io.FileNotFoundException
@@ -90,7 +92,11 @@ internal abstract class DataAccess {
 			accessFlag: FileAccessFlags
 		): DataAccess? {
 			return when (storageScope) {
-				StorageScope.APP -> FileData(filePath, accessFlag)
+				StorageScope.APP -> if (filePath.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData(context, filePath.toUri(), accessFlag)
+				} else {
+					FileData(filePath, accessFlag)
+				}
 
 				StorageScope.ASSETS -> AssetData(context, filePath, accessFlag)
 
@@ -106,7 +112,11 @@ internal abstract class DataAccess {
 
 		fun fileExists(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
-				StorageScope.APP -> FileData.fileExists(path)
+				StorageScope.APP -> if (path.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData.fileExists(context, path.toUri())
+				} else {
+					FileData.fileExists(path)
+				}
 				StorageScope.ASSETS -> AssetData.fileExists(context, path)
 				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 					MediaStoreData.fileExists(context, path)
@@ -120,7 +130,11 @@ internal abstract class DataAccess {
 
 		fun fileLastModified(storageScope: StorageScope, context: Context, path: String): Long {
 			return when(storageScope) {
-				StorageScope.APP -> FileData.fileLastModified(path)
+				StorageScope.APP -> if (path.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData.fileLastModified(context, path.toUri())
+				} else {
+					FileData.fileLastModified(path)
+				}
 				StorageScope.ASSETS -> AssetData.fileLastModified(path)
 				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 					MediaStoreData.fileLastModified(context, path)
@@ -136,23 +150,35 @@ internal abstract class DataAccess {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.fileLastAccessed(path)
 				StorageScope.ASSETS -> AssetData.fileLastAccessed(path)
-				StorageScope.SHARED -> MediaStoreData.fileLastAccessed(context, path)
-				StorageScope.UNKNOWN -> 0L
+				StorageScope.SHARED, StorageScope.UNKNOWN -> 0L
 			}
 		}
 
 		fun fileSize(storageScope: StorageScope, context: Context, path: String): Long {
 			return when(storageScope) {
-				StorageScope.APP -> FileData.fileSize(path)
+				StorageScope.APP -> if (path.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData.fileSize(context, path.toUri())
+				} else {
+					FileData.fileSize(path)
+				}
 				StorageScope.ASSETS -> AssetData.fileSize(path)
-				StorageScope.SHARED -> MediaStoreData.fileSize(context, path)
+				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					MediaStoreData.fileSize(context, path)
+				} else {
+					-1L
+				}
+
 				StorageScope.UNKNOWN -> -1L
 			}
 		}
 
 		fun removeFile(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
-				StorageScope.APP -> FileData.delete(path)
+				StorageScope.APP -> if (path.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData.delete(context, path.toUri())
+				} else {
+					FileData.delete(path)
+				}
 				StorageScope.ASSETS -> AssetData.delete(path)
 				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 					MediaStoreData.delete(context, path)
@@ -166,7 +192,11 @@ internal abstract class DataAccess {
 
 		fun renameFile(storageScope: StorageScope, context: Context, from: String, to: String): Boolean {
 			return when(storageScope) {
-				StorageScope.APP -> FileData.rename(from, to)
+				StorageScope.APP -> if (from.toUri().scheme == ContentResolver.SCHEME_CONTENT) {
+					SAFData.rename(context, from.toUri(), to)
+				} else {
+					FileData.rename(from, to)
+				}
 				StorageScope.ASSETS -> AssetData.rename(from, to)
 				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 					MediaStoreData.rename(context, from, to)
