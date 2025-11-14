@@ -39,13 +39,16 @@ HashMap<String, bool *> OpenXRPicoControllerExtension::get_requested_extensions(
 	// and was never part of the OpenXX specification.
 	// All PICO devices should be updated to an OS supporting the official extension.
 
-	request_extensions[XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
+	request_extensions[XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available[BD_CONTROLLERS];
+	request_extensions[XR_BD_ULTRA_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available[BD_CONTROLLERS];
 
 	return request_extensions;
 }
 
-bool OpenXRPicoControllerExtension::is_available() {
-	return available;
+bool OpenXRPicoControllerExtension::is_available(PICOControllers p_type) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_type, BD_MAX_CONTROLLERS, false);
+
+	return available[p_type];
 }
 
 void OpenXRPicoControllerExtension::on_register_metadata() {
@@ -54,6 +57,7 @@ void OpenXRPicoControllerExtension::on_register_metadata() {
 
 	// Make sure we switch to our new name.
 	openxr_metadata->register_profile_rename("/interaction_profiles/pico/neo3_controller", "/interaction_profiles/bytedance/pico_neo3_controller");
+	openxr_metadata->register_profile_rename("/interaction_profiles/bytedance/pico4s_controller", "/interaction_profiles/bytedance/pico_ultra_controller_bd");
 
 	{ // Pico neo 3 controller.
 		const String profile_path = "/interaction_profiles/bytedance/pico_neo3_controller";
@@ -131,9 +135,9 @@ void OpenXRPicoControllerExtension::on_register_metadata() {
 		openxr_metadata->register_io_path(profile_path, "B touch", "/user/hand/right", "/user/hand/right/input/b/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	}
 
-	{ // Pico 4 Ultra controller.
-		const String profile_path = "/interaction_profiles/bytedance/pico4s_controller";
-		openxr_metadata->register_interaction_profile("Pico 4 Ultra controller", profile_path, XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME);
+	{ // Pico Ultra controller.
+		const String profile_path = "/interaction_profiles/bytedance/pico_ultra_controller_bd";
+		openxr_metadata->register_interaction_profile("Pico Ultra controller", profile_path, XR_BD_ULTRA_CONTROLLER_INTERACTION_EXTENSION_NAME);
 		for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);

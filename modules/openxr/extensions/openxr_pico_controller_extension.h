@@ -39,12 +39,18 @@ protected:
 	static void _bind_methods() {}
 
 public:
+	enum PICOControllers {
+		BD_CONTROLLERS, // Neo3 and PICO 4 controller support
+		BD_ULTRA_CONTROLLER, // PICO Ultra controller support
+		BD_MAX_CONTROLLERS
+	};
+
 	virtual HashMap<String, bool *> get_requested_extensions() override;
 
-	bool is_available();
+	bool is_available(PICOControllers p_type = BD_CONTROLLERS);
 
 	virtual void on_register_metadata() override;
 
 private:
-	bool available = false;
+	bool available[BD_MAX_CONTROLLERS] = { false, false };
 };
