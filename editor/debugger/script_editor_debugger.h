@@ -77,6 +77,7 @@ private:
 
 	enum Actions {
 		ACTION_COPY_ERROR,
+		ACTION_OPEN_SCRIPT_SOURCE,
 		ACTION_OPEN_SOURCE,
 		ACTION_DELETE_BREAKPOINT,
 		ACTION_DELETE_BREAKPOINTS_IN_FILE,
@@ -275,6 +276,7 @@ private:
 
 	void _breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
+	void _error_tree_item_activated();
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
 
