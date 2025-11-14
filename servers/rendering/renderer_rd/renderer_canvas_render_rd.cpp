@@ -2276,6 +2276,9 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target.render_target)) {
 			clear = true;
 			clear_color = texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target);
+			if (texture_storage->render_target_is_using_hdr(p_to_render_target.render_target)) {
+				clear_color = clear_color.srgb_to_linear();
+			}
 			texture_storage->render_target_disable_clear_request(p_to_render_target.render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
