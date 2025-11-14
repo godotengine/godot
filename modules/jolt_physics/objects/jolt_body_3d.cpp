@@ -139,7 +139,6 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings->mAngularDamping = 0.0f;
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 	jolt_settings->mMaxAngularVelocity = JoltProjectSettings::max_angular_velocity;
-	jolt_settings->mApplyGyroscopicForce = JoltProjectSettings::apply_gyroscopic_force;
 
 	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_bodies) {
 		jolt_settings->mEnhancedInternalEdgeRemoval = true;

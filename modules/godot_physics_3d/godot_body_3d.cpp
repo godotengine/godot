@@ -195,15 +195,9 @@ void GodotBody3D::update_mass_properties() {
 					inertia_tensor[2][2] = inertia.z;
 				}
 
-				inertia = inertia_tensor.get_main_diagonal();
-				product_of_inertia = Vector3(-inertia_tensor[1][2],
-						-inertia_tensor[0][2],
-						-inertia_tensor[0][1]);
-				_update_local_inertia();
-
 				// Compute the principal axes of inertia.
-				// principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
-				// _inv_inertia = inertia_tensor.get_main_diagonal().inverse();
+				principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
+				_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 			}
 
 			if (mass) {
@@ -734,27 +728,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 			angular_velocity *= angular_damp_new;
 
 			linear_velocity += _inv_mass * force * p_step;
-
-			if (get_space()->get_body_apply_gyroscopic_force()) {
-				// Transform torque and angular velocity back to local axes (where it belongs)
-				Basis tb = get_transform().basis;
-				Basis tbt = tb.transposed();
-				Vector3 torque_local = tbt.xform(torque);
-				Vector3 angular_velocity_local = tbt.xform(angular_velocity);
-
-				// Euler's equation of rigid body dynamics
-				Vector3 gyro_torque = angular_velocity_local.cross(inertia_tensor_local.xform(angular_velocity_local));
-				Vector3 angular_accel_1 = inv_inertia_tensor_local.xform(torque_local - gyro_torque);
-				Vector3 angular_velocity_local_1 = angular_velocity_local + angular_accel_1 * p_step;
-				gyro_torque = angular_velocity_local_1.cross(inertia_tensor_local.xform(angular_velocity_local_1));
-				Vector3 angular_accel_2 = inv_inertia_tensor_local.xform(torque_local - gyro_torque);
-
-				// Integration (Hune's method) and transform back to inertial frame
-				angular_velocity_local += 0.5 * p_step * (angular_accel_1 + angular_accel_2);
-				angular_velocity = tb.xform(angular_velocity_local);
-			} else {
-				angular_velocity += _inv_inertia_tensor.xform(torque) * p_step;
-			}
+			angular_velocity += _inv_inertia_tensor.xform(torque) * p_step;
 		}
 
 		if (continuous_cd) {

@@ -106,8 +106,6 @@ private:
 	real_t body_angular_velocity_sleep_threshold = 0.0;
 	real_t body_time_to_sleep = 0.0;
 
-	bool body_apply_gyroscopic_force = false;
-
 	bool locked = false;
 
 	real_t last_step = 0.001;
@@ -165,7 +163,6 @@ public:
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
-	_FORCE_INLINE_ bool get_body_apply_gyroscopic_force() const { return body_apply_gyroscopic_force; }
 
 	void update();
 	void setup();

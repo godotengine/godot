@@ -76,7 +76,6 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	// Relative to the local frame of reference
 	Basis inertia_tensor_local;
-	Basis inv_inertia_tensor_local;
 	Basis principal_inertia_axes_local;
 	Vector3 center_of_mass_local;
 

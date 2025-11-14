@@ -2594,9 +2594,6 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody3D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/3d/gyroscopic_forces" type="bool" setter="" getter="" default="false">
-			Enables full physically-accurate calculation of rigid body rotational motion.
-		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
@@ -2756,9 +2753,6 @@
 		<member name="physics/jolt_physics_3d/simulation/generate_all_kinematic_contacts" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], a [RigidBody3D] frozen with [constant RigidBody3D.FREEZE_MODE_KINEMATIC] is able to collide with other kinematic and static bodies, and therefore generate contacts for them.
 			[b]Note:[/b] This setting can come at a heavy CPU and memory cost if you allow many/large frozen kinematic bodies with a non-zero [member RigidBody3D.max_contacts_reported] to overlap with complex static geometry, such as [ConcavePolygonShape3D] or [HeightMapShape3D].
-		</member>
-		<member name="physics/jolt_physics_3d/simulation/gyroscopic_forces" type="bool" setter="" getter="" default="false">
-			Enables full physically-accurate calculation of rigid body rotational motion.
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/penetration_slop" type="float" setter="" getter="" default="0.02">
 			How much bodies are allowed to penetrate each other, in meters.

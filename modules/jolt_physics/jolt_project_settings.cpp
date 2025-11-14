@@ -34,7 +34,6 @@
 #include "core/object/callable_method_pointer.h"
 
 void JoltProjectSettings::register_settings() {
-	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/jolt_physics_3d/simulation/gyroscopic_forces"), false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/velocity_steps", PROPERTY_HINT_RANGE, U"2,16,or_greater"), 10);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/position_steps", PROPERTY_HINT_RANGE, U"1,16,or_greater"), 2);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/jolt_physics_3d/simulation/use_enhanced_internal_edge_removal"), true);
@@ -79,7 +78,6 @@ void JoltProjectSettings::register_settings() {
 }
 
 void JoltProjectSettings::read_settings() {
-	apply_gyroscopic_force = GLOBAL_GET("physics/jolt_physics_3d/simulation/gyroscopic_forces");
 	simulation_velocity_steps = GLOBAL_GET("physics/jolt_physics_3d/simulation/velocity_steps");
 	simulation_position_steps = GLOBAL_GET("physics/jolt_physics_3d/simulation/position_steps");
 	use_enhanced_internal_edge_removal_for_bodies = GLOBAL_GET("physics/jolt_physics_3d/simulation/use_enhanced_internal_edge_removal");
