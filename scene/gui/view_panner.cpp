@@ -113,7 +113,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 			if (mb->is_pressed()) {
 				drag_type = DragType::DRAG_TYPE_PAN;
 			}
-			return mb->get_button_index() != MouseButton::LEFT || mb->is_pressed(); // Don't consume LMB release events (it fixes some selection problems).
+			return mb->is_pressed();
 		}
 	}
 
