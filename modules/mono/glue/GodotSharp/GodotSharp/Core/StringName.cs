@@ -96,7 +96,7 @@ namespace Godot
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
                 _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
 
-                // Store input string (used to create NodePath)
+                // Store input string (used to create this StringName)
                 _inputString = name;
                 // Store output string (string outputted by ToString())
                 // (No need to convert native value; StringNames can never change or simplify)
