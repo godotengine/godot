@@ -99,3 +99,11 @@ Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/method
 Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
 
 Duplicate method made const. Compatibility methods registered.
+
+
+GH-94602
+--------
+Validate extension JSON: Error: Field 'classes/BitMap/methods/opaque_to_polygons/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "advanced_rdp" argument to opaque_to_polygons method in BitMap class.
+Optional argument added. Compatibility methods registered.
