@@ -97,6 +97,7 @@ void EditorDirDialog::config(const Vector<String> &p_paths) {
 		// TRANSLATORS: %d is the number of files that will be moved or duplicated.
 		set_title(vformat(TTRN("Move/Duplicate %d Item", "Move/Duplicate %d Items", p_paths.size()), p_paths.size()));
 	}
+	base_directory_path = p_paths[0].get_base_dir();
 }
 
 void EditorDirDialog::reload(const String &p_path) {
@@ -127,8 +128,39 @@ void EditorDirDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (must_reload && is_visible()) {
-				reload();
+			if (is_visible()) {
+				if (must_reload) {
+					reload();
+				}
+
+				tree->deselect_all();
+				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/");
+				if (parts.is_empty()) {
+					break;
+				}
+
+				int i = 0;
+				TreeItem *item = tree->get_root();
+				while (i < parts.size()) {
+					const String &folder = parts[i];
+					for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {
+						if (child->get_text(0) == folder) {
+							i++;
+							if (i == parts.size()) {
+								TreeItem *parent_item = child->get_parent();
+								while (parent_item) {
+									parent_item->set_collapsed(false);
+									parent_item = parent_item->get_parent();
+								}
+								child->select(0);
+								tree->ensure_cursor_is_visible();
+							} else {
+								item = child;
+							}
+							break;
+						}
+					}
+				}
 			}
 		} break;
 	}
@@ -176,7 +208,7 @@ void EditorDirDialog::_make_dir() {
 	TreeItem *ti = tree->get_selected();
 	ERR_FAIL_NULL(ti);
 	const String &directory = ti->get_metadata(0);
-	makedialog->config(directory, callable_mp(this, &EditorDirDialog::_make_dir_confirm).bind(directory), DirectoryCreateDialog::MODE_DIRECTORY, "new folder");
+	makedialog->config(directory, callable_mp(this, &EditorDirDialog::_make_dir_confirm).bind(directory), DirectoryCreateDialog::MODE_DIRECTORY, TTR("Create Folder"), "new folder");
 	makedialog->popup_centered();
 }
 
