@@ -124,7 +124,23 @@ void Polygon2D::_notification(int p_what) {
 
 			ObjectID new_skeleton_id;
 
-			if (skeleton_node && !invert && bone_weights.size()) {
+			bool not_all_weights_zero = false;
+			if (skeleton_node && bone_weights.size()) {
+				for (const Polygon2D::Bone &bone : bone_weights) {
+					const float *r = bone.weights.ptr();
+					for (int j = 0; j < 4; j++) {
+						if (r[j] != 0.0) {
+							not_all_weights_zero = true;
+							break;
+						}
+					}
+					if (!not_all_weights_zero) {
+						break;
+					}
+				}
+			}
+
+			if (skeleton_node && !invert && bone_weights.size() && not_all_weights_zero) {
 				RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
 				new_skeleton_id = skeleton_node->get_instance_id();
 			} else {
@@ -239,7 +255,7 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
-			if (skeleton_node && !invert && bone_weights.size()) {
+			if (skeleton_node && !invert && bone_weights.size() && not_all_weights_zero) {
 				//a skeleton is set! fill indices and weights
 				int vc = len;
 				bones.resize(vc * 4);
