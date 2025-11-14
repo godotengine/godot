@@ -49,8 +49,6 @@ private:
 	String library_path;
 	String entry_symbol;
 
-	bool is_static_library = false;
-
 #ifdef TOOLS_ENABLED
 	bool is_reloadable = false;
 #endif
