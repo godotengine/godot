@@ -106,10 +106,15 @@ public:
 				uint32_t use_light_projector : 1;
 				uint32_t use_light_soft_shadows : 1;
 				uint32_t use_directional_soft_shadows : 1;
+
 				uint32_t decal_use_mipmaps : 1;
 				uint32_t projector_use_mipmaps : 1;
 				uint32_t use_depth_fog : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
+
+				uint32_t use_material_debanding : 1; // FIXME: Change padding?
+				uint32_t padding_0 : 3;
+
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
 				uint32_t directional_soft_shadow_samples : 6;
