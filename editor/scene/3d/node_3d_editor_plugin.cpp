@@ -6387,7 +6387,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 Node3DEditorViewport::~Node3DEditorViewport() {
 	memdelete(ruler);
-	memdelete(frame_time_gradient);
 }
 
 //////////////////////////////////////////////////////////////
