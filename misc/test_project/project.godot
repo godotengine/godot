@@ -1,0 +1,46 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Test Project"
+config/description="Test project for continuous integration."
+config/version="1.0.0"
+run/main_scene="uid://dpkhlaxg5302f"
+config/features=PackedStringArray("4.6")
+
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="TestProject"
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://fr.po")
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
+textures/default_filters/anisotropic_filtering_level=4
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/use_debanding=true
+textures/decals/filter=0
+anti_aliasing/quality/screen_space_aa=2
+
+[shader_globals]
+
+offset={
+"type": "vec3",
+"value": Vector3(0, 0, 1)
+}

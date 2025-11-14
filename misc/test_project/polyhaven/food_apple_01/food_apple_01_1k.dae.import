@@ -1,0 +1,48 @@
+[remap]
+
+importer="scene"
+importer_version=1
+type="PackedScene"
+uid="uid://sqfcstxwjv4i"
+path="res://.godot/imported/food_apple_01_1k.dae-83d71dbc11ce6c2f55330ab7097a9d53.scn"
+
+[deps]
+
+source_file="res://polyhaven/food_apple_01/food_apple_01_1k.dae"
+dest_files=["res://.godot/imported/food_apple_01_1k.dae-83d71dbc11ce6c2f55330ab7097a9d53.scn"]
+
+[params]
+
+nodes/root_type=""
+nodes/root_name="Apple"
+nodes/root_script=null
+nodes/apply_root_scale=true
+nodes/root_scale=10.0
+nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
+nodes/use_node_type_suffixes=true
+meshes/ensure_tangents=true
+meshes/generate_lods=true
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
+meshes/lightmap_texel_size=0.2
+meshes/force_disable_compression=false
+skins/use_named_skins=true
+animation/import=true
+animation/fps=30
+animation/trimming=false
+animation/remove_immutable_tracks=true
+animation/import_rest_as_RESET=false
+import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
+_subresources={
+"materials": {
+"food_apple_01": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://polyhaven/food_apple_01/textures/food_apple_01.tres",
+"use_external/path": "uid://c5o3j3qc6tb8x"
+}
+}
+}
