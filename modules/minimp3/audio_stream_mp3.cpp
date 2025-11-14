@@ -34,6 +34,7 @@
 
 #include "audio_stream_mp3.h"
 #include "core/io/file_access.h"
+#include "scene/resources/placeholder_audio_stream.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	if (!active) {
@@ -327,6 +328,14 @@ Ref<AudioStreamMP3> AudioStreamMP3::load_from_file(const String &p_path) {
 	return load_from_buffer(stream_data);
 }
 
+Ref<Resource> AudioStreamMP3::create_placeholder() const {
+	Ref<PlaceholderAudioStream> placeholder;
+	placeholder.instantiate();
+	placeholder->set_length(get_length());
+	placeholder->set_tags(get_tags());
+	return placeholder;
+}
+
 void AudioStreamMP3::_bind_methods() {
 	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamMP3::load_from_buffer);
 	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_file", "path"), &AudioStreamMP3::load_from_file);
@@ -348,6 +357,8 @@ void AudioStreamMP3::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamMP3::set_bar_beats);
 	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamMP3::get_bar_beats);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &AudioStreamMP3::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");

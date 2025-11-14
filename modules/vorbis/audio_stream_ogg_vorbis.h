@@ -38,6 +38,7 @@
 #include <vorbis/codec.h>
 
 class AudioStreamOggVorbis;
+class PlaceholderAudioStream;
 
 class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOggVorbis, AudioStreamPlaybackResampled);
@@ -176,6 +177,8 @@ public:
 		return true;
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
+
+	virtual Ref<Resource> create_placeholder() const;
 
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();

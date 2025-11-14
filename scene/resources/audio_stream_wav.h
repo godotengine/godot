@@ -171,6 +171,8 @@ public:
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
 
+	virtual Ref<Resource> create_placeholder() const;
+
 	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &r_dst_data) {
 		static const int16_t _ima_adpcm_step_table[89] = {
 			7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
