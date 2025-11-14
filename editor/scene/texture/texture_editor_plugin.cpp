@@ -35,6 +35,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"
@@ -110,6 +111,10 @@ void TexturePreview::_notification(int p_what) {
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+
+			if (popout_button) {
+				popout_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			}
 		} break;
 	}
 }
@@ -229,7 +234,26 @@ void TexturePreview::on_selected_channels_changed() {
 	texture_display->set_instance_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
 }
 
-TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
+void TexturePreview::on_popout_pressed() {
+	AcceptDialog *popout_dialog = memnew(AcceptDialog);
+	popout_dialog->set_title("Texture Preview");
+	Vector2 screen_size = get_tree()->get_root()->get_size();
+	Vector2 popout_size = MAX(Vector2(400, 300), screen_size * 0.5);
+	add_child(popout_dialog);
+	TexturePreview *texture_preview_copy = memnew(TexturePreview(texture_display->get_texture(), true, true));
+	popout_dialog->add_child(texture_preview_copy);
+	popout_dialog->connect("canceled", callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->connect("confirmed", callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->popup_centered(popout_size);
+}
+
+void TexturePreview::on_popout_closed(AcceptDialog *p_dialog) {
+	if (p_dialog) {
+		p_dialog->queue_free();
+	}
+}
+
+TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout) {
 	set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
 
 	bg_rect = memnew(ColorRect);
@@ -286,6 +310,17 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		add_child(channel_selector);
 	}
 
+	// Add a button to the upper right corner that opens a popup window with a copy of the preview.
+	if (!p_popout) {
+		popout_button = memnew(Button);
+		popout_button->connect("pressed", callable_mp(this, &TexturePreview::on_popout_pressed));
+		popout_button->set_tooltip_text(TTRC("Open the preview in a separate window."));
+		popout_button->set_flat(true);
+		popout_button->set_h_size_flags(Control::SIZE_SHRINK_END);
+		popout_button->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		add_child(popout_button);
+	}
+
 	if (p_show_metadata) {
 		metadata_label = memnew(Label);
 		metadata_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -323,7 +358,7 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 		ERR_FAIL_COND_MSG(texture.is_null(), "Failed to create the texture from an invalid image.");
 	}
 
-	add_custom_control(memnew(TexturePreview(texture, true)));
+	add_custom_control(memnew(TexturePreview(texture, true, false)));
 }
 
 TextureEditorPlugin::TextureEditorPlugin() {
