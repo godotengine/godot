@@ -349,5 +349,15 @@ namespace Godot
         protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
         {
         }
+
+        /// <summary>
+        /// Validates the exported properties of this instance.
+        /// This method is implemented by the Godot Source Generators for types that have not-null exported members
+        /// with Nullable Reference Types enabled.
+        /// </summary>
+        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        protected internal virtual void ValidateExportedProperties()
+        {
+        }
     }
 }
