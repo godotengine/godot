@@ -156,6 +156,19 @@ int EditorExport::get_export_platform_index_by_name(const String &p_name) {
 	return -1;
 }
 
+bool EditorExport::has_preset_with_name(const String &p_name, int p_exclude_index) const {
+	for (int i = 0; i < export_presets.size(); i++) {
+		if (i == p_exclude_index) {
+			continue;
+		}
+		if (export_presets[i]->get_name() == p_name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, export_platforms.size(), Ref<EditorExportPlatform>());
 
