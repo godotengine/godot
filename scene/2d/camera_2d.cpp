@@ -307,10 +307,12 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			// Force the limits etc. to update.
-			_interpolation_data.xform_curr = get_camera_transform();
-			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
-			_update_process_callback();
+			if (_interpolation_data.accepting_resets) {
+				// Force the limits etc. to update.
+				_interpolation_data.xform_curr = get_camera_transform();
+				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+				_update_process_callback();
+			}
 		} break;
 
 		case NOTIFICATION_SUSPENDED:
@@ -365,6 +367,8 @@ void Camera2D::_notification(int p_what) {
 				_interpolation_data.xform_curr = get_camera_transform();
 				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 			}
+
+			_interpolation_data.accepting_resets = true;
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -375,6 +379,7 @@ void Camera2D::_notification(int p_what) {
 			}
 			viewport = nullptr;
 			just_exited_tree = true;
+			_interpolation_data.accepting_resets = false;
 			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
