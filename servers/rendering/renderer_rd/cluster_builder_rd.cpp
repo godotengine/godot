@@ -501,7 +501,7 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RendererRD::MaterialStorage::store_camera(adjusted_projection, state.projection);
 			state.inv_z_far = 1.0 / z_far;
-			state.screen_to_clusters_shift = get_shift_from_power_of_2(cluster_size);
+			state.screen_to_clusters_shift = Math::get_shift_from_power_of_2(cluster_size);
 			state.screen_to_clusters_shift -= divisor; //screen is smaller, shift one less
 
 			state.cluster_screen_width = cluster_screen_size.x;
@@ -600,7 +600,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	push_constant.screen_size[1] = screen_size.y;
 	push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 	push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-	push_constant.cluster_shift = get_shift_from_power_of_2(cluster_size);
+	push_constant.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
 	push_constant.cluster_type = p_element;
 	push_constant.orthogonal = camera_orthogonal;
 	push_constant.z_far = z_far;
