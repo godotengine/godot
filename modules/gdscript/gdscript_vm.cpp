@@ -33,6 +33,7 @@
 #include "gdscript_lambda_callable.h"
 
 #include "core/os/os.h"
+#include "core/profiling/profiling.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -495,6 +496,18 @@ void (*type_init_function_table[])(Variant *) = {
 #define METHOD_CALL_ON_FREED_INSTANCE_ERROR(method_pointer) "Cannot call method '" + (method_pointer)->get_name() + "' on a previously freed instance."
 
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state) {
+#ifdef GODOT_USE_TRACY
+	//It would be nice to use something like "ObjectName::function_name"
+	// But it would be much more expensive
+	// eg _script->get_fully_qualified_name() + "::" + name
+
+	GodotProfileZoneScript(_call_zone, func_cname, name, source, _initial_line, tracy::Color::DarkTurquoise);
+#elif GODOT_USE_PERFETTO
+	// TODO ???
+	// #else
+	GodotProfileZone("GDScriptFunction::call");
+#endif
+
 	OPCODES_TABLE;
 
 	if (!_code_ptr) {
@@ -2097,6 +2110,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_BUILTIN_STATIC) {
+				// GodotProfileZone("OPCODE_CALL_BUILTIN_STATIC");
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(4 + instr_arg_count);
 
@@ -2108,6 +2122,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int methodname_idx = _code_ptr[ip + 2];
 				GD_ERR_BREAK(methodname_idx < 0 || methodname_idx >= _global_names_count);
 				const StringName *methodname = &_global_names_ptr[methodname_idx];
+#ifdef GODOT_USE_TRACY
+				auto tz_method_name = String(*methodname).utf8();
+				// GodotProfileZoneRename(tz_method_name);
+				GodotProfileZoneDynamic(opcode_zone, *methodname);
+
+#endif
 
 				int argc = _code_ptr[ip + 3];
 				GD_ERR_BREAK(argc < 0);
@@ -2131,6 +2151,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_NATIVE_STATIC) {
+				GodotProfileZone("OPCODE_CALL_NATIVE_STATIC");
+
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(3 + instr_arg_count);
 
@@ -2138,6 +2160,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= _methods_count);
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
+#ifdef GODOT_USE_TRACY
+				auto tz_method_name = String(method->get_name()).utf8();
+				GodotProfileZoneRename(tz_method_name);
+#endif
 
 				int argc = _code_ptr[ip + 2];
 				GD_ERR_BREAK(argc < 0);
@@ -2174,6 +2200,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN) {
+				GodotProfileZone("OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN");
+
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(3 + instr_arg_count);
 
@@ -2184,6 +2212,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+#ifdef GODOT_USE_TRACY
+				auto tz_method_name = String(method->get_name()).utf8();
+				GodotProfileZoneRename(tz_method_name);
+#endif
 
 				Variant **argptrs = instruction_args;
 
@@ -2210,6 +2242,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN) {
+				GodotProfileZone("OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN");
+
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(3 + instr_arg_count);
 
@@ -2220,6 +2254,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+#ifdef GODOT_USE_TRACY
+				auto tz_method_name = String(method->get_name()).utf8();
+				GodotProfileZoneRename(tz_method_name);
+#endif
 
 				Variant **argptrs = instruction_args;
 #ifdef DEBUG_ENABLED
@@ -2371,6 +2409,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_UTILITY) {
+				GodotProfileZone("OPCODE_CALL_UTILITY");
+
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(3 + instr_arg_count);
 
@@ -2381,6 +2421,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _global_names_count);
 				StringName function = _global_names_ptr[_code_ptr[ip + 2]];
+#ifdef GODOT_USE_TRACY
+				auto tz_method_name = String(function).utf8();
+				GodotProfileZoneRename(tz_method_name);
+#endif
 
 				Variant **argptrs = instruction_args;
 
