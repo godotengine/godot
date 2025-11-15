@@ -29,7 +29,7 @@
 			<param index="2" name="json" type="Dictionary" />
 			<param index="3" name="node" type="Node" />
 			<description>
-				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_post]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
+				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_scene]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
 				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [Node] is also provided if available. [param node] may be [code]null[/code] if not available, such as when exporting glTF data not generated from a Godot scene.
 			</description>
 		</method>
@@ -79,6 +79,15 @@
 			<description>
 				Part of the export process. This method is run after [method _export_post_convert] and before [method _get_saveable_image_formats].
 				This method can be used to alter the state before performing serialization. It runs every time when generating a buffer with [method GLTFDocument.generate_buffer] or writing to the file system with [method GLTFDocument.write_to_filesystem].
+			</description>
+		</method>
+		<method name="_export_scene" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="json" type="Dictionary" />
+			<description>
+				Part of the export process. This method is run after [method _export_node] and before [method _export_post].
+				This method can be used to modify the final JSON of the scene, such as adding extensions to the scene. Data should be primarily stored in [param state] prior to serializing the JSON.
 			</description>
 		</method>
 		<method name="_generate_scene_node" qualifiers="virtual">
@@ -185,8 +194,17 @@
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="extensions" type="Dictionary" />
 			<description>
-				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _import_post_parse].
+				Part of the import process. This method is run after [method _parse_scene_extensions] and before [method _import_post_parse].
 				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node]. The return value should be a member of the [enum Error] enum.
+			</description>
+		</method>
+		<method name="_parse_scene_extensions" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="extensions" type="Dictionary" />
+			<description>
+				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _parse_node_extensions].
+				Runs when parsing the scene extensions of the GLTFState. This method can be used to process the extension JSON data into a format that can be used by later stages in the import process. The return value should be a member of the [enum Error] enum.
 			</description>
 		</method>
 		<method name="_parse_texture_json" qualifiers="virtual">
