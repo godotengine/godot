@@ -546,8 +546,6 @@ Ref<Image> DisplayServerWayland::clipboard_get_image() const {
 		err = image->load_tga_from_buffer(wayland_thread.selection_get_mime("image/x-targa"));
 	} else if (wayland_thread.selection_has_mime("image/ktx")) {
 		err = image->load_ktx_from_buffer(wayland_thread.selection_get_mime("image/ktx"));
-	} else if (wayland_thread.selection_has_mime("image/x-exr")) {
-		err = image->load_exr_from_buffer(wayland_thread.selection_get_mime("image/x-exr"));
 	}
 
 	ERR_FAIL_COND_V(err != OK, Ref<Image>());
@@ -688,18 +686,7 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
 
 #ifdef DBUS_ENABLED
-	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
-		if (p_enable) {
-			// Attach the inhibit request to the main window, not the last focused window,
-			// on the basis that inhibiting the screensaver is global state for the application.
-			WindowID window_id = MAIN_WINDOW_ID;
-			WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
-			screensaver_inhibited = portal_desktop->inhibit(ws ? ws->exported_handle : String());
-		} else {
-			portal_desktop->uninhibit();
-			screensaver_inhibited = false;
-		}
-	} else if (screensaver) {
+	if (screensaver) {
 		if (p_enable) {
 			screensaver->inhibit();
 		} else {
@@ -826,7 +813,6 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.surface = wayland_thread.window_get_wl_surface(wd.id);
-				ERR_FAIL_NULL(wpd.vulkan.surface);
 				wpd.vulkan.display = wayland_thread.get_wl_display();
 			}
 #endif
@@ -848,7 +834,6 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
 			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
-			ERR_FAIL_NULL(wl_surface);
 			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
 
 			Error err = egl_manager->window_create(p_window_id, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
@@ -1228,15 +1213,6 @@ Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::Win
 	return windows[p_window_id].rect.size;
 }
 
-float DisplayServerWayland::window_get_scale(WindowID p_window_id) const {
-	MutexLock mutex_lock(wayland_thread.mutex);
-
-	const WaylandThread::WindowState *ws = wayland_thread.window_get_state(p_window_id);
-	ERR_FAIL_NULL_V(ws, 1);
-
-	return wayland_thread.window_state_get_scale_factor(ws);
-}
-
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1558,11 +1534,10 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		ERR_FAIL_NULL_V(ws, ERR_BUG);
 
 		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
-#ifdef LIBDECOR_ENABLED
+
 		if (toplevel == nullptr && ws->libdecor_frame) {
 			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
 		}
-#endif
 
 		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
 
@@ -1676,12 +1651,6 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return key;
 }
 
-Key DisplayServerWayland::keyboard_get_label_from_physical(Key p_keycode) const {
-	MutexLock mutex_lock(wayland_thread.mutex);
-
-	return wayland_thread.keyboard_get_label_from_physical(p_keycode);
-}
-
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
 #ifdef DBUS_ENABLED
 	if (!portal_desktop) {
@@ -1711,8 +1680,6 @@ void DisplayServerWayland::try_suspend() {
 
 void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
-
-	wayland_thread.keyboard_echo_keys();
 
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
@@ -1855,6 +1822,8 @@ void DisplayServerWayland::process_events() {
 			continue;
 		}
 	}
+
+	wayland_thread.keyboard_echo_keys();
 
 	switch (suspend_state) {
 		case SuspendState::NONE: {

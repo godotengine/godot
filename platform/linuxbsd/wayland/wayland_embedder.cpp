@@ -1207,6 +1207,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 	DEBUG_LOG_WAYLAND_EMBED(vformat("Client #%d -> %s::%s(%s) l0x%x g0x%x", client->socket, interface->name, message.name, message.signature, local_id, global_id));
 
 	const uint32_t *body = msg_data + 2;
+	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
 
 	if (registry_globals_names.has(global_id)) {
 		int global_name = registry_globals_names[global_id];
@@ -1622,7 +1623,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 			// Args: int x, int y, int width, int height.
 			pos_data->anchor_rect = Rect2i(body[0], body[1], body[2], body[3]);
 
-			send_wayland_message(compositor_socket, global_id, p_opcode, { body[0], body[1], body[2], body[3] });
+			send_wayland_message(compositor_socket, global_id, p_opcode, body, body_len);
 			return MessageStatus::HANDLED;
 		}
 	}
@@ -2961,9 +2962,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 
 WaylandEmbedder::~WaylandEmbedder() {
 	shutdown();
-	if (proxy_thread.is_started()) {
-		proxy_thread.wait_to_finish();
-	}
+	proxy_thread.wait_to_finish();
 }
 
 #endif // TOOLS_ENABLED
