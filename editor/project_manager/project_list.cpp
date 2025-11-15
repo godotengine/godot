@@ -1348,10 +1348,12 @@ void ProjectList::add_search_tag(const String &p_tag) {
 	sort_projects();
 }
 
-void ProjectList::set_order_option(int p_option) {
+void ProjectList::set_order_option(int p_option, bool p_save) {
 	FilterOption selected = (FilterOption)p_option;
-	EditorSettings::get_singleton()->set("project_manager/sorting_order", p_option);
-	EditorSettings::get_singleton()->save();
+	if (p_save) {
+		EditorSettings::get_singleton()->set("project_manager/sorting_order", p_option);
+		EditorSettings::get_singleton()->save();
+	}
 	_order_option = selected;
 
 	sort_projects();
