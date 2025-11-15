@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -1365,6 +1366,18 @@ void FindInFilesContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_modified", PropertyInfo(Variant::STRING, "paths")));
 
 	ADD_SIGNAL(MethodInfo("close_button_clicked"));
+}
+
+void FindInFilesContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			// TODO: Replace this hack once FindInFilesContainer is converted to a dock. It should be in the constructor.
+			EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
+			if (parent) {
+				parent->set_clip_contents(false);
+			}
+		} break;
+	}
 }
 
 void FindInFilesContainer::_on_theme_changed() {
