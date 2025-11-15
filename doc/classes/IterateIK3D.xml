@@ -145,6 +145,10 @@
 			The maximum amount each bone can rotate in a single iteration.
 			[b]Note:[/b] This limitation is applied during each iteration. For example, if [member max_iterations] is [code]4[/code] and [member angular_delta_limit] is [code]5[/code] degrees, the maximum rotation possible in a single frame is [code]20[/code] degrees.
 		</member>
+		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" default="false">
+			If [code]false[/code], the result is calculated from the previous frame's [IterateIK3D] result as the initial state.
+			If [code]true[/code], the previous frame's [IterateIK3D] result is discarded. At this point, the new result is calculated from the bone pose excluding the [IterateIK3D] as the initial state. This means the result will be always equal as long as the target position and the previous bone pose are the same. However, if [member angular_delta_limit] and [member max_iterations] are set too small, the end bone of the chain will never reach the target.
+		</member>
 		<member name="max_iterations" type="int" setter="set_max_iterations" getter="get_max_iterations" default="4">
 			The number of iteration loops used by the IK solver to produce more accurate results.
 		</member>
