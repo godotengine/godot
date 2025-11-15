@@ -51,7 +51,7 @@
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
-#define GodotProfileZone(m_zone_name) ZoneScopedN(m_zone_name)
+#define GodotProfileZone(m_zone_name) ZoneNamedN(GD_UNIQUE_NAME(__godot_tracy_szone_), m_zone_name, true)
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
 #ifndef TRACY_CALLSTACK
