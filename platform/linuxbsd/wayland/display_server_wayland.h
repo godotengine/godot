@@ -328,6 +328,11 @@ public:
 
 	virtual bool get_swap_cancel_ok() override;
 
+	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual OS::ProcessID get_focused_process_id() override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;

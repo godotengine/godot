@@ -72,6 +72,8 @@
 #include "wayland/protocol/xdg_system_bell.gen.h"
 #include "wayland/protocol/xdg_toplevel_icon.gen.h"
 
+#include "wayland/protocol/godot_embedding_compositor.gen.h"
+
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
 
@@ -85,6 +87,8 @@
 
 #include "core/os/thread.h"
 #include "servers/display/display_server.h"
+
+#include "wayland_embedder.h"
 
 class WaylandThread {
 public:
@@ -228,6 +232,9 @@ public:
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
+
+		struct godot_embedding_compositor *godot_embedding_compositor = nullptr;
+		uint32_t godot_embedding_compositor_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -477,6 +484,10 @@ public:
 		uint64_t last_repeat_start_msec = 0;
 		uint64_t last_repeat_msec = 0;
 
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
+
 		bool shift_pressed = false;
 		bool ctrl_pressed = false;
 		bool alt_pressed = false;
@@ -527,6 +538,22 @@ public:
 		uint32_t buffer_data_size = 0;
 
 		Point2i hotspot;
+	};
+
+	struct EmbeddingCompositorState {
+		LocalVector<struct godot_embedded_client *> clients;
+
+		// Only a client per PID can create a window.
+		HashMap<int, struct godot_embedded_client *> mapped_clients;
+
+		OS::ProcessID focused_pid = -1;
+	};
+
+	struct EmbeddedClientState {
+		struct godot_embedding_compositor *embedding_compositor = nullptr;
+
+		uint32_t pid = 0;
+		bool window_mapped = false;
 	};
 
 private:
@@ -603,6 +630,10 @@ private:
 	RegistryState registry;
 
 	bool initialized = false;
+
+#ifdef TOOLS_ENABLED
+	WaylandEmbedder embedder;
+#endif
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
@@ -741,6 +772,13 @@ private:
 	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
+
+	static void _godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid);
+
+	static void _godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client);
 
 	// Core Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
@@ -929,6 +967,18 @@ private:
 		.done = _xdg_activation_token_on_done,
 	};
 
+	// Godot interfaces.
+	static constexpr struct godot_embedding_compositor_listener godot_embedding_compositor_listener = {
+		.client = _godot_embedding_compositor_on_client,
+	};
+
+	static constexpr struct godot_embedded_client_listener godot_embedded_client_listener = {
+		.disconnected = _godot_embedded_client_on_disconnected,
+		.window_embedded = _godot_embedded_client_on_window_embedded,
+		.window_focus_in = _godot_embedded_client_on_window_focus_in,
+		.window_focus_out = _godot_embedded_client_on_window_focus_out,
+	};
+
 #ifdef LIBDECOR_ENABLED
 	// libdecor event handlers.
 	static void libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message);
@@ -1008,6 +1058,8 @@ public:
 	static OfferState *wl_data_offer_get_offer_state(struct wl_data_offer *p_offer);
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
+
+	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
@@ -1115,6 +1167,10 @@ public:
 	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
 	bool is_suspended() const;
+
+	struct godot_embedding_compositor *get_embedding_compositor();
+
+	OS::ProcessID embedded_compositor_get_focused_pid();
 
 	Error init();
 	void destroy();
