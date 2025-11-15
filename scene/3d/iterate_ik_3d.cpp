@@ -190,6 +190,14 @@ double IterateIK3D::get_angular_delta_limit() const {
 	return angular_delta_limit;
 }
 
+void IterateIK3D::set_deterministic(bool p_deterministic) {
+	deterministic = p_deterministic;
+}
+
+bool IterateIK3D::is_deterministic() const {
+	return deterministic;
+}
+
 // Setting.
 
 void IterateIK3D::set_target_node(int p_index, const NodePath &p_node_path) {
@@ -362,6 +370,8 @@ void IterateIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_min_distance"), &IterateIK3D::get_min_distance);
 	ClassDB::bind_method(D_METHOD("set_angular_delta_limit", "angular_delta_limit"), &IterateIK3D::set_angular_delta_limit);
 	ClassDB::bind_method(D_METHOD("get_angular_delta_limit"), &IterateIK3D::get_angular_delta_limit);
+	ClassDB::bind_method(D_METHOD("set_deterministic", "deterministic"), &IterateIK3D::set_deterministic);
+	ClassDB::bind_method(D_METHOD("is_deterministic"), &IterateIK3D::is_deterministic);
 
 	// Setting.
 	ClassDB::bind_method(D_METHOD("set_target_node", "index", "target_node"), &IterateIK3D::set_target_node);
@@ -384,6 +394,7 @@ void IterateIK3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_iterations", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_max_iterations", "get_max_iterations");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_distance", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), "set_min_distance", "get_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_delta_limit", PROPERTY_HINT_RANGE, "0,180,0.001,radians_as_degrees"), "set_angular_delta_limit", "get_angular_delta_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 	ADD_ARRAY_COUNT("Settings", "setting_count", "set_setting_count", "get_setting_count", "settings/");
 }
 
@@ -414,6 +425,8 @@ void IterateIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 		_clear_joints(p_index);
 		setting->init_joints(p_skeleton, mutable_bone_axes);
 		setting->simulation_dirty = false;
+	} else if (deterministic) {
+		setting->init_joints(p_skeleton, mutable_bone_axes);
 	}
 
 	if (mutable_bone_axes) {
