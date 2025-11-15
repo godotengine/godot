@@ -43,30 +43,34 @@ class EditorDock : public MarginContainer {
 
 public:
 	enum DockLayout {
-		DOCK_LAYOUT_VERTICAL = 1,
-		DOCK_LAYOUT_HORIZONTAL = 2,
+		DOCK_LAYOUT_VERTICAL = DockConstants::DOCK_LAYOUT_VERTICAL,
+		DOCK_LAYOUT_HORIZONTAL = DockConstants::DOCK_LAYOUT_HORIZONTAL,
+		DOCK_LAYOUT_FLOATING = DockConstants::DOCK_LAYOUT_FLOATING,
+		DOCK_LAYOUT_ALL = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING,
 	};
 
 private:
 	friend class EditorDockManager;
 	friend class DockContextPopup;
+	friend class DockShortcutHandler;
 
 	String title;
 	String layout_key;
 	StringName icon_name;
 	Ref<Texture2D> dock_icon;
+	Color title_color = Color(0, 0, 0, 0);
 	Ref<Shortcut> shortcut;
-	EditorDockManager::DockSlot default_slot = EditorDockManager::DOCK_SLOT_NONE;
+	DockConstants::DockSlot default_slot = DockConstants::DOCK_SLOT_NONE;
+	bool global = true;
+	bool transient = false;
 
-	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL;
+	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
-	bool open = false;
+	bool is_open = false;
 	bool enabled = true;
-	bool at_bottom = false;
 	int previous_tab_index = -1;
-	bool previous_at_bottom = false;
 	WindowWrapper *dock_window = nullptr;
-	int dock_slot_index = EditorDockManager::DOCK_SLOT_NONE;
+	int dock_slot_index = DockConstants::DOCK_SLOT_NONE;
 
 	void _set_default_slot_bind(EditorPlugin::DockSlot p_slot);
 	EditorPlugin::DockSlot _get_default_slot_bind() const { return (EditorPlugin::DockSlot)default_slot; }
@@ -81,11 +85,20 @@ protected:
 public:
 	EditorDock();
 
+	void open();
+	void close();
+
 	void set_title(const String &p_title);
 	String get_title() const { return title; }
 
 	void set_layout_key(const String &p_key) { layout_key = p_key; }
 	String get_layout_key() const { return layout_key; }
+
+	void set_global(bool p_global);
+	bool is_global() const { return global; }
+
+	void set_transient(bool p_transient) { transient = p_transient; }
+	bool is_transient() const { return transient; }
 
 	void set_icon_name(const StringName &p_name);
 	StringName get_icon_name() const { return icon_name; }
@@ -93,11 +106,14 @@ public:
 	void set_dock_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_dock_icon() const { return dock_icon; }
 
-	void set_dock_shortcut(const Ref<Shortcut> &p_shortcut) { shortcut = p_shortcut; }
+	void set_title_color(const Color &p_color);
+	Color get_title_color() const { return title_color; }
+
+	void set_dock_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_dock_shortcut() const { return shortcut; }
 
-	void set_default_slot(EditorDockManager::DockSlot p_slot);
-	EditorDockManager::DockSlot get_default_slot() const { return default_slot; }
+	void set_default_slot(DockConstants::DockSlot p_slot);
+	DockConstants::DockSlot get_default_slot() const { return default_slot; }
 
 	void set_available_layouts(BitField<DockLayout> p_layouts) { available_layouts = p_layouts; }
 	BitField<DockLayout> get_available_layouts() const { return available_layouts; }

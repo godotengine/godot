@@ -121,6 +121,7 @@ private:
 
 	ScriptEditorDebugger *_add_debugger();
 	void _update_errors();
+	void _update_margins();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;

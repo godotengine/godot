@@ -160,8 +160,6 @@ private:
 
 	HashSet<String> favorites;
 
-	Button *button_dock_placement = nullptr;
-
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
@@ -378,8 +376,6 @@ private:
 	void _feature_profile_changed();
 	void _project_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
-
-	void _change_bottom_dock_placement();
 
 private:
 	inline static FileSystemDock *singleton = nullptr;

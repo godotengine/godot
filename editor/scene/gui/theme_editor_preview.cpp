@@ -201,12 +201,14 @@ void ThemeEditorPreview::_reset_picker_overlay() {
 
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (is_visible_in_tree()) {
 				set_process(true);
 			}
-
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_READY: {

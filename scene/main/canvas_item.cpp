@@ -284,7 +284,6 @@ void CanvasItem::_enter_canvas() {
 		}
 	}
 
-	pending_update = false;
 	queue_redraw();
 
 	notification(NOTIFICATION_ENTER_CANVAS);

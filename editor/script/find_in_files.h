@@ -278,6 +278,7 @@ class FindInFilesContainer : public MarginContainer {
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
 	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
