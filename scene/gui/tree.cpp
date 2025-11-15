@@ -59,23 +59,23 @@ Size2 TreeItem::Cell::get_icon_size() const {
 	}
 }
 
-void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Color &p_color) const {
+void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Rect2i &p_region, const Color &p_color) const {
 	if (icon.is_null()) {
 		return;
 	}
 
 	Size2i dsize = (p_size == Size2()) ? icon->get_size() : p_size;
 
-	if (icon_region == Rect2i()) {
+	if (p_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
 		if (icon_overlay.is_valid()) {
 			Vector2 offset = icon->get_size() - icon_overlay->get_size();
 			icon_overlay->draw_rect_region(p_where, Rect2(p_pos + offset, dsize), Rect2(Point2(), icon_overlay->get_size()), p_color);
 		}
 	} else {
-		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), p_region, p_color);
 		if (icon_overlay.is_valid()) {
-			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), p_region, p_color);
 		}
 	}
 }
@@ -2081,7 +2081,16 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 
 	int displayed_width = 0;
 	if (p_cell.icon.is_valid()) {
-		displayed_width += icon_size.width + theme_cache.h_separation;
+		if (displayed_width + icon_size.width > rect.size.width) {
+			displayed_width = rect.size.width;
+		} else {
+			displayed_width += icon_size.width;
+		}
+		if (displayed_width + theme_cache.h_separation > rect.size.width) {
+			displayed_width = rect.size.width;
+		} else {
+			displayed_width += theme_cache.h_separation;
+		}
 	}
 	if (displayed_width + ts.width > rect.size.width) {
 		ts.width = rect.size.width - displayed_width;
@@ -2122,7 +2131,13 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 	}
 
 	if (p_cell.icon.is_valid()) {
-		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2)), icon_size, p_icon_color);
+		Point2 icon_pos = rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2));
+		Rect2i icon_region = (p_cell.icon_region == Rect2i()) ? Rect2i(Point2(), p_cell.icon->get_size()) : p_cell.icon_region;
+		if (icon_size.width > rect.size.width) {
+			icon_region.size.width = icon_region.size.width * rect.size.width / icon_size.width;
+			icon_size.width = rect.size.width;
+		}
+		p_cell.draw_icon(ci, icon_pos, icon_size, icon_region, p_icon_color);
 		rect.position.x += icon_size.x + theme_cache.h_separation;
 	}
 
