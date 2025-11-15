@@ -187,7 +187,7 @@ void ShaderGraph::_get_property_list(List<PropertyInfo> *p_list) const {
 		String prop_name = "nodes/";
 		prop_name += itos(E.key);
 
-		if (E.key != ShaderGraph::NODE_ID_OUTPUT) {
+		if (E.key >= reserved_node_ids) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 		}
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
@@ -1248,6 +1248,10 @@ String ShaderGraph::validate_port_name(const String &p_port_name, VisualShaderNo
 String ShaderGraph::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
 	// TODO: Implement?
 	return String();
+}
+
+ShaderGraph::ShaderGraph(int reserved_node_ids) :
+		reserved_node_ids(reserved_node_ids) {
 }
 
 String VisualShaderNode::port_type_to_shader_string(PortType p_type) {
@@ -3617,7 +3621,7 @@ void VisualShader::_bind_methods() {
 VisualShader::VisualShader() {
 	dirty.set();
 	for (int i = 0; i < TYPE_MAX; i++) {
-		graph[i].instantiate();
+		graph[i].instantiate(1);
 		graph[i]->connect("graph_changed", callable_mp(this, &VisualShader::_queue_update));
 		if (i > (int)TYPE_LIGHT && i < (int)TYPE_SKY) {
 			Ref<VisualShaderNodeParticleOutput> output;

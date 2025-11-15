@@ -36,9 +36,6 @@
 class VisualShaderGroup : public Resource {
 	GDCLASS(VisualShaderGroup, Resource);
 
-	inline static int NODE_ID_GROUP_INPUT = 0;
-	inline static int NODE_ID_GROUP_OUTPUT = 1;
-
 public:
 	struct Port {
 		VisualShaderNode::PortType type = VisualShaderNode::PortType::PORT_TYPE_MAX;
@@ -142,6 +139,7 @@ class VisualShaderNodeGroup : public VisualShaderNode {
 	ShaderGraph::Type shader_type = ShaderGraph::Type::TYPE_MAX; // TYPE_MAX when used in a VisualShaderGroup itself.
 	Shader::Mode shader_mode = Shader::Mode::MODE_MAX; // MODE_MAX when used in a VisualShaderGroup itself.
 
+	Variant _get_default_variant(VisualShaderNode::PortType p_type);
 	void _emit_changed();
 
 protected:
@@ -284,7 +282,7 @@ class VisualShaderGroupPortsDialog : public AcceptDialog {
 	OptionButton *port_type_optbtn = nullptr;
 
 	void _add_port();
-	void _update_editor_for_port(int p_idx);
+	void _update_dialog_for_port(int p_idx);
 	void _remove_port();
 
 	void _on_port_item_selected(int p_idx);
@@ -292,7 +290,10 @@ class VisualShaderGroupPortsDialog : public AcceptDialog {
 	void _on_port_type_changed(int p_idx);
 	void _on_dialog_about_to_popup();
 
-	// TODO: Update graph on exit.
+	// TODO: Update graph on exit. (I think no longer necessary)
+protected:
+	void _notification(int p_what);
+
 public:
 	void set_dialog_mode(bool p_edit_inputs);
 	void set_group(VisualShaderGroup *p_group);

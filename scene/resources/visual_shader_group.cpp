@@ -31,6 +31,8 @@
 #include "visual_shader_group.h"
 
 #include "core/error/error_macros.h"
+#include "core/math/transform_3d.h"
+#include "core/math/vector4.h"
 #include "core/object/callable_method_pointer.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
@@ -40,6 +42,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/resources/visual_shader.h"
 #include "visual_shader_particle_nodes.h"
 
 String VisualShaderGroup::_validate_port_name(const String &p_port_name, int p_port_id, bool p_output) const {
@@ -234,7 +237,7 @@ void VisualShaderGroup::_update_group() {
 		input_connections.insert(to_key, E);
 	}
 
-	Error err = graph->_write_node(&global_code_builder, &global_code_per_node_builder, &global_code_per_func_builder, group_code, default_tex_params, input_connections, output_connections, NODE_ID_GROUP_OUTPUT, processed, false, classes);
+	Error err = graph->_write_node(&global_code_builder, &global_code_per_node_builder, &global_code_per_func_builder, group_code, default_tex_params, input_connections, output_connections, ShaderGraph::NODE_ID_OUTPUT, processed, false, classes);
 	ERR_FAIL_COND(err != OK);
 
 	// TODO: Figure out why this needs to be separately.
@@ -380,7 +383,12 @@ void VisualShaderGroup::set_input_port_name(int p_id, const String &p_name) {
 void VisualShaderGroup::set_input_port_type(int p_id, VisualShaderNode::PortType p_type) {
 	ERR_FAIL_COND(!input_ports.has(p_id));
 
+	if (input_ports[p_id].type == p_type) {
+		return;
+	}
+
 	input_ports[p_id].type = p_type;
+	_queue_update();
 	emit_changed();
 }
 
@@ -429,7 +437,12 @@ void VisualShaderGroup::set_output_port_name(int p_id, const String &p_name) {
 void VisualShaderGroup::set_output_port_type(int p_id, VisualShaderNode::PortType p_type) {
 	ERR_FAIL_COND(!output_ports.has(p_id));
 
+	if (output_ports[p_id].type == p_type) {
+		return;
+	}
+
 	output_ports[p_id].type = p_type;
+	_queue_update();
 	emit_changed();
 }
 
@@ -534,27 +547,55 @@ void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_co
 VisualShaderGroup::VisualShaderGroup() {
 	dirty.set();
 
-	graph.instantiate();
+	graph.instantiate(2); // A node group has two reserved node IDs, one input and one output node.
 	graph->connect("graph_changed", callable_mp(this, &VisualShaderGroup::_queue_update));
 
 	Ref<VisualShaderNodeGroupInput> input_node;
 	input_node.instantiate();
 	input_node->set_group(this);
-	graph->nodes[NODE_ID_GROUP_INPUT].node = input_node;
-	graph->nodes[NODE_ID_GROUP_INPUT].position = Vector2(0, 150);
+	graph->nodes[ShaderGraph::NODE_ID_INPUT].node = input_node;
+	graph->nodes[ShaderGraph::NODE_ID_INPUT].position = Vector2(0, 150);
 
 	Ref<VisualShaderNodeGroupOutput> output_node;
 	output_node.instantiate();
 	output_node->set_group(this);
-	graph->nodes[NODE_ID_GROUP_OUTPUT].node = output_node;
-	graph->nodes[NODE_ID_GROUP_OUTPUT].position = Vector2(400, 150);
+	graph->nodes[ShaderGraph::NODE_ID_OUTPUT].node = output_node;
+	graph->nodes[ShaderGraph::NODE_ID_OUTPUT].position = Vector2(400, 150);
 
 	group_name = TTR("Node group");
 }
 
 ////////////// Group
+Variant VisualShaderNodeGroup::_get_default_variant(VisualShaderNode::PortType p_type) {
+	switch (p_type) {
+		case VisualShaderNode::PORT_TYPE_SCALAR:
+			return 0.0;
+		case VisualShaderNode::PORT_TYPE_SCALAR_INT:
+			return 0;
+		case VisualShaderNode::PORT_TYPE_SCALAR_UINT:
+			return 0u;
+		case VisualShaderNode::PORT_TYPE_VECTOR_2D:
+			return Vector2();
+		case VisualShaderNode::PORT_TYPE_VECTOR_3D:
+			return Vector3();
+		case VisualShaderNode::PORT_TYPE_VECTOR_4D:
+			return Vector4();
+		case VisualShaderNode::PORT_TYPE_BOOLEAN:
+			return false;
+		case VisualShaderNode::PORT_TYPE_TRANSFORM:
+			return Transform3D();
+		default:
+			return Variant();
+	}
+}
 
 void VisualShaderNodeGroup::_emit_changed() {
+	// Check for input port changes.
+	for (int i = 0; i < get_input_port_count(); i++) {
+		const PortType type = get_input_port_type(i);
+		set_input_port_default_value(i, _get_default_variant(type));
+	}
+
 	emit_changed();
 }
 
@@ -889,6 +930,7 @@ void VisualShaderGroupPortsDialog::_add_port() {
 	String port_name_numerated = port_name;
 	while (group->_validate_port_name(port_name_numerated, -1, !edit_inputs).is_empty()) {
 		port_name_numerated = port_name + itos(port_idx);
+		port_idx++;
 	}
 	port_name = port_name_numerated;
 
@@ -908,10 +950,10 @@ void VisualShaderGroupPortsDialog::_add_port() {
 
 	// Select the new port.
 	port_item_list->select(port_item_list->get_item_count() - 1);
-	_update_editor_for_port(port_item_list->get_item_count() - 1);
+	_update_dialog_for_port(port_item_list->get_item_count() - 1);
 }
 
-void VisualShaderGroupPortsDialog::_update_editor_for_port(int p_idx) {
+void VisualShaderGroupPortsDialog::_update_dialog_for_port(int p_idx) {
 	ERR_FAIL_NULL(group);
 
 	if (p_idx < 0 || p_idx >= port_item_list->get_item_count()) {
@@ -950,14 +992,14 @@ void VisualShaderGroupPortsDialog::_remove_port() {
 	// Select the next port.
 	if (selected_idx < port_item_list->get_item_count()) {
 		port_item_list->select(selected_idx);
-		_update_editor_for_port(selected_idx);
+		_update_dialog_for_port(selected_idx);
 	}
 
-	_update_editor_for_port(-1);
+	_update_dialog_for_port(-1);
 }
 
 void VisualShaderGroupPortsDialog::_on_port_item_selected(int p_index) {
-	_update_editor_for_port(p_index);
+	_update_dialog_for_port(p_index);
 }
 
 void VisualShaderGroupPortsDialog::_on_port_name_changed(const String &p_name) {
@@ -996,14 +1038,20 @@ void VisualShaderGroupPortsDialog::_on_port_type_changed(int p_idx) {
 void VisualShaderGroupPortsDialog::_on_dialog_about_to_popup() {
 	ERR_FAIL_NULL(group);
 	if (port_item_list->get_item_count() == 0) {
-		_update_editor_for_port(-1);
+		_update_dialog_for_port(-1);
 		return;
 	}
 
-	if (port_item_list->get_selected_items().size() != 1) {
-		port_item_list->select(0);
+	port_item_list->select(0);
+	_update_dialog_for_port(0);
+}
+
+void VisualShaderGroupPortsDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("about_to_popup", callable_mp(this, &VisualShaderGroupPortsDialog::_on_dialog_about_to_popup));
+		} break;
 	}
-	_update_editor_for_port(port_item_list->get_selected_items()[0]);
 }
 
 void VisualShaderGroupPortsDialog::set_dialog_mode(bool p_edit_inputs) {
@@ -1030,7 +1078,6 @@ void VisualShaderGroupPortsDialog::set_group(VisualShaderGroup *p_group) {
 }
 
 VisualShaderGroupPortsDialog::VisualShaderGroupPortsDialog() {
-	connect(SNAME("about_to_popup"), callable_mp(this, &VisualShaderGroupPortsDialog::_on_dialog_about_to_popup));
 	set_title("Edit group ports");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

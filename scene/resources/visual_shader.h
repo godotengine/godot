@@ -101,7 +101,9 @@ public:
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
+		NODE_ID_INPUT = 1
 	};
+	int reserved_node_ids = 1;
 
 	RBMap<int, Node> nodes; // TODO: Does order really matter here? Maybe for serialization?
 	List<Connection> connections; // TODO: Evaluate whether this should be a LocalVector.
@@ -180,6 +182,8 @@ public:
 	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
 	// TODO: Implement?
 	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
+
+	ShaderGraph(int reserved_node_ids = 1);
 };
 
 class VisualShader : public Shader {
