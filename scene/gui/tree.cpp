@@ -6188,10 +6188,10 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 	}
 	pos -= theme_cache.panel_style->get_offset();
 	pos.y -= _get_title_button_height();
+	pos += theme_cache.offset; // Scrolling.
 	if (pos.y < 0) {
 		return;
 	}
-	pos += theme_cache.offset; // Scrolling.
 
 	int x_limit = _get_content_rect().size.x + theme_cache.offset.width;
 
@@ -6313,15 +6313,14 @@ int Tree::get_column_at_position(const Point2 &p_pos) const {
 	}
 	pos -= theme_cache.panel_style->get_offset();
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
-		return -1;
-	}
-
 	if (h_scroll->is_visible_in_tree()) {
 		pos.x += h_scroll->get_value();
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		pos.y += v_scroll->get_value();
+	}
+	if (pos.y < 0) {
+		return -1;
 	}
 
 	int col, h, section;
@@ -6344,15 +6343,14 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	}
 	pos -= theme_cache.panel_style->get_offset();
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
-		return -100;
-	}
-
 	if (h_scroll->is_visible_in_tree()) {
 		pos.x += h_scroll->get_value();
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		pos.y += v_scroll->get_value();
+	}
+	if (pos.y < 0) {
+		return -100;
 	}
 
 	int col, h, section;
@@ -6393,15 +6391,14 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	}
 	pos -= theme_cache.panel_style->get_offset();
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
-		return nullptr;
-	}
-
 	if (h_scroll->is_visible_in_tree()) {
 		pos.x += h_scroll->get_value();
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		pos.y += v_scroll->get_value();
+	}
+	if (pos.y < 0) {
+		return nullptr;
 	}
 
 	int col, h, section;
