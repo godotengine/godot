@@ -431,18 +431,22 @@ void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 	if (!tasks_cancelled) {
 		// Only process the item if the tasks haven't been cancelled by the user yet.
 		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers);
-		ERR_FAIL_COND_MSG(spirv_data.is_empty(), "Unable to retrieve SPIR-V data for shader");
+		if (unlikely(spirv_data.is_empty())) {
+			ERR_PRINT("Unable to retrieve SPIR-V data for shader.");
+		} else {
+			Ref<RenderingShaderContainer> shader_container = shader_container_format->create_container();
 
-		Ref<RenderingShaderContainer> shader_container = shader_container_format->create_container();
-
-		// Compile shader binary from SPIR-V.
-		bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
-		ERR_FAIL_COND_MSG(!code_compiled, vformat("Failed to compile code to native for SPIR-V."));
-
-		PackedByteArray shader_bytes = shader_container->to_bytes();
-		{
-			MutexLock lock(shader_work_results_mutex);
-			shader_work_results[p_work_item.cache_path].variant_data.ptrw()[p_work_item.variant] = shader_bytes;
+			// Compile shader binary from SPIR-V.
+			bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
+			if (unlikely(!code_compiled)) {
+				ERR_PRINT("Failed to compile code to native for SPIR-V.");
+			} else {
+				PackedByteArray shader_bytes = shader_container->to_bytes();
+				{
+					MutexLock lock(shader_work_results_mutex);
+					shader_work_results[p_work_item.cache_path].variant_data.ptrw()[p_work_item.variant] = shader_bytes;
+				}
+			}
 		}
 	}
 
