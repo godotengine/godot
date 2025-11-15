@@ -1865,6 +1865,18 @@ void ScriptEditor::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 		} break;
 
+#ifdef ANDROID_ENABLED
+		case NOTIFICATION_PROCESS: {
+			float kb_height = DisplayServer::get_singleton()->virtual_keyboard_get_height();
+			if (kb_height > 0) {
+				float extra_bottom = get_viewport_rect().size.y - (get_global_position().y + get_size().y);
+				float height = kb_height - extra_bottom;
+				virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, height));
+				_get_current_editor()->get_code_editor()->get_text_editor()->adjust_viewport_to_caret();
+			}
+		} break;
+#endif
+
 		case NOTIFICATION_EXIT_TREE: {
 			EditorRunBar::get_singleton()->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 		} break;
@@ -4186,6 +4198,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	main_container->add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
+#ifdef ANDROID_ENABLED
+	virtual_keyboard_spacer = memnew(Control);
+	virtual_keyboard_spacer->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_container->add_child(virtual_keyboard_spacer);
+#endif
+
 	list_split = memnew(VSplitContainer);
 	script_split->add_child(list_split);
 	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4526,6 +4544,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	register_syntax_highlighter(config_file_syntax_highlighter);
 
 	_update_online_doc();
+
+	set_process(true);
 }
 
 void ScriptEditorPlugin::_focus_another_editor() {
