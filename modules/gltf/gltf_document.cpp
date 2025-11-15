@@ -99,49 +99,6 @@ static void _attach_meta_to_extras(Ref<Resource> p_node, Dictionary &p_json) {
 	}
 }
 
-static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	if (p_mesh.is_null()) {
-		return importer_mesh;
-	}
-
-	Ref<ArrayMesh> array_mesh = p_mesh;
-	if (p_mesh->get_blend_shape_count()) {
-		ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
-		if (array_mesh.is_valid()) {
-			shape_mode = array_mesh->get_blend_shape_mode();
-		}
-		importer_mesh->set_blend_shape_mode(shape_mode);
-		for (int morph_i = 0; morph_i < p_mesh->get_blend_shape_count(); morph_i++) {
-			importer_mesh->add_blend_shape(p_mesh->get_blend_shape_name(morph_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
-		Array array = p_mesh->surface_get_arrays(surface_i);
-		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
-		const String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
-		String mat_name;
-		if (mat.is_valid()) {
-			mat_name = mat->get_name();
-			if (mat_name.is_empty()) {
-				mat_name = surface_name;
-			}
-		} else {
-			mat_name = surface_name;
-			// Assign default material when no material is assigned.
-			mat.instantiate();
-			mat->set_name(mat_name);
-		}
-		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
-				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
-				mat_name, p_mesh->surface_get_format(surface_i));
-	}
-	importer_mesh->merge_meta_from(*p_mesh);
-	importer_mesh->set_name(p_mesh->get_name());
-	return importer_mesh;
-}
-
 Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -188,12 +145,6 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 		return Error::FAILED;
 	}
 
-	/* STEP SERIALIZE ACCESSORS */
-	err = _encode_accessors(p_state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
 	/* STEP SERIALIZE IMAGES */
 	err = _serialize_images(p_state);
 	if (err != OK) {
@@ -202,12 +153,6 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 
 	/* STEP SERIALIZE TEXTURES */
 	err = _serialize_textures(p_state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP SERIALIZE BUFFER VIEWS */
-	err = _encode_buffer_views(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -238,6 +183,18 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 
 	/* STEP SERIALIZE VERSION */
 	err = _serialize_asset_header(p_state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP SERIALIZE ACCESSORS */
+	err = _encode_accessors(p_state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP SERIALIZE BUFFER VIEWS */
+	err = _encode_buffer_views(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -4094,7 +4051,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 		Ref<Material> mat = p_mesh_instance->get_active_material(surface_i);
 		instance_materials.append(mat);
 	}
-	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
+	const Ref<ImporterMesh> current_mesh = ImporterMesh::from_mesh(mesh_resource);
 	Vector<float> blend_weights;
 	int32_t blend_count = mesh_resource->get_blend_shape_count();
 	blend_weights.resize(blend_count);
@@ -4227,9 +4184,6 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		_convert_skeleton_to_gltf(skel, p_state, p_gltf_parent, p_gltf_root, gltf_node);
 		// We ignore the Godot Engine node that is the skeleton.
 		return;
-	} else if (Object::cast_to<MultiMeshInstance3D>(p_current)) {
-		MultiMeshInstance3D *multi = Object::cast_to<MultiMeshInstance3D>(p_current);
-		_convert_multi_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, p_state);
 #ifdef MODULE_CSG_ENABLED
 	} else if (Object::cast_to<CSGShape3D>(p_current)) {
 		CSGShape3D *shape = Object::cast_to<CSGShape3D>(p_current);
@@ -4374,7 +4328,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();
-		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
+		gltf_mesh->set_mesh(ImporterMesh::from_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		const String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
 		gltf_mesh->set_name(unique_name);
@@ -4385,77 +4339,6 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		new_gltf_node->set_name(unique_name);
 	}
 #endif // MODULE_GRIDMAP_ENABLED
-}
-
-void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
-		MultiMeshInstance3D *p_multi_mesh_instance,
-		GLTFNodeIndex p_parent_node_index,
-		GLTFNodeIndex p_root_node_index,
-		Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL(p_multi_mesh_instance);
-	Ref<MultiMesh> multi_mesh = p_multi_mesh_instance->get_multimesh();
-	if (multi_mesh.is_null()) {
-		return;
-	}
-	Ref<GLTFMesh> gltf_mesh;
-	gltf_mesh.instantiate();
-	Ref<Mesh> mesh = multi_mesh->get_mesh();
-	if (mesh.is_null()) {
-		return;
-	}
-	gltf_mesh->set_original_name(multi_mesh->get_name());
-	gltf_mesh->set_name(multi_mesh->get_name());
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	Ref<ArrayMesh> array_mesh = multi_mesh->get_mesh();
-	if (array_mesh.is_valid()) {
-		importer_mesh->set_blend_shape_mode(array_mesh->get_blend_shape_mode());
-		for (int32_t blend_i = 0; blend_i < array_mesh->get_blend_shape_count(); blend_i++) {
-			importer_mesh->add_blend_shape(array_mesh->get_blend_shape_name(blend_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < mesh->get_surface_count(); surface_i++) {
-		Ref<Material> mat = mesh->surface_get_material(surface_i);
-		String material_name;
-		if (mat.is_valid()) {
-			material_name = mat->get_name();
-		}
-		Array blend_arrays;
-		if (array_mesh.is_valid()) {
-			blend_arrays = array_mesh->surface_get_blend_shape_arrays(surface_i);
-		}
-		importer_mesh->add_surface(mesh->surface_get_primitive_type(surface_i), mesh->surface_get_arrays(surface_i),
-				blend_arrays, mesh->surface_get_lods(surface_i), mat, material_name, mesh->surface_get_format(surface_i));
-	}
-	gltf_mesh->set_mesh(importer_mesh);
-	GLTFMeshIndex mesh_index = p_state->meshes.size();
-	p_state->meshes.push_back(gltf_mesh);
-	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
-			instance_i++) {
-		Transform3D transform;
-		if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
-			Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
-			transform.origin =
-					Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
-			real_t rotation = xform_2d.get_rotation();
-			Quaternion quaternion(Vector3(0, 1, 0), rotation);
-			Size2 scale = xform_2d.get_scale();
-			transform.basis.set_quaternion_scale(quaternion,
-					Vector3(scale.x, 0, scale.y));
-			transform = p_multi_mesh_instance->get_transform() * transform;
-		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
-			transform = p_multi_mesh_instance->get_transform() *
-					multi_mesh->get_instance_transform(instance_i);
-		}
-		Ref<GLTFNode> new_gltf_node;
-		new_gltf_node.instantiate();
-		new_gltf_node->mesh = mesh_index;
-		new_gltf_node->transform = transform;
-		new_gltf_node->set_original_name(p_multi_mesh_instance->get_name());
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
-		p_gltf_node->children.push_back(p_state->nodes.size());
-		p_state->nodes.push_back(new_gltf_node);
-	}
 }
 
 void GLTFDocument::_convert_skeleton_to_gltf(Skeleton3D *p_skeleton3d, Ref<GLTFState> p_state, GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_node_index, Ref<GLTFNode> p_gltf_node) {
@@ -4598,6 +4481,9 @@ bool GLTFDocument::_does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_
 
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
+	if (gltf_node->has_additional_data(StringName("SkipNodeGeneration"))) {
+		return;
+	}
 	Node3D *current_node = nullptr;
 	// Check if any GLTFDocumentExtension classes want to generate a node for us.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -7012,6 +6898,18 @@ Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
 Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path) {
 	Error err;
 
+	/* PARSE BUFFERS */
+	err = _parse_buffers(p_state, p_search_path);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+	/* PARSE BUFFER VIEWS */
+	err = _parse_buffer_views(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+	/* PARSE ACCESSORS */
+	err = _parse_accessors(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
 	/* PARSE EXTENSIONS */
 	err = _parse_gltf_extensions(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -7022,21 +6920,6 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 	/* PARSE NODES */
 	err = _parse_nodes(p_state);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE BUFFERS */
-	err = _parse_buffers(p_state, p_search_path);
-
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE BUFFER VIEWS */
-	err = _parse_buffer_views(p_state);
-
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
-
-	/* PARSE ACCESSORS */
-	err = _parse_accessors(p_state);
-
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	if (!p_state->discard_meshes_and_materials) {
