@@ -103,6 +103,25 @@ GLTFAccessor::GLTFAccessorType GLTFObjectModelProperty::get_accessor_type() cons
 	}
 }
 
+GLTFAccessor::GLTFComponentType GLTFObjectModelProperty::get_component_type(const Vector<Variant> &p_values) const {
+	switch (object_model_type) {
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL: {
+			return GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE;
+		} break;
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_INT: {
+			PackedInt64Array int_values;
+			for (int i = 0; i < p_values.size(); i++) {
+				int_values.append(p_values[i]);
+			}
+			return GLTFAccessor::get_minimal_integer_component_type_from_ints(int_values);
+		} break;
+		default: {
+			// The base glTF specification only supports 32-bit float accessors for floating point data.
+			return GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT;
+		} break;
+	}
+}
+
 Ref<Expression> GLTFObjectModelProperty::get_gltf_to_godot_expression() const {
 	return gltf_to_godot_expr;
 }

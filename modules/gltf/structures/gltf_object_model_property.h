@@ -71,6 +71,7 @@ public:
 	void append_path_to_property(const NodePath &p_node_path, const StringName &p_prop_name);
 
 	GLTFAccessor::GLTFAccessorType get_accessor_type() const;
+	GLTFAccessor::GLTFComponentType get_component_type(const Vector<Variant> &p_values) const;
 
 	Ref<Expression> get_gltf_to_godot_expression() const;
 	void set_gltf_to_godot_expression(const Ref<Expression> &p_gltf_to_godot_expr);
