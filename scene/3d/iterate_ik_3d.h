@@ -279,6 +279,8 @@ protected:
 	double min_distance_squared = min_distance * min_distance; // For cache.
 	double angular_delta_limit = Math::deg_to_rad(2.0); // If the delta is too large, the results before and after iterating can change significantly, and divergence of calculations can easily occur.
 
+	bool deterministic = false;
+
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -324,6 +326,9 @@ public:
 	double get_min_distance() const;
 	void set_angular_delta_limit(double p_angular_delta_limit);
 	double get_angular_delta_limit() const;
+
+	void set_deterministic(bool p_deterministic);
+	bool is_deterministic() const;
 
 	// Setting.
 	void set_target_node(int p_index, const NodePath &p_target_node);
