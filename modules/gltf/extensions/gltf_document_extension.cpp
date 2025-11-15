@@ -45,6 +45,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_import_node, "state", "gltf_node", "json", "node");
 	GDVIRTUAL_BIND(_import_post, "state", "root");
 	// Export process.
+	GDVIRTUAL_BIND(_export_configure_for_scene, "root_node");
 	GDVIRTUAL_BIND(_export_preflight, "state", "root");
 	GDVIRTUAL_BIND(_convert_scene_node, "state", "gltf_node", "scene_node");
 	GDVIRTUAL_BIND(_export_post_convert, "state", "root");
@@ -149,6 +150,12 @@ Error GLTFDocumentExtension::import_post(Ref<GLTFState> p_state, Node *p_root) {
 }
 
 // Export process.
+Error GLTFDocumentExtension::export_configure_for_scene(Node *p_root_node) {
+	Error err = OK;
+	GDVIRTUAL_CALL(_export_configure_for_scene, p_root_node, err);
+	return err;
+}
+
 Error GLTFDocumentExtension::export_preflight(Ref<GLTFState> p_state, Node *p_root) {
 	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
 	Error err = OK;

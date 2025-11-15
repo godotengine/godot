@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
+#include "extensions/gltf_document_extension_multi_mesh.h"
 #include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
 #include "extensions/gltf_spec_gloss.h"
@@ -134,6 +135,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 #endif // PHYSICS_3D_DISABLED
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionMultiMesh);
 		bool is_editor = Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {
 			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);

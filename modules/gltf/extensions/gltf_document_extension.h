@@ -55,6 +55,7 @@ public:
 	virtual Error import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
 	virtual Error import_post(Ref<GLTFState> p_state, Node *p_node);
 	// Export process.
+	virtual Error export_configure_for_scene(Node *p_root_node);
 	virtual Error export_preflight(Ref<GLTFState> p_state, Node *p_root);
 	virtual void convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node);
 	virtual Error export_post_convert(Ref<GLTFState> p_state, Node *p_root);
@@ -81,6 +82,7 @@ public:
 	GDVIRTUAL4R(Error, _import_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
 	GDVIRTUAL2R(Error, _import_post, Ref<GLTFState>, Node *);
 	// Export process.
+	GDVIRTUAL1R(Error, _export_configure_for_scene, Node *);
 	GDVIRTUAL2R(Error, _export_preflight, Ref<GLTFState>, Node *);
 	GDVIRTUAL3(_convert_scene_node, Ref<GLTFState>, Ref<GLTFNode>, Node *);
 	GDVIRTUAL2R(Error, _export_post_convert, Ref<GLTFState>, Node *);
