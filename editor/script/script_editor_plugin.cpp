@@ -1871,8 +1871,8 @@ void ScriptEditor::_notification(int p_what) {
 			if (kb_height > 0) {
 				float extra_bottom = get_viewport_rect().size.y - (get_global_position().y + get_size().y);
 				float height = kb_height - extra_bottom;
-				print_line(extra_bottom);
 				virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, height));
+				_get_current_editor()->get_code_editor()->get_text_editor()->adjust_viewport_to_caret();
 			}
 		} break;
 #endif
