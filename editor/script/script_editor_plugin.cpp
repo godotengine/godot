@@ -3503,6 +3503,17 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->popup();
 }
 
+void ScriptEditor::_script_name_label_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		if (!is_files_panel_toggled()) {
+			_menu_option(FILE_MENU_TOGGLE_FILES_PANEL);
+		}
+		script_list->ensure_current_is_visible();
+	}
+}
+
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	if (!bool(EDITOR_GET("text_editor/behavior/files/restore_scripts_on_load"))) {
 		return;
@@ -4382,6 +4393,9 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	script_name_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	script_name_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	script_name_label->set_tooltip_text(TTRC("Double-click: Navigate to script list"));
+	script_name_label->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditor::_script_name_label_gui_input));
 	menu_hb->add_child(script_name_label);
 
 	site_search = memnew(Button);
