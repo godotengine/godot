@@ -314,4 +314,6 @@ public class GodotLib {
 	static native boolean isEditorHint();
 
 	static native boolean isProjectManagerHint();
+
+	static native boolean hasFeature(String feature);
 }
