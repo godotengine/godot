@@ -117,11 +117,16 @@ void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, con
 	}
 }
 
-void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
+void EditorBottomPanel::load_layout_from_config(const Ref<ConfigFile> &p_config_file, const String &p_section, const Ref<ConfigFile> &p_fallback_layout) {
 	for (const Control *dock : bottom_docks) {
-		String name = dock->get_name();
-		String key = name.to_snake_case();
-		dock_offsets[key] = p_config_file->get_value(p_section, "dock_" + key + "_offset", 0);
+		const String name = dock->get_name().operator String().to_snake_case();
+		const String key = "dock_" + name + "_offset";
+
+		int offset = p_config_file->get_value(p_section, key, 0);
+		if (offset == 0 && p_fallback_layout.is_valid()) {
+			offset = p_fallback_layout->get_value(p_section, key, 0);
+		}
+		dock_offsets[name] = offset;
 	}
 
 	if (p_config_file->has_section_key(p_section, "selected_bottom_panel_item")) {

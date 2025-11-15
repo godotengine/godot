@@ -137,7 +137,6 @@ private:
 	Button *collapse_button = nullptr;
 	bool collapse = false;
 
-	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
 	// Reusable RichTextLabel for BBCode parsing during search
@@ -161,7 +160,6 @@ private:
 	bool _check_display_message(LogMessage &p_message);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
-	void _set_search_visible(bool p_visible);
 	void _search_changed(const String &p_text);
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
@@ -179,6 +177,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);

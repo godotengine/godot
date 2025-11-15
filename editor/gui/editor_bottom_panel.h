@@ -66,7 +66,7 @@ protected:
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
+	void load_layout_from_config(const Ref<ConfigFile> &p_config_file, const String &p_section, const Ref<ConfigFile> &p_fallback_layout = Ref<ConfigFile>());
 
 	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
 	void remove_item(Control *p_item);
