@@ -98,7 +98,7 @@ void ProjectManager::_notification(int p_what) {
 			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
-			project_list->set_order_option(default_sorting);
+			project_list->set_order_option(default_sorting, false);
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
@@ -964,7 +964,7 @@ void ProjectManager::_on_project_duplicated(const String &p_original_path, const
 
 void ProjectManager::_on_order_option_changed(int p_idx) {
 	if (is_inside_tree()) {
-		project_list->set_order_option(p_idx);
+		project_list->set_order_option(p_idx, true);
 	}
 }
 
