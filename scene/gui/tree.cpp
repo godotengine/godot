@@ -2348,7 +2348,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			r_self_height = compute_item_height(p_item);
 			label_h = r_self_height + theme_cache.v_separation;
 
-			if (p_pos.y + label_h - theme_cache.offset.y < 0) {
+			if (p_pos.y + label_h - theme_cache.offset.y + p_draw_ofs.y < 0) {
 				continue; // No need to draw.
 			}
 
@@ -2708,7 +2708,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		if (p_pos.y + label_h - theme_cache.offset.y >= 0) {
+		if (p_pos.y + label_h - theme_cache.offset.y + p_draw_ofs.y >= 0) {
 			// Draw the folding arrow.
 			if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { // Has visible children, draw the guide box.
 				Ref<Texture2D> arrow;
@@ -6230,9 +6230,10 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 	if (cache.rtl) {
 		pos.x = get_size().width - pos.x - 1;
 	}
-	pos -= theme_cache.panel_style->get_offset();
+	Point2 margin_offset = theme_cache.panel_style->get_offset();
+	pos -= margin_offset;
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
+	if (pos.y + margin_offset.y < 0) {
 		return;
 	}
 	pos += theme_cache.offset; // Scrolling.
@@ -6355,9 +6356,10 @@ int Tree::get_column_at_position(const Point2 &p_pos) const {
 	if (is_layout_rtl()) {
 		pos.x = get_size().width - pos.x - 1;
 	}
-	pos -= theme_cache.panel_style->get_offset();
+	Point2 margin_offset = theme_cache.panel_style->get_offset();
+	pos -= margin_offset;
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
+	if (pos.y + margin_offset.y < 0) {
 		return -1;
 	}
 
@@ -6386,9 +6388,10 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 	if (is_layout_rtl()) {
 		pos.x = get_size().width - pos.x - 1;
 	}
-	pos -= theme_cache.panel_style->get_offset();
+	Point2 margin_offset = theme_cache.panel_style->get_offset();
+	pos -= margin_offset;
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
+	if (pos.y + margin_offset.y < 0) {
 		return -100;
 	}
 
@@ -6435,9 +6438,10 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	if (is_layout_rtl()) {
 		pos.x = get_size().width - pos.x - 1;
 	}
-	pos -= theme_cache.panel_style->get_offset();
+	Point2 margin_offset = theme_cache.panel_style->get_offset();
+	pos -= margin_offset;
 	pos.y -= _get_title_button_height();
-	if (pos.y < 0) {
+	if (pos.y + margin_offset.y < 0) {
 		return nullptr;
 	}
 
