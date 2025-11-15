@@ -36,7 +36,6 @@
 #include "gltf_state.h"
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
 
 class CSGShape3D;
 class GridMap;
@@ -267,11 +266,6 @@ public:
 			Ref<GLTFNode> p_gltf_node);
 	void _convert_grid_map_to_gltf(
 			GridMap *p_grid_map,
-			GLTFNodeIndex p_parent_node_index,
-			GLTFNodeIndex p_root_node_index,
-			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-	void _convert_multi_mesh_instance_to_gltf(
-			MultiMeshInstance3D *p_multi_mesh_instance,
 			GLTFNodeIndex p_parent_node_index,
 			GLTFNodeIndex p_root_node_index,
 			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
