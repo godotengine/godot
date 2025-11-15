@@ -319,6 +319,7 @@ public:
 	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
+	void center_on_current(bool p_center_verically = true, bool p_center_horizontally = true);
 
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;

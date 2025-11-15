@@ -1182,6 +1182,36 @@ void ItemList::ensure_current_is_visible() {
 	queue_redraw();
 }
 
+void ItemList::center_on_current(bool p_center_verically, bool p_center_horizontally) {
+	if (current < 0 || current >= items.size()) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!p_center_verically && !p_center_horizontally, "At least one of the parameters must be true.");
+
+	Rect2 r = items[current].rect_cache;
+
+	if (p_center_verically) {
+		int from_v = scroll_bar_v->get_value();
+		int to_v = from_v + scroll_bar_v->get_page();
+		int item_center_y = r.position.y + r.size.y / 2;
+		int viewport_center_y = (from_v + to_v) / 2;
+
+		int offset_y = item_center_y - viewport_center_y;
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + offset_y);
+	}
+
+	if (p_center_horizontally) {
+		int from_h = scroll_bar_h->get_value();
+		int to_h = from_h + scroll_bar_h->get_page();
+		int item_center_x = r.position.x + r.size.x / 2;
+		int viewport_center_x = (from_h + to_h) / 2;
+
+		int offset_x = item_center_x - viewport_center_x;
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + offset_x);
+	}
+}
+
 static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 	Size2 size = p_max_size;
 	int tex_width = p_size.width * size.height / p_size.height;
@@ -2370,6 +2400,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"), &ItemList::ensure_current_is_visible);
+	ClassDB::bind_method(D_METHOD("center_on_current", "center_verically", "center_horizontally"), &ItemList::center_on_current, DEFVAL(true), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ItemList::get_v_scroll_bar);
 	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &ItemList::get_h_scroll_bar);
