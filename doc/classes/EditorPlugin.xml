@@ -424,7 +424,7 @@
 				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
-		<method name="add_control_to_bottom_panel">
+		<method name="add_control_to_bottom_panel" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant DOCK_SLOT_BOTTOM].">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
@@ -662,7 +662,7 @@
 				Removes the specified context menu plugin.
 			</description>
 		</method>
-		<method name="remove_control_from_bottom_panel">
+		<method name="remove_control_from_bottom_panel" deprecated="Use [method remove_dock] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<description>
@@ -910,7 +910,10 @@
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
+		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
+			Bottom panel.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">

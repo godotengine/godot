@@ -1926,10 +1926,10 @@ void ThemeItemEditorDialog::_select_another_theme_cbk(const String &p_path) {
 
 void ThemeItemEditorDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("about_to_popup", callable_mp(this, &ThemeItemEditorDialog::_dialog_about_to_show));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_items_add_color->set_button_icon(get_editor_theme_icon(SNAME("Color")));
 			edit_items_add_constant->set_button_icon(get_editor_theme_icon(SNAME("MemberConstant")));
@@ -2271,10 +2271,10 @@ void ThemeTypeDialog::_add_type_confirmed() {
 
 void ThemeTypeDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("about_to_popup", callable_mp(this, &ThemeTypeDialog::_dialog_about_to_show));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_add_type_options();
 		} break;

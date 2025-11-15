@@ -4555,7 +4555,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	find_in_files->connect("close_button_clicked", callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
-	find_in_files->hide();
 	find_in_files_button->hide();
 
 	history_pos = -1;

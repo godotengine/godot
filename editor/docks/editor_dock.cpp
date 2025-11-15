@@ -32,13 +32,17 @@
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "editor/docks/editor_dock_manager.h"
 
 void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 	ERR_FAIL_COND(p_slot < EditorPlugin::DOCK_SLOT_NONE || p_slot >= EditorPlugin::DOCK_SLOT_MAX);
-	default_slot = (EditorDockManager::DockSlot)p_slot;
+	default_slot = (DockConstants::DockSlot)p_slot;
 }
 
 void EditorDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
+	ClassDB::bind_method(D_METHOD("close"), &EditorDock::close);
+
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &EditorDock::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &EditorDock::get_title);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
@@ -47,6 +51,14 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_key"), &EditorDock::get_layout_key);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "layout_key"), "set_layout_key", "get_layout_key");
 
+	ClassDB::bind_method(D_METHOD("set_global", "global"), &EditorDock::set_global);
+	ClassDB::bind_method(D_METHOD("is_global"), &EditorDock::is_global);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "global"), "set_global", "is_global");
+
+	ClassDB::bind_method(D_METHOD("set_transient", "transient"), &EditorDock::set_transient);
+	ClassDB::bind_method(D_METHOD("is_transient"), &EditorDock::is_transient);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
+
 	ClassDB::bind_method(D_METHOD("set_icon_name", "icon_name"), &EditorDock::set_icon_name);
 	ClassDB::bind_method(D_METHOD("get_icon_name"), &EditorDock::get_icon_name);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "icon_name"), "set_icon_name", "get_icon_name");
@@ -54,6 +66,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dock_icon", "icon"), &EditorDock::set_dock_icon);
 	ClassDB::bind_method(D_METHOD("get_dock_icon"), &EditorDock::get_dock_icon);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_dock_icon", "get_dock_icon");
+
+	ClassDB::bind_method(D_METHOD("set_title_color", "color"), &EditorDock::set_title_color);
+	ClassDB::bind_method(D_METHOD("get_title_color"), &EditorDock::get_title_color);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "title_color"), "set_title_color", "get_title_color");
 
 	ClassDB::bind_method(D_METHOD("set_dock_shortcut", "shortcut"), &EditorDock::set_dock_shortcut);
 	ClassDB::bind_method(D_METHOD("get_dock_shortcut"), &EditorDock::get_dock_shortcut);
@@ -65,10 +81,12 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_available_layouts", "layouts"), &EditorDock::set_available_layouts);
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2"), "set_available_layouts", "get_available_layouts");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:3"), "set_available_layouts", "get_available_layouts");
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
+	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
+	BIND_BITFIELD_FLAG(DOCK_LAYOUT_ALL);
 
 	GDVIRTUAL_BIND(_update_layout, "layout");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
@@ -80,12 +98,34 @@ EditorDock::EditorDock() {
 	add_user_signal(MethodInfo("tab_style_changed"));
 }
 
+void EditorDock::open() {
+	if (!is_open) {
+		EditorDockManager::get_singleton()->open_dock(this);
+	}
+}
+
+void EditorDock::close() {
+	if (is_open) {
+		EditorDockManager::get_singleton()->close_dock(this);
+	}
+}
+
 void EditorDock::set_title(const String &p_title) {
 	if (title == p_title) {
 		return;
 	}
 	title = p_title;
 	emit_signal("tab_style_changed");
+}
+
+void EditorDock::set_global(bool p_global) {
+	if (global == p_global) {
+		return;
+	}
+	global = p_global;
+	if (is_inside_tree()) {
+		EditorDockManager::get_singleton()->update_docks_menu();
+	}
 }
 
 void EditorDock::set_icon_name(const StringName &p_name) {
@@ -104,8 +144,23 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 	emit_signal("tab_style_changed");
 }
 
-void EditorDock::set_default_slot(EditorDockManager::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDockManager::DOCK_SLOT_MAX);
+void EditorDock::set_title_color(const Color &p_color) {
+	if (title_color == p_color) {
+		return;
+	}
+	title_color = p_color;
+	emit_signal("tab_style_changed");
+}
+
+void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
+	shortcut = p_shortcut;
+	if (global && is_inside_tree()) {
+		EditorDockManager::get_singleton()->update_docks_menu();
+	}
+}
+
+void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
+	ERR_FAIL_INDEX(p_slot, DockConstants::DOCK_SLOT_MAX);
 	default_slot = p_slot;
 }
 
