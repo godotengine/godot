@@ -1184,8 +1184,6 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
-
 			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 			for (int i = 0; i < 3; i++) {
@@ -1585,6 +1583,7 @@ GridMapEditor::GridMapEditor() {
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
+	mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 
 	info_message = memnew(Label);
 	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
