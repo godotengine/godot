@@ -303,28 +303,8 @@ String &String::operator+=(char32_t p_char) {
 }
 
 bool String::operator==(const char *p_str) const {
-	// compare Latin-1 encoded c-string
-	int len = strlen(p_str);
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	int l = length();
-
-	const char32_t *dst = get_data();
-
-	// Compare char by char
-	for (int i = 0; i < l; i++) {
-		if ((char32_t)p_str[i] != dst[i]) {
-			return false;
-		}
-	}
-
-	return true;
+	// Compare Latin-1 encoded c-string.
+	return span() == Span(p_str, strlen(p_str)).reinterpret<uint8_t>();
 }
 
 bool String::operator==(const wchar_t *p_str) const {
@@ -338,40 +318,16 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	const int len = strlen(p_str);
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str, len * sizeof(char32_t)) == 0;
+	// Compare UTF-32 encoded c-string.
+	return span() == Span(p_str, strlen(p_str));
 }
 
 bool String::operator==(const String &p_str) const {
-	if (length() != p_str.length()) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str.ptr(), length() * sizeof(char32_t)) == 0;
+	return span() == p_str.span();
 }
 
 bool String::operator==(const Span<char32_t> &p_str_range) const {
-	const int len = p_str_range.size();
-
-	if (length() != len) {
-		return false;
-	}
-	if (is_empty()) {
-		return true;
-	}
-
-	return memcmp(ptr(), p_str_range.ptr(), len * sizeof(char32_t)) == 0;
+	return span() == p_str_range;
 }
 
 bool operator==(const char *p_chr, const String &p_str) {
@@ -384,7 +340,7 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 	return p_str == String::utf16((const char16_t *)p_chr);
 #else
 	// wchar_t is 32-bi
-	return p_str == String((const char32_t *)p_chr);
+	return p_str == (const char32_t *)p_chr;
 #endif
 }
 
