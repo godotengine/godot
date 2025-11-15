@@ -2048,7 +2048,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 
 		// Ensure embedded PCK starts at a 64-bit multiple
-		int pad = f->get_position() % 8;
+		int pad = _get_pad(8, f->get_position());
 		for (int i = 0; i < pad; i++) {
 			f->store_8(0);
 		}
