@@ -158,6 +158,10 @@ android {
                 keepDebugSymbols += '**/*.so'
             }
         }
+
+        // Older versions of our vendor plugin include the loader as well, make sure we pick ours.
+        pickFirst 'lib/arm64-v8a/libopenxr_loader.so'
+        pickFirst 'lib/x86_64/libopenxr_loader.so'
     }
 
     flavorDimensions = ["android_distribution"]
@@ -202,6 +206,8 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
     implementation "androidx.constraintlayout:constraintlayout:2.2.1"
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
+
+    implementation "org.khronos.openxr:openxr_loader_for_android:$versions.openxrLoaderVersion"
 
     // Android XR dependencies
     androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"

@@ -165,6 +165,10 @@ android {
         pickFirst 'lib/x86_64/libc++_shared.so'
         pickFirst 'lib/armeabi-v7a/libc++_shared.so'
         pickFirst 'lib/arm64-v8a/libc++_shared.so'
+
+        // Older versions of our vendor plugin include the loader as well, make sure we pick ours.
+        pickFirst 'lib/arm64-v8a/libopenxr_loader.so'
+        pickFirst 'lib/x86_64/libopenxr_loader.so'
     }
 
     signingConfigs {
