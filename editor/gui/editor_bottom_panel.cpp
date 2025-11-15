@@ -52,8 +52,8 @@ void EditorBottomPanel::_notification(int p_what) {
 }
 
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
-	callable_mp(this, &EditorBottomPanel::_update_center_split_offset).call_deferred();
-	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
+	_update_center_split_offset();
+	_repaint();
 }
 
 void EditorBottomPanel::_theme_changed() {
@@ -90,7 +90,7 @@ int EditorBottomPanel::get_bottom_panel_offset() {
 
 void EditorBottomPanel::_repaint() {
 	bool panel_collapsed = get_current_tab() == -1;
-	if (panel_collapsed == (get_previous_tab() == -1)) {
+	if (!panel_collapsed && (get_previous_tab() != -1)) {
 		return;
 	}
 
