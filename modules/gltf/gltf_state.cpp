@@ -491,3 +491,20 @@ GLTFNodeIndex GLTFState::append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_god
 	}
 	return new_index;
 }
+
+String GLTFState::reserve_unique_name(const String &p_requested_name, bool p_show_warning) {
+	const String start_name = p_requested_name.validate_node_name();
+	String unique_name = start_name;
+	if (unique_names.has(unique_name)) {
+		uint64_t discriminator = 2;
+		while (unique_names.has(unique_name)) {
+			unique_name = p_requested_name + String::num_uint64(discriminator);
+			discriminator++;
+		}
+		if (p_show_warning) {
+			WARN_PRINT("GLTFState: The requested name " + p_requested_name + " is already in use. The name " + unique_name + " will be used instead.");
+		}
+	}
+	unique_names.insert(unique_name);
+	return unique_name;
+}
