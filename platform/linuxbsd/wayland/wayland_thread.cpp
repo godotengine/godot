@@ -662,6 +662,13 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
 	}
+
+	if (strcmp(interface, godot_embedding_compositor_interface.name) == 0) {
+		registry->godot_embedding_compositor = (struct godot_embedding_compositor *)wl_registry_bind(wl_registry, name, &godot_embedding_compositor_interface, 1);
+		registry->godot_embedding_compositor_name = name;
+
+		godot_embedding_compositor_add_listener(registry->godot_embedding_compositor, &godot_embedding_compositor_listener, memnew(EmbeddingCompositorState));
+	}
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -1091,6 +1098,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_fifo_manager_name) {
 		registry->wp_fifo_manager_name = 0;
+	}
+
+	if (name == registry->godot_embedding_compositor_name) {
+		registry->godot_embedding_compositor_name = 0;
+
+		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry->godot_embedding_compositor);
+		ERR_FAIL_NULL(es);
+
+		es->mapped_clients.clear();
+
+		for (struct godot_embedded_client *client : es->clients) {
+			godot_embedded_client_destroy(client);
+		}
+		es->clients.clear();
+
+		memdelete(es);
+
+		godot_embedding_compositor_destroy(registry->godot_embedding_compositor);
+		registry->godot_embedding_compositor = nullptr;
 	}
 }
 
@@ -2064,6 +2090,8 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 
 	xkb_state_unref(ss->xkb_state);
 	ss->xkb_state = xkb_state_new(ss->xkb_keymap);
+
+	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
 
 void WaylandThread::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
@@ -2124,6 +2152,15 @@ void WaylandThread::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_key
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_OUT;
 	wayland_thread->push_message(msg);
 
+	ss->shift_pressed = false;
+	ss->ctrl_pressed = false;
+	ss->alt_pressed = false;
+	ss->meta_pressed = false;
+
+	if (ss->xkb_state != nullptr) {
+		xkb_state_update_mask(ss->xkb_state, 0, 0, 0, 0, 0, 0);
+	}
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Keyboard unfocused window %d.", ws->id));
 }
 
@@ -2177,14 +2214,21 @@ void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, ss->current_layout_index, ss->current_layout_index, group);
-
-	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
-	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
-	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
-	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
-
+	ss->mods_depressed = mods_depressed;
+	ss->mods_latched = mods_latched;
+	ss->mods_locked = mods_locked;
 	ss->current_layout_index = group;
+
+	if (ss->xkb_state == nullptr) {
+		return;
+	}
+
+	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+
+	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE);
+	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE);
+	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE);
+	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE);
 }
 
 void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
@@ -3036,15 +3080,82 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
+void WaylandThread::_godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid) {
+	EmbeddingCompositorState *state = (EmbeddingCompositorState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddedClientState *client_state = memnew(EmbeddedClientState);
+	client_state->embedding_compositor = godot_embedding_compositor;
+	client_state->pid = pid;
+	godot_embedded_client_add_listener(godot_embedded_client, &godot_embedded_client_listener, client_state);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("New client %d.", pid));
+	state->clients.push_back(godot_embedded_client);
+}
+
+void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->clients.erase_unordered(godot_embedded_client);
+	ecomp_state->mapped_clients.erase(state->pid);
+
+	memfree(state);
+	godot_embedded_client_destroy(godot_embedded_client);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Client %d disconnected.", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	state->window_mapped = true;
+
+	ERR_FAIL_COND_MSG(ecomp_state->mapped_clients.has(state->pid), "More than one Wayland client per PID tried to create a window.");
+
+	ecomp_state->mapped_clients[state->pid] = godot_embedded_client;
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = state->pid;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus in", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = -1;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
+	Thread::set_name("Wayland Events");
+
 	ThreadData *data = (ThreadData *)p_data;
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
 
-	struct pollfd poll_fd;
+	struct pollfd poll_fd = {};
 	poll_fd.fd = wl_display_get_fd(data->wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	poll_fd.events = POLLIN;
 
 	while (true) {
 		// Empty the event queue while it's full.
@@ -3183,6 +3294,15 @@ WaylandThread::OfferState *WaylandThread::wl_data_offer_get_offer_state(struct w
 WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer) {
 	if (p_offer && wl_proxy_is_godot((wl_proxy *)p_offer)) {
 		return (OfferState *)zwp_primary_selection_offer_v1_get_user_data(p_offer);
+	}
+
+	return nullptr;
+}
+
+WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
+	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
+	if (p_compositor) {
+		return (EmbeddingCompositorState *)godot_embedding_compositor_get_user_data(p_compositor);
 	}
 
 	return nullptr;
@@ -3356,15 +3476,20 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
 	if (p_ss->wl_pointer == nullptr) {
+		WARN_PRINT("Can't lock - no pointer?");
 		return;
 	}
 
 	if (registry.wp_pointer_constraints == nullptr) {
+		WARN_PRINT("Can't lock - no constraints global.");
 		return;
 	}
 
 	if (p_ss->wp_locked_pointer == nullptr) {
 		struct wl_surface *locked_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
+		if (locked_surface == nullptr) {
+			locked_surface = window_get_wl_surface(DisplayServer::MAIN_WINDOW_ID);
+		}
 		ERR_FAIL_NULL(locked_surface);
 
 		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
@@ -4445,7 +4570,52 @@ Error WaylandThread::init() {
 
 	KeyMappingXKB::initialize();
 
-	wl_display = wl_display_connect(nullptr);
+#ifdef TOOLS_ENABLED
+	String embedder_socket_path;
+
+	bool embedder_enabled = true;
+
+	if (OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_EMBEDDER") == "1") {
+		print_verbose("Disabling Wayland embedder as per GODOT_WAYLAND_DISABLE_EMBEDDER.");
+		embedder_enabled = false;
+	}
+
+	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
+		print_verbose("Initializing Wayland embedder.");
+		Error embedder_status = embedder.init();
+		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
+
+		embedder_socket_path = embedder.get_socket_path();
+		ERR_FAIL_COND_V_MSG(embedder_socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
+
+		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", embedder_socket_path);
+
+		// Debug
+		if (OS::get_singleton()->get_environment("GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE") == "1") {
+			print_line("Pausing as per GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE.");
+			pause();
+		}
+	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
+		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+
+#if 0
+		// Debug
+		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
+		int fd = open("/tmp/gdembedded.log", O_CREAT | O_RDWR, 0666);
+		dup2(fd, 1);
+		dup2(fd, 2);
+#endif
+	}
+
+	if (embedder_socket_path.is_empty()) {
+		print_verbose("Connecting to the default Wayland display.");
+		wl_display = wl_display_connect(nullptr);
+	} else {
+		print_verbose("Connecting to the Wayland embedder display.");
+		wl_display = wl_display_connect(embedder_socket_path.utf8().get_data());
+	}
+#endif // TOOLS_ENABLED
+
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
 	thread_data.wl_display = wl_display;
@@ -4465,12 +4635,19 @@ Error WaylandThread::init() {
 	ERR_FAIL_NULL_V_MSG(registry.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
 	ERR_FAIL_NULL_V_MSG(registry.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
 
-	if (!registry.xdg_decoration_manager) {
+	// Embedded games can't access the decoration and icon protocol.
+	if (!Engine::get_singleton()->is_embedded_in_editor()) {
+		if (!registry.xdg_decoration_manager) {
 #ifdef LIBDECOR_ENABLED
-		WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
+			WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
 #else
-		WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
+			WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
 #endif // LIBDECOR_ENABLED
+		}
+
+		if (!registry.xdg_toplevel_icon_manager_name) {
+			WARN_PRINT("xdg-toplevel-icon protocol not found! Cannot set window icon.");
+		}
 	}
 
 	if (!registry.xdg_activation) {
@@ -4485,10 +4662,6 @@ Error WaylandThread::init() {
 
 	if (!registry.wp_fifo_manager_name) {
 		WARN_PRINT("FIFO protocol not found! Frame pacing will be degraded.");
-	}
-
-	if (!registry.xdg_toplevel_icon_manager_name) {
-		WARN_PRINT("xdg-toplevel-icon protocol not found! Cannot set window icon.");
 	}
 
 	// Wait for seat capabilities.
@@ -5010,6 +5183,17 @@ bool WaylandThread::is_suspended() const {
 	return true;
 }
 
+struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
+	return registry.godot_embedding_compositor;
+}
+
+OS::ProcessID WaylandThread::embedded_compositor_get_focused_pid() {
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
+	ERR_FAIL_NULL_V(ecomp_state, -1);
+
+	return ecomp_state->focused_pid;
+}
+
 void WaylandThread::destroy() {
 	if (!initialized) {
 		return;
@@ -5044,6 +5228,10 @@ void WaylandThread::destroy() {
 			libdecor_frame_close(ws.libdecor_frame);
 		}
 #endif // LIBDECOR_ENABLED
+
+		if (ws.xdg_toplevel_decoration) {
+			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
+		}
 
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_destroy(ws.xdg_toplevel);
@@ -5132,6 +5320,22 @@ void WaylandThread::destroy() {
 		wl_output_destroy(wl_output);
 	}
 
+	if (registry.godot_embedding_compositor) {
+		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
+		ERR_FAIL_NULL(es);
+
+		es->mapped_clients.clear();
+
+		for (struct godot_embedded_client *client : es->clients) {
+			godot_embedded_client_destroy(client);
+		}
+		es->clients.clear();
+
+		memdelete(es);
+
+		godot_embedding_compositor_destroy(registry.godot_embedding_compositor);
+	}
+
 	if (wl_cursor_theme) {
 		wl_cursor_theme_destroy(wl_cursor_theme);
 	}
@@ -5211,6 +5415,8 @@ void WaylandThread::destroy() {
 	if (wl_registry) {
 		wl_registry_destroy(wl_registry);
 	}
+
+	wl_display_roundtrip(wl_display);
 
 	if (wl_display) {
 		wl_display_disconnect(wl_display);

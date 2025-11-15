@@ -643,6 +643,12 @@ Copyright: 2008-2013, Kristian Høgsberg
   2015, Red Hat Inc.
 License: Expat
 
+Files: thirdparty/wayland-protocols/mesa/wayland-drm.xml
+Comment: Mesa Wayland protocols
+Copyright: 2008-2011, Kristian Høgsberg
+  2010-2011, Intel Corporation
+License: X11
+
 Files: thirdparty/wslay/*
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa
@@ -2304,6 +2310,28 @@ License: WOL
  the above copyright notice and this license appear in all source copies.
  THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF
  ANY KIND. See https://dspguru.com/wide-open-license/ for more information.
+
+License: X11
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that\n the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied
