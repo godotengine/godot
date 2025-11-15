@@ -175,24 +175,18 @@ public:
 		sorter.sort(data, len);
 	}
 
-	Size bsearch(const T &p_value, bool p_before) {
+	Size bsearch(const T &p_value, bool p_before) const {
 		return bsearch_custom<Comparator<T>>(p_value, p_before);
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
 	Vector<T> duplicate() const {
 		return *this;
 	}
-
-#ifndef DISABLE_DEPRECATED
-	Vector<T> _duplicate_bind_compat_112290() {
-		return *this;
-	}
-#endif // DISABLE_DEPRECATED
 
 	void ordered_insert(const T &p_val) {
 		Size i;
