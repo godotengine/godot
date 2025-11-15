@@ -5882,6 +5882,7 @@ bool TileSetScenesCollectionSource::_set(const StringName &p_name, const Variant
 			if (!has_scene_tile_id(scene_id)) {
 				create_scene_tile(p_value, scene_id);
 			}
+			set_scene_tile_display_placeholder(scene_id, p_value);
 
 			return true;
 		}
@@ -5898,7 +5899,7 @@ bool TileSetScenesCollectionSource::_get(const StringName &p_name, Variant &r_re
 			r_ret = scenes[components[1].to_int()].scene;
 			return true;
 		} else if (components.size() >= 3 && components[2] == "display_placeholder") {
-			r_ret = scenes[components[1].to_int()].scene;
+			r_ret = scenes[components[1].to_int()].display_placeholder;
 			return true;
 		}
 	}
