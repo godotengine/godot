@@ -242,6 +242,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
 	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
+	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
 	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
