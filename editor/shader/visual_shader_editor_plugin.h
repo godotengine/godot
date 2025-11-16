@@ -737,9 +737,8 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	TextureRect *checkerboard = nullptr;
-	Ref<VisualShader> shader;
+	Ref<ShaderGraph> shader_graph;
 	Ref<ShaderMaterial> preview_mat;
-	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
 	bool is_valid = false;
@@ -749,7 +748,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<ShaderGraph> &p_shader_graph, Ref<ShaderMaterial> &p_preview_material, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

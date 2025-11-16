@@ -278,7 +278,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			vbox->add_child(offset);
 
 			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
-			port_preview->setup(visual_shader, editor->preview_material, editor->get_current_shader_type(), links[p_node_id].output_ports[p_port_id].type == VisualShaderNode::PORT_TYPE_VECTOR_4D, p_node_id, p_port_id, p_is_valid);
+			port_preview->setup(editor->get_shader_graph(), editor->preview_material, links[p_node_id].output_ports[p_port_id].type == VisualShaderNode::PORT_TYPE_VECTOR_4D, p_node_id, p_port_id, p_is_valid);
 			port_preview->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 			vbox->add_child(port_preview);
 			link.preview_visible = true;
@@ -8526,12 +8526,12 @@ bool EditorInspectorVisualShaderModePlugin::parse_property(Object *p_object, con
 //////////////////////////////////
 
 void VisualShaderNodePortPreview::_shader_changed() {
-	if (!is_valid || shader.is_null()) {
+	if (!is_valid || shader_graph.is_null()) {
 		return;
 	}
 
 	Vector<ShaderGraph::DefaultTextureParam> default_textures;
-	String shader_code = shader->generate_preview_shader(type, node, port, default_textures);
+	String shader_code = shader_graph->generate_preview_shader(node, port, default_textures);
 
 	Ref<Shader> preview_shader;
 	preview_shader.instantiate();
@@ -8558,7 +8558,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	set_material(mat);
 }
 
-void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, bool p_has_transparency, int p_node, int p_port, bool p_is_valid) {
+void VisualShaderNodePortPreview::setup(const Ref<ShaderGraph> &p_shader_graph, Ref<ShaderMaterial> &p_preview_material, bool p_has_transparency, int p_node, int p_port, bool p_is_valid) {
 	if (p_has_transparency) {
 		checkerboard = memnew(TextureRect);
 		checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
@@ -8568,10 +8568,9 @@ void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, Ref<S
 	}
 
 	set_mouse_filter(MOUSE_FILTER_PASS);
-	shader = p_shader;
-	shader->connect_changed(callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
+	shader_graph = p_shader_graph;
+	shader_graph->connect("graph_changed", callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
 	preview_mat = p_preview_material;
-	type = p_type;
 	port = p_port;
 	node = p_node;
 	is_valid = p_is_valid;

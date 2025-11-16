@@ -1190,9 +1190,96 @@ void ShaderGraph::get_node_connections(List<ShaderGraph::Connection> *r_connecti
 	}
 }
 
-String ShaderGraph::generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const {
-	// TODO: Implement?
-	return String();
+String ShaderGraph::generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params, const String &p_additional_global_code) const {
+	Ref<VisualShaderNode> node = get_node(p_node);
+	ERR_FAIL_COND_V(node.is_null(), String());
+	ERR_FAIL_COND_V(p_port < 0 || p_port >= node->get_expanded_output_port_count(), String());
+	ERR_FAIL_COND_V(node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_TRANSFORM, String());
+
+	StringBuilder global_code;
+	StringBuilder global_code_per_node;
+	HashMap<ShaderGraph::Type, StringBuilder> global_code_per_func;
+	StringBuilder shader_code;
+	HashSet<StringName> classes;
+
+	global_code += String() + "shader_type canvas_item;\n";
+	global_code += "\n";
+
+	String global_expressions;
+	int index = 0;
+	for (const KeyValue<int, ShaderGraph::Node> &E : nodes) {
+		Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
+		if (global_expression.is_valid()) {
+			String expr = "";
+			expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
+			// Use TYPE_MAX/MODE_MAX for preview since we're not in a specific shader context.
+			expr += global_expression->generate_global(Shader::MODE_MAX, VisualShader::TYPE_MAX, -1);
+			expr = expr.replace("\n", "\n	");
+			expr += "\n";
+			global_expressions += expr;
+		}
+	}
+
+	global_code += global_expressions;
+	global_code += p_additional_global_code;
+
+	// Make it faster to go around through shader.
+	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
+	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
+
+	for (const List<ShaderGraph::Connection>::Element *E = connections.front(); E; E = E->next()) {
+		ShaderGraph::ConnectionKey from_key;
+		from_key.node = E->get().from_node;
+		from_key.port = E->get().from_port;
+
+		output_connections.insert(from_key, E);
+
+		ShaderGraph::ConnectionKey to_key;
+		to_key.node = E->get().to_node;
+		to_key.port = E->get().to_port;
+
+		input_connections.insert(to_key, E);
+	}
+
+	shader_code += "\nvoid fragment() {\n";
+
+	HashSet<int> processed;
+	Error err = _write_node(&global_code, &global_code_per_node, &global_code_per_func, shader_code, r_default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
+	ERR_FAIL_COND_V(err != OK, String());
+
+	switch (node->get_output_port_type(p_port)) {
+		case VisualShaderNode::PORT_TYPE_SCALAR: {
+			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + ");\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
+			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_BOOLEAN: {
+			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + " ? 1.0 : 0.0);\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
+			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + ", 0.0);\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
+			shader_code += "	COLOR.rgb = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
+			shader_code += "	COLOR = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
+		} break;
+		default: {
+			shader_code += "	COLOR.rgb = vec3(0.0);\n";
+		} break;
+	}
+
+	shader_code += "}\n";
+	global_code += "\n\n";
+	String final_code = global_code;
+	final_code += global_code_per_node;
+	final_code += shader_code;
+	return final_code;
 }
 
 String ShaderGraph::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
@@ -1254,7 +1341,7 @@ ShaderGraph::ShaderGraph(int reserved_node_ids) :
 		reserved_node_ids(reserved_node_ids) {
 }
 
-String VisualShaderNode::port_type_to_shader_string(PortType p_type) {
+String VisualShaderNode::get_port_type_shader_string(PortType p_type) {
 	switch (p_type) {
 		case PORT_TYPE_SCALAR:
 			return "float";
@@ -1277,6 +1364,29 @@ String VisualShaderNode::port_type_to_shader_string(PortType p_type) {
 		case PORT_TYPE_MAX:
 		default:
 			ERR_FAIL_V_MSG("", "Invalid port type.");
+	}
+}
+
+String VisualShaderNode::get_port_type_default_value_shader_string(PortType p_type) {
+	switch (p_type) {
+		case PORT_TYPE_SCALAR:
+			return "0.0";
+		case PORT_TYPE_SCALAR_INT:
+			return "0";
+		case PORT_TYPE_SCALAR_UINT:
+			return "0u";
+		case PORT_TYPE_VECTOR_2D:
+			return "vec2(0.0)";
+		case PORT_TYPE_VECTOR_3D:
+			return "vec3(0.0)";
+		case PORT_TYPE_VECTOR_4D:
+			return "vec4(0.0)";
+		case PORT_TYPE_BOOLEAN:
+			return "false";
+		case PORT_TYPE_TRANSFORM:
+			return "mat4(1.0)";
+		default:
+			return "0.0";
 	}
 }
 
@@ -2442,16 +2552,11 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	ERR_FAIL_COND_V(p_port < 0 || p_port >= node->get_expanded_output_port_count(), String());
 	ERR_FAIL_COND_V(node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_TRANSFORM, String());
 
-	StringBuilder global_code;
-	StringBuilder global_code_per_node;
-	HashMap<ShaderGraph::Type, StringBuilder> global_code_per_func;
-	StringBuilder shader_code;
-	HashSet<StringName> classes;
-
-	global_code += String() + "shader_type canvas_item;\n";
-
-	String global_expressions;
+	String additional_global_code;
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
+		if (i == p_type) {
+			continue; // Skip current type, will be handled by ShaderGraph::generate_preview_shader.
+		}
 		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i]->nodes) {
 			Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
 			if (global_expression.is_valid()) {
@@ -2460,73 +2565,12 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 				expr += global_expression->generate_global(get_mode(), Type(i), -1);
 				expr = expr.replace("\n", "\n	");
 				expr += "\n";
-				global_expressions += expr;
+				additional_global_code += expr;
 			}
 		}
 	}
 
-	global_code += "\n";
-	global_code += global_expressions;
-
-	//make it faster to go around through shader
-	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
-	HashMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
-
-	for (const List<ShaderGraph::Connection>::Element *E = graph[p_type]->connections.front(); E; E = E->next()) {
-		ShaderGraph::ConnectionKey from_key;
-		from_key.node = E->get().from_node;
-		from_key.port = E->get().from_port;
-
-		output_connections.insert(from_key, E);
-
-		ShaderGraph::ConnectionKey to_key;
-		to_key.node = E->get().to_node;
-		to_key.port = E->get().to_port;
-
-		input_connections.insert(to_key, E);
-	}
-
-	shader_code += "\nvoid fragment() {\n";
-
-	HashSet<int> processed;
-	Error err = _write_node((ShaderGraph::Type)p_type, &global_code, &global_code_per_node, &global_code_per_func, shader_code, default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
-	ERR_FAIL_COND_V(err != OK, String());
-
-	switch (node->get_output_port_type(p_port)) {
-		case VisualShaderNode::PORT_TYPE_SCALAR: {
-			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + ");\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
-			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
-			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_BOOLEAN: {
-			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + " ? 1.0 : 0.0);\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
-			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + ", 0.0);\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
-			shader_code += "	COLOR.rgb = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
-		} break;
-		case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-			shader_code += "	COLOR = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
-		} break;
-		default: {
-			shader_code += "	COLOR.rgb = vec3(0.0);\n";
-		} break;
-	}
-
-	shader_code += "}\n";
-
-	//set code secretly
-	global_code += "\n\n";
-	String final_code = global_code;
-	final_code += global_code_per_node;
-	final_code += shader_code;
-	return final_code;
+	return graph[p_type]->generate_preview_shader(p_node, p_port, default_tex_params, additional_global_code);
 }
 
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {

@@ -121,7 +121,7 @@ public:
 
 	// TODO: Maybe change this method to use a return type.
 	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
-	// TODO: Implement?
+
 	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
 
 	// TODO: Implement?

@@ -176,8 +176,7 @@ public:
 	// TODO: Maybe change this method to use a return type.
 	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
 
-	// TODO: Implement?
-	String generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
+	String generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params, const String &p_additional_global_code = String()) const;
 
 	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
 	// TODO: Implement?
@@ -451,7 +450,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static String port_type_to_shader_string(PortType p_type);
+	static String get_port_type_shader_string(PortType p_type);
+	static String get_port_type_default_value_shader_string(PortType p_type);
 
 	bool is_simple_decl() const;
 

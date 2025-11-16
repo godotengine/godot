@@ -377,6 +377,7 @@ void VisualShaderGroup::set_input_port_name(int p_id, const String &p_name) {
 	}
 
 	input_ports[p_id].name = valid_name;
+	_queue_update();
 	emit_changed();
 }
 
@@ -407,6 +408,7 @@ Vector<VisualShaderGroup::Port> VisualShaderGroup::get_input_ports() const {
 
 void VisualShaderGroup::remove_input_port(int p_id) {
 	input_ports.erase(p_id);
+	_queue_update();
 	emit_changed();
 }
 
@@ -418,6 +420,7 @@ void VisualShaderGroup::add_output_port(int p_id, VisualShaderNode::PortType p_t
 	}
 
 	output_ports[p_id] = Port{ p_type, valid_name };
+	_queue_update();
 	emit_changed();
 }
 
@@ -431,6 +434,7 @@ void VisualShaderGroup::set_output_port_name(int p_id, const String &p_name) {
 	}
 
 	output_ports[p_id].name = valid_name;
+	_queue_update();
 	emit_changed();
 }
 
@@ -544,6 +548,15 @@ void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_co
 	graph->get_node_connections(r_connections);
 }
 
+String VisualShaderGroup::generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const {
+	return graph->generate_preview_shader(p_node, p_port, r_default_tex_params);
+}
+
+String VisualShaderGroup::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
+	// TODO: Implement if we decide to support parameters inside node groups.
+	return String();
+}
+
 VisualShaderGroup::VisualShaderGroup() {
 	dirty.set();
 
@@ -566,6 +579,7 @@ VisualShaderGroup::VisualShaderGroup() {
 }
 
 ////////////// Group
+
 Variant VisualShaderNodeGroup::_get_default_variant(VisualShaderNode::PortType p_type) {
 	switch (p_type) {
 		case VisualShaderNode::PORT_TYPE_SCALAR:
@@ -751,14 +765,14 @@ String VisualShaderNodeGroup::generate_group_function(Shader::Mode p_mode, Visua
 		} else {
 			code += ", in ";
 		}
-		code += VisualShaderNode::port_type_to_shader_string(input_ports[i].type) + " ";
+		code += VisualShaderNode::get_port_type_shader_string(input_ports[i].type) + " ";
 		code += input_ports[i].name;
 	}
 
 	const Vector<VisualShaderGroup::Port> output_ports = group->get_output_ports();
 	for (int i = 0; i < output_ports.size(); i++) {
 		code += ", out ";
-		code += VisualShaderNode::port_type_to_shader_string(output_ports[i].type) + " ";
+		code += VisualShaderNode::get_port_type_shader_string(output_ports[i].type) + " ";
 		code += output_ports[i].name;
 	}
 
@@ -835,7 +849,14 @@ String VisualShaderNodeGroupInput::generate_code(Shader::Mode p_mode, VisualShad
 
 	String code;
 	for (int i = 0; i < group->get_input_ports().size(); i++) {
-		code += p_output_vars[i] + " = " + group->get_input_port(i).name + ";\n";
+		if (p_for_preview) {
+			// When generating preview shaders, we use default values instead of the group input port names
+			// since the port names are not valid identifiers in the preview context.
+			// TODO: Maybe we find a way to use the inputs of the VisualShaderNodeGroup that was used to open the node group? (or maybe this is not a good idea?)
+			code += p_output_vars[i] + " = " + VisualShaderNode::get_port_type_default_value_shader_string(group->get_input_port(i).type) + ";\n";
+		} else {
+			code += p_output_vars[i] + " = " + group->get_input_port(i).name + ";\n";
+		}
 	}
 	return code;
 }
