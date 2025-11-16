@@ -774,22 +774,24 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
 	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
 
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
-	ClassDB::bind_method(D_METHOD("open_with_program", "program_path", "paths"), &OS::open_with_program);
-	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
-	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
-	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
-	ClassDB::bind_method(D_METHOD("get_process_exit_code", "pid"), &OS::get_process_exit_code);
+	// MODDING SECURITY: ALL OS command execution and process management disabled
+	// ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
+	// ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
+	// ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
+	// ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
+	// ClassDB::bind_method(D_METHOD("open_with_program", "program_path", "paths"), &OS::open_with_program);
+	// ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
+	// ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	// ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
+	// ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
+	// ClassDB::bind_method(D_METHOD("get_process_exit_code", "pid"), &OS::get_process_exit_code);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
-	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
-	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
-	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &OS::set_environment);
-	ClassDB::bind_method(D_METHOD("unset_environment", "variable"), &OS::unset_environment);
+	// MODDING SECURITY: Environment variable access disabled
+	// ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
+	// ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
+	// ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &OS::set_environment);
+	// ClassDB::bind_method(D_METHOD("unset_environment", "variable"), &OS::unset_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);

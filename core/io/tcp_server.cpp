@@ -31,9 +31,10 @@
 #include "tcp_server.h"
 
 void TCPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
-	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
+	// MODDING SECURITY: ALL network access disabled
+	// ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
+	// ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
+	// ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
 }
 
 Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {

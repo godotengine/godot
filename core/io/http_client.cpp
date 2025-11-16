@@ -138,37 +138,38 @@ PackedStringArray HTTPClient::_get_response_headers() {
 }
 
 void HTTPClient::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "tls_options"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(Ref<TLSOptions>()));
-	ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
-	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
-	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
-	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request, DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("close"), &HTTPClient::close);
+	// MODDING SECURITY: ALL network access disabled
+	// ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port", "tls_options"), &HTTPClient::connect_to_host, DEFVAL(-1), DEFVAL(Ref<TLSOptions>()));
+	// ClassDB::bind_method(D_METHOD("set_connection", "connection"), &HTTPClient::set_connection);
+	// ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
+	// ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
+	// ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request, DEFVAL(String()));
+	// ClassDB::bind_method(D_METHOD("close"), &HTTPClient::close);
 
-	ClassDB::bind_method(D_METHOD("has_response"), &HTTPClient::has_response);
-	ClassDB::bind_method(D_METHOD("is_response_chunked"), &HTTPClient::is_response_chunked);
-	ClassDB::bind_method(D_METHOD("get_response_code"), &HTTPClient::get_response_code);
-	ClassDB::bind_method(D_METHOD("get_response_headers"), &HTTPClient::_get_response_headers);
-	ClassDB::bind_method(D_METHOD("get_response_headers_as_dictionary"), &HTTPClient::_get_response_headers_as_dictionary);
-	ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
-	ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
-	ClassDB::bind_method(D_METHOD("set_read_chunk_size", "bytes"), &HTTPClient::set_read_chunk_size);
-	ClassDB::bind_method(D_METHOD("get_read_chunk_size"), &HTTPClient::get_read_chunk_size);
+	// ClassDB::bind_method(D_METHOD("has_response"), &HTTPClient::has_response);
+	// ClassDB::bind_method(D_METHOD("is_response_chunked"), &HTTPClient::is_response_chunked);
+	// ClassDB::bind_method(D_METHOD("get_response_code"), &HTTPClient::get_response_code);
+	// ClassDB::bind_method(D_METHOD("get_response_headers"), &HTTPClient::_get_response_headers);
+	// ClassDB::bind_method(D_METHOD("get_response_headers_as_dictionary"), &HTTPClient::_get_response_headers_as_dictionary);
+	// ClassDB::bind_method(D_METHOD("get_response_body_length"), &HTTPClient::get_response_body_length);
+	// ClassDB::bind_method(D_METHOD("read_response_body_chunk"), &HTTPClient::read_response_body_chunk);
+	// ClassDB::bind_method(D_METHOD("set_read_chunk_size", "bytes"), &HTTPClient::set_read_chunk_size);
+	// ClassDB::bind_method(D_METHOD("get_read_chunk_size"), &HTTPClient::get_read_chunk_size);
 
-	ClassDB::bind_method(D_METHOD("set_blocking_mode", "enabled"), &HTTPClient::set_blocking_mode);
-	ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
+	// ClassDB::bind_method(D_METHOD("set_blocking_mode", "enabled"), &HTTPClient::set_blocking_mode);
+	// ClassDB::bind_method(D_METHOD("is_blocking_mode_enabled"), &HTTPClient::is_blocking_mode_enabled);
 
-	ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
-	ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
+	// ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
+	// ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
 
-	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
-	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
+	// ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
+	// ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
 
-	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
+	// ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_connection", "get_connection");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
+	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
+	// ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_connection", "get_connection");
+	// ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);
 	BIND_ENUM_CONSTANT(METHOD_HEAD);

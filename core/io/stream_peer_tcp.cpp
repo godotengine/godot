@@ -129,10 +129,11 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 }
 
 void StreamPeerTCP::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("bind", "port", "host"), &StreamPeerTCP::bind, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
-	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
-	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
-	ClassDB::bind_method(D_METHOD("get_local_port"), &StreamPeerTCP::get_local_port);
-	ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &StreamPeerTCP::set_no_delay);
+	// MODDING SECURITY: ALL network access disabled
+	// ClassDB::bind_method(D_METHOD("bind", "port", "host"), &StreamPeerTCP::bind, DEFVAL("*"));
+	// ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
+	// ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
+	// ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
+	// ClassDB::bind_method(D_METHOD("get_local_port"), &StreamPeerTCP::get_local_port);
+	// ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &StreamPeerTCP::set_no_delay);
 }

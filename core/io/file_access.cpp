@@ -37,6 +37,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/modding_security.h"
 #include "core/io/resource_uid.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
@@ -157,6 +158,24 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 }
 
 Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
+	// MODDING SECURITY: Block all write operations
+	if (p_mode_flags & WRITE) {
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), "MODDING SECURITY: File write operations are disabled for security.");
+		if (r_error) {
+			*r_error = ERR_UNAUTHORIZED;
+		}
+		return Ref<FileAccess>();
+	}
+
+	// MODDING SECURITY: Only allow reading from user://mods/
+	if (!ModdingSecurity::is_path_allowed_for_read(p_path)) {
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat("MODDING SECURITY: File access denied. Only 'user://mods/' paths are allowed for reading. Attempted path: '%s'", p_path));
+		if (r_error) {
+			*r_error = ERR_UNAUTHORIZED;
+		}
+		return Ref<FileAccess>();
+	}
+
 	//try packed data first
 
 	Ref<FileAccess> ret;
@@ -857,6 +876,15 @@ bool FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
+	// MODDING SECURITY: Validate path before access
+	if (!ModdingSecurity::is_path_allowed_for_read(p_path)) {
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("MODDING SECURITY: File access denied. Only 'user://mods/' paths are allowed. Attempted path: '%s'", p_path));
+		if (r_error) {
+			*r_error = ERR_UNAUTHORIZED;
+		}
+		return Vector<uint8_t>();
+	}
+
 	Ref<FileAccess> f = FileAccess::open(p_path, READ, r_error);
 	if (f.is_null()) {
 		if (r_error) { // if error requested, do not throw error
@@ -981,8 +1009,9 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
 
-	ClassDB::bind_method(D_METHOD("resize", "length"), &FileAccess::resize);
-	ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
+	// MODDING SECURITY: Write operations disabled
+	// ClassDB::bind_method(D_METHOD("resize", "length"), &FileAccess::resize);
+	// ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
 	ClassDB::bind_method(D_METHOD("get_path"), &FileAccess::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &FileAccess::get_path_absolute);
 	ClassDB::bind_method(D_METHOD("is_open"), &FileAccess::is_open);
@@ -1010,21 +1039,22 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error"), &FileAccess::get_error);
 	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &FileAccess::get_var, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("store_8", "value"), &FileAccess::store_8);
-	ClassDB::bind_method(D_METHOD("store_16", "value"), &FileAccess::store_16);
-	ClassDB::bind_method(D_METHOD("store_32", "value"), &FileAccess::store_32);
-	ClassDB::bind_method(D_METHOD("store_64", "value"), &FileAccess::store_64);
-	ClassDB::bind_method(D_METHOD("store_half", "value"), &FileAccess::store_half);
-	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
-	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
-	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool (FileAccess::*)(const Vector<uint8_t> &))&FileAccess::store_buffer);
-	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
-	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
-	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
-	ClassDB::bind_method(D_METHOD("store_var", "value", "full_objects"), &FileAccess::store_var, DEFVAL(false));
+	// MODDING SECURITY: All write methods disabled
+	// ClassDB::bind_method(D_METHOD("store_8", "value"), &FileAccess::store_8);
+	// ClassDB::bind_method(D_METHOD("store_16", "value"), &FileAccess::store_16);
+	// ClassDB::bind_method(D_METHOD("store_32", "value"), &FileAccess::store_32);
+	// ClassDB::bind_method(D_METHOD("store_64", "value"), &FileAccess::store_64);
+	// ClassDB::bind_method(D_METHOD("store_half", "value"), &FileAccess::store_half);
+	// ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
+	// ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
+	// ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
+	// ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool (FileAccess::*)(const Vector<uint8_t> &))&FileAccess::store_buffer);
+	// ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
+	// ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
+	// ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
+	// ClassDB::bind_method(D_METHOD("store_var", "value", "full_objects"), &FileAccess::store_var, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string);
+	// ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &FileAccess::get_pascal_string);
 
 	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
@@ -1035,11 +1065,13 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_size", "file"), &FileAccess::get_size);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);
+	// MODDING SECURITY: Disabled file attribute modification
+	// ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_hidden_attribute", "file"), &FileAccess::get_hidden_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
+	// MODDING SECURITY: Disabled file attribute modification
+	// ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
+	// ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");

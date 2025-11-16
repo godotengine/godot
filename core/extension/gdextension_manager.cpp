@@ -461,14 +461,16 @@ GDExtensionManager *GDExtensionManager::get_singleton() {
 }
 
 void GDExtensionManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
-	ClassDB::bind_method(D_METHOD("load_extension_from_function", "path", "init_func"), &GDExtensionManager::load_extension_from_function);
-	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
-	ClassDB::bind_method(D_METHOD("unload_extension", "path"), &GDExtensionManager::unload_extension);
-	ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &GDExtensionManager::is_extension_loaded);
+	// MODDING SECURITY: Native code loading disabled (MOST CRITICAL SECURITY RISK)
+	// Allowing GDExtension would bypass ALL other security measures
+	// ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
+	// ClassDB::bind_method(D_METHOD("load_extension_from_function", "path", "init_func"), &GDExtensionManager::load_extension_from_function);
+	// ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
+	// ClassDB::bind_method(D_METHOD("unload_extension", "path"), &GDExtensionManager::unload_extension);
+	// ClassDB::bind_method(D_METHOD("is_extension_loaded", "path"), &GDExtensionManager::is_extension_loaded);
 
-	ClassDB::bind_method(D_METHOD("get_loaded_extensions"), &GDExtensionManager::get_loaded_extensions);
-	ClassDB::bind_method(D_METHOD("get_extension", "path"), &GDExtensionManager::get_extension);
+	// ClassDB::bind_method(D_METHOD("get_loaded_extensions"), &GDExtensionManager::get_loaded_extensions);
+	// ClassDB::bind_method(D_METHOD("get_extension", "path"), &GDExtensionManager::get_extension);
 
 	BIND_ENUM_CONSTANT(LOAD_STATUS_OK);
 	BIND_ENUM_CONSTANT(LOAD_STATUS_FAILED);

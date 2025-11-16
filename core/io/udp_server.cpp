@@ -31,16 +31,17 @@
 #include "udp_server.h"
 
 void UDPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
-	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
-	ClassDB::bind_method(D_METHOD("get_local_port"), &UDPServer::get_local_port);
-	ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);
-	ClassDB::bind_method(D_METHOD("take_connection"), &UDPServer::take_connection);
-	ClassDB::bind_method(D_METHOD("stop"), &UDPServer::stop);
-	ClassDB::bind_method(D_METHOD("set_max_pending_connections", "max_pending_connections"), &UDPServer::set_max_pending_connections);
-	ClassDB::bind_method(D_METHOD("get_max_pending_connections"), &UDPServer::get_max_pending_connections);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_pending_connections", PROPERTY_HINT_RANGE, "0,256,1"), "set_max_pending_connections", "get_max_pending_connections");
+	// MODDING SECURITY: ALL network access disabled
+	// ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
+	// ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
+	// ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
+	// ClassDB::bind_method(D_METHOD("get_local_port"), &UDPServer::get_local_port);
+	// ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);
+	// ClassDB::bind_method(D_METHOD("take_connection"), &UDPServer::take_connection);
+	// ClassDB::bind_method(D_METHOD("stop"), &UDPServer::stop);
+	// ClassDB::bind_method(D_METHOD("set_max_pending_connections", "max_pending_connections"), &UDPServer::set_max_pending_connections);
+	// ClassDB::bind_method(D_METHOD("get_max_pending_connections"), &UDPServer::get_max_pending_connections);
+	// ADD_PROPERTY(PropertyInfo(Variant::INT, "max_pending_connections", PROPERTY_HINT_RANGE, "0,256,1"), "set_max_pending_connections", "get_max_pending_connections");
 }
 
 Error UDPServer::poll() {

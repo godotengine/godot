@@ -632,56 +632,60 @@ bool DirAccess::is_equivalent(const String &p_path_a, const String &p_path_b) co
 }
 
 void DirAccess::_bind_methods() {
-	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("create_temp", "prefix", "keep"), &DirAccess::_create_temp, DEFVAL(""), DEFVAL(false));
+	// MODDING SECURITY: ALL directory operations disabled
+	// User requirement: "don't let modders read directories delete files add files etc"
+	// All DirAccess functionality is completely blocked for security
 
-	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
-	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
-	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
-	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
-	ClassDB::bind_method(D_METHOD("get_files"), &DirAccess::get_files);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_files_at", "path"), &DirAccess::get_files_at);
-	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
-	ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
-	ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
-	ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("make_dir", "path"), &DirAccess::make_dir);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
-	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
-	ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
-	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
-	ClassDB::bind_method(D_METHOD("get_space_left"), &DirAccess::get_space_left);
-	ClassDB::bind_method(D_METHOD("copy", "from", "to", "chmod_flags"), &DirAccess::copy, DEFVAL(-1));
-	ClassDB::bind_static_method("DirAccess", D_METHOD("copy_absolute", "from", "to", "chmod_flags"), &DirAccess::copy_absolute, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
-	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
-	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("create_temp", "prefix", "keep"), &DirAccess::_create_temp, DEFVAL(""), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
-	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
-	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
+	// ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
+	// ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
+	// ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
+	// ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
+	// ClassDB::bind_method(D_METHOD("get_files"), &DirAccess::get_files);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("get_files_at", "path"), &DirAccess::get_files_at);
+	// ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
+	// ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
+	// ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
+	// ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));
+	// ClassDB::bind_method(D_METHOD("make_dir", "path"), &DirAccess::make_dir);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
+	// ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
+	// ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
+	// ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
+	// ClassDB::bind_method(D_METHOD("get_space_left"), &DirAccess::get_space_left);
+	// ClassDB::bind_method(D_METHOD("copy", "from", "to", "chmod_flags"), &DirAccess::copy, DEFVAL(-1));
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("copy_absolute", "from", "to", "chmod_flags"), &DirAccess::copy_absolute, DEFVAL(-1));
+	// ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
+	// ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
+	// ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
 
-	ClassDB::bind_method(D_METHOD("is_bundle", "path"), &DirAccess::is_bundle);
+	// ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
+	// ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
+	// ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
-	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
-	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
-	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
-	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
+	// ClassDB::bind_method(D_METHOD("is_bundle", "path"), &DirAccess::is_bundle);
 
-	ClassDB::bind_method(D_METHOD("get_filesystem_type"), &DirAccess::get_filesystem_type);
+	// ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
+	// ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
+	// ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
+	// ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
 
-	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
-	ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);
+	// ClassDB::bind_method(D_METHOD("get_filesystem_type"), &DirAccess::get_filesystem_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
+	// ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
+	// ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);
+
+	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
+	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
 }
 
 DirAccess::~DirAccess() {
