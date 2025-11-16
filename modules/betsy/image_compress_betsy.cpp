@@ -429,11 +429,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		return ERR_INVALID_DATA;
 	}
 
-	int img_width = r_img->get_width();
-	int img_height = r_img->get_height();
-	if (img_width % 4 != 0 || img_height % 4 != 0) {
-		img_width = img_width <= 2 ? img_width : (img_width + 3) & ~3;
-		img_height = img_height <= 2 ? img_height : (img_height + 3) & ~3;
+	int img_width = (r_img->get_width() + 3) & ~0x03;
+	int img_height = (r_img->get_height() + 3) & ~0x03;
+
+	if (r_img->get_width() != img_width || r_img->get_height() != img_height) {
+		// Align the image to 4x4 texels.
+		r_img->resize(img_width, img_height, Image::INTERPOLATE_NEAREST);
 	}
 
 	Error err = OK;
@@ -537,38 +538,9 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dst_texture_format.height = (height + 3) >> 2;
 		dst_texture_format.width = (width + 3) >> 2;
 
-		// Pad textures to nearest block by smearing.
-		if (width != src_mip_w || height != src_mip_h) {
-			const uint8_t *src_mip_read = r_img->ptr() + src_mip_ofs;
-
-			// Reserve the buffer for padded image data.
-			int px_size = Image::get_format_pixel_size(r_img->get_format());
-			src_image_ptr[0].resize(width * height * px_size);
-			uint8_t *ptrw = src_image_ptr[0].ptrw();
-
-			int x = 0, y = 0;
-			for (y = 0; y < src_mip_h; y++) {
-				for (x = 0; x < src_mip_w; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
-				}
-
-				// First, smear in x.
-				for (; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
-				}
-			}
-
-			// Then, smear in y.
-			for (; y < height; y++) {
-				for (x = 0; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
-				}
-			}
-		} else {
-			// Create a buffer filled with the source mip layer data.
-			src_image_ptr[0].resize(src_mip_size);
-			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
-		}
+		// Create a buffer filled with the source mip layer data.
+		src_image_ptr[0].resize(src_mip_size);
+		memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
 
 		// Create the textures on the GPU.
 		RID src_texture;
