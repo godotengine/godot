@@ -36,7 +36,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
 #include "core/extension/gdextension_interface_dump.gen.h"
-#include "core/extension/gdextension_interface_header_generator.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -280,7 +279,6 @@ static bool print_fps = false;
 #ifdef TOOLS_ENABLED
 static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
-static bool dump_gdextension_interface_header = false;
 static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
@@ -547,7 +545,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--version", "Display the version string.\n");
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
 	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
-	print_help_option("--no-header", "Do not print engine version and rendering driver/method header on startup.\n");
+	print_help_option("--no-header", "Do not print engine version and rendering method header on startup.\n");
 
 	print_help_title("Run options");
 	print_help_option("--, ++", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
@@ -709,7 +707,6 @@ void Main::print_help(const char *p_binary) {
 #endif
 	print_help_option("--build-solutions", "Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-gdextension-interface", "Generate a GDExtension header file \"gdextension_interface.h\" in the current folder. This file is the base file required to implement a GDExtension.\n", CLI_OPTION_AVAILABILITY_EDITOR);
-	print_help_option("--dump-gdextension-interface-json", "Generate a JSON dump of the GDExtension interface named \"gdextension_interface.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api", "Generate a JSON dump of the Godot API for GDExtension bindings named \"extension_api.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api-with-docs", "Generate JSON dump of the Godot API like the previous option, but including documentation.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--validate-extension-api <path>", "Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility.\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -996,7 +993,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #if !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 	String old_cwd = OS::get_singleton()->get_cwd();
-#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#ifdef MACOS_ENABLED
 	String new_cwd = OS::get_singleton()->get_bundle_resource_dir();
 	if (new_cwd.is_empty() || !new_cwd.is_absolute_path()) {
 		new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -1564,18 +1561,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
-			dump_gdextension_interface_header = true;
-			print_line("Dumping GDExtension interface header file");
-			// Hack. Not needed but otherwise we end up detecting that this should
-			// run the project instead of a cmdline tool.
-			// Needs full refactoring to fix properly.
-			main_args.push_back(arg);
-		} else if (arg == "--dump-gdextension-interface-json") {
-			// Register as an editor instance to use low-end fallback if relevant.
-			editor = true;
-			cmdline_tool = true;
 			dump_gdextension_interface = true;
-			print_line("Dumping GDExtension interface json file");
+			print_line("Dumping GDExtension interface header file");
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
@@ -2201,11 +2188,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
-	if (!editor) {
-		ResourceUID::get_singleton()->enable_reverse_cache();
-	}
-	ResourceUID::get_singleton()->load_from_cache(true); // Load UUIDs from cache.
-	ProjectSettings::get_singleton()->fix_autoload_paths(); // Handles autoloads saved as UID.
+	ResourceUID::get_singleton()->load_from_cache(true); // load UUIDs from cache.
 
 	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
 		audio_driver = NULL_AUDIO_DRIVER;
@@ -2709,12 +2692,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
 	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM, "default,windows,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM, "default,android,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM, "default,iOS,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.visionos", PROPERTY_HINT_ENUM, "default,visionOS,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM, "default,macos,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.visionos", PROPERTY_HINT_ENUM_SUGGESTION, "default,visionOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -4149,11 +4132,7 @@ int Main::start() {
 	// GDExtension API and interface.
 	{
 		if (dump_gdextension_interface) {
-			GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.json");
-		}
-
-		if (dump_gdextension_interface_header) {
-			GDExtensionInterfaceHeaderGenerator::generate_gdextension_interface_header("gdextension_interface.h");
+			GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.h");
 		}
 
 		if (dump_extension_api) {
@@ -4161,7 +4140,7 @@ int Main::start() {
 			GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
 		}
 
-		if (dump_gdextension_interface || dump_gdextension_interface_header || dump_extension_api) {
+		if (dump_gdextension_interface || dump_extension_api) {
 			return EXIT_SUCCESS;
 		}
 
