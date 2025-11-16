@@ -3209,16 +3209,20 @@ void GLTFDocument::_set_texture_transform_uv1(const Dictionary &p_dict, Ref<Base
 		if (extensions.has("KHR_texture_transform")) {
 			if (p_material.is_valid()) {
 				const Dictionary &texture_transform = extensions["KHR_texture_transform"];
-				const Array &offset_arr = texture_transform["offset"];
-				if (offset_arr.size() == 2) {
-					const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
-					p_material->set_uv1_offset(offset_vector3);
+				if (texture_transform.has("offset")) {
+					const Array offset_arr = texture_transform["offset"];
+					if (offset_arr.size() == 2) {
+						const Vector3 offset_vector3 = Vector3(offset_arr[0], offset_arr[1], 0.0f);
+						p_material->set_uv1_offset(offset_vector3);
+					}
 				}
 
-				const Array &scale_arr = texture_transform["scale"];
-				if (scale_arr.size() == 2) {
-					const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
-					p_material->set_uv1_scale(scale_vector3);
+				if (texture_transform.has("scale")) {
+					const Array scale_arr = texture_transform["scale"];
+					if (scale_arr.size() == 2) {
+						const Vector3 scale_vector3 = Vector3(scale_arr[0], scale_arr[1], 1.0f);
+						p_material->set_uv1_scale(scale_vector3);
+					}
 				}
 			}
 		}
