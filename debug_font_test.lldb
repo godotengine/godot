@@ -1,0 +1,75 @@
+settings set -- target.run-args "--test" "-tc" "*FontVariation*"
+
+# Cache hit returning found=false — something else cached the failure first
+breakpoint set -f text_server_adv.cpp -l 1301
+breakpoint modify 1 -c "!E->value.found"
+breakpoint command add 1
+  script print("==> cache hit with found=false")
+  bt 8
+  continue
+DONE
+
+# FT_Load_Glyph failed — caches found=false and returns false
+breakpoint set -f text_server_adv.cpp -l 1348
+breakpoint command add 2
+  script print("==> FT_Load_Glyph error, caching found=false")
+  p error
+  p glyph_index
+  bt 8
+  continue
+DONE
+
+# rasterize_bitmap returned found=false (size overflow)
+breakpoint set -f text_server_adv.cpp -l 1196
+breakpoint modify 3 -c "mw > 4096 || mh > 4096"
+breakpoint command add 3
+  script print("==> rasterize_bitmap size overflow")
+  p mw
+  p mh
+  bt 8
+  continue
+DONE
+
+# rasterize_bitmap returned found=false (no texture slot)
+breakpoint set -f text_server_adv.cpp -l 1202
+breakpoint modify 4 -c "tex_pos.index < 0"
+breakpoint command add 4
+  script print("==> rasterize_bitmap tex_pos.index < 0")
+  p mw
+  p mh
+  bt 8
+  continue
+DONE
+
+# End of _ensure_glyph: gl.found=false means rasterization silently failed
+breakpoint set -f text_server_adv.cpp -l 1540
+breakpoint modify 5 -c "!gl.found"
+breakpoint command add 5
+  script print("==> _ensure_glyph gl.found=false at end")
+  bt 8
+  continue
+DONE
+
+# FT_Render_Glyph failed in HB block (line 1495 = if (!error) after line 1494)
+breakpoint set -f text_server_adv.cpp -l 1495
+breakpoint modify 6 -c "error != 0"
+breakpoint command add 6
+  script print("==> FT_Render_Glyph failed in HB block")
+  script import lldb; f=lldb.debugger.GetSelectedTarget().GetProcess().GetSelectedThread().GetSelectedFrame(); print("error =", f.FindVariable("error").GetValue()); print("aa_mode =", f.FindVariable("aa_mode").GetValue())
+  bt 5
+  continue
+DONE
+
+# FT_Render_Glyph failed in else block (line 1504 = if (!error) after line 1503)
+breakpoint set -f text_server_adv.cpp -l 1504
+breakpoint modify 7 -c "error != 0"
+breakpoint command add 7
+  script print("==> FT_Render_Glyph failed in else block")
+  p error
+  p aa_mode
+  p slot->format
+  bt 5
+  continue
+DONE
+
+process launch
