@@ -251,8 +251,8 @@
 			[codeblocks]
 			[gdscript]
 			func inertia_from_principal(principal_inertia: Vector3, principal_axes: Basis):
-				var principal_inertia_tensor : Basis = Basis.from_scale(principal_inertia)
-				var inertia_tensor : Basis = principal_axes * principal_inertia_tensor * principal_axes.transposed()
+				var principal_inertia_tensor: Basis = Basis.from_scale(principal_inertia)
+				var inertia_tensor: Basis = principal_axes * principal_inertia_tensor * principal_axes.transposed()
 				inertia = Vector3(inertia_tensor.x.x, inertia_tensor.y.y, inertia_tensor.z.z)
 				product_of_inertia = Vector3(-inertia_tensor.y.z, -inertia_tensor.x.z, -inertia_tensor.x.y)
 			[/gdscript]
@@ -260,7 +260,7 @@
 			func InertiaFromPrincipal(Vector3 principalInertia, Basis principalAxes)
 			{
 				Basis principalInertiaTensor = Basis.FromScale(principalInertia);
-				Basis inertiaTensor  = principalAxes * principalInertiaTensor * principalAxes.Transposed();
+				Basis inertiaTensor = principalAxes * principalInertiaTensor * principalAxes.Transposed();
 				Inertia = Vector3(InertiaTensor.X.X, InertiaTensor.Y.Y, InertiaTensor.Z.Z);
 				ProductOfInertia = Vector3(-InertiaTensor.Y.Z, -InertiaTensor.X.Z, -InertiaTensor.X.Y);
 			}
