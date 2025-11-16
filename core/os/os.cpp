@@ -408,6 +408,10 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
+String OS::get_cwd() const {
+	return ".";
+}
+
 Dictionary OS::get_memory_info() const {
 	Dictionary meminfo;
 
