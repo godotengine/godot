@@ -5435,6 +5435,10 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							}
 							p_new_sd->width += gl.advance * gl.repeat;
 						}
+						if (p_new_sd->glyphs.is_empty() && gl.x_off < 0.0) {
+							gl.advance += -gl.x_off;
+							gl.x_off = 0.0;
+						}
 						p_new_sd->glyphs.push_back(gl);
 					}
 				}
