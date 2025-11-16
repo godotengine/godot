@@ -543,7 +543,7 @@ void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture2D
 }
 
 void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
-	if (!FileAccess::exists(p_path) || !previews_enabled) {
+	if (!FileAccess::exists(p_path) || !previews_enabled || !EditorResourcePreview::get_singleton()) {
 		return;
 	}
 
@@ -1162,7 +1162,7 @@ void EditorFileDialog::update_file_list() {
 			d["path"] = file_info.path;
 			item_list->set_item_metadata(-1, d);
 
-			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled) {
+			if (display_mode == DISPLAY_THUMBNAILS && previews_enabled && EditorResourcePreview::get_singleton()) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(file_info.path, callable_mp(this, &EditorFileDialog::_thumbnail_result));
 			}
 
