@@ -349,36 +349,52 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 		old_input_array = _event_list_to_array_helper(defaults);
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		EditorSettings::get_singleton()->mark_setting_changed("builtin_action_overrides");
+		EditorSettings::get_singleton()->set_builtin_action_override(p_name, p_events);
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Built-in Action: %s"), p_name));
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, p_events);
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 }
 
 void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
-	// History must be fixed based on the EditorSettings object because current_sc would
-	// incorrectly make this action use the scene history.
-	undo_redo->force_fixed_history();
-	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
-	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
-	undo_redo->add_do_method(this, "_update_shortcuts");
-	undo_redo->add_undo_method(this, "_update_shortcuts");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
+	if (_is_in_project_manager()) {
+		// Project Manager doesn't have EditorUndoRedoManager, so apply changes directly.
+		current_sc->set_events(p_events);
+		EditorSettings::get_singleton()->mark_setting_changed("shortcuts");
+		_update_shortcuts();
+		_settings_changed();
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
+		// History must be fixed based on the EditorSettings object because current_sc would
+		// incorrectly make this action use the scene history.
+		undo_redo->force_fixed_history();
+		undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
+		undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
+		undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
+	}
 
 	bool path_is_orbit_mod = p_path == "spatial_editor/viewport_orbit_modifier_1" || p_path == "spatial_editor/viewport_orbit_modifier_2";
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
