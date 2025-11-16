@@ -394,6 +394,14 @@ AnimationPlayer *GLTFState::get_animation_player(int idx) {
 	return animation_players[idx];
 }
 
+bool GLTFState::get_ignore_multimesh_instances() {
+	return ignore_multimesh_instances;
+}
+
+void GLTFState::set_ignore_multimesh_instances(bool p_ignore_multimesh_instances) {
+	ignore_multimesh_instances = p_ignore_multimesh_instances;
+}
+
 void GLTFState::set_discard_meshes_and_materials(bool p_discard_meshes_and_materials) {
 	discard_meshes_and_materials = p_discard_meshes_and_materials;
 }

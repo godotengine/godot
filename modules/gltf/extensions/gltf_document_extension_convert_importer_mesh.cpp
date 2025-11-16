@@ -46,7 +46,6 @@ void GLTFDocumentExtensionConvertImporterMesh::_copy_meta(Object *p_src_object, 
 
 Node3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d) {
 	if (p_importer_mesh_instance_3d && p_importer_mesh_instance_3d->get_multimesh().is_valid()) {
-
 		Ref<MultiMesh> mm = p_importer_mesh_instance_3d->get_multimesh();
 		Ref<ImporterMesh> mesh = p_importer_mesh_instance_3d->get_mesh();
 

@@ -2614,6 +2614,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 
 		MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
 		mm_node->set_multimesh(mm);
+		mm_node->set_transform(src_mesh_node->get_transform());
 		mm_node->set_name(src_mesh_node->get_name());
 		_copy_meta(p_node, mm_node);
 		p_node->replace_by(mm_node);

@@ -49,12 +49,6 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &GLTFNode::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &GLTFNode::get_skeleton);
 	ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &GLTFNode::set_skeleton);
-	ClassDB::bind_method(D_METHOD("get_multimesh_translation"), &GLTFNode::get_multimesh_translation);
-	ClassDB::bind_method(D_METHOD("set_multimesh_translation", "multimesh_translation"), &GLTFNode::set_multimesh_translation);
-	ClassDB::bind_method(D_METHOD("get_multimesh_rotation"), &GLTFNode::get_multimesh_rotation);
-	ClassDB::bind_method(D_METHOD("set_multimesh_rotation", "multimesh_rotation"), &GLTFNode::set_multimesh_rotation);
-	ClassDB::bind_method(D_METHOD("get_multimesh_scale"), &GLTFNode::get_multimesh_scale);
-	ClassDB::bind_method(D_METHOD("set_multimesh_scale", "multimesh_scale"), &GLTFNode::set_multimesh_scale);
 	ClassDB::bind_method(D_METHOD("get_position"), &GLTFNode::get_position);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &GLTFNode::set_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &GLTFNode::get_rotation);
@@ -80,9 +74,6 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera"), "set_camera", "get_camera"); // GLTFCameraIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // GLTFSkeletonIndex
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_translation"), "set_multimesh_translation", "get_multimesh_translation"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_rotation"), "set_multimesh_rotation", "get_multimesh_rotation"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "multimesh_scale"), "set_multimesh_scale", "get_multimesh_scale"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
@@ -152,30 +143,6 @@ GLTFSkeletonIndex GLTFNode::get_skeleton() {
 
 void GLTFNode::set_skeleton(GLTFSkeletonIndex p_skeleton) {
 	skeleton = p_skeleton;
-}
-
-int GLTFNode::get_multimesh_translation() {
-	return multimesh_translation;
-}
-
-void GLTFNode::set_multimesh_translation(GLTFSkeletonIndex p_multimesh_translation) {
-	multimesh_translation = p_multimesh_translation;
-}
-
-int GLTFNode::get_multimesh_rotation() {
-	return multimesh_rotation;
-}
-
-void GLTFNode::set_multimesh_rotation(GLTFSkeletonIndex p_multimesh_rotation) {
-	multimesh_rotation = p_multimesh_rotation;
-}
-
-int GLTFNode::get_multimesh_scale() {
-	return multimesh_scale;
-}
-
-void GLTFNode::set_multimesh_scale(GLTFSkeletonIndex p_multimesh_scale) {
-	multimesh_scale = p_multimesh_scale;
 }
 
 Vector3 GLTFNode::get_position() {

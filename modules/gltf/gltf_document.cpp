@@ -657,23 +657,6 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 				}
 			}
 
-			if (extensions.has("EXT_mesh_gpu_instancing")) {
-				Dictionary mesh_gpu_instancing = extensions["EXT_mesh_gpu_instancing"];
-				if (mesh_gpu_instancing.has("attributes")) {
-					Dictionary instancing_attributes = mesh_gpu_instancing["attributes"];
-
-					if (instancing_attributes.has("TRANSLATION")) {
-						node->multimesh_translation = instancing_attributes["TRANSLATION"];
-					}
-					if (instancing_attributes.has("ROTATION")) {
-						node->multimesh_rotation = instancing_attributes["ROTATION"];
-					}
-					if (instancing_attributes.has("SCALE")) {
-						node->multimesh_scale = instancing_attributes["SCALE"];
-					}
-				}
-			}
-
 			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 				ERR_CONTINUE(ext.is_null());
 				Error err = ext->parse_node_extensions(p_state, node, extensions);
@@ -4129,6 +4112,44 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 	return mesh_i;
 }
 
+GLTFMeshIndex GLTFDocument::_convert_multimesh_to_gltf(Ref<GLTFState> p_state, MultiMeshInstance3D *p_multi_mesh_instance) {
+	ERR_FAIL_NULL_V(p_multi_mesh_instance, -1);
+	// TODO missing checks
+
+	Ref<MultiMesh> multi_mesh = p_multi_mesh_instance->get_multimesh();
+	Ref<Mesh> mesh_resource = multi_mesh->get_mesh();
+
+	TypedArray<Material> instance_materials;
+	for (int32_t surface_i = 0; surface_i < mesh_resource->get_surface_count(); surface_i++) {
+		// TODO consider override?
+		Ref<Material> mat = mesh_resource->surface_get_material(surface_i);
+
+		instance_materials.append(mat);
+	}
+
+	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
+	Vector<float> blend_weights;
+	int32_t blend_count = mesh_resource->get_blend_shape_count();
+	blend_weights.resize(blend_count);
+	for (int32_t blend_i = 0; blend_i < blend_count; blend_i++) {
+		blend_weights.write[blend_i] = 0.0f;
+	}
+
+	Ref<GLTFMesh> gltf_mesh;
+	gltf_mesh.instantiate();
+	if (!mesh_resource->get_name().is_empty()) {
+		gltf_mesh->set_original_name(mesh_resource->get_name());
+		gltf_mesh->set_name(_gen_unique_name_static(p_state->unique_names, mesh_resource->get_name()));
+	}
+	gltf_mesh->set_instance_materials(instance_materials);
+	gltf_mesh->set_mesh(current_mesh);
+	gltf_mesh->set_blend_weights(blend_weights);
+	GLTFMeshIndex mesh_i = p_state->meshes.size();
+	p_state->meshes.push_back(gltf_mesh);
+
+	return mesh_i;
+}
+
 ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
@@ -4136,13 +4157,6 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 
 	ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->get_name());
-
-	if (gltf_node->multimesh_translation >= 0 || gltf_node->multimesh_rotation >= 0 || gltf_node->multimesh_scale >= 0) {
-		Ref<MultiMesh> multimesh = _generate_multimesh(p_state, gltf_node);
-		if (multimesh.is_valid()) {
-			mi->set_multimesh(multimesh);
-		}
-	}
 
 	p_state->scene_mesh_instances.insert(p_node_index, mi);
 	Ref<GLTFMesh> mesh = p_state->meshes.write[gltf_node->mesh];
@@ -4156,100 +4170,6 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 	mi->set_mesh(import_mesh);
 	import_mesh->merge_meta_from(*mesh);
 	return mi;
-}
-
-Ref<MultiMesh> GLTFDocument::_generate_multimesh(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node) {
-	int instances_count = 0;
-	Vector3 *translation_ptr = nullptr;
-	Quaternion *rotation_ptr = nullptr;
-	Vector3 *scale_ptr = nullptr;
-
-	if (p_gltf_node->multimesh_translation >= 0) {
-		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_translation];
-		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC3) {
-			ERR_PRINT(vformat("glTF import: Invalid translation accessor_type: %i", accessor->accessor_type));
-			return nullptr;
-		}
-		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid translation component_type: %i", accessor->component_type));
-			return nullptr;
-		}
-		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[accessor->buffer_view];
-		translation_ptr = (Vector3 *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
-
-		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: translation instances_count: %i", accessor->get_count()));
-			return nullptr;
-		}
-		instances_count = accessor->get_count();
-	}
-
-	if (p_gltf_node->multimesh_rotation >= 0) {
-		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_rotation];
-		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC4) {
-			ERR_PRINT(vformat("glTF import: Invalid rotation accessor_type: %i", accessor->accessor_type));
-			return nullptr;
-		}
-		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid rotation component_type: %i", accessor->component_type));
-			return nullptr;
-		}
-
-		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[accessor->buffer_view];
-		rotation_ptr = (Quaternion *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
-
-		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: rotation instances_count: %i", accessor->get_count()));
-			return nullptr;
-		}
-		instances_count = accessor->get_count();
-	}
-
-	if (p_gltf_node->multimesh_scale >= 0) {
-		Ref<GLTFAccessor> accessor = p_state->accessors[p_gltf_node->multimesh_scale];
-		if (accessor->accessor_type != GLTFAccessor::TYPE_VEC3) {
-			ERR_PRINT(vformat("glTF import: Invalid scale accessor_type: %i", accessor->accessor_type));
-			return nullptr;
-		}
-		if (accessor->component_type != GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT) {
-			ERR_PRINT(vformat("glTF import: Invalid scale component_type: %i", accessor->component_type));
-			return nullptr;
-		}
-
-		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[accessor->buffer_view];
-		scale_ptr = (Vector3 *)(p_state->buffers[buffer_view->get_buffer()].ptr() + buffer_view->get_byte_offset());
-
-		if (instances_count && instances_count != accessor->get_count()) {
-			ERR_PRINT(vformat("glTF import: scale instances_count: %i", accessor->get_count()));
-			return nullptr;
-		}
-		instances_count = accessor->get_count();
-	}
-
-	Ref<MultiMesh> multimesh = memnew(MultiMesh);
-	multimesh->set_instance_count(0);
-	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-	multimesh->set_instance_count(instances_count);
-
-	for (int i = 0; i < instances_count; i++) {
-		Transform3D tr;
-
-		if (translation_ptr) {
-			tr = tr.translated(translation_ptr[i]);
-		}
-
-		if (rotation_ptr) {
-			tr.set_basis(Basis(rotation_ptr[i]));
-		}
-
-		if (scale_ptr) {
-			tr.scale_basis(scale_ptr[i]);
-		}
-
-		multimesh->set_instance_transform(i, tr);
-	}
-
-	return multimesh;
 }
 
 Light3D *GLTFDocument::_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index) {
@@ -4341,7 +4261,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		_convert_skeleton_to_gltf(skel, p_state, p_gltf_parent, p_gltf_root, gltf_node);
 		// We ignore the Godot Engine node that is the skeleton.
 		return;
-	} else if (Object::cast_to<MultiMeshInstance3D>(p_current)) {
+	} else if (Object::cast_to<MultiMeshInstance3D>(p_current) && !p_state->get_ignore_multimesh_instances()) {
 		MultiMeshInstance3D *multi = Object::cast_to<MultiMeshInstance3D>(p_current);
 		_convert_multi_mesh_instance_to_gltf(multi, p_gltf_parent, p_gltf_root, gltf_node, p_state);
 #ifdef MODULE_CSG_ENABLED

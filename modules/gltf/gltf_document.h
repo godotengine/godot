@@ -174,7 +174,6 @@ private:
 	BoneAttachment3D *_generate_bone_attachment(Skeleton3D *p_godot_skeleton, const Ref<GLTFNode> &p_bone_node);
 	BoneAttachment3D *_generate_bone_attachment_compat_4pt4(Ref<GLTFState> p_state, Skeleton3D *p_skeleton, const GLTFNodeIndex p_node_index, const GLTFNodeIndex p_bone_index);
 	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
-	Ref<MultiMesh> _generate_multimesh(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node);
 	Camera3D *_generate_camera(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
@@ -277,6 +276,8 @@ public:
 			Ref<GLTFNode> p_gltf_node);
 	GLTFMeshIndex _convert_mesh_to_gltf(Ref<GLTFState> p_state,
 			MeshInstance3D *p_mesh_instance);
+	static GLTFMeshIndex _convert_multimesh_to_gltf(Ref<GLTFState> p_state,
+			MultiMeshInstance3D *p_multi_mesh_instance);
 
 	GLTFNodeIndex _node_and_or_bone_to_gltf_node_index(Ref<GLTFState> p_state, const Vector<StringName> &p_node_subpath, const Node *p_godot_node);
 	bool _convert_animation_node_track(Ref<GLTFState> p_state,

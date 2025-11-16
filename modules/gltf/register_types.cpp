@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
+#include "extensions/gltf_document_extension_mesh_gpu_instancing.h"
 #include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
 #include "extensions/gltf_spec_gloss.h"
@@ -113,6 +114,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
+		GDREGISTER_CLASS(GLTFDocumentExtensionMeshGPUInstancing);
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
@@ -132,6 +134,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		// Ensure physics is first in this list so that physics nodes are created before other nodes.
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 #endif // PHYSICS_3D_DISABLED
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionMeshGPUInstancing);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
 		bool is_editor = Engine::get_singleton()->is_editor_hint();

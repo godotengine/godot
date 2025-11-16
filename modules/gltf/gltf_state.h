@@ -73,6 +73,7 @@ protected:
 
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
+	bool ignore_multimesh_instances = false;
 	bool discard_meshes_and_materials = false;
 	bool force_generate_tangents = false;
 	bool create_animations = true;
@@ -175,6 +176,9 @@ public:
 
 	bool get_extract_textures();
 	void set_extract_textures(bool p_extract_textures);
+
+	bool get_ignore_multimesh_instances();
+	void set_ignore_multimesh_instances(bool p_ignore_multimesh_instances);
 
 	bool get_discard_meshes_and_materials();
 	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
