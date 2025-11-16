@@ -4900,12 +4900,12 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 	HashSet<RID> rids;
 
-	if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
+	if (preview_node && preview_node->get_child_count() > 0) {
+		_insert_rid_recursive(preview_node, rids);
+	} else if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-
-		Array children = first_selected_node->get_children();
 
 		if (first_selected_node) {
 			_insert_rid_recursive(first_selected_node, rids);
