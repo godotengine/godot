@@ -261,8 +261,8 @@
 			{
 				Basis principalInertiaTensor = Basis.FromScale(principalInertia);
 				Basis inertiaTensor = principalAxes * principalInertiaTensor * principalAxes.Transposed();
-				Inertia = Vector3(InertiaTensor.X.X, InertiaTensor.Y.Y, InertiaTensor.Z.Z);
-				ProductOfInertia = Vector3(-InertiaTensor.Y.Z, -InertiaTensor.X.Z, -InertiaTensor.X.Y);
+				Inertia = Vector3(inertiaTensor.X.X, inertiaTensor.Y.Y, inertiaTensor.Z.Z);
+				ProductOfInertia = Vector3(-inertiaTensor.Y.Z, -inertiaTensor.X.Z, -inertiaTensor.X.Y);
 			}
 			[/csharp]
 			[/codeblocks]
