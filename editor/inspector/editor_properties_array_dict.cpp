@@ -280,7 +280,13 @@ void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 
 void EditorPropertyArray::_change_type_menu(int p_index) {
 	if (p_index == Variant::VARIANT_MAX) {
+		if (changing_type_index == EditorPropertyArrayObject::NOT_CHANGING_TYPE) {
+			WARN_PRINT("Attempted to remove an array element without a valid type selection.");
+			return;
+		}
+
 		_remove_pressed(changing_type_index);
+		changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 		return;
 	}
 
@@ -562,10 +568,17 @@ void EditorPropertyArray::update_property() {
 }
 
 void EditorPropertyArray::_remove_pressed(int p_slot_index) {
+	ERR_FAIL_COND_MSG(p_slot_index < 0 || p_slot_index >= slots.size(),
+			vformat("Invalid array slot index '%d' for removal.", p_slot_index));
+
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
 
 	emit_changed(get_edited_property(), array);
+
+	if (changing_type_index == p_slot_index) {
+		changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
+	}
 }
 
 void EditorPropertyArray::_button_draw() {

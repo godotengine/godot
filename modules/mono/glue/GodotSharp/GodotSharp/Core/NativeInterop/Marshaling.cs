@@ -370,7 +370,21 @@ namespace Godot.NativeInterop
             var ret = new T[length];
 
             for (int i = 0; i < length; i++)
-                ret[i] = (T)(object)array[i].AsGodotObject();
+            {
+                GodotObject godotObject = array[i].AsGodotObject();
+
+                if (godotObject is EncodedObjectAsId encoded)
+                {
+                    GodotObject? decoded = GodotObject.InstanceFromId(encoded.ObjectId);
+
+                    if (decoded != null)
+                    {
+                        godotObject = decoded;
+                    }
+                }
+
+                ret[i] = (T)(object)godotObject;
+            }
 
             return ret;
         }

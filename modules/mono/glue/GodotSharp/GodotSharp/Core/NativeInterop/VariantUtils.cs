@@ -500,7 +500,21 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GodotObject ConvertToGodotObject(in godot_variant p_var)
-            => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
+        {
+            GodotObject godotObject = InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
+
+            if (godotObject is EncodedObjectAsId encoded)
+            {
+                GodotObject? decoded = GodotObject.InstanceFromId(encoded.ObjectId);
+
+                if (decoded != null)
+                {
+                    return decoded;
+                }
+            }
+
+            return godotObject;
+        }
 
         public static string ConvertToString(in godot_variant p_var)
         {
