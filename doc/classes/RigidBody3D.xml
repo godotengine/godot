@@ -257,7 +257,7 @@
 				product_of_inertia = Vector3(-inertia_tensor.y.z, -inertia_tensor.x.z, -inertia_tensor.x.y)
 			[/gdscript]
 			[csharp]
-			func InertiaFromPrincipal(Vector3 principalInertia, Basis principalAxes)
+			void InertiaFromPrincipal(Vector3 principalInertia, Basis principalAxes)
 			{
 				Basis principalInertiaTensor = Basis.FromScale(principalInertia);
 				Basis inertiaTensor = principalAxes * principalInertiaTensor * principalAxes.Transposed();
