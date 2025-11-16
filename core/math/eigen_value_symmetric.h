@@ -43,7 +43,7 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 	Vector3 b;
 	Vector3 z;
 
-	for (int ip = 0; ip < N; ++ip) {
+	for (int ip = 0; ip < N; ip++) {
 		// Initialize b and output to diagonal of a
 		b[ip] = a[ip][ip];
 		r_eig_val[ip] = a[ip][ip];
@@ -52,11 +52,11 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 		z[ip] = 0.0;
 	}
 
-	for (int sweep = 0; sweep < MAX_SWEEPS; ++sweep) {
+	for (int sweep = 0; sweep < MAX_SWEEPS; sweep++) {
 		// sum the off-diagonal elements of a
 		real_t sm = 0.0;
-		for (int ip = 0; ip < N; ++ip) {
-			for (int iq = ip + 1; iq < N; ++iq) {
+		for (int ip = 0; ip < N; ip++) {
+			for (int iq = ip + 1; iq < N; iq++) {
 				sm += Math::abs(a[ip][iq]);
 			}
 		}
@@ -69,8 +69,8 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 
 		real_t thresh = sweep < 4 ? 0.2 * avg_sm : CMP_EPSILON2;
 
-		for (int ip = 0; ip < N - 1; ++ip) {
-			for (int iq = ip + 1; iq < N; ++iq) {
+		for (int ip = 0; ip < N - 1; ip++) {
+			for (int iq = ip + 1; iq < N; iq++) {
 				real_t &a_pq = a[ip][iq];
 				real_t &eigval_p = r_eig_val[ip];
 				real_t &eigval_q = r_eig_val[iq];
@@ -115,16 +115,16 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 	m_a[m_k][m_l] = h + s * (g - h * tau);
 
 					int j;
-					for (j = 0; j < ip; ++j) {
+					for (j = 0; j < ip; j++) {
 						GODOT_EVS_ROTATE(a, j, ip, j, iq);
 					}
-					for (j = ip + 1; j < iq; ++j) {
+					for (j = ip + 1; j < iq; j++) {
 						GODOT_EVS_ROTATE(a, ip, j, j, iq);
 					}
-					for (j = iq + 1; j < N; ++j) {
+					for (j = iq + 1; j < N; j++) {
 						GODOT_EVS_ROTATE(a, ip, j, iq, j);
 					}
-					for (j = 0; j < N; ++j) {
+					for (j = 0; j < N; j++) {
 						GODOT_EVS_ROTATE(r_eig_vec, j, ip, j, iq);
 					}
 
@@ -133,7 +133,7 @@ bool eigen_value_symmetric(const Basis &p_matrix, Basis &r_eig_vec, Vector3 &r_e
 			}
 		}
 		// Update eigenvalues with the sum of ta_pq and reinitialize z
-		for (int ip = 0; ip < N; ++ip) {
+		for (int ip = 0; ip < N; ip++) {
 			b[ip] += z[ip];
 			r_eig_val[ip] = b[ip];
 			z[ip] = 0.0;
