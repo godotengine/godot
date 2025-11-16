@@ -442,13 +442,13 @@ Error AudioDriverCoreAudio::init_input_device() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	capture_mix_rate = mix_rate;
-    
-    if (abs(hw_mix_rate - mix_rate) > 1.0) {
-        WARN_PRINT("CoreAudio: Input device hardware rate (" + rtos(hw_mix_rate) + " Hz) differs from output mix rate (" + itos(mix_rate) + " Hz). Forcing input to " + itos(mix_rate) + " Hz to avoid sample rate mismatch.");
-    }
+
+	if (abs(hw_mix_rate - mix_rate) > 1.0) {
+		WARN_PRINT("CoreAudio: Input device hardware rate (" + rtos(hw_mix_rate) + " Hz) differs from output mix rate (" + itos(mix_rate) + " Hz). Forcing input to " + itos(mix_rate) + " Hz to avoid sample rate mismatch.");
+	}
 #else
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
-	capture_mix_rate = hw_mix_rate; 
+	capture_mix_rate = hw_mix_rate;
 #endif
 
 	memset(&strdesc, 0, sizeof(strdesc));
@@ -470,7 +470,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	buffer_size = capture_buffer_frames * capture_channels;
 	input_buf.resize(buffer_size);
-	
+
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));
 	callback.inputProc = &AudioDriverCoreAudio::input_callback;
