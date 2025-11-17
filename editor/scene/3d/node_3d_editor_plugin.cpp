@@ -6381,8 +6381,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
-
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
@@ -8366,12 +8364,6 @@ void Node3DEditor::update_gizmo_opacity() {
 	}
 }
 
-void Node3DEditor::_on_editor_settings_changed() {
-	if (EditorSettings::get_singleton()->get_changed_settings().has("editors/3d/manipulator_gizmo_opacity")) {
-		update_gizmo_opacity();
-	}
-}
-
 void Node3DEditor::update_grid() {
 	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
@@ -8825,7 +8817,6 @@ void Node3DEditor::_notification(int p_what) {
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
-			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -8846,7 +8837,6 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
-			EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -8874,6 +8864,11 @@ void Node3DEditor::_notification(int p_what) {
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
+
+				for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+					viewports[i]->update_transform_gizmo_view();
+				}
+				update_gizmo_opacity();
 			}
 		} break;
 
