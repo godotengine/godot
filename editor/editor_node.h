@@ -750,6 +750,8 @@ public:
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
+	static Button *get_distraction_free_button() { return singleton->distraction_free; }
+
 	static String adjust_scene_name_casing(const String &p_root_name);
 	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
 
@@ -800,6 +802,7 @@ public:
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+	void update_distraction_free_button_theme();
 
 	void set_center_split_offset(int p_offset);
 
