@@ -24,15 +24,21 @@ layout(location = 11) in vec4 weight_attrib;
 
 #include "canvas_uniforms_inc.glsl"
 
-layout(location = 0) out vec2 uv_interp;
+layout(location = 0) out vec4 uv_vertex_interp;
 layout(location = 1) out vec4 color_interp;
-layout(location = 2) out vec2 vertex_interp;
+
+#ifndef USE_ATTRIBUTES
+// Varyings so the per-instance info can be used in the fragment shader
+layout(location = 2) out flat vec4 varying_A;
+layout(location = 3) out flat uvec4 varying_B;
+layout(location = 4) out flat uvec4 varying_C;
 
 #ifdef USE_NINEPATCH
-
-layout(location = 3) out vec2 pixel_size_interp;
-
-#endif
+layout(location = 5) out flat vec4 varying_D;
+layout(location = 6) out flat vec4 varying_E;
+layout(location = 7) out vec2 pixel_size_interp;
+#endif // USE_NINEPATCH
+#endif // !USE_ATTRIBUTES
 
 #define read_draw_data_color_texture_pixel_size params.color_texture_pixel_size
 
@@ -60,16 +66,6 @@ layout(location = 13) in vec4 attrib_F;
 #endif // USE_PRIMITIVE
 layout(location = 14) in uvec4 attrib_G;
 layout(location = 15) in uvec4 attrib_H;
-
-// Varyings so the per-instance info can be used in the fragment shader
-layout(location = 5) out flat vec4 varying_A;
-layout(location = 6) out flat uvec4 varying_B;
-layout(location = 7) out flat uvec4 varying_C;
-
-#ifdef USE_NINEPATCH
-layout(location = 8) out flat vec4 varying_D;
-layout(location = 9) out flat vec4 varying_E;
-#endif // USE_NINEPATCH
 
 #define read_draw_data_world_x attrib_A.xy
 #define read_draw_data_world_y attrib_A.zw
@@ -295,8 +291,7 @@ void main() {
 		uv += 1e-5;
 	}
 
-	vertex_interp = vertex;
-	uv_interp = uv;
+	uv_vertex_interp = vec4(uv, vertex);
 
 	gl_Position = canvas_data.screen_transform * vec4(vertex, 0.0, 1.0);
 
@@ -313,15 +308,8 @@ void main() {
 
 #include "canvas_uniforms_inc.glsl"
 
-layout(location = 0) in vec2 uv_interp;
+layout(location = 0) in vec4 uv_vertex_interp;
 layout(location = 1) in vec4 color_interp;
-layout(location = 2) in vec2 vertex_interp;
-
-#ifdef USE_NINEPATCH
-
-layout(location = 3) in vec2 pixel_size_interp;
-
-#endif
 
 #define read_draw_data_color_texture_pixel_size params.color_texture_pixel_size
 
@@ -336,21 +324,22 @@ layout(location = 3) in vec2 pixel_size_interp;
 #else // !USE_ATTRIBUTES
 
 // Can all be flat as they are the same for the whole batched instance
-layout(location = 5) in flat vec4 varying_A;
+layout(location = 2) in flat vec4 varying_A;
 
 #define read_draw_data_world_x varying_A.xy
 #define read_draw_data_world_y varying_A.zw
 
-layout(location = 6) in flat uvec4 varying_B;
-layout(location = 7) in flat uvec4 varying_C;
+layout(location = 3) in flat uvec4 varying_B;
+layout(location = 4) in flat uvec4 varying_C;
 #define read_draw_data_flags varying_B.x
 #define read_draw_data_instance_offset varying_B.y
 #define read_draw_data_src_rect (varying_B.zw)
 #define read_draw_data_lights varying_C
 
 #ifdef USE_NINEPATCH
-layout(location = 8) in flat vec4 varying_D;
-layout(location = 9) in flat vec4 varying_E;
+layout(location = 5) in flat vec4 varying_D;
+layout(location = 6) in flat vec4 varying_E;
+layout(location = 7) in vec2 pixel_size_interp;
 #define read_draw_data_ninepatch_margins varying_D
 #define read_draw_data_dst_rect_z varying_E.x
 #define read_draw_data_dst_rect_w varying_E.y
@@ -574,8 +563,8 @@ float msdf_median(float r, float g, float b) {
 
 void main() {
 	vec4 color = color_interp;
-	vec2 uv = uv_interp;
-	vec2 vertex = vertex_interp;
+	vec2 uv = uv_vertex_interp.xy;
+	vec2 vertex = uv_vertex_interp.zw;
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	vec4 src_rect = vec4(unpackHalf2x16(read_draw_data_src_rect.x), unpackHalf2x16(read_draw_data_src_rect.y));
