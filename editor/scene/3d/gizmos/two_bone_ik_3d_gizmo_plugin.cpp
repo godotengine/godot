@@ -134,35 +134,28 @@ Ref<ArrayMesh> TwoBoneIK3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, T
 
 		int root_bone = p_ik->get_root_bone(i);
 		int middle_bone = p_ik->get_middle_bone(i);
-		int end_bone = p_ik->get_end_bone(i);
-
-		bool is_extended = p_ik->is_end_bone_extended(i) && p_ik->get_end_bone_length(i) > 0.0f;
 
 		Transform3D root_gp = p_skeleton->get_bone_global_rest(root_bone);
 		Transform3D mid_gp = p_skeleton->get_bone_global_rest(middle_bone);
-		Transform3D end_gp = p_skeleton->get_bone_global_rest(end_bone);
-
-		Vector3 end_point = end_gp.origin;
-		if (is_extended) {
-			end_point += end_gp.basis.get_rotation_quaternion().xform(p_ik->get_bone_axis(end_bone, p_ik->get_end_bone_direction(i))).normalized() * p_ik->get_end_bone_length(i);
-		}
+		Vector3 root_vec = p_ik->get_root_bone_vector(i);
+		Vector3 mid_vec = p_ik->get_middle_bone_vector(i);
 
 		bones.write[0] = root_bone;
 		surface_tool->set_bones(bones);
 		surface_tool->set_weights(weights);
-		draw_line(surface_tool, root_gp.origin, mid_gp.origin, bone_color);
+		draw_line(surface_tool, root_gp.origin, root_gp.translated_local(root_vec).origin, bone_color);
 
 		bones.write[0] = middle_bone;
 		surface_tool->set_bones(bones);
 		surface_tool->set_weights(weights);
-		draw_line(surface_tool, mid_gp.origin, end_point, bone_color);
+		draw_line(surface_tool, mid_gp.origin, mid_gp.translated_local(mid_vec).origin, bone_color);
 
 		Vector3 pole_vector = p_ik->get_pole_direction_vector(i);
 		if (pole_vector.is_zero_approx()) {
 			continue;
 		}
 
-		float pole_length = MIN(root_gp.origin.distance_to(mid_gp.origin), mid_gp.origin.distance_to(end_point)) * 0.25;
+		float pole_length = MIN(root_vec.length(), mid_vec.length()) * 0.25;
 		draw_arrow(surface_tool, mid_gp.origin, mid_gp.basis.get_rotation_quaternion().xform(pole_vector).normalized(), pole_length, bone_color);
 	}
 
