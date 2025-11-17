@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SandboxBase" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for sandbox implementations providing default/dummy implementations.
+	</brief_description>
+	<description>
+		SandboxBase is a base class that provides default implementations for sandbox functionality. This allows the Sandbox class to work without libriscv dependencies for testing purposes.
+
+		It provides virtual methods that can be overridden by derived classes (such as [Sandbox]) to implement full sandbox functionality. The base implementation includes basic property management, program management, function management, and statistics tracking.
+
+		This class is primarily used as an inheritance base and should not be instantiated directly. Use [Sandbox] instead for actual sandbox functionality.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
