@@ -170,7 +170,7 @@ String GDScriptWarning::get_message() const {
 		case CONSTANT_USED_AS_FUNCTION: // There is already an error.
 		case FUNCTION_USED_AS_PROPERTY: // This is valid, returns `Callable`.
 			break;
-#endif
+#endif // DISABLE_DEPRECATED
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -185,7 +185,7 @@ int GDScriptWarning::get_default_value(Code p_code) {
 }
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
-	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
+	return PropertyInfo(Variant::INT, get_setting_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
 String GDScriptWarning::get_name() const {
@@ -245,7 +245,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
 		"FUNCTION_USED_AS_PROPERTY",
-#endif
+#endif // DISABLE_DEPRECATED
 	};
 
 	static_assert(std_size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
@@ -253,7 +253,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 	return names[(int)p_code];
 }
 
-String GDScriptWarning::get_settings_path_from_code(Code p_code) {
+String GDScriptWarning::get_setting_path_from_code(Code p_code) {
 	return "debug/gdscript/warnings/" + get_name_from_code(p_code).to_lower();
 }
 
