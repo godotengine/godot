@@ -1463,6 +1463,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	preset_vb->set_stretch_ratio(0.35);
 	hbox->add_child(preset_vb);
 
 	Label *l = memnew(Label(TTR("Presets")));

@@ -45,6 +45,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/audio_stream_player_3d_gizmo_plugin.h"
@@ -1767,28 +1768,33 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 	{
 		EditorNode *en = EditorNode::get_singleton();
-		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
-		if (!force_input_forwarding_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_3d_gui_input(camera, p_event, true);
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-				return;
-			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+
+		switch (en->get_editor_plugins_force_input_forwarding()->forward_3d_gui_input(camera, p_event, true)) {
+			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
+				// Continue processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_STOP: {
+				return; // Stop processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_CUSTOM: {
 				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-			}
+			} break;
 		}
-	}
-	{
-		EditorNode *en = EditorNode::get_singleton();
-		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
-		if (!over_plugin_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_3d_gui_input(camera, p_event, false);
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-				return;
-			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+
+		switch (en->get_editor_plugins_over()->forward_3d_gui_input(camera, p_event, false)) {
+			case EditorPlugin::AFTER_GUI_INPUT_PASS: {
+				// Continue processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_STOP: {
+				return; // Stop processing.
+			} break;
+
+			case EditorPlugin::AFTER_GUI_INPUT_CUSTOM: {
 				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-			}
+			} break;
 		}
 	}
 
@@ -3613,15 +3619,8 @@ static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Text
 }
 
 void Node3DEditorViewport::_draw() {
-	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
-	if (!over_plugin_list->is_empty()) {
-		over_plugin_list->forward_3d_draw_over_viewport(surface);
-	}
-
-	EditorPluginList *force_over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->is_empty()) {
-		force_over_plugin_list->forward_3d_force_draw_over_viewport(surface);
-	}
+	EditorNode::get_singleton()->get_editor_plugins_over()->forward_3d_draw_over_viewport(surface);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_3d_force_draw_over_viewport(surface);
 
 	if (surface->has_focus() || rotation_control->has_focus()) {
 		Size2 size = surface->get_size();
@@ -6382,8 +6381,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_type = VIEW_TYPE_USER;
 	_update_name();
-
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
@@ -8367,12 +8364,6 @@ void Node3DEditor::update_gizmo_opacity() {
 	}
 }
 
-void Node3DEditor::_on_editor_settings_changed() {
-	if (EditorSettings::get_singleton()->get_changed_settings().has("editors/3d/manipulator_gizmo_opacity")) {
-		update_gizmo_opacity();
-	}
-}
-
 void Node3DEditor::update_grid() {
 	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
@@ -8826,7 +8817,6 @@ void Node3DEditor::_notification(int p_what) {
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
-			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -8847,7 +8837,6 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
-			EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -8875,6 +8864,11 @@ void Node3DEditor::_notification(int p_what) {
 				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
+
+				for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+					viewports[i]->update_transform_gizmo_view();
+				}
+				update_gizmo_opacity();
 			}
 		} break;
 

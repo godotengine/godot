@@ -818,23 +818,45 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 	}
 
 	view_configuration_views.resize(view_count);
+	for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+		extension->prepare_view_configuration(view_count);
+	}
 
+	uint32_t view = 0;
 	for (XrViewConfigurationView &view_configuration_view : view_configuration_views) {
 		view_configuration_view.type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
 		view_configuration_view.next = nullptr;
+
+		for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+			void *np = extension->set_view_configuration_and_get_next_pointer(view, view_configuration_view.next);
+			if (np != nullptr) {
+				view_configuration_view.next = np;
+			}
+		}
+
+		view++;
 	}
 
 	result = xrEnumerateViewConfigurationViews(instance, system_id, p_configuration_type, view_count, &view_count, view_configuration_views.ptr());
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate view configurations");
 
-	for (const XrViewConfigurationView &view_configuration_view : view_configuration_views) {
-		print_verbose("OpenXR: Found supported view configuration view");
-		print_verbose(String(" - width: ") + itos(view_configuration_view.maxImageRectWidth));
-		print_verbose(String(" - height: ") + itos(view_configuration_view.maxImageRectHeight));
-		print_verbose(String(" - sample count: ") + itos(view_configuration_view.maxSwapchainSampleCount));
-		print_verbose(String(" - recommended render width: ") + itos(view_configuration_view.recommendedImageRectWidth));
-		print_verbose(String(" - recommended render height: ") + itos(view_configuration_view.recommendedImageRectHeight));
-		print_verbose(String(" - recommended render sample count: ") + itos(view_configuration_view.recommendedSwapchainSampleCount));
+	if (is_print_verbose_enabled()) {
+		view = 0;
+		for (const XrViewConfigurationView &view_configuration_view : view_configuration_views) {
+			print_line("OpenXR: Found supported view configuration view");
+			print_line(" - width: ", itos(view_configuration_view.maxImageRectWidth));
+			print_line(" - height: ", itos(view_configuration_view.maxImageRectHeight));
+			print_line(" - sample count: ", itos(view_configuration_view.maxSwapchainSampleCount));
+			print_line(" - recommended render width: ", itos(view_configuration_view.recommendedImageRectWidth));
+			print_line(" - recommended render height: ", itos(view_configuration_view.recommendedImageRectHeight));
+			print_line(" - recommended render sample count: ", itos(view_configuration_view.recommendedSwapchainSampleCount));
+
+			for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+				extension->print_view_configuration_info(view);
+			}
+
+			view++;
+		}
 	}
 
 	return true;
@@ -1367,6 +1389,9 @@ void OpenXRAPI::destroy_session() {
 		for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 			wrapper->on_session_destroyed();
 		}
+
+		// Rerun this just in case any of our extensions freed up swapchains.
+		OpenXRSwapChainInfo::free_queued();
 
 		end_debug_label_region();
 

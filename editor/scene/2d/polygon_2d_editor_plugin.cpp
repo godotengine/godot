@@ -595,6 +595,9 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					if (closest == -1) {
 						return;
 					}
+					if (closest == hovered_point) {
+						hovered_point = -1;
+					}
 
 					previous_polygon.remove_at(closest);
 					previous_uv.remove_at(closest);
@@ -786,6 +789,40 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
+		// Highlight a point near the cursor.
+		if (is_creating) {
+			if (editing_points.size() > 2 && mtx.affine_inverse().xform(mm->get_position()).distance_to(node->get_polygon()[0]) < (8 / draw_zoom)) {
+				if (hovered_point != 0) {
+					hovered_point = 0;
+					canvas->queue_redraw();
+				}
+			} else if (hovered_point == 0) {
+				hovered_point = -1;
+				canvas->queue_redraw();
+			}
+		}
+		if (selected_action == ACTION_REMOVE_INTERNAL || selected_action == ACTION_EDIT_POINT || selected_action == ACTION_ADD_POLYGON) {
+			Vector<Vector2> points;
+			if (current_mode == MODE_POINTS || current_mode == MODE_POLYGONS) {
+				points = node->get_polygon();
+			} else {
+				points = node->get_uv();
+			}
+			int i = points.size() - 1;
+			for (; i >= 0; i--) {
+				if (mtx.affine_inverse().xform(mm->get_position()).distance_to(points[i]) < (8 / draw_zoom)) {
+					if (hovered_point != i) {
+						hovered_point = i;
+						canvas->queue_redraw();
+					}
+					break;
+				}
+			}
+			if (i == -1 && hovered_point >= 0) {
+				hovered_point = -1;
+				canvas->queue_redraw();
+			}
+		}
 		if (is_dragging) {
 			Vector2 uv_drag_to = mm->get_position();
 			uv_drag_to = snap_point(uv_drag_to);
@@ -1183,17 +1220,31 @@ void Polygon2DEditor::_canvas_draw() {
 		}
 	}
 
-	for (int i = 0; i < uvs.size(); i++) {
-		if (weight_r) {
+	if (weight_r) {
+		for (int i = 0; i < uvs.size(); i++) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
 			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
-		} else {
-			if (i < uv_draw_max) {
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
+		}
+	} else {
+		Vector2 texture_size_half = handle->get_size() * 0.5;
+		Color mod(1, 1, 1);
+		Color hovered_mod(0.65, 0.65, 0.65);
+		for (int i = 0; i < uv_draw_max; i++) {
+			if (i == hovered_point && selected_action != ACTION_REMOVE_INTERNAL) {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, hovered_mod);
 			} else {
-				// Internal vertex
-				canvas->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5, Color(0.6, 0.8, 1));
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, mod);
+			}
+		}
+		// Internal vertices.
+		mod = Color(0.6, 0.8, 1);
+		hovered_mod = Color(0.35, 0.55, 0.75);
+		for (int i = uv_draw_max; i < uvs.size(); i++) {
+			if (i == hovered_point) {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, hovered_mod);
+			} else {
+				canvas->draw_texture(handle, mtx.xform(uvs[i]) - texture_size_half, mod);
 			}
 		}
 	}

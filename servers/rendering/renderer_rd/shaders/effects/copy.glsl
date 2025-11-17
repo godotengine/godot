@@ -15,6 +15,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_FORCE_LUMINANCE (1 << 6)
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
 #define FLAG_ALPHA_TO_ONE (1 << 8)
+#define FLAG_SANITIZE_INF_NAN (1 << 9)
 
 layout(push_constant, std430) uniform Params {
 	ivec4 section;
@@ -224,6 +225,11 @@ void main() {
 
 	if (bool(params.flags & FLAG_ALPHA_TO_ONE)) {
 		color.a = 1.0;
+	}
+
+	if (bool(params.flags & FLAG_SANITIZE_INF_NAN)) {
+		color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isinf(color));
+		color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
 	}
 
 	imageStore(dest_buffer, pos + params.target, color);

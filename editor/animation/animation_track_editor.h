@@ -566,6 +566,8 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTimelineEdit *timeline = nullptr;
 	AnimationTrackEditor *editor = nullptr;
 
+	bool hovered = false;
+
 	void _zoom_changed();
 
 protected:
@@ -593,6 +595,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	Ref<Animation> animation;
 	bool read_only = false;
 	Node *root = nullptr;
+
+	AcceptDialog *read_only_dialog = nullptr;
 
 	MenuButton *edit = nullptr;
 
@@ -923,7 +927,9 @@ public:
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
-		EDIT_CLEAN_UP_ANIMATION_CONFIRM
+		EDIT_CLEAN_UP_ANIMATION_CONFIRM,
+		EDIT_GOTO_NEXT_KEYFRAME,
+		EDIT_GOTO_PREV_KEYFRAME,
 	};
 
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
@@ -981,6 +987,10 @@ public:
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
 	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
+
+	bool is_read_only() const;
+	bool is_global_library_read_only() const;
+	void popup_read_only_dialog();
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

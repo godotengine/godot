@@ -85,6 +85,10 @@ public:
 	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrLocateViews
 	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrEndFrame
 
+	virtual void prepare_view_configuration(uint32_t p_view_count);
+	virtual void *set_view_configuration_and_get_next_pointer(uint32_t p_view, void *p_next_pointer); // Add additional data structures when calling xrEnumerateViewConfiguration
+	virtual void print_view_configuration_info(uint32_t p_view) const;
+
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
 	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_instance_create_info_and_get_next_pointer, GDExtensionPtr<void>);
@@ -99,6 +103,9 @@ public:
 	GDVIRTUAL0R(int, _get_composition_layer_count);
 	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
 	GDVIRTUAL1R(int, _get_composition_layer_order, int);
+	GDVIRTUAL1(_prepare_view_configuration, int);
+	GDVIRTUAL2R(uint64_t, _set_view_configuration_and_get_next_pointer, uint32_t, GDExtensionPtr<void>);
+	GDVIRTUAL1C(_print_view_configuration_info, int);
 
 	virtual PackedStringArray get_suggested_tracker_names();
 

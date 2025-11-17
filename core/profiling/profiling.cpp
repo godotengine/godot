@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  forward_id_storage.cpp                                                */
+/*  profiling.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "forward_id_storage.h"
+#include "profiling.h"
 
-using namespace RendererRD;
-
-ForwardIDStorage *ForwardIDStorage::singleton = nullptr;
-
-ForwardIDStorage::ForwardIDStorage() {
-	singleton = this;
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
 }
+#elif defined(GODOT_USE_PERFETTO)
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-ForwardIDStorage::~ForwardIDStorage() {
-	singleton = nullptr;
+void godot_init_profiler() {
+	perfetto::TracingInitArgs args;
+
+	args.backends |= perfetto::kSystemBackend;
+
+	perfetto::Tracing::Initialize(args);
+	perfetto::TrackEvent::Register();
 }
+#else
+void godot_init_profiler() {
+	// Stub
+}
+#endif

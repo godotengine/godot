@@ -36,6 +36,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/scene/editor_scene_tabs.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -52,11 +53,12 @@ void EditorBottomPanel::_notification(int p_what) {
 }
 
 void EditorBottomPanel::_on_tab_changed(int p_idx) {
-	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
+	_update_center_split_offset();
+	_repaint();
 }
 
 void EditorBottomPanel::_theme_changed() {
-	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox("tabbar_background", "BottomPanel")->duplicate();
+	Ref<StyleBox> bottom_tabbar_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox("tabbar_background", "BottomPanel")->duplicate();
 	bottom_tabbar_style->set_content_margin(SIDE_RIGHT, bottom_hbox->get_minimum_size().x + bottom_tabbar_style->get_content_margin(SIDE_LEFT));
 	add_theme_style_override("tabbar_background", bottom_tabbar_style);
 
@@ -68,13 +70,32 @@ void EditorBottomPanel::_theme_changed() {
 	}
 }
 
+void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
+	Control *current_tab = get_current_tab_control();
+	if (current_tab) {
+		String name = current_tab->get_name();
+		String key = name.to_snake_case();
+		dock_offsets[key] = p_offset;
+	}
+}
+
+int EditorBottomPanel::get_bottom_panel_offset() {
+	Control *current_tab = get_current_tab_control();
+	if (current_tab) {
+		String name = current_tab->get_name();
+		String key = name.to_snake_case();
+		return dock_offsets[key];
+	}
+	return 0;
+}
+
 void EditorBottomPanel::_repaint() {
 	bool panel_collapsed = get_current_tab() == -1;
-	if (panel_collapsed == (get_previous_tab() == -1)) {
+	if (!panel_collapsed && (get_previous_tab() != -1)) {
 		return;
 	}
 
-	SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
+	DockSplitContainer *center_split = EditorNode::get_center_split();
 	ERR_FAIL_NULL(center_split);
 
 	center_split->set_dragger_visibility(panel_collapsed ? SplitContainer::DRAGGER_HIDDEN : SplitContainer::DRAGGER_VISIBLE);
@@ -91,9 +112,19 @@ void EditorBottomPanel::_repaint() {
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	p_config_file->set_value(p_section, "selected_bottom_panel_item", get_current_tab() != -1 ? Variant(get_current_tab()) : Variant());
+
+	for (const KeyValue<String, int> &E : dock_offsets) {
+		p_config_file->set_value(p_section, "dock_" + E.key + "_offset", E.value);
+	}
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
+	for (const Control *dock : bottom_docks) {
+		String name = dock->get_name();
+		String key = name.to_snake_case();
+		dock_offsets[key] = p_config_file->get_value(p_section, "dock_" + key + "_offset", 0);
+	}
+
 	if (p_config_file->has_section_key(p_section, "selected_bottom_panel_item")) {
 		int stored_current_tab = p_config_file->get_value(p_section, "selected_bottom_panel_item");
 
@@ -101,6 +132,8 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 			// Make sure we don't try to open contextual editors which are not enabled in the current context.
 			if (!get_tab_bar()->is_tab_hidden(stored_current_tab)) {
 				set_current_tab(stored_current_tab);
+
+				callable_mp(this, &EditorBottomPanel::_update_center_split_offset).call_deferred();
 				return;
 			}
 		}
@@ -154,6 +187,25 @@ void EditorBottomPanel::set_expanded(bool p_expanded) {
 
 void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
+
+	Button *distraction_free = EditorNode::get_singleton()->get_distraction_free_button();
+	distraction_free->set_meta("_scene_tabs_owned", !p_pressed);
+	EditorNode::get_singleton()->update_distraction_free_button_theme();
+	if (p_pressed) {
+		distraction_free->reparent(bottom_hbox);
+		bottom_hbox->move_child(distraction_free, -2);
+	} else {
+		distraction_free->get_parent()->remove_child(distraction_free);
+		EditorSceneTabs::get_singleton()->add_extra_button(distraction_free);
+	}
+	_theme_changed();
+}
+
+void EditorBottomPanel::_update_center_split_offset() {
+	DockSplitContainer *center_split = EditorNode::get_center_split();
+	ERR_FAIL_NULL(center_split);
+
+	center_split->set_split_offset(get_bottom_panel_offset());
 }
 
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
@@ -199,7 +251,7 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control 
 }
 
 EditorBottomPanel::EditorBottomPanel() {
-	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_gui_input).bind(this));
+	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_popup).bind(this));
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);

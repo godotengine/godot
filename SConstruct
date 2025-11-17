@@ -202,6 +202,14 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
 opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
+opts.Add(("profiler_path", "Path to the Profiler framework. Only tracy and perfetto are supported at the moment.", ""))
+opts.Add(
+    BoolVariable(
+        "profiler_sample_callstack",
+        "Profile random samples application-wide using a callstack based sampler.",
+        False,
+    )
+)
 
 # Advanced options
 opts.Add(
@@ -239,7 +247,14 @@ opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server
 opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
 opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
-opts.Add(BoolVariable("disable_overrides", "Disable project settings overrides and related CLI arguments", False))
+opts.Add(BoolVariable("disable_overrides", "Disable project settings overrides (override.cfg)", False))
+opts.Add(
+    BoolVariable(
+        "disable_path_overrides",
+        "Disable CLI arguments to override project path/main pack/scene and run scripts (export template only)",
+        True,
+    )
+)
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
@@ -1032,6 +1047,9 @@ if env["brotli"]:
 
 if not env["disable_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
+
+if env.editor_build or not env["disable_path_overrides"]:
+    env.Append(CPPDEFINES=["OVERRIDE_PATH_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)

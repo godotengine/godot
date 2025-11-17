@@ -719,7 +719,7 @@ void main() {
 
 		prev_z = z;
 
-		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, 1.0 - fog_accum.a));
+		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, fog_accum.a));
 	}
 
 #endif

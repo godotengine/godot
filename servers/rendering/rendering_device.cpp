@@ -37,6 +37,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/profiling/profiling.h"
+#include "core/templates/fixed_vector.h"
 #include "modules/modules_enabled.gen.h"
 #include "servers/rendering/rendering_shader_container.h"
 
@@ -3087,6 +3089,12 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p
 	if (p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_STORAGE_BIT);
 	}
+	if (p_creation_bits.has_flag(BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
+
+		// Persistent buffers expect frequent CPU -> GPU writes, so GPU writes should avoid the same path.
+		buffer.usage.clear_flag(RDD::BUFFER_USAGE_TRANSFER_TO_BIT);
+	}
 	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
 	}
@@ -3094,7 +3102,7 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Vertex buffers are assumed to be immutable unless they don't have initial data or they've been marked for storage explicitly.
-	if (p_data.is_empty() || p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT)) {
+	if (p_data.is_empty() || p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT) || p_creation_bits.has_flag(BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT)) {
 		buffer.draw_tracker = RDG::resource_tracker_create();
 		buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
 	}
@@ -3126,24 +3134,49 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 		return *idptr;
 	}
 
+	VertexAttributeBindingsMap bindings;
+	bool has_implicit = false;
+	bool has_explicit = false;
+	Vector<VertexAttribute> vertex_descriptions = p_vertex_descriptions;
 	HashSet<int> used_locations;
-	for (int i = 0; i < p_vertex_descriptions.size(); i++) {
-		ERR_CONTINUE(p_vertex_descriptions[i].format >= DATA_FORMAT_MAX);
-		ERR_FAIL_COND_V(used_locations.has(p_vertex_descriptions[i].location), INVALID_ID);
+	for (int i = 0; i < vertex_descriptions.size(); i++) {
+		VertexAttribute &attr = vertex_descriptions.write[i];
+		ERR_CONTINUE(attr.format >= DATA_FORMAT_MAX);
+		ERR_FAIL_COND_V(used_locations.has(attr.location), INVALID_ID);
 
-		ERR_FAIL_COND_V_MSG(get_format_vertex_size(p_vertex_descriptions[i].format) == 0, INVALID_ID,
-				"Data format for attachment (" + itos(i) + "), '" + FORMAT_NAMES[p_vertex_descriptions[i].format] + "', is not valid for a vertex array.");
+		ERR_FAIL_COND_V_MSG(get_format_vertex_size(attr.format) == 0, INVALID_ID,
+				vformat("Data format for attribute (%d), '%s', is not valid for a vertex array.", attr.location, String(FORMAT_NAMES[attr.format])));
 
-		used_locations.insert(p_vertex_descriptions[i].location);
+		if (attr.binding == UINT32_MAX) {
+			attr.binding = i; // Implicitly assigned binding
+			has_implicit = true;
+		} else {
+			has_explicit = true;
+		}
+		ERR_FAIL_COND_V_MSG(!(has_implicit ^ has_explicit), INVALID_ID, "Vertex attributes must use either all explicit or all implicit bindings.");
+
+		const VertexAttributeBinding *existing = bindings.getptr(attr.binding);
+		if (!existing) {
+			bindings.insert(attr.binding, VertexAttributeBinding(attr.stride, attr.frequency));
+		} else {
+			ERR_FAIL_COND_V_MSG(existing->stride != attr.stride, INVALID_ID,
+					vformat("Vertex attributes with binding (%d) have an inconsistent stride.", attr.binding));
+			ERR_FAIL_COND_V_MSG(existing->frequency != attr.frequency, INVALID_ID,
+					vformat("Vertex attributes with binding (%d) have an inconsistent frequency.", attr.binding));
+		}
+
+		used_locations.insert(attr.location);
 	}
 
-	RDD::VertexFormatID driver_id = driver->vertex_format_create(p_vertex_descriptions);
+	RDD::VertexFormatID driver_id = driver->vertex_format_create(vertex_descriptions, bindings);
 	ERR_FAIL_COND_V(!driver_id, 0);
 
 	VertexFormatID id = (vertex_format_cache.size() | ((int64_t)ID_TYPE_VERTEX_FORMAT << ID_BASE_SHIFT));
 	vertex_format_cache[key] = id;
-	vertex_formats[id].vertex_formats = p_vertex_descriptions;
-	vertex_formats[id].driver_id = driver_id;
+	VertexDescriptionCache &ce = vertex_formats.insert(id, VertexDescriptionCache())->value;
+	ce.vertex_formats = vertex_descriptions;
+	ce.bindings = std::move(bindings);
+	ce.driver_id = driver_id;
 	return id;
 }
 
@@ -3152,12 +3185,6 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 
 	ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
 	const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
-
-	ERR_FAIL_COND_V(vd.vertex_formats.size() != p_src_buffers.size(), RID());
-
-	for (int i = 0; i < p_src_buffers.size(); i++) {
-		ERR_FAIL_COND_V(!vertex_buffer_owner.owns(p_src_buffers[i]), RID());
-	}
 
 	VertexArray vertex_array;
 
@@ -3171,39 +3198,53 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	vertex_array.vertex_count = p_vertex_count;
 	vertex_array.description = p_vertex_format;
 	vertex_array.max_instances_allowed = 0xFFFFFFFF; // By default as many as you want.
-	for (int i = 0; i < p_src_buffers.size(); i++) {
-		Buffer *buffer = vertex_buffer_owner.get_or_null(p_src_buffers[i]);
+	vertex_array.buffers.resize(p_src_buffers.size());
+
+	HashSet<RID> unique_buffers;
+	unique_buffers.reserve(p_src_buffers.size());
+
+	for (const VertexAttribute &atf : vd.vertex_formats) {
+		ERR_FAIL_COND_V_MSG(atf.binding >= p_src_buffers.size(), RID(), vformat("Vertex attribute location (%d) is missing a buffer for binding (%d).", atf.location, atf.binding));
+		RID buf = p_src_buffers[atf.binding];
+		ERR_FAIL_COND_V(!vertex_buffer_owner.owns(buf), RID());
+
+		Buffer *buffer = vertex_buffer_owner.get_or_null(buf);
 
 		// Validate with buffer.
 		{
-			const VertexAttribute &atf = vd.vertex_formats[i];
-
 			uint32_t element_size = get_format_vertex_size(atf.format);
-			ERR_FAIL_COND_V(element_size == 0, RID()); // Should never happens since this was prevalidated.
+			ERR_FAIL_COND_V(element_size == 0, RID()); // Should never happen since this was prevalidated.
 
 			if (atf.frequency == VERTEX_FREQUENCY_VERTEX) {
 				// Validate size for regular drawing.
 				uint64_t total_size = uint64_t(atf.stride) * (p_vertex_count - 1) + atf.offset + element_size;
 				ERR_FAIL_COND_V_MSG(total_size > buffer->size, RID(),
-						"Attachment (" + itos(i) + ") will read past the end of the buffer.");
+						vformat("Vertex attribute (%d) will read past the end of the buffer.", atf.location));
 
 			} else {
 				// Validate size for instances drawing.
 				uint64_t available = buffer->size - atf.offset;
 				ERR_FAIL_COND_V_MSG(available < element_size, RID(),
-						"Attachment (" + itos(i) + ") uses instancing, but it's just too small.");
+						vformat("Vertex attribute (%d) uses instancing, but it's just too small.", atf.location));
 
 				uint32_t instances_allowed = available / atf.stride;
 				vertex_array.max_instances_allowed = MIN(instances_allowed, vertex_array.max_instances_allowed);
 			}
 		}
 
-		vertex_array.buffers.push_back(buffer->driver_id);
+		vertex_array.buffers.write[atf.binding] = buffer->driver_id;
+
+		if (unique_buffers.has(buf)) {
+			// No need to add dependencies multiple times.
+			continue;
+		}
+
+		unique_buffers.insert(buf);
 
 		if (buffer->draw_tracker != nullptr) {
 			vertex_array.draw_trackers.push_back(buffer->draw_tracker);
 		} else {
-			vertex_array.untracked_buffers.insert(p_src_buffers[i]);
+			vertex_array.untracked_buffers.insert(buf);
 		}
 
 		if (buffer->transfer_worker_index >= 0) {
@@ -3213,8 +3254,8 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	}
 
 	RID id = vertex_array_owner.make_rid(vertex_array);
-	for (int i = 0; i < p_src_buffers.size(); i++) {
-		_add_dependency(id, p_src_buffers[i]);
+	for (const RID &buf : unique_buffers) {
+		_add_dependency(id, buf);
 	}
 
 	return id;
@@ -4664,6 +4705,102 @@ void RenderingDevice::draw_list_bind_vertex_array(DrawListID p_list, RID p_verte
 	for (int i = 0; i < vertex_array->draw_trackers.size(); i++) {
 		draw_graph.add_draw_list_usage(vertex_array->draw_trackers[i], RDG::RESOURCE_USAGE_VERTEX_BUFFER_READ);
 	}
+}
+
+void RenderingDevice::draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const Span<RID> &p_vertex_buffers, const Span<uint64_t> &p_offsets) {
+	ERR_RENDER_THREAD_GUARD();
+
+	ERR_FAIL_COND(!draw_list.active);
+
+	const VertexDescriptionCache *vertex_description = vertex_formats.getptr(p_vertex_format);
+	ERR_FAIL_NULL_MSG(vertex_description, "Supplied vertex format does not exist.");
+
+	Span<uint64_t> offsets_span = p_offsets;
+	FixedVector<uint64_t, 32> offsets;
+	if (offsets_span.is_empty()) {
+		offsets.resize_initialized(p_vertex_buffers.size());
+		offsets_span = offsets;
+	} else {
+		ERR_FAIL_COND_MSG(offsets_span.size() != p_vertex_buffers.size(),
+				"Number of vertex buffer offsets (" + itos(offsets_span.size()) + ") does not match number of vertex buffers (" + itos(p_vertex_buffers.size()) + ").");
+	}
+
+	FixedVector<RDD::BufferID, 32> driver_buffers;
+	driver_buffers.resize_initialized(p_vertex_buffers.size());
+
+	FixedVector<RDG::ResourceTracker *, 32> draw_trackers;
+
+#if DEBUG_ENABLED
+	uint32_t max_instances_allowed = 0xFFFFFFFF;
+#endif
+
+	for (uint32_t i = 0; i < p_vertex_buffers.size(); i++) {
+		RID buffer_rid = p_vertex_buffers[i];
+		if (buffer_rid.is_null()) {
+			// The buffer array can be sparse.
+			continue;
+		}
+		ERR_FAIL_COND_MSG(!vertex_buffer_owner.owns(buffer_rid), "Vertex buffer at index " + itos(i) + " is invalid.");
+
+		Buffer *buffer = vertex_buffer_owner.get_or_null(buffer_rid);
+		ERR_FAIL_NULL(buffer);
+
+		_check_transfer_worker_buffer(buffer);
+
+#if DEBUG_ENABLED
+		uint64_t binding_offset = offsets_span[i];
+		ERR_FAIL_COND_MSG(binding_offset > buffer->size, "Vertex buffer offset for attachment (" + itos(i) + ") exceeds buffer size.");
+
+		const VertexAttribute &attribute = vertex_description->vertex_formats[i];
+		uint32_t element_size = get_format_vertex_size(attribute.format);
+		ERR_FAIL_COND_MSG(element_size == 0, "Vertex attribute format for attachment (" + itos(i) + ") is invalid.");
+
+		uint64_t attribute_offset = binding_offset + attribute.offset;
+		ERR_FAIL_COND_MSG(attribute_offset > buffer->size, "Vertex attribute offset for attachment (" + itos(i) + ") exceeds buffer size.");
+		ERR_FAIL_COND_MSG(attribute_offset + element_size > buffer->size,
+				"Vertex buffer (" + itos(i) + ") will read past the end of the buffer.");
+
+		if (attribute.frequency == VERTEX_FREQUENCY_VERTEX) {
+			ERR_FAIL_COND_MSG(p_vertex_count == 0, "Vertex count must be greater than 0 when binding vertex buffers.");
+
+			uint64_t required_size = attribute_offset + element_size;
+			if (p_vertex_count > 1) {
+				required_size += uint64_t(attribute.stride) * (uint64_t(p_vertex_count) - 1);
+			}
+
+			ERR_FAIL_COND_MSG(required_size > buffer->size,
+					"Vertex buffer (" + itos(i) + ") will read past the end of the buffer.");
+		} else {
+			uint64_t available = buffer->size - attribute_offset;
+			ERR_FAIL_COND_MSG(available < element_size,
+					"Vertex buffer (" + itos(i) + ") uses instancing, but it's just too small.");
+
+			uint32_t instances_allowed = attribute.stride == 0 ? 0 : uint32_t(buffer->size / attribute.stride);
+			max_instances_allowed = MIN(instances_allowed, max_instances_allowed);
+		}
+#endif
+
+		driver_buffers[i] = buffer->driver_id;
+
+		if (buffer->draw_tracker != nullptr) {
+			draw_trackers.push_back(buffer->draw_tracker);
+		}
+	}
+
+	draw_list.state.vertex_array = RID();
+
+	draw_graph.add_draw_list_bind_vertex_buffers(driver_buffers, offsets_span);
+
+	for (RDG::ResourceTracker *tracker : draw_trackers) {
+		draw_graph.add_draw_list_usage(tracker, RDG::RESOURCE_USAGE_VERTEX_BUFFER_READ);
+	}
+
+	draw_list.validation.vertex_array_size = p_vertex_count;
+
+#ifdef DEBUG_ENABLED
+	draw_list.validation.vertex_format = p_vertex_format;
+	draw_list.validation.vertex_max_instances_allowed = max_instances_allowed;
+#endif
 }
 
 void RenderingDevice::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
@@ -6256,12 +6393,16 @@ String RenderingDevice::get_device_pipeline_cache_uuid() const {
 void RenderingDevice::swap_buffers(bool p_present) {
 	ERR_RENDER_THREAD_GUARD();
 
+	GodotProfileZoneGroupedFirst(_profile_zone, "_end_frame");
 	_end_frame();
+
+	GodotProfileZoneGrouped(_profile_zone, "_execute_frame");
 	_execute_frame(p_present);
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
 
+	GodotProfileZoneGrouped(_profile_zone, "_begin_frame");
 	_begin_frame(true);
 }
 
@@ -6389,27 +6530,34 @@ uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
 }
 
 void RenderingDevice::_begin_frame(bool p_presented) {
+	GodotProfileZoneGroupedFirst(_profile_zone, "_stall_for_frame");
 	// Before writing to this frame, wait for it to be finished.
 	_stall_for_frame(frame);
 
 	if (command_pool_reset_enabled) {
+		GodotProfileZoneGrouped(_profile_zone, "driver->command_pool_reset");
 		bool reset = driver->command_pool_reset(frames[frame].command_pool);
 		ERR_FAIL_COND(!reset);
 	}
 
 	if (p_presented) {
+		GodotProfileZoneGrouped(_profile_zone, "update_perf_report");
 		update_perf_report();
 		driver->linear_uniform_set_pools_reset(frame);
 	}
 
 	// Begin recording on the frame's command buffers.
+	GodotProfileZoneGrouped(_profile_zone, "driver->begin_segment");
 	driver->begin_segment(frame, frames_drawn++);
+	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_begin");
 	driver->command_buffer_begin(frames[frame].command_buffer);
 
 	// Reset the graph.
+	GodotProfileZoneGrouped(_profile_zone, "draw_graph.begin");
 	draw_graph.begin();
 
 	// Erase pending resources.
+	GodotProfileZoneGrouped(_profile_zone, "_free_pending_resources");
 	_free_pending_resources(frame);
 
 	// Advance staging buffers if used.
@@ -6446,11 +6594,16 @@ void RenderingDevice::_end_frame() {
 
 	// The command buffer must be copied into a stack variable as the driver workarounds can change the command buffer in use.
 	RDD::CommandBufferID command_buffer = frames[frame].command_buffer;
+	GodotProfileZoneGroupedFirst(_profile_zone, "_submit_transfer_workers");
 	_submit_transfer_workers(command_buffer);
+	GodotProfileZoneGrouped(_profile_zone, "_submit_transfer_barriers");
 	_submit_transfer_barriers(command_buffer);
 
+	GodotProfileZoneGrouped(_profile_zone, "draw_graph.end");
 	draw_graph.end(RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
+	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_end");
 	driver->command_buffer_end(command_buffer);
+	GodotProfileZoneGrouped(_profile_zone, "driver->end_segment");
 	driver->end_segment();
 }
 
@@ -6542,11 +6695,13 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 	thread_local PackedByteArray packed_byte_array;
 
 	if (frames[p_frame].fence_signaled) {
+		GodotProfileZoneGroupedFirst(_profile_zone, "driver->fence_wait");
 		driver->fence_wait(frames[p_frame].fence);
 		frames[p_frame].fence_signaled = false;
 
 		// Flush any pending requests for asynchronous buffer downloads.
 		if (!frames[p_frame].download_buffer_get_data_requests.is_empty()) {
+			GodotProfileZoneGrouped(_profile_zone, "flush asynchronous buffer downloads");
 			for (uint32_t i = 0; i < frames[p_frame].download_buffer_get_data_requests.size(); i++) {
 				const BufferGetDataRequest &request = frames[p_frame].download_buffer_get_data_requests[i];
 				packed_byte_array.resize(request.size);
@@ -6571,6 +6726,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 
 		// Flush any pending requests for asynchronous texture downloads.
 		if (!frames[p_frame].download_texture_get_data_requests.is_empty()) {
+			GodotProfileZoneGrouped(_profile_zone, "flush asynchronous texture downloads");
 			uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 			for (uint32_t i = 0; i < frames[p_frame].download_texture_get_data_requests.size(); i++) {
 				const TextureGetDataRequest &request = frames[p_frame].download_texture_get_data_requests[i];
@@ -6618,6 +6774,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 				request.callback.call(packed_byte_array);
 			}
 
+			GodotProfileZoneGrouped(_profile_zone, "clear buffers");
 			frames[p_frame].download_texture_staging_buffers.clear();
 			frames[p_frame].download_buffer_texture_copy_regions.clear();
 			frames[p_frame].download_texture_mipmap_offsets.clear();
@@ -7410,6 +7567,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_list_bind_render_pipeline", "draw_list", "render_pipeline"), &RenderingDevice::draw_list_bind_render_pipeline);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_uniform_set", "draw_list", "uniform_set", "set_index"), &RenderingDevice::draw_list_bind_uniform_set);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_vertex_array", "draw_list", "vertex_array"), &RenderingDevice::draw_list_bind_vertex_array);
+	ClassDB::bind_method(D_METHOD("draw_list_bind_vertex_buffers_format", "draw_list", "vertex_format", "vertex_count", "vertex_buffers", "offsets"), &RenderingDevice::_draw_list_bind_vertex_buffers_format, DEFVAL(Vector<int64_t>()));
 	ClassDB::bind_method(D_METHOD("draw_list_bind_index_array", "draw_list", "index_array"), &RenderingDevice::draw_list_bind_index_array);
 	ClassDB::bind_method(D_METHOD("draw_list_set_push_constant", "draw_list", "buffer", "size_bytes"), &RenderingDevice::_draw_list_set_push_constant);
 
@@ -8211,6 +8369,18 @@ RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatI
 	}
 
 	return vertex_array_create(p_vertex_count, p_vertex_format, buffers, offsets);
+}
+
+void RenderingDevice::_draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const TypedArray<RID> &p_vertex_buffers, const Vector<int64_t> &p_offsets) {
+	Vector<RID> buffers = Variant(p_vertex_buffers);
+
+	Vector<uint64_t> offsets;
+	offsets.resize(p_offsets.size());
+	for (int i = 0; i < p_offsets.size(); i++) {
+		offsets.write[i] = p_offsets[i];
+	}
+
+	draw_list_bind_vertex_buffers_format(p_list, p_vertex_format, p_vertex_count, buffers, offsets);
 }
 
 Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {

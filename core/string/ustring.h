@@ -211,12 +211,7 @@ public:
 	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
 	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
-		if (length() != p_other.length()) {
-			return false;
-		}
-		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
-	}
+	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const { return span() == p_other.span(); }
 	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
 		if (length() == 0) {

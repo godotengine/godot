@@ -530,151 +530,154 @@
 			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
 		</member>
 		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_local_declaration" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier declared in the nested block has the same name as an identifier declared below in the parent block.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier declared in the nested block has the same name as an identifier declared below in the parent block.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when deprecated keywords are used.
 			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
 		</member>
+		<member name="debug/gdscript/warnings/directory_rules" type="Dictionary" setter="" getter="" default="{ &quot;res://addons&quot;: 0 }">
+			The rules for including or excluding scripts when generating warnings, as a dictionary. Each rule is an entry consisting of a directory path (key) and a decision (value). When trying to generate a warning, the GDScript parser chooses the most specific rule, i.e. the most nested directory containing the script. If the decision is [b]Exclude[/b], warnings are not generated for this script. If the decision is [b]Include[/b] or the script doesn't satisfy any of the rules, the warning configuration specified in the Project Settings is applied.
+			It is recommended to include your own addons/libraries, either project-specific or actively being developed at the moment. Third-party or project-agnostic addons/libraries should be excluded, as they may be incompatible with the project's warning configuration.
+			[b]Note:[/b] It is not recommended to remove or change the rule for [code]"res://addons"[/code] as the project's warning configuration may break third-party addons. Instead, consider including individual addons, if necessary.
+			[b]Note:[/b] The editor does not check whether the specified paths are existing directories. It also does not automatically update these paths when directories are moved.
+		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
 		<member name="debug/gdscript/warnings/enum_variable_without_default" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
-		</member>
-		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
 		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>
 		<member name="debug/gdscript/warnings/inference_on_variant" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
 		<member name="debug/gdscript/warnings/inferred_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
 			[b]Note:[/b] This warning is recommended [i]in addition[/i] to [member debug/gdscript/warnings/untyped_declaration] if you want to always specify the type explicitly. Having [code]INFERRED_DECLARATION[/code] warning level higher than [code]UNTYPED_DECLARATION[/code] warning level makes little sense and is not recommended.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_match" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum when there is no matching enum member for that numeric value.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when trying to use an integer as an enum when there is no matching enum member for that numeric value.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
 		<member name="debug/gdscript/warnings/missing_await" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a coroutine without [code]await[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a coroutine without [code]await[/code].
 		</member>
 		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
 		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_static_unload" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
 		</member>
 		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="true">
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in the current class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable or local constant shadows a member declared in the current class.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in a base class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable or local constant shadows a member declared in a base class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when using a variable that wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a [Variant] value is cast to a non-Variant.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a [Variant] value is cast to a non-Variant.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
 		</member>
 		<member name="debug/gdscript/warnings/untyped_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
 			[b]Note:[/b] This warning is recommended together with [member EditorSettings.text_editor/completion/add_type_hints] to help achieve type safety.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local constant is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function parameter is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a function parameter is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable is unused.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
 			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
@@ -3517,6 +3520,10 @@
 		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
+		</member>
+		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
+			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.

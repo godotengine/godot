@@ -86,6 +86,7 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
 		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
 		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.dark_color_2);
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
 #endif
@@ -908,7 +909,6 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_color("font_outline_color", "TextEdit", p_config.font_outline_color);
 		p_theme->set_color("caret_color", "TextEdit", p_config.font_color);
 		p_theme->set_color("selection_color", "TextEdit", p_config.selection_color);
-		p_theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 
 		p_theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 		p_theme->set_constant("outline_size", "TextEdit", 0);
@@ -2147,6 +2147,10 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		Ref<StyleBoxFlat> style_animation_track_header = EditorThemeManager::make_flat_stylebox(p_config.dark_color_2 * Color(1, 1, 1, 0.6), p_config.increased_margin * 3, 0, 0, 0, p_config.corner_radius);
 
 		p_theme->set_stylebox("header", "AnimationTrackEditGroup", style_animation_track_header);
+
+		Ref<StyleBoxFlat> style_animation_track_group_hover = p_config.base_style->duplicate();
+		style_animation_track_group_hover->set_bg_color(p_config.highlight_color);
+		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEditGroup", style_animation_track_group_hover);
 
 		p_theme->set_color("h_line_color", "AnimationTrackEditGroup", p_config.font_color * Color(1, 1, 1, 0.2));
 		p_theme->set_color("v_line_color", "AnimationTrackEditGroup", p_config.font_color * Color(1, 1, 1, 0.2));

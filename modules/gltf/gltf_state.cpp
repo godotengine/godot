@@ -162,11 +162,11 @@ void GLTFState::add_used_extension(const String &p_extension_name, bool p_requir
 }
 
 Dictionary GLTFState::get_json() {
-	return json;
+	return Dictionary(json);
 }
 
-void GLTFState::set_json(Dictionary p_json) {
-	json = p_json;
+void GLTFState::set_json(const Dictionary &p_json) {
+	json = Dictionary(p_json);
 }
 
 int GLTFState::get_major_version() {
@@ -194,11 +194,11 @@ void GLTFState::set_copyright(const String &p_copyright) {
 }
 
 Vector<uint8_t> GLTFState::get_glb_data() {
-	return glb_data;
+	return Vector<uint8_t>(glb_data);
 }
 
-void GLTFState::set_glb_data(Vector<uint8_t> p_glb_data) {
-	glb_data = p_glb_data;
+void GLTFState::set_glb_data(const Vector<uint8_t> &p_glb_data) {
+	glb_data = Vector<uint8_t>(p_glb_data);
 }
 
 bool GLTFState::get_use_named_skin_binds() {
@@ -213,7 +213,7 @@ TypedArray<GLTFNode> GLTFState::get_nodes() {
 	return GLTFTemplateConvert::to_array(nodes);
 }
 
-void GLTFState::set_nodes(TypedArray<GLTFNode> p_nodes) {
+void GLTFState::set_nodes(const TypedArray<GLTFNode> &p_nodes) {
 	GLTFTemplateConvert::set_from_array(nodes, p_nodes);
 }
 
@@ -221,7 +221,7 @@ TypedArray<PackedByteArray> GLTFState::get_buffers() {
 	return GLTFTemplateConvert::to_array(buffers);
 }
 
-void GLTFState::set_buffers(TypedArray<PackedByteArray> p_buffers) {
+void GLTFState::set_buffers(const TypedArray<PackedByteArray> &p_buffers) {
 	GLTFTemplateConvert::set_from_array(buffers, p_buffers);
 }
 
@@ -229,7 +229,7 @@ TypedArray<GLTFBufferView> GLTFState::get_buffer_views() {
 	return GLTFTemplateConvert::to_array(buffer_views);
 }
 
-void GLTFState::set_buffer_views(TypedArray<GLTFBufferView> p_buffer_views) {
+void GLTFState::set_buffer_views(const TypedArray<GLTFBufferView> &p_buffer_views) {
 	GLTFTemplateConvert::set_from_array(buffer_views, p_buffer_views);
 }
 
@@ -237,7 +237,7 @@ TypedArray<GLTFAccessor> GLTFState::get_accessors() {
 	return GLTFTemplateConvert::to_array(accessors);
 }
 
-void GLTFState::set_accessors(TypedArray<GLTFAccessor> p_accessors) {
+void GLTFState::set_accessors(const TypedArray<GLTFAccessor> &p_accessors) {
 	GLTFTemplateConvert::set_from_array(accessors, p_accessors);
 }
 
@@ -245,7 +245,7 @@ TypedArray<GLTFMesh> GLTFState::get_meshes() {
 	return GLTFTemplateConvert::to_array(meshes);
 }
 
-void GLTFState::set_meshes(TypedArray<GLTFMesh> p_meshes) {
+void GLTFState::set_meshes(const TypedArray<GLTFMesh> &p_meshes) {
 	GLTFTemplateConvert::set_from_array(meshes, p_meshes);
 }
 
@@ -253,7 +253,7 @@ TypedArray<Material> GLTFState::get_materials() {
 	return GLTFTemplateConvert::to_array(materials);
 }
 
-void GLTFState::set_materials(TypedArray<Material> p_materials) {
+void GLTFState::set_materials(const TypedArray<Material> &p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
 }
 
@@ -261,7 +261,7 @@ String GLTFState::get_scene_name() {
 	return scene_name;
 }
 
-void GLTFState::set_scene_name(String p_scene_name) {
+void GLTFState::set_scene_name(const String &p_scene_name) {
 	scene_name = p_scene_name;
 }
 
@@ -269,15 +269,15 @@ PackedInt32Array GLTFState::get_root_nodes() {
 	return root_nodes;
 }
 
-void GLTFState::set_root_nodes(PackedInt32Array p_root_nodes) {
-	root_nodes = p_root_nodes;
+void GLTFState::set_root_nodes(const PackedInt32Array &p_root_nodes) {
+	root_nodes = PackedInt32Array(p_root_nodes);
 }
 
 TypedArray<GLTFTexture> GLTFState::get_textures() {
 	return GLTFTemplateConvert::to_array(textures);
 }
 
-void GLTFState::set_textures(TypedArray<GLTFTexture> p_textures) {
+void GLTFState::set_textures(const TypedArray<GLTFTexture> &p_textures) {
 	GLTFTemplateConvert::set_from_array(textures, p_textures);
 }
 
@@ -285,7 +285,7 @@ TypedArray<GLTFTextureSampler> GLTFState::get_texture_samplers() {
 	return GLTFTemplateConvert::to_array(texture_samplers);
 }
 
-void GLTFState::set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers) {
+void GLTFState::set_texture_samplers(const TypedArray<GLTFTextureSampler> &p_texture_samplers) {
 	GLTFTemplateConvert::set_from_array(texture_samplers, p_texture_samplers);
 }
 
@@ -293,7 +293,7 @@ TypedArray<Texture2D> GLTFState::get_images() {
 	return GLTFTemplateConvert::to_array(images);
 }
 
-void GLTFState::set_images(TypedArray<Texture2D> p_images) {
+void GLTFState::set_images(const TypedArray<Texture2D> &p_images) {
 	GLTFTemplateConvert::set_from_array(images, p_images);
 }
 
@@ -301,7 +301,7 @@ TypedArray<GLTFSkin> GLTFState::get_skins() {
 	return GLTFTemplateConvert::to_array(skins);
 }
 
-void GLTFState::set_skins(TypedArray<GLTFSkin> p_skins) {
+void GLTFState::set_skins(const TypedArray<GLTFSkin> &p_skins) {
 	GLTFTemplateConvert::set_from_array(skins, p_skins);
 }
 
@@ -309,7 +309,7 @@ TypedArray<GLTFCamera> GLTFState::get_cameras() {
 	return GLTFTemplateConvert::to_array(cameras);
 }
 
-void GLTFState::set_cameras(TypedArray<GLTFCamera> p_cameras) {
+void GLTFState::set_cameras(const TypedArray<GLTFCamera> &p_cameras) {
 	GLTFTemplateConvert::set_from_array(cameras, p_cameras);
 }
 
@@ -317,7 +317,7 @@ TypedArray<GLTFLight> GLTFState::get_lights() {
 	return GLTFTemplateConvert::to_array(lights);
 }
 
-void GLTFState::set_lights(TypedArray<GLTFLight> p_lights) {
+void GLTFState::set_lights(const TypedArray<GLTFLight> &p_lights) {
 	GLTFTemplateConvert::set_from_array(lights, p_lights);
 }
 
@@ -325,7 +325,7 @@ TypedArray<String> GLTFState::get_unique_names() {
 	return GLTFTemplateConvert::to_array(unique_names);
 }
 
-void GLTFState::set_unique_names(TypedArray<String> p_unique_names) {
+void GLTFState::set_unique_names(const TypedArray<String> &p_unique_names) {
 	GLTFTemplateConvert::set_from_array(unique_names, p_unique_names);
 }
 
@@ -333,7 +333,7 @@ TypedArray<String> GLTFState::get_unique_animation_names() {
 	return GLTFTemplateConvert::to_array(unique_animation_names);
 }
 
-void GLTFState::set_unique_animation_names(TypedArray<String> p_unique_animation_names) {
+void GLTFState::set_unique_animation_names(const TypedArray<String> &p_unique_animation_names) {
 	GLTFTemplateConvert::set_from_array(unique_animation_names, p_unique_animation_names);
 }
 
@@ -341,7 +341,7 @@ TypedArray<GLTFSkeleton> GLTFState::get_skeletons() {
 	return GLTFTemplateConvert::to_array(skeletons);
 }
 
-void GLTFState::set_skeletons(TypedArray<GLTFSkeleton> p_skeletons) {
+void GLTFState::set_skeletons(const TypedArray<GLTFSkeleton> &p_skeletons) {
 	GLTFTemplateConvert::set_from_array(skeletons, p_skeletons);
 }
 
@@ -365,7 +365,7 @@ TypedArray<GLTFAnimation> GLTFState::get_animations() {
 	return GLTFTemplateConvert::to_array(animations);
 }
 
-void GLTFState::set_animations(TypedArray<GLTFAnimation> p_animations) {
+void GLTFState::set_animations(const TypedArray<GLTFAnimation> &p_animations) {
 	GLTFTemplateConvert::set_from_array(animations, p_animations);
 }
 

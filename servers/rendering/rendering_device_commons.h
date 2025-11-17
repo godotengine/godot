@@ -549,12 +549,25 @@ public:
 	};
 
 	struct VertexAttribute {
+		uint32_t binding = UINT32_MAX; // Attribute buffer binding index. When set to UINT32_MAX, it uses the index of the attribute in the layout.
 		uint32_t location = 0; // Shader location.
 		uint32_t offset = 0;
 		DataFormat format = DATA_FORMAT_MAX;
 		uint32_t stride = 0;
 		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
 	};
+
+	struct VertexAttributeBinding {
+		uint32_t stride = 0;
+		VertexFrequency frequency = VERTEX_FREQUENCY_VERTEX;
+
+		VertexAttributeBinding() = default;
+		VertexAttributeBinding(uint32_t p_stride, VertexFrequency p_frequency) :
+				stride(p_stride),
+				frequency(p_frequency) {}
+	};
+
+	typedef HashMap<uint32_t, VertexAttributeBinding> VertexAttributeBindingsMap;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
