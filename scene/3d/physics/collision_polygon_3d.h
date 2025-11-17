@@ -46,7 +46,7 @@ protected:
 	CollisionObject3D *collision_object = nullptr;
 
 	Color debug_color;
-	bool debug_fill = true;
+	bool debug_fill = false;
 
 	Color _get_default_debug_color() const;
 

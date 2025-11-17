@@ -14,7 +14,7 @@
 			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.
 			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 0)[/code] value documented here is a placeholder, and not the actual default debug color.
 		</member>
-		<member name="debug_fill" type="bool" setter="set_enable_debug_fill" getter="get_enable_debug_fill" default="true">
+		<member name="debug_fill" type="bool" setter="set_enable_debug_fill" getter="get_enable_debug_fill" default="false">
 			If [code]true[/code], when the shape is displayed, it will show a solid fill color in addition to its wireframe.
 		</member>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">

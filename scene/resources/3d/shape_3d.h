@@ -47,7 +47,7 @@ class Shape3D : public Resource {
 
 	// Not wrapped in `#ifdef DEBUG_ENABLED` as it is used for rendering.
 	Color debug_color = Color(0.0, 0.0, 0.0, 0.0);
-	bool debug_fill = true;
+	bool debug_fill = false;
 #ifdef DEBUG_ENABLED
 	bool debug_properties_edited = false;
 #endif // DEBUG_ENABLED
