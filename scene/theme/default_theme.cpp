@@ -460,7 +460,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font(SceneStringName(font), "TextEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "TextEdit", -1);
 
+#ifndef DISABLE_DEPRECATED
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
+#endif // DISABLE_DEPRECATED
 	theme->set_color(SceneStringName(font_color), "TextEdit", control_font_color);
 	theme->set_color("font_selected_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("font_readonly_color", "TextEdit", control_font_disabled_color);
@@ -501,7 +503,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font(SceneStringName(font), "CodeEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "CodeEdit", -1);
 
+#ifndef DISABLE_DEPRECATED
 	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
+#endif // DISABLE_DEPRECATED
 	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));

@@ -68,9 +68,15 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
+#ifdef DEBUG_ENABLED
+bool GDScriptParser::is_project_ignoring_warnings = false;
+GDScriptWarning::WarnLevel GDScriptParser::warning_levels[GDScriptWarning::WARNING_MAX];
+LocalVector<GDScriptParser::WarningDirectoryRule> GDScriptParser::warning_directory_rules;
+#endif // DEBUG_ENABLED
+
 #ifdef TOOLS_ENABLED
 HashMap<String, String> GDScriptParser::theme_color_names;
-#endif
+#endif // TOOLS_ENABLED
 
 HashMap<StringName, GDScriptParser::AnnotationInfo> GDScriptParser::valid_annotations;
 
@@ -88,6 +94,53 @@ void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const 
 bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 	return valid_annotations.has(p_annotation_name);
 }
+
+#ifdef DEBUG_ENABLED
+void GDScriptParser::update_project_settings() {
+	is_project_ignoring_warnings = !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize();
+
+	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
+		const String setting_path = GDScriptWarning::get_setting_path_from_code((GDScriptWarning::Code)i);
+		warning_levels[i] = (GDScriptWarning::WarnLevel)(int)GLOBAL_GET(setting_path);
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// We do not use `GLOBAL_GET`, since we check without taking overrides into account. We leave the migration of non-trivial configurations to the user.
+	if (unlikely(ProjectSettings::get_singleton()->has_setting("debug/gdscript/warnings/exclude_addons"))) {
+		const bool is_excluding_addons = ProjectSettings::get_singleton()->get_setting("debug/gdscript/warnings/exclude_addons", true).booleanize();
+		ProjectSettings::get_singleton()->clear("debug/gdscript/warnings/exclude_addons");
+
+		Dictionary rules = ProjectSettings::get_singleton()->get_setting("debug/gdscript/warnings/directory_rules");
+		rules["res://addons"] = is_excluding_addons ? WarningDirectoryRule::DECISION_EXCLUDE : WarningDirectoryRule::DECISION_INCLUDE;
+		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/directory_rules", rules);
+	}
+#endif // DISABLE_DEPRECATED
+
+	warning_directory_rules.clear();
+
+	const Dictionary rules = GLOBAL_GET("debug/gdscript/warnings/directory_rules");
+	for (const KeyValue<Variant, Variant> &kv : rules) {
+		String dir = kv.key.operator String().simplify_path();
+		ERR_CONTINUE_MSG(!dir.begins_with("res://"), R"(Paths in the project setting "debug/gdscript/warnings/directory_rules" keys must start with the "res://" prefix.)");
+		if (!dir.ends_with("/")) {
+			dir += '/';
+		}
+
+		const int decision = kv.value;
+		ERR_CONTINUE(decision < 0 || decision >= WarningDirectoryRule::DECISION_MAX);
+
+		warning_directory_rules.push_back({ dir, (WarningDirectoryRule::Decision)decision });
+	}
+
+	struct RuleSort {
+		bool operator()(const WarningDirectoryRule &p_a, const WarningDirectoryRule &p_b) const {
+			return p_a.directory_path.count("/") > p_b.directory_path.count("/");
+		}
+	};
+
+	warning_directory_rules.sort_custom<RuleSort>();
+}
+#endif // DEBUG_ENABLED
 
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
@@ -137,11 +190,10 @@ GDScriptParser::GDScriptParser() {
 	}
 
 #ifdef DEBUG_ENABLED
-	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
 	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
 		warning_ignore_start_lines[i] = INT_MAX;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	if (unlikely(theme_color_names.is_empty())) {
@@ -161,7 +213,7 @@ GDScriptParser::GDScriptParser() {
 		theme_color_names.insert("a", "axis_w_color");
 		theme_color_names.insert("a8", "axis_w_color");
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 GDScriptParser::~GDScriptParser() {
@@ -195,13 +247,11 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	ERR_FAIL_NULL(p_source);
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
-	if (is_ignoring_warnings) {
+	if (is_project_ignoring_warnings || is_script_ignoring_warnings) {
 		return;
 	}
-	if (GLOBAL_GET_CACHED(bool, "debug/gdscript/warnings/exclude_addons") && script_path.begins_with("res://addons/")) {
-		return;
-	}
-	GDScriptWarning::WarnLevel warn_level = (GDScriptWarning::WarnLevel)(int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
+
+	const GDScriptWarning::WarnLevel warn_level = warning_levels[p_code];
 	if (warn_level == GDScriptWarning::IGNORE) {
 		return;
 	}
@@ -250,6 +300,24 @@ void GDScriptParser::apply_pending_warnings() {
 	}
 
 	pending_warnings.clear();
+}
+
+void GDScriptParser::evaluate_warning_directory_rules_for_script_path() {
+	is_script_ignoring_warnings = false;
+	for (const WarningDirectoryRule &rule : warning_directory_rules) {
+		if (script_path.begins_with(rule.directory_path)) {
+			switch (rule.decision) {
+				case WarningDirectoryRule::DECISION_EXCLUDE:
+					is_script_ignoring_warnings = true;
+					return; // Stop checking rules.
+				case WarningDirectoryRule::DECISION_INCLUDE:
+					is_script_ignoring_warnings = false;
+					return; // Stop checking rules.
+				case WarningDirectoryRule::DECISION_MAX:
+					return; // Unreachable.
+			}
+		}
+	}
 }
 #endif // DEBUG_ENABLED
 
@@ -391,9 +459,14 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	text_tokenizer->set_source_code(source);
 
 	tokenizer = text_tokenizer;
-
 	tokenizer->set_cursor_position(cursor_line, cursor_column);
+
 	script_path = p_script_path.simplify_path();
+
+#ifdef DEBUG_ENABLED
+	evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
@@ -414,7 +487,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		nd->end_line = 1;
 		push_warning(nd, GDScriptWarning::EMPTY_FILE);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	push_multiline(false); // Keep one for the whole parsing.
 	parse_program();
@@ -422,7 +495,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 
 #ifdef TOOLS_ENABLED
 	comment_data = tokenizer->get_comments();
-#endif
+#endif // TOOLS_ENABLED
 
 	memdelete(text_tokenizer);
 	tokenizer = nullptr;
@@ -431,7 +504,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	if (multiline_stack.size() > 0) {
 		ERR_PRINT("Parser bug: Imbalanced multiline stack.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (errors.is_empty()) {
 		return OK;
@@ -450,7 +523,13 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 	}
 
 	tokenizer = buffer_tokenizer;
+
 	script_path = p_script_path.simplify_path();
+
+#ifdef DEBUG_ENABLED
+	evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
 	// The latter can mess with the parser when opening files filled exclusively with comments and newlines.
@@ -4997,10 +5076,6 @@ bool GDScriptParser::export_group_annotations(AnnotationNode *p_annotation, Node
 
 bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 #ifdef DEBUG_ENABLED
-	if (is_ignoring_warnings) {
-		return true; // We already ignore all warnings, let's optimize it.
-	}
-
 	bool has_error = false;
 	for (const Variant &warning_name : p_annotation->resolved_arguments) {
 		GDScriptWarning::Code warning_code = GDScriptWarning::get_code_from_name(String(warning_name).to_upper());

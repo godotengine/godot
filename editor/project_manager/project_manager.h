@@ -118,6 +118,7 @@ class ProjectManager : public Control {
 
 	void _show_about();
 	void _open_asset_library_confirmed();
+	void _project_list_menu_option(int p_option);
 
 	AcceptDialog *error_dialog = nullptr;
 
@@ -160,7 +161,6 @@ class ProjectManager : public Control {
 	Button *rename_btn = nullptr;
 	Button *duplicate_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
-	Button *show_in_fm_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
 	Button *donate_btn = nullptr;

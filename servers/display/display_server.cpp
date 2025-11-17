@@ -446,7 +446,7 @@ PackedStringArray DisplayServer::tts_get_voices_for_language(const String &p_lan
 	return ret;
 }
 
-void DisplayServer::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServer::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	WARN_PRINT("TTS is not supported by this display server.");
 }
 
@@ -459,7 +459,7 @@ void DisplayServer::tts_set_utterance_callback(TTSUtteranceEvent p_event, const 
 	utterance_callback[p_event] = p_callable;
 }
 
-void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos) {
+void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int64_t p_id, int p_pos) {
 	ERR_FAIL_INDEX(p_event, DisplayServer::TTS_UTTERANCE_MAX);
 	switch (p_event) {
 		case DisplayServer::TTS_UTTERANCE_STARTED:

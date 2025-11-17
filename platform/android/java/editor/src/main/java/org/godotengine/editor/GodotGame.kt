@@ -43,11 +43,8 @@ import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isHorizonOSDevice
-import org.godotengine.godot.utils.isNativeXRDevice
-import org.godotengine.godot.xr.HYBRID_APP_PANEL_FEATURE
 import org.godotengine.godot.xr.XRMode
-import org.godotengine.godot.xr.isHybridAppEnabled
+import org.godotengine.openxr.vendors.utils.*
 
 /**
  * Drives the 'run project' window of the Godot Editor.

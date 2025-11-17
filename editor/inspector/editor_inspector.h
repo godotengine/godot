@@ -38,14 +38,11 @@
 
 class AddMetadataDialog;
 class AcceptDialog;
-class ConfirmationDialog;
 class EditorInspector;
-class EditorValidationPanel;
 class HSeparator;
 class LineEdit;
 class MarginContainer;
 class OptionButton;
-class PanelContainer;
 class PopupMenu;
 class SpinBox;
 class StyleBoxFlat;
@@ -779,7 +776,8 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; // Used for sectioned inspector.
 	String object_class;
-	Variant property_clipboard;
+
+	static inline Variant property_clipboard;
 
 	bool restrict_to_basic = false;
 
@@ -824,9 +822,6 @@ class EditorInspector : public ScrollContainer {
 	void _section_toggled_by_user(const String &p_path, bool p_value);
 
 	AddMetadataDialog *add_meta_dialog = nullptr;
-	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
@@ -849,6 +844,9 @@ public:
 	static void initialize_section_theme(EditorInspectorSection::ThemeCache &p_cache, Control *p_control);
 	static void initialize_category_theme(EditorInspectorCategory::ThemeCache &p_cache, Control *p_control);
 	static void initialize_property_theme(EditorProperty::ThemeCache &p_cache, Control *p_control);
+
+	static void set_property_clipboard(const Variant &p_value);
+	static Variant get_property_clipboard();
 
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
@@ -908,8 +906,6 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
-	void set_property_clipboard(const Variant &p_value);
-	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };

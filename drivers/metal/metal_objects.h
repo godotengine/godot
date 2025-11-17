@@ -663,7 +663,7 @@ public:
 			uint32_t p_instance_count,
 			uint32_t p_base_vertex,
 			uint32_t p_first_instance);
-	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets);
+	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets);
 	void render_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint64_t p_offset);
 
 	void render_draw_indexed(uint32_t p_index_count,

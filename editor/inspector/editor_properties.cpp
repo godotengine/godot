@@ -936,7 +936,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		} else {
-			current_val = 1 << i;
+			current_val = 1u << i;
 		}
 		flag_values.push_back(current_val);
 
@@ -967,9 +967,7 @@ EditorPropertyFlags::EditorPropertyFlags() {
 
 void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
-	if (renamed_layer_index == INT32_MAX) {
-		return;
-	}
+	ERR_FAIL_INDEX(renamed_layer_index, names.size());
 	String name = names[renamed_layer_index];
 	rename_dialog->set_title(vformat(TTR("Renaming layer %d:"), renamed_layer_index + 1));
 	rename_dialog_text->set_text(name);
@@ -988,7 +986,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 		return;
 	}
 	names.set(renamed_layer_index, new_name);
-	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1 << renamed_layer_index));
+	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1u << renamed_layer_index));
 	emit_signal(SNAME("rename_confirmed"), renamed_layer_index, new_name);
 }
 
@@ -1060,8 +1058,8 @@ void EditorPropertyLayersGrid::_update_hovered(const Vector2 &p_position) {
 	}
 
 	// Remove highlight when no square is hovered.
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != HOVERED_INDEX_NONE) {
+		hovered_index = HOVERED_INDEX_NONE;
 		queue_redraw();
 	}
 }
@@ -1071,32 +1069,31 @@ void EditorPropertyLayersGrid::_on_hover_exit() {
 		expand_hovered = false;
 		queue_redraw();
 	}
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != HOVERED_INDEX_NONE) {
+		hovered_index = HOVERED_INDEX_NONE;
 		queue_redraw();
+	}
+	if (dragging) {
+		dragging = false;
 	}
 }
 
 void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
-	if (hovered_index != INT32_MAX) {
+	if (hovered_index != HOVERED_INDEX_NONE) {
 		// Toggle the flag.
 		// We base our choice on the hovered flag, so that it always matches the hovered flag.
 		if (p_replace) {
 			// Replace all flags with the hovered flag ("solo mode"),
 			// instead of toggling the hovered flags while preserving other flags' state.
-			if (value == uint32_t(1 << hovered_index)) {
+			if (value == 1u << hovered_index) {
 				// If the flag is already enabled, enable all other items and disable the current flag.
 				// This allows for quicker toggling.
-				value = INT32_MAX - (1 << hovered_index);
+				value = ~value;
 			} else {
-				value = 1 << hovered_index;
+				value = 1u << hovered_index;
 			}
 		} else {
-			if (value & (1 << hovered_index)) {
-				value &= ~(1 << hovered_index);
-			} else {
-				value |= (1 << hovered_index);
-			}
+			value ^= 1u << hovered_index;
 		}
 
 		emit_signal(SNAME("flag_changed"), value);
@@ -1115,16 +1112,29 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid()) {
 		_update_hovered(mm->get_position());
+		if (dragging && hovered_index != HOVERED_INDEX_NONE && dragging_value_to_set != bool(value & (1u << hovered_index))) {
+			value ^= 1u << hovered_index;
+			emit_signal(SNAME("flag_changed"), value);
+			queue_redraw();
+		}
 		return;
 	}
 
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		_update_hovered(mb->get_position());
-		_update_flag(mb->is_command_or_control_pressed());
+		bool replace_mode = mb->is_command_or_control_pressed();
+		_update_flag(replace_mode);
+		if (!replace_mode && hovered_index != HOVERED_INDEX_NONE) {
+			dragging = true;
+			dragging_value_to_set = bool(value & (1u << hovered_index));
+		}
+	}
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		dragging = false;
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		if (hovered_index != INT32_MAX) {
+		if (hovered_index != HOVERED_INDEX_NONE) {
 			renamed_layer_index = hovered_index;
 			layer_rename->set_position(get_screen_position() + mb->get_position());
 			layer_rename->reset_size();
@@ -1177,7 +1187,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < layer_group_size; j++) {
-						const bool on = value & (1 << layer_index);
+						const bool on = value & (1u << layer_index);
 						Rect2 rect2 = Rect2(ofs, Size2(bsize, bsize));
 
 						color.a = on ? 0.6 : 0.2;
@@ -1367,7 +1377,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		}
 
 		names.push_back(name);
-		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i));
+		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1u << i));
 	}
 
 	grid->names = names;
@@ -1402,7 +1412,7 @@ void EditorPropertyLayers::_button_pressed() {
 		}
 		layers->add_check_item(name, i);
 		int idx = layers->get_item_index(i);
-		layers->set_item_checked(idx, grid->value & (1 << i));
+		layers->set_item_checked(idx, grid->value & (1u << i));
 	}
 
 	if (layers->get_item_count() == 0) {
@@ -1424,13 +1434,9 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 		ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {
-		if (grid->value & (1 << p_menu)) {
-			grid->value &= ~(1 << p_menu);
-		} else {
-			grid->value |= (1 << p_menu);
-		}
+		grid->value ^= 1u << p_menu;
 		grid->queue_redraw();
-		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
+		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1u << p_menu));
 		_grid_changed(grid->value);
 	}
 }
@@ -2807,7 +2813,9 @@ void EditorPropertyColor::_picker_created() {
 }
 
 void EditorPropertyColor::_popup_opening() {
-	EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	}
 	last_color = picker->get_pick_color();
 	was_checked = !is_checkable() || is_checked();
 }

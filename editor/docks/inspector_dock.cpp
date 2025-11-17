@@ -495,6 +495,16 @@ void InspectorDock::_notification(int p_what) {
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
+				inspector->set_property_name_style(property_name_style);
+
+				bool disable_folding = EDITOR_GET("interface/inspector/disable_folding");
+				inspector->set_use_folding(!disable_folding);
+			}
+		} break;
 	}
 }
 
@@ -764,14 +774,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_spacer();
 
 	backward_button = memnew(Button);
-	backward_button->set_flat(true);
+	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTRC("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
-	forward_button->set_flat(true);
+	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
 	forward_button->set_disabled(true);

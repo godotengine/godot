@@ -4117,6 +4117,10 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 							new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						}
 					}
+					if (new_sd->glyphs.is_empty() && gl.x_off < 0.0) {
+						gl.advance += -gl.x_off;
+						gl.x_off = 0.0;
+					}
 					new_sd->width += gl.advance * gl.repeat;
 				}
 				new_sd->glyphs.push_back(gl);

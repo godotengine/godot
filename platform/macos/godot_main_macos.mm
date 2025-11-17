@@ -32,6 +32,7 @@
 
 #import "godot_application.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 #if defined(SANITIZERS_ENABLED)
@@ -39,6 +40,8 @@
 #endif
 
 int main(int argc, char **argv) {
+	godot_init_profiler();
+
 #if defined(VULKAN_ENABLED)
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1); // MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_SWAPCHAIN_MIN_MAG_FILTER_USE_NEAREST", "0", 1); // MoltenVK - use linear surface scaling. TODO: remove when full DPI scaling is implemented.

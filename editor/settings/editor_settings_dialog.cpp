@@ -205,9 +205,15 @@ void EditorSettingsDialog::popup_edit_settings() {
 	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
-	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	Rect2 saved_size;
+	if (!_is_in_project_manager()) {
+		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
+	}
+
 	if (saved_size != Rect2()) {
 		popup(saved_size);
+	} else if (_is_in_project_manager()) {
+		popup_centered_clamped(Size2(800, 600) * EDSCALE, 0.8); // Make it smaller that the default Project Manager size.
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
@@ -222,7 +228,7 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
+			if (!is_visible() && !_is_in_project_manager()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
 				set_process_shortcut_input(false);
 			}
@@ -231,6 +237,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
 
+			if (_is_in_project_manager()) {
+				return;
+			}
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_methods_changed, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_properties_changed, nullptr);
@@ -275,14 +284,16 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
-		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
-			EditorNode::get_singleton()->undo();
-			handled = true;
-		}
+		if (EditorNode::get_singleton()) {
+			if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+				EditorNode::get_singleton()->undo();
+				handled = true;
+			}
 
-		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
-			EditorNode::get_singleton()->redo();
-			handled = true;
+			if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+				EditorNode::get_singleton()->redo();
+				handled = true;
+			}
 		}
 
 		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
@@ -325,6 +336,10 @@ void EditorSettingsDialog::_event_config_confirmed() {
 	} else {
 		_update_shortcut_events(current_edited_identifier, current_events);
 	}
+}
+
+bool EditorSettingsDialog::_is_in_project_manager() const {
+	return !ProjectSettings::get_singleton()->is_project_loaded();
 }
 
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
@@ -842,6 +857,10 @@ PropertyInfo EditorSettingsDialog::_create_mouse_shortcut_property_info(const St
 String EditorSettingsDialog::_get_shortcut_button_string(const String &p_shortcut_name) {
 	String button_string;
 	Ref<Shortcut> shortcut_ref = EditorSettings::get_singleton()->get_shortcut(p_shortcut_name);
+	if (shortcut_ref.is_null()) {
+		return String();
+	}
+
 	Array events = shortcut_ref->get_events();
 	for (Ref<InputEvent> input_event : events) {
 		button_string += input_event->as_text() + " + ";
@@ -869,8 +888,7 @@ void EditorSettingsDialog::_advanced_toggled(bool p_button_pressed) {
 }
 
 void EditorSettingsDialog::_editor_restart() {
-	EditorNode::get_singleton()->save_all_scenes();
-	EditorNode::get_singleton()->restart_editor();
+	emit_signal("restart_requested");
 }
 
 void EditorSettingsDialog::_editor_restart_request() {
@@ -884,6 +902,8 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+
+	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -943,7 +963,11 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
 	restart_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	if (_is_in_project_manager()) {
+		restart_label->set_text(TTRC("The Project Manager must be restarted for changes to take effect."));
+	} else {
+		restart_label->set_text(TTRC("The editor must be restarted for changes to take effect."));
+	}
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
@@ -1004,6 +1028,41 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	EditorInspector::add_inspector_plugin(plugin);
 }
 
+void EditorSettingsPropertyWrapper::_setup_override_info() {
+	override_container = memnew(HBoxContainer);
+
+	override_icon = memnew(TextureRect);
+	override_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	override_container->add_child(override_icon);
+
+	Variant::Type type = ProjectSettings::get_singleton()->get_editor_setting_override(property).get_type();
+	override_editor_property = get_parent_inspector()->instantiate_property_editor(ProjectSettings::get_singleton(), type, ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property, hint, hint_text, usage);
+	override_editor_property->set_object_and_property(ProjectSettings::get_singleton(), ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + property);
+	override_editor_property->set_read_only(true);
+	override_editor_property->set_label(TTR("Overridden in project"));
+	override_editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
+	override_container->add_child(override_editor_property);
+
+	goto_button = memnew(Button);
+	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
+	override_container->add_child(goto_button);
+	if (EditorNode::get_singleton()) {
+		goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
+	}
+
+	remove_button = memnew(Button);
+	remove_button->set_tooltip_text(TTRC("Remove this override."));
+	override_container->add_child(remove_button);
+	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
+
+	add_child(override_container);
+
+	if (is_ready()) {
+		// Setup icons.
+		_notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void EditorSettingsPropertyWrapper::_update_override() {
 	// Don't allow overriding theme properties, because it causes problems. Overriding Project Manager settings makes no sense.
 	// TODO: Find a better way to define exception prefixes (if the list happens to grow).
@@ -1012,14 +1071,18 @@ void EditorSettingsPropertyWrapper::_update_override() {
 		return;
 	}
 
-	const bool has_override = ProjectSettings::get_singleton()->has_editor_setting_override(property);
+	const bool has_override = ProjectSettings::get_singleton()->is_project_loaded() && ProjectSettings::get_singleton()->has_editor_setting_override(property);
 	if (has_override) {
-		const Variant override_value = EDITOR_GET(property);
-		override_label->set_text(vformat(TTR("Overridden in project: %s"), override_value));
-		// In case the text is too long and trimmed.
-		override_label->set_tooltip_text(override_value);
+		if (!override_container) {
+			_setup_override_info();
+		}
+		override_editor_property->update_property();
+		set_bottom_editor(override_container);
+		override_container->show();
+	} else if (override_container) {
+		override_container->hide();
+		set_bottom_editor(nullptr);
 	}
-	override_info->set_visible(has_override);
 	can_override = !has_override;
 }
 
@@ -1036,13 +1099,14 @@ void EditorSettingsPropertyWrapper::_remove_override() {
 	EditorNode::get_singleton()->notify_settings_overrides_changed();
 	_update_override();
 
-	if (requires_restart) {
+	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
 		restart_request_callback.call();
 	}
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
+	if (override_container && p_what == NOTIFICATION_THEME_CHANGED) {
+		override_icon->set_texture(get_editor_theme_icon(SNAME("Hierarchy")));
 		goto_button->set_button_icon(get_editor_theme_icon(SNAME("MethodOverride")));
 		remove_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	}
@@ -1052,38 +1116,15 @@ void EditorSettingsPropertyWrapper::update_property() {
 	editor_property->update_property();
 }
 
-void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProperty *p_editor_property, bool p_requires_restart) {
-	requires_restart = p_requires_restart;
+void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage) {
+	hint = p_hint;
+	hint_text = p_hint_text;
+	usage = p_usage;
 
 	property = p_property;
-	container = memnew(VBoxContainer);
-
 	editor_property = p_editor_property;
-	editor_property->set_h_size_flags(SIZE_EXPAND_FILL);
-	container->add_child(editor_property);
+	add_child(editor_property);
 
-	override_info = memnew(HBoxContainer);
-	override_info->hide();
-	container->add_child(override_info);
-
-	override_label = memnew(Label);
-	override_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	override_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	override_label->set_mouse_filter(MOUSE_FILTER_STOP); // For tooltip.
-	override_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	override_info->add_child(override_label);
-
-	goto_button = memnew(Button);
-	goto_button->set_tooltip_text(TTRC("Go to the override in the Project Settings."));
-	override_info->add_child(goto_button);
-	goto_button->connect(SceneStringName(pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::open_setting_override).bind(property), CONNECT_DEFERRED);
-
-	remove_button = memnew(Button);
-	remove_button->set_tooltip_text(TTRC("Remove this override."));
-	override_info->add_child(remove_button);
-	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsPropertyWrapper::_remove_override));
-
-	add_child(container);
 	_update_override();
 
 	connect(SNAME("property_overridden"), callable_mp(this, &EditorSettingsPropertyWrapper::_create_override));
@@ -1108,8 +1149,9 @@ bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Varia
 	EditorSettingsPropertyWrapper *editor = memnew(EditorSettingsPropertyWrapper);
 	EditorProperty *real_property = inspector->get_inspector()->instantiate_property_editor(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 	real_property->set_object_and_property(p_object, p_path);
+	real_property->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	real_property->set_name_split_ratio(0.0);
-	editor->setup(property, real_property, bool(p_usage & PROPERTY_USAGE_RESTART_IF_CHANGED));
+	editor->setup(property, real_property, p_hint, p_hint_text, p_usage);
 
 	add_property_editor(p_path, editor);
 	current_object = nullptr;

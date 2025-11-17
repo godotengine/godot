@@ -48,6 +48,7 @@ class EditorBottomPanel : public TabContainer {
 	bool lock_panel_switching = false;
 	LocalVector<Control *> bottom_docks;
 	LocalVector<Ref<Shortcut>> dock_shortcuts;
+	HashMap<String, int> dock_offsets;
 
 	LocalVector<Button *> legacy_buttons;
 	void _on_button_visibility_changed(Button *p_button, Control *p_control);
@@ -56,6 +57,7 @@ class EditorBottomPanel : public TabContainer {
 	void _on_tab_changed(int p_idx);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
+	void _update_center_split_offset();
 
 protected:
 	void _notification(int p_what);
@@ -74,6 +76,9 @@ public:
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
 	void _theme_changed();
+
+	void set_bottom_panel_offset(int p_offset);
+	int get_bottom_panel_offset();
 
 	EditorBottomPanel();
 	~EditorBottomPanel();
