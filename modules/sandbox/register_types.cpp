@@ -50,7 +50,7 @@ void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		// Register the Sandbox class
 		GDREGISTER_CLASS(Sandbox);
-		GDREGISTER_CLASS(SandboxBase);
+		GDREGISTER_ABSTRACT_CLASS(SandboxBase);
 
 		// Register ELF script classes
 		GDREGISTER_CLASS(ELFScript);
