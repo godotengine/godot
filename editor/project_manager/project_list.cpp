@@ -142,7 +142,8 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (is_hovering) {
 				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
-			if (has_focus()) {
+			// Due to how this control works, we can't rely on the built-in way of checking for focus visibility.
+			if (has_focus() && !is_focus_hidden) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
 
@@ -296,8 +297,9 @@ bool ProjectListItemControl::should_load_project_icon() const {
 	return icon_needs_reload;
 }
 
-void ProjectListItemControl::set_selected(bool p_selected) {
+void ProjectListItemControl::set_selected(bool p_selected, bool p_hide_focus) {
 	is_selected = p_selected;
+	is_focus_hidden = is_selected && p_hide_focus;
 	queue_redraw();
 	queue_accessibility_update();
 }
@@ -1017,7 +1019,7 @@ int ProjectList::get_index(const ProjectListItemControl *p_control) const {
 void ProjectList::ensure_project_visible(int p_index) {
 	const Item &item = _projects[p_index];
 	// Since follow focus is enabled.
-	item.control->grab_focus();
+	item.control->grab_focus(true);
 }
 
 void ProjectList::_create_project_item_control(int p_index) {
@@ -1111,7 +1113,7 @@ void ProjectList::_list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb) {
 
 			} else {
 				_last_clicked = clicked_project.path;
-				select_project(clicked_index);
+				select_project(clicked_index, true);
 			}
 
 			emit_signal(SNAME(SIGNAL_SELECTION_CHANGED));
@@ -1255,10 +1257,10 @@ void ProjectList::_clear_project_selection() {
 	queue_accessibility_update();
 }
 
-void ProjectList::_select_project_nocheck(int p_index) {
+void ProjectList::_select_project_nocheck(int p_index, bool p_hide_focus) {
 	Item &item = _projects.write[p_index];
 	_selected_project_paths.insert(item.path);
-	item.control->set_selected(true);
+	item.control->set_selected(true, p_hide_focus);
 	queue_accessibility_update();
 }
 
@@ -1286,10 +1288,10 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 	}
 }
 
-void ProjectList::select_project(int p_index) {
+void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
-	_select_project_nocheck(p_index);
+	_select_project_nocheck(p_index, p_hide_focus);
 }
 
 void ProjectList::deselect_project(int p_index) {
