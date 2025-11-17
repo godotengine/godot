@@ -270,7 +270,7 @@ void GameStateSnapshot::_get_rc_cycles(
 		}
 
 		SnapshotDataObject *next = objects[next_child.value];
-		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
+		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class("WeakRef") && !p_traversed_objs.has(next)) {
 			HashSet<SnapshotDataObject *> traversed_copy = p_traversed_objs;
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
@@ -303,7 +303,7 @@ void GameStateSnapshot::recompute_references() {
 	}
 
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &obj : objects) {
-		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class(WeakRef::get_class_static())) {
+		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class("WeakRef")) {
 			continue;
 		}
 		HashSet<SnapshotDataObject *> traversed_objs;
