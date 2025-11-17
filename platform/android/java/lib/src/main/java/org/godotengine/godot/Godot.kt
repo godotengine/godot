@@ -392,7 +392,12 @@ class Godot private constructor(val context: Context) {
 			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
 				v.post {
 					if (useImmersive.get()) {
-						v.setPadding(0, 0, 0, 0)
+						if (isEditorBuild()) {
+							val windowInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+							v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+						} else {
+							v.setPadding(0, 0, 0, 0)
+						}
 					} else {
 						val windowInsets = insets.getInsets(getInsetType())
 						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
