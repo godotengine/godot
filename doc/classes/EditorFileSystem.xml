@@ -36,6 +36,12 @@
 				Returns the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
+		<method name="is_importing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if resources are currently being imported.
+			</description>
+		</method>
 		<method name="is_scanning" qualifiers="const">
 			<return type="bool" />
 			<description>
