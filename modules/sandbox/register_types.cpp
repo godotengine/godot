@@ -47,7 +47,7 @@ static Ref<ResourceFormatLoaderELF> resource_loader_elf;
 static Ref<ResourceFormatSaverCPP> resource_saver_cpp;
 
 void initialize_sandbox_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
 		// Register the Sandbox class
 		GDREGISTER_CLASS(Sandbox);
 		GDREGISTER_ABSTRACT_CLASS(SandboxBase);
@@ -75,7 +75,7 @@ void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_sandbox_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
 		// Unregister resource loaders/savers
 		if (resource_loader_elf.is_valid()) {
 			ResourceLoader::remove_resource_format_loader(resource_loader_elf);
