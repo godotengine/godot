@@ -175,11 +175,11 @@ protected:
 	void _init_joints(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, LocalVector<SpringBone3DJointSetting *> &p_joints, const LocalVector<ObjectID> &p_collisions, const Transform3D &p_center_transform, const Transform3D &p_inverted_center_transform, const Quaternion &p_inverted_center_rotation);
 
-	void _make_joints_dirty(int p_index);
+	void _make_joints_dirty(int p_index, bool p_reset = false);
 	void _make_all_joints_dirty();
 
 	void _update_joint_array(int p_index);
-	void _update_joints();
+	void _update_joints(bool p_reset);
 
 	void _update_bone_axis(Skeleton3D *p_skeleton, SpringBone3DSetting *p_setting);
 
