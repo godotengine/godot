@@ -41,7 +41,7 @@ class ELFScript;
 // Base Sandbox implementation providing default/dummy implementations
 // This allows the Sandbox class to work without libriscv dependencies for testing
 class SandboxBase : public Node {
-	GDCLASS(SandboxBase, Node);
+	GDSOFTCLASS(SandboxBase, Node);
 
 protected:
 	// Internal state for base implementation
