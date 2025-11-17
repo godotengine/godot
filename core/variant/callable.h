@@ -102,6 +102,7 @@ public:
 	Callable bindv(const Array &p_arguments);
 
 	Callable bindp(const Variant **p_arguments, int p_argcount) const;
+	Callable prebindp(const Variant **p_arguments, int p_argcount) const;
 	Callable unbind(int p_argcount) const;
 
 	Object *get_object() const;
