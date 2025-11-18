@@ -30,38 +30,41 @@
 
 #include "call_error_info.h"
 
-CallErrorInfo::CallError CallErrorInfo::get_call_error() {
-	return call_error;
+void CallErrorInfo::set_call_error(CallError p_error, int p_argument, int p_expected) {
+	ERR_FAIL_COND_MSG(p_error == CALL_ERROR_INVALID_ARGUMENT && (p_expected < 0 || p_expected >= Variant::VARIANT_MAX), "Invalid value for expected argument, must be a valid Variant type");
+	call_error = p_error;
+	argument = p_argument;
+	expected = p_expected;
 }
 
-int CallErrorInfo::get_expected_arguments() {
+void CallErrorInfo::set_call_inner_error(CallError p_error) {
+	call_inner_error = p_error;
+}
+
+int CallErrorInfo::get_expected_arguments() const {
 	ERR_FAIL_COND_V_MSG(call_error != CALL_ERROR_TOO_MANY_ARGUMENTS && call_error != CALL_ERROR_TOO_FEW_ARGUMENTS, -1, "Error is not about expected argument count");
 	return expected;
 }
 
-Variant::Type CallErrorInfo::get_invalid_argument_type() {
+Variant::Type CallErrorInfo::get_invalid_argument_type() const {
 	ERR_FAIL_COND_V_MSG(call_error != CALL_ERROR_INVALID_ARGUMENT, Variant::NIL, "Error is not about an invalid argument");
 	return Variant::Type(expected);
 }
-int CallErrorInfo::get_invalid_argument_index() {
+
+int CallErrorInfo::get_invalid_argument_index() const {
 	ERR_FAIL_COND_V_MSG(call_error != CALL_ERROR_INVALID_ARGUMENT, -1, "Error is not about an invalid argument");
 	return argument;
 }
 
-void CallErrorInfo::set_call_error(CallError p_error, int p_argument, int p_expected) {
-	ERR_FAIL_COND_MSG(p_error == CALL_ERROR_INVALID_ARGUMENT && (p_expected < 0 || expected >= Variant::VARIANT_MAX), "Invalid value for expected argument, must be a valid Variant type");
-	call_error = p_error;
-	argument = p_argument;
-	expected = p_error;
-}
-
 void CallErrorInfo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_call_error"), &CallErrorInfo::get_call_error);
+	ClassDB::bind_method(D_METHOD("get_call_inner_error"), &CallErrorInfo::get_call_inner_error);
 	ClassDB::bind_method(D_METHOD("get_expected_arguments"), &CallErrorInfo::get_expected_arguments);
 	ClassDB::bind_method(D_METHOD("get_invalid_argument_type"), &CallErrorInfo::get_invalid_argument_type);
 	ClassDB::bind_method(D_METHOD("get_invalid_argument_index"), &CallErrorInfo::get_invalid_argument_index);
 
 	ClassDB::bind_method(D_METHOD("set_call_error", "error", "argument", "expected"), &CallErrorInfo::set_call_error);
+	ClassDB::bind_method(D_METHOD("set_call_inner_error", "error"), &CallErrorInfo::set_call_inner_error);
 
 	BIND_ENUM_CONSTANT(CALL_OK);
 	BIND_ENUM_CONSTANT(CALL_ERROR_INVALID_METHOD);
@@ -70,5 +73,4 @@ void CallErrorInfo::_bind_methods() {
 	BIND_ENUM_CONSTANT(CALL_ERROR_TOO_FEW_ARGUMENTS);
 	BIND_ENUM_CONSTANT(CALL_ERROR_INSTANCE_IS_NULL);
 	BIND_ENUM_CONSTANT(CALL_ERROR_METHOD_NOT_CONST);
-	BIND_ENUM_CONSTANT(CALL_ERROR_SCRIPT_ERROR);
 }

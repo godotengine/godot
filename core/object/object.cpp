@@ -722,6 +722,7 @@ Variant Object::_call_with_error_test_bind(const Variant **p_args, int p_argcoun
 
 	Variant ret = callp(method, &p_args[2], p_argcount - 2, r_error);
 	err_info->set_call_error(CallErrorInfo::CallError(r_error.error), r_error.argument, r_error.expected);
+	err_info->set_call_inner_error(CallErrorInfo::CallError(r_error.inner_error));
 
 	r_error.error = Callable::CallError::CALL_OK; // This call validates, so the call should not fail.
 
@@ -929,9 +930,6 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 				return ret;
 			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
-			} break;
-			case Callable::CallError::CALL_ERROR_SCRIPT_ERROR: {
-				return ret;
 			}
 		}
 	}
@@ -976,9 +974,6 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 				return ret;
 			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
-			} break;
-			case Callable::CallError::CALL_ERROR_SCRIPT_ERROR: {
-				return ret;
 			}
 		}
 	}
@@ -1943,7 +1938,7 @@ void Object::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "call_with_error_test";
-		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "call_error_info", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "CallErrorInfo"));
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "call_error_info", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_with_error_test", &Object::_call_with_error_test_bind, mi);

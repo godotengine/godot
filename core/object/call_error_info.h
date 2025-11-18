@@ -37,18 +37,18 @@ class CallErrorInfo : public RefCounted {
 	GDCLASS(CallErrorInfo, RefCounted)
 public:
 	enum CallError {
-		CALL_OK,
-		CALL_ERROR_INVALID_METHOD,
-		CALL_ERROR_INVALID_ARGUMENT, // expected is variant type
-		CALL_ERROR_TOO_MANY_ARGUMENTS, // expected is number of arguments
-		CALL_ERROR_TOO_FEW_ARGUMENTS, // expected is number of arguments
-		CALL_ERROR_INSTANCE_IS_NULL,
-		CALL_ERROR_METHOD_NOT_CONST,
-		CALL_ERROR_SCRIPT_ERROR,
+		CALL_OK = Callable::CallError::CALL_OK,
+		CALL_ERROR_INVALID_METHOD = Callable::CallError::CALL_ERROR_INVALID_METHOD,
+		CALL_ERROR_INVALID_ARGUMENT = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT,
+		CALL_ERROR_TOO_MANY_ARGUMENTS = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS,
+		CALL_ERROR_TOO_FEW_ARGUMENTS = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS,
+		CALL_ERROR_INSTANCE_IS_NULL = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL,
+		CALL_ERROR_METHOD_NOT_CONST = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST,
 	};
 
 private:
 	CallError call_error = CALL_OK;
+	CallError call_inner_error = CALL_OK;
 	int argument = 0;
 	int expected = 0;
 
@@ -56,12 +56,15 @@ protected:
 	static void _bind_methods();
 
 public:
-	CallError get_call_error();
-	int get_expected_arguments();
-	Variant::Type get_invalid_argument_type();
-	int get_invalid_argument_index();
-
 	void set_call_error(CallError p_error, int p_argument, int p_expected);
+	CallError get_call_error() const { return call_error; }
+
+	void set_call_inner_error(CallError p_error);
+	CallError get_call_inner_error() const { return call_inner_error; }
+
+	int get_expected_arguments() const;
+	int get_invalid_argument_index() const;
+	Variant::Type get_invalid_argument_type() const;
 };
 
 VARIANT_ENUM_CAST(CallErrorInfo::CallError);

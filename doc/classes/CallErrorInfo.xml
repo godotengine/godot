@@ -9,25 +9,32 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_call_error">
+		<method name="get_call_error" qualifiers="const">
 			<return type="int" enum="CallErrorInfo.CallError" />
 			<description>
 				Return the error type.
 			</description>
 		</method>
-		<method name="get_expected_arguments">
+		<method name="get_call_inner_error" qualifiers="const">
+			<return type="int" enum="CallErrorInfo.CallError" />
+			<description>
+				Return the inner error type, which represents the first (if any) error caused by subsequent function calls within this function call.
+				[b]Note:[/b] This can return [constant CALL_OK] even when [method get_call_error] returns an error, and vice versa.
+			</description>
+		</method>
+		<method name="get_expected_arguments" qualifiers="const">
 			<return type="int" />
 			<description>
 				Return the amount of arguments expected (when the error is too many or too few arguments).
 			</description>
 		</method>
-		<method name="get_invalid_argument_index">
+		<method name="get_invalid_argument_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Return the index of the invalid argument (when the error is an invalid argument).
 			</description>
 		</method>
-		<method name="get_invalid_argument_type">
+		<method name="get_invalid_argument_type" qualifiers="const">
 			<return type="int" enum="Variant.Type" />
 			<description>
 				Return the expected type for the invalid argument (when the error is an invalid argument).
@@ -39,7 +46,14 @@
 			<param index="1" name="argument" type="int" />
 			<param index="2" name="expected" type="int" />
 			<description>
-				Setup the error. For invalid arguments [param argument] is the argument index and [param expected] is the expected variant type. For too few or too many arguments, [param argument] is the expected argument count.
+				Sets the error. For invalid arguments [param argument] is the argument index and [param expected] is the expected variant type. For too few or too many arguments, [param argument] is the expected argument count.
+			</description>
+		</method>
+		<method name="set_call_inner_error">
+			<return type="void" />
+			<param index="0" name="error" type="int" enum="CallErrorInfo.CallError" />
+			<description>
+				Sets the inner error, which represents the first (if any) error caused by subsequent function calls within this function call.
 			</description>
 		</method>
 	</methods>
@@ -64,9 +78,6 @@
 		</constant>
 		<constant name="CALL_ERROR_METHOD_NOT_CONST" value="6" enum="CallError">
 			A constant call happened in a non-const function.
-		</constant>
-		<constant name="CALL_ERROR_SCRIPT_ERROR" value="7" enum="CallError">
-			The function called was provided by a script, which failed during the call.
 		</constant>
 	</constants>
 </class>
