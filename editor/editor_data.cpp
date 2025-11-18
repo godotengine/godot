@@ -643,7 +643,7 @@ void EditorData::remove_scene(int p_idx) {
 			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_scene_file_path());
 		}
 
-		memdelete(edited_scene[p_idx].root);
+		edited_scene[p_idx].root->queue_free();
 		edited_scene.write[p_idx].root = nullptr;
 	}
 
