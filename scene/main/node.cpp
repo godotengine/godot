@@ -2007,9 +2007,10 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
 	TypedArray<Node> ret;
 	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
-	_update_children_cache();
 
 	const auto find_children_add = [&](const auto &p_find_children_add, TypedArray<Node> &p_array, const Node *p_current_node) -> void {
+		p_current_node->_update_children_cache();
+
 		Node *const *cptr = p_current_node->data.children_cache.ptr();
 		int ccount = p_current_node->data.children_cache.size();
 		for (int i = 0; i < ccount; i++) {
