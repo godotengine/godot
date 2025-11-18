@@ -2005,42 +2005,71 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 // Can be recursive or not, and limited to owned nodes.
 TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
+
 	TypedArray<Node> ret;
 	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
 
-	const auto find_children_add = [&](const auto &p_find_children_add, TypedArray<Node> &p_array, const Node *p_current_node) -> void {
-		p_current_node->_update_children_cache();
+	// Start at first child
+	_update_children_cache();
+	if (data.children_cache.is_empty()) {
+		return ret;
+	}
+	const Node *current_node = data.children_cache[0];
 
-		Node *const *cptr = p_current_node->data.children_cache.ptr();
-		int ccount = p_current_node->data.children_cache.size();
-		for (int i = 0; i < ccount; i++) {
-			if (p_owned && !cptr[i]->data.owner) {
-				continue;
+	// Check current node repeatedly
+	while (current_node != this) {
+		if (p_owned && !current_node->data.owner) {
+			continue;
+		}
+
+		if (p_pattern.is_empty() || current_node->data.name.operator String().match(p_pattern)) {
+			if (p_type.is_empty() || current_node->is_class(p_type)) {
+				ret.append(current_node);
+			} else if (current_node->get_script_instance()) {
+				Ref<Script> scr = current_node->get_script_instance()->get_script();
+				while (scr.is_valid()) {
+					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
+						ret.append(current_node);
+						break;
+					}
+
+					scr = scr->get_base_script();
+				}
 			}
+		}
 
-			if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-				if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
-					p_array.append(cptr[i]);
-				} else if (cptr[i]->get_script_instance()) {
-					Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
-					while (scr.is_valid()) {
-						if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
-							p_array.append(cptr[i]);
-							break;
-						}
+		current_node->_update_children_cache();
 
-						scr = scr->get_base_script();
+		if (p_recursive) {
+			// Try go to first child
+			if (!current_node->data.children_cache.is_empty()) {
+				current_node = current_node->data.children_cache[0];
+			}
+			// Find next sibling
+			else {
+				while (current_node != this) {
+					const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
+
+					// Try go to next sibling
+					if (current_node->data.index + 1 < siblings.size()) {
+						current_node = siblings[current_node->data.index + 1];
+						break;
+					}
+					// Go back to parent
+					else {
+						current_node = current_node->data.parent;
 					}
 				}
 			}
-
-			if (p_recursive) {
-				p_find_children_add(p_find_children_add, p_array, cptr[i]);
-			}
 		}
-	};
+		else {
+			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
 
-	find_children_add(find_children_add, ret, this);
+			// Go to next sibling
+			current_node = siblings[current_node->data.index + 1];
+		}
+	}
+
 	return ret;
 }
 
