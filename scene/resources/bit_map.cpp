@@ -519,7 +519,7 @@ static bool seperated_axis_theorum(const PackedVector2Array &rect1, const Packed
 int advance(const PackedVector2Array &pl, const int &pl_len, int k, const Vector2 &vec) {
 	int k_next;
 	Vector2 p, pn;
-	while (1) {
+	while (true) {
 		k_next = (k + 1) % pl_len;
 		p = pl[k];
 		pn = pl[k_next];
@@ -585,7 +585,6 @@ static PackedVector2Array generate_bbox_from_polyline(const Vector<Vector2> &pl)
 	int top, bottom, left, right;
 	find_extrema(polygon, top, bottom, left, right);
 
-	Vector2 p_edge;
 	for (int i = 0; i < n; ++i) {
 		Vector2 u = edge_vectors[i];
 		Vector2 v = Vector2(-u.y, u.x); // Perpendicular Vector
