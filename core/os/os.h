@@ -47,7 +47,7 @@ public:
 	enum HidpiAwareness {
 		NO_AWARENESS,
 		SYSTEM_WIDE_AWARENESS,
-		PER_MONITOR_AWARENESS
+		PER_MONITOR_AWARENESS,
 	};
 
 private:

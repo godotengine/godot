@@ -291,8 +291,8 @@ EditorRun::WindowPlacement EditorRun::get_window_placement() {
 			int display_scale = 1;
 			// There are some problems
 			// - display_scale is int, but in one case it's assigned a float value.
-			// - Is it necessary to somehow handle the situation when the project uses OS::HidpiAwareness::PER_MONITOR_AWARENESS ?
-			//   Looks like project is more aware of that 'dpi' than editor and should be able handle it on it's own.
+			// - Is it necessary to somehow handle the situation when the project uses OS::HidpiAwareness::PER_MONITOR_AWARENESS?
+			//   Looks like project is more aware of that 'dpi' than editor and should be able handle it on its own.
 			//
 			// Should we assume that the editor always runs in SYSTEM_WIDE_AWARENESS mode?
 
