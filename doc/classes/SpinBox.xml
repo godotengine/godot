@@ -56,11 +56,17 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
+		<member name="keep_editing_on_text_submit" type="bool" setter="set_keep_editing_on_text_submit" getter="is_editing_kept_on_text_submit" default="false">
+			If [code]true[/code], the [LineEdit] will not exit edit mode when text is submitted by pressing [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
+		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
 			Adds the specified prefix string before the numerical value of the [SpinBox].
 		</member>
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
 			If [code]true[/code], the [SpinBox] will select the whole text when the [LineEdit] gains focus. Clicking the up and down arrows won't trigger this behavior.
+		</member>
+		<member name="show_plus_sign" type="bool" setter="set_show_plus_sign" getter="is_showing_plus_sign" default="false">
+			If [code]true[/code], the [SpinBox] will display a leading [code]+[/code] sign for positive numbers. Negative numbers always include their [code]-[/code] sign automatically, so this property only affects how positive values are shown.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
