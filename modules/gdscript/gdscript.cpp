@@ -2829,7 +2829,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		return String(); // No class parsed.
 	}
 
-	if (!c->extends_path.is_empty() && c->fqcn.ends_with(c->extends_path)) {
+	if (!c->extends_path.is_empty() && p_path == c->extends_path) {
 		return String();
 	}
 
