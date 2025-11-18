@@ -2041,28 +2041,25 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		current_node->_update_children_cache();
 
 		if (p_recursive) {
-			// Try go to first child
 			if (!current_node->data.children_cache.is_empty()) {
+				// Go to first child
 				current_node = current_node->data.children_cache[0];
-			}
-			// Find next sibling
-			else {
+			} else {
+				// Find next sibling
 				while (current_node != this) {
 					const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
 
-					// Try go to next sibling
 					if (current_node->data.index + 1 < siblings.size()) {
+						// Go to next sibling
 						current_node = siblings[current_node->data.index + 1];
 						break;
-					}
-					// Go back to parent
-					else {
+					} else {
+						// Go back to parent
 						current_node = current_node->data.parent;
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
 
 			// Go to next sibling
