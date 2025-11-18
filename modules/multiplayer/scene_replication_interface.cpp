@@ -238,7 +238,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 
 	if (pending_spawn == p_obj->get_instance_id() && sync->get_multiplayer_authority() == pending_spawn_remote) {
 		// Try to apply synchronizer Net ID
-		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The MultiplayerSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of multiplayer synchronizers during \"_enter_tree\" or the \"_spawn_custom\" callback of their multiplayer spawner.", sync->get_path()));
+		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The MultiplayerSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of multiplayer synchronizers during \"_enter_tree\" or the \"spawn_function\" callback of their multiplayer spawner.", sync->get_path()));
 		ERR_FAIL_COND_V(!peers_info.has(pending_spawn_remote), ERR_INVALID_DATA);
 		uint32_t net_id = pending_sync_net_ids.front()->get();
 		pending_sync_net_ids.pop_front();
@@ -684,7 +684,7 @@ bool SceneReplicationInterface::_verify_synchronizer(int p_peer, MultiplayerSync
 	if (r_net_id == 0 || (r_net_id & 0x80000000)) {
 		int path_id = 0;
 		bool verified = multiplayer_cache->send_object_cache(p_sync, p_peer, path_id);
-		ERR_FAIL_COND_V_MSG(path_id < 0, false, "This should never happen!");
+		ERR_FAIL_COND_V_MSG(path_id < 0, false, "Path ID generation failed for synchronizer. This indicates a bug in the multiplayer cache system. Please report this issue with reproduction steps.");
 		if (r_net_id == 0) {
 			// First time path based ID.
 			r_net_id = path_id | 0x80000000;

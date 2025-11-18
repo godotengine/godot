@@ -180,7 +180,7 @@ StringName Translation::get_plural_message(const StringName &p_src_text, const S
 		return ret;
 	}
 
-	ERR_FAIL_COND_V_MSG(p_n < 0, StringName(), "N passed into translation to get a plural message should not be negative. For negative numbers, use singular translation please. Search \"gettext PO Plural Forms\" online for details on translating negative numbers.");
+	ERR_FAIL_COND_V_MSG(p_n < 0, StringName(), "Negative numbers cannot be used for plural translations. Use singular translation for negative values. See: https://www.gnu.org/software/gettext/manual/html_node/Plural-forms.html");
 
 	const Vector<StringName> *msgstrs = translation_map.getptr({ p_context, p_src_text });
 	if (msgstrs == nullptr) {
