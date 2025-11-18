@@ -335,9 +335,13 @@ void RendererSceneRenderRD::_render_buffers_ensure_screen_texture(const RenderDa
 	if (reuse_blur_texture) {
 		rb->allocate_blur_textures();
 	} else {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
+		if (!rb->has_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR)) {
+			uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			// This needs to have mipmaps if any shader needs textureLod to work on screen_texture
+			uint32_t mipmaps_required = Image::get_image_required_mipmaps(size.x, size.y, Image::FORMAT_RGBAH);
+			rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits, RenderingDeviceCommons::TEXTURE_SAMPLES_1, { 0, 0 }, 0U, mipmaps_required);
+		}
 	}
 }
 
