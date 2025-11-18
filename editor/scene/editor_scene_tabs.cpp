@@ -204,7 +204,7 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(scene_path));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), SCENE_RUN);
 		DISABLE_LAST_OPTION_IF(no_root_node);
-		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), EditorNode::SCENE_SET_MAIN_SCENE);
+		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), EditorNode::SCENE_TAB_SET_AS_MAIN_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node || (!main_scene_path.is_empty() && ResourceUID::ensure_path(main_scene_path) == scene_path));
 
 		scene_tabs_context_menu->add_separator();

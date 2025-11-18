@@ -2640,7 +2640,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 		case SAVE_AND_SET_MAIN_SCENE: {
 			_save_scene(p_file);
-			_menu_option_confirm(SCENE_SET_MAIN_SCENE, true);
+			_menu_option_confirm(SCENE_TAB_SET_AS_MAIN_SCENE, true);
 		} break;
 
 		case FILE_EXPORT_MESH_LIBRARY: {
@@ -3375,7 +3375,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 
-		case SCENE_SET_MAIN_SCENE: {
+		case SCENE_TAB_SET_AS_MAIN_SCENE: {
 			const String scene_path = editor_data.get_scene_path(editor_data.get_edited_scene());
 			if (scene_path.is_empty()) {
 				current_menu_option = SAVE_AND_SET_MAIN_SCENE;
