@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/math/plane.h"
 #include "core/math/vector3.h"
 #include "renderer_scene_cull.h"
 
@@ -44,7 +43,6 @@ struct Transform3D;
 // Uncomment LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT to get periodic print of the number of casters culled for the directional light..
 
 //  #define LIGHT_CULLER_DEBUG_LOGGING
-// #define LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
 // #define LIGHT_CULLER_DEBUG_REGULAR_LIGHT
 // #define LIGHT_CULLER_DEBUG_FLASH
 #define LIGHT_CULLER_DEBUG_FLASH_FREQUENCY 1024
@@ -122,7 +120,6 @@ private:
 	enum {
 		NUM_CAM_PLANES = 6,
 		NUM_CAM_POINTS = 8,
-		MAX_CULL_PLANES = 17,
 		LUT_SIZE = 64,
 	};
 
@@ -132,12 +129,11 @@ public:
 	bool prepare_camera(const Transform3D &p_cam_transform, const Projection &p_cam_matrix);
 
 	// REGULAR LIGHTS (SPOT, OMNI).
-	// These are prepared then used for culling one by one, single threaded.
 	// prepare_regular_light() returns false if the entire light is culled (i.e. there is no intersection between the light and the view frustum).
-	bool prepare_regular_light(const RendererSceneCull::Instance &p_instance) { return _prepare_light(p_instance, -1); }
+	bool prepare_regular_light(const RendererSceneCull::Instance &p_instance, LightCullPlanes &r_light_cull_planes) { return _prepare_light(p_instance, r_light_cull_planes); }
 
 	// Cull according to the regular light planes that were setup in the previous call to prepare_regular_light.
-	void cull_regular_light(PagedArray<RendererSceneCull::Instance *> &r_instance_shadow_cull_result);
+	void cull_regular_light(const LightCullPlanes &p_light_cull_planes, PagedArray<RendererSceneCull::Instance *> &r_instance_shadow_cull_result);
 
 	// Directional lights are prepared in advance, and can be culled multithreaded chopping and changing between
 	// different directional_light_id.
@@ -151,16 +147,7 @@ public:
 	void set_light_culling_active(bool p_active) { data.light_culling_active = p_active; }
 
 private:
-	struct LightCullPlanes {
-		void add_cull_plane(const Plane &p);
-		Plane cull_planes[MAX_CULL_PLANES];
-		int num_cull_planes = 0;
-#ifdef LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
-		uint32_t rejected_count = 0;
-#endif
-	};
-
-	bool _prepare_light(const RendererSceneCull::Instance &p_instance, int32_t p_directional_light_id = -1);
+	bool _prepare_light(const RendererSceneCull::Instance &p_instance, LightCullPlanes &r_light_cull_planes);
 
 	// Avoid adding extra culling planes derived from near colinear triangles.
 	// The normals derived from these will be inaccurate, and can lead to false
@@ -222,15 +209,9 @@ private:
 		// lights multiple times per frame.
 		LocalVector<LightCullPlanes> directional_cull_planes;
 
-		// Single threaded cull planes for regular lights
-		// (OMNI, SPOT). These lights reuse the same set of cull plane data.
-		LightCullPlanes regular_cull_planes;
-
 #ifdef LIGHT_CULLER_DEBUG_REGULAR_LIGHT
-		uint32_t regular_rejected_count = 0;
+		std::atomic<uint32_t> regular_rejected_count = 0;
 #endif
-		// The whole regular light can be out of range of the view frustum, in which case all casters should be culled.
-		bool out_of_range = false;
 
 #ifdef RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 		static String plane_bitfield_to_string(unsigned int BF);
