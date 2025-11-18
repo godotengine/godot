@@ -840,6 +840,18 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 		}
 	}
 
+	Ref<Texture2D> extension_language_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class());
+	Ref<Texture2D> extension_language_alt_icon;
+	if (script->is_built_in()) {
+		extension_language_alt_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class() + "Internal");
+	}
+
+	if (extension_language_alt_icon.is_valid()) {
+		return extension_language_alt_icon;
+	} else if (extension_language_icon.is_valid()) {
+		return extension_language_icon;
+	}
+
 	return Ref<Texture2D>();
 }
 
