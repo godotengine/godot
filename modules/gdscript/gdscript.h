@@ -186,6 +186,7 @@ private:
 	StringName global_name; // `class_name`.
 	String fully_qualified_name;
 	String simplified_icon_path;
+	Vector<StringName> traits_fqtn; // Fully-qualified trait names used by script.
 	SelfList<GDScript> script_list;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;

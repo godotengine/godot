@@ -60,6 +60,7 @@ public:
 
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
+	StringName trait_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
 
@@ -251,6 +252,7 @@ public:
 		kind = p_other.kind;
 		builtin_type = p_other.builtin_type;
 		native_type = p_other.native_type;
+		trait_type = p_other.trait_type;
 		script_type = p_other.script_type;
 		script_type_ref = p_other.script_type_ref;
 		container_element_types = p_other.container_element_types;
@@ -272,6 +274,7 @@ public:
 		OPCODE_TYPE_TEST_ARRAY,
 		OPCODE_TYPE_TEST_DICTIONARY,
 		OPCODE_TYPE_TEST_NATIVE,
+		OPCODE_TYPE_TEST_TRAIT,
 		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
 		OPCODE_SET_KEYED_VALIDATED,
@@ -298,6 +301,7 @@ public:
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
 		OPCODE_CAST_TO_NATIVE,
+		OPCODE_CAST_TO_TRAIT,
 		OPCODE_CAST_TO_SCRIPT,
 		OPCODE_CONSTRUCT, // Only for basic types!
 		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
@@ -569,6 +573,7 @@ private:
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
+	bool _is_class_using_trait(Script *p_class_script, const StringName &trait_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.

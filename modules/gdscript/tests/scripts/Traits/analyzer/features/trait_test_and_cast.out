@@ -1,0 +1,23 @@
+GDTEST_OK
+~~ WARNING at line 37: (UNSAFE_CAST) Casting "Variant" to "Shearable" is unsafe.
+~~ WARNING at line 38: (UNSAFE_CAST) Casting "Variant" to "Milkable" is unsafe.
+~~ WARNING at line 43: (UNSAFE_METHOD_ACCESS) The method "shear()" is not present on the inferred type "Variant" (but may be present on a subtype).
+~~ WARNING at line 45: (UNSAFE_METHOD_ACCESS) The method "milk()" is not present on the inferred type "Variant" (but may be present on a subtype).
+FluffySheep is Shearable:true
+FluffySheep is Milkable:true
+FluffyRam is Shearable:true
+FluffyRam is Milkable:false
+
+Animal: 1
+Success Shearable cast : true
+Success Milkable cast : true
+Sheared
+Milked
+Animal: 2
+Success Shearable cast : true
+Success Milkable cast : false
+Sheared
+Animal: 3
+Success Shearable cast : false
+Success Milkable cast : false
+ok

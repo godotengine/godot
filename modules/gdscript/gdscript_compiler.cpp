@@ -138,7 +138,10 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.script_type = result.script_type_ref.ptr();
 			result.native_type = p_datatype.native_type;
 		} break;
-		case GDScriptParser::DataType::TRAIT:
+		case GDScriptParser::DataType::TRAIT: {
+			result.kind = GDScriptDataType::GDTRAIT;
+			result.trait_type = p_datatype.class_type->fqcn;
+		} break;
 		case GDScriptParser::DataType::CLASS: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;
@@ -150,9 +153,6 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.kind = GDScriptDataType::GDSCRIPT;
 			result.builtin_type = p_datatype.builtin_type;
 			result.native_type = p_datatype.native_type;
-			if (p_datatype.kind == GDScriptParser::DataType::TRAIT) {
-				result.kind = GDScriptDataType::GDTRAIT;
-			}
 
 			bool is_local_class = parser->has_class(p_datatype.class_type);
 
@@ -3143,6 +3143,7 @@ void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::Cl
 	p_script->local_name = p_class->identifier ? p_class->identifier->name : StringName();
 	p_script->global_name = p_class->get_global_name();
 	p_script->simplified_icon_path = p_class->simplified_icon_path;
+	p_script->traits_fqtn = p_class->traits_fqtn;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 
