@@ -79,6 +79,14 @@ public:
 		CURSOR_MAX
 	};
 
+	class JoypadFeatures {
+	public:
+		virtual ~JoypadFeatures() {}
+
+		virtual bool has_joy_light() const { return false; }
+		virtual bool set_joy_light(const Color &p_color) { return false; }
+	};
+
 	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
@@ -168,12 +176,15 @@ private:
 		StringName name;
 		StringName uid;
 		bool connected = false;
+		bool is_known = false;
 		bool last_buttons[(size_t)JoyButton::MAX] = { false };
 		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		bool has_light = false;
+		Input::JoypadFeatures *features = nullptr;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -253,6 +264,7 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
+	void _update_joypad_features(int p_device);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -345,6 +357,11 @@ public:
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
+
+	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
+	bool set_joy_light(int p_device, const Color &p_color);
+	bool has_joy_light(int p_device) const;
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);

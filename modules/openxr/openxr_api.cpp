@@ -36,6 +36,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/os/memory.h"
+#include "core/profiling/profiling.h"
 #include "core/version.h"
 
 #include "openxr_platform_inc.h"
@@ -170,6 +171,7 @@ void OpenXRAPI::OpenXRSwapChainInfo::free() {
 }
 
 bool OpenXRAPI::OpenXRSwapChainInfo::acquire(bool &p_should_render) {
+	GodotProfileZone("OpenXR: acquire swapchain");
 	ERR_FAIL_COND_V(image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
@@ -818,23 +820,45 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 	}
 
 	view_configuration_views.resize(view_count);
+	for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+		extension->prepare_view_configuration(view_count);
+	}
 
+	uint32_t view = 0;
 	for (XrViewConfigurationView &view_configuration_view : view_configuration_views) {
 		view_configuration_view.type = XR_TYPE_VIEW_CONFIGURATION_VIEW;
 		view_configuration_view.next = nullptr;
+
+		for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+			void *np = extension->set_view_configuration_and_get_next_pointer(view, view_configuration_view.next);
+			if (np != nullptr) {
+				view_configuration_view.next = np;
+			}
+		}
+
+		view++;
 	}
 
 	result = xrEnumerateViewConfigurationViews(instance, system_id, p_configuration_type, view_count, &view_count, view_configuration_views.ptr());
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate view configurations");
 
-	for (const XrViewConfigurationView &view_configuration_view : view_configuration_views) {
-		print_verbose("OpenXR: Found supported view configuration view");
-		print_verbose(String(" - width: ") + itos(view_configuration_view.maxImageRectWidth));
-		print_verbose(String(" - height: ") + itos(view_configuration_view.maxImageRectHeight));
-		print_verbose(String(" - sample count: ") + itos(view_configuration_view.maxSwapchainSampleCount));
-		print_verbose(String(" - recommended render width: ") + itos(view_configuration_view.recommendedImageRectWidth));
-		print_verbose(String(" - recommended render height: ") + itos(view_configuration_view.recommendedImageRectHeight));
-		print_verbose(String(" - recommended render sample count: ") + itos(view_configuration_view.recommendedSwapchainSampleCount));
+	if (is_print_verbose_enabled()) {
+		view = 0;
+		for (const XrViewConfigurationView &view_configuration_view : view_configuration_views) {
+			print_line("OpenXR: Found supported view configuration view");
+			print_line(" - width: ", itos(view_configuration_view.maxImageRectWidth));
+			print_line(" - height: ", itos(view_configuration_view.maxImageRectHeight));
+			print_line(" - sample count: ", itos(view_configuration_view.maxSwapchainSampleCount));
+			print_line(" - recommended render width: ", itos(view_configuration_view.recommendedImageRectWidth));
+			print_line(" - recommended render height: ", itos(view_configuration_view.recommendedImageRectHeight));
+			print_line(" - recommended render sample count: ", itos(view_configuration_view.recommendedSwapchainSampleCount));
+
+			for (OpenXRExtensionWrapper *extension : registered_extension_wrappers) {
+				extension->print_view_configuration_info(view);
+			}
+
+			view++;
+		}
 	}
 
 	return true;
@@ -1367,6 +1391,9 @@ void OpenXRAPI::destroy_session() {
 		for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 			wrapper->on_session_destroyed();
 		}
+
+		// Rerun this just in case any of our extensions freed up swapchains.
+		OpenXRSwapChainInfo::free_queued();
 
 		end_debug_label_region();
 
@@ -2203,6 +2230,27 @@ void OpenXRAPI::_set_render_state_render_region_rt(const Rect2i &p_render_region
 	openxr_api->render_state.render_region = p_render_region;
 }
 
+void OpenXRAPI::_update_main_swapchain_size_rt() {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+
+	uint32_t view_count_output = 0;
+	XrResult result = openxr_api->xrEnumerateViewConfigurationViews(openxr_api->instance, openxr_api->system_id, openxr_api->view_configuration, openxr_api->get_view_count(), &view_count_output, openxr_api->view_configuration_views.ptr());
+	if (XR_FAILED(result)) {
+		return;
+	}
+
+#ifdef DEBUG_ENABLED
+	for (uint32_t i = 0; i < view_count_output; i++) {
+		print_verbose("OpenXR: Recommended resolution changed");
+		print_verbose(String(" - recommended render width: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectWidth));
+		print_verbose(String(" - recommended render height: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectHeight));
+	}
+#endif
+}
+
 bool OpenXRAPI::process() {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 
@@ -2214,11 +2262,15 @@ bool OpenXRAPI::process() {
 		return false;
 	}
 
+	GodotProfileZone("OpenXRAPI::process");
+	GodotProfileZoneGroupedFirst(_profile_zone, "xrWaitFrame");
+
 	// We call xrWaitFrame as early as possible, this will allow OpenXR to get
 	// proper timing info between this point, and when we're ready to start rendering.
 	// As the name suggests, OpenXR can pause the thread to minimize the time between
 	// retrieving tracking data and using that tracking data to render.
 	// OpenXR thus works best if rendering is performed on a separate thread.
+
 	void *frame_wait_info_next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 		void *np = extension->set_frame_wait_info_and_get_next_pointer(frame_wait_info_next_pointer);
@@ -2252,20 +2304,24 @@ bool OpenXRAPI::process() {
 		frame_state.predictedDisplayPeriod = 0;
 	}
 
+	GodotProfileZoneGrouped(_profile_zone, "set_render_display_info");
 	set_render_display_info(frame_state.predictedDisplayTime, frame_state.shouldRender);
 
 	// This is before setup_play_space() to ensure that it happens on the frame after
 	// the play space has been created.
 	if (unlikely(local_floor_emulation.should_reset_floor_height && !play_space_is_dirty)) {
+		GodotProfileZoneGrouped(_profile_zone, "reset_emulated_floor_height");
 		reset_emulated_floor_height();
 		local_floor_emulation.should_reset_floor_height = false;
 	}
 
 	if (unlikely(play_space_is_dirty)) {
+		GodotProfileZoneGrouped(_profile_zone, "setup_play_space");
 		setup_play_space();
 		play_space_is_dirty = false;
 	}
 
+	GodotProfileZoneGrouped(_profile_zone, "extension wrappers on_process");
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_process();
 	}

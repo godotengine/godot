@@ -38,10 +38,14 @@ class NetSocketWeb : public NetSocket {
 	GDSOFTCLASS(NetSocketWeb, NetSocket);
 
 protected:
-	static NetSocket *_create_func();
+	static NetSocket *_create_func() {
+		return memnew(NetSocketWeb);
+	}
 
 public:
-	static void make_default();
+	static void make_default() {
+		_create = _create_func;
+	}
 
 	virtual Error open(Family p_family, Type p_sock_type, IP::Type &ip_type) override { return ERR_UNAVAILABLE; }
 	virtual void close() override {}
@@ -66,6 +70,4 @@ public:
 	virtual void set_reuse_address_enabled(bool p_enabled) override {}
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override { return ERR_UNAVAILABLE; }
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override { return ERR_UNAVAILABLE; }
-
-	NetSocketWeb() {}
 };

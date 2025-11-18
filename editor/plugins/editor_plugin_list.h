@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  command_queue_mt.cpp                                                  */
+/*  editor_plugin_list.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "command_queue_mt.h"
+#pragma once
 
-CommandQueueMT::CommandQueueMT() {
-	command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
-}
+#include "editor/plugins/editor_plugin.h"
 
-CommandQueueMT::~CommandQueueMT() {
-}
+class Control;
+class InputEvent;
+
+class EditorPluginList {
+	LocalVector<EditorPlugin *> plugins_list;
+
+public:
+	bool forward_gui_input(const Ref<InputEvent> &p_event) const;
+	void forward_canvas_draw_over_viewport(Control *p_overlay) const;
+	void forward_canvas_force_draw_over_viewport(Control *p_overlay) const;
+	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool p_serve_when_force_input_enabled) const;
+	void forward_3d_draw_over_viewport(Control *p_overlay) const;
+	void forward_3d_force_draw_over_viewport(Control *p_overlay) const;
+
+	void add_plugin(EditorPlugin *p_plugin);
+	void remove_plugin(EditorPlugin *p_plugin);
+};

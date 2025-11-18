@@ -30,7 +30,8 @@
 
 #include "gradle_export_util.h"
 
-#include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
+#include "modules/regex/regex.h"
 
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
@@ -219,6 +220,12 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 		return ERR_CANT_OPEN;
 	}
+
+	// Setup a temporary translation domain to translate the project name.
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+
 	da->list_dir_begin();
 	while (true) {
 		String file = da->get_next();
@@ -231,8 +238,15 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
 		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
-		if (p_appnames.has(locale)) {
-			String locale_project_name = p_appnames[locale];
+
+		String locale_project_name;
+		if (p_appnames.is_empty()) {
+			domain->set_locale_override(locale);
+			locale_project_name = domain->translate(p_project_name, String());
+		} else {
+			locale_project_name = p_appnames.get(locale, p_project_name);
+		}
+		if (locale_project_name != p_project_name) {
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
@@ -242,6 +256,9 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 	da->list_dir_end();
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
+
 	return OK;
 }
 
@@ -268,6 +285,19 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug) {
+	String export_plugins_activity_element_contents;
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(p_export_platform)) {
+			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
+			if (!contents.is_empty()) {
+				export_plugins_activity_element_contents += contents;
+				export_plugins_activity_element_contents += "\n";
+			}
+		}
+	}
+
+	// Update the GodotApp activity tag.
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\".GodotApp\" "
@@ -279,6 +309,20 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(p_export_platform->get_project_setting(p_preset, "display/window/size/resizable"))));
+
+	// *LAUNCHER and *HOME categories should only go to the activity-alias.
+	Ref<RegEx> activity_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"\S+(LAUNCHER|HOME)"\s*\/>)delim");
+	String updated_export_plugins_activity_element_contents = activity_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_element_contents;
+
+	manifest_activity_text += "        </activity>\n";
+
+	// Update the GodotAppLauncher activity tag.
+	manifest_activity_text += "        <activity-alias\n"
+							  "            tools:node=\"mergeOnlyAttributes\"\n"
+							  "            android:name=\".GodotAppLauncher\"\n"
+							  "            android:targetActivity=\".GodotApp\"\n"
+							  "            android:exported=\"true\">\n";
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
@@ -301,18 +345,12 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 
 	manifest_activity_text += "            </intent-filter>\n";
 
-	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
-	for (int i = 0; i < export_plugins.size(); i++) {
-		if (export_plugins[i]->supports_platform(p_export_platform)) {
-			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
-			if (!contents.is_empty()) {
-				manifest_activity_text += contents;
-				manifest_activity_text += "\n";
-			}
-		}
-	}
+	// Hybrid categories should only go to the actual 'GodotApp' activity.
+	Ref<RegEx> activity_alias_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"org.godotengine.xr.hybrid.(IMMERSIVE|PANEL)"\s*\/>)delim");
+	String updated_export_plugins_activity_alias_element_contents = activity_alias_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_alias_element_contents;
 
-	manifest_activity_text += "        </activity>\n";
+	manifest_activity_text += "        </activity-alias>\n";
 	return manifest_activity_text;
 }
 

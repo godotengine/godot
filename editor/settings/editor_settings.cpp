@@ -101,7 +101,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			Ref<Shortcut> sc;
 			sc.instantiate();
 			sc->set_events(shortcut_events);
-			add_shortcut(shortcut_name, sc);
+			_add_shortcut_default(shortcut_name, sc);
 		}
 
 		return false;
@@ -559,12 +559,12 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/integer_drag_speed", 0.5, "0.1,10,0.01")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/nested_color_mode", 0, "Containers & Resources,Resources,External Resources")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/delimitate_all_container_and_resources", true, "")
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw (e.g. \"z_index\"),Capitalized (e.g. \"Z Index\"),Localized (e.g. \"Z Index\")", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw (e.g. \"z_index\"),Capitalized (e.g. \"Z Index\"),Localized (e.g. \"Z Index\")", PROPERTY_USAGE_DEFAULT);
 	// The lowest value is equal to the minimum float step for 32-bit floats.
 	// The step must be set manually, as changing this setting should not change the step here.
-	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/default_float_step", 0.001, "0.0000001,1,0.0000001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/disable_folding", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/auto_unfold_foreign_scenes", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/default_float_step", 0.001, "0.0000001,1,0.0000001", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/disable_folding", false, "", PROPERTY_USAGE_DEFAULT);
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/auto_unfold_foreign_scenes", true, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/horizontal_vector2_editing", false, "")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/horizontal_vector_types_editing", true, "")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/open_resources_in_current_inspector", true, "")
@@ -627,6 +627,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/maximum_width", 350, "0,9999,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("interface/scene_tabs/show_script_button", false, true);
 	_initial_set("interface/scene_tabs/restore_scenes_on_load", true, true);
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/scene_tabs/auto_select_current_scene_file", false, "");
 
 	// Multi Window
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/enable", true, "");
@@ -652,6 +653,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// On save
 	_initial_set("filesystem/on_save/compress_binary_resources", true);
 	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
+	_initial_set("filesystem/on_save/warn_on_saving_large_text_resources", true);
 
 	// EditorFileServer
 	_initial_set("filesystem/file_server/port", 6010);
@@ -716,6 +718,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		"text_editor/theme/highlighting/comment_color",
 		"text_editor/theme/highlighting/doc_comment_color",
 		"text_editor/theme/highlighting/string_color",
+		"text_editor/theme/highlighting/string_placeholder_color",
 		"text_editor/theme/highlighting/background_color",
 		"text_editor/theme/highlighting/text_color",
 		"text_editor/theme/highlighting/line_number_color",
@@ -1711,6 +1714,7 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_color"] = Color(0.4, 0.4, 0.4);
 	colors["text_editor/theme/highlighting/doc_comment_color"] = Color(0.5, 0.6, 0.7);
 	colors["text_editor/theme/highlighting/string_color"] = Color(0.94, 0.43, 0.75);
+	colors["text_editor/theme/highlighting/string_placeholder_color"] = Color(1, 0.75, 0.4);
 	colors["text_editor/theme/highlighting/background_color"] = Color(0.13, 0.12, 0.15);
 	colors["text_editor/theme/highlighting/completion_background_color"] = Color(0.17, 0.16, 0.2);
 	colors["text_editor/theme/highlighting/completion_selected_color"] = Color(0.26, 0.26, 0.27);
@@ -1895,24 +1899,54 @@ String EditorSettings::get_language() const {
 
 // Shortcuts
 
-void EditorSettings::_add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut) {
-	shortcuts[p_name] = p_shortcut;
+void EditorSettings::_add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	shortcuts[p_path] = p_shortcut;
 }
 
-void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
-	shortcuts[p_name] = p_shortcut;
-	shortcuts[p_name]->set_meta("customized", true);
+void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	Array use_events = p_shortcut->get_events();
+	if (shortcuts.has(p_path)) {
+		Ref<Shortcut> existing = shortcuts.get(p_path);
+		if (!existing->has_meta("original")) {
+			// Loaded from editor settings, but plugin not loaded yet.
+			// Keep the events from editor settings but still override the shortcut in the shortcuts map
+			use_events = existing->get_events();
+		} else if (!Shortcut::is_event_array_equal(existing->get_events(), existing->get_meta("original"))) {
+			// Shortcut exists and is customized - don't override with default.
+			return;
+		}
+	}
+
+	p_shortcut->set_meta("original", p_shortcut->get_events());
+	p_shortcut->set_events(use_events);
+	if (p_shortcut->get_name().is_empty()) {
+		String shortcut_name = p_path.get_slicec('/', 1);
+		if (shortcut_name.is_empty()) {
+			shortcut_name = p_path;
+		}
+		p_shortcut->set_name(shortcut_name);
+	}
+	shortcuts[p_path] = p_shortcut;
+	shortcuts[p_path]->set_meta("customized", true);
 }
 
-bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_name);
-	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
+void EditorSettings::remove_shortcut(const String &p_path) {
+	shortcuts.erase(p_path);
+}
+
+bool EditorSettings::is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const {
+	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_path);
+	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_path + ".");
 
 	return E->value->matches_event(p_event);
 }
 
-Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
-	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_name);
+bool EditorSettings::has_shortcut(const String &p_path) const {
+	return get_shortcut(p_path).is_valid();
+}
+
+Ref<Shortcut> EditorSettings::get_shortcut(const String &p_path) const {
+	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_path);
 	if (SC) {
 		return SC->value;
 	}
@@ -1921,30 +1955,40 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	// Use the first item in the action list for the shortcut event, since a shortcut can only have 1 linked event.
 
 	Ref<Shortcut> sc;
-	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_path);
 	if (builtin_override) {
 		sc.instantiate();
 		sc->set_events_list(&builtin_override->value);
-		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_path));
 	}
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_path);
 		if (builtin_default) {
 			sc.instantiate();
 			sc->set_events_list(&builtin_default->value);
-			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
+			sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_path));
 		}
 	}
 
 	if (sc.is_valid()) {
 		// Add the shortcut to the list.
-		shortcuts[p_name] = sc;
+		shortcuts[p_path] = sc;
 		return sc;
 	}
 
 	return Ref<Shortcut>();
+}
+
+Vector<String> EditorSettings::_get_shortcut_list() {
+	List<String> shortcut_list;
+	get_shortcut_list(&shortcut_list);
+	Vector<String> ret;
+	for (const String &shortcut : shortcut_list) {
+		ret.push_back(shortcut);
+	}
+	return ret;
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
@@ -1997,7 +2041,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;
@@ -2031,7 +2075,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
 				keycode = KeyModifierMask::META | Key::BACKSPACE;
@@ -2198,6 +2242,13 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
 	ClassDB::bind_method(D_METHOD("set_builtin_action_override", "name", "actions_list"), &EditorSettings::set_builtin_action_override);
+
+	ClassDB::bind_method(D_METHOD("add_shortcut", "path", "shortcut"), &EditorSettings::add_shortcut);
+	ClassDB::bind_method(D_METHOD("remove_shortcut", "path"), &EditorSettings::remove_shortcut);
+	ClassDB::bind_method(D_METHOD("is_shortcut", "path", "event"), &EditorSettings::is_shortcut);
+	ClassDB::bind_method(D_METHOD("has_shortcut", "path"), &EditorSettings::has_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut", "path"), &EditorSettings::get_shortcut);
+	ClassDB::bind_method(D_METHOD("get_shortcut_list"), &EditorSettings::_get_shortcut_list);
 
 	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
 	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);

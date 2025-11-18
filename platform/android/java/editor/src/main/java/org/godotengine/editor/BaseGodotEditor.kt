@@ -58,6 +58,7 @@ import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.editor.utils.signApk
 import org.godotengine.editor.utils.verifyApk
 import org.godotengine.godot.BuildConfig
+import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.editor.utils.EditorUtils
@@ -68,11 +69,7 @@ import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isNativeXRDevice
-import org.godotengine.godot.xr.HybridMode
-import org.godotengine.godot.xr.getHybridAppLaunchMode
-import org.godotengine.godot.xr.HYBRID_APP_PANEL_CATEGORY
-import org.godotengine.godot.xr.HYBRID_APP_IMMERSIVE_CATEGORY
+import org.godotengine.openxr.vendors.utils.*
 import kotlin.math.min
 
 /**
@@ -158,6 +155,20 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val SNACKBAR_SHOW_DURATION_MS = 5000L
 
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
+
+		@JvmStatic
+		fun isRunningInInstrumentation(): Boolean {
+			if (BuildConfig.BUILD_TYPE == "release") {
+				return false
+			}
+
+			return try {
+				Class.forName("org.godotengine.editor.GodotEditorTest")
+				true
+			} catch (_: ClassNotFoundException) {
+				false
+			}
+		}
 	}
 
 	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
@@ -229,9 +240,15 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			enableEdgeToEdge()
 		}
 
-		// We exclude certain permissions from the set we request at startup, as they'll be
-		// requested on demand based on use cases.
-		PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
+		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
+		// intent (e.g. instrumentation tests).
+		val skipPermissionsRequest = isRunningInInstrumentation() ||
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
+		if (!skipPermissionsRequest) {
+			// We exclude certain permissions from the set we request at startup, as they'll be
+			// requested on demand based on use cases.
+			PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
+		}
 
 		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 
@@ -247,7 +264,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun onNewIntent(newIntent: Intent) {
 		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
-			val params = newIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+			val params = retrieveCommandLineParamsFromLaunchIntent(newIntent)
 			Log.d(TAG, "Received hybrid transition intent $newIntent with parameters ${params.contentToString()}")
 			// Override EXTRA_NEW_LAUNCH so the editor is not restarted
 			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
@@ -257,7 +274,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				var scene = ""
 				var xrMode = XR_MODE_DEFAULT
 				var path = ""
-				if (params != null) {
+				if (params.isNotEmpty()) {
 					val sceneIndex = params.indexOf(SCENE_ARG)
 					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
 						scene = params[sceneIndex +1]
@@ -511,6 +528,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		return editorWindowInfo.windowId
 	}
 
+	override fun onGodotForceQuit(instance: Godot) {
+		if (!isRunningInInstrumentation()) {
+			// For instrumented tests, we disable force-quitting to allow the tests to complete successfully, otherwise
+			// they fail when the process crashes.
+			super.onGodotForceQuit(instance)
+		}
+	}
+
 	final override fun onGodotForceQuit(godotInstanceId: Int): Boolean {
 		val editorWindowInfo = getEditorWindowInfoForInstanceId(godotInstanceId) ?: return super.onGodotForceQuit(godotInstanceId)
 
@@ -714,12 +739,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			return isNativeXRDevice(applicationContext)
 		}
 
-		if (featureTag == "horizonos") {
-			return BuildConfig.FLAVOR == "horizonos"
-		}
-
-		if (featureTag == "picoos") {
-			return BuildConfig.FLAVOR == "picoos"
+		if (featureTag == BuildConfig.FLAVOR) {
+			return true
 		}
 
         return super.supportsFeature(featureTag)

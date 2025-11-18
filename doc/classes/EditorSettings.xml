@@ -70,6 +70,33 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<description>
+				Adds a [param shortcut] whose path is specified by [param path].
+				The [param path] determines how the shortcut is organized and displayed in the editor's shortcut settings. The path format affects the display as follows:
+				- [code]"name"[/code] (no slash): Creates a category named [code]name[/code] with the shortcut displayed as [code]name[/code].
+				- [code]"category/name"[/code] (single slash): Displays as [code]name[/code] in the [code]category[/code] section.
+				- [code]"category/name/extra"[/code] (multiple slashes): Extra path components are ignored, so this behaves the same as [code]"category/name"[/code].
+				[b]Note:[/b] Shortcuts are only saved to the editor settings if they differ from their original/default state. This means empty shortcuts that were originally empty will not persist between editor sessions and must be re-added. If a shortcut with the same [param path] already exists, this method will update it with the new [param shortcut] instead of creating a duplicate.
+				[codeblock]
+				# Add a custom shortcut for a plugin action.
+				var my_shortcut = Shortcut.new()
+				var input_event = InputEventKey.new()
+				input_event.keycode = KEY_F5
+				input_event.ctrl_pressed = true
+				my_shortcut.events.append(input_event)
+
+				# This will appear under the "My Plugin" category as "Reload Data".
+				EditorInterface.get_editor_settings().add_shortcut("my_plugin/reload_data", my_shortcut)
+
+				# This will appear under the "Test Action" category as "Test Action".
+				EditorInterface.get_editor_settings().add_shortcut("test_action", my_shortcut)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
@@ -118,6 +145,19 @@
 				Returns the value of the setting specified by [param name]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="Shortcut" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the shortcut specified by [param path]. Tries to find a built-in action if no shortcut with the provided path is found in the shortcut list. If found, adds it to the list and returns it, otherwise returns [code]null[/code].
+			</description>
+		</method>
+		<method name="get_shortcut_list">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of stored shortcut paths.
+			</description>
+		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -125,11 +165,33 @@
 				Returns [code]true[/code] if the setting specified by [param name] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="has_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] exists, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] matches the event specified by [param event], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="mark_setting_changed">
 			<return type="void" />
 			<param index="0" name="setting" type="String" />
 			<description>
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
+			</description>
+		</method>
+		<method name="remove_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Removes the shortcut specified by [param path].
 			</description>
 		</method>
 		<method name="set_builtin_action_override">
@@ -791,6 +853,10 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/on_save/warn_on_saving_large_text_resources" type="bool" setter="" getter="">
+			If [code]true[/code], displays a warning toast message when saving a text-based scene or resource that is larger than 500 KiB on disk. This is typically caused by binary subresources being embedded as text, which results in slow and inefficient conversion to text. This in turn impacts scene saving and loading times.
+			This should usually be resolved by moving the embedded binary subresource to its own binary resource file ([code].res[/code] extension instead of [code].tres[/code]). This is the preferred approach. Alternatively, the entire scene can be saved with the binary [code].scn[/code] format as opposed to [code].tscn[/code], but this will make it less friendly to version control systems.
+		</member>
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
@@ -1077,6 +1143,9 @@
 		</member>
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
+		</member>
+		<member name="interface/scene_tabs/auto_select_current_scene_file" type="bool" setter="" getter="">
+			If [code]true[/code], the FileSystem dock will automatically navigate to the currently selected scene tab.
 		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
@@ -1645,6 +1714,10 @@
 		</member>
 		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
 			The script editor's color for strings (single-line and multi-line).
+		</member>
+		<member name="text_editor/theme/highlighting/string_placeholder_color" type="Color" setter="" getter="">
+			The script editor's color for string placeholders, such as [code]%s[/code] and [code]{_}[/code]. Refer to the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings documentation[/url] for more details.
+			[b]Note:[/b] Only the default [code]{_}[/code] placeholder patterns are highlighted for the [method String.format] method. Custom patterns still appear as plain strings.
 		</member>
 		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
 			The script editor's color for operators ([code]( ) [ ] { } + - * /[/code], ...).

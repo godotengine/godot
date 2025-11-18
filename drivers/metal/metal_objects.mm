@@ -783,10 +783,12 @@ void MDCommandBuffer::_render_set_dirty_state() {
 
 	if (render.dirty.has_flag(RenderState::DIRTY_VERTEX)) {
 		uint32_t p_binding_count = render.vertex_buffers.size();
-		uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
-		[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
-								 offsets:render.vertex_offsets.ptr()
-							   withRange:NSMakeRange(first, p_binding_count)];
+		if (p_binding_count > 0) {
+			uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
+			[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
+									 offsets:render.vertex_offsets.ptr()
+								   withRange:NSMakeRange(first, p_binding_count)];
+		}
 	}
 
 	render.resource_tracker.encode(render.encoder);
@@ -1252,24 +1254,47 @@ void MDCommandBuffer::render_draw(uint32_t p_vertex_count,
 			 baseInstance:p_first_instance];
 }
 
-void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets) {
+void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	render.vertex_buffers.resize(p_binding_count);
 	render.vertex_offsets.resize(p_binding_count);
 
+	// Are the existing buffer bindings the same?
+	bool same = true;
+
 	// Reverse the buffers, as their bindings are assigned in descending order.
 	for (uint32_t i = 0; i < p_binding_count; i += 1) {
 		const RenderingDeviceDriverMetal::BufferInfo *buf_info = (const RenderingDeviceDriverMetal::BufferInfo *)p_buffers[p_binding_count - i - 1].id;
-		render.vertex_buffers[i] = buf_info->metal_buffer;
-		render.vertex_offsets[i] = p_offsets[p_binding_count - i - 1];
+
+		NSUInteger dynamic_offset = 0;
+		if (buf_info->is_dynamic()) {
+			const MetalBufferDynamicInfo *dyn_buf = (const MetalBufferDynamicInfo *)buf_info;
+			uint64_t frame_idx = p_dynamic_offsets & 0x3;
+			p_dynamic_offsets >>= 2;
+			dynamic_offset = frame_idx * dyn_buf->size_bytes;
+		}
+		if (render.vertex_buffers[i] != buf_info->metal_buffer) {
+			render.vertex_buffers[i] = buf_info->metal_buffer;
+			same = false;
+		}
+
+		render.vertex_offsets[i] = dynamic_offset + p_offsets[p_binding_count - i - 1];
 	}
 
 	if (render.encoder) {
 		uint32_t first = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(p_binding_count - 1);
-		[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
-								 offsets:render.vertex_offsets.ptr()
-							   withRange:NSMakeRange(first, p_binding_count)];
+		if (same) {
+			NSUInteger *offset_ptr = render.vertex_offsets.ptr();
+			for (uint32_t i = first; i < first + p_binding_count; i++) {
+				[render.encoder setVertexBufferOffset:*offset_ptr atIndex:i];
+				offset_ptr++;
+			}
+		} else {
+			[render.encoder setVertexBuffers:render.vertex_buffers.ptr()
+									 offsets:render.vertex_offsets.ptr()
+								   withRange:NSMakeRange(first, p_binding_count)];
+		}
 		render.dirty.clear_flag(RenderState::DIRTY_VERTEX);
 	} else {
 		render.dirty.set_flag(RenderState::DIRTY_VERTEX);
@@ -1394,7 +1419,9 @@ void MDCommandBuffer::RenderState::reset() {
 	viewports.clear();
 	scissors.clear();
 	blend_constants.reset();
+	bzero(vertex_buffers.ptr(), sizeof(id<MTLBuffer> __unsafe_unretained) * vertex_buffers.size());
 	vertex_buffers.clear();
+	bzero(vertex_offsets.ptr(), sizeof(NSUInteger) * vertex_offsets.size());
 	vertex_offsets.clear();
 	resource_tracker.reset();
 }

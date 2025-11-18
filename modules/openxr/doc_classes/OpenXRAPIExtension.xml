@@ -329,6 +329,12 @@
 				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
 			</description>
 		</method>
+		<method name="update_main_swapchain_size">
+			<return type="void" />
+			<description>
+				Request the recommended resolution from the OpenXR runtime and update the main swapchain size if it has changed.
+			</description>
+		</method>
 		<method name="xr_result">
 			<return type="bool" />
 			<param index="0" name="result" type="int" />

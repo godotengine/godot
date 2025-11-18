@@ -37,7 +37,7 @@
 using GLTFShapeIndex = int64_t;
 
 // Import process.
-Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	if (!p_extensions.has("OMI_collider") && !p_extensions.has("OMI_physics_body") && !p_extensions.has("OMI_physics_shape")) {
 		return ERR_SKIP;
 	}
@@ -83,7 +83,7 @@ Vector<String> GLTFDocumentExtensionPhysics::get_supported_extensions() {
 	return ret;
 }
 
-Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) {
+Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) {
 #ifndef DISABLE_DEPRECATED
 	if (p_extensions.has("OMI_collider")) {
 		Dictionary node_collider_ext = p_extensions["OMI_collider"];

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ip_web.cpp                                                            */
+/*  profiling.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "ip_web.h"
+#include "profiling.h"
 
-void IPWeb::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type) const {
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
 }
+#elif defined(GODOT_USE_PERFETTO)
+PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-void IPWeb::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
-}
+void godot_init_profiler() {
+	perfetto::TracingInitArgs args;
 
-void IPWeb::make_default() {
-	_create = _create_web;
-}
+	args.backends |= perfetto::kSystemBackend;
 
-IP *IPWeb::_create_web() {
-	return memnew(IPWeb);
+	perfetto::Tracing::Initialize(args);
+	perfetto::TrackEvent::Register();
 }
-
-IPWeb::IPWeb() {
+#else
+void godot_init_profiler() {
+	// Stub
 }
+#endif
