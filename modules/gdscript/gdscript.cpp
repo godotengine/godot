@@ -2829,6 +2829,10 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		return String(); // No class parsed.
 	}
 
+	if (!c->extends_path.is_empty() && c->fqcn.ends_with(c->extends_path)) {
+		return String();
+	}
+
 	/* **WARNING**
 	 *
 	 * This function is written with the goal to be *extremely* error tolerant, as such
