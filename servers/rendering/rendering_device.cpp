@@ -6918,18 +6918,31 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	frames.resize(frame_count);
 
 	// Create data for all the frames.
+	bool frame_failed = false;
 	for (uint32_t i = 0; i < frames.size(); i++) {
 		frames[i].index = 0;
 
 		// Create command pool, command buffers, semaphores and fences.
 		frames[i].command_pool = driver->command_pool_create(main_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
-		ERR_FAIL_COND_V(!frames[i].command_pool, FAILED);
+		if (!frames[i].command_pool) {
+			frame_failed = true;
+			break;
+		}
 		frames[i].command_buffer = driver->command_buffer_create(frames[i].command_pool);
-		ERR_FAIL_COND_V(!frames[i].command_buffer, FAILED);
+		if (!frames[i].command_buffer) {
+			frame_failed = true;
+			break;
+		}
 		frames[i].semaphore = driver->semaphore_create();
-		ERR_FAIL_COND_V(!frames[i].semaphore, FAILED);
+		if (!frames[i].semaphore) {
+			frame_failed = true;
+			break;
+		}
 		frames[i].fence = driver->fence_create();
-		ERR_FAIL_COND_V(!frames[i].fence, FAILED);
+		if (!frames[i].fence) {
+			frame_failed = true;
+			break;
+		}
 		frames[i].fence_signaled = false;
 
 		// Create query pool.
@@ -6949,8 +6962,35 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		frames[i].transfer_worker_semaphores.resize(transfer_worker_pool_max_size);
 		for (uint32_t j = 0; j < transfer_worker_pool_max_size; j++) {
 			frames[i].transfer_worker_semaphores[j] = driver->semaphore_create();
-			ERR_FAIL_COND_V(!frames[i].transfer_worker_semaphores[j], FAILED);
+			if (!frames[i].transfer_worker_semaphores[j]) {
+				frame_failed = true;
+				break;
+			}
 		}
+	}
+	if (frame_failed) {
+		// Clean up created data.
+		for (uint32_t i = 0; i < frames.size(); i++) {
+			if (frames[i].command_pool) {
+				driver->command_pool_free(frames[i].command_pool);
+			}
+			if (frames[i].semaphore) {
+				driver->semaphore_free(frames[i].semaphore);
+			}
+			if (frames[i].fence) {
+				driver->fence_free(frames[i].fence);
+			}
+			if (frames[i].timestamp_pool) {
+				driver->timestamp_query_pool_free(frames[i].timestamp_pool);
+			}
+			for (uint32_t j = 0; j < frames[i].transfer_worker_semaphores.size(); j++) {
+				if (frames[i].transfer_worker_semaphores[j]) {
+					driver->semaphore_free(frames[i].transfer_worker_semaphores[j]);
+				}
+			}
+		}
+		frames.clear();
+		ERR_FAIL_V_MSG(FAILED, "Failed to create frame data.");
 	}
 
 	// Start from frame count, so everything else is immediately old.
