@@ -3243,7 +3243,6 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 			if (!must_remap) {
 				state.instance_data = state.prev_instance_data;
 				state.instance_data_index = state.prev_instance_data_index;
-				new_batch.start = state.instance_data_index;
 			}
 			state.prev_instance_data = nullptr;
 			state.prev_instance_data_index = 0;
@@ -3253,6 +3252,9 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 		if (state.instance_data == nullptr) {
 			// If there is no existing instance buffer, we must allocate a new one.
 			_allocate_instance_buffer();
+		} else {
+			// Otherwise, just use the existing one from where it last left off.
+			new_batch.start = state.instance_data_index;
 		}
 		new_batch.instance_buffer = state.instance_buffers._get(0);
 		state.canvas_instance_batches.push_back(new_batch);
