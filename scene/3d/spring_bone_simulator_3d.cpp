@@ -519,7 +519,7 @@ int SpringBoneSimulator3D::get_end_bone(int p_index) const {
 void SpringBoneSimulator3D::set_extend_end_bone(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index]->extend_end_bone = p_enabled;
-	_make_joints_dirty(p_index);
+	_make_joints_dirty(p_index, true);
 	notify_property_list_changed();
 }
 
@@ -537,7 +537,7 @@ void SpringBoneSimulator3D::set_end_bone_direction(int p_index, BoneDirection p_
 	if (mutable_bone_axes) {
 		return; // Chain dir will be recaluclated in _update_bone_axis().
 	}
-	_make_joints_dirty(p_index);
+	_make_joints_dirty(p_index, true);
 }
 
 SkeletonModifier3D::BoneDirection SpringBoneSimulator3D::get_end_bone_direction(int p_index) const {
@@ -555,7 +555,7 @@ void SpringBoneSimulator3D::set_end_bone_length(int p_index, float p_length) {
 	if (mutable_bone_axes && Math::is_zero_approx(old) == Math::is_zero_approx(p_length)) {
 		return; // If chain size is not changed, length will be recaluclated in _update_bone_axis().
 	}
-	_make_joints_dirty(p_index);
+	_make_joints_dirty(p_index, true);
 }
 
 float SpringBoneSimulator3D::get_end_bone_length(int p_index) const {
@@ -874,7 +874,7 @@ void SpringBoneSimulator3D::clear_settings() {
 void SpringBoneSimulator3D::set_individual_config(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index]->individual_config = p_enabled;
-	_make_joints_dirty(p_index);
+	_make_joints_dirty(p_index, true);
 	notify_property_list_changed();
 }
 
@@ -1385,14 +1385,14 @@ void SpringBoneSimulator3D::_validate_bone_names() {
 	}
 }
 
-void SpringBoneSimulator3D::_make_joints_dirty(int p_index) {
+void SpringBoneSimulator3D::_make_joints_dirty(int p_index, bool p_reset) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index]->joints_dirty = true;
 	if (joints_dirty) {
 		return;
 	}
 	joints_dirty = true;
-	callable_mp(this, &SpringBoneSimulator3D::_update_joints).call_deferred();
+	callable_mp(this, &SpringBoneSimulator3D::_update_joints).call_deferred(p_reset);
 }
 
 void SpringBoneSimulator3D::_make_all_joints_dirty() {
@@ -1534,7 +1534,7 @@ void SpringBoneSimulator3D::_make_collisions_dirty() {
 }
 
 void SpringBoneSimulator3D::_update_joint_array(int p_index) {
-	_make_joints_dirty(p_index);
+	_make_joints_dirty(p_index, true);
 
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone;
@@ -1574,7 +1574,7 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 	}
 }
 
-void SpringBoneSimulator3D::_update_joints() {
+void SpringBoneSimulator3D::_update_joints(bool p_reset) {
 	if (!joints_dirty) {
 		return;
 	}
@@ -1583,7 +1583,7 @@ void SpringBoneSimulator3D::_update_joints() {
 			continue;
 		}
 		if (settings[i]->individual_config) {
-			settings[i]->simulation_dirty = true;
+			settings[i]->simulation_dirty = p_reset;
 			settings[i]->joints_dirty = false;
 			continue; // Abort.
 		}
@@ -1620,7 +1620,7 @@ void SpringBoneSimulator3D::_update_joints() {
 			joints[j]->rotation_axis = settings[i]->rotation_axis;
 			joints[j]->rotation_axis_vector = settings[i]->rotation_axis_vector;
 		}
-		settings[i]->simulation_dirty = true;
+		settings[i]->simulation_dirty = p_reset;
 		settings[i]->joints_dirty = false;
 	}
 	joints_dirty = false;
@@ -1754,7 +1754,7 @@ void SpringBoneSimulator3D::reset() {
 	_find_collisions();
 	_process_collisions();
 	for (uint32_t i = 0; i < settings.size(); i++) {
-		settings[i]->simulation_dirty = true;
+		_make_joints_dirty(i, true);
 		_init_joints(skeleton, settings[i]);
 	}
 }
