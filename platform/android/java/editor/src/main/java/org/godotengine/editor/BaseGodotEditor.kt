@@ -270,10 +270,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
 
 			godot?.runOnRenderThread {
-				// Look for the scene and xr-mode arguments
+				// Look for the scene, XR-mode, and hybrid data arguments.
 				var scene = ""
 				var xrMode = XR_MODE_DEFAULT
 				var path = ""
+				var base64HybridData = ""
 				if (params.isNotEmpty()) {
 					val sceneIndex = params.indexOf(SCENE_ARG)
 					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
@@ -289,9 +290,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					if (pathIndex != -1 && pathIndex + 1 < params.size) {
 						path = params[pathIndex + 1]
 					}
+
+					val hybridDataIndex = params.indexOf(HYBRID_DATA_ARG)
+					if (hybridDataIndex != -1 && hybridDataIndex + 1 < params.size) {
+						base64HybridData = params[hybridDataIndex + 1]
+					}
 				}
 
-				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode).apply {
+				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode, HYBRID_DATA_ARG, base64HybridData).apply {
 					if (path.isNotEmpty() && scene.isEmpty()) {
 						add(PATH_ARG)
 						add(path)
