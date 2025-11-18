@@ -320,8 +320,6 @@ public:
 			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
-
-	_FORCE_INLINE_ ~Vector() {}
 };
 
 template <typename T>
