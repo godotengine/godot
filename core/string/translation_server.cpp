@@ -464,6 +464,8 @@ String TranslationServer::get_country_name(const String &p_country) const {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
+	ERR_FAIL_COND_MSG(p_locale.is_empty(), "Locale cannot be an empty string.");
+
 	String new_locale = standardize_locale(p_locale);
 	if (locale == new_locale) {
 		return;
