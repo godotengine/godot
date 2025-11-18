@@ -134,13 +134,14 @@ public:
 
 		real_t sphere_d = normal.dot(sphere_pos);
 
-		real_t ray_distance = sphere_pos.distance_to(normal * sphere_d);
+		const real_t ray_distance_squared = sphere_pos.distance_squared_to(normal * sphere_d);
+		const real_t sphere_radius_squared = p_sphere_radius * p_sphere_radius;
 
-		if (ray_distance >= p_sphere_radius) {
+		if (ray_distance_squared >= sphere_radius_squared) {
 			return false;
 		}
 
-		real_t inters_d2 = p_sphere_radius * p_sphere_radius - ray_distance * ray_distance;
+		real_t inters_d2 = sphere_radius_squared - ray_distance_squared;
 		real_t inters_d = sphere_d;
 
 		if (inters_d2 >= (real_t)CMP_EPSILON) {
