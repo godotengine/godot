@@ -862,17 +862,14 @@ void main() {
 	}
 
 	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_SOFTLIGHT) {
-		vec3 glow = gather_glow(source_glow, uv_interp);
+		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
+		if (params.glow_map_strength > 0.001) {
+			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+		}
+
 		if (params.glow_mode == GLOW_MODE_MIX) {
-			if (params.glow_map_strength > 0.001) {
-				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
-			}
-			color.rgb = mix(color.rgb, glow, params.glow_intensity);
+			color.rgb = color.rgb * (1.0 - params.glow_intensity) + glow;
 		} else {
-			glow = glow * params.glow_intensity;
-			if (params.glow_map_strength > 0.001) {
-				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
-			}
 			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
 	}
@@ -887,8 +884,7 @@ void main() {
 		// Apply soft light after tonemapping to mitigate the issue of discontinuity
 		// at 1.0 and higher. This makes the issue only appear with HDR output that
 		// can exceed a 1.0 output value.
-		vec3 glow = gather_glow(source_glow, uv_interp);
-		glow = glow * params.glow_intensity;
+		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 		}
