@@ -99,6 +99,10 @@ const char *intern_string(const CharString &p_name);
 #define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
 
+// Threading
+#define GodotProfileSetThreadName(m_name) \
+	tracy::SetThreadName(intern_string(m_name));
+
 void godot_init_profiler();
 
 #elif defined(GODOT_USE_PERFETTO)
@@ -135,7 +139,8 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
-#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color) \\ TODO
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color) // TODO
+#define GodotProfileSetThreadName(m_name) // TODO
 
 void godot_init_profiler();
 
@@ -170,5 +175,8 @@ void godot_init_profiler();
 // Define a zone with custom source information, for scripting, unique utf8
 // strings will be copied and stored for the duration of the program.
 #define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color)
+
+// Set the thread name
+#define GodotProfileSetThreadName(m_name)
 
 #endif
