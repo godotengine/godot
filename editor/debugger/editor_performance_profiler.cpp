@@ -242,6 +242,7 @@ TreeItem *EditorPerformanceProfiler::_get_monitor_base(const StringName &p_base_
 
 	TreeItem *base = monitor_tree->create_item(monitor_tree->get_root());
 	base->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(p_base_name, EditorPropertyNameProcessor::get_settings_style()));
+	base->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 	base->set_editable(0, false);
 	base->set_selectable(0, false);
 	base->set_expand_right(0, true);
@@ -386,6 +387,15 @@ List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_nam
 
 void EditorPerformanceProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				_build_monitor_tree();
+				if (monitor_draw->is_visible_in_tree()) {
+					monitor_draw->queue_redraw();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			for (KeyValue<StringName, TreeItem *> &E : base_map) {
 				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
@@ -401,16 +411,15 @@ void EditorPerformanceProfiler::_notification(int p_what) {
 }
 
 EditorPerformanceProfiler::EditorPerformanceProfiler() {
-	set_name(TTR("Monitors"));
+	set_name(TTRC("Monitors"));
 	set_split_offset(340 * EDSCALE);
 
 	monitor_tree = memnew(Tree);
 	monitor_tree->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	monitor_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	monitor_tree->set_columns(2);
-	monitor_tree->set_column_title(0, TTR("Monitor"));
+	monitor_tree->set_column_title(0, TTRC("Monitor"));
 	monitor_tree->set_column_expand(0, true);
-	monitor_tree->set_column_title(1, TTR("Value"));
+	monitor_tree->set_column_title(1, TTRC("Value"));
 	monitor_tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
 	monitor_tree->set_column_expand(1, false);
 	monitor_tree->set_column_titles_visible(true);
@@ -429,7 +438,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 
 	info_message = memnew(Label);
 	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
-	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
+	info_message->set_text(TTRC("Pick one or more items from the list to display the graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
