@@ -203,6 +203,23 @@ void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_f
 	vulkan_queue_index = p_queue_index;
 }
 
+LocalVector<VkOffset2D> OpenXRVulkanExtension::get_fragment_density_offsets() {
+	LocalVector<VkOffset2D> ret;
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return ret;
+	}
+
+	LocalVector<Vector2i> offsets = fb_foveation->get_fragment_density_offsets();
+
+	ret.reserve(offsets.size());
+	for (const Vector2i &offset : offsets) {
+		ret.push_back(VkOffset2D{ offset.x, offset.y });
+	}
+
+	return ret;
+}
+
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
