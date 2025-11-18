@@ -487,29 +487,22 @@ namespace Godot.SourceGenerators
                 // Check if this is a packed array type
                 bool isPackedArray = MarshalUtils.IsPackedArrayType(memberType);
 
-                source.Append("        if (this.");
-                source.Append(memberName);
+                source.Append("        ");
 
                 if (isString)
                 {
                     // For string, initialize with string.Empty instead of throwing
-                    source.Append(" == null) this.");
-                    source.Append(memberName);
-                    source.Append(" = string.Empty;\n");
+                    source.Append($"this.{memberName} ??= string.Empty;\n");
                 }
                 else if (isStringName)
                 {
                     // For StringName, initialize with new StringName() instead of throwing
-                    source.Append(" == null) this.");
-                    source.Append(memberName);
-                    source.Append(" = new global::Godot.StringName();\n");
+                    source.Append($"this.{memberName} ??= new global::Godot.StringName();\n");
                 }
                 else if (isPackedArray)
                 {
                     // For packed arrays, initialize with Array.Empty instead of throwing
-                    source.Append(" == null) this.");
-                    source.Append(memberName);
-                    source.Append(" = global::System.Array.Empty<");
+                    source.Append($"this.{memberName} ??= global::System.Array.Empty<");
 
                     var arrayType = (IArrayTypeSymbol)memberType;
                     source.Append(arrayType.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
@@ -518,11 +511,7 @@ namespace Godot.SourceGenerators
                 else
                 {
                     // For other types (Node, Resource, NodePath, Collections), throw NullReferenceException
-                    source.Append(" == null) throw new global::System.NullReferenceException(\"The exported property/field '");
-                    source.Append(memberName);
-                    source.Append("' of type '");
-                    source.Append(memberType.ToDisplayString());
-                    source.Append("' is null.\");\n");
+                    source.Append($"global::System.ArgumentNullException.ThrowIfNull(this.{memberName}, \"{memberName}\");\n");
                 }
             }
         }
