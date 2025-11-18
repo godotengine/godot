@@ -989,6 +989,21 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	// Fallback to text-based project.godot file if binary was not found.
 	err = _load_settings_text(p_text_path);
 	if (err == OK) {
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray features = get_setting("application/config/features");
+		for (const String &feat : features) {
+			if (feat.contains_char('.') && feat.get_slice_count(".") == 2) {
+				int major_version = feat.get_slicec('.', 0).to_int();
+				int minor_version = feat.get_slicec('.', 1).to_int();
+				// Major version is irrelevant, but the extra check ensures that the feature is in fact a version string.
+				if (major_version == 4 && minor_version < 6) {
+					// Enable MeshInstance3D compat for projects created before 4.6.
+					set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", true);
+				}
+				break;
+			}
+		}
+#endif
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		ERR_PRINT(vformat("Couldn't load file '%s', error code %d.", p_text_path, err));
