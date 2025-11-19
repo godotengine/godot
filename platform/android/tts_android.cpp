@@ -55,6 +55,7 @@ jmethodID TTS_Android::_stop_speaking = nullptr;
 HashMap<int64_t, Char16String> TTS_Android::ids;
 
 void TTS_Android::_thread_function(void *self) {
+	Thread::set_name("TTS initialization");
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 

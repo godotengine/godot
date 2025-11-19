@@ -3038,6 +3038,7 @@ void EditorHelp::remove_class(const String &p_class) {
 }
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
+	Thread::set_name("Load doc");
 	bool use_script_cache = (bool)p_udata;
 	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
 	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == doc_version_hash) {
@@ -3059,6 +3060,7 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 }
 
 void EditorHelp::_gen_doc_thread(void *p_udata) {
+	Thread::set_name("Gen doc");
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); // Ensure all is up to date.
@@ -3146,6 +3148,7 @@ void EditorHelp::_process_postponed_docs() {
 }
 
 void EditorHelp::_load_script_doc_cache_thread(void *p_udata) {
+	Thread::set_name("Load script doc cache");
 	ERR_FAIL_COND_MSG(!ProjectSettings::get_singleton()->is_project_loaded(), "Error: cannot load script doc cache without a project.");
 	ERR_FAIL_COND_MSG(!ResourceLoader::exists(get_script_doc_cache_full_path()), "Error: cannot load script doc cache from inexistent file.");
 
@@ -3191,6 +3194,7 @@ void EditorHelp::regenerate_script_doc_cache() {
 
 // Runs on worker_thread since it writes to DocData.
 void EditorHelp::_finish_regen_script_doc_thread(void *p_udata) {
+	Thread::set_name("Finish regen script doc");
 	loader_thread.wait_to_finish();
 	_process_postponed_docs();
 	_script_docs_loaded.set();
@@ -3201,6 +3205,7 @@ void EditorHelp::_finish_regen_script_doc_thread(void *p_udata) {
 // Runs on loader_thread since _reload_scripts_documentation calls ResourceLoader::load().
 // Avoids deadlocks of worker_thread needing main thread for load task dispatching, but main thread waiting on worker_thread.
 void EditorHelp::_regen_script_doc_thread(void *p_udata) {
+	Thread::set_name("Regen script doc");
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp", "Generate Script Documentation");
 
 	EditorFileSystemDirectory *dir = static_cast<EditorFileSystemDirectory *>(p_udata);

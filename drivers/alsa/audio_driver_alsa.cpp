@@ -194,6 +194,7 @@ Error AudioDriverALSA::init() {
 }
 
 void AudioDriverALSA::thread_func(void *p_udata) {
+	Thread::set_name("Audio ALSA");
 	AudioDriverALSA *ad = static_cast<AudioDriverALSA *>(p_udata);
 
 	while (!ad->exit_thread.is_set()) {
