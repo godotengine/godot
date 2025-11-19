@@ -142,6 +142,20 @@ float sc_luminance_multiplier() {
 	return 1.0;
 }
 
+layout(constant_id = 2) const bool sc_emulate_point_size = false;
+
+#ifdef POINT_SIZE_USED
+
+#define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
+#define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
+
+#else
+
+#define VERTEX_INDEX gl_VertexIndex
+#define INSTANCE_INDEX gl_InstanceIndex
+
+#endif
+
 #define REFLECTION_MULTIPLIER 1.0
 
 #define SDFGI_MAX_CASCADES 8

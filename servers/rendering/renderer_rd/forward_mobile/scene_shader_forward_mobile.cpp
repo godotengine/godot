@@ -366,7 +366,12 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		depth_stencil_state.back_op = op;
 	}
 
-	RD::RenderPrimitive primitive_rd = uses_point_size ? RD::RENDER_PRIMITIVE_POINTS : primitive_rd_table[p_pipeline_key.primitive_type];
+	RD::RenderPrimitive primitive_rd;
+	if (uses_point_size) {
+		primitive_rd = p_pipeline_key.emulate_point_size ? RD::RENDER_PRIMITIVE_TRIANGLES : RD::RENDER_PRIMITIVE_POINTS;
+	} else {
+		primitive_rd = primitive_rd_table[p_pipeline_key.primitive_type];
+	}
 
 	RD::PipelineRasterizationState raster_state;
 	raster_state.cull_mode = p_pipeline_key.cull_mode;
@@ -428,6 +433,12 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	sc.constant_id = 2;
 	sc.float_value = p_pipeline_key.shader_specialization.packed_2;
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
+	specialization_constants.push_back(sc);
+
+	sc = {}; // Sanitize value bits. "bool_value" only assigns 8 bits and keeps the remaining bits intact.
+	sc.constant_id = 3;
+	sc.bool_value = p_pipeline_key.emulate_point_size;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
 	specialization_constants.push_back(sc);
 
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.ubershader);
@@ -559,6 +570,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 	// Store whether the shader will prefer using the FP16 variant.
 	use_fp16 = RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT);
 
+	emulate_point_size = !RD::get_singleton()->has_feature(RD::SUPPORTS_POINT_SIZE);
+
 	// Immutable samplers : create the shadow sampler to be passed when creating the pipeline.
 	{
 		RD::SamplerState sampler;
@@ -636,9 +649,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["UV"] = "uv_interp";
 		actions.renames["UV2"] = "uv2_interp";
 		actions.renames["COLOR"] = "color_highp";
-		actions.renames["POINT_SIZE"] = "gl_PointSize";
-		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
-		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["POINT_SIZE"] = "point_size";
+		actions.renames["INSTANCE_ID"] = "INSTANCE_INDEX";
+		actions.renames["VERTEX_ID"] = "VERTEX_INDEX";
 		actions.renames["Z_CLIP_SCALE"] = "z_clip_scale";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold_highp";
@@ -683,7 +696,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["AO"] = "ao_highp";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect_highp";
 		actions.renames["EMISSION"] = "emission_highp";
-		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["POINT_COORD"] = "point_coord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
@@ -763,6 +776,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["IRRADIANCE"] = "#define CUSTOM_IRRADIANCE_USED\n";
 
 		actions.usage_defines["MODEL_MATRIX"] = "#define MODEL_MATRIX_USED\n";
+
+		actions.usage_defines["POINT_SIZE"] = "#define POINT_SIZE_USED\n";
+		actions.usage_defines["POINT_COORD"] = "#define POINT_COORD_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";

@@ -484,6 +484,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		pipeline_key.framebuffer_format_id = framebuffer_format;
 		pipeline_key.wireframe = p_params->force_wireframe;
 		pipeline_key.ubershader = 0;
+		pipeline_key.emulate_point_size = shader->uses_point_size && scene_shader.emulate_point_size;
 
 		const RD::PolygonCullMode cull_mode = shader->get_cull_mode_from_cull_variant(cull_variant);
 		RID vertex_array_rd;
@@ -497,9 +498,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			bool pipeline_motion_vectors = pipeline_key.color_pass_flags & SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS;
 			uint64_t input_mask = shader->get_vertex_input_mask(pipeline_key.version, pipeline_key.color_pass_flags, pipeline_key.ubershader);
 			if (surf->owner->mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, pipeline_motion_vectors, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, pipeline_motion_vectors, pipeline_key.emulate_point_size, vertex_array_rd, vertex_format);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, pipeline_motion_vectors, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, pipeline_motion_vectors, pipeline_key.emulate_point_size, vertex_array_rd, vertex_format);
 			}
 
 			pipeline_key.vertex_format_id = vertex_format;
@@ -534,7 +535,11 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		}
 
 		if (pipeline_valid) {
-			index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			if (!pipeline_key.emulate_point_size) {
+				index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			} else {
+				index_array_rd = RID();
+			}
 
 			if (prev_vertex_array_rd != vertex_array_rd) {
 				RD::get_singleton()->draw_list_bind_vertex_array(draw_list, vertex_array_rd);
@@ -592,7 +597,14 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 				instance_count /= surf->owner->trail_steps;
 			}
 
-			if (bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT)) {
+			bool indirect = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT);
+
+			if (pipeline_key.emulate_point_size) {
+				if (indirect) {
+					WARN_PRINT("Indirect draws are not supported when emulating point size.");
+				}
+				RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
+			} else if (indirect) {
 				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
 			} else {
 				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
@@ -4517,7 +4529,7 @@ void RenderForwardClustered::_mesh_compile_pipeline_for_surface(SceneShaderForwa
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 	uint64_t input_mask = p_shader->get_vertex_input_mask(r_pipeline_key.version, r_pipeline_key.color_pass_flags, p_ubershader);
 	bool pipeline_motion_vectors = r_pipeline_key.color_pass_flags & SceneShaderForwardClustered::PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS;
-	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, pipeline_motion_vectors);
+	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, pipeline_motion_vectors, r_pipeline_key.emulate_point_size);
 	r_pipeline_key.ubershader = p_ubershader;
 
 	p_shader->pipeline_hash_map.compile_pipeline(r_pipeline_key, r_pipeline_key.hash(), p_source, p_ubershader);
@@ -4540,6 +4552,7 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 	pipeline_key.cull_mode = RD::POLYGON_CULL_DISABLED;
 	pipeline_key.primitive_type = mesh_storage->mesh_surface_get_primitive(p_surface.mesh_surface);
 	pipeline_key.wireframe = false;
+	pipeline_key.emulate_point_size = p_surface.shader->uses_point_size && scene_shader.emulate_point_size;
 
 	// Grab the shader and surface used for most passes.
 	const uint32_t multiview_iterations = multiview_enabled ? 2 : 1;
@@ -4638,6 +4651,7 @@ void RenderForwardClustered::_mesh_compile_pipelines_for_surface(const SurfacePi
 	pipeline_key.primitive_type = mesh_storage->mesh_surface_get_primitive(p_surface.mesh_surface_shadow);
 	pipeline_key.version = SceneShaderForwardClustered::PIPELINE_VERSION_DEPTH_PASS;
 	pipeline_key.framebuffer_format_id = _get_depth_framebuffer_format_for_pipeline(buffers_can_be_storage, RD::TextureSamples(p_global.texture_samples), false, false);
+	pipeline_key.emulate_point_size = p_surface.shader_shadow->uses_point_size && scene_shader.emulate_point_size;
 	_mesh_compile_pipeline_for_surface(p_surface.shader_shadow, p_surface.mesh_surface_shadow, true, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 
 	if (p_global.use_shadow_dual_paraboloid) {

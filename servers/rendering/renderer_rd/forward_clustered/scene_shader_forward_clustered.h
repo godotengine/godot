@@ -195,6 +195,7 @@ public:
 			ShaderSpecialization shader_specialization = {};
 			uint32_t wireframe = false;
 			uint32_t ubershader = false;
+			bool emulate_point_size = false;
 
 			uint32_t hash() const {
 				uint32_t h = hash_murmur3_one_64(vertex_format_id);
@@ -208,6 +209,7 @@ public:
 				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(wireframe, h);
 				h = hash_murmur3_one_32(ubershader, h);
+				h = hash_murmur3_one_32(emulate_point_size, h);
 				return hash_fmix32(h);
 			}
 		};
@@ -342,6 +344,7 @@ public:
 
 	SceneForwardClusteredShaderRD shader;
 	ShaderCompiler compiler;
+	bool emulate_point_size = false;
 
 	RID default_shader;
 	RID default_material;
