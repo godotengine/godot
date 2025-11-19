@@ -2019,6 +2019,15 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	// Check current node repeatedly
 	while (true) {
 		if (p_owned && !current_node->data.owner) {
+			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
+
+			if (current_node->data.index + 1 >= (int)siblings.size()) {
+				// Finished iterating all children
+				return ret;
+			}
+
+			// Go to next sibling
+			current_node = siblings[current_node->data.index + 1];
 			continue;
 		}
 
