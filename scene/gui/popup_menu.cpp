@@ -119,6 +119,9 @@ RID PopupMenu::bind_global_menu() {
 				RID submenu_rid = item.submenu->bind_global_menu();
 				nmenu->set_item_submenu(global_menu, index, submenu_rid);
 				item.submenu_bound = true;
+				if (item.submenu->is_connected("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden))) {
+					item.submenu->disconnect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
+				}
 			}
 			if (item.checkable_type == Item::CHECKABLE_TYPE_CHECK_BOX) {
 				nmenu->set_item_checkable(global_menu, index, true);
@@ -348,8 +351,10 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	ERR_FAIL_INDEX_MSG(p_over, items.size(), vformat("Invalid submenu index %d in _activate_submenu.", p_over));
 	PopupMenu *submenu_popup = items[p_over].submenu;
-	ERR_FAIL_COND_MSG(submenu_popup->is_visible(), vformat("_activate_submenu should not be called on an open submenu - index: %d.", p_over));
-
+	if (submenu_popup->is_visible()) {
+		WARN_VERBOSE(vformat("_activate_submenu should not be called on an open submenu - index: %d.", p_over));
+		return;
+	}
 	submenu_popup->this_submenu_index = p_over;
 	active_submenu_index = p_over;
 
@@ -1919,13 +1924,14 @@ void PopupMenu::add_submenu_node_item(const String &p_label, PopupMenu *p_submen
 		RID submenu_rid = p_submenu->bind_global_menu();
 		nmenu->set_item_submenu(global_menu, index, submenu_rid);
 		items.write[index].submenu_bound = true;
+	} else {
+		p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	}
 
 	_shape_item(items.size() - 1);
 	queue_accessibility_update();
 	control->queue_redraw();
 
-	p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	child_controls_changed();
 	notify_property_list_changed();
 	_menu_changed();
@@ -2215,8 +2221,9 @@ void PopupMenu::set_item_submenu_node(int p_idx, PopupMenu *p_submenu) {
 			NativeMenu::get_singleton()->set_item_submenu(global_menu, p_idx, submenu_rid);
 			items.write[p_idx].submenu_bound = true;
 		}
+	} else {
+		p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	}
-	p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	control->queue_redraw();
 	child_controls_changed();
 	_menu_changed();
@@ -2238,8 +2245,14 @@ void PopupMenu::_close_suspended_timeout() {
 
 void PopupMenu::_submenu_hidden() {
 	// Ensure the submenu_timer is not running to avoid any race conditions between opening and closing submenus.
-	ERR_FAIL_COND_MSG(!submenu_timer->is_stopped(), "The submenu_timer should never be running when the _submenu_hidden signal is emitted.");
-	ERR_FAIL_COND_MSG(active_submenu_index == -1, "The active_submenu_index should never be -1 when _submenu_hidden is entered.");
+	if (!submenu_timer->is_stopped()) {
+		WARN_VERBOSE("The submenu_timer should never be running when the _submenu_hidden signal is emitted.");
+		return;
+	}
+	if (active_submenu_index == -1) {
+		WARN_VERBOSE("The active_submenu_index should never be -1 when _submenu_hidden is entered.");
+		return;
+	}
 	active_submenu_index = -1;
 	submenu_over = -1;
 	submenu_mouse_exited_ticks_msec = -1;
