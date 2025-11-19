@@ -2017,7 +2017,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	const Node *current_node = data.children_cache[0];
 
 	// Check current node repeatedly
-	while (current_node != this) {
+	while (true) {
 		if (p_owned && !current_node->data.owner) {
 			continue;
 		}
@@ -2045,7 +2045,8 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
 
 			if (current_node->data.index + 1 >= (int)siblings.size()) {
-				break;
+				// Finished iterating all children
+				return ret;
 			}
 
 			// Go to next sibling
@@ -2073,13 +2074,11 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			current_node = current_node->data.parent;
 
 			if (current_node == this) {
-				// Finished iterating all children
+				// Finished iterating all descendants
 				return ret;
 			}
 		}
 	}
-
-	return ret;
 }
 
 void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
