@@ -28,7 +28,7 @@ var d6 = Dictionary({ 1: 1 }, TYPE_INT, &"", null, TYPE_INT, &"", null)
 
 func test_value(value: Variant) -> void:
 	@warning_ignore("unsafe_method_access")
-	prints(value.is_read_only(), var_to_str(value).replace("\n", " "))
+	prints(value.is_read_only(), var_to_str(value))
 
 func test():
 	print('---')
