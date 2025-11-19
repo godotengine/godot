@@ -56,20 +56,13 @@ bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const
 	return RendererSceneRenderRD::get_singleton() != nullptr && RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
 }
 
-bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features, const Ref<EditorExportPreset> &p_preset) {
-	Variant driver_variant = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
-	if (!driver_variant.is_string()) {
-		driver_variant = GLOBAL_GET("rendering/rendering_device/driver");
-		if (!driver_variant.is_string()) {
-			return false;
-		}
-	}
-
-	shader_container_driver = driver_variant;
+bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) {
+	shader_container_driver = p_preset->get_project_setting("rendering/rendering_device/driver");
+	ERR_FAIL_COND_V_MSG(shader_container_driver.is_empty(), false, "Invalid `rendering/rendering_device/driver` setting, disabling shader baking.");
 
 	for (Ref<ShaderBakerExportPluginPlatform> platform : platforms) {
 		if (platform->matches_driver(shader_container_driver)) {
-			shader_container_format = platform->create_shader_container_format(p_platform, get_export_preset());
+			shader_container_format = platform->create_shader_container_format(p_platform, p_preset);
 			ERR_FAIL_NULL_V_MSG(shader_container_format, false, "Unable to create shader container format for the export platform.");
 			return true;
 		}
@@ -101,7 +94,7 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		return false;
 	}
 
-	if (!_initialize_container_format(p_platform, p_features, get_export_preset())) {
+	if (!_initialize_container_format(p_platform, get_export_preset())) {
 		return false;
 	}
 
