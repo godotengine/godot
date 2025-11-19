@@ -437,7 +437,7 @@
 			<param index="0" name="code_hint" type="String" />
 			<description>
 				Sets the code hint text. Pass an empty string to clear.
-				Aligns char [code]0xFFFF[/code] on the first line to the caret location.
+				If the [param code_hint] includes char [code]0xFFFF[/code] on the first line, the hint is moved horizontally to align the first occurrence of `0xFFFF` with the caret.
 				If a line contains at least two [code]0xFFFF[/code] characters, the text between the first and last [code]0xFFFF[/code] on that line gets both highlighted and underlined.
 			</description>
 		</method>
