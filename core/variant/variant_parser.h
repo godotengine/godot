@@ -159,6 +159,6 @@ public:
 	typedef Error (*StoreStringFunc)(void *ud, const String &p_string);
 	typedef String (*EncodeResourceFunc)(void *ud, const Ref<Resource> &p_resource);
 
-	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count = 0, bool p_compat = true);
-	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr, bool p_compat = true);
+	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_pretty_print = true, int p_recursion_count = 0, bool p_compat = true);
+	static Error write_to_string(const Variant &p_variant, String &r_string, bool p_pretty_print = true, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr, bool p_compat = true);
 };

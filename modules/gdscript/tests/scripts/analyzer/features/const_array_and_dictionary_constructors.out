@@ -10,9 +10,9 @@ true Array[int]([1])
 true {}
 true {}
 true {}
-true { {}: {} }
-true { {}: {} }
-true Dictionary[int, int]({ 1: 1 })
+true {{}: {}}
+true {{}: {}}
+true Dictionary[int, int]({1: 1})
 ---
 false []
 false []
@@ -24,6 +24,6 @@ false Array[int]([1])
 false {}
 false {}
 false {}
-false { {}: {} }
-false { {}: {} }
-false Dictionary[int, int]({ 1: 1 })
+false {{}: {}}
+false {{}: {}}
+false Dictionary[int, int]({1: 1})
