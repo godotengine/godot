@@ -58,6 +58,7 @@
 #include "editor/gui/window_wrapper.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/scene/editor_scene_tabs.h"
 #include "editor/script/editor_script.h"
 #include "editor/script/find_in_files.h"
 #include "editor/settings/editor_command_palette.h"
@@ -1883,8 +1884,9 @@ void ScriptEditor::_notification(int p_what) {
 			last_kb_height = kb_height;
 			float spacer_height = 0.0f;
 			const float status_bar_height = 28 * EDSCALE; // Magic number
+			const bool kb_visible = kb_height > 0;
 
-			if (kb_height > 0) {
+			if (kb_visible) {
 				if (ScriptEditorBase *editor = _get_current_editor()) {
 					if (CodeTextEditor *code_editor = editor->get_code_editor()) {
 						if (CodeEdit *text_editor = code_editor->get_text_editor()) {
@@ -1906,6 +1908,8 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
+			EditorSceneTabs::get_singleton()->set_visible(!kb_height);
+			menu_hb->set_visible(!kb_visible);
 		} break;
 #endif
 
