@@ -192,6 +192,8 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.2.1"
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
 
+    // Android XR dependencies
+    androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"
     // Meta dependencies
     horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
     // Pico dependencies
