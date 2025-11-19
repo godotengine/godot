@@ -2063,10 +2063,10 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 				// Go to next sibling
 				current_node = siblings[current_node->data.index + 1];
 				break;
-			} else {
-				// Go back to parent
-				current_node = current_node->data.parent;
 			}
+
+			// Go back to parent
+			current_node = current_node->data.parent;
 		}
 	}
 
