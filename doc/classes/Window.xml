@@ -374,7 +374,7 @@
 		<method name="move_to_mouse">
 			<return type="void" />
 			<description>
-				Moves the window to the current mouse position.
+				Moves the top left corner of the window to the current mouse position.
 			</description>
 		</method>
 		<method name="popup">
