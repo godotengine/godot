@@ -70,7 +70,7 @@ public:
 	XrFoveationDynamicFB get_foveation_dynamic() const;
 	void set_foveation_dynamic(XrFoveationDynamicFB p_foveation_dynamic);
 
-	LocalVector<Vector2i> get_fragment_density_offsets();
+	void get_fragment_density_offsets(LocalVector<Vector2i> &r_offsets);
 
 private:
 	static OpenXRFBFoveationExtension *singleton;
@@ -86,14 +86,14 @@ private:
 	XrFoveationLevelFB foveation_level = XR_FOVEATION_LEVEL_NONE_FB;
 	XrFoveationDynamicFB foveation_dynamic = XR_FOVEATION_DYNAMIC_DISABLED_FB;
 
-	static void _update_profile();
+	void _update_profile_rt();
 
 	void update_profile() {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
 		RenderingServer *rendering_server = RenderingServer::get_singleton();
 		ERR_FAIL_NULL(rendering_server);
 
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRFBFoveationExtension::_update_profile));
+		rendering_server->call_on_render_thread(callable_mp(this, &OpenXRFBFoveationExtension::_update_profile_rt));
 	}
 
 	// Enable foveation on this swapchain

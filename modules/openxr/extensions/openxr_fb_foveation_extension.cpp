@@ -167,14 +167,18 @@ void OpenXRFBFoveationExtension::set_foveation_dynamic(XrFoveationDynamicFB p_fo
 	update_profile();
 }
 
-LocalVector<Vector2i> OpenXRFBFoveationExtension::get_fragment_density_offsets() {
-	LocalVector<Vector2i> ret;
+void OpenXRFBFoveationExtension::get_fragment_density_offsets(LocalVector<Vector2i> &r_offsets) {
+	// Must be called from rendering thread!
+	ERR_NOT_ON_RENDER_THREAD;
+
 	if (!is_enabled() || !meta_foveation_eye_tracked || !meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
-		return ret;
+		return;
 	}
 
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
-	ERR_FAIL_NULL_V(openxr_api, ret);
+	ERR_FAIL_NULL(openxr_api);
+
+	_update_profile_rt();
 
 	XrFoveationEyeTrackedStateMETA state = {
 		XR_TYPE_FOVEATION_EYE_TRACKED_STATE_META, // type
@@ -185,27 +189,25 @@ LocalVector<Vector2i> OpenXRFBFoveationExtension::get_fragment_density_offsets()
 	XrResult result = xrGetFoveationEyeTrackedStateMETA(openxr_api->get_session(), &state);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Unable to get foveation offsets [", openxr_api->get_error_string(result), "]");
-		return ret;
+		return;
+	}
+	if (!(state.flags & XR_FOVEATION_EYE_TRACKED_STATE_VALID_BIT_META)) {
+		return;
 	}
 
-	ret.reserve(XR_FOVEATION_CENTER_SIZE_META);
-	Size2 dims = openxr_api->get_recommended_target_size() * 0.5 / openxr_api->get_render_target_size_multiplier();
+	r_offsets.reserve(XR_FOVEATION_CENTER_SIZE_META);
+	Size2 dims = openxr_api->get_recommended_target_size() * 0.5;
 	for (uint32_t i = 0; i < XR_FOVEATION_CENTER_SIZE_META; ++i) {
-		const XrVector2f &xr_offset = state.foveationCenter[i];
-		ret.push_back(Vector2i((int)(xr_offset.x * dims.x), (int)(xr_offset.y * dims.y)));
+		const XrVector2f &xr_center = state.foveationCenter[i];
+		r_offsets.push_back(Vector2i((int)(xr_center.x * dims.x), (int)(xr_center.y * dims.y)));
 	}
-
-	return ret;
 }
 
-void OpenXRFBFoveationExtension::_update_profile() {
+void OpenXRFBFoveationExtension::_update_profile_rt() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
-	ERR_FAIL_NULL(fov_ext);
-
-	if (!fov_ext->is_enabled()) {
+	if (!is_enabled()) {
 		return;
 	}
 
@@ -219,24 +221,24 @@ void OpenXRFBFoveationExtension::_update_profile() {
 	}
 
 	void *next = nullptr;
-	if (fov_ext->meta_foveation_eye_tracked && fov_ext->meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
-		fov_ext->meta_foveation_eye_tracked_create_info.next = next;
-		next = &fov_ext->meta_foveation_eye_tracked_create_info;
+	if (meta_foveation_eye_tracked && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
+		meta_foveation_eye_tracked_create_info.next = next;
+		next = &meta_foveation_eye_tracked_create_info;
 	}
 
 	XrFoveationLevelProfileCreateInfoFB level_profile_create_info;
 	level_profile_create_info.type = XR_TYPE_FOVEATION_LEVEL_PROFILE_CREATE_INFO_FB;
 	level_profile_create_info.next = next;
-	level_profile_create_info.level = fov_ext->foveation_level;
+	level_profile_create_info.level = foveation_level;
 	level_profile_create_info.verticalOffset = 0.0f;
-	level_profile_create_info.dynamic = fov_ext->foveation_dynamic;
+	level_profile_create_info.dynamic = foveation_dynamic;
 
 	XrFoveationProfileCreateInfoFB profile_create_info;
 	profile_create_info.type = XR_TYPE_FOVEATION_PROFILE_CREATE_INFO_FB;
 	profile_create_info.next = &level_profile_create_info;
 
 	XrFoveationProfileFB foveation_profile;
-	XrResult result = fov_ext->xrCreateFoveationProfileFB(openxr_api->get_session(), &profile_create_info, &foveation_profile);
+	XrResult result = xrCreateFoveationProfileFB(openxr_api->get_session(), &profile_create_info, &foveation_profile);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Unable to create the foveation profile [", openxr_api->get_error_string(result), "]");
 		return;
@@ -248,14 +250,14 @@ void OpenXRFBFoveationExtension::_update_profile() {
 	foveation_update_state.flags = 0;
 	foveation_update_state.profile = foveation_profile;
 
-	result = fov_ext->swapchain_update_state_ext->xrUpdateSwapchainFB(main_color_swapchain, (XrSwapchainStateBaseHeaderFB *)&foveation_update_state);
+	result = swapchain_update_state_ext->xrUpdateSwapchainFB(main_color_swapchain, (XrSwapchainStateBaseHeaderFB *)&foveation_update_state);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Unable to update the swapchain [", openxr_api->get_error_string(result), "]");
 
 		// We still want to destroy our profile so keep going...
 	}
 
-	result = fov_ext->xrDestroyFoveationProfileFB(foveation_profile);
+	result = xrDestroyFoveationProfileFB(foveation_profile);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Unable to destroy the foveation profile [", openxr_api->get_error_string(result), "]");
 	}
