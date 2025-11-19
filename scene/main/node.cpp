@@ -2038,7 +2038,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			}
 		}
 
-		// Perform a "tree walk" to avoid recursion and allocations
+		// The following code performs a "tree walk" to avoid recursion and allocations
 		current_node->_update_children_cache();
 
 		if (!p_recursive) {
