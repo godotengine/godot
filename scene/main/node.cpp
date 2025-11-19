@@ -2060,7 +2060,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		}
 
 		// Find next sibling
-		while (current_node != this) {
+		while (true) {
 			const LocalVector<Node *> &siblings = current_node->data.parent->data.children_cache;
 
 			if (current_node->data.index + 1 < (int)siblings.size()) {
@@ -2071,6 +2071,11 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 
 			// Go back to parent
 			current_node = current_node->data.parent;
+
+			if (current_node == this) {
+				// Finished iterating all children
+				return ret;
+			}
 		}
 	}
 
