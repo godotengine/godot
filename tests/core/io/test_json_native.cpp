@@ -148,7 +148,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	test(dict2, dict2_repr, true);
 	ERR_PRINT_OFF;
 	CHECK(encode(dict2) == R"({"type":"Dictionary","args":["s:x",null]})");
-	CHECK(decode(dict2_repr).get_construct_string() == "{\n\"x\": null\n}");
+	CHECK(decode(dict2_repr).get_construct_string() == "{\"x\": null}");
 	ERR_PRINT_ON;
 
 	TypedDictionary<String, Resource> res_dict;

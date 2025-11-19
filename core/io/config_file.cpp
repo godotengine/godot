@@ -135,7 +135,7 @@ String ConfigFile::encode_to_text() const {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, true);
 			sb.append(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
@@ -202,7 +202,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, true);
 			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
