@@ -630,6 +630,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["msdf_pixel_range"] = import_settings_data->get("msdf_pixel_range");
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
 	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
+	main_settings["use_for_color_emojis"] = import_settings_data->get("use_for_color_emojis");
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["modulate_color_glyphs"] = import_settings_data->get("modulate_color_glyphs");
 	main_settings["hinting"] = import_settings_data->get("hinting");
@@ -976,6 +977,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "use_for_color_emojis"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
