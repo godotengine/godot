@@ -422,13 +422,13 @@ void ResourceLoaderText::_count_resources() {
 	resources_total = 0;
 	resource_current = 0;
 
-	// Open a separate file handle for counting
+	// Open a separate file handle for counting.
 	Ref<FileAccess> counting_file = FileAccess::open(local_path, FileAccess::READ);
 	if (counting_file.is_null()) {
-		return; // If we can't open the file for counting, just skip progress tracking
+		return; // If we can't open the file for counting, just skip progress tracking.
 	}
 
-	// Simple line-based counting to avoid parser state issues
+	// Simple line-based counting to avoid parser state issues.
 	uint64_t original_pos = stream.f->get_position();
 	counting_file->seek(original_pos);
 
