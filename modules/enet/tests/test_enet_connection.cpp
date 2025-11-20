@@ -61,10 +61,10 @@ TEST_CASE("[ENetConnection] Channel limiting") {
 	Ref<ENetConnection> connection = create_test_connection();
 	Error err = connection->create_host();
 	CHECK(err == OK);
-	
+
 	connection->channel_limit(16);
 	CHECK(connection->get_max_channels() == 16);
-	
+
 	connection->destroy();
 }
 
