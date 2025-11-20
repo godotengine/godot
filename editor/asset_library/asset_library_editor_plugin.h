@@ -44,35 +44,43 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
 
 class EditorFileDialog;
 class HSeparator;
 class MenuButton;
+class VSeparator;
 
-class EditorAssetLibraryItem : public PanelContainer {
-	GDCLASS(EditorAssetLibraryItem, PanelContainer);
+class EditorAssetLibraryItem : public MarginContainer {
+	GDCLASS(EditorAssetLibraryItem, MarginContainer);
 
-	TextureButton *icon = nullptr;
-	LinkButton *title = nullptr;
-	LinkButton *category = nullptr;
+	MarginContainer *margin = nullptr;
+	Button *button = nullptr;
+	TextureRect *icon = nullptr;
+	Label *title = nullptr;
 	LinkButton *author = nullptr;
-	Label *price = nullptr;
+	LinkButton *license = nullptr;
 	HSeparator *separator = nullptr;
 	Control *spacer = nullptr;
-	HBoxContainer *author_price_hbox = nullptr;
+	HBoxContainer *author_license_hbox = nullptr;
+	TextureRect *rating_icon = nullptr;
+	Label *rating_count = nullptr;
 
 	String title_text;
-	int asset_id = 0;
-	int category_id = 0;
-	int author_id = 0;
+	String asset_id;
+	String author_id;
+	String license_url;
+
+	bool is_hovering = false;
+	bool is_clickable = false;
 
 	int author_width = 0;
 	int price_width = 0;
 
 	void _asset_clicked();
-	void _category_clicked();
 	void _author_clicked();
+	void _license_clicked();
 
 	void _calculate_misc_links_size();
 
@@ -83,58 +91,110 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
+	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating);
 
 	void calculate_misc_links_ratio();
 
 	EditorAssetLibraryItem(bool p_clickable = false);
 };
 
+class EditorAssetLibraryZoomMode : public CanvasLayer {
+	GDCLASS(EditorAssetLibraryZoomMode, CanvasLayer);
+
+	Control *previews = nullptr;
+
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
+public:
+	Control *remove_previews();
+
+	EditorAssetLibraryZoomMode(Control *p_previews);
+};
+
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item = nullptr;
+	HBoxContainer *root = nullptr;
 	RichTextLabel *description = nullptr;
+	Label *version_label = nullptr;
+	Label *version = nullptr;
+	OptionButton *version_list = nullptr;
+	Button *store = nullptr;
+	Button *source = nullptr;
+	VBoxContainer *desc_vbox = nullptr;
+
 	VBoxContainer *previews_vbox = nullptr;
+	Button *previous_preview = nullptr;
+	Button *next_preview = nullptr;
 	ScrollContainer *previews = nullptr;
 	HBoxContainer *preview_hb = nullptr;
 	PanelContainer *previews_bg = nullptr;
+
+	Button *zoom_button = nullptr;
+	EditorAssetLibraryZoomMode *zoom_mode = nullptr;
 
 	struct Preview {
 		int id = 0;
 		bool is_video = false;
 		String video_link;
+		String thumbnail;
 		Button *button = nullptr;
 		Ref<Texture2D> image;
 	};
 
 	Vector<Preview> preview_images;
+	Ref<ButtonGroup> preview_group;
 	TextureRect *preview = nullptr;
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id = 0;
-	String download_url;
+	struct Release {
+		String url;
+		String version;
+		String sha256;
+	};
+
+	String asset_id;
+	Vector<Release> releases;
+	String store_url;
+	String source_url;
 	String title;
-	String sha256;
 	Ref<Texture2D> icon;
 
+public:
+	enum InstallMode {
+		MODE_DOWNLOAD,
+		MODE_DOWNLOADING,
+		MODE_INSTALL,
+	};
+
+private:
+	InstallMode install_mode = MODE_DOWNLOAD;
+
+	void _confirmed();
+	void _store_pressed();
+	void _source_pressed();
 	void _link_click(const String &p_url);
-	void _preview_click(int p_id);
+
+	void _previous_preview_pressed();
+	void _next_preview_pressed();
+
+	void _zoom_toggled(bool p_pressed);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash);
-	void add_preview(int p_id, bool p_video, const String &p_url);
+	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
+	void set_install_mode(InstallMode p_mode);
+	void add_release(const String &p_url, const String &p_version, const String &p_sha256);
+	void add_preview(int p_id, bool p_video = false, const String &p_url = "", const String &p_thumbnail = "");
+	void preview_click(int p_id);
 
 	String get_title() { return title; }
 	Ref<Texture2D> get_preview_icon() { return icon; }
-	String get_download_url() { return download_url; }
-	int get_asset_id() { return asset_id; }
-	String get_sha256() { return sha256; }
 	EditorAssetLibraryItemDescription();
 };
 
@@ -144,10 +204,13 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 	PanelContainer *panel = nullptr;
 	TextureRect *icon = nullptr;
 	Label *title = nullptr;
+	Label *version = nullptr;
 	ProgressBar *progress = nullptr;
 	Button *install_button = nullptr;
 	Button *retry_button = nullptr;
 	TextureButton *dismiss_button = nullptr;
+	HBoxContainer *progress_hbox = nullptr;
+	Control *spacer = nullptr;
 
 	AcceptDialog *download_error = nullptr;
 	HTTPRequest *download = nullptr;
@@ -157,7 +220,7 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 
 	int prev_status;
 
-	int asset_id = 0;
+	String asset_id;
 
 	bool external_install;
 
@@ -173,8 +236,8 @@ protected:
 
 public:
 	void set_external_install(bool p_enable) { external_install = p_enable; }
-	int get_asset_id() { return asset_id; }
-	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
+	String get_asset_id() { return asset_id; }
+	void configure(const String &p_title, const String &p_asset_id, const String &p_version, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256);
 
 	bool can_install() const;
 	void install();
@@ -207,13 +270,13 @@ class EditorAssetLibrary : public PanelContainer {
 
 	LineEdit *filter = nullptr;
 	Timer *filter_debounce_timer = nullptr;
+	OptionButton *sort = nullptr;
 	OptionButton *categories = nullptr;
 	OptionButton *repository = nullptr;
-	OptionButton *sort = nullptr;
+	MenuButton *licenses = nullptr;
 	HBoxContainer *error_hb = nullptr;
 	TextureRect *error_tr = nullptr;
 	Label *error_label = nullptr;
-	MenuButton *support = nullptr;
 
 	HBoxContainer *contents = nullptr;
 
@@ -229,33 +292,30 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _force_online_mode();
 
-	enum Support {
-		SUPPORT_FEATURED,
-		SUPPORT_COMMUNITY,
-		SUPPORT_TESTING,
-		SUPPORT_MAX
-	};
+	bool licenses_changed = false;
+
+	void _licenses_id_pressed(int p_id);
+	void _licenses_popup_hide();
 
 	enum SortOrder {
+		SORT_RELEVANCE,
 		SORT_UPDATED,
 		SORT_UPDATED_REVERSE,
-		SORT_NAME,
-		SORT_NAME_REVERSE,
-		SORT_COST,
-		SORT_COST_REVERSE,
+		SORT_REVIEWS,
+		SORT_REVIEWS_REVERSE,
+		SORT_CREATED,
+		SORT_CREATED_REVERSE,
 		SORT_MAX
 	};
 
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
-	static const char *support_key[SUPPORT_MAX];
-	static const char *support_text[SUPPORT_MAX];
 
-	///MainListing
+	constexpr static Size2 THUMBNAIL_SIZE = Size2(114, 64);
 
 	enum ImageType {
-		IMAGE_QUEUE_ICON,
 		IMAGE_QUEUE_THUMBNAIL,
+		IMAGE_QUEUE_VIDEO_THUMBNAIL,
 		IMAGE_QUEUE_SCREENSHOT,
 
 	};
@@ -263,65 +323,69 @@ class EditorAssetLibrary : public PanelContainer {
 	struct ImageQueue {
 		bool active = false;
 		int queue_id = 0;
-		ImageType image_type = ImageType::IMAGE_QUEUE_ICON;
+		ImageType image_type = ImageType::IMAGE_QUEUE_THUMBNAIL;
 		int image_index = 0;
 		String image_url;
 		HTTPRequest *request = nullptr;
 		ObjectID target;
 		int asset_id = -1;
+
+		Thread *thread = nullptr;
+		bool use_cache = false;
+		PackedByteArray data;
+		Ref<ImageTexture> texture;
+		bool update_finished = false;
 	};
 
 	int last_queue_id;
 	HashMap<int, ImageQueue> image_queue;
 
-	void _image_update(bool p_use_cache, bool p_final, const PackedByteArray &p_data, int p_queue_id);
+	static void _image_update(void *p_image_queue);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
-	void _request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index);
+	void _request_image(ObjectID p_for, int p_asset_id, const String &p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
+
+	int current_page = 0;
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
 
-	//
-	EditorAssetLibraryItemDescription *description = nullptr;
-	//
-
 	enum RequestType {
 		REQUESTING_NONE,
-		REQUESTING_CONFIG,
+		REQUESTING_CHECK,
+		REQUESTING_TAGS,
+		REQUESTING_LICENSES,
 		REQUESTING_SEARCH,
 		REQUESTING_ASSET,
+		REQUESTING_RELEASES,
 	};
 
-	RequestType requesting;
 	Dictionary category_map;
 
 	ScrollContainer *downloads_scroll = nullptr;
 	HBoxContainer *downloads_hb = nullptr;
 
-	void _install_asset();
+	EditorAssetLibraryItemDescription *description = nullptr;
+
+	void _install_asset(const String &p_asset_id, const String &p_version, const String &p_download_url, const String &p_sha256);
+	void _tag_clicked(const String &p_tag);
 
 	void _select_author(const String &p_author);
-	void _select_category(int p_id);
-	void _select_asset(int p_id);
+	void _select_asset(const String &p_id);
 
 	void _manage_plugins();
 
-	void _search(int p_page = 0);
-	void _rerun_search(int p_ignore);
-	void _search_text_changed(const String &p_text = "");
-	void _search_text_submitted(const String &p_text = "");
-	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
-	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
-	void _filter_debounce_timer_timeout();
+	void _search(int p_page = 1);
+	void _api_request(const String &p_request, RequestType p_request_type, bool p_is_parallel = false);
+	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, HTTPRequest *p_requester);
 	void _request_current_config();
-	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
+	EditorAssetLibraryItemDownload *_get_asset_in_progress(const String &p_asset_id) const;
 
 	void _repository_changed(int p_repository_id);
-	void _support_toggled(int p_support);
 
-	void _install_external_asset(String p_zip_path, String p_title);
+	void _install_external_asset(const String &p_zip_path, const String &p_title);
 
 	void _update_asset_items_columns();
+	void _update_downloads_section();
 
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
@@ -332,8 +396,6 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
-	void disable_community_support();
-
 	EditorAssetLibrary(bool p_templates_only = false);
 };
 
@@ -345,14 +407,12 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 public:
 	static bool is_available();
 
-	virtual String get_plugin_name() const override { return TTRC("AssetLib"); }
+	virtual String get_plugin_name() const override { return TTRC("Asset Store"); }
+	virtual const Ref<Texture2D> get_plugin_icon() const override;
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void make_visible(bool p_visible) override;
-	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
-	//virtual Dictionary get_state() const;
-	//virtual void set_state(const Dictionary& p_state);
 
 	AssetLibraryEditorPlugin();
 };

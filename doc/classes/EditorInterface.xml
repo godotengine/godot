@@ -494,7 +494,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]Asset Store[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_object_edited">
