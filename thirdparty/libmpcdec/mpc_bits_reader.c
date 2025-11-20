@@ -98,7 +98,7 @@ const mpc_uint32_t Cnk_lost[MAX_ENUM / 2][MAX_ENUM] =
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 103, 55, 3347, 12419, 56459, 16987, 313105, 54177, 3076873, 3739321, 3132677, 66353813, 123012781, 236330717}
 };
 
-static const mpc_uint8_t log2[32] =
+static const mpc_uint8_t mpc_log2[32] =
 { 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6};
 
 static const mpc_uint8_t log2_lost[32] =
@@ -136,8 +136,8 @@ mpc_int32_t mpc_bits_golomb_dec(mpc_bits_reader * r, const mpc_uint_t k)
 mpc_uint32_t mpc_bits_log_dec(mpc_bits_reader * r, mpc_uint_t max)
 {
 	mpc_uint32_t value = 0;
-	if (log2[max - 1] > 1)
-		value = mpc_bits_read(r, log2[max - 1] - 1);
+	if (mpc_log2[max - 1] > 1)
+		value = mpc_bits_read(r, mpc_log2[max - 1] - 1);
 	if (value >= log2_lost[max - 1])
 		value = ((value << 1) | mpc_bits_read(r, 1)) - log2_lost[max - 1];
 	return value;
