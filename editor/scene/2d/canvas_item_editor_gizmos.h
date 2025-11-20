@@ -107,7 +107,7 @@ public:
 	virtual void set_subgizmo_transform(int p_id, const Transform2D &p_xform);
 	virtual void commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
 
-	void set_selected(bool p_selected);
+	void set_selected(bool p_selected) { selected = p_selected;}
 	bool is_selected() const { return selected; };
 
 	void set_canvas_item(CanvasItem *p_canvas_item);
