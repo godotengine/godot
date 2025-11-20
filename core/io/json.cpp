@@ -1554,7 +1554,9 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	}
 
 	if (!FileAccess::exists(p_path)) {
-		*r_error = ERR_FILE_NOT_FOUND;
+		if (r_error) {
+			*r_error = ERR_FILE_NOT_FOUND;
+		}
 		return Ref<Resource>();
 	}
 
