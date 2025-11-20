@@ -151,6 +151,7 @@ private:
 		RDD::BufferID driver_id;
 		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
+		uint8_t *data_ptr = nullptr;
 	};
 
 	struct StagingBuffers {
