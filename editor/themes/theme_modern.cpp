@@ -618,6 +618,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
+			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
 			p_theme->set_constant("v_separation", "Tree", Math::pow(p_config.base_margin * 0.2 * EDSCALE, 3));
@@ -662,6 +663,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("parent_hl_line_color", "Tree", highlight_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", relationship_line_color);
+			p_theme->set_color("drop_on_item_color", "Tree", p_config.icon_normal_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
 			p_theme->set_color("guide_color", "Tree", Color(1, 1, 1, 0));
 
