@@ -108,6 +108,13 @@ private:
 		// an optimization for faster traversal.
 		LocalVector<CanvasItem *> canvas_item_children;
 		uint32_t index_in_parent = UINT32_MAX;
+#ifdef TOOLS_ENABLED
+		Vector<Ref<CanvasItemGizmo>> gizmos;
+		bool gizmos_requested : 1;
+		bool gizmos_disabled : 1;
+		bool gizmos_dirty : 1;
+		bool transform_dirty : 1;
+#endif
 	} data;
 
 	int light_mask = 1;
@@ -176,6 +183,8 @@ private:
 
 	void _notify_transform_deferred();
 	const StringName *_instance_shader_parameter_get_remap(const StringName &p_name) const;
+
+	void _update_gizmos();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -279,8 +288,12 @@ public:
 	void update_draw_order();
 
 	/* GIZMOS */
-	// TODO: actually implement this.
-	void remove_gizmo(Ref<CanvasItemGizmo> p_gizmo) {}
+	Vector<Ref<CanvasItemGizmo>> get_gizmos() const;
+	TypedArray<CanvasItemGizmo> get_gizmos_bind() const;
+	void add_gizmo(Ref<CanvasItemGizmo> p_gizmo);
+	void remove_gizmo(Ref<CanvasItemGizmo> p_gizmo);
+	void clear_gizmos();
+	void update_gizmos();
 
 	/* VISIBILITY */
 
