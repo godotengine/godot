@@ -389,7 +389,6 @@ void ProjectManager::_open_asset_library_confirmed() {
 		EditorSettings::get_singleton()->save();
 	}
 
-	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
 
