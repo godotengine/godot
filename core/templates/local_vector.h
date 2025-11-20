@@ -362,6 +362,13 @@ public:
 		return ret;
 	}
 
+	template <typename... Args>
+	static LocalVector make(Args &&...args) {
+		static_assert(sizeof...(Args) > 0);
+		RelocateInitData<T, sizeof...(Args)> data(std::forward<Args>(args)...);
+		return LocalVector(data);
+	}
+
 	LocalVector() = default;
 	LocalVector(std::initializer_list<T> p_init) {
 		reserve(p_init.size());
@@ -371,6 +378,12 @@ public:
 			i++;
 		}
 		count = p_init.size();
+	}
+	_FORCE_INLINE_ explicit LocalVector(RelocateInitList<T> p_init) {
+		CRASH_COND(reserve(p_init.size));
+		// Relocate into data
+		memcpy((void *)data, p_init.ptr, p_init.size * sizeof(T));
+		count = p_init.size;
 	}
 	explicit LocalVector(Span<T> p_span) {
 		reserve(p_span.size());
