@@ -1272,6 +1272,8 @@ void ScriptTextEditor::_on_caret_moved() {
 		store_previous_state();
 	}
 	previous_line = current_line;
+
+	ScriptEditor::get_singleton()->update_members_overview_current(current_line);
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
