@@ -234,7 +234,7 @@
 			<return type="Texture2D" />
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "Asset Store" buttons.
 				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
@@ -260,7 +260,7 @@
 			<return type="String" />
 			<description>
 				Override this method in your plugin to provide the name of the plugin when displayed in the Godot editor.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "Asset Store" buttons.
 			</description>
 		</method>
 		<method name="_get_state" qualifiers="virtual const">
@@ -329,7 +329,7 @@
 		<method name="_has_main_screen" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]AssetLib[/b]).
+				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]Asset Store[/b]).
 				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
 				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
 				[codeblock]
@@ -814,7 +814,7 @@
 		<signal name="main_screen_changed">
 			<param index="0" name="screen_name" type="String" />
 			<description>
-				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
+				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], [b]Asset Store[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
 		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
