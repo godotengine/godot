@@ -79,8 +79,10 @@ void ProjectUpgradeTool::popup_dialog() {
 void ProjectUpgradeTool::prepare_upgrade() {
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RUN_ON_RESTART, true);
 
+#ifndef DISABLE_DEPRECATED
 	ProjectSettings::get_singleton()->set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", false);
 	ProjectSettings::get_singleton()->save();
+#endif
 
 	Vector<String> reimport_paths;
 	Vector<String> resave_scenes;
@@ -107,7 +109,10 @@ void ProjectUpgradeTool::finish_upgrade() {
 	EditorFileSystem::get_singleton()->reimport_files(paths);
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_REIMPORT_PATHS, Variant());
 
+#ifndef DISABLE_DEPRECATED
 	MeshInstance3D::upgrading_skeleton_compat = true;
+#endif
+
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Vector<String>());
 		EditorProgress ep("uid_upgrade_resave", TTR("Updating Project Scenes"), paths.size());
@@ -121,7 +126,10 @@ void ProjectUpgradeTool::finish_upgrade() {
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Variant());
 	}
+
+#ifndef DISABLE_DEPRECATED
 	MeshInstance3D::upgrading_skeleton_compat = false;
+#endif
 
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_RESOURCES, Vector<String>());
