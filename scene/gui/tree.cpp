@@ -569,6 +569,10 @@ String TreeItem::get_suffix(int p_column) const {
 	return cells[p_column].suffix;
 }
 
+Ref<TextParagraph> TreeItem::get_text_paragraph(const int p_column) const {
+	return cells[p_column].text_buf;
+}
+
 void TreeItem::set_icon(int p_column, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -1854,6 +1858,8 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_suffix", "column", "text"), &TreeItem::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix", "column"), &TreeItem::get_suffix);
+
+	ClassDB::bind_method(D_METHOD("get_text_paragraph", "column"), &TreeItem::get_text_paragraph);
 
 	ClassDB::bind_method(D_METHOD("set_icon", "column", "texture"), &TreeItem::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "column"), &TreeItem::get_icon);

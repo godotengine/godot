@@ -843,6 +843,10 @@ void TextShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
+void TextShaderEditor::select(int p_origin_line, int p_origin_column, int p_caret_line, int p_caret_column) {
+	code_editor->select(p_origin_line, p_origin_column, p_caret_line, p_caret_column);
+}
+
 void TextShaderEditor::_project_settings_changed() {
 	_update_warnings(true);
 }

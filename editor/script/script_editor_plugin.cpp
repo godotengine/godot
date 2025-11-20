@@ -3613,7 +3613,7 @@ void ScriptEditor::_on_replace_in_files_requested(const String &text) {
 	find_in_files_dialog->popup_centered();
 }
 
-void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
+void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, Vector2i p_line_range, int begin, int end) {
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
 
@@ -3623,12 +3623,12 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 			shader_editor->make_visible(true);
 			TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(shader_editor->get_shader_editor(res));
 			if (text_shader_editor) {
-				text_shader_editor->goto_line_selection(line_number - 1, begin, end);
+				text_shader_editor->select(p_line_range.x, begin, p_line_range.y, end);
 			}
 			return;
 		} else if (fpath.get_extension() == "tscn") {
 			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
-			if (line_number > lines.size()) {
+			if (p_line_range.x > lines.size() || p_line_range.y > lines.size()) {
 				return;
 			}
 
@@ -3637,12 +3637,13 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 			String script_id;
 
 			// Search the scene backwards from the found line.
-			int scan_line = line_number - 1;
+			int scan_line = p_line_range.x - 1;
 			while (scan_line >= 0) {
 				const String &line = lines[scan_line];
 				if (line.begins_with(source_header)) {
 					// Adjust line relative to the script beginning.
-					line_number -= scan_line + 1;
+					p_line_range.x -= scan_line + 1;
+					p_line_range.y -= scan_line + 1;
 				} else if (line.begins_with(scr_header)) {
 					script_id = line.trim_prefix(scr_header).get_slicec('"', 0);
 					break;
@@ -3659,12 +3660,10 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 
 					if (ste) {
 						callable_mp(EditorInterface::get_singleton(), &EditorInterface::set_main_screen_editor).call_deferred("Script");
-						if (line_number == 0) {
-							const int source_len = strlen(source_header);
-							ste->goto_line_selection(line_number, begin - source_len, end - source_len);
-						} else {
-							ste->goto_line_selection(line_number, begin, end);
-						}
+						const int source_len = strlen(source_header);
+						const int start_offset = p_line_range.x == 0 ? source_len : 0;
+						const int end_offset = p_line_range.y == 0 ? source_len : 0;
+						ste->select(p_line_range.x, begin - start_offset, p_line_range.y, end - end_offset);
 					}
 				}
 			}
@@ -3679,7 +3678,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
 				if (ste) {
 					EditorInterface::get_singleton()->set_main_screen_editor("Script");
-					ste->goto_line_selection(line_number - 1, begin, end);
+					ste->select(p_line_range.x, begin, p_line_range.y, end);
 				}
 				return;
 			}
@@ -3694,7 +3693,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 
 		TextEditor *te = Object::cast_to<TextEditor>(_get_current_editor());
 		if (te) {
-			te->goto_line_selection(line_number - 1, begin, end);
+			te->select(p_line_range.x, begin, p_line_range.y, end);
 		}
 	}
 }
@@ -3710,6 +3709,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	f->set_filter(find_in_files_dialog->get_filter());
 	f->set_includes(find_in_files_dialog->get_includes());
 	f->set_excludes(find_in_files_dialog->get_excludes());
+	f->set_regex(find_in_files_dialog->is_regex());
 
 	panel->set_with_replace(with_replace);
 	panel->set_replace_text(find_in_files_dialog->get_replace_text());

@@ -1402,6 +1402,18 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
 }
 
+void CodeTextEditor::select(int p_origin_line, int p_origin_column, int p_caret_line, int p_caret_column) {
+	text_editor->remove_secondary_carets();
+	text_editor->deselect();
+	for (int line = p_origin_line; line <= p_origin_line; line++) {
+		text_editor->unfold_line(CLAMP(line, 0, text_editor->get_line_count() - 1));
+	}
+	text_editor->select(p_origin_line, p_origin_column, p_caret_line, p_caret_column);
+	text_editor->set_code_hint("");
+	text_editor->cancel_code_completion();
+	callable_mp((TextEdit *)text_editor, &TextEdit::center_viewport_to_caret).call_deferred(0);
+}
+
 void CodeTextEditor::set_executing_line(int p_line) {
 	text_editor->set_line_as_executing(p_line, true);
 }

@@ -257,6 +257,7 @@ public:
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void goto_line_centered(int p_line, int p_column = 0);
+	void select(int p_origin_line, int p_origin_column, int p_caret_line, int p_caret_column);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 

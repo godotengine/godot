@@ -303,6 +303,8 @@ public:
 	void set_suffix(int p_column, String p_suffix);
 	String get_suffix(int p_column) const;
 
+	Ref<TextParagraph> get_text_paragraph(int p_column) const;
+
 	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(int p_column) const;
 

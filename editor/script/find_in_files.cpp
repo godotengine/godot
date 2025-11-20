@@ -33,9 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "core/string/string_builder.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -48,6 +51,10 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+
+namespace {
+constexpr int FULL_LINE = -1;
+}
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 
@@ -96,6 +103,10 @@ void FindInFiles::set_whole_words(bool p_whole_word) {
 
 void FindInFiles::set_match_case(bool p_match_case) {
 	_match_case = p_match_case;
+}
+
+void FindInFiles::set_regex(bool p_regex) {
+	_regex_active = p_regex;
 }
 
 void FindInFiles::set_folder(const String &folder) {
@@ -279,26 +290,94 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 	}
 }
 
+static TypedDictionary<Variant, String> _get_regex_captures(const Ref<RegExMatch> p_match) {
+	TypedDictionary<Variant, String> dict;
+	for (const KeyValue<Variant, Variant> &name : p_match->get_names()) {
+		dict[name.key] = p_match->get_string(name.value);
+	}
+	const PackedStringArray &strings = p_match->get_strings();
+	for (int group_i = 0; group_i < strings.size(); group_i++) {
+		dict[group_i] = strings[group_i];
+	}
+	return dict;
+}
+
+static int _get_line_number(const int p_index, const String &p_text, const int p_starting_index = 0) {
+	int line_number = 1;
+	for (int i = p_starting_index; i < p_index; ++i) {
+		if (p_text[i] == '\n') {
+			line_number++;
+		}
+	}
+	return line_number;
+}
+
+static Vector2i _get_line_boundaries(const int p_start_index, const int p_end_index, const String &p_text) {
+	int start = p_start_index;
+	for (; start > 0; start--) {
+		if (p_text[start - 1] == '\n') {
+			break;
+		}
+	}
+	int end = p_end_index;
+	for (; end < p_text.length() - 1; end++) {
+		if (p_text[end] == '\n') {
+			break;
+		}
+	}
+	return Vector2i(start, end);
+}
+
 void FindInFiles::_scan_file(const String &fpath) {
-	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+	static Ref<RegEx> regex = memnew(RegEx);
+	const Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
 	if (f.is_null()) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
 
-	int line_number = 0;
+	if (_regex_active) {
+		if (regex->get_pattern() != _pattern) {
+			regex->compile(_pattern, false);
+		}
 
-	while (!f->eof_reached()) {
-		// Line number starts at 1.
-		++line_number;
+		const String text = f->get_as_text();
+		int last_end = 0;
+		Ref<RegExMatch> match = regex->search(text);
+		while (match.is_valid()) {
+			const int abs_start = match->get_start(0);
+			const int abs_end = match->get_end(0);
+			const int start_line_number = _get_line_number(abs_start, text);
+			// Line numbers start at 1, so to get the proper offset, the 1 must be subtracted.
+			const int end_line_number = start_line_number + _get_line_number(abs_end, text, abs_start) - 1;
+			const Vector2i substring_bounds = _get_line_boundaries(abs_start, abs_end - 1, text);
 
-		int begin = 0;
-		int end = 0;
+			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, Vector2i(start_line_number, end_line_number), abs_start - substring_bounds.x, abs_end - substring_bounds.x, abs_start, abs_end, text.substr(substring_bounds.x, substring_bounds.y - substring_bounds.x), _get_regex_captures(match));
 
-		String line = f->get_line();
+			last_end = abs_end;
+			if (abs_start == last_end) {
+				last_end++;
+			}
 
-		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
-			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
+			match = regex->search(text, last_end);
+		}
+	} else {
+		int line_number = 0;
+		int absolute_position = 0;
+		while (!f->eof_reached()) {
+			// Line number starts at 1.
+			++line_number;
+
+			int begin = 0;
+			int end = 0;
+
+			String line = f->get_line();
+			while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
+				emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, Vector2i(line_number, line_number), begin, end, absolute_position + begin, absolute_position + end, line, TypedDictionary<Variant, String>());
+			}
+
+			// +1 for newlines.
+			absolute_position += line.size() + 1;
 		}
 	}
 }
@@ -382,8 +461,23 @@ FindInFilesDialog::FindInFilesDialog() {
 		_match_case_checkbox->set_text(TTRC("Match Case"));
 		hbc->add_child(_match_case_checkbox);
 
+		_regex_checkbox = memnew(CheckBox);
+		_regex_checkbox->set_text(TTRC("Use RegEx"));
+		_regex_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_regex_checkbox_toggled));
+		hbc->add_child(_regex_checkbox);
+
 		gc->add_child(hbc);
 	}
+
+	_regex_status_label_filler = memnew(Control);
+	_regex_status_label_filler->hide();
+	gc->add_child(_regex_status_label_filler);
+
+	_regex_status_panel = memnew(EditorValidationPanel);
+	_regex_status_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_regex_status_panel->hide();
+	_regex_status_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT);
+	gc->add_child(_regex_status_panel);
 
 	Label *folder_label = memnew(Label);
 	folder_label->set_text(TTRC("Folder:"));
@@ -462,22 +556,25 @@ FindInFilesDialog::FindInFilesDialog() {
 	cancel_button->set_text(TTRC("Cancel"));
 
 	_mode = SEARCH_MODE;
+
+	_regex = memnew(RegEx);
 }
 
 void FindInFilesDialog::set_search_text(const String &text) {
+	const String &replaced_text = is_regex() ? RegEx::escape_literal(text) : text;
 	if (_mode == SEARCH_MODE) {
 		if (!text.is_empty()) {
-			_search_text_line_edit->set_text(text);
-			_on_search_text_modified(text);
+			_search_text_line_edit->set_text(replaced_text);
+			_on_search_text_modified(replaced_text);
 		}
 		callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred(false);
 		_search_text_line_edit->select_all();
 	} else if (_mode == REPLACE_MODE) {
-		if (!text.is_empty()) {
-			_search_text_line_edit->set_text(text);
+		if (!replaced_text.is_empty()) {
+			_search_text_line_edit->set_text(replaced_text);
 			callable_mp((Control *)_replace_text_line_edit, &Control::grab_focus).call_deferred(false);
 			_replace_text_line_edit->select_all();
-			_on_search_text_modified(text);
+			_on_search_text_modified(replaced_text);
 		} else {
 			callable_mp((Control *)_search_text_line_edit, &Control::grab_focus).call_deferred(false);
 			_search_text_line_edit->select_all();
@@ -524,6 +621,10 @@ bool FindInFilesDialog::is_match_case() const {
 
 bool FindInFilesDialog::is_whole_words() const {
 	return _whole_words_checkbox->is_pressed();
+}
+
+bool FindInFilesDialog::is_regex() const {
+	return _regex_checkbox->is_pressed();
 }
 
 String FindInFilesDialog::get_folder() const {
@@ -618,13 +719,12 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 void FindInFilesDialog::_on_search_text_modified(const String &text) {
 	ERR_FAIL_NULL(_find_button);
 	ERR_FAIL_NULL(_replace_button);
-
-	_find_button->set_disabled(get_search_text().is_empty());
-	_replace_button->set_disabled(get_search_text().is_empty());
+	update_search_parameters();
 }
 
 void FindInFilesDialog::_on_search_text_submitted(const String &text) {
 	// This allows to trigger a global search without leaving the keyboard.
+	update_search_parameters();
 	if (!_find_button->is_disabled()) {
 		if (_mode == SEARCH_MODE) {
 			custom_action("find");
@@ -645,6 +745,23 @@ void FindInFilesDialog::_on_replace_text_submitted(const String &text) {
 			custom_action("replace");
 		}
 	}
+}
+
+void FindInFilesDialog::_on_regex_checkbox_toggled(bool p_toggled) {
+	update_search_parameters();
+}
+
+void FindInFilesDialog::update_search_parameters() {
+	const bool valid = validate_search_text(get_search_text());
+	const bool regex = is_regex();
+
+	_find_button->set_disabled(!valid);
+	_replace_button->set_disabled(!valid);
+
+	_regex_status_panel->set_visible(regex);
+	_regex_status_label_filler->set_visible(regex);
+	_whole_words_checkbox->set_disabled(regex);
+	_match_case_checkbox->set_disabled(regex);
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
@@ -676,6 +793,23 @@ String FindInFilesDialog::validate_filter_wildcard(const String &p_expression) c
 	}
 
 	return ret;
+}
+
+bool FindInFilesDialog::validate_search_text(const String &p_text) const {
+	if (is_regex()) {
+		if (p_text.is_empty()) {
+			_regex_status_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Expression is empty"), EditorValidationPanel::MSG_ERROR);
+			return false;
+		}
+		if (_regex->compile(p_text, false) == OK) {
+			_regex_status_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Expression is valid"), EditorValidationPanel::MSG_OK);
+			return true;
+		}
+		_regex_status_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, _regex->get_compile_error(), EditorValidationPanel::MSG_ERROR);
+		return false;
+	} else {
+		return !p_text.is_empty();
+	}
 }
 
 void FindInFilesDialog::_bind_methods() {
@@ -918,10 +1052,38 @@ void FindInFilesPanel::_notification(int p_what) {
 	}
 }
 
-void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, int begin, int end, String text) {
+static String _process_tabs(const String &p_input, int &inout_start_index, int &inout_end_index) {
+	static constexpr int tab_width = 4;
+	static const String tab = String(" ").repeat(tab_width);
+	StringBuilder buffer;
+	int start_index = inout_start_index;
+	int end_index = inout_end_index;
+	for (int i = 0; i < p_input.length(); i++) {
+		if (const char32_t ch = p_input[i]; ch == '\t') {
+			buffer.append(tab);
+			if (inout_start_index > i) {
+				// 1 character gets replaced with tab_width.
+				start_index += tab_width - 1;
+			}
+			if (inout_end_index > i) {
+				// 1 character gets replaced with tab_width.
+				end_index += tab_width - 1;
+			}
+		} else {
+			buffer.append(String::chr(ch));
+		}
+	}
+	inout_start_index = start_index;
+	if (inout_end_index != FULL_LINE) {
+		inout_end_index = end_index;
+	}
+	return buffer;
+}
+
+void FindInFilesPanel::_on_result_found(const String &fpath, Vector2i line_range, int begin, int end, int absolute_begin, int absolute_end, const String &text, const TypedDictionary<Variant, String> &p_captures) {
 	TreeItem *file_item;
-	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
-	Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
+	const Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
+	const Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
 
 	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
 	if (!E) {
@@ -957,20 +1119,65 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	// Do this first because it resets properties of the cell...
 	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
 
-	// Trim result item line.
-	int old_text_size = text.size();
-	text = text.strip_edges(true, false);
-	int chars_removed = old_text_size - text.size();
-	String start = vformat("%3s: ", line_number);
+	Vector<HighlightRange> highlight_ranges;
+	String first_line_indent;
+	PackedStringArray lines = text.split("\n");
 
-	item->set_text(text_index, start + text);
+	// Handle mischievous users who try to match newlines.
+	// I am always two steps ahead.
+	const bool is_annoying_newline_match = line_range.y - line_range.x + 1 > lines.size();
+	if (is_annoying_newline_match) {
+		lines.append(" ");
+	}
+
+	PackedStringArray processed_lines;
+	processed_lines.reserve_exact(lines.size());
+	highlight_ranges.reserve_exact(lines.size());
+
+	// Only strip the leading whitespace from one line matches, and only if the start & end columns aren't inside the whitespace.
+	if (lines.size() == 1) {
+		const String stripped = lines[0].strip_edges(true, false);
+		const int stripped_chars = lines[0].length() - stripped.length();
+		if (begin >= stripped_chars && end >= stripped_chars) {
+			first_line_indent = lines[0].left(stripped_chars);
+		}
+	}
+
+	// `line_start_i` is the absolute index at which the current line began.
+	// `i` is the line number.
+	for (int i = 0, line_start_i = 0; i < lines.size(); line_start_i += lines[i].length() + 1, i++) {
+		const String &line = lines[i];
+		const String start = vformat("%03d: ", line_range.x + i);
+
+		String stripped_line = line.trim_prefix(first_line_indent);
+		int stripped_chars = line.length() - stripped_line.length();
+
+		Vector2i range{
+			i > 0 ? 0 : begin - stripped_chars,
+			i < lines.size() - 1 ? FULL_LINE : end - line_start_i - stripped_chars,
+		};
+
+		stripped_line = _process_tabs(stripped_line, range.x, range.y);
+
+		const String processed_line = start + stripped_line;
+		highlight_ranges.append({ start.length(), range, processed_line });
+		processed_lines.append(processed_line);
+	}
+
+	item->set_text(text_index, String("\n").join(processed_lines));
 	item->set_custom_draw_callback(text_index, callable_mp(this, &FindInFilesPanel::draw_result_text));
 
 	Result r;
-	r.line_number = line_number;
+	r.line_range = line_range;
 	r.begin = begin;
 	r.end = end;
-	r.begin_trimmed = begin - chars_removed + start.size() - 1;
+	r.absolute_begin = absolute_begin;
+	r.absolute_end = absolute_end;
+	r.captures = p_captures;
+	r.highlight_ranges = highlight_ranges;
+	r.was_annoying_newline_match = is_annoying_newline_match;
+
+	r.text = text;
 	_result_items[item] = r;
 
 	if (_with_replace) {
@@ -982,6 +1189,84 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	} else {
 		item->add_button(0, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
 	}
+}
+
+void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
+	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
+	if (!item) {
+		return;
+	}
+
+	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
+	if (!E) {
+		return;
+	}
+	Result r = E->value;
+	const int column = _with_replace ? 1 : 0;
+	const Ref<TextParagraph> item_text_paragraph = item->get_text_paragraph(column);
+	const Ref<Font> font = _results_display->get_theme_font(SceneStringName(font));
+	Color outline_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.33);
+	Color background_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.17);
+	const int font_size = _results_display->get_theme_font_size(SceneStringName(font_size));
+	const real_t font_descent = font->get_descent(font_size);
+
+	int y_offset = 0;
+	int line = 0;
+	Vector<HighlightRange> ranges = r.highlight_ranges;
+	PackedVector2Array l_outline_points;
+	PackedVector2Array r_outline_points;
+	l_outline_points.reserve_exact(ranges.size());
+	r_outline_points.reserve_exact(ranges.size());
+
+	for (const HighlightRange &hl_range : ranges) {
+		const int prefix_text_width = hl_range.prefix_text_width;
+		const Vector2i range = hl_range.range;
+		const String &line_text = hl_range.text;
+
+		const bool is_first = line == 0;
+
+		const int start = range.x;
+		const int end = range.y == FULL_LINE ? line_text.size() - prefix_text_width : range.y;
+		const real_t height = item_text_paragraph->get_line_size(line).height;
+
+		const Size2 highlight_size = font->get_string_size(line_text.substr(start + prefix_text_width, end - start), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+		Rect2 match_rect = rect;
+		match_rect.position.x += font->get_string_size(line_text.left(start + prefix_text_width), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
+		match_rect.size.x = highlight_size.x + 1;
+		match_rect.size.y = height;
+		match_rect.position.y += y_offset;
+
+		if (is_first) {
+			match_rect = match_rect.grow_side(SIDE_BOTTOM, font_descent / 2);
+		} else {
+			match_rect.position.y += font_descent / 2;
+		}
+
+		Point2 tl = match_rect.position;
+		Point2 bl = match_rect.position + Vector2(0.0, match_rect.size.height);
+		Point2 tr = match_rect.position + Vector2(match_rect.size.width, 0.0);
+		Point2 br = match_rect.position + Vector2(match_rect.size.width, match_rect.size.height);
+
+		l_outline_points.append(tl);
+		l_outline_points.append(bl);
+		r_outline_points.append(tr);
+		r_outline_points.append(br);
+
+		_results_display->draw_rect(match_rect, background_color, true);
+
+		y_offset += height;
+		line++;
+	}
+
+	l_outline_points.reverse();
+	PackedVector2Array outline_points;
+	outline_points.reserve_exact(l_outline_points.size() + r_outline_points.size() + 1);
+	outline_points.append_array(l_outline_points);
+	outline_points.append_array(r_outline_points);
+	outline_points.append(outline_points[0]);
+	_results_display->draw_polyline(outline_points, outline_color, 1.0, true);
+
+	// Text is drawn by Tree already.
 }
 
 void FindInFilesPanel::_on_theme_changed() {
@@ -1014,33 +1299,6 @@ void FindInFilesPanel::_on_theme_changed() {
 
 		file_item = file_item->get_next();
 	}
-}
-
-void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
-	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
-	if (!item) {
-		return;
-	}
-
-	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
-	if (!E) {
-		return;
-	}
-	Result r = E->value;
-	String item_text = item->get_text(_with_replace ? 1 : 0);
-	Ref<Font> font = _results_display->get_theme_font(SceneStringName(font));
-	int font_size = _results_display->get_theme_font_size(SceneStringName(font_size));
-
-	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 1;
-	match_rect.position.y += 1 * EDSCALE;
-	match_rect.size.y -= 2 * EDSCALE;
-
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.33), false, 2.0);
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.17), true);
-
-	// Text is drawn by Tree already.
 }
 
 void FindInFilesPanel::_on_item_edited() {
@@ -1086,7 +1344,10 @@ void FindInFilesPanel::_on_result_selected() {
 	TreeItem *file_item = item->get_parent();
 	String fpath = file_item->get_metadata(0);
 
-	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), fpath, r.line_number, r.begin, r.end);
+	// If yes, it matched a new line that doesn't show up in the text because it's at the very end.
+	const int end_col = r.was_annoying_newline_match ? 0 : (r.end - MAX(0, r.text.rfind("\n") + 1));
+	// Line numbers are one-based in the results list but the various text editors expect them to be zero-based.
+	emit_signal(SNAME(SIGNAL_RESULT_SELECTED), fpath, r.line_range - Vector2i(1, 1), r.begin, end_col);
 }
 
 void FindInFilesPanel::_on_replace_text_changed(const String &text) {
@@ -1211,13 +1472,92 @@ private:
 	Vector<char> _line_buffer;
 };
 
-void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) {
+// Reimplements a limited subset of the PCRE replacement syntax.
+static String _fake_regex_sub(const String &p_pattern, const TypedDictionary<Variant, String> &p_captures) {
+	StringBuilder sb;
+	for (int i = 0; i < p_pattern.length(); i++) {
+		char32_t ch = p_pattern[i];
+		if (ch != '$') {
+			sb.append(String::chr(ch));
+			continue;
+		}
+		if (i + 1 < p_pattern.length()) {
+			int peek = 1;
+			int start_i = i + peek;
+			ch = p_pattern[start_i];
+			if (ch == '$') {
+				// $$
+				sb.append("$");
+				i++;
+				continue;
+			} else if (ch >= '0' && ch <= '9') {
+				// $<number>
+				for (; i + peek < p_pattern.length(); peek++) {
+					ch = p_pattern[i + peek];
+					if (ch < '0' || ch > '9') {
+						break;
+					}
+				}
+				int num = p_pattern.substr(start_i, peek - 1).to_int();
+				Variant result = p_captures.get(num, Variant());
+				if (result.get_type() != Variant::NIL) {
+					// If the number is a valid capture group name, append it and consume the peeked digits.
+					sb.append(result);
+					i += peek - 1;
+					continue;
+				}
+			} else if (ch == '{') {
+				for (;; peek++) {
+					if (i + peek >= p_pattern.length()) {
+						goto not_matched;
+					}
+					ch = p_pattern[i + peek];
+					if (ch == '}') {
+						break;
+					}
+				}
+				// It needs to be `start_i + 1` because pattern[start_i] is '{'.
+				// peek needs two subtracted, because when the loop breaks it points at the curly brace and start_i has one added.
+				Variant result = p_captures.get(p_pattern.substr(start_i + 1, peek - 2), Variant());
+				if (result.get_type() != Variant::NIL) {
+					// If the number is a valid capture group name, append it and consume the peeked digits.
+					sb.append(result);
+					i += peek;
+					continue;
+				}
+			}
+		}
+	not_matched:
+		sb.append("$");
+	}
+	return sb.as_string();
+}
+
+void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) const {
 	// If the file is already open, I assume the editor will reload it.
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
 
 	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
+
+	if (_finder->is_regex()) {
+		int last_end = 0;
+		StringBuilder buffer;
+		const String full_text = f->get_as_text();
+		for (const Result &result : locations) {
+			buffer.append(full_text.substr(last_end, result.absolute_begin - last_end));
+			buffer.append(_fake_regex_sub(new_text, result.captures));
+			last_end = result.absolute_end;
+		}
+		buffer.append(full_text.substr(last_end));
+
+		const Error err = f->reopen(fpath, FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
+
+		f->store_string(buffer);
+		return;
+	}
 
 	String buffer;
 	int current_line = 1;
@@ -1230,7 +1570,7 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 	int offset = 0;
 
 	for (int i = 0; i < locations.size(); ++i) {
-		int repl_line_number = locations[i].line_number;
+		int repl_line_number = locations[i].line_range.x;
 
 		while (current_line < repl_line_number) {
 			buffer += line;
@@ -1242,16 +1582,18 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 		int repl_begin = locations[i].begin + offset;
 		int repl_end = locations[i].end + offset;
 
+		String replacement_text = new_text;
 		int _;
 		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
 			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
+			// RegEx matches are ignored in this case, since they have their own matching logic that doesn't work with find_next.
+			print_verbose(vformat("Occurrence no longer matches, replace will be ignored in %s: line %d, col %d", fpath, repl_line_number, repl_begin));
 			continue;
 		}
 
-		line = line.left(repl_begin) + new_text + line.substr(repl_end);
+		line = line.left(repl_begin) + replacement_text + line.substr(repl_end);
 		// Keep an offset in case there are successive replaces in the same line.
-		offset += new_text.length() - (repl_end - repl_begin);
+		offset += replacement_text.length() - (repl_end - repl_begin);
 	}
 
 	buffer += line;
@@ -1422,8 +1764,8 @@ void FindInFilesContainer::_on_theme_changed() {
 	}
 }
 
-void FindInFilesContainer::_on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end) {
-	emit_signal(SNAME("result_selected"), p_fpath, p_line_number, p_begin, p_end);
+void FindInFilesContainer::_on_find_in_files_result_selected(const String &p_fpath, Vector2i p_line_range, int p_begin, int p_end) {
+	emit_signal(SNAME("result_selected"), p_fpath, p_line_range, p_begin, p_end);
 }
 
 void FindInFilesContainer::_on_find_in_files_modified_files(const PackedStringArray &p_paths) {

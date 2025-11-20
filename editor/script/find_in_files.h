@@ -31,7 +31,10 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "core/variant/typed_dictionary.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/gui/editor_validation_panel.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search
@@ -44,6 +47,7 @@ public:
 
 	void set_search_text(const String &p_pattern);
 	void set_whole_words(bool p_whole_word);
+	void set_regex(bool p_regex);
 	void set_match_case(bool p_match_case);
 	void set_folder(const String &folder);
 	void set_filter(const HashSet<String> &exts);
@@ -54,6 +58,7 @@ public:
 
 	bool is_whole_words() const { return _whole_words; }
 	bool is_match_case() const { return _match_case; }
+	bool is_regex() const { return _regex_active; }
 
 	void start();
 	void stop();
@@ -82,6 +87,7 @@ private:
 	String _root_dir;
 	bool _whole_words = true;
 	bool _match_case = true;
+	bool _regex_active = false;
 
 	// State
 	bool _searching = false;
@@ -120,6 +126,7 @@ public:
 	String get_replace_text() const;
 	bool is_match_case() const;
 	bool is_whole_words() const;
+	bool is_regex() const;
 	String get_folder() const;
 	HashSet<String> get_filter() const;
 	HashSet<String> get_includes() const;
@@ -138,8 +145,12 @@ private:
 	void _on_search_text_modified(const String &text);
 	void _on_search_text_submitted(const String &text);
 	void _on_replace_text_submitted(const String &text);
+	void _on_regex_checkbox_toggled(bool p_toggled);
+
+	void update_search_parameters();
 
 	String validate_filter_wildcard(const String &p_expression) const;
+	bool validate_search_text(const String &p_text) const;
 
 	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit = nullptr;
@@ -150,6 +161,10 @@ private:
 	LineEdit *_folder_line_edit = nullptr;
 	CheckBox *_match_case_checkbox = nullptr;
 	CheckBox *_whole_words_checkbox = nullptr;
+	Ref<RegEx> _regex;
+	CheckBox *_regex_checkbox = nullptr;
+	Control *_regex_status_label_filler = nullptr;
+	EditorValidationPanel *_regex_status_panel = nullptr;
 	Button *_find_button = nullptr;
 	Button *_replace_button = nullptr;
 	FileDialog *_folder_dialog = nullptr;
@@ -196,7 +211,7 @@ protected:
 
 private:
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
-	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
+	void _on_result_found(const String &fpath, Vector2i line_range, int begin, int end, int absolute_begin, int absolute_end, const String &text, const TypedDictionary<Variant, String> &p_captures);
 	void _on_theme_changed();
 	void _on_finished();
 	void _on_refresh_button_clicked();
@@ -212,14 +227,25 @@ private:
 		FIND_BUTTON_REMOVE,
 	};
 
-	struct Result {
-		int line_number = 0;
-		int begin = 0;
-		int end = 0;
-		int begin_trimmed = 0;
+	struct HighlightRange {
+		int prefix_text_width = 0;
+		Vector2i range;
+		String text;
 	};
 
-	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text);
+	struct Result {
+		Vector2i line_range;
+		int begin = 0;
+		int end = 0;
+		int absolute_begin = 0;
+		int absolute_end = 0;
+		bool was_annoying_newline_match = false;
+		String text;
+		TypedDictionary<Variant, String> captures;
+		Vector<HighlightRange> highlight_ranges;
+	};
+
+	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) const;
 	void update_replace_buttons();
 	void update_matches_text();
 	String get_replace_text();
@@ -286,7 +312,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
+	void _on_find_in_files_result_selected(const String &p_fpath, Vector2i p_line_range, int p_begin, int p_end);
 	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
 	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
 

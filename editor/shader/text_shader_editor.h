@@ -202,6 +202,7 @@ public:
 	bool get_trim_final_newlines_on_save() const { return trim_final_newlines_on_save; }
 	void ensure_select_current();
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void select(int p_origin_line, int p_origin_column, int p_caret_line, int p_caret_column);
 	void trim_trailing_whitespace();
 	void trim_final_newlines();
 	void tag_saved_version();
