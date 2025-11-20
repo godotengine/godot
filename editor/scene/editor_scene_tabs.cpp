@@ -223,6 +223,13 @@ void EditorSceneTabs::_update_context_menu() {
 		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
 	} else {
+		scene_tabs_context_menu->add_separator();
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), EditorNode::SCENE_OPEN_PREV);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Undo Close Tab"));
+		DISABLE_LAST_OPTION_IF(!EditorNode::get_singleton()->has_previous_closed_scenes());
+		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
+		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
+
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, {});
 	}
 #undef DISABLE_LAST_OPTION_IF
