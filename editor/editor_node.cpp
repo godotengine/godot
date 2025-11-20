@@ -8770,8 +8770,8 @@ EditorNode::EditorNode() {
 	default_layout.instantiate();
 	// Dock numbers are based on DockSlot enum value + 1.
 	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
-	default_layout->set_value(docks_section, "dock_4", "FileSystem");
-	default_layout->set_value(docks_section, "dock_5", "Inspector,Signals,Groups,History");
+	default_layout->set_value(docks_section, "dock_4", "FileSystem,History");
+	default_layout->set_value(docks_section, "dock_5", "Inspector,Signals,Groups");
 
 	int hsplits[] = { 0, 270, -270, 0 };
 	DEV_ASSERT((int)std_size(hsplits) == editor_dock_manager->get_hsplit_count());
