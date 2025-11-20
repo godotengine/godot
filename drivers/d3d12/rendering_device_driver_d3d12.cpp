@@ -1059,6 +1059,11 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
 				allocation_desc.HeapType = dynamic_persistent_upload_heap;
 
+				// D3D12_HEAP_TYPE_UPLOAD mandates D3D12_RESOURCE_STATE_GENERIC_READ.
+				if (dynamic_persistent_upload_heap == D3D12_HEAP_TYPE_UPLOAD) {
+					initial_state = D3D12_RESOURCE_STATE_GENERIC_READ;
+				}
+
 				// We can't use STORAGE for write access, just for read.
 				resource_desc.Flags = resource_desc.Flags & ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 			}
