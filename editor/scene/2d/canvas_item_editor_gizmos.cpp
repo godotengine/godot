@@ -462,7 +462,7 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
 		Vector2 a = collision_segments[i];
 		Vector2 b = collision_segments[i+1];
 		Vector2 closest = Geometry2D::get_closest_point_to_segment(local_point, a, b);
-		if (closest.distance_to(local_point) < 8) { // TODO: 3d uses a magic 8 here, not sure why
+		if (closest.distance_to(local_point) < 8) { // TODO: GIZMOS 3d uses a magic 8 here, not sure why
 			return true;
 		}
 	}
@@ -547,7 +547,7 @@ void EditorCanvasItemGizmo::set_plugin(EditorCanvasItemGizmoPlugin *p_plugin) {
 }
 
 void EditorCanvasItemGizmo::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_circle", "position", "radius", "color"), &EditorCanvasItemGizmo::add_polyline, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("add_circle", "position", "radius", "color"), &EditorCanvasItemGizmo::add_circle, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("add_polygon", "points", "color"), &EditorCanvasItemGizmo::add_polygon, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("add_polyline", "points", "color"), &EditorCanvasItemGizmo::add_polyline, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("add_rect", "rect", "color"), &EditorCanvasItemGizmo::add_rect, DEFVAL(Color(1, 1, 1)));
@@ -556,7 +556,7 @@ void EditorCanvasItemGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_collision_polygon", "polygon"), &EditorCanvasItemGizmo::add_collision_polygon);
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "color", "ids", "secondary"), &EditorCanvasItemGizmo::add_handles, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_canvas_item", "canvas_item"), &EditorCanvasItemGizmo::_set_canvas_item);
-	ClassDB::bind_method(D_METHOD("set_canvas_item"), &EditorCanvasItemGizmo::get_canvas_item);
+	ClassDB::bind_method(D_METHOD("get_canvas_item"), &EditorCanvasItemGizmo::get_canvas_item);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorCanvasItemGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorCanvasItemGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorCanvasItemGizmo::set_hidden);
