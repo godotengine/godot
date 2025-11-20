@@ -2377,8 +2377,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	// Prepare opaque-only texture for reactive mask generation if needed.
 	if (rb->get_fsr_auto_generate_reactive()) {
 		rb->ensure_opaque_only_color_texture();
+		RD::get_singleton()->draw_command_begin_label("Copy Opaque-only Color for FSR");
 		Size2i copy_size = rb->get_internal_size();
-		RD::get_singleton()->texture_copy(rb->get_internal_texture(), rb->get_opaque_only_color_texture(), Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(copy_size.width, copy_size.height, 1), 0, 0, 0, 0);
+		copy_effects->copy_to_rect(rb->get_internal_texture(), rb->get_opaque_only_color_texture(), Rect2i(0, 0, copy_size.width, copy_size.height));
+		RD::get_singleton()->draw_command_end_label();
 	}
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
