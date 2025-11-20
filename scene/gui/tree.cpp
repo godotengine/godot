@@ -4205,24 +4205,40 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::WHEEL_UP: {
+				if (popup_editor) {
+					popup_editor->hide();
+				}
+
 				if (_scroll(mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
+				if (popup_editor) {
+					popup_editor->hide();
+				}
+
 				if (_scroll(mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_LEFT: {
+				if (popup_editor) {
+					popup_editor->hide();
+				}
+
 				if (_scroll(!mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_RIGHT: {
+				if (popup_editor) {
+					popup_editor->hide();
+				}
+
 				if (_scroll(!mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
