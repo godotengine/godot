@@ -55,15 +55,7 @@ void NodeDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_
 
 void NodeDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) {
 	const int current_tab = p_layout->get_value(p_section, "current_tab", 0);
-	if (select_a_node->is_visible()) {
-		if (current_tab == 0) {
-			groups_button->set_pressed_no_signal(false);
-			connections_button->set_pressed_no_signal(true);
-		} else if (current_tab == 1) {
-			groups_button->set_pressed_no_signal(true);
-			connections_button->set_pressed_no_signal(false);
-		}
-	} else if (current_tab == 0) {
+	if (current_tab == 0) {
 		show_connections();
 	} else if (current_tab == 1) {
 		show_groups();
@@ -83,32 +75,17 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::set_object(Object *p_object) {
-	connections->set_object(p_object);
-	groups->set_current(Object::cast_to<Node>(p_object));
+void NodeDock::set_selection(const Vector<Object *> &p_objects) {
+	connections->set_selection(p_objects);
 
-	if (p_object) {
-		if (connections_button->is_pressed()) {
-			connections->show();
-		} else {
-			groups->show();
+	Vector<Node *> nodes;
+	for (Object *obj : p_objects) {
+		Node *n = Object::cast_to<Node>(obj);
+		if (n) {
+			nodes.append(n);
 		}
-
-		if (Object::cast_to<Resource>(p_object)) {
-			show_connections();
-			groups_button->set_disabled(true);
-		} else {
-			groups_button->set_disabled(false);
-		}
-
-		mode_hb->show();
-		select_a_node->hide();
-	} else {
-		connections->hide();
-		groups->hide();
-		mode_hb->hide();
-		select_a_node->show();
 	}
+	groups->set_selection(nodes);
 }
 
 NodeDock::NodeDock() {
@@ -123,13 +100,11 @@ NodeDock::NodeDock() {
 
 	mode_hb = memnew(HBoxContainer);
 	main_vb->add_child(mode_hb);
-	mode_hb->hide();
 
 	connections_button = memnew(Button);
 	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
 	connections_button->set_text(TTRC("Signals"));
 	connections_button->set_toggle_mode(true);
-	connections_button->set_pressed(true);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
@@ -139,7 +114,6 @@ NodeDock::NodeDock() {
 	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
 	groups_button->set_text(TTRC("Groups"));
 	groups_button->set_toggle_mode(true);
-	groups_button->set_pressed(false);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
@@ -155,15 +129,7 @@ NodeDock::NodeDock() {
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();
 
-	select_a_node = memnew(Label);
-	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
-	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups, or select an independent resource to view its signals."));
-	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
-	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	main_vb->add_child(select_a_node);
+	show_connections();
 }
 
 NodeDock::~NodeDock() {
