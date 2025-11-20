@@ -2014,6 +2014,9 @@
 		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a depth/stencil attachment in a framebuffer.
 		</constant>
+		<constant name="TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT" value="4096" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a depth/stencil resolve attachment in a framebuffer.
+		</constant>
 		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
 			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-storageimage]storage image[/url].
 		</constant>
