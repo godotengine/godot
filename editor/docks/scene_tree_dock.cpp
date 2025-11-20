@@ -202,12 +202,14 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CUT);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node", p_event)) {
 		_tool_selected(TOOL_COPY);
+	} else if (ED_IS_SHORTCUT("scene_tree/replace_node", p_event)) {
+		_tool_selected(TOOL_REPLACE);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
 		_tool_selected(TOOL_PASTE);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
 		_tool_selected(TOOL_PASTE_AS_SIBLING);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
-		_tool_selected(TOOL_REPLACE);
+		_tool_selected(TOOL_CHANGE_TYPE);
 	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
 		_tool_selected(TOOL_DUPLICATE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
@@ -718,13 +720,35 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				_update_create_root_dialog();
 			}
 		} break;
+		case TOOL_REPLACE: {
+			if (!profile_allow_editing) {
+				break;
+			}
+
+			if (node_clipboard.is_empty()) {
+				break;
+			}
+
+			if (!_validate_no_foreign()) {
+				break;
+			}
+
+			Node *selected = scene_tree->get_selected();
+			Node *clipboard_node = node_clipboard.front()->get();
+			HashMap<const Node *, Node *> duplimap;
+			Node *new_node = clipboard_node->duplicate_from_editor(duplimap);
+
+			if (new_node) {
+				replace_node(selected, new_node);
+			}
+		} break;
 		case TOOL_PASTE: {
 			paste_nodes(false);
 		} break;
 		case TOOL_PASTE_AS_SIBLING: {
 			paste_nodes(true);
 		} break;
-		case TOOL_REPLACE: {
+		case TOOL_CHANGE_TYPE: {
 			if (!profile_allow_editing) {
 				break;
 			}
@@ -2304,7 +2328,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 			// When edited_scene inherits from another one the root Node will be the parent Scene,
 			// we don't want to consider that Node a foreign one otherwise we would not be able to
 			// delete it.
-			if (edited_scene == E && current_option != TOOL_REPLACE) {
+			if (edited_scene == E && current_option != TOOL_CHANGE_TYPE) {
 				continue;
 			}
 
@@ -3018,7 +3042,7 @@ void SceneTreeDock::_create() {
 
 		_do_create(parent);
 
-	} else if (current_option == TOOL_REPLACE) {
+	} else if (current_option == TOOL_CHANGE_TYPE) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 		ERR_FAIL_COND(selection.is_empty());
 
@@ -3863,6 +3887,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
 		if (selection.size() == 1 && !node_clipboard.is_empty()) {
+			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/replace_node"), TOOL_REPLACE);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
 			if (selection.front()->get() == edited_scene) {
@@ -3922,7 +3947,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (!is_foreign) {
 			BEGIN_SECTION()
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_CHANGE_TYPE);
 			END_SECTION()
 		}
 
@@ -4740,6 +4765,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTRC("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTRC("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("scene_tree/replace_node", TTRC("Replace"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTRC("Change Type..."));
