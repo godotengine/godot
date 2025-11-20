@@ -274,6 +274,12 @@ Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) 
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
+	block.data_ptr = driver->buffer_map(block.driver_id);
+
+	if (block.data_ptr == nullptr) {
+		driver->buffer_free(block.driver_id);
+		return ERR_CANT_CREATE;
+	}
 
 	p_staging_buffers.blocks.insert(p_staging_buffers.current, block);
 	return OK;
@@ -513,15 +519,8 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 
 		_staging_buffer_execute_required_action(upload_staging_buffers, required_action);
 
-		// Map staging buffer (It's CPU and coherent).
-		uint8_t *data_ptr = driver->buffer_map(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
-		ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
-
 		// Copy to staging buffer.
-		memcpy(data_ptr + block_write_offset, src_data + submit_from, block_write_amount);
-
-		// Unmap.
-		driver->buffer_unmap(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
+		memcpy(upload_staging_buffers.blocks[upload_staging_buffers.current].data_ptr + block_write_offset, src_data + submit_from, block_write_amount);
 
 		// Insert a command to copy this.
 		RDD::BufferCopyRegion region;
@@ -1700,23 +1699,12 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 
 					_staging_buffer_execute_required_action(upload_staging_buffers, required_action);
 
-					uint8_t *write_ptr;
-
-					{ // Map.
-						uint8_t *data_ptr = driver->buffer_map(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
-						ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
-						write_ptr = data_ptr;
-						write_ptr += alloc_offset;
-					}
+					uint8_t *write_ptr = upload_staging_buffers.blocks[upload_staging_buffers.current].data_ptr + alloc_offset;
 
 					ERR_FAIL_COND_V(region_w % block_w, ERR_BUG);
 					ERR_FAIL_COND_V(region_h % block_h, ERR_BUG);
 
 					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr, x, y, width, region_w, region_h, block_w, block_h, region_pitch, pixel_size, block_size);
-
-					{ // Unmap.
-						driver->buffer_unmap(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
-					}
 
 					RDD::BufferTextureCopyRegion copy_region;
 					copy_region.buffer_offset = alloc_offset;
@@ -7425,10 +7413,12 @@ void RenderingDevice::finalize() {
 	frames.clear();
 
 	for (int i = 0; i < upload_staging_buffers.blocks.size(); i++) {
+		driver->buffer_unmap(upload_staging_buffers.blocks[i].driver_id);
 		driver->buffer_free(upload_staging_buffers.blocks[i].driver_id);
 	}
 
 	for (int i = 0; i < download_staging_buffers.blocks.size(); i++) {
+		driver->buffer_unmap(download_staging_buffers.blocks[i].driver_id);
 		driver->buffer_free(download_staging_buffers.blocks[i].driver_id);
 	}
 
