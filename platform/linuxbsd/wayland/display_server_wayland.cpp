@@ -195,6 +195,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_SUBWINDOWS:
+		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_SELF_FITTING_WINDOWS: {
 			return true;
 		} break;
@@ -1298,6 +1299,8 @@ void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_w
 }
 
 bool DisplayServerWayland::window_is_focused(WindowID p_window_id) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
 	return wayland_thread.pointer_get_pointed_window_id() == p_window_id;
 }
 
@@ -1503,6 +1506,94 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 bool DisplayServerWayland::get_swap_cancel_ok() {
 	return swap_cancel_ok;
+}
+
+Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
+	ERR_FAIL_NULL_V_MSG(ec, ERR_BUG, "Missing embedded compositor interface");
+
+	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
+	ERR_FAIL_NULL_V(ecs, ERR_BUG);
+
+	if (!ecs->mapped_clients.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
+	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
+	ERR_FAIL_NULL_V(client_data, ERR_BUG);
+
+	if (p_grab_focus) {
+		godot_embedded_client_focus_window(embedded_client);
+	}
+
+	if (p_visible) {
+		WaylandThread::WindowState *ws = wayland_thread.window_get_state(p_window);
+		ERR_FAIL_NULL_V(ws, ERR_BUG);
+
+		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
+
+		if (toplevel == nullptr && ws->libdecor_frame) {
+			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
+		}
+
+		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
+
+		godot_embedded_client_set_embedded_window_parent(embedded_client, toplevel);
+
+		double window_scale = WaylandThread::window_state_get_scale_factor(ws);
+
+		Rect2i scaled_rect = p_rect;
+		scaled_rect.position = WaylandThread::scale_vector2i(scaled_rect.position, 1 / window_scale);
+		scaled_rect.size = WaylandThread::scale_vector2i(scaled_rect.size, 1 / window_scale);
+
+		print_verbose(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
+
+		godot_embedded_client_set_embedded_window_rect(embedded_client, scaled_rect.position.x, scaled_rect.position.y, scaled_rect.size.width, scaled_rect.size.height);
+	} else {
+		godot_embedded_client_set_embedded_window_parent(embedded_client, nullptr);
+	}
+
+	return OK;
+}
+
+Error DisplayServerWayland::request_close_embedded_process(OS::ProcessID p_pid) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
+	ERR_FAIL_NULL_V_MSG(ec, ERR_BUG, "Missing embedded compositor interface");
+
+	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
+	ERR_FAIL_NULL_V(ecs, ERR_BUG);
+
+	if (!ecs->mapped_clients.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
+	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
+	ERR_FAIL_NULL_V(client_data, ERR_BUG);
+
+	godot_embedded_client_embedded_window_request_close(embedded_client);
+	return OK;
+}
+
+Error DisplayServerWayland::remove_embedded_process(OS::ProcessID p_pid) {
+	return request_close_embedded_process(p_pid);
+}
+
+OS::ProcessID DisplayServerWayland::get_focused_process_id() {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	OS::ProcessID embedded_pid = wayland_thread.embedded_compositor_get_focused_pid();
+
+	if (embedded_pid < 0) {
+		return OS::get_singleton()->get_process_id();
+	}
+
+	return embedded_pid;
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
