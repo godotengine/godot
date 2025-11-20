@@ -138,7 +138,7 @@ partial class ExportedProperties
         values.Add(PropertyName.@PropertyGodotObjectOrDerived, global::Godot.Variant.From<global::Godot.GodotObject>(__PropertyGodotObjectOrDerived_default_value));
         global::Godot.Texture __PropertyGodotResourceTexture_default_value = default;
         values.Add(PropertyName.@PropertyGodotResourceTexture, global::Godot.Variant.From<global::Godot.Texture>(__PropertyGodotResourceTexture_default_value));
-        global::Godot.Texture __PropertyGodotResourceTextureWithInitializer_default_value = new()  { ResourceName = ""   };
+        global::Godot.Texture __PropertyGodotResourceTextureWithInitializer_default_value = new()  { ResourceName  = ""   };
         values.Add(PropertyName.@PropertyGodotResourceTextureWithInitializer, global::Godot.Variant.From<global::Godot.Texture>(__PropertyGodotResourceTextureWithInitializer_default_value));
         global::Godot.StringName __PropertyStringName_default_value = new global::Godot.StringName("foo");
         values.Add(PropertyName.@PropertyStringName, global::Godot.Variant.From<global::Godot.StringName>(__PropertyStringName_default_value));

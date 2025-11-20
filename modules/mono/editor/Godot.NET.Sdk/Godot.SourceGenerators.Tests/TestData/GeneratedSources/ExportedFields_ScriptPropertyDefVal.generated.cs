@@ -118,7 +118,7 @@ partial class ExportedFields
         values.Add(PropertyName.@_fieldGodotObjectOrDerived, global::Godot.Variant.From<global::Godot.GodotObject>(___fieldGodotObjectOrDerived_default_value));
         global::Godot.Texture ___fieldGodotResourceTexture_default_value = default;
         values.Add(PropertyName.@_fieldGodotResourceTexture, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTexture_default_value));
-        global::Godot.Texture ___fieldGodotResourceTextureWithInitializer_default_value = new()  { ResourceName = ""   };
+        global::Godot.Texture ___fieldGodotResourceTextureWithInitializer_default_value = new()  { ResourceName  = ""   };
         values.Add(PropertyName.@_fieldGodotResourceTextureWithInitializer, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTextureWithInitializer_default_value));
         global::Godot.StringName ___fieldStringName_default_value = new global::Godot.StringName("foo");
         values.Add(PropertyName.@_fieldStringName, global::Godot.Variant.From<global::Godot.StringName>(___fieldStringName_default_value));
