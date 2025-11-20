@@ -491,13 +491,15 @@ Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::release(const CPUDescr
 	} else if (next != free_blocks_by_offset.end()) {
 		// Connects to the next block.
 		remove_from_size_map(next->value);
+
+		FreeBlockInfo merged_block = next->value;
+		merged_block.global_offset -= p_result.count;
+		merged_block.size += p_result.count;
+
+		// Replace with the merged block.
 		free_blocks_by_offset.erase(next->value.global_offset);
-
-		next->value.global_offset -= p_result.count;
-		next->value.size += p_result.count;
-
-		DEV_ASSERT(!free_blocks_by_offset.has(next->value.global_offset));
-		new_block = free_blocks_by_offset.insert(next->value.global_offset, next->value);
+		DEV_ASSERT(!free_blocks_by_offset.has(merged_block.global_offset));
+		new_block = free_blocks_by_offset.insert(merged_block.global_offset, merged_block);
 	} else {
 		// Connects to no block.
 		new_block = free_blocks_by_offset.insert(global_offset, FreeBlockInfo{ p_result.heap, global_offset, p_result.base_offset, p_result.count });
