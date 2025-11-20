@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/relocate_init_list.h"
 #include "core/templates/span.h"
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
@@ -56,11 +57,10 @@ class FixedVector {
 public:
 	_FORCE_INLINE_ constexpr FixedVector() = default;
 
-	constexpr FixedVector(std::initializer_list<T> p_init) {
-		ERR_FAIL_COND(p_init.size() > CAPACITY);
-		for (const T &element : p_init) {
-			memnew_placement(ptr() + _size++, T(element));
-		}
+	constexpr FixedVector(std::initializer_list<T> p_init) = delete;
+	constexpr explicit FixedVector(RelocateInitList<T> p_init) {
+		memcpy((void *)_data, p_init.ptr, p_init.size * sizeof(T));
+		_size = p_init.size;
 	}
 
 	constexpr FixedVector(const FixedVector &p_from) {
@@ -79,6 +79,13 @@ public:
 		// Note: Assumes trivial relocatability.
 		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
 		p_from._size = 0;
+	}
+
+	template <typename... Args>
+	static FixedVector make(Args &&...args) {
+		static_assert(sizeof...(Args) <= CAPACITY);
+		RelocateInitData<T, sizeof...(Args)> data(std::forward<Args>(args)...);
+		return FixedVector(data);
 	}
 
 	constexpr FixedVector &operator=(const FixedVector &p_from) {

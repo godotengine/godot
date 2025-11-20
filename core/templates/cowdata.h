@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
+#include "core/templates/relocate_init_list.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
@@ -214,7 +215,8 @@ public:
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
-	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
+	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init); // Deprecated.
+	_FORCE_INLINE_ explicit CowData(RelocateInitList<T> p_init);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
@@ -567,6 +569,14 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
 	*_get_size() = p_init.size();
+}
+
+template <typename T>
+CowData<T>::CowData(RelocateInitList<T> p_init) {
+	CRASH_COND(_alloc_exact(p_init.size));
+	// Relocate contiguous data into ptr.
+	memcpy((void *)_ptr, p_init.ptr, p_init.size * sizeof(T));
+	*_get_size() = p_init.size;
 }
 
 GODOT_GCC_WARNING_POP
