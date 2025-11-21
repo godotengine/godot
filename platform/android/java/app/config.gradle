@@ -17,7 +17,7 @@ ext.versions = [
     splashscreenVersion: '1.0.1',
     // 'openxrLoaderVersion' should be set to XR_CURRENT_API_VERSION, see 'thirdparty/openxr'
     openxrLoaderVersion: '1.1.53',
-    openxrVendorsVersion: '4.2.0-stable',
+    openxrVendorsVersion: '4.2.1-stable',
     junitVersion       : '1.3.0',
     espressoCoreVersion: '3.7.0',
     kotlinTestVersion  : '1.3.11',
