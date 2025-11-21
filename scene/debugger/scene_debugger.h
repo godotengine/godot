@@ -125,11 +125,16 @@ private:
 	static Error _msg_transform_camera_3d(const Array &p_args);
 #endif // _3D_DISABLED
 
+	// Periodic telemetry.
+	static void _send_audio_peaks();
+
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 	static void reload_cached_files(const PackedStringArray &p_files);
+	// Public wrapper to allow external callers to trigger audio peak send.
+	static void send_audio_peaks();
 #endif
 };
 

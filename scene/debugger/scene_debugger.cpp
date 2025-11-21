@@ -91,7 +91,6 @@ SceneDebugger::~SceneDebugger() {
 		RuntimeNodeSelect::singleton = nullptr;
 	}
 #endif // DEBUG_ENABLED
-
 	singleton = nullptr;
 }
 
@@ -265,57 +264,110 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 	for (int i = 0; i < apply_count; i++) {
 		Dictionary b = buses[i];
 		if (b.has("name")) {
-			as->set_bus_name(i, String(b["name"]));
+			const String want = String(b["name"]);
+			if (as->get_bus_name(i) != want) {
+				as->set_bus_name(i, want);
+			}
 		}
 		if (b.has("send")) {
-			as->set_bus_send(i, StringName(String(b["send"])));
+			const StringName want = StringName(String(b["send"]));
+			if (as->get_bus_send(i) != want) {
+				as->set_bus_send(i, want);
+			}
 		}
 		if (b.has("volume_db")) {
-			as->set_bus_volume_db(i, (float)b["volume_db"]);
+			const float want = (float)b["volume_db"];
+			if (!Math::is_equal_approx(as->get_bus_volume_db(i), want)) {
+				as->set_bus_volume_db(i, want);
+			}
 		}
 		if (b.has("solo")) {
-			as->set_bus_solo(i, (bool)b["solo"]);
+			const bool want = (bool)b["solo"];
+			if (as->is_bus_solo(i) != want) {
+				as->set_bus_solo(i, want);
+			}
 		}
 		if (b.has("mute")) {
-			as->set_bus_mute(i, (bool)b["mute"]);
+			const bool want = (bool)b["mute"];
+			if (as->is_bus_mute(i) != want) {
+				as->set_bus_mute(i, want);
+			}
 		}
 		if (b.has("bypass")) {
-			as->set_bus_bypass_effects(i, (bool)b["bypass"]);
+			const bool want = (bool)b["bypass"];
+			if (as->is_bus_bypassing_effects(i) != want) {
+				as->set_bus_bypass_effects(i, want);
+			}
 		}
 
-		// Effects: rebuild the list to match editor state (simple approach).
+		// Effects: update in place to minimize interruptions.
 		if (b.has("effects") && Variant(b["effects"]).get_type() == Variant::ARRAY) {
 			Array effects = b["effects"];
-			// Remove all current effects.
-			for (int e = as->get_bus_effect_count(i) - 1; e >= 0; e--) {
-				as->remove_bus_effect(i, e);
-			}
-			// Add effects in order.
-			for (int e = 0; e < effects.size(); e++) {
+			const int current_count = as->get_bus_effect_count(i);
+			const int incoming_count = effects.size();
+
+			// Replace mismatched effects where class differs within overlap.
+			const int common = MIN(current_count, incoming_count);
+			for (int e = 0; e < common; e++) {
 				Dictionary fx = effects[e];
-				const String class_name = fx.has("class") ? String(fx["class"]) : String();
-				Object *obj = class_name.is_empty() ? nullptr : ClassDB::instantiate(class_name);
-				AudioEffect *afx = obj ? Object::cast_to<AudioEffect>(obj) : nullptr;
-				Ref<AudioEffect> afxr;
-				if (afx) {
-					afxr = Ref<AudioEffect>(afx);
-				}
-				// Add placeholder even if instantiation failed (skip if null to avoid errors).
-				if (afxr.is_valid()) {
-					as->add_bus_effect(i, afxr, -1);
-					// Apply params if present.
-					if (fx.has("params") && Variant(fx["params"]).get_type() == Variant::DICTIONARY) {
-						Dictionary params = fx["params"];
-						LocalVector<Variant> keys = params.get_key_list();
-						for (const Variant &k : keys) {
-							const StringName prop = StringName(String(k));
-							afxr->set(prop, params[k]);
+				const String desired_class = fx.has("class") ? String(fx["class"]) : String();
+				Ref<AudioEffect> existing = as->get_bus_effect(i, e);
+				const String existing_class = existing.is_valid() ? existing->get_class() : String();
+				if (desired_class != existing_class) {
+					// Replace effect at index.
+					as->remove_bus_effect(i, e);
+					if (!desired_class.is_empty()) {
+						if (Object *obj = ClassDB::instantiate(desired_class)) {
+							if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
+								Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
+								as->add_bus_effect(i, afxr, e);
+							}
 						}
 					}
 				}
-				// Enabled flag (safe even if not added; index aligns with successful adds).
-				if (fx.has("enabled")) {
-					as->set_bus_effect_enabled(i, e, (bool)fx["enabled"]);
+			}
+
+			// If there are extra current effects, remove trailing ones.
+			for (int e = current_count - 1; e >= incoming_count; e--) {
+				as->remove_bus_effect(i, e);
+			}
+
+			// If there are extra incoming effects, append them.
+			for (int e = current_count; e < incoming_count; e++) {
+				Dictionary fx = effects[e];
+				const String class_name = fx.has("class") ? String(fx["class"]) : String();
+				if (!class_name.is_empty()) {
+					if (Object *obj = ClassDB::instantiate(class_name)) {
+						if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
+							Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
+							as->add_bus_effect(i, afxr, -1);
+						}
+					}
+				}
+			}
+
+			// Apply parameters and enabled flags for all incoming effects.
+			for (int e = 0; e < incoming_count; e++) {
+				Dictionary fx = effects[e];
+				const int final_count = as->get_bus_effect_count(i);
+				Ref<AudioEffect> eff = (e < final_count) ? as->get_bus_effect(i, e) : Ref<AudioEffect>();
+				if (eff.is_valid() && fx.has("params") && Variant(fx["params"]).get_type() == Variant::DICTIONARY) {
+					Dictionary params = fx["params"];
+					LocalVector<Variant> keys = params.get_key_list();
+					for (const Variant &k : keys) {
+						const StringName prop = StringName(String(k));
+						const Variant &val = params[k];
+						Variant cur = eff->get(prop);
+						if (cur != val) {
+							eff->set(prop, val);
+						}
+					}
+				}
+				if (fx.has("enabled") && e < final_count) {
+					bool want_enabled = (bool)fx["enabled"];
+					if (as->is_bus_effect_enabled(i, e) != want_enabled) {
+						as->set_bus_effect_enabled(i, e, want_enabled);
+					}
 				}
 			}
 		}
@@ -1853,6 +1905,10 @@ void RuntimeNodeSelect::_update_input_state() {
 }
 
 void RuntimeNodeSelect::_process_frame() {
+#ifdef DEBUG_ENABLED
+	// Stream audio peaks to the editor UI at low frequency.
+	SceneDebugger::send_audio_peaks();
+#endif
 #ifndef _3D_DISABLED
 	if (camera_freelook) {
 		Transform3D transform = _get_cursor_transform();
@@ -3090,4 +3146,45 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 }
 #endif // _3D_DISABLED
 
+#ifdef DEBUG_ENABLED
+void SceneDebugger::_send_audio_peaks() {
+	// Throttle to ~10 Hz using a frame counter (avoids OS tick queries).
+	static int frame_counter = 0;
+	if ((++frame_counter % 6) != 0) { // assuming ~60 FPS
+		return;
+	}
+
+	if (!EngineDebugger::is_active()) {
+		return;
+	}
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return;
+	}
+
+	Array payload;
+	const int bus_count = as->get_bus_count();
+	for (int i = 0; i < bus_count; i++) {
+		Dictionary bus_dict;
+		bus_dict["index"] = i;
+		Array channels;
+		const int cc = as->get_bus_channels(i);
+		for (int c = 0; c < cc; c++) {
+			Dictionary ch;
+			ch["l"] = as->get_bus_peak_volume_left_db(i, c);
+			ch["r"] = as->get_bus_peak_volume_right_db(i, c);
+			ch["active"] = as->is_bus_channel_active(i, c);
+			channels.push_back(ch);
+		}
+		bus_dict["channels"] = channels;
+		payload.push_back(bus_dict);
+	}
+
+	EngineDebugger::get_singleton()->send_message("scene:audio_peaks", payload);
+}
+
+void SceneDebugger::send_audio_peaks() {
+	_send_audio_peaks();
+}
 #endif // DEBUG_ENABLED

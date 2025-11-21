@@ -389,4 +389,18 @@ public:
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
+
+private:
+	struct ChannelPeak {
+		float l_db = -100.f;
+		float r_db = -100.f;
+		bool active = false;
+	};
+	HashMap<int, Vector<ChannelPeak>> remote_bus_peaks; // bus_index -> channels
+	uint64_t remote_bus_peaks_last_ms = 0;
+
+	void _msg_scene_audio_peaks(uint64_t p_thread_id, const Array &p_data);
+
+public:
+	bool get_remote_audio_bus_peaks(int p_bus_index, Vector<float> &r_left_db, Vector<float> &r_right_db, Vector<bool> &r_active) const;
 };

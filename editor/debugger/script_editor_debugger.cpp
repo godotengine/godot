@@ -463,6 +463,55 @@ void ScriptEditorDebugger::_msg_scene_debug_mute_audio(uint64_t p_thread_id, con
 	// This is handled by SceneDebugger, we need to ignore here to not show a warning.
 }
 
+void ScriptEditorDebugger::_msg_scene_audio_peaks(uint64_t p_thread_id, const Array &p_data) {
+	if (p_data.is_empty()) {
+		return;
+	}
+	const Array &payload = p_data; // payload is the array of per-bus dictionaries.
+	remote_bus_peaks.clear();
+	for (int i = 0; i < payload.size(); i++) {
+		Dictionary bus = payload[i];
+		if (!bus.has("index") || !bus.has("channels")) {
+			continue;
+		}
+		int bus_index = int(bus["index"]);
+		Array channels = bus["channels"];
+		Vector<ChannelPeak> v;
+		v.resize(channels.size());
+		for (int c = 0; c < channels.size(); c++) {
+			Dictionary ch = channels[c];
+			ChannelPeak cp;
+			cp.l_db = float(ch.get("l", -100.0));
+			cp.r_db = float(ch.get("r", -100.0));
+			cp.active = bool(ch.get("active", false));
+			v.write[c] = cp;
+		}
+		remote_bus_peaks[bus_index] = v;
+	}
+	remote_bus_peaks_last_ms = OS::get_singleton()->get_ticks_msec();
+}
+
+bool ScriptEditorDebugger::get_remote_audio_bus_peaks(int p_bus_index, Vector<float> &r_left_db, Vector<float> &r_right_db, Vector<bool> &r_active) const {
+	// Require fresh data (avoid stale display when session stops).
+	const uint64_t now = OS::get_singleton()->get_ticks_msec();
+	if (now > remote_bus_peaks_last_ms + 500) {
+		return false;
+	}
+	const Vector<ChannelPeak> *peaks = remote_bus_peaks.getptr(p_bus_index);
+	if (!peaks) {
+		return false;
+	}
+	r_left_db.resize(peaks->size());
+	r_right_db.resize(peaks->size());
+	r_active.resize(peaks->size());
+	for (int i = 0; i < peaks->size(); i++) {
+		const ChannelPeak &cp = (*peaks)[i];
+		r_left_db.write[i] = cp.l_db;
+		r_right_db.write[i] = cp.r_db;
+		r_active.write[i] = cp.active;
+	}
+	return true;
+}
 void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data) {
 	vmem_tree->clear();
 	TreeItem *root = vmem_tree->create_item();
@@ -996,6 +1045,7 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["scene:inspect_object"] = &ScriptEditorDebugger::_msg_scene_inspect_object;
 #endif // DISABLE_DEPRECATED
 	parse_message_handlers["scene:debug_mute_audio"] = &ScriptEditorDebugger::_msg_scene_debug_mute_audio;
+	parse_message_handlers["scene:audio_peaks"] = &ScriptEditorDebugger::_msg_scene_audio_peaks;
 	parse_message_handlers["servers:memory_usage"] = &ScriptEditorDebugger::_msg_servers_memory_usage;
 	parse_message_handlers["servers:drawn"] = &ScriptEditorDebugger::_msg_servers_drawn;
 	parse_message_handlers["stack_dump"] = &ScriptEditorDebugger::_msg_stack_dump;
