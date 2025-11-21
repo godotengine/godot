@@ -398,6 +398,7 @@ private:
 	};
 	HashMap<int, Vector<ChannelPeak>> remote_bus_peaks; // bus_index -> channels
 	uint64_t remote_bus_peaks_last_ms = 0;
+	Dictionary last_sent_audio_layout; // cache to avoid redundant sends
 
 	void _msg_scene_audio_peaks(uint64_t p_thread_id, const Array &p_data);
 

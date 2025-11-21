@@ -176,9 +176,10 @@ void EditorAudioBus::_notification(int p_what) {
 							Vector<bool> actives;
 							if (dbg->get_remote_audio_bus_peaks(get_index(), lvals, rvals, actives) && i < lvals.size()) {
 								used_remote = true;
-								activity_found = actives[i];
-								real_peak[0] = lvals[i];
-								real_peak[1] = rvals[i];
+								real_peak[0] = MAX(lvals[i], -80.0f);
+								real_peak[1] = MAX(rvals[i], -80.0f);
+								// Derive activity from current levels to avoid sticky state.
+								activity_found = (real_peak[0] > -75.0f) || (real_peak[1] > -75.0f);
 							}
 						}
 					}
@@ -189,6 +190,10 @@ void EditorAudioBus::_notification(int p_what) {
 						activity_found = true;
 						real_peak[0] = MAX(real_peak[0], AudioServer::get_singleton()->get_bus_peak_volume_left_db(get_index(), i));
 						real_peak[1] = MAX(real_peak[1], AudioServer::get_singleton()->get_bus_peak_volume_right_db(get_index(), i));
+					}
+					// Also derive activity from levels to turn off reliably when near silence.
+					if (!activity_found) {
+						activity_found = (real_peak[0] > -75.0f) || (real_peak[1] > -75.0f);
 					}
 				}
 

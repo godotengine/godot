@@ -470,20 +470,22 @@ void ScriptEditorDebugger::_msg_scene_audio_peaks(uint64_t p_thread_id, const Ar
 	const Array &payload = p_data; // payload is the array of per-bus dictionaries.
 	remote_bus_peaks.clear();
 	for (int i = 0; i < payload.size(); i++) {
-		Dictionary bus = payload[i];
-		if (!bus.has("index") || !bus.has("channels")) {
+		Array bus_arr = payload[i];
+		if (bus_arr.size() != 4) {
 			continue;
 		}
-		int bus_index = int(bus["index"]);
-		Array channels = bus["channels"];
+		int bus_index = int(bus_arr[0]);
+		PackedFloat32Array lefts = bus_arr[1];
+		PackedFloat32Array rights = bus_arr[2];
+		PackedByteArray actives = bus_arr[3];
+		const int cc = MIN(lefts.size(), MIN(rights.size(), actives.size()));
 		Vector<ChannelPeak> v;
-		v.resize(channels.size());
-		for (int c = 0; c < channels.size(); c++) {
-			Dictionary ch = channels[c];
+		v.resize(cc);
+		for (int c = 0; c < cc; c++) {
 			ChannelPeak cp;
-			cp.l_db = float(ch.get("l", -100.0));
-			cp.r_db = float(ch.get("r", -100.0));
-			cp.active = bool(ch.get("active", false));
+			cp.l_db = lefts[c];
+			cp.r_db = rights[c];
+			cp.active = actives[c] != 0;
 			v.write[c] = cp;
 		}
 		remote_bus_peaks[bus_index] = v;
@@ -1870,6 +1872,11 @@ void ScriptEditorDebugger::sync_audio_buses() {
 
 	Array layout_data;
 	layout_data.push_back(layout);
+	// Skip sending if unchanged since last time.
+	if (last_sent_audio_layout == layout) {
+		return;
+	}
+	last_sent_audio_layout = layout;
 	_put_msg("scene:sync_audio_buses", layout_data);
 }
 

@@ -300,42 +300,112 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 			}
 		}
 
-		// Effects: update in place to minimize interruptions.
+		// Effects: update in place to minimize interruptions (minimal-diff using LCS).
 		if (b.has("effects") && Variant(b["effects"]).get_type() == Variant::ARRAY) {
 			Array effects = b["effects"];
 			const int current_count = as->get_bus_effect_count(i);
 			const int incoming_count = effects.size();
 
-			// Replace mismatched effects where class differs within overlap.
-			const int common = MIN(current_count, incoming_count);
-			for (int e = 0; e < common; e++) {
+			// Gather current and desired class sequences.
+			Vector<String> curr;
+			curr.resize(current_count);
+			for (int e = 0; e < current_count; e++) {
+				Ref<AudioEffect> ex = as->get_bus_effect(i, e);
+				curr.write[e] = ex.is_valid() ? ex->get_class() : String();
+			}
+			Vector<String> want;
+			want.resize(incoming_count);
+			for (int e = 0; e < incoming_count; e++) {
 				Dictionary fx = effects[e];
-				const String desired_class = fx.has("class") ? String(fx["class"]) : String();
-				Ref<AudioEffect> existing = as->get_bus_effect(i, e);
-				const String existing_class = existing.is_valid() ? existing->get_class() : String();
-				if (desired_class != existing_class) {
-					// Replace effect at index.
-					as->remove_bus_effect(i, e);
-					if (!desired_class.is_empty()) {
-						if (Object *obj = ClassDB::instantiate(desired_class)) {
-							if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
-								Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
-								as->add_bus_effect(i, afxr, e);
-							}
-						}
+				want.write[e] = fx.has("class") ? String(fx["class"]) : String();
+			}
+
+			// Compute LCS of class names.
+			const int n = curr.size();
+			const int m = want.size();
+			Vector<Vector<int>> dp;
+			dp.resize(n + 1);
+			for (int ii = 0; ii <= n; ii++) {
+				dp.write[ii].resize(m + 1);
+				for (int jj = 0; jj <= m; jj++) {
+					dp.write[ii].write[jj] = 0;
+				}
+			}
+			for (int ii = 1; ii <= n; ii++) {
+				for (int jj = 1; jj <= m; jj++) {
+					if (curr[ii - 1] == want[jj - 1]) {
+						dp.write[ii].write[jj] = dp[ii - 1][jj - 1] + 1;
+					} else {
+						dp.write[ii].write[jj] = MAX(dp[ii - 1][jj], dp[ii][jj - 1]);
 					}
 				}
 			}
 
-			// If there are extra current effects, remove trailing ones.
-			for (int e = current_count - 1; e >= incoming_count; e--) {
-				as->remove_bus_effect(i, e);
+			// Build LCS sequence (class names) without push_front by filling backwards.
+			Vector<String> lcs;
+			{
+				const int lcs_len = dp[n][m];
+				lcs.resize(lcs_len);
+				int pos = lcs_len - 1;
+				int ii = n, jj = m;
+				while (ii > 0 && jj > 0) {
+					if (curr[ii - 1] == want[jj - 1]) {
+						if (pos >= 0) {
+							lcs.write[pos] = curr[ii - 1];
+							pos--;
+						}
+						ii--;
+						jj--;
+					} else if (dp[ii - 1][jj] >= dp[ii][jj - 1]) {
+						ii--;
+					} else {
+						jj--;
+					}
+				}
 			}
 
-			// If there are extra incoming effects, append them.
-			for (int e = current_count; e < incoming_count; e++) {
-				Dictionary fx = effects[e];
-				const String class_name = fx.has("class") ? String(fx["class"]) : String();
+			// Transform current chain into desired using LCS-guided edits.
+			int ci = 0, wi = 0, li = 0;
+			while (li < lcs.size()) {
+				// Remove non-LCS from current at position ci.
+				while (ci < as->get_bus_effect_count(i)) {
+					Ref<AudioEffect> ex = as->get_bus_effect(i, ci);
+					String ex_class = ex.is_valid() ? ex->get_class() : String();
+					if (ex_class == lcs[li]) {
+						break;
+					}
+					as->remove_bus_effect(i, ci); // removal shifts next into this index
+				}
+				// Insert missing desired until we reach LCS token.
+				while (wi < want.size() && want[wi] != lcs[li]) {
+					const String class_name = want[wi];
+					if (!class_name.is_empty()) {
+						if (Object *obj = ClassDB::instantiate(class_name)) {
+							if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
+								Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
+								as->add_bus_effect(i, afxr, ci);
+								ci++; // advance past inserted
+							}
+						}
+					}
+					wi++;
+				}
+				// Skip the LCS token in both sequences.
+				if (ci < as->get_bus_effect_count(i)) {
+					ci++;
+				}
+				if (wi < want.size()) {
+					wi++;
+				}
+				li++;
+			}
+			// Remove any remaining extras from current.
+			while (ci < as->get_bus_effect_count(i)) {
+				as->remove_bus_effect(i, ci);
+			}
+			// Append any remaining desired.
+			while (wi < want.size()) {
+				const String class_name = want[wi];
 				if (!class_name.is_empty()) {
 					if (Object *obj = ClassDB::instantiate(class_name)) {
 						if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
@@ -344,6 +414,7 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 						}
 					}
 				}
+				wi++;
 			}
 
 			// Apply parameters and enabled flags for all incoming effects.
@@ -3146,15 +3217,30 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 }
 #endif // _3D_DISABLED
 
+#endif // DEBUG_ENABLED
+
 #ifdef DEBUG_ENABLED
 void SceneDebugger::_send_audio_peaks() {
 	// Throttle to ~10 Hz using a frame counter (avoids OS tick queries).
 	static int frame_counter = 0;
-	if ((++frame_counter % 6) != 0) { // assuming ~60 FPS
+	static int stride = 6;
+	// Adjust stride based on current FPS (~10 Hz target).
+	const double fps = MAX(1.0, Engine::get_singleton()->get_frames_per_second());
+	const int new_stride = CLAMP(int(Math::round(fps / 10.0)), 1, 30);
+	if (new_stride != stride) {
+		stride = new_stride;
+		frame_counter = 0; // resync
+	}
+	if ((++frame_counter % stride) != 0) {
 		return;
 	}
 
 	if (!EngineDebugger::is_active()) {
+		return;
+	}
+	// Skip while scene is suspended to avoid stale peak snapshots.
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_suspended()) {
 		return;
 	}
 
@@ -3166,19 +3252,24 @@ void SceneDebugger::_send_audio_peaks() {
 	Array payload;
 	const int bus_count = as->get_bus_count();
 	for (int i = 0; i < bus_count; i++) {
-		Dictionary bus_dict;
-		bus_dict["index"] = i;
-		Array channels;
 		const int cc = as->get_bus_channels(i);
+		PackedFloat32Array lefts;
+		PackedFloat32Array rights;
+		PackedByteArray actives;
+		lefts.resize(cc);
+		rights.resize(cc);
+		actives.resize(cc);
 		for (int c = 0; c < cc; c++) {
-			Dictionary ch;
-			ch["l"] = as->get_bus_peak_volume_left_db(i, c);
-			ch["r"] = as->get_bus_peak_volume_right_db(i, c);
-			ch["active"] = as->is_bus_channel_active(i, c);
-			channels.push_back(ch);
+			lefts.write[c] = as->get_bus_peak_volume_left_db(i, c);
+			rights.write[c] = as->get_bus_peak_volume_right_db(i, c);
+			actives.write[c] = as->is_bus_channel_active(i, c) ? uint8_t(1) : uint8_t(0);
 		}
-		bus_dict["channels"] = channels;
-		payload.push_back(bus_dict);
+		Array bus_arr;
+		bus_arr.push_back(i);
+		bus_arr.push_back(lefts);
+		bus_arr.push_back(rights);
+		bus_arr.push_back(actives);
+		payload.push_back(bus_arr);
 	}
 
 	EngineDebugger::get_singleton()->send_message("scene:audio_peaks", payload);
