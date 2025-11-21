@@ -100,7 +100,7 @@ TEST_CASE("[ENetConnection] Error handling") {
 	ERR_PRINT_OFF;
 	Error err = connection->create_host_bound(IPAddress(), -1);
 	ERR_PRINT_ON;
-	CHECK(err != OK);
+	CHECK_NE(err, OK);
 }
 
 } // namespace TestENetConnection
