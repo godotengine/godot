@@ -172,7 +172,8 @@ void EditorAudioBus::_notification(int p_what) {
 				if (EditorDebuggerNode::get_singleton() != nullptr) {
 					if (ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_current_debugger()) {
 						if (dbg->is_session_active()) {
-							Vector<float> lvals, rvals;
+							Vector<float> lvals;
+							Vector<float> rvals;
 							Vector<bool> actives;
 							if (dbg->get_remote_audio_bus_peaks(get_index(), lvals, rvals, actives) && i < lvals.size()) {
 								used_remote = true;

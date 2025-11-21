@@ -91,6 +91,7 @@ SceneDebugger::~SceneDebugger() {
 		RuntimeNodeSelect::singleton = nullptr;
 	}
 #endif // DEBUG_ENABLED
+
 	singleton = nullptr;
 }
 
@@ -303,13 +304,13 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 		// Effects: update in place to minimize interruptions (minimal-diff using LCS).
 		if (b.has("effects") && Variant(b["effects"]).get_type() == Variant::ARRAY) {
 			Array effects = b["effects"];
-			const int current_count = as->get_bus_effect_count(i);
+			const int curr_count = as->get_bus_effect_count(i);
 			const int incoming_count = effects.size();
 
 			// Gather current and desired class sequences.
 			Vector<String> curr;
-			curr.resize(current_count);
-			for (int e = 0; e < current_count; e++) {
+			curr.resize(curr_count);
+			for (int e = 0; e < curr_count; e++) {
 				Ref<AudioEffect> ex = as->get_bus_effect(i, e);
 				curr.write[e] = ex.is_valid() ? ex->get_class() : String();
 			}
@@ -380,12 +381,10 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 				while (wi < want.size() && want[wi] != lcs[li]) {
 					const String class_name = want[wi];
 					if (!class_name.is_empty()) {
-						if (Object *obj = ClassDB::instantiate(class_name)) {
-							if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
-								Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
-								as->add_bus_effect(i, afxr, ci);
-								ci++; // advance past inserted
-							}
+						Ref<AudioEffect> afxr = Object::cast_to<AudioEffect>(ClassDB::instantiate(class_name));
+						if (afxr.is_valid()) {
+							as->add_bus_effect(i, afxr, ci);
+							ci++; // advance past inserted
 						}
 					}
 					wi++;
@@ -407,11 +406,9 @@ Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
 			while (wi < want.size()) {
 				const String class_name = want[wi];
 				if (!class_name.is_empty()) {
-					if (Object *obj = ClassDB::instantiate(class_name)) {
-						if (AudioEffect *afx = Object::cast_to<AudioEffect>(obj)) {
-							Ref<AudioEffect> afxr = Ref<AudioEffect>(afx);
-							as->add_bus_effect(i, afxr, -1);
-						}
+					Ref<AudioEffect> afxr = Object::cast_to<AudioEffect>(ClassDB::instantiate(class_name));
+					if (afxr.is_valid()) {
+						as->add_bus_effect(i, afxr, -1);
 					}
 				}
 				wi++;
