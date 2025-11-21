@@ -74,7 +74,7 @@ TEST_CASE("[ENetPacketPeer] Packet operations") {
 	ERR_PRINT_OFF;
 	err = peer->get_packet(&buffer, buffer_size);
 	ERR_PRINT_ON;
-	CHECK(err != OK);
+	CHECK_NE(err, OK);
 }
 
 TEST_CASE("[ENetPacketPeer] Statistics") {
