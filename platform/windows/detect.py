@@ -56,7 +56,6 @@ def get_opts():
 	return [
 		('mingw_prefix','Mingw Prefix',mingw),
 		('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
-		('mingw64_for_32','Use Mingw 64 for 32 Bits Build',"no"),
 	]
   
 def get_flags():
@@ -146,22 +145,14 @@ def configure(env):
 		if (env["bits"]=="default"):
 			env["bits"]="32"
 
-		use64=False
 		if (env["bits"]=="32"):
-
-			if (env["mingw64_for_32"]=="yes"):
-				env.Append(CCFLAGS=['-m32'])
-				env.Append(LINKFLAGS=['-m32'])
-				env.Append(LINKFLAGS=['-static-libgcc'])
-				env.Append(LINKFLAGS=['-static-libstdc++'])
-				mingw_prefix=env["mingw_prefix_64"];
-			else:
-				mingw_prefix=env["mingw_prefix"];
-
-
-		else:
-			mingw_prefix=env["mingw_prefix_64"];
 			env.Append(LINKFLAGS=['-static'])
+			env.Append(LINKFLAGS=['-static-libgcc'])
+			env.Append(LINKFLAGS=['-static-libstdc++'])
+			mingw_prefix=env["mingw_prefix"];
+		else:
+			env.Append(LINKFLAGS=['-static'])
+			mingw_prefix=env["mingw_prefix_64"];
 
 		nulstr=""
 
@@ -209,15 +200,6 @@ def configure(env):
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLEW_ENABLED'])
 		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','wsock32','kernel32'])
-
-		if (env["bits"]=="32" and env["mingw64_for_32"]!="yes"):
-#			env.Append(LIBS=['gcc_s'])
-			#--with-arch=i686
-			env.Append(CPPFLAGS=['-march=i686'])
-			env.Append(LINKFLAGS=['-march=i686'])
-
-
-
 
 		#'d3dx9d'
 		env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
