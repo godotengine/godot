@@ -716,7 +716,10 @@ bool OS_JavaScript::main_loop_iterate() {
 			/* clang-format on */
 		}
 	}
-	process_joysticks();
+
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joysticks();
+
 	return Main::iteration();
 }
 
@@ -805,8 +808,11 @@ void OS_JavaScript::process_joysticks() {
 	int joy_count = emscripten_get_num_gamepads();
 	for (int i = 0; i < joy_count; i++) {
 		EmscriptenGamepadEvent state;
-		emscripten_get_gamepad_status(i, &state);
-		if (state.connected) {
+		EMSCRIPTEN_RESULT query_result = emscripten_get_gamepad_status(i, &state);
+		// Chromium reserves gamepads slots, so NO_DATA is an expected result.
+		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
+				query_result != EMSCRIPTEN_RESULT_NO_DATA);
+		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
 
 			int num_buttons = MIN(state.numButtons, 18);
 			int num_axes = MIN(state.numAxes, 8);
