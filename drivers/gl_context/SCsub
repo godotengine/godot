@@ -15,7 +15,7 @@ if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
         env.Append(CPPFLAGS=['-DGLEW_STATIC'])
         env.Append(CPPPATH=[thirdparty_dir])
 
-    env.Append(CPPFLAGS=['-DGLEW_ENABLED'])
+    env.Append(CPPFLAGS=['-DGLEW_ENABLED', '-DGLEW_NO_GLU'])
 
 # Godot source files
 env.add_source_files(env.drivers_sources, "*.cpp")
