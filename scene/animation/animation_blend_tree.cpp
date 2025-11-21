@@ -550,7 +550,6 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	set_parameter(request, ONE_SHOT_REQUEST_NONE);
 
 	bool is_shooting = true;
-	bool clear_remaining_fade = false;
 	bool is_fading_out = cur_active == true && cur_internal_active == false;
 
 	double p_time = p_playback_info.time;
@@ -559,15 +558,25 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
-	if (Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking) {
-		clear_remaining_fade = true; // Reset occurs.
+	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
+
+	bool is_reset = Math::is_zero_approx(p_time) && p_seek && !p_is_external_seeking;
+	if (is_reset && cur_internal_active) {
+		do_start = true;
 	}
 
-	bool do_start = cur_request == ONE_SHOT_REQUEST_FIRE;
-	if (cur_request == ONE_SHOT_REQUEST_ABORT) {
+	bool is_abort = cur_request == ONE_SHOT_REQUEST_ABORT;
+	if (is_reset && is_fading_out) {
+		is_abort = true;
+	}
+
+	if (is_abort) {
 		set_parameter(internal_active, false);
 		set_parameter(active, false);
 		set_parameter(time_to_restart, -1);
+		set_parameter(fade_out_remaining, 0);
+		cur_fade_out_remaining = 0;
+		is_fading_out = false;
 		is_shooting = false;
 	} else if (cur_request == ONE_SHOT_REQUEST_FADE_OUT && !is_fading_out) { // If fading, keep current fade.
 		if (cur_active) {
@@ -595,17 +604,6 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	bool os_seek = p_seek;
-
-	if (clear_remaining_fade) {
-		os_seek = false;
-		cur_fade_out_remaining = 0;
-		set_parameter(fade_out_remaining, 0);
-		if (is_fading_out) {
-			is_fading_out = false;
-			set_parameter(internal_active, false);
-			set_parameter(active, false);
-		}
-	}
 
 	if (!is_shooting) {
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
