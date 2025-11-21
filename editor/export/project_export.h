@@ -79,11 +79,14 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Button *delete_preset = nullptr;
 	ItemList *presets = nullptr;
 
+	VBoxContainer *settings_vb = nullptr;
 	LineEdit *name = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
 	CheckButton *advanced_options = nullptr;
+
+	Label *empty_label = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
