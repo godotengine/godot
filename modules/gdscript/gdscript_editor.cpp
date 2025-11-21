@@ -1027,15 +1027,13 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 	}
 }
 
-static void _find_built_in_variants(HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool exclude_nil = false) {
+static void _find_built_in_variants(HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (!exclude_nil && Variant::Type(i) == Variant::Type::NIL) {
-			ScriptLanguage::CodeCompletionOption option("null", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-			r_result.insert(option.display, option);
-		} else {
-			ScriptLanguage::CodeCompletionOption option(Variant::get_type_name(Variant::Type(i)), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-			r_result.insert(option.display, option);
+		if (Variant::Type(i) == Variant::Type::NIL) {
+			continue;
 		}
+		ScriptLanguage::CodeCompletionOption option(Variant::get_type_name(Variant::Type(i)), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+		r_result.insert(option.display, option);
 	}
 }
 
@@ -1050,7 +1048,13 @@ static void _find_global_enums(HashMap<String, ScriptLanguage::CodeCompletionOpt
 
 static void _list_available_types(bool p_inherit_only, GDScriptParser::CompletionContext &p_context, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	// Built-in Variant Types
-	_find_built_in_variants(r_result, true);
+	_find_built_in_variants(r_result);
+
+	// Variant meta-type
+	if (!p_inherit_only) {
+		ScriptLanguage::CodeCompletionOption variant_option("Variant", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+		r_result.insert(variant_option.display, variant_option);
+	}
 
 	LocalVector<StringName> native_types;
 	ClassDB::get_class_list(native_types);
