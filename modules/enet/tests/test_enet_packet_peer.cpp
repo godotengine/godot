@@ -51,7 +51,7 @@ TEST_CASE("[ENetPacketPeer] Basic peer properties") {
 	Ref<ENetPacketPeer> peer = create_test_peer();
 
 	CHECK(peer->is_active());
-	CHECK(peer->get_state() == ENetPacketPeer::STATE_CONNECTING);
+	CHECK_EQ(peer->get_state(), ENetPacketPeer::STATE_CONNECTING);
 	CHECK(peer->get_max_packet_size() > 0);
 	CHECK(peer->get_available_packet_count() == 0);
 	CHECK(peer->get_channels() > 0);
