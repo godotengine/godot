@@ -4335,7 +4335,7 @@ int Main::start() {
 
 					if (info.is_singleton) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
+							ScriptServer::get_language(i)->add_global_constant(E.key, Variant());
 						}
 					}
 				}
@@ -4350,7 +4350,7 @@ int Main::start() {
 						// Cache the scene reference before loading it (for cyclic references)
 						Ref<PackedScene> scn;
 						scn.instantiate();
-						scn->set_path(ResourceUID::ensure_path(info.path));
+						scn->set_path(info.path);
 						scn->reload_from_file();
 						ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
@@ -4376,14 +4376,14 @@ int Main::start() {
 					}
 
 					ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", info.path));
-					n->set_name(info.name);
+					n->set_name(E.key);
 
 					//defer so references are all valid on _ready()
 					to_add.push_back(n);
 
 					if (info.is_singleton) {
 						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(info.name, n);
+							ScriptServer::get_language(i)->add_global_constant(E.key, n);
 						}
 					}
 				}
