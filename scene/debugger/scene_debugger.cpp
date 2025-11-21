@@ -47,6 +47,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
+#include "servers/audio/audio_effect.h"
 #include "servers/audio/audio_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
@@ -219,6 +220,107 @@ Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool do_mute = p_args[0];
 	AudioServer::get_singleton()->set_debug_mute(do_mute);
+	return OK;
+}
+
+Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
+	// Accept a serializable dictionary of bus data and apply it live.
+	if (p_args.size() != 1 || p_args[0].get_type() != Variant::DICTIONARY) {
+		return ERR_INVALID_DATA;
+	}
+
+	Dictionary layout = p_args[0];
+	if (!layout.has("buses")) {
+		return ERR_INVALID_DATA;
+	}
+
+	Array buses = layout["buses"];
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return ERR_UNAVAILABLE;
+	}
+
+	// Ensure we can safely apply while a scene is running.
+	if (!SceneTree::get_singleton() || !SceneTree::get_singleton()->get_root()) {
+		return ERR_UNAVAILABLE;
+	}
+
+	// Resize bus count to match.
+	const int target_count = buses.size();
+	int current_count = as->get_bus_count();
+	// Add buses if needed.
+	while (current_count < target_count) {
+		as->add_bus(-1);
+		current_count++;
+	}
+	// Remove extra buses (but never remove Master at index 0).
+	while (current_count > target_count && current_count > 1) {
+		as->remove_bus(current_count - 1);
+		current_count--;
+	}
+
+	// Apply per-bus properties.
+	const int apply_count = MIN(current_count, target_count);
+	for (int i = 0; i < apply_count; i++) {
+		Dictionary b = buses[i];
+		if (b.has("name")) {
+			as->set_bus_name(i, String(b["name"]));
+		}
+		if (b.has("send")) {
+			as->set_bus_send(i, StringName(String(b["send"])));
+		}
+		if (b.has("volume_db")) {
+			as->set_bus_volume_db(i, (float)b["volume_db"]);
+		}
+		if (b.has("solo")) {
+			as->set_bus_solo(i, (bool)b["solo"]);
+		}
+		if (b.has("mute")) {
+			as->set_bus_mute(i, (bool)b["mute"]);
+		}
+		if (b.has("bypass")) {
+			as->set_bus_bypass_effects(i, (bool)b["bypass"]);
+		}
+
+		// Effects: rebuild the list to match editor state (simple approach).
+		if (b.has("effects") && Variant(b["effects"]).get_type() == Variant::ARRAY) {
+			Array effects = b["effects"];
+			// Remove all current effects.
+			for (int e = as->get_bus_effect_count(i) - 1; e >= 0; e--) {
+				as->remove_bus_effect(i, e);
+			}
+			// Add effects in order.
+			for (int e = 0; e < effects.size(); e++) {
+				Dictionary fx = effects[e];
+				const String class_name = fx.has("class") ? String(fx["class"]) : String();
+				Object *obj = class_name.is_empty() ? nullptr : ClassDB::instantiate(class_name);
+				AudioEffect *afx = obj ? Object::cast_to<AudioEffect>(obj) : nullptr;
+				Ref<AudioEffect> afxr;
+				if (afx) {
+					afxr = Ref<AudioEffect>(afx);
+				}
+				// Add placeholder even if instantiation failed (skip if null to avoid errors).
+				if (afxr.is_valid()) {
+					as->add_bus_effect(i, afxr, -1);
+					// Apply params if present.
+					if (fx.has("params") && Variant(fx["params"]).get_type() == Variant::DICTIONARY) {
+						Dictionary params = fx["params"];
+						LocalVector<Variant> keys = params.get_key_list();
+						for (const Variant &k : keys) {
+							const StringName prop = StringName(String(k));
+							afxr->set(prop, params[k]);
+						}
+					}
+				}
+				// Enabled flag (safe even if not added; index aligns with successful adds).
+				if (fx.has("enabled")) {
+					as->set_bus_effect_enabled(i, e, (bool)fx["enabled"]);
+				}
+			}
+		}
+	}
+
 	return OK;
 }
 
@@ -539,6 +641,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["next_frame"] = _msg_next_frame;
 	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
+	message_handlers["sync_audio_buses"] = _msg_sync_audio_buses;
 	message_handlers["override_cameras"] = _msg_override_cameras;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED

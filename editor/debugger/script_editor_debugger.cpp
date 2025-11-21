@@ -65,6 +65,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_stream.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display/display_server.h"
 
@@ -1755,6 +1757,70 @@ void ScriptEditorDebugger::reload_all_scripts() {
 
 void ScriptEditorDebugger::reload_scripts(const Vector<String> &p_script_paths) {
 	_put_msg("reload_scripts", Variant(p_script_paths).operator Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+}
+
+void ScriptEditorDebugger::sync_audio_buses() {
+	// Send a minimal, serializable snapshot of audio buses to the running game.
+	if (!is_session_active()) {
+		return;
+	}
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return;
+	}
+
+	Dictionary layout;
+	Array buses;
+	const int bus_count = as->get_bus_count();
+	for (int i = 0; i < bus_count; i++) {
+		Dictionary b;
+		b["name"] = as->get_bus_name(i);
+		b["send"] = String(as->get_bus_send(i));
+		b["volume_db"] = as->get_bus_volume_db(i);
+		b["solo"] = as->is_bus_solo(i);
+		b["mute"] = as->is_bus_mute(i);
+		b["bypass"] = as->is_bus_bypassing_effects(i);
+		// Effects
+		Array effects;
+		const int effect_count = as->get_bus_effect_count(i);
+		for (int j = 0; j < effect_count; j++) {
+			Dictionary fx;
+			Ref<AudioEffect> effect = as->get_bus_effect(i, j);
+			fx["class"] = effect.is_valid() ? effect->get_class() : String();
+			fx["enabled"] = as->is_bus_effect_enabled(i, j);
+			// Serialize simple parameters for the effect.
+			Dictionary params;
+			if (effect.is_valid()) {
+				List<PropertyInfo> plist;
+				effect->get_property_list(&plist, true);
+				for (const PropertyInfo &pi : plist) {
+					// Only serialize editor-exposed properties and skip non-data entries.
+					if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+						continue;
+					}
+					// Skip categories and internal fields.
+					if (pi.type == Variant::NIL || pi.name.is_empty()) {
+						continue;
+					}
+					// Avoid complex/unsupported types across the debugger channel.
+					if (pi.type == Variant::OBJECT || pi.type == Variant::RID) {
+						continue;
+					}
+					params[pi.name] = effect->get(pi.name);
+				}
+			}
+			fx["params"] = params;
+			effects.push_back(fx);
+		}
+		b["effects"] = effects;
+		buses.push_back(b);
+	}
+	layout["buses"] = buses;
+
+	Array layout_data;
+	layout_data.push_back(layout);
+	_put_msg("scene:sync_audio_buses", layout_data);
 }
 
 bool ScriptEditorDebugger::is_skip_breakpoints() const {
