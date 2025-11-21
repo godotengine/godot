@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+import platform
 import subprocess
 import sys
 
@@ -50,18 +51,34 @@ lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSU
 env.Depends(lib, thirdparty_obj)
 
 lib_arch_dir = ""
+triple_target_dir = ""
 if env["arch"] == "arm32":
     lib_arch_dir = "armeabi-v7a"
+    triple_target_dir = "arm-linux-androideabi"
 elif env["arch"] == "arm64":
     lib_arch_dir = "arm64-v8a"
+    triple_target_dir = "aarch64-linux-android"
 elif env["arch"] == "x86_32":
     lib_arch_dir = "x86"
+    triple_target_dir = "i686-linux-android"
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
+    triple_target_dir = "x86_64-linux-android"
 else:
     print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
-if lib_arch_dir != "":
+host_subpath = ""
+if sys.platform.startswith("linux"):
+    host_subpath = "linux-x86_64"
+elif sys.platform.startswith("darwin"):
+    host_subpath = "darwin-x86_64"
+elif sys.platform.startswith("win"):
+    if platform.machine().endswith("64"):
+        host_subpath = "windows-x86_64"
+    else:
+        host_subpath = "windows"
+
+if lib_arch_dir != "" and host_subpath != "":
     if env.dev_build:
         lib_type_dir = "dev"
     elif env.debug_features:
@@ -82,9 +99,7 @@ if lib_arch_dir != "":
         out_dir + "/libgodot_android.so", "#bin/libgodot" + env["SHLIBSUFFIX"], Move("$TARGET", "$SOURCE")
     )
 
-    stl_lib_path = (
-        str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
-    )
+    stl_lib_path = f"{env['ANDROID_NDK_ROOT']}/toolchains/llvm/prebuilt/{host_subpath}/sysroot/usr/lib/{triple_target_dir}/libc++_shared.so"
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
 
     def generate_apk(target, source, env):
@@ -99,10 +114,11 @@ if lib_arch_dir != "":
         else:
             gradle_process = ["./gradlew"]
 
-        gradle_process += [
-            "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
-            "--quiet",
-        ]
+        if env["target"] == "editor":
+            gradle_process += ["generateGodotEditor", "generateGodotHorizonOSEditor", "generateGodotPicoOSEditor"]
+        else:
+            gradle_process += ["generateGodotTemplates"]
+        gradle_process += ["--quiet"]
 
         if env["debug_symbols"]:
             gradle_process += ["-PdoNotStrip=true"]
