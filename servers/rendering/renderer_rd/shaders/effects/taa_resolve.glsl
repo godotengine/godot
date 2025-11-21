@@ -323,11 +323,19 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
 	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
+	// Get pixel perfect history color to use as a sanity check to prevent edge shrinkage/expansion in motion
+	vec3 color_history_sanity = textureLod(tex_history, uv + round(velocity), 0.0).rgb;
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
 	vec2 velocity_closest = vec2(0.0); // This is best done by using the velocity with the closest depth.
 	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity_closest);
 	color_history = clip_history_3x3(pos_group, color_history, velocity_closest);
+	color_history_sanity = clip_history_3x3(pos_group, color_history_sanity, velocity_closest);
+
+	// Too low value will cause Ghosting, Too high value will cause edge shrinkage/expansion in motion
+	if (length(color_history_sanity - color_history) > 0.025) {
+		color_history = color_history_sanity;
+	}
 
 	// Compute blend factor
 	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
