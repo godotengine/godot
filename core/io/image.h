@@ -219,6 +219,7 @@ public:
 	static inline ScalableImageMemLoadFunc _svg_scalable_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _dds_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _exr_mem_loader_func = nullptr;
 
 	// External VRAM compression function pointers.
 
@@ -429,6 +430,7 @@ public:
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
