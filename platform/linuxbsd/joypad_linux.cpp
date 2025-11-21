@@ -361,7 +361,7 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		// Check if the device supports basic gamepad events
 		bool has_abs_left = (test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit));
 		bool has_abs_right = (test_bit(ABS_RX, absbit) && test_bit(ABS_RY, absbit));
-		if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) && (has_abs_left || has_abs_right))) {
+		if (!((test_bit(EV_KEY, evbit) || (test_bit(EV_ABS, evbit) && (has_abs_left || has_abs_right))) && test_bit(BTN_GAMEPAD, keybit))) {
 			close(fd);
 			return;
 		}
