@@ -89,7 +89,7 @@ TEST_CASE("[ENetConnection] Service operations") {
 
 	ENetConnection::Event event;
 	ENetConnection::EventType type = connection->service(10, event);
-	CHECK((type == ENetConnection::EVENT_NONE || type >= 0));
+	CHECK(type == ENetConnection::EVENT_NONE || type >= 0);
 
 	connection->destroy();
 }
