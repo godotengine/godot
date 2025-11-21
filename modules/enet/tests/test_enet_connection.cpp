@@ -44,7 +44,7 @@ Ref<ENetConnection> create_test_connection() {
 TEST_CASE("[ENetConnection] Host creation and destruction") {
 	Ref<ENetConnection> connection = create_test_connection();
 	Error err = connection->create_host();
-	CHECK(err == OK);
+	CHECK_EQ(err, OK);
 	CHECK(connection->get_max_channels() >= 0);
 	connection->destroy();
 }
