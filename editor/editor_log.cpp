@@ -33,6 +33,7 @@
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -42,7 +43,6 @@
 #include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tab_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
@@ -286,11 +286,10 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 }
 
 void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
-	// This is the sole reason to include "tab_container.h" here.
-	TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
+	// TODO: Remove this hack once EditorLog is converted to a dock.
+	EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
 	if (parent) {
-		int idx = parent->get_tab_idx_from_control(this);
-		parent->set_tab_icon(idx, p_icon);
+		parent->set_dock_icon(p_icon);
 	}
 }
 

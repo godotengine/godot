@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/dock_constants.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 
@@ -60,30 +61,26 @@ public:
 	DockSplitContainer();
 };
 
+class DockShortcutHandler : public Node {
+	GDCLASS(DockShortcutHandler, Node);
+
+protected:
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
+public:
+	DockShortcutHandler() { set_process_shortcut_input(true); }
+};
+
 class DockContextPopup;
 class EditorDockDragHint;
 
 class EditorDockManager : public Object {
 	GDCLASS(EditorDockManager, Object);
 
-public:
-	enum DockSlot {
-		DOCK_SLOT_NONE = -1,
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
 private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
-	friend class EditorBottomPanel; // TODO: Temporary until DOCK_SLOT_BOTTOM registered. Used to connect signals.
+	friend class DockShortcutHandler;
 
 	static inline EditorDockManager *singleton = nullptr;
 
@@ -91,10 +88,16 @@ private:
 	Vector<DockSplitContainer *> vsplits;
 	Vector<DockSplitContainer *> hsplits;
 
+	struct DockSlot {
+		TabContainer *container = nullptr;
+		EditorDockDragHint *drag_hint = nullptr;
+		DockConstants::DockLayout layout = DockConstants::DOCK_LAYOUT_VERTICAL;
+	};
+
+	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
-	TabContainer *dock_slot[DOCK_SLOT_MAX];
-	EditorDockDragHint *dock_drag_rects[DOCK_SLOT_MAX];
 	LocalVector<EditorDock *> all_docks;
+
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
 
@@ -117,10 +120,6 @@ private:
 	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
 
-	void _dock_move_to_bottom(EditorDock *p_dock, bool p_visible);
-	void _dock_remove_from_bottom(EditorDock *p_dock);
-	bool _is_dock_at_bottom(EditorDock *p_dock);
-
 	void _move_dock_tab_index(EditorDock *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
@@ -135,7 +134,7 @@ public:
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void add_hsplit(DockSplitContainer *p_split);
-	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
+	void register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout);
 	int get_hsplit_count() const;
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
@@ -149,8 +148,6 @@ public:
 	void focus_dock(EditorDock *p_dock);
 
 	TabContainer *get_dock_tab_container(Control *p_dock) const;
-
-	void bottom_dock_show_placement_popup(const Rect2i &p_position, EditorDock *p_dock);
 
 	void set_docks_visible(bool p_show);
 	bool are_docks_visible() const;
@@ -166,7 +163,7 @@ class EditorDockDragHint : public Control {
 
 private:
 	EditorDockManager *dock_manager = nullptr;
-	EditorDockManager::DockSlot occupied_slot = EditorDockManager::DOCK_SLOT_MAX;
+	DockConstants::DockSlot occupied_slot = DockConstants::DOCK_SLOT_MAX;
 	TabBar *drop_tabbar = nullptr;
 
 	Color valid_drop_color;
@@ -186,7 +183,7 @@ protected:
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 public:
-	void set_slot(EditorDockManager::DockSlot p_slot);
+	void set_slot(DockConstants::DockSlot p_slot);
 
 	EditorDockDragHint();
 };
@@ -201,10 +198,9 @@ private:
 	Button *tab_move_left_button = nullptr;
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
-	Button *dock_to_bottom_button = nullptr;
 
 	Control *dock_select = nullptr;
-	Rect2 dock_select_rects[EditorDockManager::DOCK_SLOT_MAX];
+	Rect2 dock_select_rects[DockConstants::DOCK_SLOT_MAX];
 	int dock_select_rect_over_idx = -1;
 
 	EditorDock *context_dock = nullptr;
@@ -215,7 +211,7 @@ private:
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
-	void _move_dock_to_bottom();
+	bool _is_slot_available(int p_slot) const;
 
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_select_mouse_exited();

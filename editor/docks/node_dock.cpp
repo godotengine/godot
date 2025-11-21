@@ -93,7 +93,7 @@ NodeDock::NodeDock() {
 	set_name(TTRC("Node"));
 	set_icon_name("Object");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_node", TTRC("Open Node Dock")));
-	set_default_slot(EditorDockManager::DOCK_SLOT_RIGHT_UL);
+	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
