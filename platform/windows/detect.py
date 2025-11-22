@@ -689,6 +689,11 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["lto"] == "auto":  # Enable LTO for production with MinGW.
         env["lto"] = "thin" if env["use_llvm"] else "full"
 
+    if env["lto"] == "none" and not env["use_llvm"]:
+        # FIXME: Allow big objects. It's supposed to have no drawbacks, but seems to break LTO on
+        # GCC specifically.
+        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             if not env["use_llvm"]:
