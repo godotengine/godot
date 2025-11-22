@@ -1073,7 +1073,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			connect("started", callable_mp(expression_evaluator, &EditorExpressionEvaluator::on_start));
@@ -1772,25 +1771,12 @@ void ScriptEditorDebugger::_error_activated() {
 		return;
 	}
 
-	TreeItem *ci = selected->get_first_child();
-	if (ci) {
-		selected->set_collapsed(!selected->is_collapsed());
-	}
-}
-
-void ScriptEditorDebugger::_error_selected() {
-	TreeItem *selected = error_tree->get_selected();
-
-	if (!selected) {
-		return;
-	}
-
 	Array meta = selected->get_metadata(0);
 	if (meta.is_empty()) {
 		return;
 	}
 
-	emit_signal(SNAME("error_selected"), String(meta[0]), int(meta[1]));
+	emit_signal(SNAME("view_error"), String(meta[0]), int(meta[1]));
 }
 
 void ScriptEditorDebugger::_expand_errors_list() {
@@ -1995,7 +1981,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stopped"));
 	ADD_SIGNAL(MethodInfo("stop_requested"));
 	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
-	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::INT, "error")));
+	ADD_SIGNAL(MethodInfo("view_error", PropertyInfo(Variant::INT, "error")));
 	ADD_SIGNAL(MethodInfo("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
