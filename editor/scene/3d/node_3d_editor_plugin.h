@@ -544,6 +544,7 @@ private:
 	void finish_transform();
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
+	void register_shortcuts_action(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
 	// Supported rendering methods for advanced debug draw mode items.
