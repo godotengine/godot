@@ -1041,6 +1041,11 @@ void EditorFileSystem::_create_actions_from_uid_change(EditorFileInfo *p_fi, con
 bool EditorFileSystem::_update_scan_uid_actions() {
 	bool fs_changed = false;
 
+	HashMap<ResourceUID::ID, String> retracks;
+	HashMap<ResourceUID::ID, String> untracks;
+	HashMap<ResourceUID::ID, Vector<String>> duplicates;
+	HashMap<String, ResourceUID::ID> tracks;
+
 	EditorProgress *ep = nullptr;
 	if (scan_uid_actions.size() > (EditorFileSystem::ItemUIDAction::STEP_UID_MAX / 2 + 1)) {
 		ep = memnew(EditorProgress("_update_scan_uid_actions", TTR("Scanning uid actions..."), scan_uid_actions.size()));
@@ -1063,6 +1068,8 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 					ia.file->uid = ia.old_uid;
 				}
 				ResourceUID::get_singleton()->add_id(ia.file->uid, ia.path);
+				tracks[ia.path] = ia.file->uid;
+				fs_changed = true;
 				// Update internal file.
 				if (ia.file->status & EditorFileInfo::IS_IMPORTABLE) {
 					const String internal_path = ia.path + ".import";
@@ -1084,7 +1091,6 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.file->uid));
 					}
 				}
-				fs_changed = true; // The timestamp has changed.
 				print_verbose(vformat("[ADD UID] %s, %s", ia.path, ResourceUID::get_singleton()->id_to_text(ia.file->uid)));
 			} break;
 			case ItemUIDAction::ACTION_UID_REMOVE: {
@@ -1093,6 +1099,8 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 						ResourceUID::get_singleton()->id_to_text(ia.old_uid),
 						ResourceUID::get_singleton()->id_to_text(ia.file->uid),
 						ia.path));
+				untracks[ia.old_uid] = ia.path;
+				fs_changed = true;
 				if (!first_scan || ResourceUID::get_singleton()->has_id(ia.old_uid)) {
 					ResourceUID::get_singleton()->remove_id(ia.old_uid);
 				}
@@ -1106,6 +1114,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 				if (ResourceUID::get_singleton()->has_id(ia.file->uid)) {
 					const String cache_uid_path = ResourceUID::get_singleton()->get_id_path(ia.file->uid);
 					if (cache_uid_path != ia.path) {
+						duplicates[ia.file->uid].push_back(ia.path);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", ia.path, cache_uid_path));
 						if (ia.old_uid != ResourceUID::INVALID_ID && ia.old_uid != ia.file->uid && ResourceUID::get_singleton()->has_id(ia.old_uid)) {
 							// Files may be overwritten.
@@ -1117,6 +1126,7 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 						step_count--;
 					}
 				} else {
+					retracks[ia.file->uid] = ia.path;
 					ResourceUID::get_singleton()->add_id(ia.file->uid, ia.path);
 				}
 			} break;
@@ -1129,6 +1139,54 @@ bool EditorFileSystem::_update_scan_uid_actions() {
 		}
 	}
 	memdelete_notnull(ep);
+
+	if (!retracks.is_empty() || !untracks.is_empty() || !tracks.is_empty()) {
+		struct MoveItems {
+			String origin;
+			String target;
+		};
+		HashMap<ResourceUID::ID, MoveItems> moves;
+
+		print_verbose("======= Scan UID Analysis Start ======");
+
+		for (KeyValue<ResourceUID::ID, String> &KV : untracks) {
+			HashMap<ResourceUID::ID, String>::Iterator E = retracks.find(KV.key);
+			if (!E) {
+				print_verbose(vformat("[Untracked] %s, at %s.", ResourceUID::get_singleton()->id_to_text(KV.key), KV.value));
+				continue;
+			}
+			MoveItems mi;
+			mi.origin = KV.value;
+			mi.target = E->value;
+			moves.insert(KV.key, mi);
+
+			retracks.erase(KV.key);
+		}
+
+		for (KeyValue<ResourceUID::ID, MoveItems> &E : moves) {
+			print_verbose(vformat("[Moved] %s, from %s to %s.", ResourceUID::get_singleton()->id_to_text(E.key), E.value.origin, E.value.target));
+			untracks.erase(E.key);
+		}
+
+		for (KeyValue<ResourceUID::ID, Vector<String>> &KV : duplicates) {
+			for (const String &E : KV.value) {
+				HashMap<String, ResourceUID::ID>::Iterator I = tracks.find(E);
+				ERR_CONTINUE(I == nullptr);
+				print_verbose(vformat("[Duplicated] %s, from %s to %s, %s.", ResourceUID::get_singleton()->id_to_text(KV.key), ResourceUID::get_singleton()->get_id_path(KV.key), E, ResourceUID::get_singleton()->id_to_text(I->value)));
+				tracks.erase(E);
+			}
+		}
+
+		for (KeyValue<String, ResourceUID::ID> &KV : tracks) {
+			print_verbose(vformat("[Tracked] %s, at %s.", ResourceUID::get_singleton()->id_to_text(KV.value), KV.key));
+		}
+
+		for (KeyValue<ResourceUID::ID, String> &E : retracks) {
+			print_verbose(vformat("[Retracked] %s, at %s.", ResourceUID::get_singleton()->id_to_text(E.key), E.value));
+		}
+
+		print_verbose("======= Scan UID Analysis End ======");
+	}
 
 	if (!first_scan) {
 		_update_global_script_class_activation();
@@ -2176,6 +2234,7 @@ void EditorFileSystem::_notification(int p_what) {
 			if (is_scanning()) {
 				break;
 			}
+			_reload_loader_or_saver();
 			if (!first_scan && need_update_extensions) {
 				need_update_extensions = false;
 				update_extensions();
@@ -2196,6 +2255,10 @@ void EditorFileSystem::_notification(int p_what) {
 				updating_scan_actions = true;
 				set_process(false);
 				_update_scan_uid_actions();
+				if (!first_scan && need_update_extensions) {
+					need_update_extensions = false;
+					update_extensions();
+				}
 				if (_update_scan_actions()) {
 					emit_signal(SNAME("filesystem_changed"));
 				}
