@@ -252,6 +252,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		nullptr, // GDExtensionClassIsValidPropertyValue is_valid_property_value_func;
 		nullptr, // GDExtensionClassValidateProperty validate_property_func;
 		nullptr, // GDExtensionClassNotification2 notification_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
@@ -291,6 +292,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		nullptr, // GDExtensionClassIsValidPropertyValue is_valid_property_value_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
 		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
@@ -330,6 +332,7 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		nullptr, // GDExtensionClassIsValidPropertyValue is_valid_property_value_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
 		p_extension_funcs->notification_func, // GDExtensionClassNotification2 notification_func;
 		p_extension_funcs->to_string_func, // GDExtensionClassToString to_string_func;
@@ -454,6 +457,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.free_property_list2 = p_extension_funcs->free_property_list_func;
 	extension->gdextension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->gdextension.property_get_revert = p_extension_funcs->property_get_revert_func;
+	extension->gdextension.is_valid_property_value = p_extension_funcs->is_valid_property_value_func;
 	extension->gdextension.validate_property = p_extension_funcs->validate_property_func;
 #ifndef DISABLE_DEPRECATED
 	if (p_deprecated_funcs) {

@@ -1993,6 +1993,29 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 	return false;
 }
 
+bool GDScriptInstance::is_valid_property_value(const StringName &p_path, const Variant &p_value, Variant &r_ret) const {
+	Variant path = p_path;
+	const Variant *args[2] = { &path, &p_value };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		if (likely(sptr->valid)) {
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._is_valid_property_value);
+			if (E) {
+				Callable::CallError err;
+				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+				if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
+					r_ret = ret;
+					return true;
+				}
+			}
+		}
+		sptr = sptr->_base;
+	}
+
+	return false;
+}
+
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {

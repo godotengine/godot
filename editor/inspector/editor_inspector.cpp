@@ -5281,6 +5281,25 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 }
 
 void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing, bool p_update_all) {
+#ifdef TOOLS_ENABLED
+	if (editor_property_map.has(p_path)) {
+		// validate before edit value
+		String p_error_message;
+		bool is_valid = object->is_valid_property_value(p_path, p_value, p_error_message);
+		for (EditorProperty *E : editor_property_map[p_path]) {
+			// show or hide warning color
+			E->set_draw_warning(!is_valid);
+			if (is_valid) {
+				E->clean_unsaved();
+			}
+		}
+		if (!is_valid) {
+			WARN_PRINT(p_error_message);
+			return;
+		}
+	}
+#endif
+
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
 	// like "text_changed" signal. E.g. text property of Label, Button, RichTextLabel, etc.
 	if (p_changing) {
