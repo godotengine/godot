@@ -201,6 +201,10 @@ void Button::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			if (!Engine::get_singleton()->is_editor_hint() && is_touchscreen_only() && !DisplayServer::get_singleton()->is_touchscreen_available()) {
+				return;
+			}
+
 			// Reshape and update size min. if text is invalidated by an external source (e.g., oversampling).
 			if (text_buf.is_valid() && !TS->shaped_text_is_ready(text_buf->get_rid())) {
 				_shape();
