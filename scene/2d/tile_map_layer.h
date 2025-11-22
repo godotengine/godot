@@ -48,7 +48,8 @@ private:
 	Ref<TileSet> tile_set;
 	Vector2i base_cell_coords;
 	int bit = -1;
-	int terrain = -1;
+	int terrain_center = -1;
+	int terrain_neighbor = -1;
 
 	int priority = 1;
 
@@ -61,7 +62,11 @@ public:
 	}
 
 	String to_string() const {
-		return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
+		if (is_center_bit()) {
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain_center, priority);
+		} else {
+			return vformat("Constraint {pos:%s, bit:%d, terrain center:%d, terrain neighbor:%d, priority:%d}", base_cell_coords, bit, terrain_center, terrain_neighbor, priority);
+		}
 	}
 
 	Vector2i get_base_cell_coords() const {
@@ -74,12 +79,20 @@ public:
 
 	HashMap<Vector2i, TileSet::CellNeighbor> get_overlapping_coords_and_peering_bits() const;
 
-	void set_terrain(int p_terrain) {
-		terrain = p_terrain;
+	void set_terrain_center(int p_terrain) {
+		terrain_center = p_terrain;
 	}
 
-	int get_terrain() const {
-		return terrain;
+	void set_terrain_neighbor(int p_terrain) {
+		terrain_neighbor = p_terrain;
+	}
+
+	int get_terrain_center() const {
+		return terrain_center;
+	}
+
+	int get_terrain_neighbor() const {
+		return terrain_neighbor;
 	}
 
 	void set_priority(int p_priority) {
@@ -91,7 +104,7 @@ public:
 	}
 
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
-	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
+	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain_center, int p_terrain_neighbor); // For peering bits
 	TerrainConstraint() {}
 };
 
@@ -496,8 +509,8 @@ private:
 
 	// Terrains.
 	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;
+	int _get_cell_terrain(const Vector2i &p_coords, int p_terrain_set) const;
 	RBSet<TerrainConstraint> _get_terrain_constraints_from_added_pattern(const Vector2i &p_position, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
-	RBSet<TerrainConstraint> _get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const;
 
 	void _tile_set_changed();
 
