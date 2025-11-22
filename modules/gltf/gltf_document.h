@@ -70,7 +70,7 @@ private:
 	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
-	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
+	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_OPTIONAL;
 
 protected:
 	static void _bind_methods();
