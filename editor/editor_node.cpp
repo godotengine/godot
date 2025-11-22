@@ -1054,10 +1054,6 @@ void EditorNode::_notification(int p_what) {
 				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
-				editor_dock_manager->update_tab_styles();
-			}
-
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
 				scene_tabs->update_scene_tabs();
 			}
@@ -5323,7 +5319,7 @@ void EditorNode::_project_run_started() {
 
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
-		bottom_panel->make_item_visible(log);
+		editor_dock_manager->focus_dock(log);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
 		bottom_panel->make_item_visible(EditorDebuggerNode::get_singleton());
 	}
@@ -8793,7 +8789,7 @@ EditorNode::EditorNode() {
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
 	log = memnew(EditorLog);
-	bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
+	editor_dock_manager->add_dock(log);
 
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
