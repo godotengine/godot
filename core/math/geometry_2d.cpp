@@ -308,6 +308,69 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 	return polypaths;
 }
 
+Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation_complex(PolyBooleanOperation p_op, const Vector<Vector<Point2>> &p_polypaths_a, const Vector<Vector<Point2>> &p_polypaths_b) {
+	using namespace Clipper2Lib;
+
+	ClipType op = ClipType::Union;
+
+	switch (p_op) {
+		case OPERATION_UNION:
+			op = ClipType::Union;
+			break;
+		case OPERATION_DIFFERENCE:
+			op = ClipType::Difference;
+			break;
+		case OPERATION_INTERSECTION:
+			op = ClipType::Intersection;
+			break;
+		case OPERATION_XOR:
+			op = ClipType::Xor;
+			break;
+	}
+
+	ClipperD clp(clipper_precision); // Scale points up internally to attain the desired precision.
+	clp.PreserveCollinear(false); // Remove redundant vertices.
+
+	PathsD paths_a;
+	for (int i = 0; i < p_polypaths_a.size(); i++) {
+		const Vector<Point2> &sub_polypath = p_polypaths_a[i];
+
+		PathD path(sub_polypath.size());
+		for (int j = 0; j != sub_polypath.size(); ++j) {
+			path[j] = PointD(sub_polypath[j].x, sub_polypath[j].y);
+		}
+		paths_a.push_back(path);
+	}
+	clp.AddSubject(paths_a);
+
+	PathsD paths_b;
+	for (int i = 0; i < p_polypaths_b.size(); i++) {
+		const Vector<Point2> &sub_polypath = p_polypaths_b[i];
+
+		PathD path(sub_polypath.size());
+		for (int j = 0; j != sub_polypath.size(); ++j) {
+			path[j] = PointD(sub_polypath[j].x, sub_polypath[j].y);
+		}
+		paths_b.push_back(path);
+	}
+	clp.AddClip(paths_b);
+
+	PathsD out_paths;
+	clp.Execute(op, FillRule::EvenOdd, out_paths);
+
+	Vector<Vector<Point2>> polypaths;
+	for (PathsD::size_type i = 0; i < out_paths.size(); ++i) {
+		const PathD &path = out_paths[i];
+
+		Vector<Vector2> polypath;
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			polypath.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+		}
+		polypaths.push_back(polypath);
+	}
+	return polypaths;
+}
+
 Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 	using namespace Clipper2Lib;
 
