@@ -510,6 +510,10 @@ void SpinBox::_notification(int p_what) {
 			_update_buttons_state_for_current_value();
 		} break;
 
+		case NOTIFICATION_READY: {
+			connect(CoreStringName(changed), callable_mp(this, &SpinBox::_update_buttons_state_for_current_value));
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED:
 			drag.allowed = false;
 			[[fallthrough]];
