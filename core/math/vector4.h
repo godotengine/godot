@@ -144,6 +144,13 @@ struct [[nodiscard]] Vector4 {
 	constexpr bool operator>=(const Vector4 &p_vec4) const;
 	constexpr bool operator<=(const Vector4 &p_vec4) const;
 
+	bool operator==(const Vector4i &p_vector4i) const;
+	bool operator!=(const Vector4i &p_vector4i) const;
+	bool operator<(const Vector4i &p_vector4i) const;
+	bool operator>(const Vector4i &p_vector4i) const;
+	bool operator<=(const Vector4i &p_vector4i) const;
+	bool operator>=(const Vector4i &p_vector4i) const;
+
 	explicit operator String() const;
 	operator Vector4i() const;
 
