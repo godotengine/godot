@@ -196,7 +196,8 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_SUBWINDOWS:
 		case FEATURE_WINDOW_EMBEDDING:
-		case FEATURE_SELF_FITTING_WINDOWS: {
+		case FEATURE_SELF_FITTING_WINDOWS:
+		case FEATURE_HDR_OUTPUT: {
 			return true;
 		} break;
 
@@ -1438,6 +1439,128 @@ void DisplayServerWayland::window_start_resize(WindowResizeEdge p_edge, WindowID
 	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
+void DisplayServerWayland::_window_update_hdr_state(WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		// The `display/window/hdr/enabled` project setting makes all windows request hdr.
+		// On Windows this means enable hdr for all windows on an hdr screen.
+		// Since on Wayland all screens support hdr we use whether the window "prefers" hdr or not instead.
+		bool hdr_preferred = wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
+		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && wd.hdr_requested;
+
+		if (rendering_context->window_get_hdr_output_enabled(p_window_id) != hdr_desired) {
+			rendering_context->window_set_hdr_output_enabled(p_window_id, hdr_desired);
+		}
+
+		if (hdr_desired) {
+			rendering_context->window_set_hdr_output_max_luminance(p_window_id, wd.color_profile.target_max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(p_window_id, wd.color_profile.reference_luminance);
+			rendering_context->window_set_hdr_output_linear_luminance_scale(p_window_id, wd.color_profile.target_max_luminance);
+
+			wd.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			wd.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_EXT_LINEAR;
+		} else {
+			wd.color_profile.named_primary = WP_COLOR_MANAGER_V1_PRIMARIES_SRGB;
+			wd.color_profile.named_transfer_function = WP_COLOR_MANAGER_V1_TRANSFER_FUNCTION_GAMMA22;
+		}
+
+		if (wd.visible) {
+			MutexLock mutex_lock(wayland_thread.mutex);
+			wayland_thread.window_set_color_profile(p_window_id, wd.color_profile);
+		}
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_supported(WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+
+	return wd.color_profile.target_max_luminance > wd.color_profile.reference_luminance;
+}
+
+void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, WindowID p_window_id) {
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(!(rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)), "HDR output is not supported by the rendering device.");
+#endif
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.hdr_requested = p_enabled;
+
+	_window_update_hdr_state(p_window_id);
+}
+
+bool DisplayServerWayland::window_is_hdr_output_requested(WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+	const WindowData &wd = windows[p_window_id];
+	return wd.hdr_requested;
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window_id);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.color_profile.requested_reference_luminance = p_reference_luminance;
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0f);
+	const WindowData &wd = windows[p_window_id];
+	return wd.color_profile.requested_reference_luminance;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_reference_luminance(WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window_id) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	wd.color_profile.requested_max_luminance = p_max_luminance;
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0.0f);
+	const WindowData &wd = windows[p_window_id];
+	return wd.color_profile.requested_max_luminance;
+}
+
+float DisplayServerWayland::window_get_hdr_output_current_max_luminance(WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
+	}
+#endif
+	return 0.0f;
+}
+
+float DisplayServerWayland::window_get_output_max_linear_value(WindowID p_window_id) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window_id);
+	}
+#endif
+
+	return 0.0f;
+}
+
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
@@ -1823,6 +1946,14 @@ void DisplayServerWayland::process_events() {
 			}
 			continue;
 		}
+
+		Ref<WaylandThread::ColorProfileMessage> color_profile_msg = msg;
+		if (color_profile_msg.is_valid()) {
+			WindowData &wd = windows[color_profile_msg->id];
+			wd.color_profile = color_profile_msg->color_profile;
+
+			_window_update_hdr_state(color_profile_msg->id);
+		}
 	}
 
 	wayland_thread.keyboard_echo_keys();
@@ -2039,6 +2170,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #ifdef VULKAN_ENABLED
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWayland);
+		if (wayland_thread.supports_hdr()) {
+			rendering_context->set_colorspace_externally_managed(true);
+		}
 	}
 #endif // VULKAN_ENABLED
 
