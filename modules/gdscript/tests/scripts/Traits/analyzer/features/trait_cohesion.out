@@ -1,0 +1,13 @@
+GDTEST_OK
+signal connect:true
+test signal
+trait variable
+trait constant
+Trait Enum value:0
+Trait Enum value:1
+function one
+function two
+overridden function three
+function four implemented in class
+Interactable
+ok
