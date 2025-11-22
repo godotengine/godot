@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse, accordion, details" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that can be expanded/collapsed.
 	</brief_description>
 	<description>
-		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons.
-		The title can be positioned at the top or bottom of the container.
-		The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused.
-		Child control nodes are hidden when the container is collapsed. Ignores non-control children.
-		Can allow grouping with other FoldableContainers, check [member foldable_group] and [FoldableGroup].
+		A container that can be expanded/collapsed, with a title that can be filled with controls, such as buttons. This is also called an accordion.
+		The title can be positioned at the top or bottom of the container. The container can be expanded or collapsed by clicking the title or by pressing [code]ui_accept[/code] when focused. Child control nodes are hidden when the container is collapsed. Ignores non-control children.
+		A FoldableContainer can be grouped with other FoldableContainers so that only one of them can be opened at a time; see [member foldable_group] and [FoldableGroup].
 	</description>
 	<tutorials>
 	</tutorials>
