@@ -1,0 +1,12 @@
+[gd_resource type="VisualShader" load_steps=2 format=3 uid="uid://barg7ns55yag2"]
+
+[sub_resource type="VisualShaderNodeColorParameter" id="VisualShaderNodeColorParameter_bwiop"]
+output_port_for_preview = 0
+parameter_name = "ColorParameter"
+default_value_enabled = true
+default_value = Color(1, 0, 0, 1)
+
+[resource]
+nodes/fragment/2/node = SubResource("VisualShaderNodeColorParameter_bwiop")
+nodes/fragment/2/position = Vector2(20, 260)
+nodes/fragment/connections = PackedInt32Array(2, 0, 0, 0)

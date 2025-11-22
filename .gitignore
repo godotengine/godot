@@ -232,6 +232,7 @@ xcuserdata/
 
 # Actual VS project files we don't use
 *.sln
+!misc/test_project/TestProject.sln
 *.vcxproj*
 
 # User-specific files
