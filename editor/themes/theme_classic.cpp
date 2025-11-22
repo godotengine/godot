@@ -2141,8 +2141,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		// AnimationTimelineEdit.
 		// "primary" is used for integer timeline values, "secondary" for decimals.
 
-		Ref<StyleBoxFlat> style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.dark_color_2, 0, 0, 0, 0, 0);
+		Ref<StyleBoxFlat> style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.dark_color_3, 0, 0, 0, 0, 0);
 		Ref<StyleBoxFlat> style_time_available = EditorThemeManager::make_flat_stylebox(p_config.font_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+		if (!p_config.dark_theme) {
+			style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.font_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+			style_time_available = EditorThemeManager::make_flat_stylebox(p_config.dark_color_3 * Color(1, 1, 1, 0.5), 0, 0, 0, 0, 0);
+		}
 
 		p_theme->set_stylebox("time_unavailable", "AnimationTimelineEdit", style_time_unavailable);
 		p_theme->set_stylebox("time_available", "AnimationTimelineEdit", style_time_available);
