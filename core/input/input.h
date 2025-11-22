@@ -85,6 +85,8 @@ public:
 
 		virtual bool has_joy_light() const { return false; }
 		virtual bool set_joy_light(const Color &p_color) { return false; }
+
+		virtual int get_joy_num_touchpads() const { return 0; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -156,6 +158,19 @@ private:
 	};
 
 	HashMap<int, VibrationInfo> joy_vibration;
+
+	struct TouchpadFingerInfo {
+		Vector2 position;
+		float pressure = 0.0f;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		// Vector2i.x refers to touchpad ID, Vector2i.y refers to finger ID on that touchpad.
+		HashMap<Vector2i, TouchpadFingerInfo> finger_info;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
 
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
@@ -342,6 +357,12 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_touchpad, int p_finger) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_touchpad, int p_finger) const;
+	PackedInt32Array get_joy_touchpad_fingers(int p_device, int p_touchpad) const;
+
+	int get_joy_num_touchpads(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -362,6 +383,8 @@ public:
 
 	bool set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
+
+	void set_joy_touchpad_finger(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure);
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
