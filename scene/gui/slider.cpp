@@ -482,7 +482,7 @@ void Slider::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_icon, "grabber_disabled");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(Slider, center_grabber, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
 }

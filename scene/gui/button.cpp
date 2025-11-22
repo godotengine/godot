@@ -862,7 +862,7 @@ void Button::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, align_to_largest_stylebox);
+	BIND_THEME_ITEM_CONSTANT_WITH_HINT(Button, align_to_largest_stylebox, PROPERTY_HINT_ENUM, "Disabled,Enabled");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, line_spacing);
 }
 
