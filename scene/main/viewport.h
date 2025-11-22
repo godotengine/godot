@@ -100,6 +100,7 @@ public:
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
 		SCALING_3D_MODE_FSR2,
+		SCALING_3D_MODE_FSR3,
 		SCALING_3D_MODE_METALFX_SPATIAL,
 		SCALING_3D_MODE_METALFX_TEMPORAL,
 		SCALING_3D_MODE_MAX
@@ -314,6 +315,7 @@ private:
 	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
+	bool fsr_auto_generate_reactive = false;
 	float texture_mipmap_bias = 0.0f;
 	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
 	bool use_debanding = false;
@@ -589,6 +591,9 @@ public:
 
 	void set_fsr_sharpness(float p_fsr_sharpness);
 	float get_fsr_sharpness() const;
+
+	void set_fsr_auto_generate_reactive(bool p_fsr_auto_generate_reactive);
+	bool get_fsr_auto_generate_reactive() const;
 
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
 	float get_texture_mipmap_bias() const;
