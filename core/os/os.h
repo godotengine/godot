@@ -351,6 +351,10 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 	virtual void revoke_granted_permissions() {}
 
+	// Allow overrides "disable" and can be specified via the command line.
+	virtual bool _is_gdriver_threaded_optimization_allowed() const { return false; }
+	virtual void _set_gdriver_threaded_optimization_allowed(bool p_allow) {}
+
 	// For recording / measuring benchmark data. Only enabled with tools
 	void set_use_benchmark(bool p_use_benchmark);
 	bool is_use_benchmark_set();

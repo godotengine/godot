@@ -135,6 +135,8 @@ class OS_Windows : public OS {
 
 	HashMap<void *, String> temp_libraries;
 
+	bool _allow_gdriver_threaded_optimizations = false;
+
 	void _remove_temp_library(void *p_library_handle);
 	String _get_default_fontname(const String &p_font_name) const;
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
@@ -264,6 +266,9 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+
+	virtual bool _is_gdriver_threaded_optimization_allowed() const override { return _allow_gdriver_threaded_optimizations; }
+	virtual void _set_gdriver_threaded_optimization_allowed(bool p_allow) override { _allow_gdriver_threaded_optimizations = p_allow; }
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 
