@@ -107,6 +107,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	delete[] argv_utf8;
 
+	godot_cleanup_profiler();
 	return os.get_exit_code();
 }
 

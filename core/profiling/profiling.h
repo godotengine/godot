@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/typedefs.h"
 #include "profiling.gen.h"
 
 // This header provides profiling primitives (implemented as macros) for various backends.
@@ -46,12 +45,25 @@
 #if defined(GODOT_USE_TRACY)
 // Use the tracy profiler.
 
+#include "core/string/ustring.h"
+
 #define TRACY_ENABLE
+
 #include <tracy/Tracy.hpp>
+
+inline const char *intern_string(const char *p_name) {
+	return p_name;
+}
+const char *intern_string(const String &p_name);
+const char *intern_string(const CharString &p_name);
+
+// Helper Macro
+#define GodotProfileVarname(m_varname) __godot_tracy_##m_varname
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
 #define GodotProfileZone(m_zone_name) ZoneNamedN(GD_UNIQUE_NAME(__godot_tracy_szone_), m_zone_name, true)
+#define GodotProfileZoneV(m_varname, m_zone_name) ZoneNamedN(GodotProfileVarname(zone_##m_varname), m_zone_name, true)
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
 #ifndef TRACY_CALLSTACK
@@ -66,11 +78,29 @@
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
 
+// Fully Dynamic Custom source location, and naming.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color)       \
+	const char *GodotProfileVarname(m_varname##_name) = intern_string(m_zone_name);               \
+	const char *GodotProfileVarname(m_varname##_func) = intern_string(m_function);                \
+	const char *GodotProfileVarname(m_varname##_file) = intern_string(m_file);                    \
+	auto GodotProfileVarname(m_varname) = tracy::ScopedZone(                                      \
+			static_cast<uint32_t>(m_line),                                                        \
+			GodotProfileVarname(m_varname##_file), strlen(GodotProfileVarname(m_varname##_file)), \
+			GodotProfileVarname(m_varname##_func), strlen(GodotProfileVarname(m_varname##_func)), \
+			GodotProfileVarname(m_varname##_name), strlen(GodotProfileVarname(m_varname##_name)), \
+			m_color.to_rgba32(),                                                                  \
+			-1, true);
+
+#define GodotProfileZoneRename(m_varname, m_zone_name)                              \
+	const char *GodotProfileVarname(m_varname##_name) = intern_string(m_zone_name); \
+	ZoneNameV(GodotProfileVarname(zone_##m_varname), GodotProfileVarname(m_varname##_name), strlen(GodotProfileVarname(m_varname##_name)))
+
 // Memory allocation
 #define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
 
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 #elif defined(GODOT_USE_PERFETTO)
 // Use the perfetto profiler.
@@ -94,6 +124,8 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileFrameMark // TODO
 #define GodotProfileZone(m_zone_name) TRACE_EVENT("godot", m_zone_name);
+#define GodotProfileZoneV(m_varname, m_zone_name) // TODO
+#define GodotProfileZoneRename(m_varname, m_zone_name) // TODO
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);                    \
 	PerfettoGroupedEventEnder __godot_perfetto_zone_##m_group_name
@@ -104,17 +136,26 @@ struct PerfettoGroupedEventEnder {
 
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color) \\ TODO
+
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 #else
 // No profiling; all macros are stubs.
 
 void godot_init_profiler();
+void godot_cleanup_profiler();
 
 // Tell the profiling backend that a new frame has started.
 #define GodotProfileFrameMark
 // Defines a profile zone from here to the end of the scope.
 #define GodotProfileZone(m_zone_name)
+// Defines a profile zone from here to the end of the scope, with a variable
+// name specified.
+#define GodotProfileZoneV(m_varname, m_zone_name)
+// Rename an existing zone
+#define GodotProfileZoneRename(m_varname, m_zone_name)
 // Defines a profile zone group. The first profile zone starts immediately,
 // and ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)
@@ -128,4 +169,9 @@ void godot_init_profiler();
 // Tell the profiling backend that an allocation was freed.
 // There must be a one to one correspondence of GodotProfileAlloc and GodotProfileFree calls.
 #define GodotProfileFree(m_ptr)
+
+// Define a zone with custom source information, for scripting, unique utf8
+// strings will be copied and stored for the duration of the program.
+#define GodotProfileZoneScript(m_varname, m_zone_name, m_function, m_file, m_line, m_color)
+
 #endif
