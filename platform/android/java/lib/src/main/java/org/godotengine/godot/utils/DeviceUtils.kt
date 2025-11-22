@@ -37,6 +37,8 @@ package org.godotengine.godot.utils
 
 import android.content.Context
 import android.os.Build
+import java.io.BufferedReader
+import java.io.FileReader
 
 /**
  * Returns true if running on Meta Horizon OS.
@@ -57,4 +59,73 @@ fun isPicoOSDevice(): Boolean {
  */
 fun isNativeXRDevice(context: Context): Boolean {
 	return isHorizonOSDevice(context) || isPicoOSDevice()
+}
+
+/**
+ * Checks if the device has a problematic Adreno GPU configuration.
+ * This method detects known problematic SoCs with Adreno 5XX GPUs that may have
+ * issues with Vulkan or OpenGL ES rendering.
+ *
+ * @return true if this is a problematic Adreno GPU configuration
+ */
+fun isProblematicAdrenoGpu(): Boolean {
+	try {
+		val hardware = Build.HARDWARE.lowercase()
+		val board = Build.BOARD.lowercase()
+
+		// Known problematic SoCs with Adreno 5XX GPUs:
+		// - msm8953: Snapdragon 625 (Adreno 506)
+		// - msm8937/msm8940: Snapdragon 430/435 (Adreno 505)
+		// - msm8917: Snapdragon 425 (Adreno 505)
+		// - msm8976: Snapdragon 652/653 (Adreno 510)
+		// - msm8956: Snapdragon 650 (Adreno 510)
+		// - sdm660: Snapdragon 660 (Adreno 509/512)
+		// - sdm636: Snapdragon 636 (Adreno 509)
+		val isProblematicSoc = hardware.contains("qcom") && (
+			hardware.contains("msm8953") ||  // Snapdragon 625 (Adreno 506)
+			hardware.contains("msm8937") ||  // Snapdragon 430 (Adreno 505)
+			hardware.contains("msm8940") ||  // Snapdragon 435 (Adreno 505)
+			hardware.contains("msm8917") ||  // Snapdragon 425 (Adreno 505)
+			hardware.contains("msm8976") ||  // Snapdragon 652/653 (Adreno 510)
+			hardware.contains("msm8956") ||  // Snapdragon 650 (Adreno 510)
+			hardware.contains("sdm660") ||   // Snapdragon 660 (Adreno 509/512)
+			hardware.contains("sdm636") ||   // Snapdragon 636 (Adreno 509)
+			board.contains("msm8953") ||
+			board.contains("msm8937") ||
+			board.contains("msm8940") ||
+			board.contains("msm8917") ||
+			board.contains("msm8976") ||
+			board.contains("msm8956") ||
+			board.contains("sdm660") ||
+			board.contains("sdm636")
+		)
+
+		// Also check for Snapdragon 6XX series on Android 9 and below
+		// as these often have Adreno 5XX GPUs with similar issues
+		if (!isProblematicSoc && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+			try {
+				BufferedReader(FileReader("/proc/cpuinfo")).use { reader ->
+					var line: String?
+					while (reader.readLine().also { line = it } != null) {
+						val lowerLine = line!!.lowercase()
+						if (lowerLine.contains("hardware") && lowerLine.contains("qualcomm")) {
+							if (lowerLine.contains("msm8953") || lowerLine.contains("msm8937") ||
+								lowerLine.contains("msm8940") || lowerLine.contains("msm8917") ||
+								lowerLine.contains("msm8976") || lowerLine.contains("msm8956") ||
+								lowerLine.contains("sdm660") || lowerLine.contains("sdm636")) {
+								return true
+							}
+						}
+					}
+				}
+			} catch (e: Exception) {
+				// Ignore errors when reading /proc/cpuinfo
+			}
+		}
+
+		return isProblematicSoc
+	} catch (e: Exception) {
+		// Be conservative on Android 9 and below - assume problematic if detection fails
+		return Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+	}
 }

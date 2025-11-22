@@ -68,6 +68,7 @@ import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.tts.GodotTTS
 import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.GodotNetUtils
+import org.godotengine.godot.utils.isProblematicAdrenoGpu
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.PermissionsUtil.requestPermission
 import org.godotengine.godot.utils.beginBenchmarkMeasure
@@ -328,6 +329,18 @@ class Godot private constructor(val context: Context) {
 			if (expansionPackPath.isNotEmpty()) {
 				commandLine.add("--main-pack")
 				commandLine.add(expansionPackPath)
+			}
+
+			if (isProblematicAdrenoGpu()) {
+				// Remove any existing --rendering-driver argument
+				val driverIndex = commandLine.indexOf("--rendering-driver")
+				if (driverIndex >= 0 && driverIndex < commandLine.size - 1) {
+					commandLine.removeAt(driverIndex + 1)  // Remove the value
+					commandLine.removeAt(driverIndex)       // Remove the key
+				}
+
+				commandLine.add("--rendering-driver")
+				commandLine.add("opengl3")
 			}
 			if (!nativeLayerInitializeCompleted) {
 				nativeLayerInitializeCompleted = GodotLib.initialize(
@@ -938,7 +951,14 @@ class Godot private constructor(val context: Context) {
 			renderingDeviceSource = "CommandLine"
 			renderingDevice = cmdline.get(index + 1)
 		}
-		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		var result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+		if (result && isProblematicAdrenoGpu()) {
+			Log.w(TAG, "Detected problematic Adreno 5XX GPU. Forcing OpenGL ES instead of Vulkan.")
+			result = false
+			renderingDevice = "opengl3"
+			renderingDeviceSource = "Adreno5XXWorkaround"
+		}
+
 		Log.d(TAG, """usesVulkan(): ${result}
 			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
 			renderer: ${renderer} (${rendererSource})""")
@@ -967,6 +987,7 @@ class Godot private constructor(val context: Context) {
 		// Check for api version 1.0
 		return packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x400003)
 	}
+
 
 	private fun setKeepScreenOn(enabled: Boolean) {
 		runOnHostThread {
