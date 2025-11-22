@@ -3520,7 +3520,81 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 		} break;
 		case GDScriptParser::COMPLETION_INHERIT_TYPE: {
-			_list_available_types(true, completion_context, options);
+			String root_class_name = "";
+			String root_class_path = "";
+			bool valid_inner_inheritance = static_cast<bool>(completion_context.current_class);
+
+			if (valid_inner_inheritance) {
+				root_class_path = completion_context.current_class->extends_path;
+			}
+			if (valid_inner_inheritance && completion_context.current_class->extends.size()) {
+				root_class_name = completion_context.current_class->extends[0]->name;
+			}
+			// Support for both global class names and scripts' paths
+			valid_inner_inheritance = valid_inner_inheritance && (ScriptServer::is_global_class(root_class_name) || (root_class_path != ""));
+			if (valid_inner_inheritance) {
+				// Inheritance from an inner class
+				if (root_class_path == "") {
+					root_class_path = ScriptServer::get_global_class_path(root_class_name);
+				}
+				Error parser_result;
+				Ref<GDScriptParserRef> parser_reference = GDScriptCache::get_parser(root_class_path, GDScriptParserRef::INTERFACE_SOLVED, parser_result);
+
+				if (!parser_reference.is_valid()) {
+					break;
+				}
+				const GDScriptParser::ClassNode *root_class_node = parser_reference->get_parser()->get_tree();
+				GDScriptParser::ClassNode *outer_class_node = const_cast<GDScriptParser::ClassNode *>(root_class_node);
+				// Get the direct outer class of the inherited class
+				bool valid = true;
+				int inner_index = 0;
+				if (completion_context.current_class->extends_path == "") {
+					inner_index = 1;
+				}
+				for (; inner_index < completion_context.current_class->extends.size(); inner_index++) {
+					valid = false;
+					if ((inner_index + 1) == completion_context.current_class->extends.size()) {
+						valid = true;
+					}
+					for (GDScriptParser::ClassNode::Member &member : outer_class_node->members) {
+						if (member.type != GDScriptParser::ClassNode::Member::CLASS) {
+							continue;
+						}
+						if (member.get_name() != completion_context.current_class->extends[inner_index]->name) {
+							continue;
+						}
+						outer_class_node = member.m_class;
+						valid = true;
+						break;
+					}
+					if (!valid) {
+						break;
+					}
+				}
+				if (!valid) {
+					break;
+				}
+				for (GDScriptParser::ClassNode::Member &member : outer_class_node->members) {
+					if (member.type != GDScriptParser::ClassNode::Member::CLASS) {
+						continue;
+					}
+
+					ScriptLanguage::CodeCompletionOption option(member.get_name(), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+					options.insert(option.display, option);
+				}
+			} else {
+				bool native_inheritance = static_cast<bool>(completion_context.current_class);
+				if (native_inheritance) {
+					native_inheritance = static_cast<bool>(completion_context.current_class->extends.size());
+				}
+				if (native_inheritance) {
+					native_inheritance = ClassDB::class_exists(completion_context.current_class->extends[0]->name);
+				}
+				if (native_inheritance) {
+					break;
+				}
+				_list_available_types(true, completion_context, options);
+			}
 			r_forced = true;
 		} break;
 		case GDScriptParser::COMPLETION_TYPE_NAME_OR_VOID: {
