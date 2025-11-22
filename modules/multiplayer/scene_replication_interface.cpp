@@ -281,7 +281,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	for (KeyValue<int, PeerInfo> &E : peers_info) {
 		E.value.sync_nodes.erase(sid);
 		E.value.last_watch_usecs.erase(sid);
-		if (sync->get_net_id()) {
+		if (sync->get_net_id() && uint32_t(E.key) == tobj.remote_peer) {
 			E.value.recv_sync_ids.erase(sync->get_net_id());
 		}
 	}
