@@ -173,6 +173,14 @@
 				Sets camera to use perspective projection. Objects on the screen becomes smaller when they are far away.
 			</description>
 		</method>
+		<method name="camera_set_projection">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="projection" type="Projection" />
+			<description>
+				Sets a custom projection matrix.
+			</description>
+		</method>
 		<method name="camera_set_transform">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
