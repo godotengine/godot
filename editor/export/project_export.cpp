@@ -200,11 +200,15 @@ void ProjectExportDialog::_update_presets() {
 	}
 
 	int current_idx = -1;
+	int preset_count = EditorExport::get_singleton()->get_export_preset_count();
 	presets->clear();
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+	for (int i = 0; i < preset_count; i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		if (preset == current) {
 			current_idx = i;
+		} else if (current.is_null()) {
+			current_idx = i;
+			_edit_preset(i);
 		}
 
 		String preset_name = preset->get_name();
@@ -214,6 +218,9 @@ void ProjectExportDialog::_update_presets() {
 		preset->update_files();
 		presets->add_item(preset_name, preset->get_platform()->get_logo());
 	}
+
+	settings_vb->set_visible(current_idx != -1);
+	empty_label->set_visible(current_idx == -1);
 
 	if (current_idx != -1) {
 		presets->select(current_idx);
@@ -246,19 +253,14 @@ void ProjectExportDialog::_update_export_all() {
 
 void ProjectExportDialog::_edit_preset(int p_index) {
 	if (p_index < 0 || p_index >= presets->get_item_count()) {
-		name->set_text("");
-		name->set_editable(false);
-		export_path->hide();
-		advanced_options->set_disabled(true);
-		runnable->set_disabled(true);
 		parameters->edit(nullptr);
 		presets->deselect_all();
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
-		sections->hide();
 		patches->clear();
 		export_error->hide();
 		export_templates_error->hide();
+		export_texture_format_error->hide();
 		return;
 	}
 
@@ -268,10 +270,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	updating = true;
 
 	presets->select(p_index);
-	sections->show();
-
-	name->set_editable(true);
-	export_path->show();
 	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
 	get_ok_button()->set_disabled(false);
@@ -286,8 +284,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->get_path_edit()->clear();
 	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
-	advanced_options->set_disabled(false);
-	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	if (parameters->get_edited_object() != current.ptr()) {
 		current->update_value_overrides();
@@ -774,7 +770,7 @@ void ProjectExportDialog::_delete_preset() {
 
 void ProjectExportDialog::_delete_preset_confirm() {
 	int idx = presets->get_current();
-	_edit_preset(-1);
+	_edit_preset(idx - 1);
 	export_button->set_disabled(true);
 	get_ok_button()->set_disabled(true);
 	EditorExport::get_singleton()->remove_export_preset(idx);
@@ -1507,6 +1503,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets = memnew(ItemList);
 	presets->set_theme_type_variation("ItemListSecondary");
 	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	presets->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1523,7 +1520,8 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Preset settings.
 
-	VBoxContainer *settings_vb = memnew(VBoxContainer);
+	settings_vb = memnew(VBoxContainer);
+	settings_vb->hide();
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
 
@@ -1794,15 +1792,22 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 
 	// Disable by default.
-	name->set_editable(false);
-	export_path->hide();
-	advanced_options->set_disabled(true);
-	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
 	script_key_error->hide();
-	sections->hide();
 	parameters->edit(nullptr);
+
+	// Label shown when no presets are present.
+
+	empty_label = memnew(Label(TTRC("No presets found.\nCreate one so that its parameters can be edited here.")));
+	empty_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	empty_label->set_clip_text(true); // Necessary to avoid overexpanding the dialog vertically.
+	empty_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	empty_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	empty_label->hide();
+	hbox->add_child(empty_label);
 
 	// Deletion dialog.
 
@@ -1821,7 +1826,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
-	// Disable initially before we select a valid preset
+	// Disable initially before we select a valid preset.
 	export_button->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
