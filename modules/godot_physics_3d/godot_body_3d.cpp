@@ -30,6 +30,7 @@
 
 #include "godot_body_3d.h"
 
+#include "core/math/eigen_value_symmetric.h"
 #include "godot_area_3d.h"
 #include "godot_body_direct_state_3d.h"
 #include "godot_constraint_3d.h"
@@ -39,6 +40,35 @@ void GodotBody3D::_mass_properties_changed() {
 	if (get_space() && !mass_properties_update_list.in_list()) {
 		get_space()->body_add_to_mass_properties_update_list(&mass_properties_update_list);
 	}
+}
+
+void GodotBody3D::_update_local_inertia() {
+	// Set local inertia tensor to diagonal matrix
+	inertia_tensor_local = Basis();
+	inertia_tensor_local.scale(inertia);
+
+	// Add off-diagonal entries using the "alternate" convention
+	// https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_tensor
+	inertia_tensor_local[1][2] = -product_of_inertia.x;
+	inertia_tensor_local[2][1] = -product_of_inertia.x;
+
+	inertia_tensor_local[0][2] = -product_of_inertia.y;
+	inertia_tensor_local[2][0] = -product_of_inertia.y;
+
+	inertia_tensor_local[0][1] = -product_of_inertia.z;
+	inertia_tensor_local[1][0] = -product_of_inertia.z;
+
+	principal_inertia_axes_local = Basis();
+	Vector3 principal_inertia;
+
+	// Compute the principal axes and moments of inertia.
+	if (!eigen_value_symmetric(inertia_tensor_local, principal_inertia_axes_local, principal_inertia)) {
+		// Set to identity and on-axis inertia if it fails.
+		WARN_PRINT("Unable to determine principle axes of inertia. Falling back to on-axis inertia only.");
+		principal_inertia_axes_local = Basis();
+		principal_inertia = inertia;
+	}
+	_inv_inertia = principal_inertia.inverse();
 }
 
 void GodotBody3D::_update_transform_dependent() {
@@ -51,6 +81,33 @@ void GodotBody3D::_update_transform_dependent() {
 	Basis diag;
 	diag.scale(_inv_inertia);
 	_inv_inertia_tensor = tb * diag * tbt;
+}
+
+void GodotBody3D::set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia) {
+	// Set Mass
+	ERR_FAIL_COND(p_mass <= 0);
+	mass = p_mass;
+
+	// Set Center of Mass
+	calculate_center_of_mass = false;
+	center_of_mass_local = p_center_of_mass;
+
+	// Sset Inertia
+	inertia = p_inertia;
+	if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
+		calculate_inertia = true;
+		if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+			_mass_properties_changed();
+		}
+	} else {
+		calculate_inertia = false;
+		product_of_inertia = p_product_of_inertia;
+		if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+			_update_local_inertia();
+		}
+	}
+
+	_update_transform_dependent();
 }
 
 void GodotBody3D::update_mass_properties() {
@@ -216,10 +273,23 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 			} else {
 				calculate_inertia = false;
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-					principal_inertia_axes_local = Basis();
-					_inv_inertia = inertia.inverse();
+					_update_local_inertia();
 					_update_transform_dependent();
 				}
+			}
+		} break;
+		case PhysicsServer3D::BODY_PARAM_PROD_INERTIA: {
+			if (!calculate_inertia) {
+				product_of_inertia = p_value;
+				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+					_update_local_inertia();
+					_update_transform_dependent();
+				}
+			} else {
+				WARN_PRINT("On-axis inertia must be non-zero to set products of inertia.");
+				product_of_inertia.x = 0.0;
+				product_of_inertia.y = 0.0;
+				product_of_inertia.z = 0.0;
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
@@ -265,7 +335,16 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
 			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-				return _inv_inertia.inverse();
+				return inertia_tensor_local.get_main_diagonal();
+			} else {
+				return Vector3();
+			}
+		} break;
+		case PhysicsServer3D::BODY_PARAM_PROD_INERTIA: {
+			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+				return Vector3(-inertia_tensor_local[1][2],
+						-inertia_tensor_local[0][2],
+						-inertia_tensor_local[0][1]);
 			} else {
 				return Vector3();
 			}
@@ -320,7 +399,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			if (!calculate_inertia) {
 				principal_inertia_axes_local = Basis();
-				_inv_inertia = inertia.inverse();
+				_update_local_inertia();
 				_update_transform_dependent();
 			}
 			_mass_properties_changed();
