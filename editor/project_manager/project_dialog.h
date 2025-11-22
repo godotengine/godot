@@ -32,6 +32,22 @@
 
 #include "scene/gui/dialogs.h"
 
+class ProgressBar;
+
+class ProjectProgressDialog : public PopupPanel {
+	GDCLASS(ProjectProgressDialog, PopupPanel);
+
+public:
+	ProjectProgressDialog();
+	void show_dialog(String p_title);
+	void set_progress(size_t p_completed_files, size_t p_total_files, const String &p_current_file);
+
+private:
+	Label *title = nullptr;
+	Label *current_file = nullptr;
+	ProgressBar *progress_bar = nullptr;
+};
+
 class Button;
 class CheckBox;
 class CheckButton;
@@ -39,6 +55,7 @@ class EditorFileDialog;
 class LineEdit;
 class OptionButton;
 class TextureRect;
+class ProjectProgressDialog;
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -97,6 +114,7 @@ private:
 	EditorFileDialog *fdialog_project = nullptr;
 	EditorFileDialog *fdialog_install = nullptr;
 	AcceptDialog *dialog_error = nullptr;
+	ProjectProgressDialog *progress_dialog = nullptr;
 
 	String zip_path;
 	String zip_title;
@@ -135,6 +153,32 @@ private:
 	void _reset_name();
 	void _renderer_selected();
 	void _nonempty_confirmation_ok_pressed();
+	void _post_process_project(Mode p_mode, const String &p_path);
+
+	struct ProgressData {
+		Mode mode;
+		String source_path;
+		String target_path;
+		bool create_dir;
+
+		Error error;
+		String popup_error_msg;
+		String inline_error_msg;
+
+		Mutex state_mutex;
+		struct State {
+			String current_file;
+			size_t total_files = 0;
+			size_t completed_files = 0;
+			bool done = false;
+		} state;
+	} *progress_data = nullptr;
+
+	Thread thread;
+
+	static void _run_thread(void *p_data);
+	static Error _copy_dir_threaded(String p_from_dir, String p_to_dir, ProgressData *p_progress_data);
+	static Error _unzip_threaded(String p_zip_path, String p_path, ProgressData *p_progress_data);
 
 	void ok_pressed() override;
 
