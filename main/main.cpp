@@ -36,6 +36,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"
 #include "core/extension/gdextension_interface_dump.gen.h"
+#include "core/extension/gdextension_interface_header_generator.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -279,6 +280,7 @@ static bool print_fps = false;
 #ifdef TOOLS_ENABLED
 static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
+static bool dump_gdextension_interface_header = false;
 static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
@@ -707,6 +709,7 @@ void Main::print_help(const char *p_binary) {
 #endif
 	print_help_option("--build-solutions", "Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-gdextension-interface", "Generate a GDExtension header file \"gdextension_interface.h\" in the current folder. This file is the base file required to implement a GDExtension.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dump-gdextension-interface-json", "Generate a JSON dump of the GDExtension interface named \"gdextension_interface.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api", "Generate a JSON dump of the Godot API for GDExtension bindings named \"extension_api.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api-with-docs", "Generate JSON dump of the Godot API like the previous option, but including documentation.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--validate-extension-api <path>", "Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility.\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1561,8 +1564,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
-			dump_gdextension_interface = true;
+			dump_gdextension_interface_header = true;
 			print_line("Dumping GDExtension interface header file");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
+			main_args.push_back(arg);
+		} else if (arg == "--dump-gdextension-interface-json") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			dump_gdextension_interface = true;
+			print_line("Dumping GDExtension interface json file");
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
@@ -4132,7 +4145,11 @@ int Main::start() {
 	// GDExtension API and interface.
 	{
 		if (dump_gdextension_interface) {
-			GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.h");
+			GDExtensionInterfaceDump::generate_gdextension_interface_file("gdextension_interface.json");
+		}
+
+		if (dump_gdextension_interface_header) {
+			GDExtensionInterfaceHeaderGenerator::generate_gdextension_interface_header("gdextension_interface.h");
 		}
 
 		if (dump_extension_api) {
@@ -4140,7 +4157,7 @@ int Main::start() {
 			GDExtensionAPIDump::generate_extension_json_file("extension_api.json", include_docs_in_extension_api_dump);
 		}
 
-		if (dump_gdextension_interface || dump_extension_api) {
+		if (dump_gdextension_interface || dump_gdextension_interface_header || dump_extension_api) {
 			return EXIT_SUCCESS;
 		}
 
