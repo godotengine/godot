@@ -1006,13 +1006,15 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		}
 
 		if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
-			print_verbose("- Vulkan Fragment Density Map supported");
-
 			fdm_capabilities.min_texel_size.x = fdm_properties.minFragmentDensityTexelSize.width;
 			fdm_capabilities.min_texel_size.y = fdm_properties.minFragmentDensityTexelSize.height;
 			fdm_capabilities.max_texel_size.x = fdm_properties.maxFragmentDensityTexelSize.width;
 			fdm_capabilities.max_texel_size.y = fdm_properties.maxFragmentDensityTexelSize.height;
 			fdm_capabilities.invocations_supported = fdm_properties.fragmentDensityInvocations;
+
+			print_verbose(String("- Vulkan Fragment Density Map supported") +
+					String(", min texel size: (") + itos(fdm_capabilities.min_texel_size.x) + String(", ") + itos(fdm_capabilities.min_texel_size.y) + String(")") +
+					String(", max texel size: (") + itos(fdm_capabilities.max_texel_size.x) + String(", ") + itos(fdm_capabilities.max_texel_size.y) + String(")"));
 
 			if (fdm_capabilities.dynamic_attachment_supported) {
 				print_verbose("  - dynamic fragment density map supported");
@@ -5036,19 +5038,22 @@ void RenderingDeviceDriverVulkan::command_end_render_pass(CommandBufferID p_cmd_
 	if (device_functions.EndRenderPass2KHR != nullptr && fdm_capabilities.offset_supported && command_buffer->active_render_pass->uses_fragment_density_map) {
 		LocalVector<VkOffset2D> fragment_density_offsets;
 		if (VulkanHooks::get_singleton() != nullptr) {
-			fragment_density_offsets = VulkanHooks::get_singleton()->get_fragment_density_offsets();
+			VulkanHooks::get_singleton()->get_fragment_density_offsets(fragment_density_offsets, fdm_capabilities.offset_granularity);
 		}
+		if (fragment_density_offsets.size() > 0) {
+			VkSubpassFragmentDensityMapOffsetEndInfoQCOM offset_info = {};
+			offset_info.sType = VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM;
+			offset_info.pFragmentDensityOffsets = fragment_density_offsets.ptr();
+			offset_info.fragmentDensityOffsetCount = fragment_density_offsets.size();
 
-		VkSubpassFragmentDensityMapOffsetEndInfoQCOM offset_info = {};
-		offset_info.sType = VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM;
-		offset_info.pFragmentDensityOffsets = fragment_density_offsets.is_empty() ? nullptr : fragment_density_offsets.ptr();
-		offset_info.fragmentDensityOffsetCount = fragment_density_offsets.size();
+			VkSubpassEndInfo subpass_end_info = {};
+			subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO;
+			subpass_end_info.pNext = &offset_info;
 
-		VkSubpassEndInfo subpass_end_info = {};
-		subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO;
-		subpass_end_info.pNext = &offset_info;
-
-		device_functions.EndRenderPass2KHR(command_buffer->vk_command_buffer, &subpass_end_info);
+			device_functions.EndRenderPass2KHR(command_buffer->vk_command_buffer, &subpass_end_info);
+		} else {
+			vkCmdEndRenderPass(command_buffer->vk_command_buffer);
+		}
 	} else {
 		vkCmdEndRenderPass(command_buffer->vk_command_buffer);
 	}

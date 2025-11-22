@@ -54,7 +54,7 @@ public:
 	virtual bool get_physical_device(VkPhysicalDevice *r_device) override final;
 	virtual bool create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) override final;
 	virtual void set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) override final;
-	virtual LocalVector<VkOffset2D> get_fragment_density_offsets() override final;
+	virtual void get_fragment_density_offsets(LocalVector<VkOffset2D> &r_offets, Vector2i p_granularity) override final;
 
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
 	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
