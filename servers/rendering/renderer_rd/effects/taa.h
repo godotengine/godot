@@ -54,7 +54,7 @@ private:
 	RID shader_version;
 	RID pipeline;
 
-	void resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
+	void resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
 };
 
 } // namespace RendererRD
