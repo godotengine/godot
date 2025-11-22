@@ -2511,8 +2511,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	String path = ResourceLoader::path_remap(local_path);
 
-	TextFile *text_file = memnew(TextFile);
-	Ref<TextFile> text_res(text_file);
+	Ref<TextFile> text_file = memnew(TextFile);
 	Error err = text_file->load_text(path);
 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load text file '" + path + "'.");
@@ -2528,7 +2527,7 @@ Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error
 		*r_error = OK;
 	}
 
-	return text_res;
+	return text_file;
 }
 
 Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_path) {

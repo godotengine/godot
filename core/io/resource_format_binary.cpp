@@ -749,7 +749,7 @@ Error ResourceLoaderBinary::load() {
 		Ref<Resource> res;
 		Resource *r = nullptr;
 
-		MissingResource *missing_resource = nullptr;
+		Ref<MissingResource> missing_resource = nullptr;
 
 		if (main) {
 			res = ResourceLoader::get_resource_ref_override(local_path);
@@ -775,7 +775,7 @@ Error ResourceLoaderBinary::load() {
 						missing_resource = memnew(MissingResource);
 						missing_resource->set_original_class(t);
 						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
+						obj = missing_resource.ptr();
 					} else {
 						error = ERR_FILE_CORRUPT;
 						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
@@ -831,7 +831,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource == nullptr && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+			if (value.get_type() == Variant::OBJECT && missing_resource.is_null() && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -873,7 +873,7 @@ Error ResourceLoaderBinary::load() {
 			}
 		}
 
-		if (missing_resource) {
+		if (missing_resource.is_valid()) {
 			missing_resource->set_recording_properties(false);
 		}
 

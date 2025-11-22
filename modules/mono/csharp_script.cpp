@@ -400,7 +400,7 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	return "";
 }
 
-Script *CSharpLanguage::create_script() const {
+Ref<Script> CSharpLanguage::create_script() const {
 	return memnew(CSharpScript);
 }
 

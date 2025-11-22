@@ -3355,7 +3355,7 @@ void TileSet::_compatibility_conversion() {
 		CompatibilityTileData *ctd = E.value;
 
 		// Add the texture
-		TileSetAtlasSource *atlas_source = memnew(TileSetAtlasSource);
+		Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 		int source_id = add_source(Ref<TileSetSource>(atlas_source));
 
 		atlas_source->set_texture(ctd->texture);

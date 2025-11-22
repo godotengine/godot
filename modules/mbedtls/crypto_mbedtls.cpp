@@ -320,10 +320,7 @@ void CryptoMbedTLS::initialize_crypto() {
 void CryptoMbedTLS::finalize_crypto() {
 	Crypto::_create = nullptr;
 	Crypto::_load_default_certificates = nullptr;
-	if (default_certs) {
-		memdelete(default_certs);
-		default_certs = nullptr;
-	}
+	default_certs = nullptr;
 	X509CertificateMbedTLS::finalize();
 	CryptoKeyMbedTLS::finalize();
 	HMACContextMbedTLS::finalize();
@@ -343,17 +340,17 @@ CryptoMbedTLS::~CryptoMbedTLS() {
 	mbedtls_entropy_free(&entropy);
 }
 
-X509CertificateMbedTLS *CryptoMbedTLS::default_certs = nullptr;
+Ref<X509CertificateMbedTLS> CryptoMbedTLS::default_certs = nullptr;
 
-X509CertificateMbedTLS *CryptoMbedTLS::get_default_certificates() {
+Ref<X509CertificateMbedTLS> CryptoMbedTLS::get_default_certificates() {
 	return default_certs;
 }
 
 void CryptoMbedTLS::load_default_certificates(const String &p_path) {
-	ERR_FAIL_COND(default_certs != nullptr);
+	ERR_FAIL_COND(default_certs.is_valid());
 
 	default_certs = memnew(X509CertificateMbedTLS);
-	ERR_FAIL_NULL(default_certs);
+	ERR_FAIL_COND(default_certs.is_null());
 
 	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
