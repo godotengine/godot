@@ -286,10 +286,10 @@ void main() {
 
 	if (canvas_data.use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
-		// precision issue on some hardware creates artifacts within texture
-		// offset uv by a small amount to avoid
-		uv += 1e-5;
 	}
+	// precision issue on some hardware creates artifacts within texture
+	// offset uv by a small amount to avoid
+	uv += 1e-5;
 
 	uv_vertex_interp = vec4(uv, vertex);
 
