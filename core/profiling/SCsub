@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from misc.utility.scons_hints import *
 
 import pathlib
-from typing import Tuple
 
 import profiling_builders
 
@@ -11,7 +12,7 @@ Import("env")
 env.add_source_files(env.core_sources, "*.cpp")
 
 
-def get_profiler_and_path_from_path(path: pathlib.Path) -> Tuple[str, pathlib.Path]:
+def get_profiler_and_path_from_path(path: pathlib.Path) -> tuple[str, pathlib.Path]:
     if not path.is_dir():
         print("profiler_path must be empty or point to a directory.")
         Exit(255)
