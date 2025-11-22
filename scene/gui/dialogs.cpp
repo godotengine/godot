@@ -67,6 +67,8 @@ void AcceptDialog::_notification(int p_what) {
 				if (get_ok_button()->is_inside_tree()) {
 					get_ok_button()->grab_focus();
 				}
+				emit_signal(SNAME("popup_hide"));
+				popped_up = false;
 				_update_child_rects();
 
 				parent_visible = get_parent_visible_window();
@@ -427,6 +429,7 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ok_button_text", "text"), &AcceptDialog::set_ok_button_text);
 	ClassDB::bind_method(D_METHOD("get_ok_button_text"), &AcceptDialog::get_ok_button_text);
 
+	ADD_SIGNAL(MethodInfo("popup_hide"));
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("canceled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));

@@ -86,6 +86,10 @@
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" overrides="Window" default="true" />
 	</members>
 	<signals>
+		<signal name="popup_hide">
+			<description>
+				Emitted when the dialog is hidden.
+			</description>
 		<signal name="canceled">
 			<description>
 				Emitted when the dialog is closed or the button created with [method add_cancel_button] is pressed.
