@@ -71,6 +71,12 @@
 				Creates and compiles a new [RegEx] object. See also [method compile].
 			</description>
 		</method>
+		<method name="get_compile_error" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the last compilation error.
+			</description>
+		</method>
 		<method name="get_group_count" qualifiers="const">
 			<return type="int" />
 			<description>

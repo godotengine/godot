@@ -74,6 +74,7 @@ class RegEx : public RefCounted {
 	void *general_ctx = nullptr;
 	void *code = nullptr;
 	String pattern;
+	String compile_error;
 
 	void _pattern_info(uint32_t what, void *where) const;
 
@@ -102,6 +103,8 @@ public:
 	String get_pattern() const;
 	int get_group_count() const;
 	PackedStringArray get_names() const;
+
+	String get_compile_error() const;
 
 	RegEx();
 	RegEx(const String &p_pattern);

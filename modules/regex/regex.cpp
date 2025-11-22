@@ -193,11 +193,11 @@ Error RegEx::compile(const String &p_pattern, bool p_show_error) {
 	pcre2_compile_context_free_32(cctx);
 
 	if (!code) {
+		PCRE2_UCHAR32 buf[256];
+		pcre2_get_error_message_32(err, buf, 256);
+		compile_error = String::num_int64(offset) + ": " + String((const char32_t *)buf);
 		if (p_show_error) {
-			PCRE2_UCHAR32 buf[256];
-			pcre2_get_error_message_32(err, buf, 256);
-			String message = String::num_int64(offset) + ": " + String((const char32_t *)buf);
-			ERR_PRINT(message);
+			ERR_PRINT(compile_error);
 		}
 		return FAILED;
 	}
@@ -400,6 +400,10 @@ PackedStringArray RegEx::get_names() const {
 	return result;
 }
 
+String RegEx::get_compile_error() const {
+	return compile_error;
+}
+
 RegEx::RegEx() {
 	general_ctx = pcre2_general_context_create_32(&_regex_malloc, &_regex_free, nullptr);
 }
@@ -428,4 +432,5 @@ void RegEx::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);
 	ClassDB::bind_method(D_METHOD("get_group_count"), &RegEx::get_group_count);
 	ClassDB::bind_method(D_METHOD("get_names"), &RegEx::get_names);
+	ClassDB::bind_method(D_METHOD("get_compile_error"), &RegEx::get_compile_error);
 }
