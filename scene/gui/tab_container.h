@@ -123,6 +123,7 @@ private:
 
 	HashMap<Node *, RID> tab_panels;
 
+	bool _is_tab_bar_owned() const;
 	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
 	Vector<Control *> _get_tab_controls() const;

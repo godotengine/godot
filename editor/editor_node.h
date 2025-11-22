@@ -282,7 +282,6 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
-	bool is_main_screen_editing = false;
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;

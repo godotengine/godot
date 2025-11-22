@@ -36,6 +36,7 @@
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -4483,6 +4484,18 @@ void CanvasItemEditor::_notification(int p_what) {
 				_commit_drag();
 			}
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				set_process(true);
+				RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), false);
+				RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_ENABLED);
+			} else {
+				set_process(false);
+				RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), true);
+				RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_DISABLED);
+			}
+		} break;
 	}
 }
 
@@ -5530,6 +5543,12 @@ void CanvasItemEditor::center_at(const Point2 &p_pos) {
 }
 
 CanvasItemEditor::CanvasItemEditor() {
+	set_name(TTRC("2D"));
+	set_icon_name("2D");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN);
+	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_2d"));
+
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -5541,9 +5560,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_adjust_new_node_position));
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
-	add_child(toolbar_margin);
+	main_vb->add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
 	HFlowContainer *main_flow = memnew(HFlowContainer);
@@ -5555,7 +5577,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_flow->add_child(main_menu_hbox);
 
 	bottom_split = memnew(VSplitContainer);
-	add_child(bottom_split);
+	main_vb->add_child(bottom_split);
 	bottom_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	left_panel_split = memnew(HSplitContainer);
@@ -6041,21 +6063,12 @@ void CanvasItemEditorPlugin::edit(Object *p_object) {
 }
 
 bool CanvasItemEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("CanvasItem");
+	return Object::cast_to<CanvasItem>(p_object);
 }
 
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		canvas_item_editor->show();
-		canvas_item_editor->set_process(true);
-		RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), false);
-		RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_ENABLED);
-
-	} else {
-		canvas_item_editor->hide();
-		canvas_item_editor->set_process(false);
-		RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), true);
-		RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_DISABLED);
+		canvas_item_editor->make_visible();
 	}
 }
 
@@ -6082,10 +6095,7 @@ void CanvasItemEditorPlugin::_notification(int p_what) {
 
 CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	canvas_item_editor = memnew(CanvasItemEditor);
-	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(canvas_item_editor);
-	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	canvas_item_editor->hide();
+	EditorDockManager::get_singleton()->add_dock(canvas_item_editor);
 }
 
 void CanvasItemEditorViewport::_on_mouse_exit() {

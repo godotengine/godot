@@ -35,6 +35,10 @@
 #include "scene/gui/popup.h"
 #include "scene/theme/theme_db.h"
 
+bool TabContainer::_is_tab_bar_owned() const {
+	return internal_container->get_parent() == this;
+}
+
 Rect2 TabContainer::_get_tab_rect() const {
 	Rect2 rect;
 	if (tabs_visible && get_tab_count() > 0) {
@@ -170,7 +174,7 @@ void TabContainer::_notification(int p_what) {
 			Size2 size = get_size();
 
 			// Draw only the tab area if the header is hidden.
-			if (!tabs_visible) {
+			if (!tabs_visible || !_is_tab_bar_owned()) {
 				theme_cache.panel_style->draw(canvas, Rect2(0, 0, size.width, size.height));
 				return;
 			}
@@ -279,12 +283,14 @@ void TabContainer::_repaint() {
 
 	// Move the TabBar to the top or bottom.
 	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
-	if (tabs_position == POSITION_BOTTOM) {
-		internal_container->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
-		internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
-	} else {
-		internal_container->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
-		internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+	if (_is_tab_bar_owned()) {
+		if (tabs_position == POSITION_BOTTOM) {
+			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
+			internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
+		} else {
+			internal_container->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
+			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+		}
 	}
 
 	updating_visibility = true;
@@ -295,7 +301,7 @@ void TabContainer::_repaint() {
 			c->show();
 			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-			if (tabs_visible) {
+			if (tabs_visible && _is_tab_bar_owned()) {
 				if (tabs_position == POSITION_BOTTOM) {
 					c->set_offset(SIDE_BOTTOM, -_get_tab_height());
 				} else {
@@ -317,6 +323,9 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_update_margins() {
+	if (!_is_tab_bar_owned()) {
+		return;
+	}
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
 
@@ -957,7 +966,7 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 Size2 TabContainer::get_minimum_size() const {
 	Size2 ms;
 
-	if (tabs_visible) {
+	if (tabs_visible && _is_tab_bar_owned()) {
 		ms = tab_bar->get_minimum_size();
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);

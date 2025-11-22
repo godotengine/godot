@@ -914,7 +914,10 @@
 		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
 			Bottom panel.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
+		<constant name="DOCK_SLOT_MAIN_SCREEN" value="9" enum="DockSlot">
+			The editor's main screen.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="10" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">
