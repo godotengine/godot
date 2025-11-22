@@ -1114,17 +1114,23 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 	{
 		Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
-		// HScrollBar.
+		Ref<StyleBoxFlat> grabber_style = p_config.base_style->duplicate();
+		grabber_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.225));
 
-		if (p_config.enable_touch_optimizations) {
-			p_theme->set_stylebox("scroll", "HScrollBar", EditorThemeManager::make_line_stylebox(p_config.separator_color, 50));
-		} else {
-			p_theme->set_stylebox("scroll", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, -5, 1, -5, 1));
-		}
-		p_theme->set_stylebox("scroll_focus", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber_highlight", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber_pressed", "HScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberPressed"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
+		Ref<StyleBoxFlat> grabber_hl_style = p_config.base_style->duplicate();
+		grabber_hl_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.5));
+
+		// HScrollBar.
+		int scroll_margin = (p_config.enable_touch_optimizations ? 10 : 3) * EDSCALE;
+
+		Ref<StyleBoxEmpty> h_scroll_style = p_config.base_empty_style->duplicate();
+		h_scroll_style->set_content_margin_individual(0, scroll_margin, 0, scroll_margin);
+
+		p_theme->set_stylebox("scroll", "HScrollBar", h_scroll_style);
+		p_theme->set_stylebox("scroll_focus", "HScrollBar", p_config.focus_style);
+		p_theme->set_stylebox("grabber", "HScrollBar", grabber_style);
+		p_theme->set_stylebox("grabber_highlight", "HScrollBar", grabber_hl_style);
+		p_theme->set_stylebox("grabber_pressed", "HScrollBar", grabber_hl_style);
 
 		p_theme->set_icon("increment", "HScrollBar", empty_icon);
 		p_theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
@@ -1135,15 +1141,14 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		// VScrollBar.
 
-		if (p_config.enable_touch_optimizations) {
-			p_theme->set_stylebox("scroll", "VScrollBar", EditorThemeManager::make_line_stylebox(p_config.separator_color, 50, 1, 1, true));
-		} else {
-			p_theme->set_stylebox("scroll", "VScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, -5, 1, -5));
-		}
-		p_theme->set_stylebox("scroll_focus", "VScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollBg"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber", "VScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabber"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber_highlight", "VScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberHl"), EditorStringName(EditorIcons)), 5, 5, 5, 5, 1, 1, 1, 1));
-		p_theme->set_stylebox("grabber_pressed", "VScrollBar", EditorThemeManager::make_stylebox(p_theme->get_icon(SNAME("GuiScrollGrabberPressed"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 1, 1, 1, 1));
+		Ref<StyleBoxEmpty> v_scroll_style = p_config.base_empty_style->duplicate();
+		v_scroll_style->set_content_margin_individual(scroll_margin, 0, scroll_margin, 0);
+
+		p_theme->set_stylebox("scroll", "VScrollBar", v_scroll_style);
+		p_theme->set_stylebox("scroll_focus", "VScrollBar", p_config.focus_style);
+		p_theme->set_stylebox("grabber", "VScrollBar", grabber_style);
+		p_theme->set_stylebox("grabber_highlight", "VScrollBar", grabber_hl_style);
+		p_theme->set_stylebox("grabber_pressed", "VScrollBar", grabber_hl_style);
 
 		p_theme->set_icon("increment", "VScrollBar", empty_icon);
 		p_theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
@@ -1155,19 +1160,26 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		// Slider
 		const int background_margin = MAX(2, p_config.base_margin / 2);
 
+		Ref<StyleBoxFlat> style_h_slider = p_config.base_style->duplicate();
+		style_h_slider->set_bg_color(p_config.mono_color_inv * Color(1, 1, 1, 0.35));
+		style_h_slider->set_content_margin_individual(0, 2 * EDSCALE, 0, 2 * EDSCALE);
+
 		// HSlider.
 		p_theme->set_icon("grabber_highlight", "HSlider", p_theme->get_icon(SNAME("GuiSliderGrabberHl"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("grabber", "HSlider", p_theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
-		p_theme->set_stylebox("slider", "HSlider", EditorThemeManager::make_flat_stylebox(p_config.dark_color_3, 0, background_margin, 0, background_margin, p_config.corner_radius));
+		p_theme->set_stylebox("slider", "HSlider", style_h_slider);
 		p_theme->set_stylebox("grabber_area", "HSlider", EditorThemeManager::make_flat_stylebox(p_config.contrast_color_1, 0, background_margin, 0, background_margin, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area_highlight", "HSlider", EditorThemeManager::make_flat_stylebox(p_config.contrast_color_1, 0, background_margin, 0, background_margin));
 		p_theme->set_constant("center_grabber", "HSlider", 0);
 		p_theme->set_constant("grabber_offset", "HSlider", 0);
 
+		Ref<StyleBoxFlat> style_v_slider = style_h_slider->duplicate();
+		style_v_slider->set_content_margin_individual(2 * EDSCALE, 0, 2 * EDSCALE, 0);
+
 		// VSlider.
 		p_theme->set_icon("grabber", "VSlider", p_theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("grabber_highlight", "VSlider", p_theme->get_icon(SNAME("GuiSliderGrabberHl"), EditorStringName(EditorIcons)));
-		p_theme->set_stylebox("slider", "VSlider", EditorThemeManager::make_flat_stylebox(p_config.dark_color_3, background_margin, 0, background_margin, 0, p_config.corner_radius));
+		p_theme->set_stylebox("slider", "VSlider", style_v_slider);
 		p_theme->set_stylebox("grabber_area", "VSlider", EditorThemeManager::make_flat_stylebox(p_config.contrast_color_1, background_margin, 0, background_margin, 0, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area_highlight", "VSlider", EditorThemeManager::make_flat_stylebox(p_config.contrast_color_1, background_margin, 0, background_margin, 0));
 		p_theme->set_constant("center_grabber", "VSlider", 0);
