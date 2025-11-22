@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
@@ -72,8 +73,8 @@ public:
 	Dictionary undo_state;
 };
 
-class CanvasItemEditor : public VBoxContainer {
-	GDCLASS(CanvasItemEditor, VBoxContainer);
+class CanvasItemEditor : public EditorDock {
+	GDCLASS(CanvasItemEditor, EditorDock);
 
 public:
 	enum Tool {
@@ -639,8 +640,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("2D"); }
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "2D"; }
+	bool has_main_screen() const override { return canvas_item_editor->get_current_layout() == EditorDock::DOCK_LAYOUT_MAIN_SCREEN; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

@@ -230,7 +230,7 @@
 				This is for editors that edit script-based objects. You can return a list of breakpoints in the format ([code]script:line[/code]), for example: [code]res://path_to_script.gd:25[/code].
 			</description>
 		</method>
-		<method name="_get_plugin_icon" qualifiers="virtual const">
+		<method name="_get_plugin_icon" qualifiers="virtual const" deprecated="Use [member EditorDock.dock_icon] of a main screen dock.">
 			<return type="Texture2D" />
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
@@ -261,6 +261,7 @@
 			<description>
 				Override this method in your plugin to provide the name of the plugin when displayed in the Godot editor.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
+				[b]Note:[/b] Main screen plugins should instead use [member EditorDock.title] of a main screen dock.
 			</description>
 		</method>
 		<method name="_get_state" qualifiers="virtual const">
@@ -326,32 +327,11 @@
 				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handles more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
-		<method name="_has_main_screen" qualifiers="virtual const">
+		<method name="_has_main_screen" qualifiers="virtual const" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant EditorDock.DOCK_SLOT_MAIN_SCREEN].">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]AssetLib[/b]).
-				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
-				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
-				[codeblock]
-				var plugin_control
-
-				func _enter_tree():
-					plugin_control = preload("my_plugin_control.tscn").instantiate()
-					EditorInterface.get_editor_main_screen().add_child(plugin_control)
-					plugin_control.hide()
-
-				func _has_main_screen():
-					return true
-
-				func _make_visible(visible):
-					plugin_control.visible = visible
-
-				func _get_plugin_name():
-					return "My Super Cool Plugin 3000"
-
-				func _get_plugin_icon():
-					return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
-				[/codeblock]
+				Return [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]AssetLib[/b]).
+				You can add a main screen dock by using [EditorDock] with [constant EditorDock.DOCK_LAYOUT_MAIN_SCREEN] as available layout.
 			</description>
 		</method>
 		<method name="_make_visible" qualifiers="virtual">
@@ -424,7 +404,7 @@
 				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
-		<method name="add_control_to_bottom_panel" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant DOCK_SLOT_BOTTOM].">
+		<method name="add_control_to_bottom_panel" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant EditorDock.DOCK_SLOT_BOTTOM].">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
@@ -914,7 +894,10 @@
 		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
 			Bottom panel.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
+		<constant name="DOCK_SLOT_MAIN_SCREEN" value="9" enum="DockSlot">
+			The editor's main screen.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="10" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">

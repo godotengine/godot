@@ -100,6 +100,7 @@ public:
 		DOCK_SLOT_RIGHT_UR,
 		DOCK_SLOT_RIGHT_BR,
 		DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_MAIN_SCREEN,
 		DOCK_SLOT_MAX
 	};
 #endif
@@ -199,7 +200,6 @@ public:
 	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
-	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual bool can_auto_hide() const;

@@ -409,18 +409,8 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		bool is_handled = true;
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
 			FileSystemDock::get_singleton()->focus_on_filter();
-		} else if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
-			editor_main_screen->select(EditorMainScreen::EDITOR_2D);
-		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
-			editor_main_screen->select(EditorMainScreen::EDITOR_3D);
-		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
-			editor_main_screen->select(EditorMainScreen::EDITOR_SCRIPT);
-		} else if (ED_IS_SHORTCUT("editor/editor_game", p_event)) {
-			editor_main_screen->select(EditorMainScreen::EDITOR_GAME);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal(SNAME("request_help_search"), "");
-		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && AssetLibraryEditorPlugin::is_available()) {
-			editor_main_screen->select(EditorMainScreen::EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			editor_main_screen->select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
@@ -3188,7 +3178,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				if (!ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree()) {
+				if ((ScriptEditor::get_singleton()->get_current_layout() != EditorDock::DOCK_LAYOUT_FLOATING) && ScriptEditor::get_singleton()->is_visible_in_tree()) {
 					skip_main_plugin = stay_in_script_editor_on_node_selected;
 				} else {
 					skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
@@ -3261,44 +3251,8 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 	// Take care of the main editor plugin.
 
-	if (!inspector_only) {
-		EditorPlugin *main_plugin = editor_data.get_handling_main_editor(current_obj);
-
-		int plugin_index = editor_main_screen->get_plugin_index(main_plugin);
-		if (main_plugin && plugin_index >= 0 && !editor_main_screen->is_button_enabled(plugin_index)) {
-			main_plugin = nullptr;
-		}
-		EditorPlugin *editor_plugin_screen = editor_main_screen->get_selected_plugin();
-
-		ObjectID editor_owner_id = editor_owner->get_instance_id();
-		if (main_plugin && !skip_main_plugin) {
-			// Special case if current_obj is a script.
-			Script *current_script = Object::cast_to<Script>(current_obj);
-			if (current_script) {
-				if (!changing_scene) {
-					// Only update main editor screen if using in-engine editor.
-					if (current_script->is_built_in() || (!bool(EDITOR_GET("text_editor/external/use_external_editor")) && !current_script->get_language()->overrides_external_editor())) {
-						editor_main_screen->select(plugin_index);
-					}
-
-					main_plugin->edit(current_script);
-				}
-			} else if (main_plugin != editor_plugin_screen) {
-				// Unedit previous plugin.
-				editor_plugin_screen->edit(nullptr);
-				active_plugins[editor_owner_id].erase(editor_plugin_screen);
-				// Update screen main_plugin.
-				editor_main_screen->select(plugin_index);
-				main_plugin->edit(current_obj);
-			} else {
-				editor_plugin_screen->edit(current_obj);
-			}
-			is_main_screen_editing = true;
-		} else if (!main_plugin && editor_plugin_screen && is_main_screen_editing) {
-			editor_plugin_screen->edit(nullptr);
-			is_main_screen_editing = false;
-		}
-
+	if (!inspector_only && !skip_main_plugin) {
+		editor_main_screen->edit(current_obj);
 		edit_item(current_obj, editor_owner);
 	}
 
@@ -3946,10 +3900,8 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path) {
-	Control *main_screen_control = editor_main_screen->get_control();
-	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
-	Viewport *viewport = main_screen_control->get_viewport();
-	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
+	Viewport *viewport = get_viewport();
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the EditorNode.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
@@ -3971,10 +3923,8 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 }
 
 void EditorNode::_save_screenshot(const String &p_path) {
-	Control *main_screen_control = editor_main_screen->get_control();
-	ERR_FAIL_NULL_MSG(main_screen_control, "Cannot get the editor main screen control.");
-	Viewport *viewport = main_screen_control->get_viewport();
-	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the editor main screen.");
+	Viewport *viewport = get_viewport();
+	ERR_FAIL_NULL_MSG(viewport, "Cannot get a viewport from the EditorNode.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
@@ -4596,10 +4546,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			if (!selected_node) {
 				selected_node = get_edited_scene();
 			}
-			const int plugin_index = editor_main_screen->get_plugin_index(editor_data.get_handling_main_editor(selected_node));
-			if (plugin_index >= 0) {
-				editor_main_screen->select(plugin_index);
-			}
+			editor_main_screen->edit(selected_node);
 		}
 	}
 
@@ -6279,10 +6226,6 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 
 	int selected_default_debugger_tab_idx = EditorDebuggerNode::get_singleton()->get_default_debugger()->get_current_debugger_tab();
 	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_default_debugger_tab_idx", selected_default_debugger_tab_idx);
-
-	// Main editor (plugin).
-
-	editor_main_screen->save_layout_to_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 }
 
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
@@ -6296,10 +6239,6 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 		int selected_default_debugger_tab_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_default_debugger_tab_idx");
 		EditorDebuggerNode::get_singleton()->get_default_debugger()->switch_to_debugger(selected_default_debugger_tab_idx);
 	}
-
-	// Main editor (plugin).
-
-	editor_main_screen->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 }
 
 void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
@@ -6744,9 +6683,8 @@ void EditorNode::_prepare_save_confirmation_popup() {
 
 void EditorNode::_toggle_distraction_free_mode() {
 	if (EDITOR_GET("interface/editor/behavior/separate_distraction_mode")) {
-		int screen = editor_main_screen->get_selected_index();
-
-		if (screen == EditorMainScreen::EDITOR_SCRIPT) {
+		Control *screen = editor_main_screen->get_current_tab_control();
+		if (screen == ScriptEditor::get_singleton()) {
 			script_distraction_free = !script_distraction_free;
 			set_distraction_free_mode(script_distraction_free);
 		} else {
@@ -6762,8 +6700,8 @@ void EditorNode::update_distraction_free_mode() {
 	if (!EDITOR_GET("interface/editor/behavior/separate_distraction_mode")) {
 		return;
 	}
-	int screen = editor_main_screen->get_selected_index();
-	if (screen == EditorMainScreen::EDITOR_SCRIPT) {
+	Control *screen = editor_main_screen->get_current_tab_control();
+	if (screen == ScriptEditor::get_singleton()) {
 		set_distraction_free_mode(script_distraction_free);
 	} else {
 		set_distraction_free_mode(scene_distraction_free);
@@ -7761,13 +7699,13 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(ImportDock::get_singleton(), !fs_dock_disabled && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 		editor_dock_manager->set_dock_enabled(history_dock, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_HISTORY_DOCK));
 
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
+		editor_dock_manager->set_dock_enabled(Node3DEditor::get_singleton(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
+		editor_dock_manager->set_dock_enabled(ScriptEditor::get_singleton(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
 		if (!Engine::get_singleton()->is_recovery_mode_hint()) {
-			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME));
+			editor_dock_manager->set_dock_enabled(GameView::get_dock(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME));
 		}
 		if (AssetLibraryEditorPlugin::is_available()) {
-			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
+			editor_dock_manager->set_dock_enabled(AssetLibraryEditorPlugin::get_library(), !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
 	} else {
 		editor_dock_manager->set_dock_enabled(ImportDock::get_singleton(), true);
@@ -7775,13 +7713,13 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(GroupsDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(FileSystemDock::get_singleton(), true);
 		editor_dock_manager->set_dock_enabled(history_dock, true);
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, true);
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, true);
+		editor_dock_manager->set_dock_enabled(Node3DEditor::get_singleton(), true);
+		editor_dock_manager->set_dock_enabled(ScriptEditor::get_singleton(), true);
 		if (!Engine::get_singleton()->is_recovery_mode_hint()) {
-			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, true);
+			editor_dock_manager->set_dock_enabled(GameView::get_dock(), true);
 		}
 		if (AssetLibraryEditorPlugin::is_available()) {
-			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, true);
+			editor_dock_manager->set_dock_enabled(AssetLibraryEditorPlugin::get_library(), true);
 		}
 	}
 }
@@ -8753,10 +8691,10 @@ EditorNode::EditorNode() {
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
 
 	editor_main_screen = memnew(EditorMainScreen);
-	editor_main_screen->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
-	editor_main_screen->set_draw_behind_parent(true);
 	srt->add_child(editor_main_screen);
-	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	title_bar->set_center_control(editor_main_screen->get_internal_container());
+
+	editor_dock_manager->register_dock_slot(editor_main_screen);
 
 	scene_root = memnew(SubViewport);
 	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
@@ -8923,7 +8861,7 @@ EditorNode::EditorNode() {
 	if (can_expand) {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
 		left_menu_spacer = memnew(Control);
-		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 		title_bar->add_child(left_menu_spacer);
 	}
 
@@ -8952,7 +8890,7 @@ EditorNode::EditorNode() {
 
 	// Spacer to center 2D / 3D / Script buttons.
 	left_spacer = memnew(HBoxContainer);
-	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(left_spacer);
 
@@ -8962,20 +8900,13 @@ EditorNode::EditorNode() {
 	project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_title->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	project_title->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	project_title->set_visible(can_expand && menu_type == MENU_TYPE_GLOBAL);
 	left_spacer->add_child(project_title);
 
-	HBoxContainer *main_editor_button_hb = memnew(HBoxContainer);
-	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	main_editor_button_hb->set_name("EditorMainScreenButtons");
-	editor_main_screen->set_button_container(main_editor_button_hb);
-	title_bar->add_child(main_editor_button_hb);
-	title_bar->set_center_control(main_editor_button_hb);
-
 	// Spacer to center 2D / 3D / Script buttons.
 	right_spacer = memnew(Control);
-	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_bar->add_child(right_spacer);
 
@@ -8988,6 +8919,8 @@ EditorNode::EditorNode() {
 	right_menu_hb = memnew(HBoxContainer);
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
+
+	title_bar->move_child(editor_main_screen->get_internal_container(), 2);
 
 	renderer = memnew(OptionButton);
 	renderer->set_visible(true);
@@ -9005,7 +8938,7 @@ EditorNode::EditorNode() {
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
-		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 		title_bar->add_child(right_menu_spacer);
 	}
 
@@ -9088,44 +9021,6 @@ EditorNode::EditorNode() {
 	// By default there is only 3 visible, so set 2 split offsets for them.
 	const int dock_hsize_scaled = dock_hsize * EDSCALE;
 	main_hsplit->set_split_offsets({ dock_hsize_scaled, -dock_hsize_scaled });
-
-	// Define corresponding default layout.
-
-	const String docks_section = "docks";
-	default_layout.instantiate();
-	// Dock numbers are based on DockSlot enum value + 1.
-	{
-		const String scene_key = SceneTreeDock::get_singleton()->get_effective_layout_key();
-		const String import_key = ImportDock::get_singleton()->get_effective_layout_key();
-		default_layout->set_value(docks_section, "dock_3", vformat("%s,%s", scene_key, import_key));
-	}
-	{
-		const String filesystem_key = filesystem_dock->get_effective_layout_key();
-		const String history_key = history_dock->get_effective_layout_key();
-		default_layout->set_value(docks_section, "dock_4", vformat("%s,%s", filesystem_key, history_key));
-	}
-	{
-		const String inspector_key = InspectorDock::get_singleton()->get_effective_layout_key();
-		const String signals_key = SignalsDock::get_singleton()->get_effective_layout_key();
-		const String groups_key = GroupsDock::get_singleton()->get_effective_layout_key();
-		default_layout->set_value(docks_section, "dock_5", vformat("%s,%s,%s", inspector_key, signals_key, groups_key));
-	}
-
-	int hsplits[] = { 0, dock_hsize, -dock_hsize, 0 };
-	for (int i = 0; i < (int)std_size(hsplits); i++) {
-		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
-	}
-	for (int i = 0; i < editor_dock_manager->get_vsplit_count(); i++) {
-		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
-	}
-
-	{
-		Dictionary offsets;
-		offsets["Audio"] = -450;
-		default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "bottom_panel_offsets", offsets);
-	}
-
-	_update_layouts_menu();
 
 	// Bottom panels.
 
@@ -9520,6 +9415,56 @@ EditorNode::EditorNode() {
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
+
+	// Define the default layout after everything is initialized.
+
+	default_layout.instantiate();
+	const String docks_section = "docks";
+	{
+		const String scene_key = SceneTreeDock::get_singleton()->get_effective_layout_key();
+		const String import_key = ImportDock::get_singleton()->get_effective_layout_key();
+		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_LEFT_UR), vformat("%s,%s", scene_key, import_key));
+	}
+	{
+		const String filesystem_key = filesystem_dock->get_effective_layout_key();
+		const String history_key = history_dock->get_effective_layout_key();
+		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_LEFT_BR), vformat("%s,%s", filesystem_key, history_key));
+	}
+	{
+		const String inspector_key = InspectorDock::get_singleton()->get_effective_layout_key();
+		const String signals_key = SignalsDock::get_singleton()->get_effective_layout_key();
+		const String groups_key = GroupsDock::get_singleton()->get_effective_layout_key();
+		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_RIGHT_UL), vformat("%s,%s,%s", inspector_key, signals_key, groups_key));
+	}
+	{
+		const String _2d_key = CanvasItemEditor::get_singleton()->get_effective_layout_key();
+		const String _3d_key = Node3DEditor::get_singleton()->get_effective_layout_key();
+		const String script_key = ScriptEditor::get_singleton()->get_effective_layout_key();
+		String game_key;
+		if (GameView::get_dock()) {
+			game_key = GameView::get_dock()->get_effective_layout_key();
+		}
+		const String asset_lib_key = AssetLibraryEditorPlugin::get_library()->get_effective_layout_key();
+		default_layout->set_value(docks_section, DockTabContainer::get_config_key(EditorDock::DOCK_SLOT_MAIN_SCREEN), vformat("%s,%s,%s,%s,%s", _2d_key, _3d_key, script_key, game_key, asset_lib_key));
+	}
+
+	int hsplits[] = { 0, dock_hsize, -dock_hsize, 0 };
+	for (int i = 0; i < (int)std_size(hsplits); i++) {
+		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
+	}
+	for (int i = 0; i < editor_dock_manager->get_vsplit_count(); i++) {
+		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
+	}
+
+	{
+		const String audio_key = audio_bus_editor->get_effective_layout_key();
+
+		Dictionary offsets;
+		offsets[audio_key] = -450;
+		default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "bottom_panel_offsets", offsets);
+	}
+
+	_update_layouts_menu();
 }
 
 EditorNode::~EditorNode() {

@@ -30,63 +30,58 @@
 
 #pragma once
 
-#include "scene/gui/panel_container.h"
+#include "editor/docks/dock_tab_container.h"
+#include "scene/gui/box_container.h"
 
-class Button;
 class ConfigFile;
+class EditorDock;
 class EditorPlugin;
-class HBoxContainer;
-class VBoxContainer;
 
-class EditorMainScreen : public PanelContainer {
-	GDCLASS(EditorMainScreen, PanelContainer);
+#ifndef DISABLE_DEPRECATED
+class LegacyMainScreenContainer : public VBoxContainer {
+	GDCLASS(LegacyMainScreenContainer, VBoxContainer);
 
-public:
-	enum EditorTable {
-		EDITOR_2D = 0,
-		EDITOR_3D,
-		EDITOR_SCRIPT,
-		EDITOR_GAME,
-		EDITOR_ASSETLIB,
-	};
+	void _force_dock_visible(EditorDock *p_dock, CanvasItem *p_child);
+
+protected:
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override {} // Disable parent method.
+};
+#endif
+
+class EditorMainScreen : public DockTabContainer {
+	GDCLASS(EditorMainScreen, DockTabContainer);
 
 private:
+#ifndef DISABLE_DEPRECATED
 	VBoxContainer *main_screen_vbox = nullptr;
+	Vector<EditorPlugin *> editor_table;
+#endif
 	EditorPlugin *selected_plugin = nullptr;
 
-	HBoxContainer *button_hb = nullptr;
-	Vector<Button *> buttons;
-	Vector<EditorPlugin *> editor_table;
-	HashMap<String, EditorPlugin *> main_editor_plugins;
-
-	int _get_current_main_editor() const;
+	void _on_tab_changed(int p_tab);
 
 protected:
 	void _notification(int p_what);
 
+	virtual void update_visibility() override { show(); } // Never hide main screen.
+	virtual TabStyle get_tab_style() const override;
+	virtual Rect2 get_drag_hint_rect() const override;
+
 public:
-	void set_button_container(HBoxContainer *p_button_hb);
+#ifndef DISABLE_DEPRECATED
+	EditorPlugin *adding_plugin = nullptr;
+	VBoxContainer *get_control() const;
+	void add_main_plugin(EditorPlugin *p_editor);
+	void remove_main_plugin(EditorPlugin *p_editor);
+#endif
 
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
-
-	void set_button_enabled(int p_index, bool p_enabled);
-	bool is_button_enabled(int p_index) const;
+	void edit(Object *p_object);
 
 	void select_next();
 	void select_prev();
-	void select_by_name(const String &p_name);
-	void select(int p_index);
-	int get_selected_index() const;
-	int get_plugin_index(EditorPlugin *p_editor) const;
 	EditorPlugin *get_selected_plugin() const;
-	EditorPlugin *get_plugin_by_name(const String &p_plugin_name) const;
 	bool can_auto_switch_screens() const;
-
-	VBoxContainer *get_control() const;
-
-	void add_main_plugin(EditorPlugin *p_editor);
-	void remove_main_plugin(EditorPlugin *p_editor);
 
 	EditorMainScreen();
 };

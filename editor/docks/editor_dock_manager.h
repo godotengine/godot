@@ -164,7 +164,6 @@ class DockSlotGrid : public Control {
 	int hovered_slot = -1;
 
 	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
-	Rect2 main_screen_rect;
 	bool rect_cache_dirty = true;
 
 	void _update_rect_cache();
