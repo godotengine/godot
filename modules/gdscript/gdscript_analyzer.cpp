@@ -2532,14 +2532,18 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 		if (is_void_function) {
 			p_return->void_return = true;
 			const GDScriptParser::DataType &return_type = p_return->return_value->datatype;
-			if (is_call && !return_type.is_hard_type()) {
-				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.operator String() : String("<anonymous function>");
-				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.operator String();
+			if (is_call) {
+				if (return_type.is_hard_type() && !(return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL)) {
+					push_error("A void function cannot return a value.", p_return);
+				} else if (!return_type.is_hard_type()) {
+					String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.operator String() : String("<anonymous function>");
+					String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.operator String();
 #ifdef DEBUG_ENABLED
-				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
+					parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
 #endif // DEBUG_ENABLED
-				mark_node_unsafe(p_return);
-			} else if (!is_call) {
+					mark_node_unsafe(p_return);
+				}
+			} else {
 				push_error("A void function cannot return a value.", p_return);
 			}
 			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
