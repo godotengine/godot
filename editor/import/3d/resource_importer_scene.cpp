@@ -49,6 +49,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
@@ -259,6 +260,8 @@ String ResourceImporterScene::get_visible_name() const {
 	// This is displayed on the UI. Friendly names here are nice but not vital, so fall back to the type.
 	if (_scene_import_type == "PackedScene") {
 		return "Scene";
+	} else if (_scene_import_type == "ArrayMesh") {
+		return "Single Mesh";
 	}
 	return _scene_import_type.capitalize();
 }
@@ -283,6 +286,12 @@ int ResourceImporterScene::get_format_version() const {
 }
 
 bool ResourceImporterScene::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option.begins_with("mesh_library/")) {
+		return _scene_import_type == "MeshLibrary";
+	}
+	if (p_option.begins_with("array_mesh/")) {
+		return _scene_import_type == "ArrayMesh";
+	}
 	if (_scene_import_type == "PackedScene") {
 		if (p_option.begins_with("animation/")) {
 			if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
@@ -293,8 +302,22 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		if (p_option == "animation/import") { // Option ignored, animation always imported.
 			return false;
 		}
-		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
+		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option == "nodes/root_script" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
 			return false; // Nothing to do here for animations.
+		}
+	} else if (_scene_import_type == "MeshLibrary") {
+		if (p_option.begins_with("animation/") || p_option.begins_with("skins/") || p_option.begins_with("import_script/")) {
+			return false;
+		}
+		if (p_option.begins_with("nodes/")) {
+			return p_option == "nodes/root_scale";
+		}
+	} else if (_scene_import_type == "ArrayMesh") {
+		if (p_option.begins_with("animation/") || p_option.begins_with("skins/") || p_option.begins_with("import_script/")) {
+			return false;
+		}
+		if (p_option.begins_with("nodes/")) {
+			return p_option == "nodes/root_scale";
 		}
 	}
 
@@ -2114,6 +2137,89 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 	}
 }
 
+Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
+	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
+	const int mesh_inst_count = mesh_instances.size();
+	TypedArray<Mesh> unique_meshes;
+	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
+	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
+		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
+		Ref<Mesh> mesh = mesh_inst->get_mesh();
+		if (mesh.is_valid()) {
+			bool is_unique = true;
+			for (int existing_i = 0; existing_i < unique_meshes.size(); existing_i++) {
+				Ref<Mesh> existing_mesh = unique_meshes[existing_i];
+				if (unique_meshes[existing_i] == mesh) {
+					is_unique = false;
+					break;
+				}
+			}
+			if (is_unique) {
+				if (use_node_names_as_mesh_names) {
+					mesh->set_name(mesh_inst->get_name());
+				}
+				unique_meshes.append(mesh);
+			}
+		}
+	}
+	const int meshes_count = unique_meshes.size();
+	const bool save_meshes_to_files = p_options.has("mesh_library/save_meshes_to_files") && p_options["mesh_library/save_meshes_to_files"];
+	const String source_base_dir = p_source_file.get_base_dir();
+	Ref<MeshLibrary> mesh_library;
+	mesh_library.instantiate();
+	for (int i = 0; i < meshes_count; i++) {
+		Ref<Mesh> mesh = unique_meshes[i];
+		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
+		const String mesh_name = mesh->get_name();
+		if (save_meshes_to_files) {
+			const String mesh_next_to_source_file_path = source_base_dir.path_join(mesh_name + ".res");
+			mesh->set_path(mesh_next_to_source_file_path, true);
+			ResourceSaver::save(mesh, mesh_next_to_source_file_path, p_flags);
+		}
+		const int id = mesh_library->get_last_unused_item_id();
+		mesh_library->create_item(id);
+		mesh_library->set_item_name(id, mesh_name);
+		mesh_library->set_item_mesh(id, mesh);
+	}
+	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);
+}
+
+Error ResourceImporterScene::_save_scene_as_single_mesh(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
+	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
+	const int mesh_inst_count = mesh_instances.size();
+	ERR_FAIL_COND_V_MSG(mesh_inst_count == 0, ERR_INVALID_DATA, "Cannot import GLTF file " + p_source_file + " as a single mesh, because it contains no meshes.");
+	const String save_file_path = p_save_path + ".res";
+	// If there is just one mesh, we can save it directly, preserving that one mesh exactly as it is.
+	if (mesh_inst_count == 1) {
+		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[0]);
+		Ref<ArrayMesh> array_mesh = mesh_inst->get_mesh();
+		if (array_mesh.is_valid()) {
+			array_mesh->set_path(save_file_path, true);
+			return ResourceSaver::save(array_mesh, save_file_path, p_flags);
+		}
+	}
+	// If the file contains multiple meshes, we have to merge them into a single mesh, based on their positions in the scene.
+	TypedArray<ArrayMesh> array_mesh_instances;
+	TypedArray<Transform3D> array_mesh_transforms;
+	for (int i = 0; i < mesh_inst_count; i++) {
+		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[i]);
+		Ref<ArrayMesh> array_mesh = mesh_inst->get_mesh();
+		if (array_mesh.is_valid()) {
+			Transform3D global_transform = mesh_inst->get_transform();
+			Node3D *parent = Object::cast_to<Node3D>(mesh_inst->get_parent());
+			while (parent != nullptr) {
+				global_transform = parent->get_transform() * global_transform;
+				parent = Object::cast_to<Node3D>(parent->get_parent());
+			}
+			array_mesh_instances.append(array_mesh);
+			array_mesh_transforms.append(global_transform);
+		}
+	}
+	const bool deduplicate_surfaces = p_options.has("array_mesh/deduplicate_surfaces") && p_options["array_mesh/deduplicate_surfaces"];
+	Ref<ArrayMesh> merged_mesh = ArrayMesh::merge_array_meshes(array_mesh_instances, array_mesh_transforms, deduplicate_surfaces);
+	return ResourceSaver::save(merged_mesh, save_file_path, p_flags);
+}
+
 void ResourceImporterScene::get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const {
 	switch (p_category) {
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
@@ -2516,6 +2622,9 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	}
 	bool trimming_defaults_on = p_path.has_extension("fbx");
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/save_meshes_to_files"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/use_node_names_as_mesh_names"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "array_mesh/deduplicate_surfaces"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/import_as_skeleton_bones"), false));
@@ -3155,6 +3264,9 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	bool apply_root = true;
 	if (p_options.has("nodes/apply_root_scale")) {
 		apply_root = p_options["nodes/apply_root_scale"];
+		if (_scene_import_type == "ArrayMesh" || _scene_import_type == "MeshLibrary") {
+			apply_root = true;
+		}
 	}
 	real_t root_scale = 1;
 	if (p_options.has("nodes/root_scale")) {
@@ -3355,6 +3467,10 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
 		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+	} else if (_scene_import_type == "ArrayMesh") {
+		_save_scene_as_single_mesh(p_source_file, p_save_path, scene, p_options, flags);
+	} else if (_scene_import_type == "MeshLibrary") {
+		_save_scene_as_mesh_library(p_source_file, p_save_path, scene, p_options, flags);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}
