@@ -40,6 +40,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -2448,13 +2449,11 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
-			_register_all_gizmos();
-			_init_indicators();
-			update_all_gizmos();
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_indicators();
+			if (move_gizmo[0].is_null()) {
+				_register_all_gizmos();
+				_init_indicators();
+				update_all_gizmos();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -3219,12 +3218,19 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 }
 
 Node3DEditor::Node3DEditor() {
+	set_name(TTRC("3D"));
+	set_icon_name("3D");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_3d"));
+
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
 	viewport_environment.instantiate();
-	VBoxContainer *vbc = this;
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
 
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
 	singleton = this;
@@ -3910,6 +3916,7 @@ void fragment() {
 }
 Node3DEditor::~Node3DEditor() {
 	singleton = nullptr;
+	_finish_indicators();
 	memdelete(preview_node);
 	if (preview_sun_dangling && preview_sun) {
 		memdelete(preview_sun);
@@ -3930,7 +3937,7 @@ void Node3DEditorPlugin::edited_scene_changed() {
 
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		spatial_editor->show();
+		spatial_editor->make_visible();
 		spatial_editor->set_process(true);
 		spatial_editor->set_physics_process(true);
 		spatial_editor->refresh_dirty_gizmos();
@@ -3946,7 +3953,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	return Object::cast_to<Node3D>(p_object);
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {
@@ -4121,7 +4128,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_fr
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(spatial_editor);
+	EditorDockManager::get_singleton()->add_dock(spatial_editor);
 
 	spatial_editor->hide();
 }
