@@ -2813,6 +2813,8 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
+	static thread_local HashSet<String> extends_visited_traversal;
+
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2827,6 +2829,10 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
 		return String(); // No class parsed.
+	}
+
+	if (!c->extends_path.is_empty() && extends_visited_traversal.has(c->extends_path)) {
+		return String();
 	}
 
 	/* **WARNING**
@@ -2852,7 +2858,9 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 				if (!subclass->extends_path.is_empty()) {
 					if (subclass->extends.is_empty()) {
 						// We only care about the referenced class_name.
+						extends_visited_traversal.insert(subclass->extends_path);
 						_ALLOW_DISCARD_ get_global_class_name(subclass->extends_path, r_base_type);
+						extends_visited_traversal.erase(subclass->extends_path);
 						subclass = nullptr;
 						break;
 					} else {
