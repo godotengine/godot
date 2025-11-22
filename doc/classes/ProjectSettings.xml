@@ -997,6 +997,10 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
+		<member name="display/window/size/exclude_from_capture" type="bool" setter="" getter="" default="false">
+			Excludes the main window from screenshots.
+			[b]Note:[/b] This setting is implemented on macOS and Windows.
+		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
