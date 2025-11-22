@@ -238,10 +238,13 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 ////////////////////////////////
 
+AudioStream::~AudioStream() {
+	_playback.unref();
+}
+
 Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
-	Ref<AudioStreamPlayback> ret;
-	GDVIRTUAL_CALL(_instantiate_playback, ret);
-	return ret;
+	GDVIRTUAL_CALL(_instantiate_playback, _playback);
+	return _playback;
 }
 String AudioStream::get_stream_name() const {
 	String ret;
