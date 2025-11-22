@@ -33,7 +33,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D &p_transform, const Projection &p_projection, const Frustum &p_frustum, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
 	is_frustum = p_is_frustum;
@@ -41,6 +41,7 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 
 	main_transform = p_transform;
 	main_projection = p_projection;
+	main_frustum = p_frustum;
 
 	visible_layers = p_visible_layers;
 	view_offset[0] = Transform3D();
@@ -180,6 +181,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 
 	// 16. Use this to build the combined camera matrix.
 	main_projection.set_frustum(local_min_vec.x, local_max_vec.x, local_min_vec.y, local_max_vec.y, z_near, z_far);
+	main_frustum.set_frustum(local_min_vec.x, local_max_vec.x, local_min_vec.y, local_max_vec.y, z_near, z_far);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// 3. Copy our view data

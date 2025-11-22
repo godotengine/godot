@@ -70,6 +70,7 @@
 #include "tests/core/math/test_basis.h"
 #include "tests/core/math/test_color.h"
 #include "tests/core/math/test_expression.h"
+#include "tests/core/math/test_frustum.h"
 #include "tests/core/math/test_geometry_2d.h"
 #include "tests/core/math/test_geometry_3d.h"
 #include "tests/core/math/test_math_funcs.h"

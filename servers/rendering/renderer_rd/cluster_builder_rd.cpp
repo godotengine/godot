@@ -460,20 +460,18 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 	}
 }
 
-void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y) {
+void ClusterBuilderRD::begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, const Frustum &p_cam_frustum, bool p_flip_y) {
 	view_xform = p_view_transform.affine_inverse();
-	projection = p_cam_projection;
-	z_near = projection.get_z_near();
-	z_far = projection.get_z_far();
+	z_near = p_cam_frustum.get_z_near();
+	z_far = p_cam_frustum.get_z_far();
 	camera_orthogonal = p_cam_projection.is_orthogonal();
-	adjusted_projection = projection;
+	adjusted_projection = p_cam_projection;
 	if (!camera_orthogonal) {
-		adjusted_projection.adjust_perspective_znear(0.0001);
+		adjusted_projection.adjust_perspective_znear_zfar(0.0001, z_far);
 	}
 
 	Projection correction;
 	correction.set_depth_correction(p_flip_y);
-	projection = correction * projection;
 	adjusted_projection = correction * adjusted_projection;
 
 	// Reset counts.

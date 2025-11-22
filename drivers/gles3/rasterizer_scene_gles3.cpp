@@ -626,7 +626,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
+void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_transform, const Size2i &p_screen_size) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_render_data->environment.is_null());
@@ -832,16 +832,11 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	ERR_FAIL_NULL(shader_data);
 
 	// Camera
-	Projection camera;
+	Projection camera = p_projection;
 
-	if (environment_get_sky_custom_fov(p_env)) {
-		float near_plane = p_projection.get_z_near();
-		float far_plane = p_projection.get_z_far();
-		float aspect = p_projection.get_aspect();
-
-		camera.set_perspective(environment_get_sky_custom_fov(p_env), aspect, near_plane, far_plane);
-	} else {
-		camera = p_projection;
+	float custom_fov = environment_get_sky_custom_fov(p_env);
+	if (custom_fov > 0) {
+		camera.adjust_perspective_fov(custom_fov);
 	}
 
 	Projection correction;
@@ -882,7 +877,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier) {
+void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Transform3D &p_transform, float p_sky_energy_multiplier) {
 	GLES3::CubemapFilter *cubemap_filter = GLES3::CubemapFilter::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
@@ -1257,11 +1252,11 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 	}
 
 	Plane near_plane;
-	if (p_render_data->cam_orthogonal) {
+	if (p_render_data->cam_is_orthogonal) {
 		near_plane = Plane(-p_render_data->cam_transform.basis.get_column(Vector3::AXIS_Z), p_render_data->cam_transform.origin);
-		near_plane.d += p_render_data->cam_projection.get_z_near();
+		near_plane.d += p_render_data->z_near;
 	}
-	float z_max = p_render_data->cam_projection.get_z_far() - p_render_data->cam_projection.get_z_near();
+	float z_max = p_render_data->z_far - p_render_data->z_near;
 
 	RenderList *rl = &render_list[p_render_list];
 
@@ -1281,7 +1276,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 		GeometryInstanceGLES3 *inst = static_cast<GeometryInstanceGLES3 *>((*p_render_data->instances)[i]);
 
 		Vector3 center = inst->transform.origin;
-		if (p_render_data->cam_orthogonal) {
+		if (p_render_data->cam_is_orthogonal) {
 			if (inst->use_aabb_center) {
 				center = inst->transformed_aabb.get_support(-near_plane.normal);
 			}
@@ -1381,7 +1376,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 		float lod_distance = 0.0;
 
-		if (p_render_data->cam_orthogonal) {
+		if (p_render_data->cam_is_orthogonal) {
 			lod_distance = 1.0;
 		} else {
 			Vector3 aabb_min = inst->transformed_aabb.position;
@@ -2181,6 +2176,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 
 	RenderDataGLES3 render_data;
 	render_data.cam_projection = light_projection;
+	render_data.cam_frustum = light_projection.get_projection_planes(Transform3D());
 	render_data.cam_transform = light_transform;
 	render_data.inv_cam_transform = light_transform.affine_inverse();
 	render_data.z_far = zfar; // Only used by OmniLights.
@@ -2300,8 +2296,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
-		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
-		render_data.cam_frustum = p_camera_data->is_frustum;
+		render_data.cam_frustum = p_camera_data->main_frustum;
+		render_data.cam_is_orthogonal = p_camera_data->is_orthogonal;
+		render_data.cam_is_frustum = p_camera_data->is_frustum;
 		render_data.camera_visible_layers = p_camera_data->visible_layers;
 		render_data.main_cam_transform = p_camera_data->main_transform;
 
@@ -2311,8 +2308,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			render_data.view_projection[v] = p_camera_data->view_projection[v];
 		}
 
-		render_data.z_near = p_camera_data->main_projection.get_z_near();
-		render_data.z_far = p_camera_data->main_projection.get_z_far();
+		render_data.z_near = p_camera_data->main_frustum.get_z_near();
+		render_data.z_far = p_camera_data->main_frustum.get_z_far();
 
 		render_data.instances = &p_instances;
 		render_data.lights = &p_lights;
@@ -2489,20 +2486,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || sky_reflections || sky_ambient) {
 			RENDER_TIMESTAMP("Setup Sky");
-			Projection projection = render_data.cam_projection;
-			if (is_reflection_probe) {
-				Projection correction;
-				correction.set_depth_correction(true, true, false);
-				projection = correction * render_data.cam_projection;
-			}
-
 			sky_energy_multiplier *= bg_energy_multiplier;
 
-			_setup_sky(&render_data, *render_data.lights, projection, render_data.cam_transform, screen_size);
+			_setup_sky(&render_data, *render_data.lights, render_data.cam_transform, screen_size);
 
 			if (environment_get_sky(render_data.environment).is_valid()) {
 				if (sky_reflections || sky_ambient) {
-					_update_sky_radiance(render_data.environment, projection, render_data.cam_transform, sky_energy_multiplier);
+					_update_sky_radiance(render_data.environment, render_data.cam_transform, sky_energy_multiplier);
 				}
 			} else {
 				// do not try to draw sky if invalid
@@ -2735,7 +2725,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			Projection correction;
 			correction.columns[1][1] = -1.0;
 			projection = correction * render_data.cam_projection;
-		} else if (render_data.cam_frustum) {
+		} else if (render_data.cam_is_frustum) {
 			// Sky is drawn upside down, the frustum offset doesn't know the image is upside down so needs a flip.
 			projection[2].y = -projection[2].y;
 		}
@@ -3842,7 +3832,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	}
 }
 
-void RasterizerSceneGLES3::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RasterizerSceneGLES3::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Frustum &p_cam_frustum, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 }
 
 void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) {
@@ -3867,10 +3857,11 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	RenderDataGLES3 render_data;
 
 	render_data.cam_projection = cm;
+	render_data.cam_frustum = cm.get_projection_planes(Transform3D());
 	render_data.cam_transform = cam_xform;
 	render_data.view_projection[0] = cm;
 	render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
-	render_data.cam_orthogonal = true;
+	render_data.cam_is_orthogonal = true;
 	render_data.z_near = 0.0;
 	render_data.z_far = cm.get_z_far();
 	render_data.main_cam_transform = cam_xform;
