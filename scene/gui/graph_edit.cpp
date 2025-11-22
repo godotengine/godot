@@ -2301,13 +2301,46 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	if (p_ev->is_pressed()) {
 		if (p_ev->is_action("ui_graph_duplicate", true)) {
-			emit_signal(SNAME("duplicate_nodes_request"));
+			TypedArray<StringName> nodes;
+
+			for (int i = 0; i < get_child_count(); i++) {
+				GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
+				if (!graph_element) {
+					continue;
+				}
+				if (graph_element->is_selected()) {
+					nodes.push_back(graph_element->get_name());
+				}
+			}
+			emit_signal(SNAME("duplicate_nodes_request"), nodes);
 			accept_event();
 		} else if (p_ev->is_action("ui_copy", true)) {
-			emit_signal(SNAME("copy_nodes_request"));
+			TypedArray<StringName> nodes;
+
+			for (int i = 0; i < get_child_count(); i++) {
+				GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
+				if (!graph_element) {
+					continue;
+				}
+				if (graph_element->is_selected()) {
+					nodes.push_back(graph_element->get_name());
+				}
+			}
+			emit_signal(SNAME("copy_nodes_request"), nodes);
 			accept_event();
 		} else if (p_ev->is_action("ui_cut", true)) {
-			emit_signal(SNAME("cut_nodes_request"));
+			TypedArray<StringName> nodes;
+
+			for (int i = 0; i < get_child_count(); i++) {
+				GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
+				if (!graph_element) {
+					continue;
+				}
+				if (graph_element->is_selected()) {
+					nodes.push_back(graph_element->get_name());
+				}
+			}
+			emit_signal(SNAME("cut_nodes_request"), nodes);
 			accept_event();
 		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
@@ -3116,10 +3149,10 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING_NAME, "from_node"), PropertyInfo(Variant::INT, "from_port"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
-	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
-	ADD_SIGNAL(MethodInfo("cut_nodes_request"));
+	ADD_SIGNAL(MethodInfo("copy_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
+	ADD_SIGNAL(MethodInfo("cut_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
-	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("duplicate_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
