@@ -291,25 +291,28 @@ void EditorVisualProfiler::_update_plot() {
 				wr[widx + 2] = b;
 				wr[widx + 3] = 255;
 			}
-			//plot GPU
-			for (int j = 0; j < h; j++) {
-				uint8_t r, g, b;
 
-				if (column_gpu[j].a == 0) {
-					r = Math::fast_ftoi(background_color.r * 255);
-					g = Math::fast_ftoi(background_color.g * 255);
-					b = Math::fast_ftoi(background_color.b * 255);
-				} else {
-					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
-					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
-					b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0, 255);
+			if (!using_metal) {
+				// Plot GPU when GPU time reporting is available.
+				for (int j = 0; j < h; j++) {
+					uint8_t r, g, b;
+
+					if (column_gpu[j].a == 0) {
+						r = Math::fast_ftoi(background_color.r * 255);
+						g = Math::fast_ftoi(background_color.g * 255);
+						b = Math::fast_ftoi(background_color.b * 255);
+					} else {
+						r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
+						g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
+						b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0, 255);
+					}
+
+					int widx = (j * w + w / 2 + i) * 4;
+					wr[widx + 0] = r;
+					wr[widx + 1] = g;
+					wr[widx + 2] = b;
+					wr[widx + 3] = 255;
 				}
-
-				int widx = (j * w + w / 2 + i) * 4;
-				wr[widx + 0] = r;
-				wr[widx + 1] = g;
-				wr[widx + 2] = b;
-				wr[widx + 3] = 255;
 			}
 		}
 	}
@@ -395,7 +398,7 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		category->set_text(0, m.areas[i].name);
 		category->set_text(1, _get_time_as_text(cpu_time));
 		category->set_metadata(1, m.areas[i].cpu_time);
-		category->set_text(2, _get_time_as_text(gpu_time));
+		category->set_text(2, !using_metal ? _get_time_as_text(gpu_time) : TTR("N/A"));
 		category->set_metadata(2, m.areas[i].gpu_time);
 
 		if (selected_area == m.areas[i].fullpath_cache) {
@@ -410,7 +413,7 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		float total_cpu = E->get_metadata(1);
 		float total_gpu = E->get_metadata(2);
 		E->set_text(1, _get_time_as_text(total_cpu));
-		E->set_text(2, _get_time_as_text(total_gpu));
+		E->set_text(2, !using_metal ? _get_time_as_text(total_gpu) : TTR("N/A"));
 	}
 
 	if (ensure_selected) {
@@ -493,7 +496,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
-	if (graph_height_gpu > 0) {
+	if (!using_metal && graph_height_gpu > 0) {
 		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_gpu - 1;
 
 		int half_width = graph->get_size().x / 2;
@@ -505,7 +508,8 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	}
 
 	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + 2), "CPU: " + cpu_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
-	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU: " + gpu_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
+	const String gpu_string = !using_metal ? ("GPU: " + gpu_name) : TTR("GPU profiling not supported on Metal.");
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), gpu_string, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
@@ -749,6 +753,8 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 }
 
 EditorVisualProfiler::EditorVisualProfiler() {
+	using_metal = RS::get_singleton()->get_current_rendering_driver_name() == "metal";
+
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 	add_child(hb);
