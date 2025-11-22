@@ -2264,13 +2264,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 	int htotal = 0;
 
-	int label_h = 0;
+	r_self_height = compute_item_height(p_item);
+	int label_h = r_self_height + theme_cache.v_separation;
 	bool rtl = cache.rtl;
 
 	// Draw label, if height fits.
 	bool skip = (p_item == root && hide_root);
 
-	if (!skip) {
+	if (!skip && p_pos.y + label_h - theme_cache.offset.y >= 0) {
 		// Draw separation.
 
 		ERR_FAIL_COND_V(theme_cache.font.is_null(), -1);
@@ -2344,13 +2345,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			p_item->cells.write[i].text_buf->set_width(text_width);
-
-			r_self_height = compute_item_height(p_item);
-			label_h = r_self_height + theme_cache.v_separation;
-
-			if (p_pos.y + label_h - theme_cache.offset.y < 0) {
-				continue; // No need to draw.
-			}
 
 			Rect2i item_rect = Rect2i(Point2i(ofs, p_pos.y) - theme_cache.offset + p_draw_ofs, Size2i(item_width, label_h));
 			Rect2i cell_rect = item_rect;
