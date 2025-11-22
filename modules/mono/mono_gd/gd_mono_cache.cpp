@@ -81,6 +81,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, SerializeState);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, DeserializeState);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, ValidateExports);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, GCHandleIsTargetCollectible);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, GetCurrentStackInfo);

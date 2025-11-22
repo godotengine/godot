@@ -103,6 +103,7 @@ struct ManagedCallbacks {
 	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
 	using FuncCSharpInstanceBridge_SerializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
 	using FuncCSharpInstanceBridge_DeserializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncCSharpInstanceBridge_ValidateExports = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncGCHandleBridge_GCHandleIsTargetCollectible = bool(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDebuggingUtils_GetCurrentStackInfo = void(GD_CLR_STDCALL *)(Vector<ScriptLanguage::StackInfo> *);
@@ -141,6 +142,7 @@ struct ManagedCallbacks {
 	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
 	FuncCSharpInstanceBridge_SerializeState CSharpInstanceBridge_SerializeState;
 	FuncCSharpInstanceBridge_DeserializeState CSharpInstanceBridge_DeserializeState;
+	FuncCSharpInstanceBridge_ValidateExports CSharpInstanceBridge_ValidateExports;
 	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
 	FuncGCHandleBridge_GCHandleIsTargetCollectible GCHandleBridge_GCHandleIsTargetCollectible;
 	FuncDebuggingUtils_GetCurrentStackInfo DebuggingUtils_GetCurrentStackInfo;
