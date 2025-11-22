@@ -836,10 +836,25 @@ public:
 	static int get_utility_function_count();
 
 	//argsVariant call()
-
 	bool operator==(const Variant &p_variant) const;
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
+
+#ifdef STRICT_CHECKS // We want to gradually move away from implicit conversions to/from Variant.
+	template <typename T>
+	bool operator==(const T &p_value) const = delete;
+	template <typename T>
+	bool operator!=(const T &p_value) const = delete;
+	template <typename T>
+	bool operator<(const T &p_value) const = delete;
+	template <typename T>
+	bool operator<=(const T &p_value) const = delete;
+	template <typename T>
+	bool operator>(const T &p_value) const = delete;
+	template <typename T>
+	bool operator>=(const T &p_value) const = delete;
+#endif // STRICT_CHECKS
+
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 

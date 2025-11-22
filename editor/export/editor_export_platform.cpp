@@ -774,7 +774,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
 				if (_export_customize_dictionary(d, customize_resources_plugins)) {
-					if (p_object->get(E.name) != d) {
+					if (p_object->get(E.name) != (Variant)d) {
 						p_object->set(E.name, d);
 					}
 
@@ -784,7 +784,7 @@ bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVecto
 			case Variant::ARRAY: {
 				Array a = p_object->get(E.name);
 				if (_export_customize_array(a, customize_resources_plugins)) {
-					if (p_object->get(E.name) != a) {
+					if (p_object->get(E.name) != (Variant)a) {
 						p_object->set(E.name, a);
 					}
 
@@ -979,9 +979,9 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 			} else {
 				String current_version = GODOT_VERSION_FULL_CONFIG;
 				String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
-				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
+				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != Variant("")) {
 					template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
-				} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != "") {
+				} else if (!p_debug && p_preset->has("custom_template/release") && p_preset->get("custom_template/release") != Variant("")) {
 					template_path = p_preset->get("custom_template/release").operator String().get_base_dir();
 				}
 				String data_file_name = template_path.path_join(ts_name);

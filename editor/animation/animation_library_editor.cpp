@@ -901,7 +901,7 @@ Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
 
 		for (const String &section : sections) {
 			Variant mixer_id = config->get_value(section, "mixer");
-			if ((mixer_id.get_type() == Variant::INT && uint64_t(mixer_id) == current_mixer_id) || config->get_value(section, "mixer_signature") == current_mixer_signature) { // Ensure value exists and is correct type
+			if ((mixer_id.get_type() == Variant::INT && uint64_t(mixer_id) == current_mixer_id) || config->get_value(section, "mixer_signature") == (Variant)current_mixer_signature) { // Ensure value exists and is correct type
 				// Found the mixer in a different section!
 				_load_config_libs_folding(collapsed_lib_ids, config.ptr(), section);
 

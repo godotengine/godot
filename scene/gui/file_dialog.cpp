@@ -425,7 +425,7 @@ void FileDialog::_action_pressed() {
 		int selected = _get_selected_file_idx();
 		if (selected > -1) {
 			Dictionary d = file_list->get_item_metadata(selected);
-			if (d["dir"] && d["name"] != "..") {
+			if (d["dir"] && d["name"] != Variant("..")) {
 				path = path.path_join(d["name"]);
 			}
 		}
