@@ -238,7 +238,7 @@ class ConnectionsDock : public VBoxContainer {
 	};
 
 	VBoxContainer *holder = nullptr;
-	Label *select_a_node = nullptr;
+	Label *select_an_object = nullptr;
 
 	Object *selected_object = nullptr;
 	ConnectionsDockTree *tree = nullptr;
@@ -285,7 +285,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_selection(const Vector<Object *> &p_objects);
+	void set_object(Object *p_object);
 	void update_tree();
 
 	ConnectionsDock();
