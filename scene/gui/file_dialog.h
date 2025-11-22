@@ -368,6 +368,7 @@ private:
 	virtual void _post_popup() override;
 
 protected:
+	virtual void _popup_base(const Rect2i &p_rect = Rect2i()) override;
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
@@ -385,7 +386,6 @@ protected:
 
 public:
 	virtual void set_visible(bool p_visible) override;
-	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	void popup_file_dialog();
 	void clear_filters();
