@@ -68,13 +68,15 @@ public:
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 
 	Address host_addr;
-	Address dest_ip;
+	Address dest_addr;
 	bool blocking_enabled = true;
+	bool tcp_no_delay_enabled = false;
 
 	// Helper methods for testing.
 	void _set_available_bytes(int p_available_bytes);
 	void _set_send_data(uint8_t *p_sent_data);
 	void _set_recv_data(uint8_t *p_recv_data);
+	void _set_is_open(bool p_is_open);
 
 	MockNetSocket();
 	~MockNetSocket() override;
@@ -103,6 +105,10 @@ void MockNetSocket::_set_send_data(uint8_t *p_sent_data) {
 
 void MockNetSocket::_set_recv_data(uint8_t *p_recv_data) {
 	_recv_data = p_recv_data;
+}
+
+void MockNetSocket::_set_is_open(bool p_is_open) {
+	_is_open = p_is_open;
 }
 
 void MockNetSocket::make_default() {
@@ -136,7 +142,7 @@ Error MockNetSocket::listen(int p_max_pending) {
 }
 
 Error MockNetSocket::connect_to_host(Address p_addr) {
-	dest_ip = p_addr;
+	dest_addr = p_addr;
 	return OK;
 }
 
@@ -181,6 +187,7 @@ int MockNetSocket::get_available_bytes() const {
 }
 
 Error MockNetSocket::get_socket_address(Address *r_ip) const {
+	*r_ip = host_addr;
 	return OK;
 }
 
@@ -194,7 +201,9 @@ void MockNetSocket::set_blocking_enabled(bool p_enabled) {
 
 void MockNetSocket::set_ipv6_only_enabled(bool p_enabled) {}
 
-void MockNetSocket::set_tcp_no_delay_enabled(bool p_enabled) {}
+void MockNetSocket::set_tcp_no_delay_enabled(bool p_enabled) {
+	tcp_no_delay_enabled = p_enabled;
+}
 
 void MockNetSocket::set_reuse_address_enabled(bool p_enabled) {}
 
@@ -215,9 +224,16 @@ TEST_CASE("[StreamPeerTCP] Basics") {
 	ns.instantiate();
 	Ref<StreamPeerTCP> spt;
 	spt.instantiate();
-	NetSocket::Address peer_ip = NetSocket::Address(IPAddress("127.0.1.1"), 5678);
+	IPAddress connect_ip = IPAddress("127.0.1.1");
+	int connect_port = 5678;
+	NetSocket::Address peer_ip = NetSocket::Address(connect_ip, connect_port);
 	spt->accept_socket(ns, peer_ip);
 	REQUIRE(ns->blocking_enabled == false);
+
+	SUBCASE("Getters for connection return correct values") {
+		REQUIRE(spt->get_connected_host() == connect_ip);
+		REQUIRE(spt->get_connected_port() == connect_port);
+	}
 
 	SUBCASE("Invalid port numbers returns an Error") {
 		ERR_PRINT_OFF;
@@ -237,11 +253,35 @@ TEST_CASE("[StreamPeerTCP] Basics") {
 		REQUIRE(ns->is_open() == true);
 		REQUIRE(ns->host_addr.ip() == bind_ip);
 		REQUIRE(ns->host_addr.port() == bind_port);
+		REQUIRE(spt->get_local_port() == bind_port);
 	}
 
 	SUBCASE("Invoking disconnect_from_host closes NetSocket") {
 		spt->disconnect_from_host();
 		REQUIRE(ns->is_open() == false);
+	}
+}
+
+TEST_CASE("[StreamPeerTCP] set_no_delay") {
+	Ref<MockNetSocket> ns;
+	ns.instantiate();
+	Ref<StreamPeerTCP> spt;
+	spt.instantiate();
+	NetSocket::Address peer_ip = NetSocket::Address(IPAddress("127.0.1.1"), 3456);
+	spt->accept_socket(ns, peer_ip);
+	REQUIRE(ns->is_open() == false);
+
+	SUBCASE("An Error is returned for a closed NetSocket") {
+		ERR_PRINT_OFF;
+		spt->set_no_delay(true);
+		REQUIRE(ns->tcp_no_delay_enabled == false);
+		ERR_PRINT_ON;
+	}
+
+	SUBCASE("set_tcp_no_delay_enabled is called for an open NetSocket") {
+		ns->_set_is_open(true);
+		spt->set_no_delay(true);
+		REQUIRE(ns->tcp_no_delay_enabled == true);
 	}
 }
 
@@ -272,6 +312,26 @@ TEST_CASE("[StreamPeerTCP] Poll") {
 		Error fin_ret = spt->poll();
 		REQUIRE(fin_ret == OK);
 		REQUIRE(ns->is_open() == false);
+	}
+}
+
+TEST_CASE("[StreamPeerTCP] connect_to_host") {
+	Ref<MockNetSocket> ns;
+	ns.instantiate();
+	Ref<StreamPeerTCP> spt;
+	spt.instantiate();
+	spt->accept_socket(ns, NetSocket::Address(IPAddress("127.5.4.9"), 4567));
+
+	SUBCASE("If already connected an Error is returned") {
+		IPAddress connect_ip = IPAddress("127.5.6.7");
+		int connect_port = 9094;
+
+		ERR_PRINT_OFF;
+		// There is already a connection from accept_socket above.
+		Error connect_ret = spt->connect_to_host(connect_ip, connect_port);
+		ERR_PRINT_ON;
+
+		REQUIRE(connect_ret == ERR_ALREADY_IN_USE);
 	}
 }
 
