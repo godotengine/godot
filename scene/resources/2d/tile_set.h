@@ -305,7 +305,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 #ifdef TOOLS_ENABLED
-	virtual uint32_t hash_edited_version_for_preview() const override { return 0; } // Not using preview, so disable it for performance.
+	virtual uint32_t hash_modified_version_for_preview() const override { return 0; } // Not using preview, so disable it for performance.
 #endif
 
 private:
