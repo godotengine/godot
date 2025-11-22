@@ -37,10 +37,18 @@ namespace TestVector3i {
 
 TEST_CASE("[Vector3i] Constructor methods") {
 	constexpr Vector3i vector_empty = Vector3i();
+	constexpr Vector3i vector_from_int_zero = Vector3i(0);
+	constexpr Vector3i vector_from_float_half = Vector3i(0.5f);
 	constexpr Vector3i vector_zero = Vector3i(0, 0, 0);
 	static_assert(
 			vector_empty == vector_zero,
-			"Vector3i Constructor with no inputs should return a zero Vector3i.");
+			"Default constructor Vector3i() should create a zero Vector3i.");
+	static_assert(
+			vector_from_int_zero == vector_zero,
+			"Vector3i(int scalar) should create a zero Vector3i when scalar is 0.");
+	static_assert(
+			vector_from_float_half == vector_zero,
+			"Vector3i(float scalar) should create a zero Vector3i when scalar < 1 (truncated to 0).");
 }
 
 TEST_CASE("[Vector3i] Axis methods") {
