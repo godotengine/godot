@@ -413,7 +413,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 			SUBCASE("[Viewport][GuiInputEvent] Signal 'gui_focus_changed' is only emitted if a previously unfocused Control grabs focus.") {
 				SIGNAL_WATCH(root, SNAME("gui_focus_changed"));
-				Array signal_args = { { node_a } };
+				Array signal_args = { Array{ node_a } };
 
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
