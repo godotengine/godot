@@ -56,6 +56,9 @@ String GDScriptWarning::get_message() const {
 		case UNUSED_PARAMETER:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The parameter "%s" is never used in the function "%s()". If this is intended, prefix it with an underscore: "_%s".)*", symbols[1], symbols[0], symbols[1]);
+		case UNUSED_OVERRIDDEN_PARAMETER:
+			CHECK_SYMBOLS(2);
+			return vformat(R"*(The parameter "%s" is never used in the overridden function "%s()" If this is intended, prefix it with an underscore: "_%s".)*", symbols[1], symbols[0], symbols[1]);
 		case UNUSED_SIGNAL:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The signal "%s" is declared but never explicitly used in the class.)", symbols[0]);
@@ -202,6 +205,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("UNUSED_LOCAL_CONSTANT"),
 		PNAME("UNUSED_PRIVATE_CLASS_VARIABLE"),
 		PNAME("UNUSED_PARAMETER"),
+		PNAME("UNUSED_OVERRIDDEN_PARAMETER"),
 		PNAME("UNUSED_SIGNAL"),
 		PNAME("SHADOWED_VARIABLE"),
 		PNAME("SHADOWED_VARIABLE_BASE_CLASS"),
