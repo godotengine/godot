@@ -142,7 +142,7 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (is_hovering) {
 				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
 			}
 
@@ -1017,7 +1017,7 @@ int ProjectList::get_index(const ProjectListItemControl *p_control) const {
 void ProjectList::ensure_project_visible(int p_index) {
 	const Item &item = _projects[p_index];
 	// Since follow focus is enabled.
-	item.control->grab_focus();
+	item.control->grab_focus(true);
 }
 
 void ProjectList::_create_project_item_control(int p_index) {
