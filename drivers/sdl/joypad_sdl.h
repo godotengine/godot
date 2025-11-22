@@ -61,9 +61,16 @@ private:
 
 		bool supports_force_feedback = false;
 		uint64_t ff_effect_timestamp = 0;
+		Vector3 accelerometer_gravity;
 
 		virtual bool has_joy_light() const override;
 		virtual bool set_joy_light(const Color &p_color) override;
+
+		virtual bool has_joy_accelerometer() const override;
+		virtual bool has_joy_gyroscope() const override;
+
+		virtual bool enable_joy_accelerometer(bool p_enable) override;
+		virtual bool enable_joy_gyroscope(bool p_enable) override;
 
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
