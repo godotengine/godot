@@ -30,10 +30,12 @@
 
 #pragma once
 
-#include "core/variant/typed_dictionary.h"
 #include "editor/inspector/editor_inspector.h"
 
 class SceneDebuggerObject;
+
+template <typename K, typename V>
+class TypedDictionary;
 
 class EditorDebuggerRemoteObjects : public Object {
 	GDCLASS(EditorDebuggerRemoteObjects, Object);
@@ -60,10 +62,7 @@ public:
 	String get_title();
 	Variant get_variant(const StringName &p_name);
 
-	void clear() {
-		prop_list.clear();
-		prop_values.clear();
-	}
+	void clear();
 
 	void update() { notify_property_list_changed(); }
 };

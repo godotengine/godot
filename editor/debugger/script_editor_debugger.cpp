@@ -33,6 +33,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_expression_evaluator.h"
