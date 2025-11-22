@@ -54,8 +54,7 @@ void PluginConfigDialog::_on_confirmed() {
 	String path = "res://addons/" + _get_subfolder();
 
 	if (!_edit_mode) {
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (d.is_null() || d->make_dir_recursive(path) != OK) {
+		if (EditorFileSystem::get_singleton()->make_dir_recursive(path) != OK) {
 			return;
 		}
 	}
@@ -72,7 +71,7 @@ void PluginConfigDialog::_on_confirmed() {
 	// Save and inform the editor.
 	cf->save(path.path_join("plugin.cfg"));
 	EditorNode::get_singleton()->get_project_settings()->update_plugins();
-	EditorFileSystem::get_singleton()->scan();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(path, true);
 	_clear_fields();
 }
 

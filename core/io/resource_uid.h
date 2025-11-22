@@ -86,8 +86,6 @@ public:
 	Error update_cache();
 	static String get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string);
 
-	void clear();
-
 	static ResourceUID *get_singleton() { return singleton; }
 
 	ResourceUID();

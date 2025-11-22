@@ -439,7 +439,7 @@ void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, 
 	// Plugins are now loaded during the first scan. It's important not to start another scan,
 	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
 	if (!EditorFileSystem::get_singleton()->doing_first_scan()) {
-		callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+		EditorFileSystem::get_singleton()->update_extensions();
 	}
 }
 
@@ -449,7 +449,7 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 	// Plugins are now loaded during the first scan. It's important not to start another scan,
 	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
 	if (!EditorNode::get_singleton()->is_exiting() && !EditorFileSystem::get_singleton()->doing_first_scan()) {
-		callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
+		EditorFileSystem::get_singleton()->update_extensions();
 	}
 }
 
@@ -496,11 +496,17 @@ void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
+	if (!EditorFileSystem::get_singleton()->doing_first_scan()) {
+		EditorFileSystem::get_singleton()->update_extensions();
+	}
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
 	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::remove_scene_importer(p_importer);
+	if (!EditorNode::get_singleton()->is_exiting() && !EditorFileSystem::get_singleton()->doing_first_scan()) {
+		EditorFileSystem::get_singleton()->update_extensions();
+	}
 }
 
 void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
