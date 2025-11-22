@@ -3211,11 +3211,6 @@ int String::rfindn(const String &p_str, int p_from) const {
 		return -1; // Still out of bounds
 	}
 
-	if (str_len == 1) {
-		// Optimize with single-char implementation.
-		return span().rfind(p_str[0], p_from);
-	}
-
 	const char32_t *src = get_data();
 	const char32_t *str = p_str.get_data();
 
