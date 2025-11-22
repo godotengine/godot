@@ -268,6 +268,11 @@ void main() {
 #ifdef USE_WORLD_VERTEX_COORDS
 	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
 #endif
+
+#ifdef OVERRIDE_POSITION
+	highp vec4 position;
+#endif
+
 	{
 #CODE : VERTEX
 	}
@@ -293,7 +298,11 @@ void main() {
 
 	uv_vertex_interp = vec4(uv, vertex);
 
+#ifdef OVERRIDE_POSITION
+	gl_Position = position;
+#else
 	gl_Position = canvas_data.screen_transform * vec4(vertex, 0.0, 1.0);
+#endif
 
 #ifdef USE_POINT_SIZE
 	gl_PointSize = point_size;
