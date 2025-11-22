@@ -1587,7 +1587,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 		ERR_FAIL_MSG("Shader compilation failed.");
 	}
 
-	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	uses_screen_texture_mipmaps = gen_code.screen_texture_filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP;
 	uses_screen_texture = gen_code.uses_screen_texture;
 
 	pipeline_hash_map.clear_pipelines();
