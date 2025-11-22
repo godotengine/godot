@@ -46,6 +46,7 @@ class OptionButton;
 class PopupMenu;
 class ProjectExportDialog;
 class RichTextLabel;
+class SpinBox;
 class TabContainer;
 class Tree;
 class TreeItem;
@@ -107,6 +108,11 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	RBSet<String> feature_set;
 
+	CheckButton *patch_delta_encoding = nullptr;
+	SpinBox *patch_delta_zstd_level = nullptr;
+	SpinBox *patch_delta_min_reduction = nullptr;
+	LineEdit *patch_delta_include_filter = nullptr;
+	LineEdit *patch_delta_exclude_filter = nullptr;
 	Tree *patches = nullptr;
 	int patch_index = -1;
 	EditorFileDialog *patch_dialog = nullptr;
@@ -158,6 +164,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _tree_popup_edited(bool p_arrow_clicked);
 	void _set_file_export_mode(int p_id);
 
+	bool updating_patch_delta_filters = false;
+	void _patch_delta_encoding_changed(bool p_pressed);
+	void _patch_delta_include_filter_changed(const String &p_filter);
+	void _patch_delta_exclude_filter_changed(const String &p_filter);
+	void _patch_delta_zstd_level_changed(double p_value);
+	void _patch_delta_min_reduction_changed(double p_value);
 	void _patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _patch_tree_item_edited();
 	void _patch_file_selected(const String &p_path);
