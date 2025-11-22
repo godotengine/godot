@@ -2484,10 +2484,6 @@ void RichTextLabel::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
-		case NOTIFICATION_READY: {
-			_prepare_scroll_anchor();
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
 			main->first_invalid_font_line.store(0); // Invalidate all lines.
@@ -2660,7 +2656,12 @@ void RichTextLabel::_notification(int p_what) {
 			}
 			if (scroll_follow_visible_characters && scroll_active) {
 				scroll_visible = follow_vc_pos > 0;
-				vscroll->set_visible(follow_vc_pos > 0);
+				if (scroll_visible) {
+					_prepare_scroll_anchor();
+				} else {
+					scroll_w = 0;
+				}
+				vscroll->set_visible(scroll_visible);
 			}
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
 				RID ae;
