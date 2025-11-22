@@ -66,11 +66,40 @@ public:
 		CACHE_MODE_REPLACE_DEEP,
 	};
 
+	enum FilterTarget {
+		FILTER_TARGET_TYPE_HINT,
+		FILTER_TARGET_PATH,
+		FILTER_TARGET_FILE_NAME,
+		FILTER_TARGET_FILE_EXTENSION,
+		FILTER_TARGET_BASE_DIR,
+		FILTER_TARGET_RESOURCE_NAME,
+		FILTER_TARGET_RESOURCE_PATH,
+		FILTER_TARGET_RESOURCE_CLASS,
+		FILTER_TARGET_REFERENCE_COUNT,
+	};
+
+	enum FilterComparator {
+		FILTER_COMP_EQUALS,
+		FILTER_COMP_NOT_EQUAL,
+		FILTER_COMP_BEGINS_WITH,
+		FILTER_COMP_ENDS_WITH,
+		FILTER_COMP_CONTAINS,
+		FILTER_COMP_GREATER,
+		FILTER_COMP_LESS,
+		FILTER_COMP_GREATER_OR_EQUAL,
+		FILTER_COMP_LESS_OR_EQUAL,
+	};
+
 	static ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
+
+	Dictionary get_cached_entries();
+	Dictionary get_cached_paths_infos(const FilterTarget &p_info);
+	Dictionary get_cached_entries_filtered(const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
+	Dictionary get_cached_paths_infos_filtered(const FilterTarget &p_info, const FilterTarget &p_target, const FilterComparator &p_comparator, const Variant &p_value, const int32_t &p_limit);
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
@@ -695,6 +724,8 @@ public:
 VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::FilterTarget);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::FilterComparator);
 
 VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 
