@@ -667,6 +667,12 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 	int len = lines.size();
 	for (int i = 0; i < len; i++) {
 		if (i == p_cursor.line) {
+			// This code tries to insert the symbol into the preexisting code. Due to using a simple
+			// algorithm, the results might not always match the option semantically (e.g. different
+			// identifier name). This is fine because symbol lookup will prioritize the provided
+			// symbol name over the actual code. Establishing a syntactic target (e.g. identifier)
+			// is usually sufficient.
+
 			String line = lines[i];
 			String first_part = line.substr(0, p_cursor.character);
 			String last_part = line.substr(p_cursor.character, lines[i].length());
@@ -678,6 +684,9 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 						first_part = line.substr(0, c);
 						first_part += p_symbol;
 						break;
+					} else if (c == 0) {
+						// No preexisting code that matches the option. Insert option in place.
+						first_part += p_symbol;
 					}
 				}
 			}
