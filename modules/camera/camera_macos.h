@@ -38,6 +38,15 @@
 class CameraMacOS : public CameraServer {
 	GDSOFTCLASS(CameraMacOS, CameraServer);
 
+#if TARGET_OS_IPHONE
+private:
+	int current_orientation = 0; // UIInterfaceOrientation value
+
+public:
+	void update_orientation(int p_orientation);
+	int get_current_orientation() const { return current_orientation; }
+#endif
+
 public:
 	CameraMacOS() = default;
 
