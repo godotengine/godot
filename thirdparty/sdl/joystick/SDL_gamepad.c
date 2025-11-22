@@ -2676,6 +2676,19 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         // Don't treat the Wii extension controls as a separate gamepad
         return true;
     }
+    if (SDL_strstr(name, "TouchPad") || // Matches e.g. "SynPS/2 Synaptics TouchPad"
+        SDL_strstr(name, "Touchpad") || // Matches e.g. "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
+        SDL_strstr(name, "Synaptics") || // Matches e.g. "Synaptics TM2768-001". Depending on Linux kernel version, Synaptics touchpads don't always have "touchpad" in thei.
+        SDL_strstr(name, "Trackpad") ||
+        SDL_strstr(name, "Clickpad") ||
+        SDL_strstr(name, "Keyboard") || // Matches e.g. "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Numpad Module System Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
+        SDL_strstr(name, "Mouse") || // Matches e.g. "Mouse passthrough"
+        SDL_strstr(name, "Pen") || // Matches e.g. "Wacom One by Wacom S Pen"
+        SDL_strstr(name, "Finger") || // Matches e.g. "Wacom HID 495F Finger"
+        SDL_strstr(name, "LED")) { // Matches e.g. "ASRock LED Controller"
+        // Don't treat various trackpads, keyboards, mice and LED controllers as gamepads
+        return true;
+    }
 #endif
 
     if (name && SDL_strcmp(name, "uinput-fpc") == 0) {
