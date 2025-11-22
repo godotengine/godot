@@ -139,38 +139,6 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 }
 
 /*------------------------------------------------------------------------------
-								VELOCITY
-------------------------------------------------------------------------------*/
-
-void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
-	float depth = load_depth(pos);
-
-	if (depth < min_depth) {
-		min_depth = depth;
-		min_pos = pos;
-	}
-}
-
-// Returns velocity with closest depth (3x3 neighborhood)
-void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
-	float min_depth = 1.0;
-	uvec2 min_pos = group_pos;
-
-	depth_test_min(group_pos + kOffsets3x3[0], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[1], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[2], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[3], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[4], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[5], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[6], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[7], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[8], min_depth, min_pos);
-
-	// Velocity out
-	velocity = imageLoad(velocity_buffer, ivec2(group_top_left + min_pos)).xy;
-}
-
-/*------------------------------------------------------------------------------
 							  HISTORY SAMPLING
 ------------------------------------------------------------------------------*/
 
@@ -261,29 +229,41 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 }
 
 // Clip history to the neighbourhood of the current sample
-vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest) {
+vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
 	// Sample a 3x3 neighbourhood
-	vec3 s1 = load_color(group_pos + kOffsets3x3[0]);
-	vec3 s2 = load_color(group_pos + kOffsets3x3[1]);
-	vec3 s3 = load_color(group_pos + kOffsets3x3[2]);
-	vec3 s4 = load_color(group_pos + kOffsets3x3[3]);
-	vec3 s5 = load_color(group_pos + kOffsets3x3[4]);
-	vec3 s6 = load_color(group_pos + kOffsets3x3[5]);
-	vec3 s7 = load_color(group_pos + kOffsets3x3[6]);
-	vec3 s8 = load_color(group_pos + kOffsets3x3[7]);
-	vec3 s9 = load_color(group_pos + kOffsets3x3[8]);
+	vec3 s1 = reinhard(load_color(group_pos + kOffsets3x3[0]));
+	vec3 s2 = reinhard(load_color(group_pos + kOffsets3x3[1]));
+	vec3 s3 = reinhard(load_color(group_pos + kOffsets3x3[2]));
+	vec3 s4 = reinhard(load_color(group_pos + kOffsets3x3[3]));
+	vec3 s5 = reinhard(load_color(group_pos + kOffsets3x3[4]));
+	vec3 s6 = reinhard(load_color(group_pos + kOffsets3x3[5]));
+	vec3 s7 = reinhard(load_color(group_pos + kOffsets3x3[6]));
+	vec3 s8 = reinhard(load_color(group_pos + kOffsets3x3[7]));
+	vec3 s9 = reinhard(load_color(group_pos + kOffsets3x3[8]));
+
+	// Find longest 3x3 velocity for history clipping
+	float v1 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[0]).xy);
+	float v2 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[1]).xy);
+	float v3 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[2]).xy);
+	float v4 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[3]).xy);
+	float v5 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[4]).xy);
+	float v6 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[5]).xy);
+	float v7 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[6]).xy);
+	float v8 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[7]).xy);
+	float v9 = length(imageLoad(velocity_buffer, ivec2(group_pos) + kOffsets3x3[8]).xy);
+	float longest_velocity = max(v1, max(v2, max(v3, max(v4, max(v5, max(v6, max(v7, max(v8, v9))))))));
 
 	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
 	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
 	// Use variance clipping as described in https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
-	float box_size = mix(0.0f, params.variance_dynamic, smoothstep(0.02f, 0.0f, length(velocity_closest)));
+	float box_size = mix(0.0f, params.variance_dynamic, smoothstep(0.02f, 0.0f, longest_velocity));
 	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * box_size;
 	vec3 color_min = color_avg - dev;
 	vec3 color_max = color_avg + dev;
 
 	// Variance clipping
-	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), color_history);
+	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), reinhard(color_history));
 
 	// Clamp to prevent NaNs
 	color = clamp(color, FLT_MIN, FLT_MAX);
@@ -325,9 +305,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
-	vec2 velocity_closest = vec2(0.0); // This is best done by using the velocity with the closest depth.
-	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity_closest);
-	color_history = clip_history_3x3(pos_group, color_history, velocity_closest);
+	color_history = clip_history_3x3(pos_group, color_history);
 
 	// Compute blend factor
 	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
@@ -346,19 +324,35 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_resolved = vec3(0.0);
 	{
 		// Tonemap
-		color_history = reinhard(color_history);
 		color_input = reinhard(color_input);
 
-		// Reduce flickering
-		float lum_color = luminance(color_input);
-		float lum_history = luminance(color_history);
-		float diff = abs(lum_color - lum_history) / max(lum_color, max(lum_history, 1.001));
-		diff = 1.0 - diff;
-		diff = diff * diff;
-		blend_factor = mix(0.0, blend_factor, diff);
+		vec3 pixel_history = reinhard(textureLod(tex_history, uv, 0.0).rgb);
+		vec3 pixel_resolve = clamp(mix(pixel_history, color_input, blend_factor), FLT_MIN, FLT_MAX);
+		float expected_range = length(pixel_resolve - color_input);
 
 		// Lerp/blend
-		color_resolved = mix(color_history, color_input, blend_factor);
+		color_resolved = clamp(mix(color_history, color_input, blend_factor), FLT_MIN, FLT_MAX);
+		float resolved_range = length(color_resolved - color_input);
+
+		if (resolved_range > expected_range) {
+			color_resolved = pixel_resolve;
+		}
+
+		// Quickly Converge When Rendering Only the Background to avoid darkening High Frequency background detail, like Stars
+		// Should probably be removed if Deriving Motion Vectors from Depth as the Background gets Motion Vectors in that scenario
+		float d1 = load_depth(pos_group + kOffsets3x3[0]);
+		float d2 = load_depth(pos_group + kOffsets3x3[1]);
+		float d3 = load_depth(pos_group + kOffsets3x3[2]);
+		float d4 = load_depth(pos_group + kOffsets3x3[3]);
+		float d5 = load_depth(pos_group + kOffsets3x3[4]);
+		float d6 = load_depth(pos_group + kOffsets3x3[5]);
+		float d7 = load_depth(pos_group + kOffsets3x3[6]);
+		float d8 = load_depth(pos_group + kOffsets3x3[7]);
+		float d9 = load_depth(pos_group + kOffsets3x3[8]);
+		float depth = d1 + d2 + d3 + d4 + d5 + d6 + d7 + d8 + d9;
+		if (depth == 0) {
+			color_resolved = clamp(mix(color_history, color_input, max(0.5, blend_factor)), FLT_MIN, FLT_MAX);
+		}
 
 		// Inverse tonemap
 		color_resolved = reinhard_inverse(color_resolved);
