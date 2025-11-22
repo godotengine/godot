@@ -13,6 +13,7 @@ apply from: "../scripts/publish-module.gradle"
 
 dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation 'androidx.documentfile:documentfile:1.1.0'
 
     testImplementation "junit:junit:4.13.2"
 }
