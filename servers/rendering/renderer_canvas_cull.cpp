@@ -357,7 +357,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 
 		Transform2D parent_xform = p_parent_xform;
 
-		if (snapping_2d_transforms_to_pixel) {
+		if (snapping_2d_transforms_to_pixel && !Engine::get_singleton()->is_editor_hint()) {
 			self_xform.columns[2] = (self_xform.columns[2] + Point2(0.5, 0.5)).floor();
 			parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
 		}
