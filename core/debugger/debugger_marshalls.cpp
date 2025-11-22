@@ -105,6 +105,7 @@ Array DebuggerMarshalls::OutputError::serialize() {
 		source_line,
 		error,
 		error_descr,
+		error_type,
 		warning,
 		size * 3
 	};
@@ -118,7 +119,7 @@ Array DebuggerMarshalls::OutputError::serialize() {
 }
 
 bool DebuggerMarshalls::OutputError::deserialize(const Array &p_arr) {
-	CHECK_SIZE(p_arr, 11, "OutputError");
+	CHECK_SIZE(p_arr, 12, "OutputError");
 	hr = p_arr[0];
 	min = p_arr[1];
 	sec = p_arr[2];
@@ -128,10 +129,11 @@ bool DebuggerMarshalls::OutputError::deserialize(const Array &p_arr) {
 	source_line = p_arr[6];
 	error = p_arr[7];
 	error_descr = p_arr[8];
-	warning = p_arr[9];
-	unsigned int stack_size = p_arr[10];
+	error_type = p_arr[9];
+	warning = p_arr[10];
+	unsigned int stack_size = p_arr[11];
 	CHECK_SIZE(p_arr, stack_size, "OutputError");
-	int idx = 11;
+	int idx = 12;
 	callstack.resize(stack_size / 3);
 	ScriptLanguage::StackInfo *w = callstack.ptrw();
 	for (unsigned int i = 0; i < stack_size / 3; i++) {

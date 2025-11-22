@@ -2281,6 +2281,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 
 	if (shader->data) {
+		shader->data->set_path_hint(shader->path_hint);
 		shader->data->set_code(p_code);
 	}
 

@@ -269,6 +269,7 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
+	oe.error_type = p_type;
 	oe.source_file = p_file;
 	oe.source_line = p_line;
 	oe.source_func = p_func;
