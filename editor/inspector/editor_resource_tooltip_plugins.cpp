@@ -94,6 +94,34 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 	return vb;
 }
 
+void EditorResourceTooltipPlugin::append_editor_description_tooltip(const String &p_resource_path, VBoxContainer *p_default_tooltip) {
+	if (!ResourceLoader::exists(p_resource_path)) {
+		return;
+	}
+
+	Ref<Resource> cached_resource = ResourceCache::get_ref(p_resource_path);
+	String editor_description;
+	if (cached_resource.is_valid()) {
+		// Use the editor description in the currently-loaded instance. (Might be unsaved)
+		editor_description = cached_resource->get_editor_description();
+	} else {
+		// Not loaded yet.
+		editor_description = ResourceLoader::get_resource_editor_description(p_resource_path);
+	}
+	if (!editor_description.is_empty()) {
+		String tooltip;
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(editor_description, "", 80);
+		for (int i = 0; i < boundaries.size(); i += 2) {
+			const int start = boundaries[i];
+			const int end = boundaries[i + 1];
+			tooltip += "\n" + editor_description.substr(start, end - start + 1).rstrip("\n");
+		}
+		Label *label = memnew(Label(tooltip));
+		label->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
+		p_default_tooltip->add_child(label);
+	}
+}
+
 void EditorResourceTooltipPlugin::request_thumbnail(const String &p_path, TextureRect *p_for_control) const {
 	ERR_FAIL_NULL(p_for_control);
 	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(const_cast<EditorResourceTooltipPlugin *>(this), &EditorResourceTooltipPlugin::_thumbnail_ready).bind(p_for_control->get_instance_id()));

@@ -66,6 +66,7 @@ class ResourceLoaderBinary {
 	bool using_named_scene_ids = false;
 	bool using_uids = false;
 	String script_class;
+	String editor_description;
 	bool use_sub_threads = false;
 	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
@@ -102,6 +103,7 @@ public:
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
 	String recognize_script_class(Ref<FileAccess> p_f);
+	String recognize_editor_description(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	void get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes);
 };
@@ -116,6 +118,8 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual String get_resource_script_class(const String &p_path) const override;
+	virtual String get_resource_editor_description(const String &p_path) const override;
+	virtual bool has_editor_description_support() const override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
@@ -170,6 +174,7 @@ public:
 		FORMAT_FLAG_UIDS = 2,
 		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,
 		FORMAT_FLAG_HAS_SCRIPT_CLASS = 8,
+		FORMAT_FLAG_HAS_EDITOR_DESCRIPTION = 16,
 
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11
