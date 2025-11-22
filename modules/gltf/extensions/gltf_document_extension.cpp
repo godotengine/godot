@@ -34,6 +34,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
 	GDVIRTUAL_BIND(_import_preflight, "state", "extensions");
 	GDVIRTUAL_BIND(_get_supported_extensions);
+	GDVIRTUAL_BIND(_parse_scene_extensions, "state", "extensions");
 	GDVIRTUAL_BIND(_parse_node_extensions, "state", "gltf_node", "extensions");
 	GDVIRTUAL_BIND(_parse_image_data, "state", "image_data", "mime_type", "ret_image");
 	GDVIRTUAL_BIND(_get_image_file_extension);
@@ -55,6 +56,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_save_image_at_path, "state", "image", "file_path", "image_format", "lossy_quality");
 	GDVIRTUAL_BIND(_serialize_texture_json, "state", "texture_json", "gltf_texture", "image_format");
 	GDVIRTUAL_BIND(_export_node, "state", "gltf_node", "json", "node");
+	GDVIRTUAL_BIND(_export_scene, "state", "json");
 	GDVIRTUAL_BIND(_export_post, "state");
 }
 
@@ -70,6 +72,13 @@ Vector<String> GLTFDocumentExtension::get_supported_extensions() {
 	Vector<String> ret;
 	GDVIRTUAL_CALL(_get_supported_extensions, ret);
 	return ret;
+}
+
+Error GLTFDocumentExtension::parse_scene_extensions(Ref<GLTFState> p_state, const Dictionary &p_extensions) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	Error err = OK;
+	GDVIRTUAL_CALL(_parse_scene_extensions, p_state, Dictionary(p_extensions), err);
+	return err;
 }
 
 Error GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) {
@@ -222,6 +231,13 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	Error err = OK;
 	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, Dictionary(r_dict), p_node, err);
+	return err;
+}
+
+Error GLTFDocumentExtension::export_scene(Ref<GLTFState> p_state, Dictionary &r_json) {
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	Error err = OK;
+	GDVIRTUAL_CALL(_export_scene, p_state, Dictionary(r_json), err);
 	return err;
 }
 
