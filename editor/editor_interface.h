@@ -48,6 +48,7 @@ class EditorSettings;
 class EditorToaster;
 class EditorUndoRedoManager;
 class FileSystemDock;
+class LineEdit;
 class Mesh;
 class Node;
 class PropertySelector;
@@ -145,6 +146,10 @@ public:
 
 	String get_current_feature_profile() const;
 	void set_current_feature_profile(const String &p_profile_name);
+
+	void open_project_settings(const String &p_general_page = "", const String &p_filter = "");
+	void open_export_dialog();
+	void search_asset_library(const String &p_filter);
 
 	// Editor dialogs.
 

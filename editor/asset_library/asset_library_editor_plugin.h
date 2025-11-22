@@ -323,6 +323,8 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _update_asset_items_columns();
 
+	void _on_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body, const String &p_search_string);
+
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
 
@@ -333,6 +335,8 @@ protected:
 
 public:
 	void disable_community_support();
+
+	void search(const String &p_filter);
 
 	EditorAssetLibrary(bool p_templates_only = false);
 };
@@ -353,6 +357,8 @@ public:
 	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);
+
+	void search_assset_library(const String &p_filter);
 
 	AssetLibraryEditorPlugin();
 };
