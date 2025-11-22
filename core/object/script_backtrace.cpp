@@ -32,20 +32,14 @@
 
 #include "core/object/script_language.h"
 
-void ScriptBacktrace::_store_variables(const List<String> &p_names, const List<Variant> &p_values, LocalVector<StackVariable> &r_variables) {
-	r_variables.reserve(p_names.size());
+void ScriptBacktrace::_store_variables(const LocalVector<Pair<String, Variant>> &p_variables, LocalVector<StackVariable> &r_variables) {
+	r_variables.reserve(p_variables.size());
 
-	const List<String>::Element *name = p_names.front();
-	const List<Variant>::Element *value = p_values.front();
-
-	for (int i = 0; i < p_names.size(); i++) {
+	for (const Pair<String, Variant> &var : p_variables) {
 		StackVariable variable;
-		variable.name = name->get();
-		variable.value = value->get();
+		variable.name = var.first;
+		variable.value = var.second;
 		r_variables.push_back(std::move(variable));
-
-		name = name->next();
-		value = value->next();
 	}
 }
 
@@ -80,10 +74,9 @@ ScriptBacktrace::ScriptBacktrace(ScriptLanguage *p_language, bool p_include_vari
 	stack_frames.reserve(stack_infos.size());
 
 	if (p_include_variables) {
-		List<String> globals_names;
-		List<Variant> globals_values;
-		p_language->debug_get_globals(&globals_names, &globals_values);
-		_store_variables(globals_names, globals_values, global_variables);
+		LocalVector<Pair<String, Variant>> globals;
+		p_language->debug_get_globals(globals);
+		_store_variables(globals, global_variables);
 	}
 
 	for (int i = 0; i < stack_infos.size(); i++) {
@@ -95,15 +88,13 @@ ScriptBacktrace::ScriptBacktrace(ScriptLanguage *p_language, bool p_include_vari
 		stack_frame.line = stack_info.line;
 
 		if (p_include_variables) {
-			List<String> locals_names;
-			List<Variant> locals_values;
-			p_language->debug_get_stack_level_locals(i, &locals_names, &locals_values);
-			_store_variables(locals_names, locals_values, stack_frame.local_variables);
+			LocalVector<Pair<String, Variant>> locals;
+			p_language->debug_get_stack_level_locals(i, locals);
+			_store_variables(locals, stack_frame.local_variables);
 
-			List<String> members_names;
-			List<Variant> members_values;
-			p_language->debug_get_stack_level_members(i, &members_names, &members_values);
-			_store_variables(members_names, members_values, stack_frame.member_variables);
+			LocalVector<Pair<String, Variant>> members;
+			p_language->debug_get_stack_level_members(i, members);
+			_store_variables(members, stack_frame.member_variables);
 		}
 
 		stack_frames.push_back(std::move(stack_frame));
