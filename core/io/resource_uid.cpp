@@ -134,7 +134,10 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 	RandomPCG rng;
 
 	const String project_name = GLOBAL_GET("application/config/name");
-	rng.seed(project_name.hash64() * p_path.hash64() * FileAccess::get_md5(p_path).hash64());
+	// Use lowercase file name as random seed.
+	// This ensures that case differences don't cause UIDs to shift on case-insensitive filesystems. The downside is that identical files with different case
+	// (but otherwise identical name) will run into a hash collision, but this is a very rare scenario.
+	rng.seed(project_name.hash64() * p_path.to_lower().hash64() * FileAccess::get_md5(p_path).hash64());
 
 	while (true) {
 		int64_t num1 = rng.rand();
