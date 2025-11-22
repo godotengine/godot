@@ -136,11 +136,11 @@ private:
 
 	String base_sha256;
 
-	static String shader_cache_dir;
-	static bool shader_cache_cleanup_on_start;
-	static bool shader_cache_save_compressed;
-	static bool shader_cache_save_compressed_zstd;
-	static bool shader_cache_save_debug;
+	static inline String shader_cache_dir;
+	static inline bool shader_cache_cleanup_on_start = false;
+	static inline bool shader_cache_save_compressed = true;
+	static inline bool shader_cache_save_compressed_zstd = true;
+	static inline bool shader_cache_save_debug = true;
 	bool shader_cache_dir_valid = false;
 
 	GLint max_image_units = 0;
@@ -179,7 +179,7 @@ private:
 	Version::Specialization *current_shader = nullptr;
 
 protected:
-	ShaderGLES3();
+	ShaderGLES3() {}
 	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
 
 	_FORCE_INLINE_ bool _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
