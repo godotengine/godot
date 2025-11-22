@@ -842,6 +842,7 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		vkGetPhysicalDeviceProperties(physical_devices[i], &props);
 
 		Device &driver_device = driver_devices[i];
+		driver_device.id = props.deviceID;
 		driver_device.name = String::utf8(props.deviceName);
 		driver_device.vendor = props.vendorID;
 		driver_device.type = DeviceType(props.deviceType);
