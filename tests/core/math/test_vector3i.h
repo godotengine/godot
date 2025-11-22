@@ -41,6 +41,10 @@ TEST_CASE("[Vector3i] Constructor methods") {
 	static_assert(
 			vector_empty == vector_zero,
 			"Vector3i Constructor with no inputs should return a zero Vector3i.");
+
+	CHECK_MESSAGE(
+			Vector3i(123) == Vector3i(123, 123, 123),
+			"Vector3i Constructor with one argument should set all components to the same value.");
 }
 
 TEST_CASE("[Vector3i] Axis methods") {
