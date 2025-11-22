@@ -521,13 +521,13 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
-#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
-#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 #if defined(MACOS_ENABLED)
 	if (p_feature == "universal") {
 		return true;
 	}
 #endif
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	if (p_feature == "x86_64") {
 		return true;
 	}
@@ -541,11 +541,6 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
-#if defined(MACOS_ENABLED)
-	if (p_feature == "universal") {
-		return true;
-	}
-#endif
 	if (p_feature == "arm64") {
 		return true;
 	}
