@@ -328,6 +328,18 @@
 				[b]Note:[/b] This method should be called only during accessibility information updates ([constant NOTIFICATION_ACCESSIBILITY_UPDATE]).
 			</description>
 		</method>
+		<method name="get_ancestor_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of ancestor nodes.
+			</description>
+		</method>
+		<method name="get_ancestors" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns an array of references to node's ancestors.
+			</description>
+		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="idx" type="int" />
@@ -361,6 +373,22 @@
 			<description>
 				Returns all children of this node inside an [Array].
 				If [param include_internal] is [code]false[/code], excludes internal children from the returned array (see [method add_child]'s [code]internal[/code] parameter).
+			</description>
+		</method>
+		<method name="get_descendant_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Returns the number of descendant nodes.
+				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
+			</description>
+		</method>
+		<method name="get_descendants" qualifiers="const">
+			<return type="Node[]" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Returns an array of references to node's descendants.
+				If [param include_internal] is [code]false[/code], the returned array won't include internal descendants (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
 		<method name="get_groups" qualifiers="const">
