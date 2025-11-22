@@ -406,7 +406,15 @@ void DisplayServerWayland::_mouse_update_mode() {
 	if (wanted_mouse_mode == DisplayServer::MOUSE_MODE_CAPTURED) {
 		WindowData *pointed_win = windows.getptr(wayland_thread.pointer_get_pointed_window_id());
 		ERR_FAIL_NULL(pointed_win);
-		wayland_thread.pointer_set_hint(pointed_win->rect.size / 2);
+
+		Point2 hint = pointed_win->rect.size / 2;
+
+		wayland_thread.pointer_set_hint(hint);
+
+		// We need to override the position or it will self-reset on the next pointer
+		// frame event.
+		wayland_thread.pointer_override_position(hint);
+		Input::get_singleton()->set_mouse_position(hint);
 	}
 
 	mouse_mode = wanted_mouse_mode;
