@@ -169,6 +169,9 @@ private:
 protected:
 	ShaderRD();
 	void setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name);
+#ifdef DEV_ENABLED
+	virtual char const *rel_shader_path() const { return ""; }
+#endif
 
 public:
 	RID version_create(bool p_embedded = true);
