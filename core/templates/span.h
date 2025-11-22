@@ -93,6 +93,10 @@ public:
 		}
 	}
 
+	// This constructor allows passing a single value as a Span with size 1.
+	_FORCE_INLINE_ constexpr Span(const T &p_value) :
+			_ptr(&p_value), _len(1) {}
+
 	_FORCE_INLINE_ constexpr uint64_t size() const { return _len; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return _len == 0; }
 
