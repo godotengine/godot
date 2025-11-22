@@ -589,9 +589,10 @@
 		</method>
 		<method name="lstrip" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="chars" type="String" />
+			<param index="0" name="chars" type="String" default="&quot;&quot;" />
 			<description>
-				Removes a set of characters defined in [param chars] from the string's beginning. See also [method rstrip].
+				Removes a set of characters defined in [param chars] from the string's beginning. See also [method rstrip], [method strip].
+				If [param chars] is empty, non-printable characters are stripped. These include spaces, tabulations ([code]\t[/code]), and newlines ([code]\n[/code] [code]\r[/code]).
 				[b]Note:[/b] [param chars] is not a prefix. Use [method trim_prefix] to remove a single prefix, rather than a set of characters.
 			</description>
 		</method>
@@ -794,9 +795,10 @@
 		</method>
 		<method name="rstrip" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="chars" type="String" />
+			<param index="0" name="chars" type="String" default="&quot;&quot;" />
 			<description>
-				Removes a set of characters defined in [param chars] from the string's end. See also [method lstrip].
+				Removes a set of characters defined in [param chars] from the string's end. See also [method lstrip], [method strip].
+				If [param chars] is empty, non-printable characters are stripped. These include spaces, tabulations ([code]\t[/code]), and newlines ([code]\n[/code] [code]\r[/code]).
 				[b]Note:[/b] [param chars] is not a suffix. Use [method trim_suffix] to remove a single suffix, rather than a set of characters.
 			</description>
 		</method>
@@ -891,7 +893,17 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="strip_edges" qualifiers="const">
+		<method name="strip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="chars" type="String" default="&quot;&quot;" />
+			<description>
+				Removes the set of characters defined in [param chars] from the beginning and end of the string.
+				If [param chars] is empty, non-printable characters are stripped. These include spaces, tabulations ([code]\t[/code]), and newlines ([code]\n[/code] [code]\r[/code]).
+				[method lstrip] and [method rstrip] can be used to only strip the beginning or end of the string.
+				[b]Note:[/b] [param chars] is a set of characters, not a string to remove. Use [method trim_prefix] and [method trim_suffix] to remove strings, rather than a set of characters.
+			</description>
+		</method>
+		<method name="strip_edges" qualifiers="const" deprecated="Prefer using [method strip], [method lstrip] and [method rstrip] instead.">
 			<return type="String" />
 			<param index="0" name="left" type="bool" default="true" />
 			<param index="1" name="right" type="bool" default="true" />
