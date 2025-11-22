@@ -94,11 +94,7 @@ namespace Godot.Bridge
         {
             try
             {
-                using var stringName = StringName.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(nativeTypeName)));
-                string nativeTypeNameStr = stringName.ToString();
-
-                var instance = Constructors.Invoke(nativeTypeNameStr, godotObject);
+                var instance = Constructors.Invoke(CustomUnsafe.AsRef(nativeTypeName), godotObject);
 
                 return GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(instance));
             }
