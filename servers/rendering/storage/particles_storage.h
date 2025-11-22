@@ -78,6 +78,8 @@ public:
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
 
+	virtual void particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) = 0;
+
 	virtual void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) = 0;
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) = 0;
