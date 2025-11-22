@@ -140,6 +140,7 @@ class PopupMenu : public Popup {
 	float submenu_timer_popup_delay = 0.2;
 	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
+	String _accel_text_to_symbols(const String &s) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	void _mouse_over_update(const Point2 &p_over);
 	virtual Size2 _get_contents_minimum_size() const override;
