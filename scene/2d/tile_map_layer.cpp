@@ -2209,6 +2209,9 @@ void TileMapLayer::_bind_methods() {
 	// --- Physics helpers ---
 	ClassDB::bind_method(D_METHOD("has_body_rid", "body"), &TileMapLayer::has_body_rid);
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMapLayer::get_coords_for_body_rid);
+	ClassDB::bind_method(D_METHOD("get_physics_quadrant_count"), &TileMapLayer::get_physics_quadrant_count);
+	ClassDB::bind_method(D_METHOD("get_physics_quadrant_coord", "index"), &TileMapLayer::get_physics_quadrant_coord);
+	ClassDB::bind_method(D_METHOD("get_physics_quadrant_polygons", "quadrant_coord"), &TileMapLayer::get_physics_quadrant_polygons);
 #endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
@@ -3118,6 +3121,28 @@ Vector2i TileMapLayer::get_coords_for_body_rid(RID p_physics_body) const {
 	const Vector2i *found = bodies_coords.getptr(p_physics_body);
 	ERR_FAIL_NULL_V(found, Vector2i());
 	return *found;
+}
+
+int TileMapLayer::get_physics_quadrant_count() const {
+	return physics_quadrant_map.size();
+}
+
+Vector2i TileMapLayer::get_physics_quadrant_coord(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, (int)physics_quadrant_map.size(), Vector2i());
+	return physics_quadrant_map.get_by_index((uint32_t)p_index).key;
+}
+
+TypedArray<Vector<Vector2>> TileMapLayer::get_physics_quadrant_polygons(Vector2i p_quadrant_coord) const {
+	TypedArray<Vector<Vector2>> polygons;
+	const Ref<PhysicsQuadrant> *quadrant = physics_quadrant_map.getptr(p_quadrant_coord);
+	ERR_FAIL_NULL_V(quadrant, polygons);
+
+	const LocalVector<Ref<ConvexPolygonShape2D>> &shapes = (*quadrant)->shapes;
+	polygons.resize(shapes.size());
+	for (uint32_t i = 0; i < shapes.size(); i++) {
+		polygons[i] = shapes[i]->get_points();
+	}
+	return polygons;
 }
 #endif // PHYSICS_2D_DISABLED
 
