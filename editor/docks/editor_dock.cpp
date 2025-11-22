@@ -167,6 +167,14 @@ void EditorDock::set_force_show_icon(bool p_force) {
 	_emit_changed();
 }
 
+void EditorDock::set_force_show_icon(bool p_force) {
+	if (force_show_icon == p_force) {
+		return;
+	}
+	force_show_icon = p_force;
+	emit_signal("tab_style_changed");
+}
+
 void EditorDock::set_title_color(const Color &p_color) {
 	if (title_color == p_color) {
 		return;
