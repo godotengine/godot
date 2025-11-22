@@ -79,10 +79,6 @@ Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces(const Color &p_modulat
 	return cylinder_mesh;
 }
 
-real_t CylinderShape3D::get_enclosing_radius() const {
-	return Vector2(radius, height * 0.5).length();
-}
-
 void CylinderShape3D::_update_shape() {
 	Dictionary d;
 	d["radius"] = radius;

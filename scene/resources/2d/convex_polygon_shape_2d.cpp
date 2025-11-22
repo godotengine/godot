@@ -130,14 +130,6 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 	return rect;
 }
 
-real_t ConvexPolygonShape2D::get_enclosing_radius() const {
-	real_t r = 0.0;
-	for (int i(0); i < get_points().size(); i++) {
-		r = MAX(get_points()[i].length_squared(), r);
-	}
-	return Math::sqrt(r);
-}
-
 ConvexPolygonShape2D::ConvexPolygonShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->convex_polygon_shape_create()) {
 }

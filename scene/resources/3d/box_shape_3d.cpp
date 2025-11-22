@@ -67,10 +67,6 @@ Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces(const Color &p_modulate) co
 	return box_mesh;
 }
 
-real_t BoxShape3D::get_enclosing_radius() const {
-	return size.length() / 2;
-}
-
 void BoxShape3D::_update_shape() {
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), size / 2);
 	Shape3D::_update_shape();

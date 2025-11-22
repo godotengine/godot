@@ -73,10 +73,6 @@ Ref<ArrayMesh> SphereShape3D::get_debug_arraymesh_faces(const Color &p_modulate)
 	return sphere_mesh;
 }
 
-real_t SphereShape3D::get_enclosing_radius() const {
-	return radius;
-}
-
 void SphereShape3D::_update_shape() {
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), radius);
 	Shape3D::_update_shape();
