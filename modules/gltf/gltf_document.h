@@ -256,11 +256,6 @@ public:
 			GLTFNodeIndex p_parent_node_index,
 			GLTFNodeIndex p_root_node_index,
 			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-	void _convert_multi_mesh_instance_to_gltf(
-			MultiMeshInstance3D *p_multi_mesh_instance,
-			GLTFNodeIndex p_parent_node_index,
-			GLTFNodeIndex p_root_node_index,
-			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
 	void _convert_skeleton_to_gltf(
 			Skeleton3D *p_scene_parent, Ref<GLTFState> p_state,
 			GLTFNodeIndex p_parent_node_index,

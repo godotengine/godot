@@ -184,32 +184,11 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.clear();
 	_document = p_document;
 	String image_format_hint_string = "None,PNG,JPEG";
-	// Add properties from all document extensions.
+	// If an extension allows saving images in different formats, add to the enum.
 	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
-		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
-		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {
-			extension->connect(CoreStringName(property_list_changed), on_prop_changed);
-		}
-		const String config_prefix = get_friendly_config_prefix(extension);
-		_config_name_to_extension_map[config_prefix] = extension;
-		// If the extension allows saving in different image formats, add to the enum.
 		PackedStringArray saveable_image_formats = extension->get_saveable_image_formats();
 		for (int i = 0; i < saveable_image_formats.size(); i++) {
 			image_format_hint_string += "," + saveable_image_formats[i];
-		}
-		// Look through the extension's properties and find the relevant ones.
-		List<PropertyInfo> ext_prop_list;
-		extension->get_property_list(&ext_prop_list);
-		for (const PropertyInfo &prop : ext_prop_list) {
-			// We only want properties that will show up in the exporter
-			// settings list. Exclude Resource's properties, as they are
-			// not relevant to the exporter. Include any user-defined script
-			// variables exposed to the editor (PROP_EDITOR_SCRIPT_VAR).
-			if ((prop.usage & PROP_EDITOR_SCRIPT_VAR) == PROP_EDITOR_SCRIPT_VAR) {
-				PropertyInfo ext_prop = prop;
-				ext_prop.name = config_prefix + "/" + prop.name;
-				_property_list.push_back(ext_prop);
-			}
 		}
 	}
 	// Add top-level properties (in addition to what _bind_methods registers).
@@ -227,6 +206,31 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	if (p_root != nullptr && is_any_node_invisible(p_root)) {
 		PropertyInfo visibility_mode_prop = PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Include & Required,Include & Optional,Exclude");
 		_property_list.push_back(visibility_mode_prop);
+	}
+	// Now that the above code set up base glTF stuff, add properties from all document extensions.
+	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
+		// Set up to listen for property changes.
+		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
+		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {
+			extension->connect(CoreStringName(property_list_changed), on_prop_changed);
+		}
+		const String config_prefix = get_friendly_config_prefix(extension);
+		_config_name_to_extension_map[config_prefix] = extension;
+		// Look through the extension's properties and find the relevant ones.
+		extension->export_configure_for_scene(p_root);
+		List<PropertyInfo> ext_prop_list;
+		extension->get_property_list(&ext_prop_list);
+		for (const PropertyInfo &prop : ext_prop_list) {
+			// We only want properties that will show up in the exporter
+			// settings list. Exclude Resource's properties, as they are
+			// not relevant to the exporter. Include any user-defined script
+			// variables exposed to the editor (PROP_EDITOR_SCRIPT_VAR).
+			if ((prop.usage & PROP_EDITOR_SCRIPT_VAR) == PROP_EDITOR_SCRIPT_VAR) {
+				PropertyInfo ext_prop = prop;
+				ext_prop.name = config_prefix + "/" + prop.name;
+				_property_list.push_back(ext_prop);
+			}
+		}
 	}
 }
 
