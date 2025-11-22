@@ -353,7 +353,12 @@ void Fog::free_fog_shader() {
 	}
 }
 
-void Fog::FogShaderData::set_code(const String &p_code) {
+void Fog::FogShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// Shader template isn't supported here yet.
+	if (p_shader_template.is_valid()) {
+		WARN_PRINT_ONCE("Shader templates are not supported for fog shaders.");
+	}
+
 	//compile
 
 	code = p_code;

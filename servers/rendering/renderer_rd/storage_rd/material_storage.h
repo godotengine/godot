@@ -36,6 +36,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "servers/rendering/renderer_rd/shader_rd.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
@@ -76,7 +77,7 @@ public:
 		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_parameter_texture(const StringName &p_param) const;
 
-		virtual void set_code(const String &p_Code) = 0;
+		virtual void set_code(const String &p_Code, RID p_shader_template = RID()) = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const = 0;
@@ -210,12 +211,31 @@ private:
 	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderParameterType p_type, const Variant &p_value);
 	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
 
+	/* SHADER TEMPLATE API */
+
+	struct Shader;
+
+	struct ShaderTemplate {
+		RID self;
+		ShaderRD *shader = nullptr;
+		bool initialized = false;
+
+		HashSet<Shader *> owners;
+
+		void cleanup();
+	};
+
+	mutable RID_Owner<ShaderTemplate, true> shader_template_owner;
+	ShaderTemplate *get_shader_template(RID p_rid) { return shader_template_owner.get_or_null(p_rid); }
+
 	/* SHADER API */
 
 	struct Material;
 
 	struct Shader {
+		RID self;
 		ShaderData *data = nullptr;
+		ShaderTemplate *shader_template = nullptr;
 		String code;
 		String path_hint;
 		ShaderType type;
@@ -405,6 +425,36 @@ public:
 
 	RID global_shader_uniforms_get_storage_buffer() const;
 
+	/* SHADER TEMPLATE API */
+
+	bool owns_shader_template(RID p_rid) { return shader_template_owner.owns(p_rid); }
+
+	virtual RID shader_template_allocate() override;
+	virtual void shader_template_initialize(RID p_rid) override;
+	virtual void shader_template_free(RID p_rid) override;
+
+	virtual void shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) override;
+	void shader_template_set_shader(RID p_template_shader, ShaderRD *p_shader); // note, this takes ownership of the shader!
+
+	// setup
+	bool shader_template_is_initialized(RID p_template_shader);
+	void shader_template_shader_initialize(RID p_template_shader, const Vector<String> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = Vector<uint64_t>());
+	void shader_template_shader_initialize(RID p_template_shader, const Vector<ShaderRD::VariantDefine> &p_variant_defines, const String &p_general_defines = "", const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers = Vector<RD::PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = Vector<uint64_t>());
+	void shader_template_set_variant_enabled(RID p_template_shader, int p_variant, bool p_enabled);
+	bool shader_template_is_variant_enabled(RID p_template_shader, int p_variant) const;
+	void shader_template_enable_group(RID p_template_shader, int p_group);
+	bool shader_template_is_any_group_enabled(int p_group);
+	void shader_template_enable_group_on_all(int p_group);
+
+	// shader version
+	RID shader_template_version_create(RID p_template_shader, bool p_embedded = true);
+	void shader_template_version_free(RID p_template_shader, RID p_version);
+	void shader_template_version_set_code(RID p_template_shader, RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines);
+	bool shader_template_version_is_valid(RID p_template_shader, RID p_version);
+	ShaderRD *shader_template_get_shader(RID p_template_shader);
+	RID shader_template_version_get_shader(RID p_template_shader, RID p_version, int p_variant);
+	RS::ShaderNativeSourceCode shader_template_version_get_native_source_code(RID p_template_shader, RID p_version);
+
 	/* SHADER API */
 
 	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
@@ -413,6 +463,7 @@ public:
 	virtual void shader_initialize(RID p_shader, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
+	virtual void shader_set_shader_template(RID p_shader, RID p_shader_template = RID(), bool p_clear_code = false) override;
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;

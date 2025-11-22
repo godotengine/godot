@@ -39,7 +39,56 @@ using namespace RendererSceneRenderImplementation;
 
 /* ShaderData */
 
-void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
+void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code, RID p_shader_template) {
+	// get shader template
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	shader_template = p_shader_template;
+	if (shader_template.is_null()) {
+		shader_template = SceneShaderForwardMobile::singleton->default_shader_template;
+	}
+	ERR_FAIL_COND(shader_template.is_null());
+
+	if (!material_storage->shader_template_is_initialized(shader_template)) {
+		Vector<ShaderRD::VariantDefine> shader_versions;
+		for (uint32_t fp16 = 0; fp16 < 2; fp16++) {
+			for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
+				String base_define = fp16 ? "\n#define EXPLICIT_FP16\n" : "";
+				int shader_group = fp16 ? SHADER_GROUP_FP16 : SHADER_GROUP_FP32;
+				int shader_group_multiview = fp16 ? SHADER_GROUP_FP16_MULTIVIEW : SHADER_GROUP_FP32_MULTIVIEW;
+				base_define += ubershader ? "\n#define UBERSHADER\n" : "";
+
+				bool default_enabled = (uint32_t(SceneShaderForwardMobile::singleton->use_fp16) == fp16);
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "", default_enabled)); // SHADER_VERSION_COLOR_PASS
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define USE_LIGHTMAP\n", default_enabled)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", default_enabled)); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n", default_enabled)); // SHADER_VERSION_SHADOW_PASS_DP
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", default_enabled)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+
+				// Multiview versions of our shaders.
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n", false)); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n", false)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", false)); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_MOTION_VECTORS\n", false)); // SHADER_VERSION_MOTION_VECTORS_MULTIVIEW
+			}
+		}
+
+		Vector<RD::PipelineImmutableSampler> immutable_samplers;
+		RD::PipelineImmutableSampler immutable_shadow_sampler;
+		immutable_shadow_sampler.binding = 2;
+		immutable_shadow_sampler.append_id(SceneShaderForwardMobile::singleton->shadow_sampler);
+		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
+		immutable_samplers.push_back(immutable_shadow_sampler);
+		Vector<uint64_t> dynamic_buffers;
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 0));
+		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 1));
+		material_storage->shader_template_shader_initialize(shader_template, shader_versions, SceneShaderForwardMobile::singleton->default_defines, immutable_samplers, dynamic_buffers);
+
+		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+			SceneShaderForwardMobile::singleton->enable_multiview_shader_group();
+		}
+	}
+
 	//compile
 
 	code = p_code;
@@ -170,14 +219,14 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	if (err != OK) {
 		if (version.is_valid()) {
-			SceneShaderForwardMobile::singleton->shader.version_free(version);
+			material_storage->shader_template_version_free(shader_template, version);
 			version = RID();
 		}
 		ERR_FAIL_MSG("Shader compilation failed.");
 	}
 
 	if (version.is_null()) {
-		version = SceneShaderForwardMobile::singleton->shader.version_create(false);
+		version = material_storage->shader_template_version_create(shader_template, false);
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
@@ -232,7 +281,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
-	SceneShaderForwardMobile::singleton->shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
+	material_storage->shader_template_version_set_code(shader_template, version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
@@ -263,7 +312,9 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		return material_storage->shader_template_version_get_native_source_code(shader_template, version);
 	} else {
 		return RS::ShaderNativeSourceCode();
 	}
@@ -272,7 +323,9 @@ RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_sour
 Pair<ShaderRD *, RID> SceneShaderForwardMobile::ShaderData::get_native_shader_and_version() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		return { &SceneShaderForwardMobile::singleton->shader, version };
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		return { material_storage->shader_template_get_shader(shader_template), version };
 	} else {
 		return {};
 	}
@@ -458,8 +511,10 @@ void SceneShaderForwardMobile::ShaderData::_clear_vertex_input_mask_cache() {
 RID SceneShaderForwardMobile::ShaderData::get_shader_variant(ShaderVersion p_shader_version, bool p_ubershader) const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		ERR_FAIL_NULL_V(SceneShaderForwardMobile::singleton, RID());
-		return SceneShaderForwardMobile::singleton->shader.version_get_shader(version, p_shader_version + (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0) + (p_ubershader ? SHADER_VERSION_MAX : 0));
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, RID());
+		return material_storage->shader_template_version_get_shader(shader_template, version, p_shader_version + (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0) + (p_ubershader ? SHADER_VERSION_MAX : 0));
 	} else {
 		return RID();
 	}
@@ -484,8 +539,10 @@ uint64_t SceneShaderForwardMobile::ShaderData::get_vertex_input_mask(ShaderVersi
 bool SceneShaderForwardMobile::ShaderData::is_valid() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		ERR_FAIL_NULL_V(SceneShaderForwardMobile::singleton, false);
-		return SceneShaderForwardMobile::singleton->shader.version_is_valid(version);
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, false);
+		return material_storage->shader_template_version_is_valid(shader_template, version);
 	} else {
 		return false;
 	}
@@ -502,8 +559,10 @@ SceneShaderForwardMobile::ShaderData::~ShaderData() {
 
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		ERR_FAIL_NULL(SceneShaderForwardMobile::singleton);
-		SceneShaderForwardMobile::singleton->shader.version_free(version);
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL(material_storage);
+		material_storage->shader_template_version_free(shader_template, version);
 	}
 }
 
@@ -525,7 +584,10 @@ void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
 bool SceneShaderForwardMobile::MaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	if (shader_data->version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-		RID base_shader = SceneShaderForwardMobile::singleton->shader.version_get_shader(shader_data->version, (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0));
+
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		RID base_shader = material_storage->shader_template_version_get_shader(shader_data->shader_template, shader_data->version, (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0));
+
 		return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, base_shader, RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true);
 	} else {
 		return false;
@@ -569,46 +631,12 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 
-	/* SCENE SHADER */
-
+	// Setup our default shader template
 	{
-		Vector<ShaderRD::VariantDefine> shader_versions;
-		for (uint32_t fp16 = 0; fp16 < 2; fp16++) {
-			for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
-				String base_define = fp16 ? "\n#define EXPLICIT_FP16\n" : "";
-				int shader_group = fp16 ? SHADER_GROUP_FP16 : SHADER_GROUP_FP32;
-				int shader_group_multiview = fp16 ? SHADER_GROUP_FP16_MULTIVIEW : SHADER_GROUP_FP32_MULTIVIEW;
-				base_define += ubershader ? "\n#define UBERSHADER\n" : "";
-
-				bool default_enabled = (uint32_t(use_fp16) == fp16);
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "", default_enabled)); // SHADER_VERSION_COLOR_PASS
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define USE_LIGHTMAP\n", default_enabled)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", default_enabled)); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n", default_enabled)); // SHADER_VERSION_SHADOW_PASS_DP
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", default_enabled)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
-
-				// Multiview versions of our shaders.
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n", false)); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n", false)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", false)); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
-				shader_versions.push_back(ShaderRD::VariantDefine(shader_group_multiview, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_MOTION_VECTORS\n", false)); // SHADER_VERSION_MOTION_VECTORS_MULTIVIEW
-			}
-		}
-
-		Vector<RD::PipelineImmutableSampler> immutable_samplers;
-		RD::PipelineImmutableSampler immutable_shadow_sampler;
-		immutable_shadow_sampler.binding = 2;
-		immutable_shadow_sampler.append_id(shadow_sampler);
-		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
-		immutable_samplers.push_back(immutable_shadow_sampler);
-		Vector<uint64_t> dynamic_buffers;
-		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 0));
-		dynamic_buffers.push_back(ShaderRD::DynamicBuffer::encode(RenderForwardMobile::RENDER_PASS_UNIFORM_SET, 1));
-		shader.initialize(shader_versions, p_defines, immutable_samplers, dynamic_buffers);
-
-		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
-			enable_multiview_shader_group();
-		}
+		default_defines = p_defines;
+		default_shader_template = material_storage->shader_template_allocate();
+		material_storage->shader_template_initialize(default_shader_template);
+		material_storage->shader_template_set_shader(default_shader_template, memnew(SceneForwardMobileShaderRD));
 	}
 
 	material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_3D, _create_shader_funcs);
@@ -842,7 +870,7 @@ void fragment() {
 		material_storage->material_set_shader(default_material, default_shader);
 
 		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
-		default_shader_rd = shader.version_get_shader(md->shader_data->version, (use_fp16 ? SHADER_VERSION_MAX * 2 : 0) + SHADER_VERSION_COLOR_PASS);
+		default_shader_rd = material_storage->shader_template_version_get_shader(default_shader_template, md->shader_data->version, (use_fp16 ? SHADER_VERSION_MAX * 2 : 0) + SHADER_VERSION_COLOR_PASS);
 
 		default_material_shader_ptr = md->shader_data;
 		default_material_uniform_set = md->uniform_set;
@@ -924,7 +952,9 @@ uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RS::PipelineSource 
 }
 
 void SceneShaderForwardMobile::enable_fp32_shader_group() {
-	shader.enable_group(SHADER_GROUP_FP32);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	material_storage->shader_template_enable_group_on_all(SHADER_GROUP_FP32);
 
 	if (is_multiview_shader_group_enabled()) {
 		enable_multiview_shader_group();
@@ -932,7 +962,9 @@ void SceneShaderForwardMobile::enable_fp32_shader_group() {
 }
 
 void SceneShaderForwardMobile::enable_fp16_shader_group() {
-	shader.enable_group(SHADER_GROUP_FP16);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	material_storage->shader_template_enable_group_on_all(SHADER_GROUP_FP16);
 
 	if (is_multiview_shader_group_enabled()) {
 		enable_multiview_shader_group();
@@ -940,17 +972,20 @@ void SceneShaderForwardMobile::enable_fp16_shader_group() {
 }
 
 void SceneShaderForwardMobile::enable_multiview_shader_group() {
-	if (shader.is_group_enabled(SHADER_GROUP_FP32)) {
-		shader.enable_group(SHADER_GROUP_FP32_MULTIVIEW);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	if (material_storage->shader_template_is_any_group_enabled(SHADER_GROUP_FP32)) {
+		material_storage->shader_template_enable_group_on_all(SHADER_GROUP_FP32_MULTIVIEW);
 	}
 
-	if (shader.is_group_enabled(SHADER_GROUP_FP16)) {
-		shader.enable_group(SHADER_GROUP_FP16_MULTIVIEW);
+	if (material_storage->shader_template_is_any_group_enabled(SHADER_GROUP_FP16)) {
+		material_storage->shader_template_enable_group_on_all(SHADER_GROUP_FP16_MULTIVIEW);
 	}
 }
 
 bool SceneShaderForwardMobile::is_multiview_shader_group_enabled() const {
-	return shader.is_group_enabled(SHADER_GROUP_FP32_MULTIVIEW) || shader.is_group_enabled(SHADER_GROUP_FP16_MULTIVIEW);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	return material_storage->shader_template_is_any_group_enabled(SHADER_GROUP_FP32_MULTIVIEW) || material_storage->shader_template_is_any_group_enabled(SHADER_GROUP_FP16_MULTIVIEW);
 }
 
 SceneShaderForwardMobile::~SceneShaderForwardMobile() {
@@ -966,4 +1001,6 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
 	material_storage->material_free(debug_shadow_splits_material);
+
+	material_storage->shader_template_free(default_shader_template);
 }
