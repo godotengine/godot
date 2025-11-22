@@ -301,16 +301,16 @@ bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parame
 		Vector3 point_A, point_B;
 		Vector3 sep_axis = motion_normal;
 
-		Transform3D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+		Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
-		if (GodotCollisionSolver3D::solve_distance(&mshape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
+		if (GodotCollisionSolver3D::solve_distance(&mshape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_shape_xform, point_A, point_B, aabb, &sep_axis)) {
 			continue;
 		}
 
 		//test initial overlap, ignore objects it's inside of.
 		sep_axis = motion_normal;
 
-		if (!GodotCollisionSolver3D::solve_distance(shape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
+		if (!GodotCollisionSolver3D::solve_distance(shape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_shape_xform, point_A, point_B, aabb, &sep_axis)) {
 			continue;
 		}
 
@@ -325,7 +325,7 @@ bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parame
 
 			Vector3 lA, lB;
 			Vector3 sep = motion_normal; //important optimization for this to work fast enough
-			bool collided = !GodotCollisionSolver3D::solve_distance(&mshape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, aabb, &sep);
+			bool collided = !GodotCollisionSolver3D::solve_distance(&mshape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj_shape_xform, lA, lB, aabb, &sep);
 
 			if (collided) {
 				hi = fraction;
@@ -442,6 +442,8 @@ struct _RestCallbackData {
 	int local_shape = 0;
 	int shape = 0;
 
+	Vector3 valid_dir;
+	real_t valid_depth = 0.0;
 	real_t min_allowed_depth = 0.0;
 
 	_RestResultData best_result;
@@ -693,6 +695,10 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(margin);
 
+	static const int max_excluded_shape_pairs = 32;
+	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
+	int excluded_shape_pair_count = 0;
+
 	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	real_t motion_length = p_parameters.motion.length();
@@ -714,7 +720,10 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 			GodotPhysicsServer3D::CollCbkData cbk;
 			cbk.max = max_results;
 			cbk.amount = 0;
+			cbk.passed = 0;
 			cbk.ptr = sr;
+			cbk.invalid_by_dir = 0;
+			excluded_shape_pair_count = 0; //last step is the one valid
 
 			GodotPhysicsServer3D::CollCbkData *cbkptr = &cbk;
 			GodotCollisionSolver3D::CallbackResult cbkres = GodotPhysicsServer3D::_shape_col_cbk;
@@ -743,12 +752,57 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 					int shape_idx = intersection_query_subindex_results[i];
 
+					Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+
+					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+						cbk.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+
+						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+						cbk.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
+						cbk.invalid_by_dir = 0;
+
+						if (col_obj->get_type() == GodotCollisionObject3D::TYPE_BODY) {
+							const GodotBody3D *b = static_cast<const GodotBody3D *>(col_obj);
+							if (b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_RIGID) {
+								//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
+								Vector3 lv = b->get_linear_velocity();
+								//compute displacement from linear velocity
+								Vector3 motion = lv * last_step;
+								real_t motion_len = motion.length();
+								motion.normalize();
+								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0);
+							}
+						}
+					} else {
+						cbk.valid_dir = Vector3();
+						cbk.valid_depth = 0;
+						cbk.invalid_by_dir = 0;
+					}
+
+					int current_passed = cbk.passed; //save how many points passed collision
+					bool did_collide = false;
+
 					if (GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, margin)) {
-						collided = cbk.amount > 0;
+						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 					while (cbk.amount > priority_amount) {
 						priorities[priority_amount] = col_obj->get_collision_priority();
 						priority_amount++;
+					}
+
+					if (!did_collide && cbk.invalid_by_dir > 0) {
+						//this shape must be excluded
+						if (excluded_shape_pair_count < max_excluded_shape_pairs) {
+							ExcludedShapeSW esp;
+							esp.local_shape = body_shape;
+							esp.against_object = col_obj;
+							esp.against_shape_index = shape_idx;
+							excluded_shape_pairs[excluded_shape_pair_count++] = esp;
+						}
+					}
+
+					if (did_collide) {
+						collided = true;
 					}
 				}
 			}
@@ -847,18 +901,31 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 				int shape_idx = intersection_query_subindex_results[i];
 
+				bool excluded = false;
+
+				for (int k = 0; k < excluded_shape_pair_count; k++) {
+					if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape_index == shape_idx) {
+						excluded = true;
+						break;
+					}
+				}
+
+				if (excluded) {
+					continue;
+				}
+
 				//test initial overlap, does it collide if going all the way?
 				Vector3 point_A, point_B;
 				Vector3 sep_axis = motion_normal;
 
-				Transform3D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+				Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 				//test initial overlap, does it collide if going all the way?
-				if (GodotCollisionSolver3D::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
+				if (GodotCollisionSolver3D::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_shape_xform, point_A, point_B, motion_aabb, &sep_axis)) {
 					continue;
 				}
 				sep_axis = motion_normal;
 
-				if (!GodotCollisionSolver3D::solve_distance(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
+				if (!GodotCollisionSolver3D::solve_distance(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_shape_xform, point_A, point_B, motion_aabb, &sep_axis)) {
 					stuck = true;
 					break;
 				}
@@ -874,7 +941,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 					Vector3 lA, lB;
 					Vector3 sep = motion_normal; //important optimization for this to work fast enough
-					bool collided = !GodotCollisionSolver3D::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, motion_aabb, &sep);
+					bool collided = !GodotCollisionSolver3D::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_shape_xform, lA, lB, motion_aabb, &sep);
 
 					if (collided) {
 						hi = fraction;
@@ -898,6 +965,28 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 							// for more accurate results with long motions that collide near the end.
 							fraction_coeff = 0.75;
 						}
+					}
+				}
+
+				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+					Vector3 cd[2];
+					GodotPhysicsServer3D::CollCbkData cbk;
+					cbk.max = 1;
+					cbk.amount = 0;
+					cbk.passed = 0;
+					cbk.ptr = cd;
+					cbk.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+
+					cbk.valid_depth = 10e20;
+
+					Vector3 sep = motion_normal; //important optimization for this to work fast enough
+					// TODO: In 3D there is no solve() that takes motion, so we should use MotionShape instead?
+					//GodotMotionShape3D mshape2;
+					//mshape2.shape = body_shape;
+					//mshape2.motion = body_shape_xform_inv.basis.xform(p_parameters.motion * (hi + contact_max_allowed_penetration));
+					bool collided = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_shape_xform, GodotPhysicsServer3D::_shape_col_cbk, &cbk, &sep, 0, 0);
+					if (!collided || cbk.amount == 0) {
+						continue;
 					}
 				}
 
@@ -970,10 +1059,46 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 				int shape_idx = intersection_query_subindex_results[i];
 
+				bool excluded = false;
+				for (int k = 0; k < excluded_shape_pair_count; k++) {
+					if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape_index == shape_idx) {
+						excluded = true;
+						break;
+					}
+				}
+				if (excluded) {
+					continue;
+				}
+
+				Transform3D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+
+				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+					rcd.valid_dir = -col_obj_shape_xform.basis[1].normalized(); // TODO + or -?
+
+					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
+
+					if (col_obj->get_type() == GodotCollisionObject3D::TYPE_BODY) {
+						const GodotBody3D *b = static_cast<const GodotBody3D *>(col_obj);
+						if (b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_RIGID) {
+							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
+							Vector3 lv = b->get_linear_velocity();
+							//compute displacement from linear velocity
+							Vector3 motion = lv * last_step;
+							real_t motion_len = motion.length();
+							motion.normalize();
+							rcd.valid_depth += motion_len * MAX(motion.dot(-rcd.valid_dir), 0.0);
+						}
+					}
+				} else {
+					rcd.valid_dir = Vector3();
+					rcd.valid_depth = 0;
+				}
+
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
-				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
+				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_shape_xform, _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;
 				}

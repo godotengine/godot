@@ -127,4 +127,8 @@ public:
 
 	bool is_shape_disabled(int p_index) const;
 	void set_shape_disabled(int p_index, bool p_disabled);
+
+	bool is_shape_set_as_one_way_collision(int p_index) const;
+	void set_shape_as_one_way_collision(int p_index, bool p_enabled, real_t p_margin);
+	real_t get_shape_one_way_collision_margin(int p_index) const;
 };

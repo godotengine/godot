@@ -95,6 +95,7 @@ class JoltContactListener3D final
 	std::atomic_int debug_contact_count = 0;
 #endif
 
+	virtual JPH::ValidateResult OnContactValidate(const JPH::Body &p_body1, const JPH::Body &p_body2, JPH::RVec3Arg p_base_offset, const JPH::CollideShapeResult &p_collision_result) override;
 	virtual void OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
 	virtual void OnContactPersisted(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
 	virtual void OnContactRemoved(const JPH::SubShapeIDPair &p_shape_pair) override;
