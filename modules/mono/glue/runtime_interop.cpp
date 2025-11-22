@@ -1415,7 +1415,15 @@ double godotsharp_randf_range(double p_from, double p_to) {
 	return Math::random(p_from, p_to);
 }
 
+float godotsharp_randf32_range(float p_from, float p_to) {
+	return Math::random(p_from, p_to);
+}
+
 double godotsharp_randfn(double p_mean, double p_deviation) {
+	return Math::randfn(p_mean, p_deviation);
+}
+
+float godotsharp_randfn32(float p_mean, float p_deviation) {
 	return Math::randfn(p_mean, p_deviation);
 }
 
@@ -1834,7 +1842,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_randi,
 	(void *)godotsharp_randomize,
 	(void *)godotsharp_randf_range,
+	(void *)godotsharp_randf32_range,
 	(void *)godotsharp_randfn,
+	(void *)godotsharp_randfn32,
 	(void *)godotsharp_randi_range,
 	(void *)godotsharp_rand_from_seed,
 	(void *)godotsharp_seed,

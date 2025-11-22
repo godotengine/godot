@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Godot.NativeInterop;
@@ -430,10 +431,22 @@ namespace Godot
         /// and a standard <paramref name="deviation"/>.
         /// This is also called Gaussian distribution.
         /// </summary>
-        /// <returns>A random normally-distributed <see langword="float"/> number.</returns>
+        /// <returns>A random normally-distributed <see langword="double"/> number.</returns>
         public static double Randfn(double mean, double deviation)
         {
             return NativeFuncs.godotsharp_randfn(mean, deviation);
+        }
+
+        /// <summary>
+        /// Returns a normally-distributed pseudo-random floating point value
+        /// using Box-Muller transform with the specified <pararmref name="mean"/>
+        /// and a standard <paramref name="deviation"/>.
+        /// This is also called Gaussian distribution.
+        /// </summary>
+        /// <returns>A random normally-distributed <see langword="float"/> number.</returns>
+        public static float Randfn(float mean, float deviation)
+        {
+            return NativeFuncs.godotsharp_randfn32(mean, deviation);
         }
 
         /// <summary>
@@ -485,6 +498,22 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a random floating point value between <paramref name="from"/>
+        /// and <paramref name="to"/> (inclusive).
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.RandRange(0.0f, 20.5f);   // Returns e.g. 7.45315
+        /// GD.RandRange(-10.0f, 10.0f); // Returns e.g. -3.844535
+        /// </code>
+        /// </example>
+        /// <returns>A random <see langword="float"/> number inside the given range.</returns>
+        public static float RandRange(float from, float to)
+        {
+            return NativeFuncs.godotsharp_randf32_range(from, to);
+        }
+
+        /// <summary>
         /// Returns a random signed 32-bit integer between <paramref name="from"/>
         /// and <paramref name="to"/> (inclusive). If <paramref name="to"/> is lesser than
         /// <paramref name="from"/>, they are swapped.
@@ -507,11 +536,12 @@ namespace Godot
         /// Passing the same <paramref name="seed"/> consistently returns the same value.
         ///
         /// Note: "Seed" here refers to the internal state of the pseudo random number
-        /// generator, currently implemented as a 64 bit integer.
+        /// generator, currently implemented as a 64 bit unsigned integer.
         /// </summary>
         /// <example>
         /// <code>
-        /// var a = GD.RandFromSeed(4);
+        /// ulong seed = 4;
+        /// uint result = GD.RandFromSeed(ref seed);
         /// </code>
         /// </example>
         /// <param name="seed">
