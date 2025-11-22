@@ -202,6 +202,10 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	_debug_was_cleaned_up = false;
 }
 
+void TileMapLayer::_debug_full_update() {
+	_debug_update(true);
+	_debug_update(false);
+}
 #endif // DEBUG_ENABLED
 
 Color TileMapLayer::_highlight_color(const Color &p_modulate) const {
@@ -3619,6 +3623,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 TileMapLayer::TileMapLayer() {
 	set_notify_transform(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp(this, &TileMapLayer::_debug_full_update));
+#endif
 }
 
 TileMapLayer::~TileMapLayer() {

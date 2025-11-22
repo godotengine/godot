@@ -302,4 +302,8 @@ CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
