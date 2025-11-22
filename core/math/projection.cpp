@@ -405,14 +405,14 @@ real_t Projection::get_z_far() const {
 	// NOTE: This assumes z-facing near and far planes, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - near and far planes are z-facing (i.e. columns[0][2] and [1][2] == 0)
-	return (columns[3][3] - columns[3][2]) / (columns[2][3] - columns[2][2]);
+	return Math::abs((columns[3][3] + Math::abs(columns[3][2])) / (columns[2][3] + Math::abs(columns[2][2])));
 }
 
 real_t Projection::get_z_near() const {
 	// NOTE: This assumes z-facing near and far planes, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - near and far planes are z-facing (i.e. columns[0][2] and [1][2] == 0)
-	return (columns[3][3] + columns[3][2]) / (columns[2][3] + columns[2][2]);
+	return Math::abs((columns[3][3] - Math::abs(columns[3][2])) / (columns[2][3] - Math::abs(columns[2][2])));
 }
 
 Vector2 Projection::get_viewport_half_extents() const {
@@ -420,8 +420,8 @@ Vector2 Projection::get_viewport_half_extents() const {
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
 	// - there is no offset / skew (i.e. columns[2][0] == columns[2][1] == 0)
-	real_t w = -get_z_near() * columns[2][3] + columns[3][3];
-	return Vector2(w / columns[0][0], w / columns[1][1]);
+	real_t w = get_z_near() * Math::abs(columns[2][3]) + columns[3][3];
+	return Vector2(w / columns[0][0], w / Math::abs(columns[1][1]));
 }
 
 Vector2 Projection::get_far_plane_half_extents() const {
@@ -429,8 +429,8 @@ Vector2 Projection::get_far_plane_half_extents() const {
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
 	// - there is no offset / skew (i.e. columns[2][0] == columns[2][1] == 0)
-	real_t w = -get_z_far() * columns[2][3] + columns[3][3];
-	return Vector2(w / columns[0][0], w / columns[1][1]);
+	real_t w = get_z_far() * Math::abs(columns[2][3]) + columns[3][3];
+	return Vector2(w / columns[0][0], w / Math::abs(columns[1][1]));
 }
 
 bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const {
@@ -859,7 +859,7 @@ real_t Projection::get_aspect() const {
 	// NOTE: This assumes a rectangular projection plane, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
-	return columns[1][1] / columns[0][0];
+	return Math::abs(columns[1][1] / columns[0][0]);
 }
 
 int Projection::get_pixels_per_meter(int p_for_pixel_width) const {
