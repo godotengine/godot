@@ -19,6 +19,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////
 // File changes (yyyy-mm-dd)
+// 2025-11-22: Rene Prašnikar: Replaced anti-flicker algorithm, added background handling
 // 2025-11-05: Jakub Brzyski: Added dynamic variance, base variance value adjusted to reduce ghosting
 // 2022-05-06: Panos Karabelas: first commit
 // 2020-12-05: Joan Fons: convert to Vulkan and Godot
@@ -263,7 +264,7 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
 	vec3 color_max = color_avg + dev;
 
 	// Variance clipping
-	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), reinhard(color_history));
+	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), color_history);
 
 	// Clamp to prevent NaNs
 	color = clamp(color, FLT_MIN, FLT_MAX);
@@ -274,12 +275,6 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
 /*------------------------------------------------------------------------------
 									TAA
 ------------------------------------------------------------------------------*/
-
-const vec3 lumCoeff = vec3(0.299f, 0.587f, 0.114f);
-
-float luminance(vec3 color) {
-	return max(dot(color, lumCoeff), 0.0001f);
-}
 
 // This is "velocity disocclusion" as described by https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/.
 // We use texel space, so our scale and threshold differ.
@@ -299,10 +294,10 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec2 uv_reprojected = uv + velocity;
 
 	// Get input color
-	vec3 color_input = load_color(pos_group);
+	vec3 color_input = reinhard(load_color(pos_group));
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
-	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
+	vec3 color_history = reinhard(sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb);
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
 	color_history = clip_history_3x3(pos_group, color_history);
@@ -323,9 +318,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Resolve
 	vec3 color_resolved = vec3(0.0);
 	{
-		// Tonemap
-		color_input = reinhard(color_input);
-
+		// Get pixel delta
 		vec3 pixel_history = reinhard(textureLod(tex_history, uv, 0.0).rgb);
 		vec3 pixel_resolve = clamp(mix(pixel_history, color_input, blend_factor), FLT_MIN, FLT_MAX);
 		float expected_range = length(pixel_resolve - color_input);
@@ -334,12 +327,12 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		color_resolved = clamp(mix(color_history, color_input, blend_factor), FLT_MIN, FLT_MAX);
 		float resolved_range = length(color_resolved - color_input);
 
+		// Resolve change is too aggressive, likely resulting in flickering
 		if (resolved_range > expected_range) {
 			color_resolved = pixel_resolve;
 		}
 
-		// Quickly Converge When Rendering Only the Background to avoid darkening High Frequency background detail, like Stars
-		// Should probably be removed if Deriving Motion Vectors from Depth as the Background gets Motion Vectors in that scenario
+		// Quickly converge when rendering only the background to avoid darkening high frequency background detail, like stars
 		float d1 = load_depth(pos_group + kOffsets3x3[0]);
 		float d2 = load_depth(pos_group + kOffsets3x3[1]);
 		float d3 = load_depth(pos_group + kOffsets3x3[2]);
@@ -354,7 +347,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 			color_resolved = clamp(mix(color_history, color_input, max(0.5, blend_factor)), FLT_MIN, FLT_MAX);
 		}
 
-		// Inverse tonemap
+		// All samples were tonemapped to help reduce flickering, so an inverse tonemap step on the final result is required
 		color_resolved = reinhard_inverse(color_resolved);
 	}
 
