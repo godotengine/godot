@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 
 	const char *headless_args[] = {
 		"--headless",
+		"--lsp",
 		"-h",
 		"--help",
 		"/?",
