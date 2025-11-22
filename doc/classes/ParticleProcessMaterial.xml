@@ -92,6 +92,12 @@
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
 			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
+		<member name="angle_3d_max" type="Vector3" setter="set_angle_3d_max" getter="get_angle_3d_max" default="Vector3(0, 0, 0)">
+			The maximum 3D angular rotation, in degrees. Works only in 3D.
+		</member>
+		<member name="angle_3d_min" type="Vector3" setter="set_angle_3d_min" getter="get_angle_3d_min" default="Vector3(0, 0, 0)">
+			The minimum 3D angular rotation, in degrees. Works only in 3D.
+		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
 		</member>
@@ -314,6 +320,12 @@
 		<member name="radial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
+		</member>
+		<member name="scale_3d_max" type="Vector3" setter="set_scale_3d_max" getter="get_scale_3d_max" default="Vector3(1, 1, 1)">
+			The maximum 2D or 3D scale value.
+		</member>
+		<member name="scale_3d_min" type="Vector3" setter="set_scale_3d_min" getter="get_scale_3d_min" default="Vector3(1, 1, 1)">
+			The minimum 2D or 3D scale value.
 		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's scale will vary along this [CurveTexture] over its lifetime. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
