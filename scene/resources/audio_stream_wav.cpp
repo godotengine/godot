@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_memory.h"
 #include "core/io/marshalls.h"
+#include "scene/resources/placeholder_audio_stream.h"
 
 const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
@@ -1204,6 +1205,14 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_file(const String &p_path, const D
 	return load_from_buffer(stream_data, p_options);
 }
 
+Ref<Resource> AudioStreamWAV::create_placeholder() const {
+	Ref<PlaceholderAudioStream> placeholder;
+	placeholder.instantiate();
+	placeholder->set_length(get_length());
+	placeholder->set_tags(get_tags());
+	return placeholder;
+}
+
 void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_static_method("AudioStreamWAV", D_METHOD("load_from_buffer", "stream_data", "options"), &AudioStreamWAV::load_from_buffer, DEFVAL(Dictionary()));
 	ClassDB::bind_static_method("AudioStreamWAV", D_METHOD("load_from_file", "path", "options"), &AudioStreamWAV::load_from_file, DEFVAL(Dictionary()));
@@ -1233,6 +1242,8 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamWAV::get_tags);
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &AudioStreamWAV::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA ADPCM,Quite OK Audio"), "set_format", "get_format");
