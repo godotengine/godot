@@ -236,7 +236,7 @@ TEST_CASE("[SceneTree][PathFollow3D] Progress out of range") {
 }
 
 TEST_CASE("[SceneTree][PathFollow3D] Calculate forward vector") {
-	const real_t dist_cube_100 = 100 * Math::sqrt(3.0);
+	const real_t dist_cube_100 = 100 * Math::SQRT3;
 	Ref<Curve3D> curve;
 	curve.instantiate();
 	curve->add_point(Vector3(0, 0, 0));
