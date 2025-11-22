@@ -637,7 +637,7 @@ Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<ui
 		ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg stream error " + itos(err));
 		int desync_iters = 0;
 
-		RBMap<uint64_t, Vector<Vector<uint8_t>>> sorted_packets;
+		RBMap<uint64_t, LocalVector<PackedByteArray, int64_t>> sorted_packets;
 		int64_t granule_pos = 0;
 
 		while (true) {
@@ -673,9 +673,10 @@ Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<ui
 				packet_count++;
 			}
 		}
-		Vector<Vector<uint8_t>> packet_data;
-		for (const KeyValue<uint64_t, Vector<Vector<uint8_t>>> &pair : sorted_packets) {
-			for (const Vector<uint8_t> &packets : pair.value) {
+		LocalVector<PackedByteArray, int64_t> packet_data;
+		for (const KeyValue<uint64_t, LocalVector<PackedByteArray, int64_t>> &pair : sorted_packets) {
+			packet_data.reserve(packet_data.size() + pair.value.size());
+			for (const PackedByteArray &packets : pair.value) {
 				packet_data.push_back(packets);
 			}
 		}
