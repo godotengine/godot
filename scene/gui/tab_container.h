@@ -118,6 +118,7 @@ private:
 
 	HashMap<Node *, RID> tab_panels;
 
+	bool _is_tab_bar_owned() const;
 	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
 	Vector<Control *> _get_tab_controls() const;
@@ -134,6 +135,7 @@ private:
 	void _on_tab_button_pressed(int p_tab);
 	void _on_active_tab_rearranged(int p_tab);
 	void _on_tab_visibility_changed(Control *p_child);
+	void _draw_popup_button_on_tab_bar() const;
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;

@@ -36,6 +36,7 @@
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -991,8 +992,8 @@ void GameView::_detach_script_debugger() {
 	embedded_process->set_script_debugger(nullptr);
 }
 
-void GameView::_remote_window_title_changed(String title) {
-	window_wrapper->set_window_title(title);
+void GameView::_remote_window_title_changed(const String &p_title) {
+	window_wrapper->set_window_title(p_title);
 }
 
 void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_arguments) {
@@ -1075,7 +1076,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 		Size2 old_min_size = embedded_process->get_custom_minimum_size();
 		embedded_process->set_custom_minimum_size(Size2i());
 
-		Control *container = EditorNode::get_singleton()->get_editor_main_screen()->get_control();
+		Control *container = EditorNode::get_singleton()->get_editor_main_screen();
 		rect = container->get_global_rect();
 
 		Size2 wrapped_min_size = window_wrapper->get_minimum_size();
@@ -1158,6 +1159,13 @@ void GameView::_feature_profile_changed() {
 
 GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
 	singleton = this;
+	set_title(TTRC("Game"));
+	set_icon_name("Game");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN);
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
 
 	debugger = p_debugger;
 	window_wrapper = p_wrapper;
@@ -1165,7 +1173,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
-	add_child(toolbar_margin);
+	vb->add_child(toolbar_margin);
 
 	FlowContainer *main_menu_fc = memnew(FlowContainer);
 	toolbar_margin->add_child(main_menu_fc);
@@ -1349,7 +1357,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
 	panel = memnew(PanelContainer);
-	add_child(panel);
+	vb->add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 #ifdef MACOS_ENABLED
@@ -1424,9 +1432,7 @@ void GameViewPluginBase::setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcess
 	game_view = memnew(GameView(debugger, p_embedded_process, window_wrapper));
 	game_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	window_wrapper->set_wrapped_control(game_view, nullptr);
-
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(window_wrapper);
+	EditorDockManager::get_singleton()->add_dock(game_view);
 	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	window_wrapper->hide();
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));

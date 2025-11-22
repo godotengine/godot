@@ -32,11 +32,18 @@
 
 #include "scene/theme/theme_db.h"
 
+bool TabContainer::_is_tab_bar_owned() const {
+	return tab_bar->get_parent() == this;
+}
+
 Rect2 TabContainer::_get_tab_rect() const {
 	Rect2 rect;
 	if (tabs_visible && get_tab_count() > 0) {
 		rect = Rect2(theme_cache.tabbar_style->get_offset(), tab_bar->get_size());
 		rect.position.x += is_layout_rtl() ? theme_cache.menu_icon->get_width() : theme_cache.side_margin;
+		if (_is_tab_bar_owned()) {
+			rect.position += tab_bar->get_global_position() - get_global_position();
+		}
 	}
 
 	return rect;
@@ -236,6 +243,10 @@ void TabContainer::_notification(int p_what) {
 			}
 			pending_tabs.clear();
 
+			if (!_is_tab_bar_owned()) {
+				get_tab_bar()->connect(SceneStringName(draw), callable_mp(this, &TabContainer::_draw_popup_button_on_tab_bar));
+			}
+
 			[[fallthrough]];
 		}
 
@@ -257,13 +268,17 @@ void TabContainer::_notification(int p_what) {
 			int header_height = _get_tab_height();
 			int header_voffset = int(tabs_position == POSITION_BOTTOM) * (size.height - header_height);
 
-			// Draw background for the tabbar.
-			theme_cache.tabbar_style->draw(canvas, Rect2(0, header_voffset, size.width, header_height));
+			if (_is_tab_bar_owned()) {
+				// Draw background for the tabbar.
+				theme_cache.tabbar_style->draw(canvas, Rect2(0, header_voffset, size.width, header_height));
+			} else {
+				header_height = 0;
+			}
 			// Draw the background for the tab's content.
 			theme_cache.panel_style->draw(canvas, Rect2(0, int(tabs_position == POSITION_TOP) * header_height, size.width, size.height - header_height));
 
 			// Draw the popup menu.
-			if (get_popup()) {
+			if (_is_tab_bar_owned() && get_popup()) {
 				int x = is_layout_rtl() ? tabbar_rect.position.x - theme_cache.menu_icon->get_width() : tabbar_rect.position.x + tabbar_rect.size.x;
 				header_voffset += tabbar_rect.position.y;
 
@@ -364,12 +379,14 @@ void TabContainer::_repaint() {
 
 	// Move the TabBar to the top or bottom.
 	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
-	if (tabs_position == POSITION_BOTTOM) {
-		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
-		tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
-	} else {
-		tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
-		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+	if (_is_tab_bar_owned()) {
+		if (tabs_position == POSITION_BOTTOM) {
+			tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
+			tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
+		} else {
+			tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
+			tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+		}
 	}
 
 	updating_visibility = true;
@@ -380,7 +397,7 @@ void TabContainer::_repaint() {
 			c->show();
 			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-			if (tabs_visible) {
+			if (tabs_visible && _is_tab_bar_owned()) {
 				if (tabs_position == POSITION_BOTTOM) {
 					c->set_offset(SIDE_BOTTOM, -_get_tab_height());
 				} else {
@@ -402,6 +419,9 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_update_margins() {
+	if (!_is_tab_bar_owned()) {
+		return;
+	}
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
 
@@ -620,6 +640,20 @@ void TabContainer::_on_tab_visibility_changed(Control *p_child) {
 	}
 
 	updating_visibility = false;
+}
+
+void TabContainer::_draw_popup_button_on_tab_bar() const {
+	if (!get_popup()) {
+		return;
+	}
+	Rect2 tabbar_rect = _get_tab_rect();
+	int x = is_layout_rtl() ? tabbar_rect.position.x - theme_cache.menu_icon->get_width() : tabbar_rect.position.x + tabbar_rect.size.x;
+
+	if (menu_hovered) {
+		theme_cache.menu_hl_icon->draw(tab_bar->get_canvas_item(), Point2(x, (tabbar_rect.size.y - theme_cache.menu_hl_icon->get_height()) / 2));
+	} else {
+		theme_cache.menu_icon->draw(tab_bar->get_canvas_item(), Point2(x, (tabbar_rect.size.y - theme_cache.menu_icon->get_height()) / 2));
+	}
 }
 
 void TabContainer::_refresh_tab_indices() {
@@ -1026,7 +1060,7 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 Size2 TabContainer::get_minimum_size() const {
 	Size2 ms;
 
-	if (tabs_visible) {
+	if (tabs_visible && _is_tab_bar_owned()) {
 		ms = tab_bar->get_minimum_size();
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);

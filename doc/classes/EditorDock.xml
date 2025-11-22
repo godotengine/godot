@@ -137,6 +137,9 @@
 		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
 			Allows making the dock floating (opened as a separate window).
 		</constant>
+		<constant name="DOCK_LAYOUT_MAIN_SCREEN" value="8" enum="DockLayout" is_bitfield="true">
+			Allows using the dock as main screen.
+		</constant>
 		<constant name="DOCK_LAYOUT_ALL" value="7" enum="DockLayout" is_bitfield="true">
 			Allows placing the dock in all available slots.
 		</constant>

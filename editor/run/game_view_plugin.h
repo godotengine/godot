@@ -32,6 +32,7 @@
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_plugin.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/debugger/scene_debugger.h"
@@ -103,8 +104,8 @@ public:
 	GameViewDebugger();
 };
 
-class GameView : public VBoxContainer {
-	GDCLASS(GameView, VBoxContainer);
+class GameView : public EditorDock {
+	GDCLASS(GameView, EditorDock);
 
 	enum {
 		CAMERA_RESET_2D,
@@ -229,7 +230,7 @@ class GameView : public VBoxContainer {
 	void _update_floating_window_settings();
 	void _attach_script_debugger();
 	void _detach_script_debugger();
-	void _remote_window_title_changed(String title);
+	void _remote_window_title_changed(const String &p_title);
 
 	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
@@ -275,7 +276,7 @@ protected:
 
 public:
 	virtual String get_plugin_name() const override { return TTRC("Game"); }
-	bool has_main_screen() const override { return true; }
+	// bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void selected_notify() override;

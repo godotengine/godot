@@ -298,7 +298,7 @@ void EditorDockManager::_dock_container_popup(int p_tab_idx, TabContainer *p_doc
 
 	// Right click context menu.
 	dock_context_popup->set_dock(hovered_dock);
-	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_local_mouse_position());
+	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();
 }
 
@@ -582,6 +582,7 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		PackedStringArray names;
 		names.reserve_exact(dock_slot.container->get_tab_count());
 		for (int j = 0; j < dock_slot.container->get_tab_count(); j++) {
+			Node *dock = dock_slot.container->get_tab_control(j);
 			const String name = Object::cast_to<EditorDock>(dock_slot.container->get_tab_control(j))->get_effective_layout_key();
 			names.append(name);
 		}

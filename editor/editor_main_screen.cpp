@@ -31,12 +31,41 @@
 #include "editor_main_screen.h"
 
 #include "core/io/config_file.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+
+void LegacyMainScreenContainer::_force_dock_visible(EditorDock *p_dock, CanvasItem *p_child) {
+	if (p_dock->is_visible_in_tree()) {
+		p_child->show();
+	}
+}
+
+void LegacyMainScreenContainer::add_child_notify(Node *p_child) {
+	EditorMainScreen *ms = EditorNode::get_editor_main_screen();
+	if (!ms->adding_plugin || !ms->adding_plugin->has_main_screen()) {
+		return;
+	}
+
+	EditorDock *dock = memnew(EditorDock);
+	dock->set_default_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN);
+	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN);
+	dock->set_title(ms->adding_plugin->get_plugin_name());
+	dock->set_dock_icon(ms->adding_plugin->get_plugin_icon());
+	dock->set_icon_name(ms->adding_plugin->get_plugin_name());
+	EditorDockManager::get_singleton()->add_dock(dock);
+
+	CanvasItem *ci_child = Object::cast_to<CanvasItem>(p_child);
+	if (ci_child) {
+		ci_child->show();
+		dock->connect(SceneStringName(visibility_changed), callable_mp(this, &LegacyMainScreenContainer::_force_dock_visible).bind(ci_child));
+	}
+
+	p_child->reparent(dock);
+}
 
 void EditorMainScreen::_notification(int p_what) {
 	switch (p_what) {
@@ -56,6 +85,8 @@ void EditorMainScreen::_notification(int p_what) {
 					return;
 				}
 			}
+			add_theme_font_override(SceneStringName(font), get_theme_font(SceneStringName(font), "MainScreenButton"));
+			add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SceneStringName(font_size), "MainScreenButton"));
 
 			select(-1);
 		} break;
@@ -76,7 +107,12 @@ void EditorMainScreen::_notification(int p_what) {
 }
 
 void EditorMainScreen::set_button_container(HBoxContainer *p_button_hb) {
+	get_tab_bar()->reparent(p_button_hb);
+	get_tab_bar()->set_h_size_flags(SIZE_EXPAND_FILL);
+	get_tab_bar()->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	button_hb = p_button_hb;
+	button_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	// button_hb->set_custom_minimum_size(Vector2(500, 0));
 }
 
 void EditorMainScreen::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -238,17 +274,17 @@ bool EditorMainScreen::can_auto_switch_screens() const {
 		return true;
 	}
 	// Only allow auto-switching if the selected button is to the left of the Script button.
-	for (int i = 0; i < button_hb->get_child_count(); i++) {
-		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
-		if (button->get_text() == "Script") {
-			// Selected button is at or after the Script button.
-			return false;
-		}
-		if (button->get_text() == selected_plugin->get_plugin_name()) {
-			// Selected button is before the Script button.
-			return true;
-		}
-	}
+	// for (int i = 0; i < button_hb->get_child_count(); i++) {
+	// 	Button *button = Object::cast_to<Button>(button_hb->get_child(i));
+	// 	if (button->get_text() == "Script") {
+	// 		// Selected button is at or after the Script button.
+	// 		return false;
+	// 	}
+	// 	if (button->get_text() == selected_plugin->get_plugin_name()) {
+	// 		// Selected button is before the Script button.
+	// 		return true;
+	// 	}
+	// }
 	return false;
 }
 
@@ -258,30 +294,9 @@ VBoxContainer *EditorMainScreen::get_control() const {
 
 void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	Button *tb = memnew(Button);
-	tb->set_toggle_mode(true);
-	tb->set_theme_type_variation("MainScreenButton");
-	tb->set_name(p_editor->get_plugin_name());
-	tb->set_text(p_editor->get_plugin_name());
 
-	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
-	if (shortcut.is_valid()) {
-		tb->set_shortcut(shortcut);
-	}
-
-	Ref<Texture2D> icon = p_editor->get_plugin_icon();
-	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
-		icon = get_editor_theme_icon(p_editor->get_plugin_name());
-	}
-	if (icon.is_valid()) {
-		tb->set_button_icon(icon);
-		// Make sure the control is updated if the icon is reimported.
-		icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
-	}
-
-	tb->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(buttons.size()));
-
-	buttons.push_back(tb);
-	button_hb->add_child(tb);
+	// buttons.push_back(tb);
+	// button_hb->add_child(tb);
 	editor_table.push_back(p_editor);
 	main_editor_plugins.insert(p_editor->get_plugin_name(), p_editor);
 }
@@ -314,9 +329,11 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 }
 
 EditorMainScreen::EditorMainScreen() {
-	main_screen_vbox = memnew(VBoxContainer);
-	main_screen_vbox->set_name("MainScreen");
-	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_screen_vbox->add_theme_constant_override("separation", 0);
-	add_child(main_screen_vbox);
+	main_screen_vbox = memnew(LegacyMainScreenContainer);
+	main_screen_vbox->hide();
+	EditorNode::get_singleton()->get_gui_base()->add_child(main_screen_vbox);
+
+	Ref<StyleBoxEmpty> sb;
+	sb.instantiate();
+	add_theme_style_override(SceneStringName(panel), sb);
 }
