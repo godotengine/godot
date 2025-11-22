@@ -1985,6 +1985,7 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 		if (max > 0) {
 			TerrainConstraint c = E_constraint;
 			c.set_terrain(max_terrain);
+			c.set_priority(8);
 			constraints.insert(c);
 		}
 	}
@@ -2003,7 +2004,9 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 
 		int terrain = (tile_data && tile_data->get_terrain_set() == p_terrain_set) ? tile_data->get_terrain() : -1;
 		if (!p_ignore_empty_terrains || terrain >= 0) {
-			constraints.insert(TerrainConstraint(tile_set, E_coords, terrain));
+			TerrainConstraint c(tile_set, E_coords, terrain);
+			c.set_priority(8);
+			constraints.insert(c);
 		}
 	}
 
@@ -2410,12 +2413,22 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 		// Update the constraint set with the new ones.
 		RBSet<TerrainConstraint> new_constraints = _get_terrain_constraints_from_added_pattern(coords, p_terrain_set, pattern);
 		for (const TerrainConstraint &E_constraint : new_constraints) {
-			if (constraints.has(E_constraint)) {
-				constraints.erase(E_constraint);
+			RBSet<TerrainConstraint>::Element *in_set_constraint_element = constraints.find(E_constraint);
+			if (in_set_constraint_element) {
+				TerrainConstraint &c = in_set_constraint_element->get();
+				if (c.get_terrain() == E_constraint.get_terrain()) {
+					if (c.get_priority() < 6) {
+						c.set_priority(6);
+					}
+				} else {
+					c.set_terrain(E_constraint.get_terrain());
+					c.set_priority(6);
+				}
+			} else {
+				TerrainConstraint c = E_constraint;
+				c.set_priority(6);
+				constraints.insert(c);
 			}
-			TerrainConstraint c = E_constraint;
-			c.set_priority(5);
-			constraints.insert(c);
 		}
 
 		output[coords] = pattern;
