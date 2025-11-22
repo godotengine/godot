@@ -52,6 +52,7 @@ for name, path in env.module_list.items():
 
 # Generate header to be included in `tests/test_main.cpp` to run module-specific tests.
 if env["tests"]:
+    env.Append(CPPDEFINES=["TESTS_ENABLED"])
     env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_builders.modules_tests_builder))
 
 # libmodules.a with only register_module_types.
