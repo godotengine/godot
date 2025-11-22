@@ -1603,6 +1603,16 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->xkb_context = nullptr;
 		}
 
+		if (ss->xkb_compose_table) {
+			xkb_compose_table_unref(ss->xkb_compose_table);
+			ss->xkb_compose_table = nullptr;
+		}
+
+		if (ss->xkb_compose_state) {
+			xkb_compose_state_unref(ss->xkb_compose_state);
+			ss->xkb_compose_state = nullptr;
+		}
+
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
 			ss->wl_keyboard = nullptr;
@@ -2091,6 +2101,22 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	xkb_state_unref(ss->xkb_state);
 	ss->xkb_state = xkb_state_new(ss->xkb_keymap);
 
+	xkb_compose_table_unref(ss->xkb_compose_table);
+	const char *locale = getenv("LC_ALL");
+	if (!locale || !*locale) {
+		locale = getenv("LC_CTYPE");
+	}
+	if (!locale || !*locale) {
+		locale = getenv("LANG");
+	}
+	if (!locale || !*locale) {
+		locale = "C";
+	}
+	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+
+	xkb_compose_state_unref(ss->xkb_compose_state);
+	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+
 	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
 
@@ -2179,6 +2205,9 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	xkb_keycode_t xkb_keycode = key + 8;
 
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
+	Key last_key = Key::NONE;
+
+	xkb_compose_status compose_status = xkb_compose_state_get_status(ss->xkb_compose_state);
 
 	if (pressed) {
 		if (xkb_keymap_key_repeats(ss->xkb_keymap, xkb_keycode)) {
@@ -2187,27 +2216,58 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 		}
 
 		ss->last_key_pressed_serial = serial;
+
+		xkb_keysym_t keysym = xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode);
+		xkb_compose_feed_result compose_result = xkb_compose_state_feed(ss->xkb_compose_state, keysym);
+		compose_status = xkb_compose_state_get_status(ss->xkb_compose_state);
+
+		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+			// We need to generate multiple key events to report the composed result, One
+			// per character.
+			char str_xkb[256] = {};
+			int str_xkb_size = xkb_compose_state_get_utf8(ss->xkb_compose_state, str_xkb, 255);
+
+			String decoded_str = String::utf8(str_xkb, str_xkb_size);
+			for (int i = 0; i < decoded_str.length(); ++i) {
+				Ref<InputEventKey> k = _seat_state_get_key_event(ss, xkb_keycode, pressed);
+				k->set_unicode(decoded_str[i]);
+
+				Ref<InputEventMessage> msg;
+				msg.instantiate();
+				msg->event = k;
+				wayland_thread->push_message(msg);
+
+				last_key = k->get_keycode();
+			}
+		}
 	} else if (ss->repeating_keycode == xkb_keycode) {
 		ss->repeating_keycode = XKB_KEYCODE_INVALID;
 	}
 
-	Ref<InputEventKey> k = _seat_state_get_key_event(ss, xkb_keycode, pressed);
-	if (k.is_null()) {
-		return;
+	if (last_key == Key::NONE && compose_status == XKB_COMPOSE_NOTHING) {
+		// If we continued with other compose status (e.g. XKB_COMPOSE_COMPOSING) we
+		// would get the composing keys _and_ the result.
+		Ref<InputEventKey> k = _seat_state_get_key_event(ss, xkb_keycode, pressed);
+
+		if (k.is_valid()) {
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = k;
+			wayland_thread->push_message(msg);
+
+			last_key = k->get_keycode();
+		}
 	}
 
-	Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(ss, xkb_keycode, pressed, k->get_keycode());
-	if (uk.is_valid()) {
-		Ref<InputEventMessage> u_msg;
-		u_msg.instantiate();
-		u_msg->event = uk;
-		wayland_thread->push_message(u_msg);
+	if (last_key != Key::NONE) {
+		Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(ss, xkb_keycode, pressed, last_key);
+		if (uk.is_valid()) {
+			Ref<InputEventMessage> u_msg;
+			u_msg.instantiate();
+			u_msg->event = uk;
+			wayland_thread->push_message(u_msg);
+		}
 	}
-
-	Ref<InputEventMessage> msg;
-	msg.instantiate();
-	msg->event = k;
-	wayland_thread->push_message(msg);
 }
 
 void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
@@ -3623,20 +3683,42 @@ void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
 
 			int keys_amount = (ticks_delta / p_ss->repeat_key_delay_msec);
 
+			xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+
+			Key last_key = Key::NONE;
 			for (int i = 0; i < keys_amount; i++) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_ss->repeating_keycode, true);
-				if (k.is_null()) {
-					continue;
+				xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_ss->repeating_keycode);
+				xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+				compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+
+				if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+					// We need to generate multiple key events to report the composed result, One
+					// per character.
+					char str_xkb[256] = {};
+					int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
+
+					String decoded_str = String::utf8(str_xkb, str_xkb_size);
+					for (int j = 0; j < decoded_str.length(); ++j) {
+						Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_ss->repeating_keycode, true);
+						k->set_unicode(decoded_str[j]);
+						Input::get_singleton()->parse_input_event(k);
+
+						last_key = k->get_keycode();
+					}
+				} else if (compose_status == XKB_COMPOSE_NOTHING) {
+					Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_ss->repeating_keycode, true);
+					k->set_echo(true);
+					Input::get_singleton()->parse_input_event(k);
+
+					last_key = k->get_keycode();
 				}
 
-				k->set_echo(true);
-
-				Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(p_ss, p_ss->repeating_keycode, true, k->get_keycode());
-				if (uk.is_valid()) {
-					Input::get_singleton()->parse_input_event(uk);
+				if (last_key != Key::NONE) {
+					Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(p_ss, p_ss->repeating_keycode, true, last_key);
+					if (uk.is_valid()) {
+						Input::get_singleton()->parse_input_event(uk);
+					}
 				}
-
-				Input::get_singleton()->parse_input_event(k);
 			}
 
 			p_ss->last_repeat_msec += ticks_delta - (ticks_delta % p_ss->repeat_key_delay_msec);
@@ -5255,6 +5337,8 @@ void WaylandThread::destroy() {
 		xkb_context_unref(ss->xkb_context);
 		xkb_state_unref(ss->xkb_state);
 		xkb_keymap_unref(ss->xkb_keymap);
+		xkb_compose_table_unref(ss->xkb_compose_table);
+		xkb_compose_state_unref(ss->xkb_compose_state);
 
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
