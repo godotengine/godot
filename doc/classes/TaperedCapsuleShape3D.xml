@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TaperedCapsuleShape3D" inherits="Shape3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D tapered capsule shape used for physics collision.
+	</brief_description>
+	<description>
+		A 3D tapered capsule shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. A tapered capsule consists of a cylinder with hemispherical ends where the hemispheres can have different radii, creating a tapered or cone-like collision shape.
+		This shape is particularly useful for projectiles, organic forms, or any collision object that needs smooth transitions between different sizes. The tapered design allows for more realistic physics interactions compared to basic geometric shapes.
+		[b]Performance:[/b] [TaperedCapsuleShape3D] provides good collision detection performance, similar to [CapsuleShape3D]. It is more complex than basic shapes like [SphereShape3D] and [BoxShape3D], but offers more flexibility for specific use cases.
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The total height of the tapered capsule, calculated as [member mid_height] + [member radius_top] + [member radius_bottom]. This is the full extent from the bottom of the lower hemisphere to the top of the upper hemisphere. Setting this property adjusts [member mid_height] while keeping the radii unchanged.
+		</member>
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
+			The height of the cylindrical section of the tapered capsule (excluding the hemispherical ends). This is the distance between the centers of the two hemispheres.
+			[b]Note:[/b] The [member mid_height] must be greater than [code]0.0[/code]. Unlike regular capsules, tapered capsules can have any positive height regardless of the radius values, providing more flexibility in collision shape design.
+		</member>
+		<member name="radius_bottom" type="float" setter="set_radius_bottom" getter="get_radius_bottom" default="0.5">
+			The radius of the bottom hemisphere of the tapered capsule. This determines the size of the lower hemispherical end of the collision shape. When [member radius_bottom] differs from [member radius_top], the cylindrical section becomes tapered, creating a cone-like transition between the hemispheres for more complex collision detection.
+		</member>
+		<member name="radius_top" type="float" setter="set_radius_top" getter="get_radius_top" default="0.5">
+			The radius of the top hemisphere of the tapered capsule. This determines the size of the upper hemispherical end of the collision shape.
+		</member>
+	</members>
+</class>
