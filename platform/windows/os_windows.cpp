@@ -55,6 +55,7 @@
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
+#include <hidsdi.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <psapi.h>
@@ -62,6 +63,7 @@
 #include <shlobj.h>
 #include <wbemcli.h>
 #include <wincrypt.h>
+#include <winternl.h>
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -2748,8 +2750,107 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 }
 #endif
 
+using GetProcAddressType = FARPROC(__stdcall *)(HMODULE, LPCSTR);
+GetProcAddressType Original_GetProcAddress = nullptr;
+
+using HidD_GetProductStringType = BOOLEAN(__stdcall *)(HANDLE, void *, ULONG);
+HidD_GetProductStringType Original_HidD_GetProductString = nullptr;
+
+#ifndef HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER
+#define HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER 0x08
+#endif
+
+bool _hid_is_controller(HANDLE p_hid_handle) {
+	PHIDP_PREPARSED_DATA hid_preparsed = nullptr;
+	BOOLEAN preparsed_res = HidD_GetPreparsedData(p_hid_handle, &hid_preparsed);
+	if (!preparsed_res) {
+		return false;
+	}
+
+	HIDP_CAPS hid_caps = {};
+	NTSTATUS caps_res = HidP_GetCaps(hid_preparsed, &hid_caps);
+	HidD_FreePreparsedData(hid_preparsed);
+	if (caps_res != HIDP_STATUS_SUCCESS) {
+		return false;
+	}
+
+	if (hid_caps.UsagePage != HID_USAGE_PAGE_GENERIC) {
+		return false;
+	}
+
+	if (hid_caps.Usage == HID_USAGE_GENERIC_JOYSTICK || hid_caps.Usage == HID_USAGE_GENERIC_GAMEPAD || hid_caps.Usage == HID_USAGE_GENERIC_MULTI_AXIS_CONTROLLER) {
+		return true;
+	}
+
+	return false;
+}
+
+BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
+	constexpr const wchar_t unknown_product_string[] = L"Unknown HID Device";
+	constexpr size_t unknown_product_length = sizeof(unknown_product_string);
+
+	if (_hid_is_controller(p_object)) {
+		return HidD_GetProductString(p_object, p_buffer, p_buffer_length);
+	}
+
+	// The HID is (probably) not a controller, so we don't care about returning its actual product string.
+	// This avoids stalls on `EnumDevices` because DirectInput attempts to enumerate all HIDs, including some DACs
+	// and other devices which take too long to respond to those requests, added to the lack of a shorter timeout.
+	if (p_buffer_length >= unknown_product_length) {
+		memcpy(p_buffer, unknown_product_string, unknown_product_length);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
+	if (String(p_name) == "HidD_GetProductString") {
+		return (FARPROC)(LPVOID)Hook_HidD_GetProductString;
+	}
+	if (Original_GetProcAddress) {
+		return Original_GetProcAddress(p_module, p_name);
+	}
+	return nullptr;
+}
+
+LPVOID install_iat_hook(const String &p_target, const String &p_module, const String &p_symbol, LPVOID p_hook_func) {
+	LPVOID image_base = LoadLibraryA(p_target.ascii().get_data());
+	if (image_base) {
+		PIMAGE_NT_HEADERS nt_headers = (PIMAGE_NT_HEADERS)((DWORD_PTR)image_base + ((PIMAGE_DOS_HEADER)image_base)->e_lfanew);
+		PIMAGE_IMPORT_DESCRIPTOR import_descriptor = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD_PTR)image_base + nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+		while (import_descriptor->Name != 0) {
+			LPCSTR library_name = (LPCSTR)((DWORD_PTR)image_base + import_descriptor->Name);
+			if (String(library_name).to_lower() == p_module) {
+				PIMAGE_THUNK_DATA original_first_thunk = (PIMAGE_THUNK_DATA)((DWORD_PTR)image_base + import_descriptor->OriginalFirstThunk);
+				PIMAGE_THUNK_DATA first_thunk = (PIMAGE_THUNK_DATA)((DWORD_PTR)image_base + import_descriptor->FirstThunk);
+
+				while ((LPVOID)original_first_thunk->u1.AddressOfData != nullptr) {
+					PIMAGE_IMPORT_BY_NAME function_import = (PIMAGE_IMPORT_BY_NAME)((DWORD_PTR)image_base + original_first_thunk->u1.AddressOfData);
+					if (String(function_import->Name).to_lower() == p_symbol.to_lower()) {
+						DWORD old_protect = 0;
+						VirtualProtect((LPVOID)(&first_thunk->u1.Function), 8, PAGE_READWRITE, &old_protect);
+
+						LPVOID old_func = (LPVOID)first_thunk->u1.Function;
+						first_thunk->u1.Function = (DWORD_PTR)p_hook_func;
+
+						VirtualProtect((LPVOID)(&first_thunk->u1.Function), 8, old_protect, nullptr);
+						return old_func;
+					}
+					original_first_thunk++;
+					first_thunk++;
+				}
+			}
+			import_descriptor++;
+		}
+	}
+	return nullptr;
+}
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+	Original_GetProcAddress = (GetProcAddressType)install_iat_hook("dinput8.dll", "kernel32.dll", "GetProcAddress", (LPVOID)Hook_GetProcAddress);
+	Original_HidD_GetProductString = (HidD_GetProductStringType)install_iat_hook("dinput8.dll", "hid.dll", "HidD_GetProductString", (LPVOID)Hook_HidD_GetProductString);
 
 	_init_encodings();
 
