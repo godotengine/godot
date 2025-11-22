@@ -910,6 +910,9 @@
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
+		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the bottom.
+		</member>
 		<member name="interface/editor/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 		</member>
@@ -943,7 +946,7 @@
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
 		</member>
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
-			Tab style of editor docks.
+			Tab style of editor docks, except bottom docks.
 		</member>
 		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
