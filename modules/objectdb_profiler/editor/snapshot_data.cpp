@@ -352,7 +352,7 @@ Ref<GameStateSnapshotRef> GameStateSnapshot::create_ref(const String &p_snapshot
 	}
 
 	snapshot->recompute_references();
-	print_verbose("Resource cache hits: " + String::num(resource_cache.hits) + ". Resource cache misses: " + String::num(resource_cache.misses));
+	PRINT_VERBOSE("Resource cache hits: " + String::num(resource_cache.hits) + ". Resource cache misses: " + String::num(resource_cache.misses));
 	return sn;
 }
 
