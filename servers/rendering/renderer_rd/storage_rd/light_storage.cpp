@@ -719,7 +719,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
+						// Ensure the bias scale multiplier isn't too close to zero, as it can cause shadow acne.
+						float bias_scale = light_instance->shadow_transform[j].bias_scale * MAX(0.05, light_data.soft_shadow_scale);
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
