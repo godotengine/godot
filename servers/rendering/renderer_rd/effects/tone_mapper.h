@@ -108,7 +108,7 @@ private:
 
 		float pixel_size[2]; //  8 - 24
 		uint32_t tonemapper; //  4 - 28
-		uint32_t pad; //  4 - 32
+		float output_max_value; //  4 - 32
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
@@ -134,6 +134,9 @@ private:
 		float glow_map_strength; //  4 - 40
 		float exposure; //  4 - 44
 		float white; //  4 - 48
+
+		float pad[3]; //  12 - 60
+		float output_max_value; //  4 - 64
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -172,6 +175,7 @@ public:
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
 		float exposure = 1.0;
 		float white = 1.0;
+		float max_value = 1.0;
 
 		bool use_auto_exposure = false;
 		float auto_exposure_scale = 0.5;

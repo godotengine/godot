@@ -38,6 +38,14 @@
 #include <android/log.h>
 #include <jni.h>
 
+struct AndroidHdrCapabilities {
+	bool hdr_supported = false;
+	float min_luminance = 0.0f;
+	float max_luminance = 0.0f;
+	float max_average_luminance = 0.0f;
+	float hdr_sdr_ratio = 1.0f;
+};
+
 // Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
 class GodotIOJavaWrapper {
 private:
@@ -63,6 +71,8 @@ private:
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
+
+	jmethodID _get_hdr_capabilities = 0;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
@@ -92,4 +102,6 @@ public:
 	int get_screen_orientation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
 	int get_display_rotation();
+
+	AndroidHdrCapabilities getHdrCapabilities();
 };

@@ -68,6 +68,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
 		_get_display_rotation = p_env->GetMethodID(cls, "getDisplayRotation", "()I");
+
+		_get_hdr_capabilities = p_env->GetMethodID(cls, "getHdrCapabilities", "()[F");
 	}
 }
 
@@ -298,6 +300,26 @@ int GodotIOJavaWrapper::get_display_rotation() {
 	} else {
 		return 0;
 	}
+}
+
+AndroidHdrCapabilities GodotIOJavaWrapper::getHdrCapabilities() {
+	AndroidHdrCapabilities result = {};
+
+	ERR_FAIL_NULL_V(_get_hdr_capabilities, result);
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, result);
+	jfloatArray returnArray = (jfloatArray)env->CallObjectMethod(godot_io_instance, _get_hdr_capabilities);
+	ERR_FAIL_COND_V(env->GetArrayLength(returnArray) != 5, result);
+	jfloat *arrayBody = env->GetFloatArrayElements(returnArray, JNI_FALSE);
+
+	result.hdr_supported = arrayBody[0] > 0.0f;
+	result.min_luminance = arrayBody[1];
+	result.max_luminance = arrayBody[2];
+	result.max_average_luminance = arrayBody[3];
+	result.hdr_sdr_ratio = arrayBody[4];
+
+	env->ReleaseFloatArrayElements(returnArray, arrayBody, 0);
+	return result;
 }
 
 // SafeNumeric because it can be changed from non-main thread and we need to

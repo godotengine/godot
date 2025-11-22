@@ -69,7 +69,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 pixel_size;
 	uint tonemapper;
-	uint pad;
+	float output_max_value;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -90,9 +90,9 @@ layout(location = 0) out vec4 frag_color;
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float white) {
 	float white_squared = white * white;
-	vec3 white_squared_color = white_squared * color;
-	// Equivalent to color * (1 + color / white_squared) / (1 + color)
-	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+
+	// Updated version of the Reinhard tonemapper supporting HDR rendering.
+	return color * (1.0f + color / (white_squared / params.output_max_value)) / (1.0f + color / params.output_max_value);
 }
 
 vec3 tonemap_filmic(vec3 color, float white) {

@@ -120,6 +120,29 @@
 				Returns layout direction and text writing direction.
 			</description>
 		</method>
+		<method name="get_output_max_linear_value" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. This value is used by tonemapping and glow effects to ensure that bright colors are presented in the range that can be displayed by this window.
+				Use the returned value to scale content to maximize the display's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest red color that the display can produce:
+				[codeblocks]
+				[gdscript]
+				var bright_red = Color.RED
+				# Color must be linear-encoded to use math operations correctly.
+				bright_red = bright_red.srgb_to_linear()
+				# Record the original alpha value.
+				var original_alpha = bright_red.a
+				# Adjust brightness to be the brightest possible, regardless of SDR or HDR output.
+				bright_red = bright_red * get_window().get_output_max_linear_value()
+				# Restore the original alpha channel value.
+				bright_red.a = original_alpha
+				# Convert back to nonlinear sRGB encoding.
+				bright_red = bright_red.linear_to_srgb()
+				[/gdscript]
+				[/codeblocks]
+				[b]Note:[/b] You will need to convert sRGB colors to linear before multiplying by this value to get correct results.
+			</description>
+		</method>
 		<method name="get_position_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -339,6 +362,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is currently embedded in another window.
+			</description>
+		</method>
+		<method name="is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window supports HDR output. This depends on the platform, display capabilities, system settings, and the display the window is currently on.
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -627,6 +656,9 @@
 		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
+		</member>
+		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
+			If [code]true[/code], requests HDR output for the [Window], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between displays, display capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of this [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window].
