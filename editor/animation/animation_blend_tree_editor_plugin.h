@@ -30,24 +30,22 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/inspector/editor_inspector.h"
-#include "scene/animation/animation_blend_tree.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/graph_edit.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/tree.h"
 
 class AcceptDialog;
+class AnimationNodeAnimation;
 class CheckBox;
-class ProgressBar;
 class EditorFileDialog;
+class EditorInspectorPluginAnimationNodeAnimation;
 class EditorProperty;
+class GraphEdit;
 class MenuButton;
 class PanelContainer;
-class EditorInspectorPluginAnimationNodeAnimation;
+class ProgressBar;
+class Tree;
+class TreeItem;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
@@ -78,21 +76,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	int to_slot = -1;
 	String from_node = "";
 
-	struct AddOption {
-		String name;
-		String type;
-		Ref<Script> script;
-		int input_port_count;
-		AddOption(const String &p_name = String(), const String &p_type = String(), int p_input_port_count = 0) :
-				name(p_name),
-				type(p_type),
-				input_port_count(p_input_port_count) {
-		}
-	};
-
-	Vector<AddOption> add_options;
-
-	void _add_node(int p_idx);
+	void _add_node(int p_id);
 	void _update_options_menu(bool p_has_input_ports = false);
 
 	static AnimationNodeBlendTreeEditor *singleton;
@@ -157,9 +141,6 @@ protected:
 
 public:
 	static AnimationNodeBlendTreeEditor *get_singleton() { return singleton; }
-
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
-	void remove_custom_type(const Ref<Script> &p_script);
 
 	virtual Size2 get_minimum_size() const override;
 
