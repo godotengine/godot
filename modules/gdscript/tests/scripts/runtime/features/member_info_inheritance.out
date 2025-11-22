@@ -28,12 +28,16 @@ static func test_static_func_b1() -> void
 static func test_static_func_b2() -> void
 func test_abstract_func_1() -> void
 func test_abstract_func_2() -> void
+func test_abstract_func_with_return() -> Node
+func test_abstract_func_with_return_void() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 func test_func_b1() -> void
 func test_func_b2() -> void
 @abstract func test_abstract_func_1() -> void
 @abstract func test_abstract_func_2() -> void
+@abstract func test_abstract_func_with_return() -> Node
+@abstract func test_abstract_func_with_return_void() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 --- C ---
@@ -49,12 +53,16 @@ static func test_static_func_b1() -> void
 static func test_static_func_b2() -> void
 func test_abstract_func_1() -> void
 func test_abstract_func_2() -> void
+func test_abstract_func_with_return() -> Node
+func test_abstract_func_with_return_void() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 func test_func_b1() -> void
 func test_func_b2() -> void
 @abstract func test_abstract_func_1() -> void
 @abstract func test_abstract_func_2() -> void
+@abstract func test_abstract_func_with_return() -> Node
+@abstract func test_abstract_func_with_return_void() -> void
 func test_override_func_1() -> void
 func test_override_func_2() -> void
 === Signals ===
