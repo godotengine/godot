@@ -41,6 +41,7 @@
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_interface.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
@@ -612,6 +613,12 @@ void EditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+			// When the plugin registers a main screen (which usually should happen when entering tree), this allows to recognize it as the owner.
+			EditorNode::get_editor_main_screen()->adding_plugin = this;
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			EditorNode::get_editor_main_screen()->adding_plugin = nullptr;
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -739,6 +746,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_MAIN_SCREEN);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 #endif
 
