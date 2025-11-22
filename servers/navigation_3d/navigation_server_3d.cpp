@@ -82,6 +82,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result", "callback"), &NavigationServer3D::query_path, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
+	ClassDB::bind_method(D_METHOD("region_force_update", "region"), &NavigationServer3D::region_force_update);
 	ClassDB::bind_method(D_METHOD("region_get_iteration_id", "region"), &NavigationServer3D::region_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("region_set_use_async_iterations", "region", "enabled"), &NavigationServer3D::region_set_use_async_iterations);
 	ClassDB::bind_method(D_METHOD("region_get_use_async_iterations", "region"), &NavigationServer3D::region_get_use_async_iterations);
@@ -116,6 +117,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer3D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
+	ClassDB::bind_method(D_METHOD("link_force_update", "link"), &NavigationServer3D::link_force_update);
 	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer3D::link_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
 	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer3D::link_get_map);

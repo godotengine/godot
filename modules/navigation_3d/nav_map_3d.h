@@ -75,9 +75,11 @@ class NavMap3D : public NavRid3D {
 
 	/// Map regions
 	LocalVector<NavRegion3D *> regions;
+	RWLock rwlock_regions;
 
 	/// Map links
 	LocalVector<NavLink3D *> links;
+	RWLock rwlock_links;
 
 	/// RVO avoidance worlds
 	RVO2D::RVOSimulator2D rvo_simulation_2d;
@@ -235,7 +237,9 @@ public:
 
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
-	void sync();
+	void sync_navigation();
+	void sync_avoidance();
+	void process(double p_delta_time);
 	void step(double p_delta_time);
 	void dispatch_callbacks();
 
@@ -270,6 +274,8 @@ public:
 	void set_use_async_iterations(bool p_enabled);
 	bool get_use_async_iterations() const;
 
+	void force_update();
+
 private:
 	void _sync_dirty_map_update_requests();
 	void _sync_dirty_avoidance_update_requests();
@@ -280,7 +286,6 @@ private:
 	void compute_single_avoidance_step_2d(uint32_t index, NavAgent3D **agent);
 	void compute_single_avoidance_step_3d(uint32_t index, NavAgent3D **agent);
 
-	void _sync_avoidance();
 	void _update_rvo_simulation();
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();
