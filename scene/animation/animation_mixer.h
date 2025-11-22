@@ -36,6 +36,7 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_polyphonic.h"
+#include "scene/resources/fpslod_level.h"
 
 class AnimatedValuesBackup;
 
@@ -137,6 +138,23 @@ protected:
 	bool active = true;
 
 	void _set_process(bool p_process, bool p_force = false);
+
+	// FPSLOD
+	bool fps_lod = false;
+	int tick_fpslod = 0;
+	int skip_frames_fpslod = 0;
+	bool fps_lod_manual = false;
+
+	NodePath lod_target_path;
+	Node3D *lod_target = nullptr;
+	TypedArray<FPSLODLevel> fpslod_levels;
+	int current_lod_index = -1;
+
+	static const int FRAME_HISTORY_SIZE = 16;
+	double frame_time_history[FRAME_HISTORY_SIZE] = {};
+	int frame_time_index = 0;
+	double frame_time_accum = 0.0;
+	double average_frame_time = 0.016;
 
 	/* ---- Caches for blending ---- */
 	bool cache_valid = false;
@@ -341,7 +359,7 @@ protected:
 	virtual uint32_t _get_libraries_property_usage() const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &p_property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
@@ -357,6 +375,7 @@ protected:
 
 	/* ---- Blending processor ---- */
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
+	void _process_fpslod(double p_delta);
 
 	// For post process with retrieved key value during blending.
 	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
@@ -433,6 +452,19 @@ public:
 
 	void set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode);
 	AnimationCallbackModeDiscrete get_callback_mode_discrete() const;
+
+	void set_fpslod(bool p_enabled);
+	bool is_fpslod() const;
+	void set_fpslod_manual(bool p_enabled);
+	bool is_fpslod_manual() const;
+	void set_fpslod_skip_frames(int frames);
+	int get_fpslod_skip_frames() const;
+	void set_fpslod_target(const NodePath &p_path);
+	NodePath get_fpslod_target() const;
+	void set_fpslod_levels(const TypedArray<FPSLODLevel> &p_levels);
+	TypedArray<FPSLODLevel> get_fpslod_levels() const;
+	int get_fpslod_current_index_level() const;
+	int _get_fpslod_for_distance(double dist) const;
 
 	/* ---- Audio ---- */
 	void set_audio_max_polyphony(int p_audio_max_polyphony);
