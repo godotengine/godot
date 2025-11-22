@@ -126,6 +126,10 @@ void Array::clear() {
 	_p->array.clear();
 }
 
+const Vector<Variant> &Array::as_vector() const {
+	return _p->array;
+}
+
 bool Array::operator==(const Array &p_array) const {
 	return recursive_equal(p_array, 0);
 }
@@ -952,6 +956,12 @@ Span<Variant> Array::span() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(Vector<Variant> &&p_from) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = std::move(p_from);
 }
 
 Array::Array(std::initializer_list<Variant> p_init) {
