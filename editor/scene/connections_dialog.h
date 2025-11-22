@@ -70,24 +70,27 @@ public:
 
 			Callable base_callable;
 			if (p_connection.callable.is_custom()) {
-				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(p_connection.callable.get_custom());
-				if (ccb) {
-					binds = ccb->get_binds();
-					unbinds = ccb->get_unbound_arguments_count();
+				CallableCustom *next_callable = p_connection.callable.get_custom();
 
-					base_callable = ccb->get_callable();
-				}
-
-				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(p_connection.callable.get_custom());
+				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(next_callable);
 				if (ccu) {
-					ccu->get_bound_arguments(binds);
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
+
+					if (base_callable.is_custom()) {
+						next_callable = base_callable.get_custom();
+					}
 				}
 
-				// The source object may already be bound, ignore it to prevent display of the source object.
-				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
-					binds.remove_at(0);
+				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(next_callable);
+				if (ccb) {
+					binds = ccb->get_binds();
+					base_callable = ccb->get_callable();
+
+					// The source object may already be bound, ignore it to prevent display of the source object.
+					if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
+						binds.remove_at(0);
+					}
 				}
 			} else {
 				base_callable = p_connection.callable;
@@ -146,7 +149,6 @@ private:
 	CheckBox *one_shot = nullptr;
 	CheckBox *append_source = nullptr;
 	CheckButton *advanced = nullptr;
-	Vector<Control *> bind_controls;
 
 	Label *warning_label = nullptr;
 	Label *error_label = nullptr;
