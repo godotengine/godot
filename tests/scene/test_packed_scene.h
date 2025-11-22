@@ -34,6 +34,77 @@
 
 #include "tests/test_macros.h"
 
+// Declared in global namespace because of GDCLASS macro warning (Windows):
+// "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
+// is a Microsoft extension; add a nested name specifier".
+class _TestIntArrayProperty : public Node {
+	GDCLASS(_TestIntArrayProperty, Node);
+
+	Variant property_value;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestIntArrayProperty::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &_TestIntArrayProperty::get_property);
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "property", PROPERTY_HINT_TYPE_STRING, vformat("%d:", Variant::INT)), "set_property", "get_property");
+	}
+
+public:
+	void set_property(Variant value) { property_value = value; }
+	Variant get_property() const { return property_value; }
+};
+
+class _TestNodeArrayProperty : public Node {
+	GDCLASS(_TestNodeArrayProperty, Node);
+
+	Variant property_value;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestNodeArrayProperty::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &_TestNodeArrayProperty::get_property);
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "property", PROPERTY_HINT_TYPE_STRING, vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_NODE_TYPE, "Node")), "set_property", "get_property");
+	}
+
+public:
+	void set_property(Variant value) { property_value = value; }
+	Variant get_property() const { return property_value; }
+};
+
+class _TestDictionaryProperty : public Node {
+	GDCLASS(_TestDictionaryProperty, Node);
+
+	Variant property_value;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestDictionaryProperty::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &_TestDictionaryProperty::get_property);
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "property", PROPERTY_HINT_TYPE_STRING, vformat("%d:;%d:", Variant::INT, Variant::INT)), "set_property", "get_property");
+	}
+
+public:
+	void set_property(Variant value) { property_value = value; }
+	Variant get_property() const { return property_value; }
+};
+
+class _TestNodeDictionaryProperty : public Node {
+	GDCLASS(_TestNodeDictionaryProperty, Node);
+
+	Variant property_value;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestNodeDictionaryProperty::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &_TestNodeDictionaryProperty::get_property);
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "property", PROPERTY_HINT_TYPE_STRING, vformat("%d/%d:%s;%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_NODE_TYPE, "Node", Variant::OBJECT, PROPERTY_HINT_NODE_TYPE, "Node")), "set_property", "get_property");
+	}
+
+public:
+	void set_property(Variant value) { property_value = value; }
+	Variant get_property() const { return property_value; }
+};
+
 namespace TestPackedScene {
 
 TEST_CASE("[PackedScene] Pack Scene and Retrieve State") {
@@ -278,6 +349,170 @@ TEST_CASE("[PackedScene] Recreate State") {
 	CHECK(state->get_node_count() == 0); // Since the state was recreated, it should be empty.
 
 	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Preserve Array Types With Nil Default") {
+	GDREGISTER_CLASS(_TestIntArrayProperty);
+
+	// Create a scene to pack.
+	_TestIntArrayProperty *scene = memnew(_TestIntArrayProperty);
+	String property_name = "property";
+
+	// This test is pointless if default value can't be nil.
+	REQUIRE(scene->get(property_name).get_type() == Variant::NIL);
+
+	// Set property to a typed array.
+	Array array;
+	StringName class_name;
+	Ref<Script> script;
+	array.set_typed(Variant::INT, class_name, script);
+	array.push_back(0);
+	array.push_back(1);
+	array.push_back(2);
+	scene->set(property_name, array);
+
+	// Instantiate the scene.
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
+	Node *instantiated_scene = packed_scene->instantiate();
+
+	bool get_valid;
+	Array get_value = instantiated_scene->get(property_name, &get_valid);
+	CHECK(get_valid);
+	CHECK(get_value.get_typed_builtin() == Variant::INT);
+	CHECK(get_value.size() == 3);
+
+	memdelete(scene);
+	memdelete(instantiated_scene);
+}
+
+TEST_CASE("[PackedScene] Preserve Node Array Types With Nil Default") {
+	GDREGISTER_CLASS(_TestNodeArrayProperty);
+
+	// Create a scene to pack.
+	_TestNodeArrayProperty *scene = memnew(_TestNodeArrayProperty);
+	String property_name = "property";
+
+	// This test is pointless if default value can't be nil.
+	REQUIRE(scene->get(property_name).get_type() == Variant::NIL);
+
+	// Set property to a typed array.
+	Array array;
+	StringName class_name = "Node";
+	Ref<Script> script;
+	array.set_typed(Variant::OBJECT, class_name, script);
+	for (int i = 0; i < 3; i++) {
+		Node *child = memnew(Node);
+		scene->add_child(child);
+		child->set_owner(scene);
+		array.push_back(child);
+	}
+	scene->set(property_name, array);
+
+	// Instantiate the scene.
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
+	Node *instantiated_scene = packed_scene->instantiate();
+
+	bool get_valid;
+	Array get_value = instantiated_scene->get(property_name, &get_valid);
+	CHECK(get_valid);
+	CHECK(get_value.get_typed_builtin() == Variant::OBJECT);
+	CHECK(get_value.get_typed_class_name() == class_name);
+	for (int i = 0; i < 3; i++) {
+		CHECK(instantiated_scene->get_child(i) == get_value[i]);
+	}
+
+	memdelete(scene);
+	memdelete(instantiated_scene);
+}
+
+TEST_CASE("[PackedScene] Preserve Dictionary Types With Nil Default") {
+	GDREGISTER_CLASS(_TestDictionaryProperty);
+
+	// Create a scene to pack.
+	_TestDictionaryProperty *scene = memnew(_TestDictionaryProperty);
+	String property_name = "property";
+
+	// This test is pointless if default value can't be nil.
+	REQUIRE(scene->get(property_name).get_type() == Variant::NIL);
+
+	// Set property to a typed dictionary.
+	Dictionary dictionary;
+	StringName key_class_name;
+	Ref<Script> key_script;
+	StringName value_class_name;
+	Ref<Script> value_script;
+	dictionary.set_typed(Variant::INT, key_class_name, key_script, Variant::INT, value_class_name, value_script);
+	for (int i = 0; i < 3; i++) {
+		dictionary[i] = i;
+	}
+	scene->set(property_name, dictionary);
+
+	// Instantiate the scene.
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
+	Node *instantiated_scene = packed_scene->instantiate();
+
+	bool get_valid;
+	Dictionary get_value = instantiated_scene->get(property_name, &get_valid);
+	CHECK(get_valid);
+	CHECK(get_value.get_typed_key_builtin() == Variant::INT);
+	CHECK(get_value.get_typed_value_builtin() == Variant::INT);
+
+	memdelete(scene);
+	memdelete(instantiated_scene);
+}
+
+TEST_CASE("[PackedScene] Preserve Node Dictionary Types With Nil Default") {
+	GDREGISTER_CLASS(_TestNodeDictionaryProperty);
+
+	// Create a scene to pack.
+	_TestNodeDictionaryProperty *scene = memnew(_TestNodeDictionaryProperty);
+	String property_name = "property";
+
+	// This test is pointless if default value can't be nil.
+	REQUIRE(scene->get(property_name).get_type() == Variant::NIL);
+
+	// Set property to a typed dictionary.
+	Dictionary dictionary;
+	StringName key_class_name = "Node";
+	Ref<Script> key_script;
+	StringName value_class_name = "Node";
+	Ref<Script> value_script;
+	dictionary.set_typed(Variant::OBJECT, key_class_name, key_script, Variant::OBJECT, value_class_name, value_script);
+	for (int i = 0; i < 3; i++) {
+		Node *child = memnew(Node);
+		scene->add_child(child);
+		child->set_owner(scene);
+		dictionary[child] = child;
+	}
+	scene->set(property_name, dictionary);
+
+	// Instantiate the scene.
+	Ref<PackedScene> packed_scene;
+	packed_scene.instantiate();
+	packed_scene->pack(scene);
+	Node *instantiated_scene = packed_scene->instantiate();
+
+	bool get_valid;
+	Dictionary get_value = instantiated_scene->get(property_name, &get_valid);
+	CHECK(get_valid);
+	CHECK(get_value.get_typed_key_builtin() == Variant::OBJECT);
+	CHECK(get_value.get_typed_key_class_name() == key_class_name);
+	CHECK(get_value.get_typed_value_builtin() == Variant::OBJECT);
+	CHECK(get_value.get_typed_value_class_name() == value_class_name);
+	for (int i = 0; i < 3; i++) {
+		Node *child = instantiated_scene->get_child(i);
+		CHECK(get_value.has(child));
+		CHECK(get_value[child] == Variant(child));
+	}
+
+	memdelete(scene);
+	memdelete(instantiated_scene);
 }
 
 } // namespace TestPackedScene
