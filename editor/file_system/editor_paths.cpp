@@ -277,6 +277,17 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
+		// This directory should never be committed to git.
+		String project_data_gitignore_file_path = project_data_dir.path_join(".gitignore");
+		if (!FileAccess::exists(project_data_gitignore_file_path)) {
+			Ref<FileAccess> f = FileAccess::open(project_data_gitignore_file_path, FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_line("*");
+			} else {
+				ERR_PRINT("Failed to create file " + project_data_gitignore_file_path.quote() + ".");
+			}
+		}
+
 		Engine::get_singleton()->set_shader_cache_path(project_data_dir);
 
 		// Editor metadata dir.
