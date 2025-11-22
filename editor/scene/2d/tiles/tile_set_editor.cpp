@@ -33,10 +33,13 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
+#include "core/config/project_settings.h"
+#include "core/io/image_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/import/editor_atlas_packer.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -44,6 +47,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/resources/image_texture.h"
 
 TileSetEditor *TileSetEditor::singleton = nullptr;
 
@@ -133,6 +137,140 @@ void TileSetEditor::_load_texture_files(const Vector<String> &p_paths) {
 
 	// Update the selected source (thus triggering an update).
 	_update_sources_list(source_id);
+}
+
+void TileSetEditor::_pack_texture_files_into_atlas(const Vector<String> &p_paths) {
+	if (p_paths.is_empty()) {
+		return;
+	}
+
+	Vector<Ref<Image>> images;
+
+	for (const String &path : p_paths) {
+		Ref<Image> image;
+		image.instantiate();
+		Error err = ImageLoader::load_image(path, image);
+		if (err != OK) {
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Failed to load image: %s"), path));
+			continue;
+		}
+
+		images.push_back(image);
+	}
+
+	if (images.is_empty()) {
+		EditorNode::get_singleton()->show_warning(TTR("No valid images to pack."));
+		return;
+	}
+
+	// Use first image size as the grid cell size, based off assumption that all images are the same size
+	Vector2i texture_region_size = images[0]->get_size();
+
+	const int max_width = (int)GLOBAL_GET("editor/import/atlas_max_width");
+	int columns = MAX(1, max_width / texture_region_size.x);
+
+	// Ceiling division
+	int rows = (images.size() + columns - 1) / columns;
+	int atlas_width = columns * texture_region_size.x;
+	int atlas_height = rows * texture_region_size.y;
+
+	Ref<Image> packed_atlas = Image::create_empty(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
+
+	// Arrange images in a grid layout
+	Vector<Vector2i> tile_positions;
+	for (int i = 0; i < images.size(); i++) {
+		Ref<Image> src_image = images[i];
+
+		if (src_image->get_format() != Image::FORMAT_RGBA8) {
+			src_image->convert(Image::FORMAT_RGBA8);
+		}
+
+		int col = i % columns;
+		int row = i / columns;
+		Vector2i grid_pos = Vector2i(col, row);
+		tile_positions.push_back(grid_pos);
+
+		Vector2i pixel_pos = grid_pos * texture_region_size;
+
+		Vector2i src_size = src_image->get_size();
+		packed_atlas->blit_rect(src_image, Rect2i(Vector2i(0, 0), src_size), pixel_pos);
+	}
+
+	pending_atlas_image = packed_atlas;
+	pending_atlas_charts.clear();
+
+	// Store tile positions and sizes for later tile creation
+	for (int i = 0; i < tile_positions.size(); i++) {
+		EditorAtlasPacker::Chart chart;
+		Vector2i img_size = images[i]->get_size();
+
+		// Store image size in vertices (used to calculate tile_size_in_atlas)
+		chart.vertices.push_back(Vector2i(0, 0));
+		chart.vertices.push_back(Vector2i(img_size.x, 0));
+		chart.vertices.push_back(Vector2i(img_size.x, img_size.y));
+		chart.vertices.push_back(Vector2i(0, img_size.y));
+
+		// Store pixel position in atlas
+		chart.final_offset = tile_positions[i] * texture_region_size;
+
+		pending_atlas_charts.push_back(chart);
+	}
+
+	pending_atlas_tile_size = texture_region_size;
+
+	if (!atlas_packing_save_dialog) {
+		atlas_packing_save_dialog = memnew(EditorFileDialog);
+		add_child(atlas_packing_save_dialog);
+		atlas_packing_save_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		atlas_packing_save_dialog->add_filter("*.png", "PNG Image");
+		atlas_packing_save_dialog->connect("file_selected", callable_mp(this, &TileSetEditor::_create_atlas_source_from_packed_scene));
+	}
+
+	atlas_packing_save_dialog->set_title(TTR("Save Packed Atlas"));
+	atlas_packing_save_dialog->popup_file_dialog();
+}
+
+void TileSetEditor::_create_atlas_source_from_packed_scene(const String &p_path) {
+	Error err = pending_atlas_image->save_png(p_path);
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Failed to save atlas image: %s"), p_path));
+		return;
+	}
+
+	ResourceLoader::import(p_path);
+	Ref<Texture2D> atlas_texture = ResourceLoader::load(p_path, "Texture2D");
+
+	if (atlas_texture.is_null()) {
+		EditorNode::get_singleton()->show_warning(TTR("Failed to load the saved atlas texture."));
+		return;
+	}
+
+	Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+	atlas_source->set_texture(atlas_texture);
+	atlas_source->set_texture_region_size(pending_atlas_tile_size);
+
+	// Create tiles at grid-aligned positions
+	for (int i = 0; i < pending_atlas_charts.size(); i++) {
+		const EditorAtlasPacker::Chart &chart = pending_atlas_charts[i];
+
+		Vector2i image_size = chart.vertices[2] - chart.vertices[0];
+		Vector2i tile_position = chart.final_offset / pending_atlas_tile_size;
+		// Round up to handle images larger than one cell
+		Vector2i tile_size_in_atlas = (image_size + pending_atlas_tile_size - Vector2i(1, 1)) / pending_atlas_tile_size;
+
+		atlas_source->create_tile(tile_position, tile_size_in_atlas);
+	}
+
+	int source_id = tile_set->get_next_source_id();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Add packed atlas source"));
+	undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+	undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+	undo_redo->commit_action();
+
+	_update_sources_list(source_id);
+
+	EditorNode::get_singleton()->show_warning(TTR("Atlas created successfully!"), TTR("Success"));
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
@@ -321,6 +459,22 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			undo_redo->commit_action();
 
 			_update_sources_list(source_id);
+		} break;
+		case 2: {
+			if (!atlas_packing_file_dialog) {
+				atlas_packing_file_dialog = memnew(EditorFileDialog);
+				add_child(atlas_packing_file_dialog);
+				atlas_packing_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+				atlas_packing_file_dialog->connect("files_selected", callable_mp(this, &TileSetEditor::_pack_texture_files_into_atlas));
+
+				List<String> extensions;
+				ImageLoader::get_recognized_extensions(&extensions);
+				for (const String &E : extensions) {
+					atlas_packing_file_dialog->add_filter("*." + E, E.to_upper());
+				}
+			}
+			atlas_packing_file_dialog->set_title(TTR("Select Images to Pack"));
+			atlas_packing_file_dialog->popup_file_dialog();
 		} break;
 		default:
 			ERR_FAIL();
@@ -881,6 +1035,8 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A palette of tiles made from a texture."));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
 	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A collection of scenes that can be instantiated and placed as tiles."));
+	sources_add_button->get_popup()->add_item(TTR("Atlas from Multiple Images"));
+	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("Pack multiple individual tile images into a single atlas texture."));
 	sources_add_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
