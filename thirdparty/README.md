@@ -90,6 +90,7 @@ Patches:
 - `0003-remove-tinydds-qoi.patch` (GH-97582)
 - `0004-clang-warning-exclude.patch` (GH-111346)
 - `0005-unused-typedef.patch` (GH-111445)
+- `0006-explicit-includes.patch` (GH-111557)
 
 
 ## brotli
@@ -220,6 +221,7 @@ Patches:
 - `0003-emscripten-nthreads.patch` (GH-69799)
 - `0004-mingw-no-cpuidex.patch` (GH-92488)
 - `0005-mingw-llvm-arm64.patch` (GH-93364)
+- `0006-explicit-includes.patch` (GH-111557)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -707,6 +709,7 @@ Patches:
 
 - `0001-disable-exceptions.patch` (GH-85039)
 - `0002-clang-std-replacements-leak.patch` (GH-85208)
+- `0003-explicit-includes.patch` (GH-111557)
 
 
 ## minimp3
@@ -1046,6 +1049,7 @@ Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
 - `0002-use-heap-alloc.patch` (GH-109530)
+- `0003-explicit-includes.patch` (GH-111557)
 
 
 ## tinyexr
