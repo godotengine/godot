@@ -36,11 +36,6 @@
 
 #include <zlib.h>
 
-#ifndef _MSC_VER
-// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#endif
-
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
 GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
@@ -59,10 +54,10 @@ GODOT_MSVC_WARNING_PUSH
 GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
 GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
 
-#include <d3dx12.h>
 #include <dxgi1_6.h>
+#include <thirdparty/directx_headers/include/directx/d3dx12.h>
 #define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <D3D12MemAlloc.h>
+#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
 
 #include <wrl/client.h>
 

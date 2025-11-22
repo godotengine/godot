@@ -58,6 +58,10 @@ GODOT_MSVC_WARNING_PUSH
 GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
 GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
 
+#include <dxgi1_6.h>
+#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
+#include <thirdparty/d3d12ma/D3D12MemAlloc.h>
+
 #include <nir_spirv.h>
 #include <nir_to_dxil.h>
 #include <spirv_to_dxil.h>
@@ -72,8 +76,10 @@ GODOT_MSVC_WARNING_POP
 #if !defined(_MSC_VER)
 #include <guiddef.h>
 
-#include <dxguids.h>
+#include <thirdparty/directx_headers/include/dxguids/dxguids.h>
 #endif
+
+using Microsoft::WRL::ComPtr;
 
 // Mesa may define this.
 #ifdef UNUSED
@@ -85,7 +91,7 @@ GODOT_MSVC_WARNING_POP
 #define _MSC_VER 1800
 #endif
 #define USE_PIX
-#include "WinPixEventRuntime/pix3.h"
+#include <WinPixEventRuntime/pix3.h>
 #if defined(__GNUC__)
 #undef _MSC_VER
 #endif
@@ -6738,6 +6744,7 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 	adapter = context_driver->create_adapter(p_device_index);
 	ERR_FAIL_NULL_V(adapter, ERR_CANT_CREATE);
 
+	DXGI_ADAPTER_DESC adapter_desc;
 	HRESULT res = adapter->GetDesc(&adapter_desc);
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 

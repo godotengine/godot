@@ -37,10 +37,10 @@
 #include "rendering_shader_container_d3d12.h"
 #include "servers/rendering/rendering_device_driver.h"
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
 // Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
-#endif
+#endif // !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
 
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
@@ -55,23 +55,26 @@ GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
 GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
-#include <d3dx12.h>
-#include <dxgi1_6.h>
-#define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include <D3D12MemAlloc.h>
-
-#include <wrl/client.h>
+#include <thirdparty/directx_headers/include/directx/d3dx12.h>
 
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
 
-using Microsoft::WRL::ComPtr;
+#include <wrl/client.h>
 
 #ifdef DEV_ENABLED
 #define CUSTOM_INFO_QUEUE_ENABLED 0
 #endif
 
 class RenderingContextDriverD3D12;
+
+namespace D3D12MA {
+class Allocation;
+class Allocator;
+}; // namespace D3D12MA
+
+struct IDXGIAdapter;
+struct IDXGISwapChain3;
 
 // Design principles:
 // - D3D12 structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
@@ -123,9 +126,8 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
-	ComPtr<IDXGIAdapter> adapter;
-	DXGI_ADAPTER_DESC adapter_desc;
-	ComPtr<ID3D12Device> device;
+	Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	DeviceLimits device_limits;
 	RDD::Capabilities device_capabilities;
 	uint32_t feature_level = 0; // Major * 10 + minor.
@@ -230,7 +232,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 
 	class GPUDescriptorsHeap {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		ComPtr<ID3D12DescriptorHeap> heap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 		uint32_t handle_size = 0;
 
 	public:
@@ -243,9 +245,9 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	CPUDescriptorsHeapPools cpu_descriptor_pool;
 
 	struct {
-		ComPtr<ID3D12CommandSignature> draw;
-		ComPtr<ID3D12CommandSignature> draw_indexed;
-		ComPtr<ID3D12CommandSignature> dispatch;
+		Microsoft::WRL::ComPtr<ID3D12CommandSignature> draw;
+		Microsoft::WRL::ComPtr<ID3D12CommandSignature> draw_indexed;
+		Microsoft::WRL::ComPtr<ID3D12CommandSignature> dispatch;
 	} indirect_cmd_signatures;
 
 	static void STDMETHODCALLTYPE _debug_message_func(D3D12_MESSAGE_CATEGORY p_category, D3D12_MESSAGE_SEVERITY p_severity, D3D12_MESSAGE_ID p_id, LPCSTR p_description, void *p_context);
@@ -265,7 +267,7 @@ private:
 	/**** MEMORY ****/
 	/****************/
 
-	ComPtr<D3D12MA::Allocator> allocator;
+	Microsoft::WRL::ComPtr<D3D12MA::Allocator> allocator;
 
 	/******************/
 	/**** RESOURCE ****/
@@ -280,8 +282,8 @@ private:
 
 		ID3D12Resource *resource = nullptr; // Non-null even if not owned.
 		struct {
-			ComPtr<ID3D12Resource> resource;
-			ComPtr<D3D12MA::Allocation> allocation;
+			Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+			Microsoft::WRL::ComPtr<D3D12MA::Allocation> allocation;
 			States states;
 		} owner_info; // All empty if the resource is not owned.
 		States *states_ptr = nullptr; // Own or from another if it doesn't own the D3D12 resource.
@@ -446,7 +448,7 @@ private:
 	/****************/
 
 	struct FenceInfo {
-		ComPtr<ID3D12Fence> d3d_fence = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Fence> d3d_fence = nullptr;
 		HANDLE event_handle = nullptr;
 		UINT64 fence_value = 0;
 	};
@@ -462,7 +464,7 @@ private:
 	/********************/
 
 	struct SemaphoreInfo {
-		ComPtr<ID3D12Fence> d3d_fence = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Fence> d3d_fence = nullptr;
 		UINT64 fence_value = 0;
 	};
 
@@ -481,7 +483,7 @@ private:
 	// ----- QUEUE -----
 
 	struct CommandQueueInfo {
-		ComPtr<ID3D12CommandQueue> d3d_queue;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> d3d_queue;
 	};
 
 public:
@@ -538,8 +540,8 @@ private:
 		// Store a self list reference to be used by the command pool.
 		SelfList<CommandBufferInfo> command_buffer_info_elem{ this };
 
-		ComPtr<ID3D12CommandAllocator> cmd_allocator;
-		ComPtr<ID3D12GraphicsCommandList> cmd_list;
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
@@ -569,7 +571,7 @@ private:
 	/********************/
 
 	struct SwapChain {
-		ComPtr<IDXGISwapChain3> d3d_swap_chain;
+		Microsoft::WRL::ComPtr<IDXGISwapChain3> d3d_swap_chain;
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		UINT present_flags = 0;
 		UINT sync_interval = 1;
@@ -682,8 +684,8 @@ private:
 
 		HashMap<ShaderStage, Vector<uint8_t>> stages_bytecode;
 
-		ComPtr<ID3D12RootSignature> root_signature;
-		ComPtr<ID3D12RootSignatureDeserializer> root_signature_deserializer;
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> root_signature;
+		Microsoft::WRL::ComPtr<ID3D12RootSignatureDeserializer> root_signature_deserializer;
 		const D3D12_ROOT_SIGNATURE_DESC *root_signature_desc = nullptr; // Owned by the deserializer.
 		uint32_t root_signature_crc = 0;
 	};
@@ -912,9 +914,9 @@ public:
 
 private:
 	struct TimestampQueryPoolInfo {
-		ComPtr<ID3D12QueryHeap> query_heap;
+		Microsoft::WRL::ComPtr<ID3D12QueryHeap> query_heap;
 		uint32_t query_count = 0;
-		ComPtr<D3D12MA::Allocation> results_buffer_allocation;
+		Microsoft::WRL::ComPtr<D3D12MA::Allocation> results_buffer_allocation;
 	};
 
 public:
