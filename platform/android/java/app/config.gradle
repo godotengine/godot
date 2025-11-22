@@ -283,6 +283,27 @@ ext.getGodotPluginsRemoteBinaries = { ->
 }
 
 /**
+ * Parse the project properties for the 'plugins_remote_gradle_plugins' property and return
+ * it for inclusion in the build plugins.
+ */
+ext.getGodotPluginsRemoteGradlePlugins = { ->
+    Set<String> remotePlugs = []
+
+    // Retrieve the list of remote plugins.
+    if (project.hasProperty("plugins_remote_gradle_plugins")) {
+        String remotePlugsList = project.property("plugins_remote_gradle_plugins")
+        if (remotePlugsList != null && !remotePlugsList.trim().isEmpty()) {
+            for (String plug: remotePlugsList.split(VALUE_SEPARATOR_REGEX)) {
+                String name = plug.trim().split(":")[0]
+                String versionString = plug.trim().split(":")[1]
+                remotePlugs += id name version versionString
+            }
+        }
+    }
+    return remotePlugs
+}
+
+/**
  * Parse the project properties for the 'plugins_local_binaries' property and return
  * their binaries for inclusion in the build dependencies.
  */
