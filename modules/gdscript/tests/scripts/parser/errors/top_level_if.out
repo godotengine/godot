@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Top-level "if" is not allowed in GDScript. Place it within a function instead.
