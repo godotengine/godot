@@ -311,6 +311,20 @@ TEST_CASE_TEMPLATE("[Math] db_to_linear", T, float, double) {
 	CHECK(Math::db_to_linear((T)-20.0) == doctest::Approx((T)0.1));
 }
 
+TEST_CASE_TEMPLATE("[Math] semitones_to_pitch_scale", T, float, double) {
+	CHECK(Math::semitones_to_pitch_scale((T)0.0) == doctest::Approx((T)1.0));
+	CHECK(Math::semitones_to_pitch_scale((T)12.0) == doctest::Approx((T)2.0));
+	CHECK(Math::semitones_to_pitch_scale((T)-12.0) == doctest::Approx((T)0.5));
+}
+
+TEST_CASE_TEMPLATE("[Math] pitch_scale_to_semitones", T, float, double) {
+	CHECK(Math::pitch_scale_to_semitones((T)1.0) == doctest::Approx((T)0.0));
+	CHECK(Math::pitch_scale_to_semitones((T)2.0) == doctest::Approx((T)12.0));
+	CHECK(Math::pitch_scale_to_semitones((T)0.5) == doctest::Approx((T)-12.0));
+	CHECK(Math::is_inf(Math::pitch_scale_to_semitones((T)0.0)));
+	CHECK(Math::is_nan(Math::pitch_scale_to_semitones((T)-20.0)));
+}
+
 TEST_CASE_TEMPLATE("[Math] step_decimals", T, float, double) {
 	CHECK(Math::step_decimals((T)-0.5) == 1);
 	CHECK(Math::step_decimals((T)0) == 0);
