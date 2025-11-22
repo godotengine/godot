@@ -38,7 +38,7 @@
 #include "core/typedefs.h"
 
 class GodotPhysicsDirectSpaceState2D : public PhysicsDirectSpaceState2D {
-	GDCLASS(GodotPhysicsDirectSpaceState2D, PhysicsDirectSpaceState2D);
+	GDSOFTCLASS(GodotPhysicsDirectSpaceState2D, PhysicsDirectSpaceState2D);
 
 public:
 	GodotSpace2D *space = nullptr;
