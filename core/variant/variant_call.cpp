@@ -1258,6 +1258,18 @@ struct _VariantCall {
 		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
 		enum_data[p_type].value_to_enum[p_enumeration_name] = p_enum_type_name;
 	}
+
+#ifndef DISABLE_DEPRECATED
+	template <typename T>
+	static Vector<T> _duplicate_bind_compat_112290(Vector<T> *p_vector) {
+		return *p_vector;
+	}
+
+	template <typename T>
+	static int64_t _bsearch_bind_compat_112539(Vector<T> *p_vector, const T &p_value, bool p_before) {
+		return p_vector->bsearch(p_value, p_before);
+	}
+#endif
 };
 
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
@@ -2754,7 +2766,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedByteArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedByteArray, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<uint8_t>, sarray(), varray());
+	bind_compat_functionnc(PackedByteArray, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<uint8_t>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
@@ -2833,7 +2846,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedInt32Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedInt32Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<int32_t>, sarray(), varray());
+	bind_compat_functionnc(PackedInt32Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<int32_t>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
@@ -2860,7 +2874,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedInt64Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedInt64Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<int64_t>, sarray(), varray());
+	bind_compat_functionnc(PackedInt64Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<int64_t>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
@@ -2887,7 +2902,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedFloat32Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedFloat32Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<float>, sarray(), varray());
+	bind_compat_functionnc(PackedFloat32Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<float>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
@@ -2914,7 +2930,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedFloat64Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedFloat64Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<double>, sarray(), varray());
+	bind_compat_functionnc(PackedFloat64Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<double>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
@@ -2941,7 +2958,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedStringArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedStringArray, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<String>, sarray(), varray());
+	bind_compat_functionnc(PackedStringArray, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<String>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
@@ -2968,7 +2986,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedVector2Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedVector2Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<Vector2>, sarray(), varray());
+	bind_compat_functionnc(PackedVector2Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<Vector2>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
@@ -2995,7 +3014,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedVector3Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedVector3Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<Vector3>, sarray(), varray());
+	bind_compat_functionnc(PackedVector3Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<Vector3>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
@@ -3022,7 +3042,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedColorArray, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedColorArray, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<Color>, sarray(), varray());
+	bind_compat_functionnc(PackedColorArray, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<Color>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
@@ -3049,7 +3070,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector4Array, duplicate, sarray(), varray());
 #ifndef DISABLE_DEPRECATED
-	bind_compat_method(PackedVector4Array, duplicate, _duplicate_bind_compat_112290, sarray(), varray());
+	bind_compat_functionnc(PackedVector4Array, duplicate, _duplicate_bind_compat_112290, _VariantCall::_duplicate_bind_compat_112290<Vector4>, sarray(), varray());
+	bind_compat_functionnc(PackedVector4Array, bsearch, _bsearch_bind_compat_112539, _VariantCall::_bsearch_bind_compat_112539<Vector4>, sarray("value", "before"), varray(true));
 #endif
 	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
