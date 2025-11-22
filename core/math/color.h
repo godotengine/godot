@@ -55,6 +55,7 @@ struct [[nodiscard]] Color {
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
 	String to_html(bool p_alpha = true) const;
+	String to_named() const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
