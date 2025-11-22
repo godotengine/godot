@@ -96,6 +96,9 @@ private:
 	};
 
 	HashMap<ObjectID, BodyState> body_map;
+	HashSet<ObjectID> reparenting_bodies;
+
+	void _clear_reparenting_body(ObjectID p_id);
 
 	void _area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape);
 
