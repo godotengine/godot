@@ -579,6 +579,7 @@ public:
 		CONNECT_REFERENCE_COUNTED = 8,
 		CONNECT_APPEND_SOURCE_OBJECT = 16,
 		CONNECT_INHERITED = 32, // Used in editor builds.
+		CONNECT_UNIQUE = 64,
 	};
 
 	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
@@ -629,6 +630,14 @@ private:
 	ObjectGDExtension *_extension = nullptr;
 	GDExtensionClassInstancePtr _extension_instance = nullptr;
 
+	struct SignalCallableHasher {
+		static uint32_t hash(const Callable &p_callable);
+	};
+
+	struct SignalCallableComparator {
+		static bool compare(const Callable &p_lhs, const Callable &p_rhs);
+	};
+
 	struct SignalData {
 		struct Slot {
 			int reference_count = 0;
@@ -637,7 +646,7 @@ private:
 		};
 
 		MethodInfo user;
-		HashMap<Callable, Slot> slot_map;
+		HashMap<Callable, Slot, SignalCallableHasher, SignalCallableComparator> slot_map;
 		bool removable = false;
 	};
 	friend struct _ObjectSignalLock;
