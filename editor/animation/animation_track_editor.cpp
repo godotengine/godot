@@ -4484,7 +4484,7 @@ void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_bezi
 	}
 }
 
-void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
+void AnimationTrackEditor::insert_transform_3d_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value) {
 	if (read_only) {
 		popup_read_only_dialog();
 		return;
@@ -4532,7 +4532,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 	_query_insert(id);
 }
 
-bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
+bool AnimationTrackEditor::has_transform_3d_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type) {
 	ERR_FAIL_NULL_V(root, false);
 	if (!keying) {
 		return false;
