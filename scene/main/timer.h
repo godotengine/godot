@@ -42,6 +42,8 @@ class Timer : public Node {
 	bool paused = false;
 	bool ignore_time_scale = false;
 
+	int loop_count = 0;
+
 	double time_left = -1.0;
 
 protected:
@@ -72,9 +74,13 @@ public:
 	void set_ignore_time_scale(bool p_ignore);
 	bool is_ignoring_time_scale();
 
+	int get_loop_count() const;
+
 	bool is_stopped() const;
 
 	double get_time_left() const;
+
+	double get_elapsed_time() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
