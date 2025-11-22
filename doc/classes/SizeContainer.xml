@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SizeContainer" inherits="Container" keywords="size" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that supports a maximum size for itself.
+	</brief_description>
+	<description>
+		[SizeContainer] allows setting a maximum size for itself, both in code and in the editor. When the container's size exceeds the defined maximum size, it will not grow any larger, effectively capping its dimensions. This is useful for creating UI elements that should not exceed a certain size regardless of their content or parent container's size.
+		To control the [SizeContainer]'s maximum size, use the [code skip-lint]custom_maximum_size[/code] property as shown below.
+		[codeblocks]
+		[gdscript]
+		# This code sample assumes the current script is extending SizeContainer.
+		var max_size_value = Vector2(400, 300)
+		set_custom_maximum_size(max_size_value)
+		[/gdscript]
+		[csharp]
+		// This code sample assumes the current script is extending SizeContainer.
+		Vector2 maxSizeValue = new Vector2(400, 300);
+		SetCustomMaximumSize(maxSizeValue);
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<members>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+	</members>
+</class>

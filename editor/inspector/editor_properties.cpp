@@ -1094,7 +1094,7 @@ void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
 		queue_redraw();
 	} else if (expand_hovered) {
 		expanded = !expanded;
-		update_minimum_size();
+		update_size_bounds();
 		queue_redraw();
 	}
 }
@@ -1240,7 +1240,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 			}
 
 			if ((expansion_rows != prev_expansion_rows) && expanded) {
-				update_minimum_size();
+				update_size_bounds();
 			}
 
 			if ((expansion_rows == 0) && (layer_index == layer_count)) {

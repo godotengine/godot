@@ -270,7 +270,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	if (icon.is_valid()) {
 		tb->set_button_icon(icon);
 		// Make sure the control is updated if the icon is reimported.
-		icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
+		icon->connect_changed(callable_mp((Control *)tb, &Control::update_size_bounds));
 	}
 
 	tb->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(buttons.size()));

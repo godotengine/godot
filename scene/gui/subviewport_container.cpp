@@ -58,7 +58,7 @@ void SubViewportContainer::set_stretch(bool p_enable) {
 
 	stretch = p_enable;
 	recalc_force_viewport_sizes();
-	update_minimum_size();
+	update_size_bounds();
 	queue_sort();
 	queue_redraw();
 }

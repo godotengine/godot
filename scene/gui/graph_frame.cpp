@@ -224,7 +224,7 @@ void GraphFrame::set_title(const String &p_title) {
 	if (title_label) {
 		title_label->set_text(title);
 	}
-	update_minimum_size();
+	update_size_bounds();
 }
 
 String GraphFrame::get_title() const {

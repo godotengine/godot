@@ -375,7 +375,7 @@ void SplitContainer::_notification(int p_what) {
 			_resort();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			update_minimum_size();
+			update_size_bounds();
 			if (touch_dragger) {
 				touch_dragger->set_modulate(theme_cache.touch_dragger_color);
 				touch_dragger->set_texture(_get_touch_dragger_icon());
@@ -439,7 +439,7 @@ void SplitContainer::set_vertical(bool p_vertical) {
 		touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 		touch_dragger->set_default_cursor_shape(vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 	}
-	update_minimum_size();
+	update_size_bounds();
 	_resort();
 }
 

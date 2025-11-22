@@ -3873,7 +3873,7 @@ bool RichTextLabel::_validate_line_caches() {
 		main->first_resized_line.store(main->lines.size());
 
 		if (fit_content) {
-			update_minimum_size();
+			update_size_bounds();
 		}
 		validating.store(false);
 		if (!scroll_visible) {
@@ -3975,7 +3975,7 @@ void RichTextLabel::_process_line_caches() {
 	updating.store(false);
 
 	if (fit_content) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 	emit_signal(SceneStringName(finished));
 }
@@ -4105,7 +4105,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	_invalidate_current_line(current_frame);
 
 	if (fit_content) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 	queue_accessibility_update();
 	queue_redraw();
@@ -5109,7 +5109,7 @@ void RichTextLabel::clear() {
 	}
 
 	if (fit_content) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 	queue_accessibility_update();
 	update_configuration_warnings();
@@ -5139,7 +5139,7 @@ void RichTextLabel::set_fit_content(bool p_enabled) {
 	}
 
 	fit_content = p_enabled;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool RichTextLabel::is_fit_content_enabled() const {

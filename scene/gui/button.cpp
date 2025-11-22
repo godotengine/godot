@@ -179,7 +179,7 @@ void Button::_notification(int p_what) {
 			xl_text = _get_translated_text(text);
 			_shape();
 
-			update_minimum_size();
+			update_size_bounds();
 			queue_accessibility_update();
 			queue_redraw();
 		} break;
@@ -187,7 +187,7 @@ void Button::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
-			update_minimum_size();
+			update_size_bounds();
 			queue_redraw();
 		} break;
 
@@ -195,7 +195,7 @@ void Button::_notification(int p_what) {
 			if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
 				_shape();
 
-				update_minimum_size();
+				update_size_bounds();
 				queue_redraw();
 			}
 		} break;
@@ -205,7 +205,7 @@ void Button::_notification(int p_what) {
 			if (text_buf.is_valid() && !TS->shaped_text_is_ready(text_buf->get_rid())) {
 				_shape();
 
-				update_minimum_size();
+				update_size_bounds();
 			}
 
 			const RID ci = get_canvas_item();
@@ -427,7 +427,7 @@ void Button::_notification(int p_what) {
 
 				float text_buf_width = Math::ceil(MAX(1.0f, drawable_size_remained.width)); // The space's width filled by the text_buf.
 				if (autowrap_mode != TextServer::AUTOWRAP_OFF && !Math::is_equal_approx(text_buf_width, text_buf->get_width())) {
-					update_minimum_size();
+					update_size_bounds();
 				}
 				text_buf->set_width(text_buf_width);
 
@@ -581,7 +581,7 @@ void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 			_queue_update_size_cache();
 		}
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -600,7 +600,7 @@ void Button::set_text(const String &p_text) {
 
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 String Button::get_text() const {
@@ -612,7 +612,7 @@ void Button::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 		autowrap_mode = p_mode;
 		_shape();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -625,7 +625,7 @@ void Button::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags
 		autowrap_flags_trim = p_flags & TextServer::BREAK_TRIM_MASK;
 		_shape();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -676,12 +676,12 @@ void Button::set_button_icon(const Ref<Texture2D> &p_icon) {
 	}
 
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void Button::_texture_changed() {
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void Button::_update_style_margins(const Ref<StyleBox> &p_stylebox) {
@@ -701,7 +701,7 @@ void Button::set_expand_icon(bool p_enabled) {
 		expand_icon = p_enabled;
 		_queue_update_size_cache();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -726,7 +726,7 @@ void Button::set_clip_text(bool p_enabled) {
 
 		_queue_update_size_cache();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -752,7 +752,7 @@ void Button::set_icon_alignment(HorizontalAlignment p_alignment) {
 	}
 
 	horizontal_icon_alignment = p_alignment;
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -766,7 +766,7 @@ void Button::set_vertical_icon_alignment(VerticalAlignment p_alignment) {
 	if (need_update_cache) {
 		_queue_update_size_cache();
 	}
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 

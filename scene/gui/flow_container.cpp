@@ -316,11 +316,11 @@ void FlowContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -371,7 +371,7 @@ FlowContainer::LastWrapAlignmentMode FlowContainer::get_last_wrap_alignment() co
 void FlowContainer::set_vertical(bool p_vertical) {
 	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
 	vertical = p_vertical;
-	update_minimum_size();
+	update_size_bounds();
 	_resort();
 }
 
