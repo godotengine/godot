@@ -52,11 +52,6 @@
 #include "wayland/display_server_wayland.h"
 #endif
 
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
-
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 #endif
@@ -339,98 +334,30 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		return info;
 	}
 
-	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name(); // e.g. `NVIDIA GeForce GTX 970`
-	const String rendering_device_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor(); // e.g. `NVIDIA`
-	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
-
-	String vendor_device_id_mappings;
-	List<String> lspci_args;
-	lspci_args.push_back("-n");
-	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", lspci_args, &vendor_device_id_mappings);
-	if (err != OK || vendor_device_id_mappings.is_empty()) {
+	const uint32_t vendor_id = RenderingDevice::get_singleton()->get_device_vendor_id();
+	const uint32_t device_id = RenderingDevice::get_singleton()->get_device_id();
+	if (vendor_id == 0x0 || device_id == 0x0) {
 		return Vector<String>();
 	}
+	String vendor_device_id_mapping = String(String::num_uint64(vendor_id, 16) + ":" + String::num_uint64(device_id, 16));
 
-	// Usually found under "VGA", but for example NVIDIA mobile/laptop adapters are often listed under "3D" and some AMD adapters are under "Display".
-	const String dc_vga = "0300"; // VGA compatible controller
-	const String dc_display = "0302"; // Display controller
-	const String dc_3d = "0380"; // 3D controller
-
-	// splitting results by device class allows prioritizing, if multiple devices are found.
-	Vector<String> class_vga_device_candidates;
-	Vector<String> class_display_device_candidates;
-	Vector<String> class_3d_device_candidates;
-
-#ifdef MODULE_REGEX_ENABLED
-	RegEx regex_id_format = RegEx();
-	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
-#endif
-
-	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
-	for (const String &line : value_lines) {
-		Vector<String> columns = line.split(" ", false);
-		if (columns.size() < 3) {
-			continue;
-		}
-		String device_class = columns[1].trim_suffix(":");
-		const String &vendor_device_id_mapping = columns[2];
-
-#ifdef MODULE_REGEX_ENABLED
-		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
-			continue;
-		}
-#endif
-
-		if (device_class == dc_vga) {
-			class_vga_device_candidates.push_back(vendor_device_id_mapping);
-		} else if (device_class == dc_display) {
-			class_display_device_candidates.push_back(vendor_device_id_mapping);
-		} else if (device_class == dc_3d) {
-			class_3d_device_candidates.push_back(vendor_device_id_mapping);
-		}
-	}
-
-	// Check results against currently used device (`card_name`), in case the user has multiple graphics cards.
-	const String device_lit = "Device"; // line of interest
-	class_vga_device_candidates = OS_LinuxBSD::lspci_device_filter(class_vga_device_candidates, dc_vga, device_lit, card_name);
-	class_display_device_candidates = OS_LinuxBSD::lspci_device_filter(class_display_device_candidates, dc_display, device_lit, card_name);
-	class_3d_device_candidates = OS_LinuxBSD::lspci_device_filter(class_3d_device_candidates, dc_3d, device_lit, card_name);
-
-	// Get driver names and filter out invalid ones, because some adapters are dummys used only for passthrough.
+	// Get driver name, but filter out invalid ones, because some adapters are dummys used only for passthrough.
 	// And they have no indicator besides certain driver names.
 	const String kernel_lit = "Kernel driver in use"; // line of interest
 	const String dummys = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
-	Vector<String> class_vga_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_vga_device_candidates, kernel_lit, dummys);
-	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
-	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
-
-	String driver_name;
-	String driver_version;
-
-	// Use first valid value:
-	for (const String &driver : class_3d_device_drivers) {
-		driver_name = driver;
-		break;
-	}
-	if (driver_name.is_empty()) {
-		for (const String &driver : class_display_device_drivers) {
-			driver_name = driver;
-			break;
-		}
-	}
-	if (driver_name.is_empty()) {
-		for (const String &driver : class_vga_device_drivers) {
-			driver_name = driver;
-			break;
-		}
-	}
-
+	String driver_name = OS_LinuxBSD::lspci_get_device_value(vendor_device_id_mapping, kernel_lit, dummys);
 	info.push_back(driver_name);
+	if (driver_name.is_empty()) {
+		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
+		return info;
+	}
+
+	String driver_version;
 
 	String modinfo;
 	List<String> modinfo_args;
 	modinfo_args.push_back(driver_name);
-	err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
 	if (err != OK || modinfo.is_empty()) {
 		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
 		return info;
@@ -452,83 +379,42 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	return info;
 }
 
-Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
-	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
+String OS_LinuxBSD::lspci_get_device_value(String vendor_device_id_mapping, String check_column, String disallow_list) const {
+	// NOTE: disallow_list can be changed to `Vector<String>`, if the need arises.
 	const String sep = ":";
-	Vector<String> devices;
-	for (const String &mapping : vendor_device_id_mapping) {
-		String device;
-		List<String> d_args;
-		d_args.push_back("-d");
-		d_args.push_back(mapping + sep + class_suffix);
-		d_args.push_back("-vmm");
-		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2:0300 -vmm`
-		if (err != OK) {
-			return Vector<String>();
-		} else if (device.is_empty()) {
+	String value;
+
+	String device;
+	List<String> d_args;
+	d_args.push_back("-d");
+	d_args.push_back(vendor_device_id_mapping);
+	d_args.push_back("-k");
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
+	if (err != OK || device.is_empty()) {
+		return "";
+	}
+
+	Vector<String> device_lines = device.split("\n", false);
+	for (const String &line : device_lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
 			continue;
 		}
-
-		Vector<String> device_lines = device.split("\n", false);
-		for (const String &line : device_lines) {
-			Vector<String> columns = line.split(":", false, 1);
-			if (columns.size() < 2) {
-				continue;
+		if (columns[0].strip_edges() == check_column) {
+			// for `column[0] == "Kernel driver in use"` this may contain `nvidia`, `amdgpu`, `i915`, etc.
+			bool is_valid = true;
+			const String option = columns[1].strip_edges();
+			if (!disallow_list.is_empty()) {
+				is_valid = !option.contains(disallow_list);
 			}
-			if (columns[0].strip_edges() == check_column) {
-				// for `column[0] == "Device"` this may contain `GM204 [GeForce GTX 970]`
-				bool is_valid = true;
-				if (!whitelist.is_empty()) {
-					is_valid = columns[1].strip_edges().contains(whitelist);
-				}
-				if (is_valid) {
-					devices.push_back(mapping);
-				}
-				break;
+			if (is_valid) {
+				value = option;
 			}
+			break;
 		}
 	}
-	return devices;
-}
 
-Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
-	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
-	const String sep = ":";
-	Vector<String> values;
-	for (const String &mapping : vendor_device_id_mapping) {
-		String device;
-		List<String> d_args;
-		d_args.push_back("-d");
-		d_args.push_back(mapping);
-		d_args.push_back("-k");
-		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
-		if (err != OK) {
-			return Vector<String>();
-		} else if (device.is_empty()) {
-			continue;
-		}
-
-		Vector<String> device_lines = device.split("\n", false);
-		for (const String &line : device_lines) {
-			Vector<String> columns = line.split(":", false, 1);
-			if (columns.size() < 2) {
-				continue;
-			}
-			if (columns[0].strip_edges() == check_column) {
-				// for `column[0] == "Kernel driver in use"` this may contain `nvidia`
-				bool is_valid = true;
-				const String value = columns[1].strip_edges();
-				if (!blacklist.is_empty()) {
-					is_valid = !value.contains(blacklist);
-				}
-				if (is_valid) {
-					values.push_back(value);
-				}
-				break;
-			}
-		}
-	}
-	return values;
+	return value;
 }
 
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
