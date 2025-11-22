@@ -85,7 +85,7 @@ struct VariantCaster<const T &> {
 #define VARIANT_BITFIELD_CAST(m_enum) MAKE_BITFIELD_TYPE_INFO(m_enum)
 
 // Object enum casts must go here
-VARIANT_ENUM_CAST(Object::ConnectFlags);
+VARIANT_BITFIELD_CAST(Object::ConnectFlags);
 
 VARIANT_ENUM_CAST(Vector2::Axis);
 VARIANT_ENUM_CAST(Vector2i::Axis);
