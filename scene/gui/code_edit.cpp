@@ -138,14 +138,14 @@ void CodeEdit::_notification(int p_what) {
 				/* Code completion */
 				if (draw_code_completion) {
 					const int code_completion_options_count = code_completion_options.size();
-					const int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
+					int lines = MIN(code_completion_options_count, theme_cache.code_completion_max_lines);
 					const Size2 icon_area_size(row_height, row_height);
 
 					code_completion_rect.size.width = code_completion_longest_line + theme_cache.code_completion_icon_separation + icon_area_size.width + 2;
 					code_completion_rect.size.height = lines * row_height;
 
 					const Point2 caret_pos = get_caret_draw_pos();
-					const int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+					int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
 					int min_y = caret_pos.y - row_height;
 					int max_y = caret_pos.y + row_height + total_height;
 					if (draw_code_hint) {
@@ -158,7 +158,30 @@ void CodeEdit::_notification(int p_what) {
 
 					const bool can_fit_completion_above = (min_y > total_height);
 					const bool can_fit_completion_below = (max_y <= get_size().height);
+					bool should_place_above = false;
+
 					if (!can_fit_completion_below && can_fit_completion_above) {
+						should_place_above = true;
+					} else if (!can_fit_completion_below && !can_fit_completion_above) {
+						const int space_above = (caret_pos.y - row_height);
+						const int space_below = (get_size().height - caret_pos.y);
+						should_place_above = (space_above > space_below);
+
+						// Reduce the line count and recalculate heights to better fit the completion popup.
+						int space_avail;
+						if (should_place_above) {
+							space_avail = space_above - theme_cache.code_completion_style->get_minimum_size().y;
+						} else {
+							space_avail = space_below - theme_cache.code_completion_style->get_minimum_size().y;
+						}
+
+						int max_lines_fit = MAX(1, space_avail / row_height);
+						lines = MIN(lines, max_lines_fit);
+						code_completion_rect.size.height = lines * row_height;
+						total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+					}
+
+					if (should_place_above) {
 						code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + theme_cache.line_spacing;
 						if (draw_code_hint && !code_hint_draw_below) {
 							code_completion_rect.position.y -= code_hint_minsize.y;
