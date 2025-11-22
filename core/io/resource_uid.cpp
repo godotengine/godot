@@ -160,6 +160,9 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 	Cache c;
 	c.cs = p_path.utf8();
 	unique_ids[p_id] = c;
+	if (use_reverse_cache) {
+		reverse_cache[c.cs] = p_id;
+	}
 	changed = true;
 }
 
@@ -175,6 +178,9 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
 		unique_ids[p_id].cs = cs;
 		unique_ids[p_id].saved_to_cache = false; //changed
+		if (use_reverse_cache) {
+			reverse_cache[cs] = p_id;
+		}
 		changed = true;
 	}
 }
@@ -199,6 +205,14 @@ String ResourceUID::get_id_path(ID p_id) const {
 	ERR_FAIL_COND_V_MSG(!cache, String(), vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
 	const CharString &cs = cache->cs;
 	return String::utf8(cs.ptr());
+}
+
+ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
+	const ID *id = reverse_cache.getptr(p_path.utf8());
+	if (id) {
+		return *id;
+	}
+	return INVALID_ID;
 }
 
 void ResourceUID::remove_id(ID p_id) {
@@ -281,6 +295,9 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 		c.saved_to_cache = true;
 		unique_ids[id] = c;
+		if (use_reverse_cache) {
+			reverse_cache[c.cs] = id;
+		}
 	}
 
 	cache_entries = entry_count;
