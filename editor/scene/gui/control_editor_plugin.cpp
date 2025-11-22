@@ -37,12 +37,15 @@
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/theme/theme_db.h"
 
 // Inspector controls.
 
@@ -442,6 +445,19 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
 }
 
+EditorInspectorPluginControl::EditorInspectorPluginControl() {
+	create_new_variation_dialog = memnew(ConfirmationDialog);
+	create_new_variation_dialog->set_title(TTRC("Create Theme Variation"));
+	create_new_variation_dialog->set_min_size(Size2(256, 64) * EDSCALE);
+	EditorNode::get_singleton()->add_child(create_new_variation_dialog);
+	create_new_variation_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspectorPluginControl::_on_create_variation_confirmed));
+
+	create_new_variation_line_edit = memnew(LineEdit);
+	create_new_variation_line_edit->set_select_all_on_focus(true);
+	create_new_variation_dialog->add_child(create_new_variation_line_edit);
+	create_new_variation_dialog->register_text_enter(create_new_variation_line_edit);
+}
+
 bool EditorInspectorPluginControl::can_handle(Object *p_object) {
 	return Object::cast_to<Control>(p_object) != nullptr;
 }
@@ -456,13 +472,50 @@ void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p
 	}
 
 	Control *control = Object::cast_to<Control>(p_object);
-	if (!control || p_group != "Layout") {
+	if (!control) {
 		return;
 	}
 
-	ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
-	pos_warning->set_control(control);
-	add_custom_control(pos_warning);
+	if (p_group == "Layout") {
+		ControlPositioningWarning *pos_warning = memnew(ControlPositioningWarning);
+		pos_warning->set_control(control);
+		add_custom_control(pos_warning);
+	} else if (p_group == "Theme") {
+		String hint_text = "Convert Overrides to Type Variation";
+
+		if (control->get_theme_type_variation() != "") {
+			hint_text = vformat("Push Overrides to Type Variation \"%s\"", control->get_theme_type_variation());
+		}
+
+		String hint_icon = "Theme";
+		EditorInspectorActionButton *convert_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
+		convert_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation).bind(control));
+		add_custom_control(convert_button);
+	}
+}
+
+void EditorInspectorPluginControl::_on_convert_theme_overrides_to_variation(Control *p_control) {
+	current_control = p_control;
+	if (current_control->get_theme_type_variation() == "") {
+		// If this Control doesn't currently have a type variation, we want to prompt
+		// the user for one.
+		create_new_variation_line_edit->set_text("");
+		create_new_variation_dialog->reset_size();
+		create_new_variation_dialog->popup_centered();
+		create_new_variation_line_edit->grab_focus();
+	} else {
+		// If it *does* have a type variation, we want to push these changes to it
+		// instead.
+		current_control->create_variation_from_overrides("");
+	}
+}
+
+void EditorInspectorPluginControl::_on_create_variation_confirmed() {
+	// TODO: A blank string will make it assume there's already a type variation set.
+	// So we need to pop up some kind of error if the user tries to explicitly enter
+	// an empty string.
+	StringName variation_name = create_new_variation_line_edit->get_text();
+	current_control->create_variation_from_overrides(variation_name);
 }
 
 bool EditorInspectorPluginControl::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
