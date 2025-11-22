@@ -43,6 +43,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/doc/editor_help_search.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/node_dock.h"
@@ -4211,7 +4212,10 @@ void ScriptEditor::_bind_methods() {
 }
 
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
-	window_wrapper = p_wrapper;
+	set_name(TTRC("Script"));
+	set_icon_name("Script");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN);
 
 	script_editor_cache.instantiate();
 	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
@@ -4473,10 +4477,9 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	make_floating = memnew(ScreenSelect);
 	make_floating->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 
 	menu_hb->add_child(make_floating);
-	p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
+	// p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
 
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
@@ -4582,10 +4585,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 }
 
 void ScriptEditorPlugin::_focus_another_editor() {
-	if (window_wrapper->get_window_enabled()) {
-		ERR_FAIL_COND(last_editor.is_empty());
-		EditorInterface::get_singleton()->set_main_screen_editor(last_editor);
-	}
 }
 
 void ScriptEditorPlugin::_save_last_editor(const String &p_editor) {
@@ -4606,7 +4605,6 @@ void ScriptEditorPlugin::_window_visibility_changed(bool p_visible) {
 void ScriptEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Script Editor")));
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect("main_screen_changed", callable_mp(this, &ScriptEditorPlugin::_save_last_editor));
@@ -4712,10 +4710,8 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 
 void ScriptEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		window_wrapper->show();
 		script_editor->ensure_select_current();
 	} else {
-		window_wrapper->hide();
 	}
 }
 
@@ -4779,37 +4775,10 @@ void ScriptEditorPlugin::apply_changes() {
 
 void ScriptEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	script_editor->set_window_layout(p_layout);
-
-	if (EDITOR_GET("interface/multi_window/restore_windows_on_load") && window_wrapper->is_window_available() && p_layout->has_section_key("ScriptEditor", "window_rect")) {
-		window_wrapper->restore_window_from_saved_position(
-				p_layout->get_value("ScriptEditor", "window_rect", Rect2i()),
-				p_layout->get_value("ScriptEditor", "window_screen", -1),
-				p_layout->get_value("ScriptEditor", "window_screen_rect", Rect2i()));
-	} else {
-		window_wrapper->set_window_enabled(false);
-	}
 }
 
 void ScriptEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	script_editor->get_window_layout(p_layout);
-
-	if (window_wrapper->get_window_enabled()) {
-		p_layout->set_value("ScriptEditor", "window_rect", window_wrapper->get_window_rect());
-		int screen = window_wrapper->get_window_screen();
-		p_layout->set_value("ScriptEditor", "window_screen", screen);
-		p_layout->set_value("ScriptEditor", "window_screen_rect", DisplayServer::get_singleton()->screen_get_usable_rect(screen));
-
-	} else {
-		if (p_layout->has_section_key("ScriptEditor", "window_rect")) {
-			p_layout->erase_section_key("ScriptEditor", "window_rect");
-		}
-		if (p_layout->has_section_key("ScriptEditor", "window_screen")) {
-			p_layout->erase_section_key("ScriptEditor", "window_screen");
-		}
-		if (p_layout->has_section_key("ScriptEditor", "window_screen_rect")) {
-			p_layout->erase_section_key("ScriptEditor", "window_screen_rect");
-		}
-	}
 }
 
 void ScriptEditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
@@ -4829,17 +4798,9 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"), KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT("script_text_editor/capitalize", TTRC("Capitalize"), KeyModifierMask::SHIFT | Key::F6);
 
-	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_margins_enabled(true);
-
-	script_editor = memnew(ScriptEditor(window_wrapper));
+	script_editor = memnew(ScriptEditor(nullptr));
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("script_editor/make_floating", TTRC("Make Floating"));
-	window_wrapper->set_wrapped_control(script_editor, make_floating_shortcut);
 
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(window_wrapper);
-	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	window_wrapper->hide();
-	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditorPlugin::_window_visibility_changed));
-
+	EditorDockManager::get_singleton()->add_dock(script_editor);
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
 }

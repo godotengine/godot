@@ -312,12 +312,14 @@ void TabContainer::_repaint() {
 
 	// Move the TabBar to the top or bottom.
 	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
-	if (tabs_position == POSITION_BOTTOM) {
-		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
-		tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
-	} else {
-		tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
-		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+	if (tab_bar->get_parent() == this) {
+		if (tabs_position == POSITION_BOTTOM) {
+			tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
+			tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
+		} else {
+			tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
+			tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+		}
 	}
 
 	updating_visibility = true;
@@ -350,6 +352,9 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_update_margins() {
+	if (tab_bar->get_parent() != this) {
+		return;
+	}
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
 

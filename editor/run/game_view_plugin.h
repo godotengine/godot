@@ -32,6 +32,7 @@
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_plugin.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/debugger/scene_debugger.h"
@@ -103,8 +104,8 @@ public:
 	GameViewDebugger();
 };
 
-class GameView : public VBoxContainer {
-	GDCLASS(GameView, VBoxContainer);
+class GameView : public EditorDock {
+	GDCLASS(GameView, EditorDock);
 
 	enum {
 		CAMERA_RESET_2D,

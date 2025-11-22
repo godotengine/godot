@@ -31,6 +31,7 @@
 #include "editor_main_screen.h"
 
 #include "core/io/config_file.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
@@ -76,7 +77,10 @@ void EditorMainScreen::_notification(int p_what) {
 }
 
 void EditorMainScreen::set_button_container(HBoxContainer *p_button_hb) {
+	get_tab_bar()->reparent(p_button_hb);
+	get_tab_bar()->set_h_size_flags(SIZE_EXPAND_FILL);
 	button_hb = p_button_hb;
+	button_hb->set_custom_minimum_size(Vector2(500, 0));
 }
 
 void EditorMainScreen::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -238,17 +242,17 @@ bool EditorMainScreen::can_auto_switch_screens() const {
 		return true;
 	}
 	// Only allow auto-switching if the selected button is to the left of the Script button.
-	for (int i = 0; i < button_hb->get_child_count(); i++) {
-		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
-		if (button->get_text() == "Script") {
-			// Selected button is at or after the Script button.
-			return false;
-		}
-		if (button->get_text() == selected_plugin->get_plugin_name()) {
-			// Selected button is before the Script button.
-			return true;
-		}
-	}
+	// for (int i = 0; i < button_hb->get_child_count(); i++) {
+	// 	Button *button = Object::cast_to<Button>(button_hb->get_child(i));
+	// 	if (button->get_text() == "Script") {
+	// 		// Selected button is at or after the Script button.
+	// 		return false;
+	// 	}
+	// 	if (button->get_text() == selected_plugin->get_plugin_name()) {
+	// 		// Selected button is before the Script button.
+	// 		return true;
+	// 	}
+	// }
 	return false;
 }
 
@@ -276,7 +280,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->connect(SceneStringName(pressed), callable_mp(this, &EditorMainScreen::select).bind(buttons.size()));
 
 	buttons.push_back(tb);
-	button_hb->add_child(tb);
+	// button_hb->add_child(tb);
 	editor_table.push_back(p_editor);
 	main_editor_plugins.insert(p_editor->get_plugin_name(), p_editor);
 }
@@ -308,10 +312,17 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	main_editor_plugins.erase(p_editor->get_plugin_name());
 }
 
+void EditorMainScreen::add_dock(Control *p_control) {
+	EditorDock *dock = memnew(EditorDock);
+	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	dock->add_child(p_control);
+	add_child(dock);
+}
+
 EditorMainScreen::EditorMainScreen() {
 	main_screen_vbox = memnew(VBoxContainer);
 	main_screen_vbox->set_name("MainScreen");
 	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_screen_vbox->add_theme_constant_override("separation", 0);
-	add_child(main_screen_vbox);
+	// add_child(main_screen_vbox);
 }

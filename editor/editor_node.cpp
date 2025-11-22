@@ -8364,6 +8364,8 @@ EditorNode::EditorNode() {
 	srt->add_child(editor_main_screen);
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN, editor_main_screen, DockConstants::DOCK_LAYOUT_MAIN_SCREEN);
+
 	scene_root = memnew(SubViewport);
 	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	scene_root->set_translation_domain(StringName());

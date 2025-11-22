@@ -39,6 +39,7 @@
 #include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -9665,11 +9666,17 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 }
 
 Node3DEditor::Node3DEditor() {
+	set_title(TTRC("3D"));
+	set_icon_name("3D");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(DockConstants::DOCK_SLOT_MAIN_SCREEN);
+
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 
 	viewport_environment.instantiate();
-	VBoxContainer *vbc = this;
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
 
 	custom_camera = nullptr;
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
@@ -10501,7 +10508,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_fr
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(spatial_editor);
+	EditorDockManager::get_singleton()->add_dock(spatial_editor);
 
 	spatial_editor->hide();
 }
