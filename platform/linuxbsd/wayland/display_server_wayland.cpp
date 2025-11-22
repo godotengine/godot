@@ -1536,10 +1536,11 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		ERR_FAIL_NULL_V(ws, ERR_BUG);
 
 		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
-
+#ifdef LIBDECOR_ENABLED
 		if (toplevel == nullptr && ws->libdecor_frame) {
 			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
 		}
+#endif
 
 		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
 
