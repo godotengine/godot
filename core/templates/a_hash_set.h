@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  a_hash_map.h                                                          */
+/*  a_hash_set.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,30 +31,20 @@
 #pragma once
 
 #include "core/string/print_string.h"
-#include "core/templates/pair.h"
 #include "core/templates/raw_a_hash_table.h"
 
 #include <initializer_list>
 
-class String;
-class StringName;
-class Variant;
-
 /**
- * An array-based implementation of a hash map. See parent class RawAHashTable for details.
+ * An array-based implementation of a hash set. See parent class RawAHashTable for details.
  *
- * Use RBMap if you need to iterate over sorted elements.
+ * Use RBSet if you need to iterate over sorted elements.
  *
- * Use HashMap if:
- *   - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
- *   - You need to preserve the insertion order when using erase.
- *
- * It is recommended to use `HashMap` if `KeyValue` size is very large.
  */
-template <typename TKey, typename TValue,
+template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
+class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base = RawAHashTable<TKey, Hasher, Comparator>;
 
 	using Base::_capacity_mask;
@@ -70,11 +60,11 @@ class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
 
 protected:
 	virtual const TKey &_get_key(uint32_t p_idx) const override {
-		return _elements[p_idx].key;
+		return _elements[p_idx];
 	}
 
 	virtual void _resize_elements(uint32_t p_new_capacity) override {
-		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * p_new_capacity));
+		_elements = reinterpret_cast<TKey *>(Memory::realloc_static(_elements, sizeof(TKey) * p_new_capacity));
 	}
 
 	virtual bool _is_elements_valid() const override {
@@ -82,30 +72,29 @@ protected:
 	}
 
 private:
-	typedef KeyValue<TKey, TValue> MapKeyValue;
-	MapKeyValue *_elements = nullptr;
+	TKey *_elements = nullptr;
 
-	int32_t _insert_element(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
+	int32_t _insert_element(const TKey &p_key, uint32_t p_hash) {
 		if (unlikely(_elements == nullptr)) {
 			// Allocate on demand to save memory.
 
 			uint32_t real_capacity = _capacity_mask + 1;
 			_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static_zeroed(sizeof(RawAHashTableMetadata) * real_capacity));
-			_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
+			_elements = reinterpret_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * (_get_resize_count(_capacity_mask) + 1)));
 		}
 
 		if (unlikely(_size > _get_resize_count(_capacity_mask))) {
 			_resize_and_rehash(_capacity_mask * 2);
 		}
 
-		memnew_placement(&_elements[_size], MapKeyValue(p_key, p_value));
+		memnew_placement(&_elements[_size], TKey(p_key));
 
 		_insert_metadata(p_hash, _size);
 		_size++;
 		return _size - 1;
 	}
 
-	void _init_from(const AHashMap &p_other) {
+	void _init_from(const AHashSet &p_other) {
 		_capacity_mask = p_other._capacity_mask;
 		uint32_t real_capacity = _capacity_mask + 1;
 		_size = p_other._size;
@@ -115,15 +104,15 @@ private:
 		}
 
 		_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static(sizeof(RawAHashTableMetadata) * real_capacity));
-		_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
+		_elements = reinterpret_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * (_get_resize_count(_capacity_mask) + 1)));
 
-		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
+		if constexpr (std::is_trivially_copyable_v<TKey>) {
 			void *destination = _elements;
 			const void *source = p_other._elements;
-			memcpy(destination, source, sizeof(MapKeyValue) * _size);
+			memcpy(destination, source, sizeof(TKey) * _size);
 		} else {
 			for (uint32_t i = 0; i < _size; i++) {
-				memnew_placement(&_elements[i], MapKeyValue(p_other._elements[i]));
+				memnew_placement(&_elements[i], TKey(p_other._elements[i]));
 			}
 		}
 
@@ -146,52 +135,13 @@ public:
 		}
 
 		memset(_metadata, RAHT_EMPTY_HASH, (_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
-		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
 			for (uint32_t i = 0; i < _size; i++) {
-				_elements[i].key.~TKey();
-				_elements[i].value.~TValue();
+				_elements[i].~TKey();
 			}
 		}
 
 		_size = 0;
-	}
-
-	TValue &get(const TKey &p_key) {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		CRASH_COND_MSG(!exists, "AHashMap key not found.");
-		return _elements[element_idx].value;
-	}
-
-	const TValue &get(const TKey &p_key) const {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		CRASH_COND_MSG(!exists, "AHashMap key not found.");
-		return _elements[element_idx].value;
-	}
-
-	const TValue *getptr(const TKey &p_key) const {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-
-		if (exists) {
-			return &_elements[element_idx].value;
-		}
-		return nullptr;
-	}
-
-	TValue *getptr(const TKey &p_key) {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-
-		if (exists) {
-			return &_elements[element_idx].value;
-		}
-		return nullptr;
 	}
 
 	bool has(const TKey &p_key) const {
@@ -218,15 +168,14 @@ public:
 		}
 
 		_metadata[meta_idx].hash = RAHT_EMPTY_HASH;
-		_elements[element_idx].key.~TKey();
-		_elements[element_idx].value.~TValue();
+		_elements[element_idx].~TKey();
 		_size--;
 
 		if (element_idx < _size) {
-			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
+			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(TKey));
 			uint32_t moved_element_idx = 0;
 			uint32_t moved_meta_idx = 0;
-			_lookup_idx(_elements[_size].key, moved_element_idx, moved_meta_idx);
+			_lookup_idx(_elements[_size], moved_element_idx, moved_meta_idx);
 			_metadata[moved_meta_idx].element_idx = element_idx;
 		}
 
@@ -243,8 +192,8 @@ public:
 		uint32_t element_idx = 0;
 		ERR_FAIL_COND_V(_lookup_idx(p_new_key, element_idx, meta_idx), false);
 		ERR_FAIL_COND_V(!_lookup_idx(p_old_key, element_idx, meta_idx), false);
-		MapKeyValue &element = _elements[element_idx];
-		const_cast<TKey &>(element.key) = p_new_key;
+		TKey &element = _elements[element_idx];
+		const_cast<TKey &>(element) = p_new_key;
 
 		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
 		while (_metadata[next_meta_idx].hash != RAHT_EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
@@ -281,67 +230,18 @@ public:
 
 	/** Iterator API **/
 
-	struct ConstIterator {
-		_FORCE_INLINE_ const MapKeyValue &operator*() const {
-			return *pair;
-		}
-		_FORCE_INLINE_ const MapKeyValue *operator->() const {
-			return pair;
-		}
-		_FORCE_INLINE_ ConstIterator &operator++() {
-			pair++;
-			return *this;
-		}
-
-		_FORCE_INLINE_ ConstIterator &operator--() {
-			pair--;
-			if (pair < begin) {
-				pair = end;
-			}
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return pair == b.pair; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return pair != b.pair; }
-
-		_FORCE_INLINE_ explicit operator bool() const {
-			return pair != end;
-		}
-
-		_FORCE_INLINE_ ConstIterator(MapKeyValue *p_key, MapKeyValue *p_begin, MapKeyValue *p_end) {
-			pair = p_key;
-			begin = p_begin;
-			end = p_end;
-		}
-		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
-		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
-			pair = p_it.pair;
-			begin = p_it.begin;
-			end = p_it.end;
-		}
-
-	private:
-		MapKeyValue *pair = nullptr;
-		MapKeyValue *begin = nullptr;
-		MapKeyValue *end = nullptr;
-	};
-
 	struct Iterator {
-		_FORCE_INLINE_ MapKeyValue &operator*() const {
+		_FORCE_INLINE_ const TKey &operator*() const {
 			return *pair;
 		}
-		_FORCE_INLINE_ MapKeyValue *operator->() const {
+		_FORCE_INLINE_ const TKey *operator->() const {
 			return pair;
 		}
 		_FORCE_INLINE_ Iterator &operator++() {
 			pair++;
 			return *this;
 		}
+
 		_FORCE_INLINE_ Iterator &operator--() {
 			pair--;
 			if (pair < begin) {
@@ -357,7 +257,7 @@ public:
 			return pair != end;
 		}
 
-		_FORCE_INLINE_ Iterator(MapKeyValue *p_key, MapKeyValue *p_begin, MapKeyValue *p_end) {
+		_FORCE_INLINE_ Iterator(TKey *p_key, TKey *p_begin, TKey *p_end) {
 			pair = p_key;
 			begin = p_begin;
 			end = p_end;
@@ -374,32 +274,34 @@ public:
 			end = p_it.end;
 		}
 
-		operator ConstIterator() const {
-			return ConstIterator(pair, begin, end);
-		}
-
 	private:
-		MapKeyValue *pair = nullptr;
-		MapKeyValue *begin = nullptr;
-		MapKeyValue *end = nullptr;
+		TKey *pair = nullptr;
+		TKey *begin = nullptr;
+		TKey *end = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	void remove(const Iterator &p_iter) {
+		if (p_iter) {
+			erase(*p_iter);
+		}
+	}
+
+	_FORCE_INLINE_ Iterator begin() const {
 		return Iterator(_elements, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() const {
 		return Iterator(_elements + _size, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ Iterator last() {
+	_FORCE_INLINE_ Iterator last() const {
 		if (unlikely(_size == 0)) {
 			return Iterator(nullptr, nullptr, nullptr);
 		}
 		return Iterator(_elements + _size - 1, _elements, _elements + _size);
 	}
 
-	Iterator find(const TKey &p_key) {
-		uint32_t meta_idx = 0;
+	Iterator find(const TKey &p_key) const {
 		uint32_t element_idx = 0;
+		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
 		if (!exists) {
 			return end();
@@ -407,71 +309,18 @@ public:
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
-	void remove(const Iterator &p_iter) {
-		if (p_iter) {
-			erase(p_iter->key);
-		}
-	}
-
-	_FORCE_INLINE_ ConstIterator begin() const {
-		return ConstIterator(_elements, _elements, _elements + _size);
-	}
-	_FORCE_INLINE_ ConstIterator end() const {
-		return ConstIterator(_elements + _size, _elements, _elements + _size);
-	}
-	_FORCE_INLINE_ ConstIterator last() const {
-		if (unlikely(_size == 0)) {
-			return ConstIterator(nullptr, nullptr, nullptr);
-		}
-		return ConstIterator(_elements + _size - 1, _elements, _elements + _size);
-	}
-
-	ConstIterator find(const TKey &p_key) const {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		if (!exists) {
-			return end();
-		}
-		return ConstIterator(_elements + element_idx, _elements, _elements + _size);
-	}
-
-	/* Indexing */
-
-	const TValue &operator[](const TKey &p_key) const {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		CRASH_COND(!exists);
-		return _elements[element_idx].value;
-	}
-
-	TValue &operator[](const TKey &p_key) {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
-
-		if (exists) {
-			return _elements[element_idx].value;
-		} else {
-			element_idx = _insert_element(p_key, TValue(), hash);
-			return _elements[element_idx].value;
-		}
-	}
-
 	/* Insert */
 
-	Iterator insert(const TKey &p_key, const TValue &p_value) {
+	Iterator insert(const TKey &p_key) {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		uint32_t hash = _hash(p_key);
 		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
 
 		if (!exists) {
-			element_idx = _insert_element(p_key, p_value, hash);
+			element_idx = _insert_element(p_key, hash);
 		} else {
-			_elements[element_idx].value = p_value;
+			_elements[element_idx] = p_key;
 		}
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
@@ -481,17 +330,17 @@ public:
 	// SAFETY: In dev builds, the insertions are checked and causes a crash on bad use.
 	// In release builds, the insertions are not checked, but bad use will cause duplicate
 	// keys, which also affect iterators. Bad use does not cause undefined behavior.
-	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
+	Iterator insert_new(const TKey &p_key) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
-		uint32_t element_idx = _insert_element(p_key, p_value, hash);
+		uint32_t element_idx = _insert_element(p_key, hash);
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
 	}
 
 	/* Array methods. */
 
 	// Unsafe. Changing keys and going outside the bounds of an array can lead to undefined behavior.
-	KeyValue<TKey, TValue> *get_elements_ptr() {
+	TKey *get_elements_ptr() {
 		return _elements;
 	}
 
@@ -506,7 +355,7 @@ public:
 		return element_idx;
 	}
 
-	KeyValue<TKey, TValue> &get_by_index(uint32_t p_index) {
+	TKey &get_by_index(uint32_t p_index) {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, _size);
 		return _elements[p_index];
 	}
@@ -515,12 +364,12 @@ public:
 		if (p_index >= size()) {
 			return false;
 		}
-		return erase(_elements[p_index].key);
+		return erase(_elements[p_index]);
 	}
 
 	/* Constructors */
 
-	AHashMap(AHashMap &&p_other) {
+	AHashSet(AHashSet &&p_other) {
 		_elements = p_other._elements;
 		_metadata = p_other._metadata;
 		_capacity_mask = p_other._capacity_mask;
@@ -532,11 +381,11 @@ public:
 		p_other._size = 0;
 	}
 
-	AHashMap(const AHashMap &p_other) {
+	AHashSet(const AHashSet &p_other) {
 		_init_from(p_other);
 	}
 
-	void operator=(const AHashMap &p_other) {
+	void operator=(const AHashSet &p_other) {
 		if (this == &p_other) {
 			return; // Ignore self assignment.
 		}
@@ -546,28 +395,42 @@ public:
 		_init_from(p_other);
 	}
 
-	AHashMap(uint32_t p_initial_capacity) {
+	bool operator==(const AHashSet &p_other) const {
+		if (_size != p_other._size) {
+			return false;
+		}
+		for (uint32_t i = 0; i < _size; i++) {
+			if (!p_other.has(_elements[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	bool operator!=(const AHashSet &p_other) const {
+		return !(*this == p_other);
+	}
+
+	AHashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
 		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
 	}
-	AHashMap() {
+	AHashSet() {
 		_capacity_mask = (RAHT_INITIAL_CAPACITY - 1);
 	}
 
-	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+	AHashSet(std::initializer_list<TKey> p_init) {
 		reserve(p_init.size());
-		for (const KeyValue<TKey, TValue> &E : p_init) {
-			insert(E.key, E.value);
+		for (const TKey &E : p_init) {
+			insert(E);
 		}
 	}
 
 	void reset() {
 		if (_elements != nullptr) {
-			if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
+			if constexpr (!std::is_trivially_destructible_v<TKey>) {
 				for (uint32_t i = 0; i < _size; i++) {
-					_elements[i].key.~TKey();
-					_elements[i].value.~TValue();
+					_elements[i].~TKey();
 				}
 			}
 			Memory::free_static(_elements);
@@ -578,13 +441,7 @@ public:
 		_size = 0;
 	}
 
-	virtual ~AHashMap() override {
+	virtual ~AHashSet() override {
 		reset();
 	}
 };
-
-extern template class AHashMap<int, int>;
-extern template class AHashMap<String, int>;
-extern template class AHashMap<StringName, StringName>;
-extern template class AHashMap<StringName, Variant>;
-extern template class AHashMap<StringName, int>;
