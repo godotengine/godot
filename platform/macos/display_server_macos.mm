@@ -3552,6 +3552,9 @@ DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver,
 					"If possible, consider updating your macOS version.",
 					"Unable to initialize OpenGL video driver");
 		}
+
+		memdelete(ds);
+		return nullptr;
 	}
 	return ds;
 }
