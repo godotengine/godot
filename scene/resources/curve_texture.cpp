@@ -136,6 +136,8 @@ void CurveTexture::_update() {
 	} else {
 		_texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	RS::get_singleton()->texture_set_path(_texture, get_path());
+
 	_current_texture_mode = texture_mode;
 	_current_width = _width;
 
@@ -336,6 +338,8 @@ void CurveXYZTexture::_update() {
 	} else {
 		_texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	RS::get_singleton()->texture_set_path(_texture, get_path());
+
 	_current_width = _width;
 
 	emit_changed();
