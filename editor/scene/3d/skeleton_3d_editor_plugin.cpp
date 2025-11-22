@@ -567,7 +567,10 @@ void Skeleton3DEditor::create_physical_skeleton() {
 
 						// Create joint between parent of parent.
 						if (parent_parent != -1) {
-							ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
+							// Use HingeJoint with angular constraint enabled for more realistic simulation out of the box,
+							// especially with humanoid characters.
+							ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_HINGE);
+							ur->add_do_method(physical_bone, "set", "joint_constraints/angular_limit_enabled", true);
 						}
 
 						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), physical_bone);
