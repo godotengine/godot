@@ -1211,15 +1211,17 @@ EditorData::~EditorData() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void EditorSelection::_node_removed(Node *p_node) {
-	if (!selection.has(p_node)) {
+	ERR_FAIL_NULL(p_node);
+	ObjectID nid = p_node->get_instance_id();
+	if (!selection.has(nid)) {
 		return;
 	}
 
-	Object *meta = selection[p_node];
+	Object *meta = selection[nid];
 	if (meta) {
 		memdelete(meta);
 	}
-	selection.erase(p_node);
+	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
 }
@@ -1227,7 +1229,8 @@ void EditorSelection::_node_removed(Node *p_node) {
 void EditorSelection::add_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!p_node->is_inside_tree());
-	if (selection.has(p_node)) {
+	ObjectID nid = p_node->get_instance_id();
+	if (selection.has(nid)) {
 		return;
 	}
 
@@ -1240,30 +1243,35 @@ void EditorSelection::add_node(Node *p_node) {
 			break;
 		}
 	}
-	selection[p_node] = meta;
+	selection[nid] = meta;
 
 	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
-	if (!selection.has(p_node)) {
+	ObjectID nid = p_node->get_instance_id();
+	if (!selection.has(nid)) {
 		return;
 	}
 
 	changed = true;
 	node_list_changed = true;
-	Object *meta = selection[p_node];
+	Object *meta = selection[nid];
 	if (meta) {
 		memdelete(meta);
 	}
-	selection.erase(p_node);
+	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {
-	return selection.has(p_node);
+	if (!p_node) {
+		return false;
+	}
+	ObjectID nid = p_node->get_instance_id();
+	return selection.has(nid);
 }
 
 void EditorSelection::_bind_methods() {
@@ -1292,12 +1300,15 @@ void EditorSelection::_update_node_list() {
 	// If the selection does not have the parent of the selected node, then add the node to the node list.
 	// However, if the parent is already selected, then adding this node is redundant as
 	// it is included with the parent, so skip it.
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node *parent = E.key;
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *parent = ObjectDB::get_instance<Node>(E.key);
+		if (!parent) {
+			continue;
+		}
 		parent = parent->get_parent();
 		bool skip = false;
 		while (parent) {
-			if (selection.has(parent)) {
+			if (selection.has(parent->get_instance_id())) {
 				skip = true;
 				break;
 			}
@@ -1334,8 +1345,11 @@ void EditorSelection::_emit_change() {
 TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const Node *E : top_selected_node_list) {
-		ret.push_back(E);
+	for (const ObjectID &nid : top_selected_node_list) {
+		Node *node = ObjectDB::get_instance<Node>(nid);
+		if (node) {
+			ret.push_back(node);
+		}
 	}
 
 	return ret;
@@ -1344,26 +1358,39 @@ TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 TypedArray<Node> EditorSelection::get_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		ret.push_back(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			ret.push_back(node);
+		}
 	}
 
 	return ret;
 }
 
-const List<Node *> &EditorSelection::get_top_selected_node_list() {
+List<Node *> EditorSelection::get_top_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
 		_update_node_list();
 	}
-	return top_selected_node_list;
+	List<Node *> node_list;
+	for (const ObjectID &nid : top_selected_node_list) {
+		Node *node = ObjectDB::get_instance<Node>(nid);
+		if (node) {
+			node_list.push_back(node);
+		}
+	}
+	return node_list;
 }
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
 	List<Node *> node_list;
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		node_list.push_back(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			node_list.push_back(node);
+		}
 	}
 
 	return node_list;
@@ -1371,7 +1398,10 @@ List<Node *> EditorSelection::get_full_selected_node_list() {
 
 void EditorSelection::clear() {
 	while (!selection.is_empty()) {
-		remove_node(selection.begin()->key);
+		Node *node = ObjectDB::get_instance<Node>(selection.begin()->key);
+		if (node) {
+			remove_node(node);
+		}
 	}
 
 	changed = true;
