@@ -587,8 +587,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		if (different_usage) {
 			// Even if the usage of the resource isn't a write usage explicitly, a different usage implies a transition and it should therefore be considered a write.
-			// In the case of buffers however, this is not exactly necessary if the driver does not consider different buffer usages as different states.
-			write_usage = write_usage || bool(resource_tracker->texture_driver_id) || driver_buffers_require_transitions;
+			write_usage = true;
 			resource_tracker->usage = new_resource_usage;
 		}
 
