@@ -34,6 +34,7 @@
 #include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "core/variant/callable.h"
 #include "servers/display/native_menu.h"
 
@@ -53,6 +54,9 @@ class DisplayServer : public Object {
 #endif
 
 	LocalVector<ObjectID> additional_outputs;
+
+protected:
+	AHashMap<int, bool> id_map;
 
 public:
 	_FORCE_INLINE_ static DisplayServer *get_singleton() {
@@ -281,6 +285,9 @@ private:
 
 protected:
 	static bool _get_window_early_clear_override(Color &r_color);
+
+	virtual void kb_map_insert(int new_kb_id);
+	virtual void kb_map_remove(int raw_kb_id);
 
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
