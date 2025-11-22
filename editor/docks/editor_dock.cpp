@@ -67,6 +67,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dock_icon"), &EditorDock::get_dock_icon);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_dock_icon", "get_dock_icon");
 
+	ClassDB::bind_method(D_METHOD("set_force_show_icon", "force"), &EditorDock::set_force_show_icon);
+	ClassDB::bind_method(D_METHOD("get_force_show_icon"), &EditorDock::get_force_show_icon);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_show_icon"), "set_force_show_icon", "get_force_show_icon");
+
 	ClassDB::bind_method(D_METHOD("set_title_color", "color"), &EditorDock::set_title_color);
 	ClassDB::bind_method(D_METHOD("get_title_color"), &EditorDock::get_title_color);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "title_color"), "set_title_color", "get_title_color");
@@ -141,6 +145,14 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 		return;
 	}
 	dock_icon = p_icon;
+	emit_signal("tab_style_changed");
+}
+
+void EditorDock::set_force_show_icon(bool p_force) {
+	if (force_show_icon == p_force) {
+		return;
+	}
+	force_show_icon = p_force;
 	emit_signal("tab_style_changed");
 }
 
