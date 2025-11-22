@@ -35,11 +35,10 @@
 #include "modules/gltf/gltf_defines.h"
 #include "modules/gltf/gltf_document.h"
 
-#include <ufbx.h>
-
-#ifdef UFBX_WRITE_AVAILABLE
+// ufbx_write includes ufbx functionality, so we use ufbx_write.h
+// ufbx.h is in test/ufbx/ directory
+#include "test/ufbx/ufbx.h"
 #include "ufbx_write.h"
-#endif
 
 class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
@@ -56,6 +55,7 @@ public:
 	static String _as_string(const ufbx_string &p_string);
 	static Vector3 _as_vec3(const ufbx_vec3 &p_vector);
 	static String _gen_unique_name(HashSet<String> &unique_names, const String &p_name);
+	static ufbxw_matrix _transform_to_ufbxw_matrix(const Transform3D &p_transform);
 
 public:
 	Error append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, const String &p_base_path = String()) override;
@@ -64,7 +64,7 @@ public:
 
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
-	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
+	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path, int p_format = 0) override;
 
 	void set_naming_version(int p_version);
 	int get_naming_version() const;

@@ -11,16 +11,13 @@ env_fbx = env_modules.Clone()
 thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/ufbx/"
-thirdparty_sources = [thirdparty_dir + "ufbx.c"]
-
-# Add ufbx_write if available
-ufbx_write_dir = "#thirdparty/ufbx_write/"
-ufbx_write_sources = []
-if env.Dir(ufbx_write_dir):
-    ufbx_write_sources = [ufbx_write_dir + "ufbx_write.c"]
-    env_fbx.Prepend(CPPPATH=[ufbx_write_dir])
+# ufbx_write includes ufbx, so we need both
+ufbx_sources = [thirdparty_dir + "test/ufbx/ufbx.c"]
+ufbx_write_sources = [thirdparty_dir + "ufbx_write.c"]
+thirdparty_sources = ufbx_sources + ufbx_write_sources
 
 env_fbx.Prepend(CPPPATH=[thirdparty_dir])
+env_fbx.Prepend(CPPPATH=[thirdparty_dir + "test/ufbx"])
 
 env_thirdparty = env_fbx.Clone()
 env_thirdparty.disable_warnings()
@@ -34,16 +31,14 @@ env_thirdparty.Append(
         "UFBX_NO_INDEX_GENERATION",
         "UFBX_NO_SKINNING_EVALUATION",
         "UFBX_NO_FORMAT_OBJ",
+        "UFBX_HEADER_PATH=<test/ufbx/ufbx.h>",  # ufbx_write.c needs to know where ufbx.h is
     ]
 )
 
-# Define UFBX_WRITE_AVAILABLE if ufbx_write is available
-if ufbx_write_sources:
-    env_thirdparty.Append(CPPDEFINES=["UFBX_WRITE_AVAILABLE"])
+# ufbx_write is now always available since we're using it to replace ufbx
+env_thirdparty.Append(CPPDEFINES=["UFBX_WRITE_AVAILABLE"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
-if ufbx_write_sources:
-    env_thirdparty.add_source_files(thirdparty_obj, ufbx_write_sources)
 env.modules_sources += thirdparty_obj
 
 # Godot source files

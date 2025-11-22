@@ -34,11 +34,14 @@
 #include "fbx_document.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_scene_exporter_fbx_plugin.h"
+#include "editor/editor_scene_exporter_fbx_settings.h"
 #include "editor/editor_scene_importer_fbx2gltf.h"
 #include "editor/editor_scene_importer_ufbx.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
+#include "editor/plugins/editor_plugin.h"
 
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterUFBX> import_fbx;
@@ -72,6 +75,8 @@ void initialize_fbx_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_CLASS(EditorSceneFormatImporterUFBX);
+		GDREGISTER_CLASS(EditorSceneExporterFBXSettings);
+		EditorPlugins::add_by_type<SceneExporterFBXPlugin>();
 
 		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx2gltf/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX2GLTF);

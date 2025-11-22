@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  fbx_state.h                                                           */
+/*  editor_scene_exporter_fbx_plugin.h                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,37 +30,32 @@
 
 #pragma once
 
-#include "modules/gltf/gltf_defines.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/gltf/structures/gltf_skeleton.h"
-#include "modules/gltf/structures/gltf_skin.h"
-#include "modules/gltf/structures/gltf_texture.h"
+#include "../fbx_document.h"
+#include "editor_scene_exporter_fbx_settings.h"
 
-#include "test/ufbx/ufbx.h"
+#include "editor/plugins/editor_plugin.h"
 
-class FBXState : public GLTFState {
-	GDCLASS(FBXState, GLTFState);
-	friend class FBXDocument;
-	friend class SkinTool;
-	friend class GLTFSkin;
+class ConfirmationDialog;
+class EditorFileDialog;
+class EditorInspector;
 
-	// Smart pointer that holds the loaded scene.
-	ufbx_unique_ptr<ufbx_scene> scene;
-	bool allow_geometry_helper_nodes = false;
+class SceneExporterFBXPlugin : public EditorPlugin {
+	GDCLASS(SceneExporterFBXPlugin, EditorPlugin);
 
-	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
-	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex> albedo_transparency_textures;
+	Ref<FBXDocument> _fbx_document;
+	Ref<EditorSceneExporterFBXSettings> _export_settings;
+	String export_path;
 
-	Vector<GLTFSkinIndex> skin_indices;
-	Vector<GLTFSkinIndex> original_skin_indices;
-	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
-	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
-	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)
+	EditorInspector *_settings_inspector = nullptr;
+	ConfirmationDialog *_config_dialog = nullptr;
+	EditorFileDialog *_file_dialog = nullptr;
 
-protected:
-	static void _bind_methods();
+	void _popup_fbx_settings_dialog(const String &p_selected_path);
+	void _popup_fbx_export_dialog();
+	void _export_scene_as_fbx();
 
 public:
-	bool get_allow_geometry_helper_nodes();
-	void set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes);
+	virtual String get_plugin_name() const override;
+	bool has_main_screen() const override;
+	SceneExporterFBXPlugin();
 };

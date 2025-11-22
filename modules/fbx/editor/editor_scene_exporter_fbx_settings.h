@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  fbx_state.h                                                           */
+/*  editor_scene_exporter_fbx_settings.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,37 +30,29 @@
 
 #pragma once
 
-#include "modules/gltf/gltf_defines.h"
-#include "modules/gltf/gltf_state.h"
-#include "modules/gltf/structures/gltf_skeleton.h"
-#include "modules/gltf/structures/gltf_skin.h"
-#include "modules/gltf/structures/gltf_texture.h"
+#include "../fbx_document.h"
 
-#include "test/ufbx/ufbx.h"
+class EditorSceneExporterFBXSettings : public RefCounted {
+	GDCLASS(EditorSceneExporterFBXSettings, RefCounted);
 
-class FBXState : public GLTFState {
-	GDCLASS(FBXState, GLTFState);
-	friend class FBXDocument;
-	friend class SkinTool;
-	friend class GLTFSkin;
-
-	// Smart pointer that holds the loaded scene.
-	ufbx_unique_ptr<ufbx_scene> scene;
-	bool allow_geometry_helper_nodes = false;
-
-	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
-	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex> albedo_transparency_textures;
-
-	Vector<GLTFSkinIndex> skin_indices;
-	Vector<GLTFSkinIndex> original_skin_indices;
-	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
-	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
-	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)
+	String _copyright;
+	double _bake_fps = 30.0;
+	int _naming_version = 2;
+	int _export_format = 0; // 0 = Binary, 1 = ASCII
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool get_allow_geometry_helper_nodes();
-	void set_allow_geometry_helper_nodes(bool p_allow_geometry_helper_nodes);
+	String get_copyright() const;
+	void set_copyright(const String &p_copyright);
+
+	double get_bake_fps() const;
+	void set_bake_fps(const double p_bake_fps);
+
+	int get_naming_version() const;
+	void set_naming_version(const int p_naming_version);
+
+	int get_export_format() const;
+	void set_export_format(const int p_export_format);
 };
