@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main, integration ]
+
+# Cancel any in-flight jobs for the same PR/branch so there's only one active
+# at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci_ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Configure test CMake
+        run: cmake -S test -B build-test
+      - name: Compile tests
+        run: cmake --build build-test -j 4
+      - name: Run tests
+        run: build-test/test/ufbxw_test --verbose
+      - name: Run unit tests
+        run: build-test/unit/ufbxw_unit --verbose
+
+  ci_cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Create temporary directories
+        run: mkdir -p build
+      - name: Compile as C++
+        run: clang -Werror -g -lm -DUFBX_DEV -DUFBXW_DEV ufbx_write.c misc/test_cpp.cpp -o build/test-cpp
+      - name: Run tests
+        run: build/test-cpp
+
