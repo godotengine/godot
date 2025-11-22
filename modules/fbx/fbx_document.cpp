@@ -2487,11 +2487,101 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 }
 
 Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
+#ifdef UFBX_WRITE_AVAILABLE
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
+
+	// First serialize the scene to GLTFState (similar to GLTFDocument)
+	Ref<GLTFState> state = p_state;
+	state->set_base_path(p_path.get_base_dir());
+	state->filename = p_path.get_file();
+
+	// Use parent class to serialize to GLTF format first
+	// This populates the GLTFState with all scene data (nodes, meshes, materials, animations, etc.)
+	Error err = _serialize(state);
+	if (err != OK) {
+		return err;
+	}
+
+	// Now convert GLTFState to FBX using ufbx_write
+	// Note: This is a basic implementation structure. Full implementation would need to:
+	// 1. Convert all GLTF nodes to FBX nodes (including hierarchy)
+	// 2. Convert all GLTF meshes to FBX meshes
+	// 3. Convert all GLTF materials to FBX materials
+	// 4. Convert all GLTF animations to FBX animations
+	// 5. Convert all GLTF textures/images to FBX textures
+	// 6. Handle skeletons and skinning
+	// 7. Handle cameras and lights
+
+	// Initialize ufbx_write options
+	ufbx_write_opts opts = {};
+	opts.format = UFBX_WRITE_FORMAT_FBX_BINARY;
+
+	// Create FBX write scene
+	ufbx_write_scene *write_scene = ufbx_write_scene_create(&opts);
+	if (!write_scene) {
+		return ERR_CANT_CREATE;
+	}
+
+	// Convert GLTF nodes to FBX nodes
+	// This is a simplified implementation - full implementation would handle all node types
+	for (int i = 0; i < state->nodes.size(); i++) {
+		Ref<GLTFNode> gltf_node = state->nodes[i];
+		if (gltf_node.is_null()) {
+			continue;
+		}
+
+		String node_name = gltf_node->get_name();
+		if (node_name.is_empty()) {
+			node_name = "Node" + itos(i);
+		}
+
+		// Create FBX node
+		ufbx_write_node *fbx_node = ufbx_write_node_create(write_scene, node_name.utf8().get_data());
+		if (!fbx_node) {
+			ufbx_write_scene_destroy(write_scene);
+			return ERR_CANT_CREATE;
+		}
+
+		// Set transform
+		Transform3D transform = gltf_node->transform;
+		ufbx_transform fbx_transform = {};
+		fbx_transform.translation = { (float)transform.origin.x, (float)transform.origin.y, (float)transform.origin.z };
+		Quaternion rot = transform.basis.get_rotation_quaternion();
+		fbx_transform.rotation = { (float)rot.x, (float)rot.y, (float)rot.z, (float)rot.w };
+		Vector3 scale = transform.basis.get_scale();
+		fbx_transform.scale = { (float)scale.x, (float)scale.y, (float)scale.z };
+		ufbx_write_node_set_transform(fbx_node, &fbx_transform);
+
+		// TODO: Handle mesh, camera, light, skeleton, etc. based on gltf_node properties
+		// This requires full implementation of:
+		// - Mesh conversion (vertices, indices, UVs, normals, etc.)
+		// - Material conversion
+		// - Camera conversion
+		// - Light conversion
+		// - Skeleton and skinning conversion
+	}
+
+	// Write FBX file
+	ufbx_write_result result = ufbx_write_scene_to_file(write_scene, p_path.utf8().get_data(), &opts);
+	ufbx_write_scene_destroy(write_scene);
+
+	if (result.error_code != UFBX_WRITE_ERROR_NONE) {
+		ERR_PRINT("FBX write error: " + String(result.error_description.data, (int)result.error_description.length));
+		return ERR_FILE_CANT_WRITE;
+	}
+
+	return OK;
+#else
+	ERR_PRINT("FBX writing requires ufbx_write library. Please add ufbx_write files (ufbx_write.h and ufbx_write.c) to thirdparty/ufbx_write/");
 	return ERR_UNAVAILABLE;
+#endif
 }
 
 Error FBXDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
-	return ERR_UNAVAILABLE;
+	// Use parent class implementation to convert Node to GLTFState
+	// This works because FBXDocument inherits from GLTFDocument
+	return GLTFDocument::append_from_scene(p_node, p_state, p_flags);
 }
 
 void FBXDocument::set_naming_version(int p_version) {

@@ -37,6 +37,10 @@
 
 #include <ufbx.h>
 
+#ifdef UFBX_WRITE_AVAILABLE
+#include "ufbx_write.h"
+#endif
+
 class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
 
