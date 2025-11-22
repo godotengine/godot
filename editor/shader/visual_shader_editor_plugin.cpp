@@ -1176,7 +1176,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				if (is_group) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
-					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
+					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_right);
 					remove_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_remove_output_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 
@@ -1386,6 +1386,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression_node->set_ctrl_pressed(expression_box, 0);
 		expression_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		node->add_child(expression_box);
+
+		Control *offset2 = memnew(Control);
+		offset2->set_custom_minimum_size(Vector2(0, 11 * EDSCALE));
+		node->add_child(offset2);
+
 		register_expression_edit(p_id, expression_box);
 
 		Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
