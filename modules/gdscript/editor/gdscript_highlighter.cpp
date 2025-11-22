@@ -793,7 +793,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
-			class_names[info.name] = usertype_color;
+			class_names[E.key] = usertype_color;
 		}
 	}
 

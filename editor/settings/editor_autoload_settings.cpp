@@ -239,24 +239,18 @@ void EditorAutoloadSettings::_autoload_edited() {
 	} else if (column == 2) {
 		updating_autoload = true;
 
-		bool checked = ti->is_checked(2);
 		String base = "autoload/" + ti->get_text(0);
 
 		int order = ProjectSettings::get_singleton()->get_order(base);
-		String scr_path = GLOBAL_GET(base);
 
-		if (scr_path.begins_with("*")) {
-			scr_path = scr_path.substr(1);
-		}
-
-		// Singleton autoloads are represented with a leading "*" in their path.
-		if (checked) {
-			scr_path = "*" + scr_path;
-		}
+		String autoload_path;
+		bool autoload_is_singleton;
+		ProjectSettings::parse_autoload_value(GLOBAL_GET(base), autoload_path, autoload_is_singleton);
+		autoload_is_singleton = ti->is_checked(2);
 
 		undo_redo->create_action(TTR("Toggle Autoload Globals"));
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), base, scr_path);
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), base, ProjectSettings::stringify_autoload_value(autoload_path, autoload_is_singleton));
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), base, GLOBAL_GET(base));
 
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", base, order);
@@ -427,7 +421,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 void EditorAutoloadSettings::init_autoloads() {
 	for (AutoloadInfo &info : autoload_cache) {
-		info.node = _create_autoload(ResourceUID::ensure_path(info.path));
+		info.node = _create_autoload(info.path);
 
 		if (info.node) {
 			Ref<Script> scr = info.node->get_script();
@@ -484,21 +478,13 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 
 		String name = pi.name.get_slicec('/', 1);
-		String scr_path = GLOBAL_GET(pi.name);
-
 		if (name.is_empty()) {
 			continue;
 		}
 
 		AutoloadInfo info;
-		info.is_singleton = scr_path.begins_with("*");
-
-		if (info.is_singleton) {
-			scr_path = scr_path.substr(1);
-		}
-
+		ProjectSettings::parse_autoload_value(GLOBAL_GET(pi.name), info.path, info.is_singleton);
 		info.name = name;
-		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		bool need_to_add = true;
@@ -530,7 +516,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_text(0, name);
 		item->set_editable(0, true);
 
-		item->set_text(1, ResourceUID::ensure_path(scr_path));
+		item->set_text(1, info.path);
 		item->set_selectable(1, true);
 
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
@@ -799,8 +785,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	undo_redo->create_action(TTR("Add Autoload"));
-	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + ResourceUID::get_singleton()->path_to_uid(p_path));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, ProjectSettings::stringify_autoload_value(p_path, true));
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
@@ -862,21 +847,13 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 
 		String name = pi.name.get_slicec('/', 1);
-		String scr_path = GLOBAL_GET(pi.name);
-
 		if (name.is_empty()) {
 			continue;
 		}
 
 		AutoloadInfo info;
-		info.is_singleton = scr_path.begins_with("*");
-
-		if (info.is_singleton) {
-			scr_path = scr_path.substr(1);
-		}
-
+		ProjectSettings::parse_autoload_value(GLOBAL_GET(pi.name), info.path, info.is_singleton);
 		info.name = name;
-		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		if (info.is_singleton) {

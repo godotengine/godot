@@ -493,7 +493,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
 				const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(name);
 				if (!info.path.has_extension(GDScriptLanguage::get_singleton()->get_extension())) {
-					push_error(vformat(R"(Singleton %s is not a GDScript.)", info.name), id);
+					push_error(vformat(R"(Singleton %s is not a GDScript.)", name), id);
 					return ERR_PARSE_ERROR;
 				}
 
@@ -806,8 +806,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			String script_path;
 			if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
 				// Try to get script from scene if possible.
-				if (GDScriptLanguage::get_singleton()->has_any_global_constant(autoload.name)) {
-					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(autoload.name);
+				if (GDScriptLanguage::get_singleton()->has_any_global_constant(first)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(first);
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
 						Ref<GDScript> scr = node->get_script();
