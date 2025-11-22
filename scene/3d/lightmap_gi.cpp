@@ -925,6 +925,12 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	{
 		Vector<MeshesFound> meshes_found;
 		_find_meshes_and_lights(p_from_node ? p_from_node : get_parent(), meshes_found, lights_found, probes_found);
+		for (const NodePath &node_path : additional_nodes) {
+			Node *node = get_node(node_path);
+			if (node) {
+				_find_meshes_and_lights(node, meshes_found, lights_found, probes_found);
+			}
+		}
 
 		if (meshes_found.is_empty()) {
 			return BAKE_ERROR_NO_MESHES;
@@ -1800,6 +1806,21 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+void LightmapGI::set_additional_nodes(const TypedArray<NodePath> &p_additional_nodes) {
+	additional_nodes.clear();
+	for (int i = 0; i < p_additional_nodes.size(); i++) {
+		additional_nodes.append(p_additional_nodes[i]);
+	}
+}
+
+TypedArray<NodePath> LightmapGI::get_additional_nodes() const {
+	TypedArray<NodePath> ret;
+	for (const NodePath &path : additional_nodes) {
+		ret.push_back(path);
+	}
+	return ret;
+}
+
 PackedStringArray LightmapGI::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
@@ -1913,6 +1934,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
+	ClassDB::bind_method(D_METHOD("set_additional_nodes", "additional_nodes"), &LightmapGI::set_additional_nodes);
+	ClassDB::bind_method(D_METHOD("get_additional_nodes"), &LightmapGI::get_additional_nodes);
+
 	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
 
 	ADD_GROUP("Tweaks", "");
@@ -1937,6 +1961,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "additional_nodes", PROPERTY_HINT_NONE, ""), "set_additional_nodes", "get_additional_nodes");
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
