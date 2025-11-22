@@ -136,6 +136,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 
 		bool reading_plural_rows = false;
 		String plural_msgid;
+		String plural_msgid_plural;
 		String plural_msgctxt;
 		HashMap<int, Vector<String>> plural_msgstrs;
 
@@ -183,6 +184,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 					const Vector<String> &msgstrs = plural_msgstrs[E.key];
 					if (!msgstrs.is_empty()) {
 						translation->add_plural_message(plural_msgid, msgstrs, plural_msgctxt);
+						translation->set_hint(plural_msgid, plural_msgctxt, Translation::HINT_PLURAL, plural_msgid_plural);
 					}
 				}
 				plural_msgstrs.clear();
@@ -192,6 +194,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 			if (!reading_plural_rows && !msgid_plural.is_empty()) {
 				reading_plural_rows = true;
 				plural_msgid = msgid;
+				plural_msgid_plural = msgid_plural;
 				plural_msgctxt = msgctxt;
 			}
 
@@ -217,6 +220,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 				const Vector<String> &msgstrs = plural_msgstrs[E.key];
 				if (!msgstrs.is_empty()) {
 					translation->add_plural_message(plural_msgid, msgstrs, plural_msgctxt);
+					translation->set_hint(plural_msgid, plural_msgctxt, Translation::HINT_PLURAL, plural_msgid_plural);
 				}
 			}
 		}

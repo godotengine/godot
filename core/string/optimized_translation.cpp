@@ -50,18 +50,14 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	List<StringName> keys;
 	{
-		List<StringName> raw_keys;
+		List<MessageKey> raw_keys;
 		p_from->get_message_list(&raw_keys);
 
-		for (const StringName &key : raw_keys) {
-			const String key_str = key.operator String();
-			int p = key_str.find_char(0x04);
-			if (p == -1) {
-				keys.push_back(key);
+		for (const MessageKey &key : raw_keys) {
+			if (key.msgctxt.is_empty()) {
+				keys.push_back(key.msgid);
 			} else {
-				const String &msgctxt = key_str.substr(0, p);
-				const String &msgid = key_str.substr(p + 1);
-				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", msgid, msgctxt));
+				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", key.msgid, key.msgctxt));
 			}
 		}
 	}
@@ -319,7 +315,7 @@ Vector<String> OptimizedTranslation::_get_message_list() const {
 	return {};
 }
 
-void OptimizedTranslation::get_message_list(List<StringName> *r_messages) const {
+void OptimizedTranslation::get_message_list(List<MessageKey> *r_messages) const {
 	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
 }
 

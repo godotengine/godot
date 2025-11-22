@@ -97,6 +97,6 @@ public:
 	virtual Vector<String> get_translated_message_list() const override;
 	void generate(const Ref<Translation> &p_from);
 
-	virtual void get_message_list(List<StringName> *r_messages) const override;
+	virtual void get_message_list(List<MessageKey> *r_messages) const override;
 	virtual int get_message_count() const override;
 };
