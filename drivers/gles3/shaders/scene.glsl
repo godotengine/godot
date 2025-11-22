@@ -573,9 +573,13 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	highp vec3 vertex = vertex_angle_attrib_input.xyz * compressed_aabb_size_input + compressed_aabb_position_input;
 
 	highp mat4 model_matrix = world_transform_input;
+	highp mat4 instance_matrix = mat4(1.0);
 #ifdef USE_INSTANCING
-	highp mat4 m = mat4(instance_xform0_input, instance_xform1_input, instance_xform2_input, vec4(0.0, 0.0, 0.0, 1.0));
-	model_matrix = model_matrix * transpose(m);
+	instance_matrix = mat4(instance_xform0_input, instance_xform1_input, instance_xform2_input, vec4(0.0, 0.0, 0.0, 1.0));
+	instance_matrix = transpose(instance_matrix);
+#if !defined(INSTANCE_MATRIX_USED)
+	model_matrix = model_matrix * instance_matrix;
+#endif
 #endif
 
 #ifdef NORMAL_USED

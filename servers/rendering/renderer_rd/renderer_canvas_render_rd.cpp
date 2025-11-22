@@ -1782,6 +1782,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["TAU"] = String::num(Math::TAU);
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
+		actions.renames["INSTANCE_MATRIX"] = "instance_matrix";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 
 		actions.renames["COLOR"] = "color";
@@ -1817,6 +1818,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["sdf_to_screen_uv"] = "sdf_to_screen_uv";
 		actions.renames["screen_uv_to_sdf"] = "screen_uv_to_sdf";
 
+		actions.usage_defines["INSTANCE_MATRIX"] = "#define INSTANCE_MATRIX_USED\n";
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
