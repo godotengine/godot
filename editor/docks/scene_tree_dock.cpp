@@ -3025,6 +3025,9 @@ void SceneTreeDock::_create() {
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, selection.front()->get());
 
+		Vector<Node *> old_nodes;
+		Vector<Node *> new_nodes;
+
 		for (Node *n : selection) {
 			ERR_FAIL_NULL(n);
 
@@ -3033,7 +3036,16 @@ void SceneTreeDock::_create() {
 			ERR_FAIL_COND(!c);
 			Node *new_node = Object::cast_to<Node>(c);
 			ERR_FAIL_NULL(new_node);
-			replace_node(n, new_node);
+
+			old_nodes.push_back(n);
+			new_nodes.push_back(new_node);
+		}
+
+		for (int i = 0; i < old_nodes.size(); i++) {
+			Node *old_node = old_nodes[i];
+			Node *new_node = new_nodes[i];
+
+			replace_node(old_node, new_node);
 		}
 
 		ur->commit_action(false);
