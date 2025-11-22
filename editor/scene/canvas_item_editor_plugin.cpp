@@ -4451,6 +4451,15 @@ void CanvasItemEditor::_notification(int p_what) {
 					viewport->queue_redraw();
 				}
 			}
+
+			// Check if this needs to redraw to clear anything drawn from visible selections now that no selections are visible
+			bool visible_selection = selection.size() > 0;
+			if (had_visible_selection != visible_selection) {
+				if (!visible_selection) {
+					viewport->queue_redraw();
+				}
+				had_visible_selection = visible_selection;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
