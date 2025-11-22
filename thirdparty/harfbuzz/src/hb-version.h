@@ -47,7 +47,7 @@ HB_BEGIN_DECLS
  *
  * The minor component of the library version available at compile-time.
  */
-#define HB_VERSION_MINOR 1
+#define HB_VERSION_MINOR 2
 /**
  * HB_VERSION_MICRO:
  *
@@ -60,7 +60,7 @@ HB_BEGIN_DECLS
  *
  * A string literal containing the library version available at compile-time.
  */
-#define HB_VERSION_STRING "12.1.0"
+#define HB_VERSION_STRING "12.2.0"
 
 /**
  * HB_VERSION_ATLEAST:

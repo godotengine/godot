@@ -90,7 +90,7 @@ struct hb_cache_t
   {
     unsigned int k = key & ((1u<<cache_bits)-1);
     unsigned int v = values[k];
-    if ((key_bits + value_bits - cache_bits == 8 * sizeof (item_t) && v == (unsigned int) -1) ||
+    if ((key_bits + value_bits - cache_bits == 8 * sizeof (item_t) && (item_t) v == (item_t) -1) ||
 	(v >> value_bits) != (key >> cache_bits))
       return false;
     *value = v & ((1u<<value_bits)-1);
