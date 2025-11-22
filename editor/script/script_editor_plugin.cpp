@@ -1463,7 +1463,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			open_find_in_files_dialog("");
 		} break;
 		case REPLACE_IN_FILES: {
-			_on_replace_in_files_requested("");
+			open_find_in_files_dialog("", true);
 		} break;
 		case SEARCH_HELP: {
 			help_search_dialog->popup_dialog();
@@ -2707,8 +2707,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
-	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
-	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
+	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(false));
+	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(true));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 	CodeTextEditor *cte = se->get_code_editor();
@@ -2931,10 +2931,8 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 	_update_script_names();
 }
 
-void ScriptEditor::open_find_in_files_dialog(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->popup_centered();
+void ScriptEditor::open_find_in_files_dialog(const String &p_initial_text, bool p_replace) {
+	find_in_files->open_dialog(p_initial_text, p_replace);
 }
 
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
@@ -4020,13 +4018,6 @@ void ScriptEditor::_script_changed() {
 	SignalsDock::get_singleton()->update_lists();
 }
 
-void ScriptEditor::_on_replace_in_files_requested(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->set_replace_text("");
-	find_in_files_dialog->popup_centered();
-}
-
 void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
 	if (ResourceLoader::exists(fpath)) {
 		Ref<Resource> res = ResourceLoader::load(fpath);
@@ -4113,26 +4104,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 	}
 }
 
-void ScriptEditor::_start_find_in_files(bool with_replace) {
-	FindInFilesPanel *panel = find_in_files->get_panel_for_results(with_replace ? TTR("Replace:") + " " + find_in_files_dialog->get_search_text() : TTR("Find:") + " " + find_in_files_dialog->get_search_text());
-	FindInFiles *f = panel->get_finder();
-
-	f->set_search_text(find_in_files_dialog->get_search_text());
-	f->set_match_case(find_in_files_dialog->is_match_case());
-	f->set_whole_words(find_in_files_dialog->is_whole_words());
-	f->set_folder(find_in_files_dialog->get_folder());
-	f->set_filter(find_in_files_dialog->get_filter());
-	f->set_includes(find_in_files_dialog->get_includes());
-	f->set_excludes(find_in_files_dialog->get_excludes());
-
-	panel->set_with_replace(with_replace);
-	panel->set_replace_text(find_in_files_dialog->get_replace_text());
-	panel->start_search();
-
-	find_in_files->make_visible();
-}
-
-void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &paths) {
+void ScriptEditor::_on_find_in_files_modified_files() {
 	_test_script_times_on_disk();
 	_update_modified_scripts_for_external_editor();
 }
@@ -4521,14 +4493,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	add_child(help_search_dialog);
 	help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
-	find_in_files_dialog = memnew(FindInFilesDialog);
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(false));
-	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, callable_mp(this, &ScriptEditor::_start_find_in_files).bind(true));
-	add_child(find_in_files_dialog);
-
-	find_in_files = memnew(FindInFilesContainer);
-	EditorDockManager::get_singleton()->add_dock(find_in_files);
-	find_in_files->close();
+	find_in_files = memnew(FindInFiles);
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 
@@ -4554,6 +4519,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	register_syntax_highlighter(config_file_syntax_highlighter);
 
 	_update_online_doc();
+}
+
+ScriptEditor::~ScriptEditor() {
+	memdelete(find_in_files);
 }
 
 void ScriptEditorPlugin::_focus_another_editor() {

@@ -249,8 +249,7 @@ public:
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
 
 class EditorScriptCodeCompletionCache;
-class FindInFilesContainer;
-class FindInFilesDialog;
+class FindInFiles;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -364,8 +363,7 @@ class ScriptEditor : public PanelContainer {
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
 
-	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesContainer *find_in_files = nullptr;
+	FindInFiles *find_in_files = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -548,10 +546,8 @@ class ScriptEditor : public PanelContainer {
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
-	void _on_replace_in_files_requested(const String &text);
-	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
-	void _start_find_in_files(bool with_replace);
-	void _on_find_in_files_modified_files(const PackedStringArray &paths);
+	void _on_find_in_files_result_selected(const String &p_path, int p_line_number, int p_begin, int p_end);
+	void _on_find_in_files_modified_files();
 
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
@@ -574,7 +570,7 @@ public:
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
-	void open_find_in_files_dialog(const String &text);
+	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
@@ -624,6 +620,7 @@ public:
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(WindowWrapper *p_wrapper);
+	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
