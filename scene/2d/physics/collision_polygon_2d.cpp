@@ -123,12 +123,15 @@ void CollisionPolygon2D::_notification(int p_what) {
 			collision_object = nullptr;
 		} break;
 
+#ifdef DEBUG_ENABLED
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
+			RenderingServer *rs = RenderingServer::get_singleton();
+			_prepare_debug_canvas_item();
 			if (polygon.size() > 2) {
 #ifdef TOOLS_ENABLED
 				if (build_mode == BUILD_SOLIDS) {
@@ -137,22 +140,22 @@ void CollisionPolygon2D::_notification(int p_what) {
 					Color c(0.4, 0.9, 0.1);
 					for (int i = 0; i < decomp.size(); i++) {
 						c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
-						draw_colored_polygon(decomp[i], c);
+						rs->canvas_item_add_polygon(_get_debug_canvas_item(), decomp[i], Vector<Color>{ c });
 					}
 				}
-#endif
+#endif // TOOLS_ENABLED
 
 				const Color stroke_color = get_tree()->get_debug_collisions_color();
-				draw_polyline(polygon, stroke_color);
+				rs->canvas_item_add_polyline(_get_debug_canvas_item(), polygon, Vector<Color>{ stroke_color });
 				// Draw the last segment.
-				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);
+				rs->canvas_item_add_line(_get_debug_canvas_item(), polygon[polygon.size() - 1], polygon[0], stroke_color);
 			}
 
 			if (one_way_collision) {
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
 				dcol.a = 1.0;
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, dcol, 3);
+				rs->canvas_item_add_line(_get_debug_canvas_item(), Vector2(), line_to, dcol, 3);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts = {
@@ -163,9 +166,10 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 				Vector<Color> cols{ dcol, dcol, dcol };
 
-				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
+				rs->canvas_item_add_primitive(_get_debug_canvas_item(), pts, cols, Vector<Vector2>(), RID()); //small arrow
 			}
 		} break;
+#endif // DEBUG_ENABLED
 	}
 }
 
