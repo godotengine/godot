@@ -47,7 +47,6 @@
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
 #include "editor/docks/filesystem_dock.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -2346,7 +2345,7 @@ void EditorHelp::_update_doc() {
 void EditorHelp::_request_help(const String &p_string) {
 	Error err = _goto_desc(p_string);
 	if (err == OK) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->make_visible();
 	}
 }
 
@@ -4270,7 +4269,7 @@ void EditorHelpBit::_go_to_url(const String &p_what) {
 
 void EditorHelpBit::_go_to_help(const String &p_what) {
 	if (ScriptEditor::get_singleton()) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->make_visible();
 		ScriptEditor::get_singleton()->goto_help(p_what);
 	} else {
 		_go_to_url(p_what);
