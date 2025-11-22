@@ -1274,9 +1274,6 @@ struct DocumentSymbol {
 		if (documentation.length()) {
 			markdown.value += marked_documentation(documentation) + "\n\n";
 		}
-		if (script_path.length()) {
-			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
-		}
 		return markdown;
 	}
 
