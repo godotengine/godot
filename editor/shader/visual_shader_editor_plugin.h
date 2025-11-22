@@ -37,6 +37,7 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_group.h"
 
 class CodeEdit;
 class ColorPicker;
@@ -126,8 +127,10 @@ private:
 	};
 
 	Ref<VisualShader> visual_shader;
+	Ref<VisualShaderGroup> editing_visual_shader_group; // TODO: Do we need this here?
+
 	HashMap<int, Link> links;
-	List<VisualShader::Connection> connections;
+	List<ShaderGraph::Connection> connections;
 
 	Color vector_expanded_color[4];
 
@@ -138,9 +141,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Vector<Color> get_connection_type_colors();
+
 	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
-	void set_connections(const List<VisualShader::Connection> &p_connections);
+	void set_connections(const List<ShaderGraph::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphElement *p_graph_element);
 	void register_output_port(int p_id, int p_port, VisualShaderNode::PortType p_port_type, TextureButton *p_button);
 	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
@@ -175,6 +180,7 @@ public:
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
+	// TODO: Rename and move to VisualShader/ShaderGraph.
 	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 
 	VisualShaderGraphPlugin();
@@ -198,6 +204,13 @@ class VisualShaderEditor : public ShaderEditor {
 	GDCLASS(VisualShaderEditor, ShaderEditor);
 	friend class VisualShaderGraphPlugin;
 
+	Ref<ShaderGraph> editing_shader_graph;
+	Ref<VisualShader> visual_shader; // Could be null (editing just a VisualShaderGroup).
+	Ref<VisualShaderGroup> visual_shader_group; // Could be null.
+
+	Ref<ShaderMaterial> preview_material;
+	Ref<Environment> preview_environment;
+
 	Ref<ConfigFile> vs_editor_cache; // Keeps the graph offsets and zoom levels for each VisualShader that has been edited.
 
 	PopupPanel *property_editor_popup = nullptr;
@@ -207,9 +220,6 @@ class VisualShaderEditor : public ShaderEditor {
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
 	MaterialEditor *material_editor = nullptr;
-	Ref<VisualShader> visual_shader;
-	Ref<ShaderMaterial> preview_material;
-	Ref<Environment> env;
 	String param_filter_name;
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;
@@ -221,6 +231,7 @@ class VisualShaderEditor : public ShaderEditor {
 	MenuButton *varying_button = nullptr;
 	Button *code_preview_button = nullptr;
 	Button *shader_preview_button = nullptr;
+	Button *exit_group_button = nullptr;
 	HFlowContainer *toolbar_hflow = nullptr;
 
 	int last_to_node = -1;
@@ -289,6 +300,9 @@ class VisualShaderEditor : public ShaderEditor {
 	HashMap<String, PropertyInfo> parameter_props;
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
+
+	VisualShaderGroupPortsDialog *group_ports_dialog = nullptr;
+	List<Ref<VisualShaderGroup>> group_edit_stack;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -390,6 +404,7 @@ class VisualShaderEditor : public ShaderEditor {
 	String _get_cache_id_string() const;
 	String _get_cache_key(const String &p_prop_name) const;
 
+	// TODO: This needs a big refactor, but probably later.
 	struct AddOption {
 		String name;
 		String category;
@@ -445,11 +460,17 @@ class VisualShaderEditor : public ShaderEditor {
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
+	void _edit_group_in_graph(int p_idx);
+	void _exit_group();
+	void _update_group_related_nodes(const Ref<VisualShaderGroup> &p_group);
+	void _edit_group_ports_pressed(int p_group_input_node_id, Button *p_button);
+
 	void _show_preview_text();
 	void _preview_close_requested();
 	void _preview_size_changed();
 	void _update_preview();
 	void _update_next_previews(int p_node_id);
+	// TODO: Move to ShaderGraph!
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
 
@@ -551,14 +572,14 @@ class VisualShaderEditor : public ShaderEditor {
 		bool disabled = false;
 	};
 
-	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<VisualShader::Connection> &r_connections);
-	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<VisualShader::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
+	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<ShaderGraph::Connection> &r_connections);
+	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
 
 	void _duplicate_nodes();
 
 	static Vector2 selection_center;
 	static List<CopyItem> copy_items_buffer;
-	static List<VisualShader::Connection> copy_connections_buffer;
+	static List<ShaderGraph::Connection> copy_connections_buffer;
 
 	void _clear_copy_buffer();
 	void _copy_nodes(bool p_cut);
@@ -679,6 +700,7 @@ public:
 	virtual void update_toggle_files_button() override;
 
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
+	Ref<ShaderGraph> get_shader_graph() const { return editing_shader_graph; }
 
 	VisualShaderEditor();
 	~VisualShaderEditor();
@@ -715,9 +737,8 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	TextureRect *checkerboard = nullptr;
-	Ref<VisualShader> shader;
+	Ref<ShaderGraph> shader_graph;
 	Ref<ShaderMaterial> preview_mat;
-	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
 	bool is_valid = false;
@@ -727,7 +748,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<ShaderGraph> &p_shader_graph, Ref<ShaderMaterial> &p_preview_material, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {
