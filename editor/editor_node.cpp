@@ -6076,6 +6076,9 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
+
+		// Initialize default offsets.
+		bottom_panel->load_layout_from_config(default_layout, EDITOR_NODE_CONFIG_SECTION);
 	} else {
 		ep.step(TTR("Loading docks..."), 1, true);
 		editor_dock_manager->load_docks_from_config(config, "docks", true);
@@ -6112,7 +6115,7 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	bottom_panel->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
+	bottom_panel->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION, default_layout);
 
 	// Debugger tab.
 
@@ -8777,6 +8780,8 @@ EditorNode::EditorNode() {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	}
 
+	default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "dock_output_offset", -270);
+
 	_update_layouts_menu();
 
 	// Bottom panels.
@@ -9168,6 +9173,8 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_next", TTRC("Open the next Editor"));
 	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTRC("Open the previous Editor"));
+
+	ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F);
 
 	// Apply setting presets in case the editor_settings file is missing values.
 	EditorSettingsDialog::update_navigation_preset();
