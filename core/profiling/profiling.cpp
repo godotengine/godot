@@ -31,7 +31,122 @@
 #include "profiling.h"
 
 #if defined(GODOT_USE_TRACY)
+// Use the tracy profiler.
+
+#include "core/os/mutex.h"
+#include "core/variant/variant.h"
+
+static bool configured = false;
+static const char *empty_string = "<empty>";
+
+struct TracyInternData {
+	Variant src;
+	CharString utf8;
+
+	uint32_t hash = 0;
+	TracyInternData *prev = nullptr;
+	TracyInternData *next = nullptr;
+	TracyInternData() {}
+};
+
+struct TracyInternTable {
+	constexpr static uint32_t TABLE_BITS = 16;
+	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
+	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
+
+	static inline TracyInternData *table[TABLE_LEN];
+	static inline BinaryMutex mutex;
+	static inline PagedAllocator<TracyInternData> allocator;
+};
+
+const char *intern_string(const String &p_name) {
+	TracyInternData *_data = nullptr;
+
+	ERR_FAIL_COND_V(!configured, empty_string);
+
+	if (p_name.is_empty()) {
+		return empty_string;
+	}
+
+	const uint32_t hash = p_name.hash();
+	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
+
+	MutexLock lock(TracyInternTable::mutex);
+	_data = TracyInternTable::table[idx];
+
+	while (_data) {
+		if (_data->hash == hash && _data->src == p_name) {
+			break;
+		}
+		_data = _data->next;
+	}
+	if (_data) {
+		return _data->utf8.get_data();
+	}
+
+	_data = TracyInternTable::allocator.alloc();
+	_data->src = p_name;
+	_data->utf8 = p_name.utf8(); // Make a new CharString
+	_data->hash = hash;
+	_data->next = TracyInternTable::table[idx];
+	_data->prev = nullptr;
+
+	if (TracyInternTable::table[idx]) {
+		TracyInternTable::table[idx]->prev = _data;
+	}
+	TracyInternTable::table[idx] = _data;
+
+	return _data->utf8.get_data();
+}
+
+const char *intern_string(const CharString &p_name) {
+	TracyInternData *_data = nullptr;
+
+	ERR_FAIL_COND_V(!configured, empty_string);
+
+	if (p_name.is_empty()) {
+		return empty_string;
+	}
+
+	const uint32_t hash = p_name.hash();
+	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
+
+	MutexLock lock(TracyInternTable::mutex);
+	_data = TracyInternTable::table[idx];
+
+	while (_data) {
+		if (_data->hash == hash && _data->utf8 == p_name) {
+			break;
+		}
+		_data = _data->next;
+	}
+	if (_data) {
+		return _data->utf8.get_data();
+	}
+
+	_data = TracyInternTable::allocator.alloc();
+	// _data->src = default constructed variant, perhaps too large?;
+	// I could make it the same variant, but its a value, ...
+	_data->utf8 = p_name; // Make a new CharString
+	_data->hash = hash;
+	_data->next = TracyInternTable::table[idx];
+	_data->prev = nullptr;
+
+	if (TracyInternTable::table[idx]) {
+		TracyInternTable::table[idx]->prev = _data;
+	}
+	TracyInternTable::table[idx] = _data;
+
+	return _data->utf8.get_data();
+}
+
 void godot_init_profiler() {
+	ERR_FAIL_COND(configured);
+	for (uint32_t i = 0; i < TracyInternTable::TABLE_LEN; i++) {
+		TracyInternTable::table[i] = nullptr;
+	}
+	configured = true;
+
 	// Send our first event to tracy; otherwise it doesn't start collecting data.
 	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
 	FrameMark;
