@@ -44,10 +44,12 @@ class Image;
 // Function pointer prototypes.
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+typedef Error (*SaveQOIFunc)(const String &p_path, const Ref<Image> &p_img);
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
 
 typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
+typedef Vector<uint8_t> (*SaveQOIBufferFunc)(const Ref<Image> &p_img);
 
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_data, int p_size);
 typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size, float p_scale);
@@ -202,11 +204,13 @@ public:
 	static inline SaveEXRFunc save_exr_func = nullptr;
 	static inline SaveWebPFunc save_webp_func = nullptr;
 	static inline SaveDDSFunc save_dds_func = nullptr;
+	static inline SaveQOIFunc save_qoi_func = nullptr;
 	static inline SavePNGBufferFunc save_png_buffer_func = nullptr;
 	static inline SaveEXRBufferFunc save_exr_buffer_func = nullptr;
 	static inline SaveJPGBufferFunc save_jpg_buffer_func = nullptr;
 	static inline SaveWebPBufferFunc save_webp_buffer_func = nullptr;
 	static inline SaveDDSBufferFunc save_dds_buffer_func = nullptr;
+	static inline SaveQOIBufferFunc save_qoi_buffer_func = nullptr;
 
 	// External loader function pointers.
 
@@ -220,6 +224,7 @@ public:
 	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _dds_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _exr_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _qoi_mem_loader_func = nullptr;
 
 	// External VRAM compression function pointers.
 
@@ -357,9 +362,11 @@ public:
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
 	Error save_png(const String &p_path) const;
+	Error save_qoi(const String &p_path) const;
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
+	Vector<uint8_t> save_qoi_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
@@ -431,6 +438,7 @@ public:
 	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_qoi_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
