@@ -828,7 +828,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				tex_anim_offset = curve_parameters[PARAM_ANGLE]->sample(tv);
 			}
 
-			p.seed = seed + uint32_t(1) + i + cycle;
+			p.seed = seed + uint32_t(1) + i + cycle * pcount;
 			rng->set_seed(p.seed);
 			p.angle_rand = rng->randf();
 			p.scale_rand = rng->randf();
