@@ -1369,6 +1369,9 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 }
 
 bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
+	if (force_allow_unique) {
+		return true;
+	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
 	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
