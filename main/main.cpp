@@ -54,6 +54,7 @@
 #include "core/os/os.h"
 #include "core/os/process_id.h"
 #include "core/os/time.h"
+#include "core/profiling/performance.h"
 #include "core/profiling/profiling.h"
 #include "core/register_core_types.h"
 #include "core/string/translation_server.h"
@@ -62,7 +63,6 @@
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
-#include "main/performance.h"
 #include "main/splash.gen.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -166,7 +166,6 @@ static ProjectSettings *globals = nullptr;
 static Input *input = nullptr;
 static InputMap *input_map = nullptr;
 static TranslationServer *translation_server = nullptr;
-static Performance *performance = nullptr;
 static PackedData *packed_data = nullptr;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data = nullptr;
@@ -1067,9 +1066,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	register_core_settings(); //here globals are present
 
 	translation_server = memnew(TranslationServer);
-	performance = memnew(Performance);
-	GDREGISTER_CLASS(Performance);
-	engine->add_singleton(Engine::Singleton("Performance", performance));
 
 	// Only flush stdout in debug builds by default, as spamming `print()` will
 	// decrease performance if this is enabled.
@@ -2940,9 +2936,6 @@ error:
 
 	EngineDebugger::deinitialize();
 
-	if (performance) {
-		memdelete(performance);
-	}
 	if (input_map) {
 		memdelete(input_map);
 	}
@@ -5108,9 +5101,9 @@ bool Main::iteration() {
 		}
 
 		Engine::get_singleton()->_fps = frames;
-		performance->set_process_time(USEC_TO_SEC(process_max));
-		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
-		performance->set_navigation_process_time(USEC_TO_SEC(navigation_process_max));
+		Performance::get_singleton()->set_process_time(USEC_TO_SEC(process_max));
+		Performance::get_singleton()->set_physics_process_time(USEC_TO_SEC(physics_process_max));
+		Performance::get_singleton()->set_navigation_process_time(USEC_TO_SEC(navigation_process_max));
 		process_max = 0;
 		physics_process_max = 0;
 		navigation_process_max = 0;
@@ -5316,9 +5309,6 @@ void Main::cleanup(bool p_force) {
 
 	if (packed_data) {
 		memdelete(packed_data);
-	}
-	if (performance) {
-		memdelete(performance);
 	}
 	if (input_map) {
 		memdelete(input_map);

@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/profiling/performance.h"
 #include "scene/main/node.h" // IWYU pragma: keep. Needed to bind `Node *` arg.
 #include "servers/navigation_2d/navigation_server_2d_dummy.h"
 
@@ -664,7 +665,45 @@ NavigationServer2D *NavigationServer2DManager::create_dummy_server_callback() {
 	return memnew(NavigationServer2DDummy);
 }
 
+static double _navigation_server_2d_monitor_callback(Performance::Monitor p_monitor) {
+	switch (p_monitor) {
+		case Performance::Monitor::NAVIGATION_ACTIVE_MAPS:
+		case Performance::Monitor::NAVIGATION_2D_ACTIVE_MAPS:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_ACTIVE_MAPS);
+		case Performance::Monitor::NAVIGATION_REGION_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_REGION_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_REGION_COUNT);
+		case Performance::Monitor::NAVIGATION_AGENT_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_AGENT_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_AGENT_COUNT);
+		case Performance::Monitor::NAVIGATION_LINK_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_LINK_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_LINK_COUNT);
+		case Performance::Monitor::NAVIGATION_POLYGON_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_POLYGON_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_POLYGON_COUNT);
+		case Performance::Monitor::NAVIGATION_EDGE_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_EDGE_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_EDGE_COUNT);
+		case Performance::Monitor::NAVIGATION_EDGE_MERGE_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_EDGE_MERGE_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_EDGE_MERGE_COUNT);
+		case Performance::Monitor::NAVIGATION_EDGE_CONNECTION_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_EDGE_CONNECTION_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_EDGE_CONNECTION_COUNT);
+		case Performance::Monitor::NAVIGATION_EDGE_FREE_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_EDGE_FREE_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_EDGE_FREE_COUNT);
+		case Performance::Monitor::NAVIGATION_OBSTACLE_COUNT:
+		case Performance::Monitor::NAVIGATION_2D_OBSTACLE_COUNT:
+			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::ProcessInfo::INFO_OBSTACLE_COUNT);
+		default:
+			return 0; // Unreachable.
+	}
+}
+
 NavigationServer2DManager::NavigationServer2DManager() {
+	Performance::get_singleton()->_navigation_server_2d_monitor_callback = _navigation_server_2d_monitor_callback;
 }
 
 NavigationServer2DManager::~NavigationServer2DManager() {

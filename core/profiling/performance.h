@@ -31,19 +31,12 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/templates/hash_map.h"
 #include "core/variant/type_info.h"
-
-#define PERF_WARN_OFFLINE_FUNCTION
-#define PERF_WARN_PROCESS_SYNC
-
-template <typename T>
-class TypedArray;
 
 class Performance : public Object {
 	GDCLASS(Performance, Object);
 
-	static Performance *singleton;
+	static inline Performance *singleton = nullptr;
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
@@ -51,12 +44,9 @@ class Performance : public Object {
 	static void _bind_compatibility_methods();
 #endif
 
-	int _get_node_count() const;
-	int _get_orphan_node_count() const;
-
-	double _process_time;
-	double _physics_process_time;
-	double _navigation_process_time;
+	double _process_time = 0;
+	double _physics_process_time = 0;
+	double _navigation_process_time = 0;
 
 public:
 	enum Monitor {
@@ -84,7 +74,6 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		AUDIO_OUTPUT_LATENCY,
-		// Deprecated, use the 2D/3D specific ones instead.
 		NAVIGATION_ACTIVE_MAPS,
 		NAVIGATION_REGION_COUNT,
 		NAVIGATION_AGENT_COUNT,
@@ -110,7 +99,6 @@ public:
 		NAVIGATION_2D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_2D_EDGE_FREE_COUNT,
 		NAVIGATION_2D_OBSTACLE_COUNT,
-#ifndef _3D_DISABLED
 		NAVIGATION_3D_ACTIVE_MAPS,
 		NAVIGATION_3D_REGION_COUNT,
 		NAVIGATION_3D_AGENT_COUNT,
@@ -121,8 +109,7 @@ public:
 		NAVIGATION_3D_EDGE_CONNECTION_COUNT,
 		NAVIGATION_3D_EDGE_FREE_COUNT,
 		NAVIGATION_3D_OBSTACLE_COUNT,
-#endif // _3D_DISABLED
-		MONITOR_MAX
+		MONITOR_MAX,
 	};
 
 	enum MonitorType {
@@ -131,6 +118,15 @@ public:
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_PERCENTAGE,
 	};
+
+	using BuiltinMonitorCallback = double (*)(Monitor);
+	BuiltinMonitorCallback _audio_server_monitor_callback = nullptr;
+	BuiltinMonitorCallback _navigation_server_2d_monitor_callback = nullptr;
+	BuiltinMonitorCallback _navigation_server_3d_monitor_callback = nullptr;
+	BuiltinMonitorCallback _physics_server_2d_monitor_callback = nullptr;
+	BuiltinMonitorCallback _physics_server_3d_monitor_callback = nullptr;
+	BuiltinMonitorCallback _rendering_server_monitor_callback = nullptr;
+	BuiltinMonitorCallback _scene_tree_monitor_callback = nullptr;
 
 	double get_monitor(Monitor p_monitor) const;
 	String get_monitor_name(Monitor p_monitor) const;
@@ -153,6 +149,7 @@ public:
 	static Performance *get_singleton() { return singleton; }
 
 	Performance();
+	~Performance();
 
 private:
 	class MonitorCall {
@@ -168,7 +165,7 @@ private:
 	};
 
 	HashMap<StringName, MonitorCall> _monitor_map;
-	uint64_t _monitor_modification_time;
+	uint64_t _monitor_modification_time = 0;
 };
 
 VARIANT_ENUM_CAST(Performance::Monitor);

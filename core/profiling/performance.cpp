@@ -31,32 +31,11 @@
 #include "performance.h"
 #include "performance.compat.inc"
 
-#include "core/config/engine.h"
+#include "core/io/resource.h"
 #include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
-#include "scene/main/node.h"
-#include "scene/main/scene_tree.h"
-#include "servers/audio/audio_server.h"
-#include "servers/rendering/rendering_server.h"
-
-#ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_2d/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
-
-#ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_3d/navigation_server_3d.h"
-#endif // NAVIGATION_3D_DISABLED
-
-#ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_2d/physics_server_2d.h"
-#endif // PHYSICS_2D_DISABLED
-
-#ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_3d/physics_server_3d.h"
-#endif // PHYSICS_3D_DISABLED
-
-Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
@@ -85,14 +64,16 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDER_VIDEO_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_TEXTURE_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_BUFFER_MEM_USED);
+#ifndef PHYSICS_2D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	BIND_ENUM_CONSTANT(NAVIGATION_ACTIVE_MAPS);
@@ -143,28 +124,9 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONITOR_TYPE_PERCENTAGE);
 }
 
-int Performance::_get_node_count() const {
-	MainLoop *ml = OS::get_singleton()->get_main_loop();
-	SceneTree *sml = Object::cast_to<SceneTree>(ml);
-	if (!sml) {
-		return 0;
-	}
-	return sml->get_node_count();
-}
-
-int Performance::_get_orphan_node_count() const {
-#ifdef DEBUG_ENABLED
-	const int total_node_count = Node::total_node_count.get();
-	const int orphan_node_count = total_node_count - _get_node_count();
-	return orphan_node_count;
-#else
-	return 0;
-#endif
-}
-
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
-	static const char *names[MONITOR_MAX] = {
+	static constexpr const char *names[MONITOR_MAX] = {
 		PNAME("time/fps"),
 		PNAME("time/process"),
 		PNAME("time/physics_process"),
@@ -189,7 +151,6 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("physics_3d/collision_pairs"),
 		PNAME("physics_3d/islands"),
 		PNAME("audio/driver/output_latency"),
-#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		PNAME("navigation/active_maps"),
 		PNAME("navigation/regions"),
 		PNAME("navigation/agents"),
@@ -200,13 +161,11 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation/edges_connected"),
 		PNAME("navigation/edges_free"),
 		PNAME("navigation/obstacles"),
-#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		PNAME("pipeline/compilations_canvas"),
 		PNAME("pipeline/compilations_mesh"),
 		PNAME("pipeline/compilations_surface"),
 		PNAME("pipeline/compilations_draw"),
 		PNAME("pipeline/compilations_specialization"),
-#ifndef NAVIGATION_2D_DISABLED
 		PNAME("navigation_2d/active_maps"),
 		PNAME("navigation_2d/regions"),
 		PNAME("navigation_2d/agents"),
@@ -217,8 +176,6 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation_2d/edges_connected"),
 		PNAME("navigation_2d/edges_free"),
 		PNAME("navigation_2d/obstacles"),
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
 		PNAME("navigation_3d/active_maps"),
 		PNAME("navigation_3d/regions"),
 		PNAME("navigation_3d/agents"),
@@ -229,7 +186,6 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation_3d/edges_connected"),
 		PNAME("navigation_3d/edges_free"),
 		PNAME("navigation_3d/obstacles"),
-#endif // NAVIGATION_3D_DISABLED
 	};
 	static_assert(std_size(names) == MONITOR_MAX);
 
@@ -237,8 +193,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 }
 
 double Performance::get_monitor(Monitor p_monitor) const {
-	int info = 0;
-
+	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, 0);
 	switch (p_monitor) {
 		case TIME_FPS:
 			return Engine::get_singleton()->get_frames_per_second();
@@ -258,208 +213,103 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT:
 			return ResourceCache::get_cached_resource_count();
+
 		case OBJECT_NODE_COUNT:
-			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
-			return _get_orphan_node_count();
+			DEV_ASSERT(_scene_tree_monitor_callback != nullptr);
+			return _scene_tree_monitor_callback(p_monitor);
+
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
 		case RENDER_TOTAL_DRAW_CALLS_IN_FRAME:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TEXTURE_MEM_USED);
 		case RENDER_BUFFER_MEM_USED:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_BUFFER_MEM_USED);
 		case PIPELINE_COMPILATIONS_CANVAS:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
 		case PIPELINE_COMPILATIONS_MESH:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
 		case PIPELINE_COMPILATIONS_SURFACE:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
 		case PIPELINE_COMPILATIONS_DRAW:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
 		case PIPELINE_COMPILATIONS_SPECIALIZATION:
-			return RS::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+			DEV_ASSERT(_rendering_server_monitor_callback != nullptr);
+			return _rendering_server_monitor_callback(p_monitor);
+
 #ifndef PHYSICS_2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
-			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS:
-			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
-			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
-#else
-		case PHYSICS_2D_ACTIVE_OBJECTS:
-			return 0;
-		case PHYSICS_2D_COLLISION_PAIRS:
-			return 0;
-		case PHYSICS_2D_ISLAND_COUNT:
-			return 0;
+			DEV_ASSERT(_physics_server_2d_monitor_callback != nullptr);
+			return _physics_server_2d_monitor_callback(p_monitor);
 #endif // PHYSICS_2D_DISABLED
+
 #ifndef PHYSICS_3D_DISABLED
 		case PHYSICS_3D_ACTIVE_OBJECTS:
-			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
-			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
-			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
-#else
-		case PHYSICS_3D_ACTIVE_OBJECTS:
-			return 0;
-		case PHYSICS_3D_COLLISION_PAIRS:
-			return 0;
-		case PHYSICS_3D_ISLAND_COUNT:
-			return 0;
+			DEV_ASSERT(_physics_server_3d_monitor_callback != nullptr);
+			return _physics_server_3d_monitor_callback(p_monitor);
 #endif // PHYSICS_3D_DISABLED
 
 		case AUDIO_OUTPUT_LATENCY:
-			return AudioServer::get_singleton()->get_output_latency();
+			DEV_ASSERT(_audio_server_monitor_callback != nullptr);
+			return _audio_server_monitor_callback(p_monitor);
 
-			// Deprecated, use the 2D/3D specific ones instead.
+#if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 		case NAVIGATION_ACTIVE_MAPS:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_ACTIVE_MAPS);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_REGION_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_REGION_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_REGION_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_AGENT_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_AGENT_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AGENT_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_LINK_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_LINK_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_LINK_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_POLYGON_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_POLYGON_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_POLYGON_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_EDGE_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_EDGE_MERGE_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_MERGE_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_MERGE_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_EDGE_CONNECTION_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_CONNECTION_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_CONNECTION_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
-
 		case NAVIGATION_EDGE_FREE_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_FREE_COUNT);
+		case NAVIGATION_OBSTACLE_COUNT: {
+			double info = 0;
+#ifndef NAVIGATION_3D_DISABLED
+			DEV_ASSERT(_navigation_server_2d_monitor_callback != nullptr);
+			info += _navigation_server_2d_monitor_callback(p_monitor);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
+			DEV_ASSERT(_navigation_server_3d_monitor_callback != nullptr);
+			info += _navigation_server_3d_monitor_callback(p_monitor);
 #endif // NAVIGATION_3D_DISABLED
 			return info;
-
-		case NAVIGATION_OBSTACLE_COUNT:
-#ifndef NAVIGATION_2D_DISABLED
-			info = NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_OBSTACLE_COUNT);
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-			info += NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
-#endif // NAVIGATION_3D_DISABLED
-			return info;
+		} break;
+#endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 
 #ifndef NAVIGATION_2D_DISABLED
 		case NAVIGATION_2D_ACTIVE_MAPS:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_ACTIVE_MAPS);
 		case NAVIGATION_2D_REGION_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_REGION_COUNT);
 		case NAVIGATION_2D_AGENT_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_AGENT_COUNT);
 		case NAVIGATION_2D_LINK_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_LINK_COUNT);
 		case NAVIGATION_2D_POLYGON_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_POLYGON_COUNT);
 		case NAVIGATION_2D_EDGE_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_COUNT);
 		case NAVIGATION_2D_EDGE_MERGE_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_MERGE_COUNT);
 		case NAVIGATION_2D_EDGE_CONNECTION_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_CONNECTION_COUNT);
 		case NAVIGATION_2D_EDGE_FREE_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_EDGE_FREE_COUNT);
 		case NAVIGATION_2D_OBSTACLE_COUNT:
-			return NavigationServer2D::get_singleton()->get_process_info(NavigationServer2D::INFO_OBSTACLE_COUNT);
+			DEV_ASSERT(_navigation_server_2d_monitor_callback != nullptr);
+			return _navigation_server_2d_monitor_callback(p_monitor);
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
 		case NAVIGATION_3D_ACTIVE_MAPS:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS);
 		case NAVIGATION_3D_REGION_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_REGION_COUNT);
 		case NAVIGATION_3D_AGENT_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AGENT_COUNT);
 		case NAVIGATION_3D_LINK_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_LINK_COUNT);
 		case NAVIGATION_3D_POLYGON_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_POLYGON_COUNT);
 		case NAVIGATION_3D_EDGE_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_COUNT);
 		case NAVIGATION_3D_EDGE_MERGE_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_MERGE_COUNT);
 		case NAVIGATION_3D_EDGE_CONNECTION_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_CONNECTION_COUNT);
 		case NAVIGATION_3D_EDGE_FREE_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
 		case NAVIGATION_3D_OBSTACLE_COUNT:
-			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
+			DEV_ASSERT(_navigation_server_2d_monitor_callback != nullptr);
+			return _navigation_server_2d_monitor_callback(p_monitor);
 #endif // NAVIGATION_3D_DISABLED
 
-		default: {
-		}
+		default:
+			return 0;
 	}
-
-	return 0;
 }
 
 Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const {
@@ -515,7 +365,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#ifndef _3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -526,10 +375,8 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#endif // _3D_DISABLED
-
 	};
-	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
+	static_assert(std_size(types) == MONITOR_MAX);
 
 	return types[p_monitor];
 }
@@ -604,11 +451,12 @@ uint64_t Performance::get_monitor_modification_time() {
 }
 
 Performance::Performance() {
-	_process_time = 0;
-	_physics_process_time = 0;
-	_navigation_process_time = 0;
-	_monitor_modification_time = 0;
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+}
+Performance::~Performance() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 Performance::MonitorCall::MonitorCall(Performance::MonitorType p_type, const Callable &p_callable, const Vector<Variant> &p_arguments) {

@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
+#include "core/profiling/performance.h"
 #include "core/variant/typed_array.h"
 
 PhysicsServer2D *PhysicsServer2D::singleton = nullptr;
@@ -900,6 +901,19 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(INFO_ISLAND_COUNT);
 }
 
+static double _physics_server_2d_monitor_callback(Performance::Monitor p_monitor) {
+	switch (p_monitor) {
+		case Performance::Monitor::PHYSICS_2D_ACTIVE_OBJECTS:
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::ProcessInfo::INFO_ACTIVE_OBJECTS);
+		case Performance::Monitor::PHYSICS_2D_COLLISION_PAIRS:
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::ProcessInfo::INFO_COLLISION_PAIRS);
+		case Performance::Monitor::PHYSICS_2D_ISLAND_COUNT:
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::ProcessInfo::INFO_ACTIVE_OBJECTS);
+		default:
+			return 0; // Unreachable.
+	}
+}
+
 PhysicsServer2D::PhysicsServer2D() {
 	singleton = this;
 
@@ -919,6 +933,8 @@ PhysicsServer2D::PhysicsServer2D() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater"), 0.3);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_constraint_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.2);
+
+	Performance::get_singleton()->_physics_server_2d_monitor_callback = _physics_server_2d_monitor_callback;
 }
 
 PhysicsServer2D::~PhysicsServer2D() {

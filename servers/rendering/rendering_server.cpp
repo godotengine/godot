@@ -35,6 +35,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/profiling/performance.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -3652,6 +3653,35 @@ TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() cons
 	return gsp;
 }
 
+static double _rendering_server_monitor_callback(Performance::Monitor p_monitor) {
+	switch (p_monitor) {
+		case Performance::Monitor::RENDER_TOTAL_OBJECTS_IN_FRAME:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+		case Performance::Monitor::RENDER_TOTAL_PRIMITIVES_IN_FRAME:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+		case Performance::Monitor::RENDER_TOTAL_DRAW_CALLS_IN_FRAME:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+		case Performance::Monitor::RENDER_VIDEO_MEM_USED:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_VIDEO_MEM_USED);
+		case Performance::Monitor::RENDER_TEXTURE_MEM_USED:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_TEXTURE_MEM_USED);
+		case Performance::Monitor::RENDER_BUFFER_MEM_USED:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_BUFFER_MEM_USED);
+		case Performance::Monitor::PIPELINE_COMPILATIONS_CANVAS:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
+		case Performance::Monitor::PIPELINE_COMPILATIONS_MESH:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
+		case Performance::Monitor::PIPELINE_COMPILATIONS_SURFACE:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
+		case Performance::Monitor::PIPELINE_COMPILATIONS_DRAW:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
+		case Performance::Monitor::PIPELINE_COMPILATIONS_SPECIALIZATION:
+			return RenderingServer::get_singleton()->get_rendering_info(RSE::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+		default:
+			return 0; // Unreachable.
+	}
+}
+
 void RenderingServer::init() {
 	// These are overrides, even if they are false Godot will still
 	// import the texture formats that the host platform needs.
@@ -3821,6 +3851,8 @@ void RenderingServer::init() {
 		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
 	}
 #endif
+
+	Performance::get_singleton()->_rendering_server_monitor_callback = _rendering_server_monitor_callback;
 }
 
 RenderingServer::~RenderingServer() {
