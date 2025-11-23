@@ -219,7 +219,7 @@ public:
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
