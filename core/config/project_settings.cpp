@@ -339,7 +339,19 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
+		if (p_name.operator String().begins_with("autoload_prepend/")) {
+			String node_name = p_name.operator String().get_slicec('/', 1);
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1).simplify_path();
+			} else {
+				autoload.path = path.simplify_path();
+			}
+			add_autoload(autoload, true);
+		} else if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
@@ -1468,9 +1480,16 @@ const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_a
 	return autoloads;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert) {
 	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
+	if (p_front_insert) {
+		if (autoloads.has(p_autoload.name)) {
+			autoloads.erase(p_autoload.name);
+		}
+		autoloads.insert(p_autoload.name, p_autoload, true);
+	} else {
+		autoloads[p_autoload.name] = p_autoload;
+	}
 }
 
 void ProjectSettings::remove_autoload(const StringName &p_autoload) {
