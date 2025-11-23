@@ -953,7 +953,7 @@ Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 		return nullptr;
 	}
 
-	return EditorHelpBitTooltip::show_tooltip(const_cast<ConnectionsDockTree *>(this), p_text);
+	return EditorHelpBitTooltip::make_tooltip(const_cast<ConnectionsDockTree *>(this), p_text);
 }
 
 struct _ConnectionsDockMethodInfoSort {

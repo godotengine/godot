@@ -380,7 +380,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static Control *show_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
+	// The returned control is an orphan node, which is to make the standard tooltip invisible.
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
 
 	void popup_under_cursor();
 

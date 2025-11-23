@@ -1397,7 +1397,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	}
 
 	if (!symbol.is_empty() || !prologue.is_empty()) {
-		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
+		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
 	}
 
 	return nullptr;
@@ -1780,7 +1780,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 		return nullptr;
 	}
 
-	return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorCategory *>(this), p_text);
+	return EditorHelpBitTooltip::make_tooltip(const_cast<EditorInspectorCategory *>(this), p_text);
 }
 
 void EditorInspectorCategory::set_as_favorite() {
@@ -2290,7 +2290,7 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	}
 
 	if (!symbol.is_empty() || !prologue.is_empty()) {
-		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
+		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
 	}
 
 	return nullptr;
