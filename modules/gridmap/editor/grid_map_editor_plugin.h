@@ -246,6 +246,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_clipboard_data();
 	void _update_paste_indicator();
 	void _do_paste();
+	void _show_viewports_transform_gizmo(bool p_value);
 	void _update_selection();
 	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
 	AABB _get_selection() const;

@@ -30,6 +30,7 @@
 
 #include "grid_map_editor_plugin.h"
 
+#include "core/math/basis.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -136,7 +137,7 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
 			Basis r;
-			real_t rotation = Math_PI / (node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? 2.0 : 3.0);
+			real_t rotation = Math::PI / (node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? 2.0 : 3.0);
 
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
@@ -153,7 +154,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_X: {
 			Basis r;
-			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math_PI / 2.0) : Math_PI;
+			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math::PI / 2.0) : Math::PI;
 
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
@@ -170,7 +171,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
 			Basis r;
-			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math_PI / 2.0) : Math_PI;
+			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math::PI / 2.0) : Math::PI;
 
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
@@ -186,7 +187,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
 			Basis r;
-			real_t rotation = Math_PI / (node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? 2.0 : 3.0);
+			real_t rotation = Math::PI / (node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? 2.0 : 3.0);
 
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
@@ -198,12 +199,12 @@ void GridMapEditor::_menu_option(int p_option) {
 				for (int i = 0; i < cells.size(); i++) {
 					Vector3i cell = cells[i];
 					r = node->get_basis_with_orthogonal_index(node->get_cell_item_orientation(cell));
-					r.rotate(rotation_axis, rotation_angle);
+					r.rotate(Vector3(0, 1, 0), rotation);
 					node->set_cell_item(cell, node->get_cell_item(cell), node->get_orthogonal_index_from_basis(r));
 				}
 			} else {
 				r = node->get_basis_with_orthogonal_index(cursor_rot);
-				r.rotate(rotation_axis, rotation_angle);
+				r.rotate(Vector3(0, 1, 0), rotation);
 				cursor_rot = node->get_orthogonal_index_from_basis(r);
 				_update_cursor_transform();
 			}
@@ -215,8 +216,9 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
 			Basis r;
-			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math_PI / 2.0) : Math_PI;
+			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math::PI / 2.0) : Math::PI;
 
+			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
 				r.rotate(Vector3(1, 0, 0), rotation);
 				paste_orientation = node->get_orthogonal_index_from_basis(r);
@@ -231,7 +233,7 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
 			Basis r;
-			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math_PI / 2.0) : Math_PI;
+			real_t rotation = node->get_cell_shape() == GridMap::CELL_SHAPE_SQUARE ? (Math::PI / 2.0) : Math::PI;
 
 			if (input_action == INPUT_PASTE) {
 				r = node->get_basis_with_orthogonal_index(paste_orientation);
@@ -895,8 +897,6 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
-	Ref<InputEventKey> k = p_event;
-
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
 			if (k->get_keycode() == Key::ESCAPE) {
@@ -1219,7 +1219,7 @@ void GridMapEditor::update_grid() {
 			active_grid_instance = grid_instance[2];
 			edit_plane.normal = Vector3(SQRT3_2, 0, -0.5).normalized();
 			cell_depth = 1.5 * cell_size.x;
-			grid_transform.rotate(Vector3(0, 1, 0), -Math_PI / 3.0);
+			grid_transform.rotate(Vector3(0, 1, 0), -Math::PI / 3.0);
 			// offset the edit grid on even numbered floors by half a cell
 			grid_transform.translate_local(Vector3(is_even_floor * SQRT3_2 * cell_size.x, 0, 0));
 			menu_axis = MENU_OPTION_Q_AXIS;
@@ -1235,7 +1235,7 @@ void GridMapEditor::update_grid() {
 			active_grid_instance = grid_instance[2];
 			edit_plane.normal = Vector3(SQRT3_2, 0, 0.5).normalized();
 			cell_depth = 1.5 * cell_size.x;
-			grid_transform.rotate(Vector3(0, 1, 0), Math_PI / 3.0);
+			grid_transform.rotate(Vector3(0, 1, 0), Math::PI / 3.0);
 			grid_transform.translate_local(Vector3(is_even_floor * SQRT3_2 * cell_size.x, 0, 0));
 			menu_axis = MENU_OPTION_S_AXIS;
 			break;
@@ -1291,10 +1291,10 @@ void GridMapEditor::_draw_hex_grid(RID p_mesh_id, const Vector3 &p_cell_size) {
 
 	Vector<Vector3> grid_points;
 	TypedArray<Vector3i> cells = node->local_region_to_map(
-			Vector3i(-GRID_CURSOR_SIZE * Math_SQRT3 * p_cell_size.x,
+			Vector3i(-GRID_CURSOR_SIZE * Math::SQRT3 * p_cell_size.x,
 					0,
 					-GRID_CURSOR_SIZE * 1.625 * p_cell_size.x),
-			Vector3i(GRID_CURSOR_SIZE * Math_SQRT3 * p_cell_size.x,
+			Vector3i(GRID_CURSOR_SIZE * Math::SQRT3 * p_cell_size.x,
 					0,
 					GRID_CURSOR_SIZE * 1.625 * p_cell_size.x));
 	for (const Vector3i cell : cells) {
@@ -1400,7 +1400,7 @@ void GridMapEditor::_draw_grids(const Vector3 &p_cell_size) {
 			break;
 		case GridMap::CELL_SHAPE_HEXAGON: {
 			real_t radius = p_cell_size.x;
-			Vector3 cell_size = Vector3(Math_SQRT3 * radius, p_cell_size.y, Math_SQRT3 * radius);
+			Vector3 cell_size = Vector3(Math::SQRT3 * radius, p_cell_size.y, Math::SQRT3 * radius);
 			_draw_hex_r_axis_grid(grid_mesh[0], p_cell_size);
 			_draw_hex_grid(grid_mesh[1], p_cell_size);
 			_draw_plane_grid(grid_mesh[2], Vector3(1, 0, 0), Vector3(0, 1, 0), cell_size);
@@ -1775,9 +1775,6 @@ GridMapEditor::GridMapEditor() {
 
 
 	options = memnew(MenuButton);
-	spatial_editor_hb->add_child(options);
-	spatial_editor_hb->hide();
-
 	options->set_text(TTR("Grid Map"));
 	_update_options_menu();
 
@@ -2022,6 +2019,19 @@ GridMapEditor::GridMapEditor() {
 
 	edit_axis = AXIS_Y;
 	edit_plane = Plane();
+
+	cursor_inner_mat.instantiate();
+	cursor_inner_mat->set_albedo(Color(default_color, 0.2));
+	cursor_inner_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	cursor_inner_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	cursor_inner_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+
+	cursor_outer_mat.instantiate();
+	cursor_outer_mat->set_albedo(Color(default_color, 0.8));
+	cursor_outer_mat->set_on_top_of_alpha();
+	cursor_outer_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	cursor_outer_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	cursor_outer_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	inner_mat.instantiate();
 	inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));

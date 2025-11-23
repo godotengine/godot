@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/templates/a_hash_map.h"
 #include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -730,7 +731,7 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 
 	// convert x/z point into axial hex coordinates
 	// https://www.redblobgames.com/grids/hexagons/#pixel-to-hex
-	real_t q = (Math_SQRT3 / 3 * p_local_position.x - 1.0 / 3 * p_local_position.z) / cell_size.x;
+	real_t q = (Math::SQRT3 / 3 * p_local_position.x - 1.0 / 3 * p_local_position.z) / cell_size.x;
 	real_t r = (2.0 / 3 * p_local_position.z) / cell_size.x;
 	Vector2i hex = axial_round(q, r);
 
@@ -753,7 +754,7 @@ Vector3 GridMap::map_to_local(const Vector3i &p_map_position) const {
 	// convert axial hex coordinates to a point
 	// https://www.redblobgames.com/grids/hexagons/#hex-to-pixel
 	Vector3 local;
-	local.x = cell_size.x * (Math_SQRT3 * p_map_position.x + SQRT3_2 * p_map_position.z);
+	local.x = cell_size.x * (Math::SQRT3 * p_map_position.x + SQRT3_2 * p_map_position.z);
 	local.y = p_map_position.y * cell_size.y + offset.y;
 	local.z = cell_size.x * (3.0 / 2 * p_map_position.z);
 	return local;

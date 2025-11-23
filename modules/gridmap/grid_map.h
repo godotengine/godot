@@ -34,7 +34,7 @@
 #include "scene/resources/3d/mesh_library.h"
 
 // SQRT(3)/2; used both in the editor and the GridMap.  Due to the division, it
-// didn't fit the pattern of other Math_SQRTN defines, so I'm putting it here.
+// didn't fit the pattern of other Math::SQRTN defines, so I'm putting it here.
 #define SQRT3_2 0.8660254037844386
 
 class NavigationMesh;
@@ -349,4 +349,3 @@ public:
 };
 VARIANT_ENUM_CAST(GridMap::CellShape);
 
-#endif // GRID_MAP_H

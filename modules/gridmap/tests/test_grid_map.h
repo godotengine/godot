@@ -56,19 +56,19 @@ TEST_CASE("[SceneTree][GridMap] hex cell set_cell_size()") {
 		CHECK_MESSAGE(index == (c), #p " center not in expected cell");                \
 		index = map.local_to_map((p) + Vector3(0, 0, 0.499));                          \
 		CHECK_MESSAGE(index == (c), #p " east edge not in expected cell");             \
-		index = map.local_to_map((p) + Vector3(Math_SQRT3 / 2.0 - 0.001, 0, 0.499));   \
+		index = map.local_to_map((p) + Vector3(Math::SQRT3 / 2.0 - 0.001, 0, 0.499));   \
 		CHECK_MESSAGE(index == (c), #p " northeast vertex not in expected cell");      \
 		index = map.local_to_map((p) + Vector3(0, 0, 0.999));                          \
 		CHECK_MESSAGE(index == (c), #p " north vertex not in expected cell");          \
-		index = map.local_to_map((p) + Vector3(-Math_SQRT3 / 2.0 + 0.001, 0, 0.499));  \
+		index = map.local_to_map((p) + Vector3(-Math::SQRT3 / 2.0 + 0.001, 0, 0.499));  \
 		CHECK_MESSAGE(index == (c), #p " northwest vertex not in expected cell");      \
 		index = map.local_to_map((p) + Vector3(0, 0, -0.499));                         \
 		CHECK_MESSAGE(index == (c), #p " west edge not in expected cell");             \
-		index = map.local_to_map((p) + Vector3(-Math_SQRT3 / 2.0 + 0.001, 0, -0.499)); \
+		index = map.local_to_map((p) + Vector3(-Math::SQRT3 / 2.0 + 0.001, 0, -0.499)); \
 		CHECK_MESSAGE(index == (c), #p " southwest vertex not in expected cell");      \
 		index = map.local_to_map((p) + Vector3(0, 0, -0.99));                          \
 		CHECK_MESSAGE(index == (c), #p " south vertex not in expected cell");          \
-		index = map.local_to_map((p) + Vector3(Math_SQRT3 / 2.0 - 0.001, 0, -0.49));   \
+		index = map.local_to_map((p) + Vector3(Math::SQRT3 / 2.0 - 0.001, 0, -0.49));   \
 		CHECK_MESSAGE(index == (c), #p " southeast vertex not in expected cell");      \
 	}
 
@@ -84,15 +84,15 @@ TEST_CASE("[SceneTree][GridMap] local_to_map() for hex cells") {
 	// south two rows
 	CHECK_HEX_BOUNDARIES(Vector3(0, 0, -3), Vector3i(1, 0, -2));
 	// east one cell
-	CHECK_HEX_BOUNDARIES(Vector3(Math_SQRT3, 0, 0), Vector3i(1, 0, 0));
+	CHECK_HEX_BOUNDARIES(Vector3(Math::SQRT3, 0, 0), Vector3i(1, 0, 0));
 	// west one cell
-	CHECK_HEX_BOUNDARIES(Vector3(-Math_SQRT3, 0, 0), Vector3i(-1, 0, 0));
+	CHECK_HEX_BOUNDARIES(Vector3(-Math::SQRT3, 0, 0), Vector3i(-1, 0, 0));
 	// northeast one cell
-	CHECK_HEX_BOUNDARIES(Vector3(Math_SQRT3 / 2, 0, 1.5), Vector3i(0, 0, 1));
+	CHECK_HEX_BOUNDARIES(Vector3(Math::SQRT3 / 2, 0, 1.5), Vector3i(0, 0, 1));
 	// northwest one cell
-	CHECK_HEX_BOUNDARIES(Vector3(-Math_SQRT3 / 2, 0, 1.5), Vector3i(-1, 0, 1));
+	CHECK_HEX_BOUNDARIES(Vector3(-Math::SQRT3 / 2, 0, 1.5), Vector3i(-1, 0, 1));
 	// southwest one cell
-	CHECK_HEX_BOUNDARIES(Vector3(-Math_SQRT3 / 2, 0, -1.5), Vector3i(0, 0, -1));
+	CHECK_HEX_BOUNDARIES(Vector3(-Math::SQRT3 / 2, 0, -1.5), Vector3i(0, 0, -1));
 }
 
 TEST_CASE("[SceneTree][GridMap] map_to_local() for hex cells") {
@@ -103,12 +103,12 @@ TEST_CASE("[SceneTree][GridMap] map_to_local() for hex cells") {
 	CHECK(map.map_to_local(Vector3i(0, 0, 0)) == Vector3(0, 0.5, 0));
 	CHECK(map.map_to_local(Vector3i(-1, 0, 2)) == Vector3(0, 0.5, 3));
 	CHECK(map.map_to_local(Vector3i(1, 0, -2)) == Vector3(0, 0.5, -3));
-	CHECK(map.map_to_local(Vector3i(1, 0, 0)) == Vector3(Math_SQRT3, 0.5, 0));
-	CHECK(map.map_to_local(Vector3i(-1, 0, 0)) == Vector3(-Math_SQRT3, 0.5, 0));
-	CHECK(map.map_to_local(Vector3i(0, 0, 1)) == Vector3(Math_SQRT3 / 2, 0.5, 1.5));
-	CHECK(map.map_to_local(Vector3i(-1, 0, 1)) == Vector3(-Math_SQRT3 / 2, 0.5, 1.5));
-	CHECK(map.map_to_local(Vector3i(-1, 0, 1)) == Vector3(-Math_SQRT3 / 2, 0.5, 1.5));
-	CHECK(map.map_to_local(Vector3i(0, 0, -1)) == Vector3(-Math_SQRT3 / 2, 0.5, -1.5));
+	CHECK(map.map_to_local(Vector3i(1, 0, 0)) == Vector3(Math::SQRT3, 0.5, 0));
+	CHECK(map.map_to_local(Vector3i(-1, 0, 0)) == Vector3(-Math::SQRT3, 0.5, 0));
+	CHECK(map.map_to_local(Vector3i(0, 0, 1)) == Vector3(Math::SQRT3 / 2, 0.5, 1.5));
+	CHECK(map.map_to_local(Vector3i(-1, 0, 1)) == Vector3(-Math::SQRT3 / 2, 0.5, 1.5));
+	CHECK(map.map_to_local(Vector3i(-1, 0, 1)) == Vector3(-Math::SQRT3 / 2, 0.5, 1.5));
+	CHECK(map.map_to_local(Vector3i(0, 0, -1)) == Vector3(-Math::SQRT3 / 2, 0.5, -1.5));
 
 	CHECK(map.map_to_local(Vector3i(0, 1, 0)) == Vector3(0, 1.5, 0));
 	CHECK(map.map_to_local(Vector3i(0, -1, 0)) == Vector3(0, -0.5, 0));
@@ -206,7 +206,7 @@ TEST_CASE("[SceneTree][GridMap] map_to_local() with hex cells") {
 	CHECK(cells.size() == 1);
 
 	// three cells along the x-axis
-	cells = map.local_region_to_map(Vector3(0, 0, 0), Vector3(Math_SQRT3 * 2, 0, 0));
+	cells = map.local_region_to_map(Vector3(0, 0, 0), Vector3(Math::SQRT3 * 2, 0, 0));
 	CHECK(cells.has(Vector3i(0, 0, 0)));
 	CHECK(cells.has(Vector3i(1, 0, 0)));
 	CHECK(cells.has(Vector3i(2, 0, 0)));
@@ -235,7 +235,7 @@ TEST_CASE("[SceneTree][GridMap] map_to_local() with hex cells") {
 	CHECK(cells.size() == 3);
 
 	// square region around the origin
-	cells = map.local_region_to_map(Vector3(-Math_SQRT3, 0, -1), Vector3(Math_SQRT3, 0, 1));
+	cells = map.local_region_to_map(Vector3(-Math::SQRT3, 0, -1), Vector3(Math::SQRT3, 0, 1));
 	CHECK(cells.has(Vector3i(0, 0, 0)));
 	CHECK(cells.has(Vector3i(0, 0, 1)));
 	CHECK(cells.has(Vector3i(0, 0, -1)));
