@@ -35,6 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_uid_database.h"
 #include "core/math/random_pcg.h"
 
 // These constants are off by 1, causing the 'z' and '9' characters never to be used.
@@ -124,6 +125,7 @@ ResourceUID::ID ResourceUID::create_id() {
 		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
 		if (!exists) {
+			UIDDB::get_singleton()->record_uid((uint64_t)id);
 			return id;
 		}
 	}
@@ -146,6 +148,7 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 			break;
 		}
 	}
+	UIDDB::get_singleton()->record_uid((uint64_t)id, p_path);
 	return id;
 }
 
