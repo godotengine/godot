@@ -219,7 +219,9 @@ public:
 	virtual void update_memory_info() override;
 
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override;
+	virtual uint32_t get_video_adapter_id() const override;
 	virtual String get_video_adapter_name() const override;
+	virtual uint32_t get_video_adapter_vendor_id() const override;
 	virtual String get_video_adapter_vendor() const override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
 	virtual String get_video_adapter_api_version() const override;

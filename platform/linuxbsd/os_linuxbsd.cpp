@@ -325,8 +325,8 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton() == nullptr) {
-		return Vector<String>();
+	if (RenderingServer::get_singleton() == nullptr || RSG::utilities == nullptr) {
+		return Vector<String>({ "", "" });
 	}
 
 	static Vector<String> info;
@@ -334,10 +334,11 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		return info;
 	}
 
-	const uint32_t vendor_id = RenderingDevice::get_singleton()->get_device_vendor_id();
-	const uint32_t device_id = RenderingDevice::get_singleton()->get_device_id();
+	const uint32_t vendor_id = RSG::utilities->get_video_adapter_vendor_id();
+	const uint32_t device_id = RSG::utilities->get_video_adapter_id();
 	if (vendor_id == 0x0 || device_id == 0x0) {
-		return Vector<String>();
+		info = Vector<String>({ "", "" }); // FIXME: improve previous logic and use as fallback for gles3.
+		return info;
 	}
 	String vendor_device_id_mapping = String(String::num_uint64(vendor_id, 16) + ":" + String::num_uint64(device_id, 16));
 
