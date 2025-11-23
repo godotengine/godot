@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "core/profiling/performance.h"
 #include "core/templates/hash_map.h"
-#include "main/performance.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
