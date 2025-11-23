@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+#include "core/profiling/performance.h"
 
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 
@@ -526,6 +527,19 @@ void PhysicsServer3D::_bind_methods() {
 #endif
 }
 
+static double _physics_server_3d_monitor_callback(Performance::Monitor p_monitor) {
+	switch (p_monitor) {
+		case Performance::Monitor::PHYSICS_3D_ACTIVE_OBJECTS:
+			return PhysicsServer3D::get_singleton()->get_process_info(PS3DE::ProcessInfo::INFO_ACTIVE_OBJECTS);
+		case Performance::Monitor::PHYSICS_3D_COLLISION_PAIRS:
+			return PhysicsServer3D::get_singleton()->get_process_info(PS3DE::ProcessInfo::INFO_COLLISION_PAIRS);
+		case Performance::Monitor::PHYSICS_3D_ISLAND_COUNT:
+			return PhysicsServer3D::get_singleton()->get_process_info(PS3DE::ProcessInfo::INFO_ISLAND_COUNT);
+		default:
+			return 0; // Unreachable.
+	}
+}
+
 PhysicsServer3D::PhysicsServer3D() {
 	singleton = this;
 
@@ -544,6 +558,8 @@ PhysicsServer3D::PhysicsServer3D() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.05);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.001,0.1,0.001,or_greater"), 0.01);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
+
+	Performance::get_singleton()->_physics_server_3d_monitor_callback = _physics_server_3d_monitor_callback;
 }
 
 PhysicsServer3D::~PhysicsServer3D() {
