@@ -32,7 +32,8 @@ def get_opts():
         ('ios_exceptions', 'Enable exceptions', 'no'),
         ('ios_triple', 'Triple for ios toolchain', ''),
         ('ios_sim', 'Build simulator binary', 'no'),
-        ('use_lto', 'Use link time optimization', 'no')
+        ('use_lto', 'Use link time optimization', 'no'),
+        ('separate_debug_symbols', 'Extract debug symbols in .dSYM archive', False),
     ]
 
 
