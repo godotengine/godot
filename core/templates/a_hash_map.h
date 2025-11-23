@@ -36,10 +36,6 @@
 
 #include <initializer_list>
 
-class String;
-class StringName;
-class Variant;
-
 /**
  * An array-based implementation of a hash map. See parent class RawAHashTable for details.
  *
@@ -582,9 +578,3 @@ public:
 		reset();
 	}
 };
-
-extern template class AHashMap<int, int>;
-extern template class AHashMap<String, int>;
-extern template class AHashMap<StringName, StringName>;
-extern template class AHashMap<StringName, Variant>;
-extern template class AHashMap<StringName, int>;
