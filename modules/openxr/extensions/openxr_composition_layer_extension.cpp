@@ -365,6 +365,50 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_border_color(const C
 	swapchain_state_is_dirty = true;
 }
 
+void OpenXRCompositionLayerExtension::CompositionLayer::set_pose_space(PoseSpace p_pose_space) {
+	pose_space = p_pose_space;
+}
+
+void OpenXRCompositionLayerExtension::CompositionLayer::set_eye_visibility(EyeVisibility p_eye_visibility) {
+	XrEyeVisibility eye_visibility;
+
+	switch (p_eye_visibility) {
+		case EYE_VISIBILITY_BOTH:
+			eye_visibility = XR_EYE_VISIBILITY_BOTH;
+			break;
+
+		case EYE_VISIBILITY_LEFT:
+			eye_visibility = XR_EYE_VISIBILITY_LEFT;
+			break;
+
+		case EYE_VISIBILITY_RIGHT:
+			eye_visibility = XR_EYE_VISIBILITY_RIGHT;
+			break;
+
+		default:
+			eye_visibility = XR_EYE_VISIBILITY_BOTH;
+			break;
+	}
+
+	switch (composition_layer.type) {
+		case XR_TYPE_COMPOSITION_LAYER_QUAD:
+			composition_layer_quad.eyeVisibility = eye_visibility;
+			break;
+
+		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR:
+			composition_layer_cylinder.eyeVisibility = eye_visibility;
+			break;
+
+		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR:
+			composition_layer_equirect.eyeVisibility = eye_visibility;
+			break;
+
+		default:
+			ERR_PRINT(vformat("%s does not support setting eye visibility.", composition_layer.type));
+			break;
+	}
+}
+
 void OpenXRCompositionLayerExtension::CompositionLayer::set_quad_size(const Size2 &p_size) {
 	ERR_FAIL_COND(composition_layer.type != XR_TYPE_COMPOSITION_LAYER_QUAD);
 	composition_layer_quad.size = { (float)p_size.x, (float)p_size.y };
@@ -476,20 +520,37 @@ XrCompositionLayerBaseHeader *OpenXRCompositionLayerExtension::CompositionLayer:
 		return nullptr;
 	}
 
+	// Update the layer's reference space
+	switch (pose_space) {
+		case POSE_WORLD_LOCKED: {
+			layer_reference_space = openxr_api->get_play_space();
+			break;
+		}
+
+		case POSE_HEAD_LOCKED: {
+			layer_reference_space = openxr_api->get_view_space();
+			break;
+		}
+		default: {
+			return nullptr;
+			break;
+		}
+	}
+
 	// Update the layer struct for the swapchain.
 	switch (composition_layer.type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
-			composition_layer_quad.space = openxr_api->get_play_space();
+			composition_layer_quad.space = layer_reference_space;
 			composition_layer_quad.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
-			composition_layer_cylinder.space = openxr_api->get_play_space();
+			composition_layer_cylinder.space = layer_reference_space;
 			composition_layer_cylinder.subImage = subimage;
 		} break;
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
-			composition_layer_equirect.space = openxr_api->get_play_space();
+			composition_layer_equirect.space = layer_reference_space;
 			composition_layer_equirect.subImage = subimage;
 		} break;
 

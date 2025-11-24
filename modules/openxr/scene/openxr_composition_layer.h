@@ -78,6 +78,19 @@ public:
 		SWIZZLE_ONE,
 	};
 
+	// Must be identical to PoseSpace enum definition in OpenXRCompositionLayerExtension.
+	enum PoseSpace {
+		POSE_WORLD_LOCKED,
+		POSE_HEAD_LOCKED,
+	};
+
+	// Must be identical to EyeVisibility enum definition in OpenXRCompositionLayerExtension.
+	enum EyeVisibility {
+		EYE_VISIBILITY_BOTH,
+		EYE_VISIBILITY_LEFT,
+		EYE_VISIBILITY_RIGHT,
+	};
+
 protected:
 	RID composition_layer;
 
@@ -106,6 +119,8 @@ private:
 	Swizzle alpha_swizzle = SWIZZLE_ALPHA;
 	float max_anisotropy = 1.0;
 	Color border_color = { 0.0, 0.0, 0.0, 0.0 };
+	PoseSpace pose_space = POSE_WORLD_LOCKED;
+	EyeVisibility eye_visibility = EYE_VISIBILITY_BOTH;
 
 	bool _should_use_fallback_node();
 	void _create_fallback_node();
@@ -203,6 +218,12 @@ public:
 	void set_border_color(const Color &p_color);
 	Color get_border_color() const;
 
+	void set_pose_space(PoseSpace p_pose_space);
+	PoseSpace get_pose_space() const;
+
+	void set_eye_visibility(EyeVisibility p_eye_visibility);
+	EyeVisibility get_eye_visibility() const;
+
 	virtual PackedStringArray get_configuration_warnings() const override;
 
 	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const;
@@ -214,3 +235,5 @@ VARIANT_ENUM_CAST(OpenXRCompositionLayer::Filter)
 VARIANT_ENUM_CAST(OpenXRCompositionLayer::MipmapMode)
 VARIANT_ENUM_CAST(OpenXRCompositionLayer::Wrap)
 VARIANT_ENUM_CAST(OpenXRCompositionLayer::Swizzle)
+VARIANT_ENUM_CAST(OpenXRCompositionLayer::PoseSpace)
+VARIANT_ENUM_CAST(OpenXRCompositionLayer::EyeVisibility)

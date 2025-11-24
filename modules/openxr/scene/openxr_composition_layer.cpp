@@ -146,6 +146,12 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_border_color", "color"), &OpenXRCompositionLayer::set_border_color);
 	ClassDB::bind_method(D_METHOD("get_border_color"), &OpenXRCompositionLayer::get_border_color);
 
+	ClassDB::bind_method(D_METHOD("set_pose_space", "pose_space"), &OpenXRCompositionLayer::set_pose_space);
+	ClassDB::bind_method(D_METHOD("get_pose_space"), &OpenXRCompositionLayer::get_pose_space);
+
+	ClassDB::bind_method(D_METHOD("set_eye_visibility", "eye_visibility"), &OpenXRCompositionLayer::set_eye_visibility);
+	ClassDB::bind_method(D_METHOD("get_eye_visibility"), &OpenXRCompositionLayer::get_eye_visibility);
+
 	ClassDB::bind_method(D_METHOD("intersects_ray", "origin", "direction"), &OpenXRCompositionLayer::intersects_ray);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
@@ -155,6 +161,8 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_hole_punch", PROPERTY_HINT_NONE, ""), "set_enable_hole_punch", "get_enable_hole_punch");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pose_space", PROPERTY_HINT_ENUM, "World,View (Head-locked)"), "set_pose_space", "get_pose_space");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "eye_visibility", PROPERTY_HINT_ENUM, "Both,Left,Right"), "set_eye_visibility", "get_eye_visibility");
 
 	ADD_GROUP("Swapchain State", "swapchain_state_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "swapchain_state_min_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Cubic"), "set_min_filter", "get_min_filter");
@@ -190,6 +198,13 @@ void OpenXRCompositionLayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SWIZZLE_ALPHA);
 	BIND_ENUM_CONSTANT(SWIZZLE_ZERO);
 	BIND_ENUM_CONSTANT(SWIZZLE_ONE);
+
+	BIND_ENUM_CONSTANT(POSE_WORLD_LOCKED);
+	BIND_ENUM_CONSTANT(POSE_HEAD_LOCKED);
+
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_BOTH);
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_LEFT);
+	BIND_ENUM_CONSTANT(EYE_VISIBILITY_RIGHT);
 }
 
 bool OpenXRCompositionLayer::_should_use_fallback_node() {
@@ -606,6 +621,35 @@ Color OpenXRCompositionLayer::get_border_color() const {
 	return border_color;
 }
 
+void OpenXRCompositionLayer::set_pose_space(PoseSpace p_pose_space) {
+	if (pose_space == p_pose_space) {
+		return;
+	}
+	pose_space = p_pose_space;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_pose_space(composition_layer, (OpenXRCompositionLayerExtension::PoseSpace)p_pose_space);
+	}
+	update_configuration_warnings();
+}
+
+OpenXRCompositionLayer::PoseSpace OpenXRCompositionLayer::get_pose_space() const {
+	return pose_space;
+}
+
+void OpenXRCompositionLayer::set_eye_visibility(EyeVisibility p_eye_visibility) {
+	if (eye_visibility == p_eye_visibility) {
+		return;
+	}
+	eye_visibility = p_eye_visibility;
+	if (composition_layer_extension) {
+		composition_layer_extension->composition_layer_set_eye_visibility(composition_layer, (OpenXRCompositionLayerExtension::EyeVisibility)p_eye_visibility);
+	}
+}
+
+OpenXRCompositionLayer::EyeVisibility OpenXRCompositionLayer::get_eye_visibility() const {
+	return eye_visibility;
+}
+
 Ref<JavaObject> OpenXRCompositionLayer::get_android_surface() {
 	if (composition_layer_extension) {
 		return composition_layer_extension->composition_layer_get_android_surface(composition_layer);
@@ -772,6 +816,10 @@ PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {
 
 	if (enable_hole_punch && get_sort_order() >= 0) {
 		warnings.push_back(RTR("Hole punching won't work as expected unless the sort order is less than zero."));
+	}
+
+	if (pose_space == POSE_HEAD_LOCKED && get_position().z >= 0) {
+		warnings.push_back(RTR("OpenXR composition layers must have a negative Z position to be visible when using view space."));
 	}
 
 	return warnings;
