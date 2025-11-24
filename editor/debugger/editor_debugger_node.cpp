@@ -40,9 +40,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
@@ -61,6 +61,17 @@ void _for_all(TabContainer *p_node, const Func &p_func) {
 EditorDebuggerNode *EditorDebuggerNode::singleton = nullptr;
 
 EditorDebuggerNode::EditorDebuggerNode() {
+	set_name(TTRC("Debugger"));
+	set_icon_name("Debug");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Dock"), KeyModifierMask::ALT | Key::D));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
+	set_global(false);
+	set_transient(true);
+
+	set_clip_contents(false);
+	_update_margins();
+
 	if (!singleton) {
 		singleton = this;
 	}
@@ -332,13 +343,6 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			// TODO: Replace this hack once EditorDebuggerNode is converted to a dock. It should be in the constructor.
-			EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
-			if (parent) {
-				parent->set_clip_contents(false);
-				_update_margins();
-			}
-
 			_update_debug_options();
 			initializing = false;
 		} break;
@@ -440,29 +444,25 @@ void EditorDebuggerNode::_update_errors() {
 		last_error_count = error_count;
 		last_warning_count = warning_count;
 
-		// TODO: Replace this hack once EditorDebuggerNode is converted to a dock.
-		EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
-		if (!parent) {
-			return;
-		}
-
 		if (error_count == 0 && warning_count == 0) {
-			set_name(TTR("Debugger"));
-			parent->set_dock_icon(Ref<Texture2D>());
-			parent->set_title_color(Color(0, 0, 0, 0));
+			set_title("");
+			set_dock_icon(Ref<Texture2D>());
+			set_title_color(Color(0, 0, 0, 0));
+			set_force_show_icon(false);
 		} else {
-			set_name(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			set_title(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
-				parent->set_dock_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
+				set_dock_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
 				// Use error color to represent the highest level of severity reported.
-				parent->set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else if (error_count >= 1) {
-				parent->set_dock_icon(get_editor_theme_icon(SNAME("Error")));
-				parent->set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				set_dock_icon(get_editor_theme_icon(SNAME("Error")));
+				set_title_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else {
-				parent->set_dock_icon(get_editor_theme_icon(SNAME("Warning")));
-				parent->set_title_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				set_dock_icon(get_editor_theme_icon(SNAME("Warning")));
+				set_title_color(get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			}
+			set_force_show_icon(true);
 		}
 	}
 }
@@ -564,7 +564,7 @@ void EditorDebuggerNode::_break_state_changed() {
 	const bool breaked = get_current_debugger()->is_breaked();
 	const bool can_debug = get_current_debugger()->is_debuggable();
 	if (breaked) { // Show debugger.
-		EditorNode::get_bottom_panel()->make_item_visible(this);
+		EditorDockManager::get_singleton()->focus_dock(this);
 	}
 
 	// Update script menu.

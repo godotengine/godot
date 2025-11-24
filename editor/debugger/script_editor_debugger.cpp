@@ -1070,12 +1070,7 @@ void ScriptEditorDebugger::_update_reason_content_height() {
 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
-			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
-			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
-			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("started", callable_mp(expression_evaluator, &EditorExpressionEvaluator::on_start));
 		} break;
 
@@ -2206,6 +2201,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->set_hide_root(true);
 		breakpoints_tree->set_theme_type_variation("TreeSecondary");
 		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
+		breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 		breakpoints_tree->create_item();
 
 		parent_sc->add_child(breakpoints_tree);
@@ -2262,6 +2258,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->set_theme_type_variation("TreeSecondary");
+		error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
+		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
@@ -2412,8 +2410,10 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 			info_left->add_child(l);
 			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTRC("Set From Tree")));
+			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			lehb->add_child(le_set);
 			le_clear = memnew(Button(TTRC("Clear")));
+			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			lehb->add_child(le_clear);
 			info_left->add_child(lehb);
 		}

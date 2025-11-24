@@ -32,7 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "scene/gui/margin_container.h"
+#include "editor/docks/editor_dock.h"
 
 class Button;
 class DebugAdapterParser;
@@ -44,8 +44,8 @@ class ScriptEditorDebugger;
 class TabContainer;
 class UndoRedo;
 
-class EditorDebuggerNode : public MarginContainer {
-	GDCLASS(EditorDebuggerNode, MarginContainer);
+class EditorDebuggerNode : public EditorDock {
+	GDCLASS(EditorDebuggerNode, EditorDock);
 
 public:
 	enum CameraOverride {
