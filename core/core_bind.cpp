@@ -53,10 +53,12 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
-	float progress = 0;
-	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
+	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
-	if (!ClassDB::is_default_array_arg(r_progress)) {
+	const bool return_progress = !ClassDB::is_default_array_arg(r_progress);
+	float progress = 0;
+	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, return_progress ? &progress : nullptr);
+	if (return_progress) {
 		r_progress.resize(1);
 		r_progress[0] = progress;
 	}
