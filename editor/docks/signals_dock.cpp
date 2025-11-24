@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  node_dock.h                                                           */
+/*  signals_dock.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "signals_dock.h"
 
-#include "editor/docks/editor_dock.h"
-#include "groups_editor.h"
+#include "editor/scene/connections_dialog.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/themes/editor_scale.h"
 
-class ConfigFile;
-class ConnectionsDock;
+void SignalsDock::update_lists() {
+	connections->update_tree();
+}
 
-class NodeDock : public EditorDock {
-	GDCLASS(NodeDock, EditorDock);
+void SignalsDock::set_object(Object *p_object) {
+	connections->set_object(p_object);
+}
 
-	Button *connections_button = nullptr;
-	Button *groups_button = nullptr;
+SignalsDock::SignalsDock() {
+	singleton = this;
+	set_name(TTRC("Signals"));
+	set_icon_name("Signals");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_signals", TTRC("Open Signals Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
 
-	ConnectionsDock *connections = nullptr;
-	GroupsEditor *groups = nullptr;
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
 
-	HBoxContainer *mode_hb = nullptr;
+	connections = memnew(ConnectionsDock);
+	main_vb->add_child(connections);
+	connections->set_v_size_flags(SIZE_EXPAND_FILL);
+}
 
-private:
-	inline static NodeDock *singleton = nullptr;
-
-public:
-	static NodeDock *get_singleton() { return singleton; }
-
-protected:
-	void _notification(int p_what);
-
-	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
-	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
-
-public:
-	void set_selection(const Vector<Object *> &p_objects);
-
-	void show_groups();
-	void show_connections();
-
-	void update_lists();
-
-	NodeDock();
-	~NodeDock();
-};
+SignalsDock::~SignalsDock() {
+	singleton = nullptr;
+}

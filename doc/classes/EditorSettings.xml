@@ -1453,7 +1453,7 @@
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
 		</member>
 		<member name="text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method" type="bool" setter="" getter="">
-			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Node dock.
+			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Signals dock.
 		</member>
 		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling past the end of the file.
@@ -1485,7 +1485,7 @@
 			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
 			- Accepting a suggestion from code autocompletion;
 			- Creating a new script from a template;
-			- Connecting signals from the Node dock;
+			- Connecting signals from the Signals dock;
 			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
