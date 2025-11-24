@@ -5308,7 +5308,7 @@ void Tree::update_min_size_for_item_change() {
 	// Only need to update when any scroll bar is disabled because that's the only time item size
 	// affects tree size.
 	if (!h_scroll_enabled || !v_scroll_enabled) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -5384,7 +5384,7 @@ void Tree::set_hide_root(bool p_enabled) {
 	hide_root = p_enabled;
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool Tree::is_root_hidden() const {
@@ -5836,7 +5836,7 @@ void Tree::set_column_titles_visible(bool p_show) {
 	show_column_titles = p_show;
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool Tree::are_column_titles_visible() const {
@@ -5975,7 +5975,7 @@ void Tree::set_h_scroll_enabled(bool p_enable) {
 	}
 
 	h_scroll_enabled = p_enable;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool Tree::is_h_scroll_enabled() const {
@@ -5988,7 +5988,7 @@ void Tree::set_v_scroll_enabled(bool p_enable) {
 	}
 
 	v_scroll_enabled = p_enable;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool Tree::is_v_scroll_enabled() const {

@@ -216,12 +216,17 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+
 		mutable Size2 minimum_size_cache;
 		mutable bool minimum_size_valid = false;
-
 		Size2 last_minimum_size;
-		bool updating_last_minimum_size = false;
-		bool block_minimum_size_adjust = false;
+
+		mutable Size2 maximum_size_cache;
+		mutable bool maximum_size_valid = false;
+		Size2 last_maximum_size;
+
+		bool updating_last_size_bounds = false;
+		bool block_size_bounds_adjust = false;
 
 		bool size_warning = true;
 
@@ -230,7 +235,8 @@ private:
 		BitField<SizeFlags> h_size_flags = SIZE_FILL;
 		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2 custom_minimum_size;
+		Size2 custom_minimum_size;
+		Size2 custom_maximum_size;
 
 		// Input events and rendering.
 
@@ -329,7 +335,8 @@ private:
 	int _get_anchors_layout_preset() const;
 
 	void _update_minimum_size_cache() const;
-	void _update_minimum_size();
+	void _update_maximum_size_cache() const;
+	void _update_size_bounds();
 	void _size_changed();
 
 	void _top_level_changed() override {} // Controls don't need to do anything, only other CanvasItems.
@@ -407,6 +414,7 @@ protected:
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
+	GDVIRTUAL0RC(Vector2, _get_maximum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
 
 	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
@@ -509,7 +517,7 @@ public:
 	void set_v_grow_direction(GrowDirection p_direction);
 	GrowDirection get_v_grow_direction() const;
 
-	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
+	virtual void set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets = true);
 	void set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_grow_direction_preset(LayoutPreset p_preset);
@@ -542,15 +550,24 @@ public:
 	Vector2 get_pivot_offset() const;
 	Vector2 get_combined_pivot_offset() const;
 
-	void update_minimum_size();
+#ifndef DISABLE_DEPRECATED
+	void update_minimum_size() { update_size_bounds(); }
+#endif // DISABLE_DEPRECATED
+	void update_size_bounds();
 
-	void set_block_minimum_size_adjust(bool p_block);
+	void set_block_size_bounds_adjust(bool p_block);
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
+
+	void set_custom_maximum_size(const Size2 &p_custom);
+	Size2 get_custom_maximum_size() const;
+
+	virtual Size2 get_maximum_size() const;
+	virtual Size2 get_combined_maximum_size() const;
 
 	// Container sizing.
 

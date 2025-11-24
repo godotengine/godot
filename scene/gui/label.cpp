@@ -47,7 +47,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	update_configuration_warnings();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -68,7 +68,7 @@ void Label::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags)
 	update_configuration_warnings();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -338,7 +338,7 @@ void Label::_shape() const {
 	_update_visible();
 
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
-		const_cast<Label *>(this)->update_minimum_size();
+		const_cast<Label *>(this)->update_size_bounds();
 	}
 }
 
@@ -1102,7 +1102,7 @@ void Label::set_text(const String &p_string) {
 	}
 	queue_accessibility_update();
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	update_configuration_warnings();
 }
 
@@ -1209,7 +1209,7 @@ void Label::set_clip_text(bool p_clip) {
 
 	clip = p_clip;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool Label::is_clipping_text() const {
@@ -1241,7 +1241,7 @@ void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	}
 	queue_redraw();
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -1264,7 +1264,7 @@ void Label::set_ellipsis_char(const String &p_char) {
 	}
 	queue_redraw();
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 

@@ -296,7 +296,7 @@ void TabContainer::_on_theme_changed() {
 	if (get_tab_count() > 0) {
 		_repaint();
 	} else {
-		update_minimum_size();
+		update_size_bounds();
 	}
 	queue_redraw();
 
@@ -346,7 +346,7 @@ void TabContainer::_repaint() {
 	}
 	updating_visibility = false;
 
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void TabContainer::_update_margins() {
@@ -899,7 +899,7 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 
 	_update_margins();
 	if (!get_clip_tabs()) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -920,7 +920,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 
 	_update_margins();
 	if (!get_clip_tabs()) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 	callable_mp(this, &TabContainer::_repaint).call_deferred();
 }
@@ -1004,7 +1004,7 @@ void TabContainer::set_popup(Node *p_popup) {
 		queue_redraw();
 		_update_margins();
 		if (!get_clip_tabs()) {
-			update_minimum_size();
+			update_size_bounds();
 		}
 	}
 }
@@ -1055,7 +1055,7 @@ void TabContainer::set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs) {
 	}
 
 	use_hidden_tabs_for_min_size = p_use_hidden_tabs;
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TabContainer::get_use_hidden_tabs_for_min_size() const {

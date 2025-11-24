@@ -63,7 +63,10 @@ public:
 
 	const StringName item_rect_changed = "item_rect_changed";
 	const StringName size_flags_changed = "size_flags_changed";
+#ifndef DISABLE_DEPRECATED
 	const StringName minimum_size_changed = "minimum_size_changed";
+#endif // DISABLE_DEPRECATED
+	const StringName size_bounds_changed = "size_bounds_changed";
 	const StringName sleeping_state_changed = "sleeping_state_changed";
 	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";
 	const StringName update = "update";

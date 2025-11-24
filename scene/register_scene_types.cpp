@@ -82,6 +82,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/size_container.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -506,6 +507,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
 	GDREGISTER_CLASS(MarginContainer);
+	GDREGISTER_CLASS(SizeContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 

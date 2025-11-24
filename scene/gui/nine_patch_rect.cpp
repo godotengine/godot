@@ -90,7 +90,7 @@ void NinePatchRect::_bind_methods() {
 
 void NinePatchRect::_texture_changed() {
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
@@ -109,7 +109,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 	emit_signal(SceneStringName(texture_changed));
 }
 
@@ -126,7 +126,7 @@ void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
 
 	margin[p_side] = p_size;
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int NinePatchRect::get_patch_margin(Side p_side) const {

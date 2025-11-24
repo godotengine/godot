@@ -75,7 +75,7 @@ void FoldableContainer::set_folded(bool p_folded) {
 		}
 		folded = p_folded;
 
-		update_minimum_size();
+		update_size_bounds();
 		queue_sort();
 		queue_redraw();
 	}
@@ -116,7 +116,7 @@ void FoldableContainer::set_title(const String &p_text) {
 	}
 	title = p_text;
 	_shape();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -144,7 +144,7 @@ void FoldableContainer::set_language(const String &p_language) {
 	}
 	language = p_language;
 	_shape();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -172,7 +172,7 @@ void FoldableContainer::set_title_text_overrun_behavior(TextServer::OverrunBehav
 	}
 	overrun_behavior = p_overrun_behavior;
 	_shape();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -390,7 +390,7 @@ void FoldableContainer::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
-			update_minimum_size();
+			update_size_bounds();
 			queue_redraw();
 		} break;
 	}

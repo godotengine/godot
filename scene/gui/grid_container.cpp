@@ -230,7 +230,7 @@ void GridContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -249,7 +249,7 @@ void GridContainer::set_columns(int p_columns) {
 
 	columns = p_columns;
 	queue_sort();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 int GridContainer::get_columns() const {

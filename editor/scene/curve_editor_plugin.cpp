@@ -986,7 +986,7 @@ void CurveEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_RESIZED:
-			curve_editor_rect->update_minimum_size();
+			curve_editor_rect->update_size_bounds();
 			break;
 	}
 }

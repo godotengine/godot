@@ -525,8 +525,8 @@ void SpinBox::_notification(int p_what) {
 #ifndef DISABLE_DEPRECATED
 			theme_cache.is_updown_assigned = !theme_cache.updown_icon->get_size().is_zero_approx();
 #endif
-			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
-			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
+			callable_mp((Control *)this, &Control::update_size_bounds).call_deferred();
+			callable_mp((Control *)get_line_edit(), &Control::update_size_bounds).call_deferred();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {

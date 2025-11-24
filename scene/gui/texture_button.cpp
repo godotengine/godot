@@ -363,7 +363,7 @@ void TextureButton::_set_texture(Ref<Texture2D> *p_destination, const Ref<Textur
 
 void TextureButton::_texture_changed() {
 	queue_redraw();
-	update_minimum_size();
+	update_size_bounds();
 }
 
 bool TextureButton::get_ignore_texture_size() const {
@@ -376,7 +376,7 @@ void TextureButton::set_ignore_texture_size(bool p_ignore) {
 	}
 
 	ignore_texture_size = p_ignore;
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 

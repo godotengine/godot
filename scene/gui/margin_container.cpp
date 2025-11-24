@@ -109,7 +109,7 @@ void MarginContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			update_minimum_size();
+			update_size_bounds();
 		} break;
 	}
 }

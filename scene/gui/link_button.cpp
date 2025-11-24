@@ -59,7 +59,7 @@ void LinkButton::set_text(const String &p_text) {
 	text = p_text;
 	xl_text = atr(text);
 	_shape();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -71,7 +71,7 @@ void LinkButton::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavio
 	if (overrun_behavior != p_behavior) {
 		overrun_behavior = p_behavior;
 		_shape();
-		update_minimum_size();
+		update_size_bounds();
 		queue_redraw();
 	}
 }
@@ -103,7 +103,7 @@ void LinkButton::set_ellipsis_char(const String &p_char) {
 	if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		_shape();
 		queue_redraw();
-		update_minimum_size();
+		update_size_bounds();
 	}
 }
 
@@ -218,7 +218,7 @@ void LinkButton::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
-			update_minimum_size();
+			update_size_bounds();
 			queue_redraw();
 		} break;
 
@@ -229,7 +229,7 @@ void LinkButton::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
-			update_minimum_size();
+			update_size_bounds();
 			queue_redraw();
 		} break;
 

@@ -1139,14 +1139,14 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		CHECK(test_control->get_v_grow_direction() == Control::GROW_DIRECTION_END);
 	}
 
-	SIGNAL_WATCH(test_control, SNAME("minimum_size_changed"))
+	SIGNAL_WATCH(test_control, SNAME("size_bounds_changed"))
 	Array signal_args = { {} };
 
 	SUBCASE("Horizontal grow direction begin") {
 		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 		test_control->set_custom_minimum_size(Size2(2, 2));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args)
+		SIGNAL_CHECK("size_bounds_changed", signal_args)
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(-1, 0), Size2(2, 2))),
@@ -1157,7 +1157,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
 		test_control->set_custom_minimum_size(Size2(4, 3));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args);
+		SIGNAL_CHECK("size_bounds_changed", signal_args);
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(0, -2), Size2(4, 3))),
@@ -1168,7 +1168,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		test_control->set_h_grow_direction(Control::GROW_DIRECTION_END);
 		test_control->set_custom_minimum_size(Size2(5, 3));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args);
+		SIGNAL_CHECK("size_bounds_changed", signal_args);
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(0, 0), Size2(5, 3))),
@@ -1179,7 +1179,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		test_control->set_v_grow_direction(Control::GROW_DIRECTION_END);
 		test_control->set_custom_minimum_size(Size2(4, 4));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args);
+		SIGNAL_CHECK("size_bounds_changed", signal_args);
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(0, 0), Size2(4, 4))),
@@ -1191,7 +1191,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
 		test_control->set_custom_minimum_size(Size2(2, 4));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args);
+		SIGNAL_CHECK("size_bounds_changed", signal_args);
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(-0.5, 0), Size2(2, 4))),
@@ -1202,7 +1202,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
 		test_control->set_custom_minimum_size(Size2(6, 3));
 		SceneTree::get_singleton()->process(0);
-		SIGNAL_CHECK("minimum_size_changed", signal_args);
+		SIGNAL_CHECK("size_bounds_changed", signal_args);
 		CHECK_MESSAGE(
 				test_control->get_rect().is_equal_approx(
 						Rect2(Vector2(0, -1), Size2(6, 3))),

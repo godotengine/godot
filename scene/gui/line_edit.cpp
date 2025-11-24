@@ -2558,7 +2558,7 @@ void LineEdit::set_editable(bool p_editable) {
 	}
 	_validate_caret_can_draw();
 
-	update_minimum_size();
+	update_size_bounds();
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -2853,7 +2853,7 @@ void LineEdit::_editor_settings_changed() {
 
 void LineEdit::set_expand_to_text_length_enabled(bool p_enabled) {
 	expand_to_text_length = p_enabled;
-	update_minimum_size();
+	update_size_bounds();
 	set_caret_column(caret_column);
 }
 
@@ -2867,7 +2867,7 @@ void LineEdit::set_clear_button_enabled(bool p_enabled) {
 	}
 	clear_button_enabled = p_enabled;
 	_fit_to_width();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -2956,7 +2956,7 @@ bool LineEdit::is_drag_and_drop_selection_enabled() const {
 
 void LineEdit::_texture_changed() {
 	_fit_to_width();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -2976,7 +2976,7 @@ void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	}
 
 	_fit_to_width();
-	update_minimum_size();
+	update_size_bounds();
 	queue_redraw();
 }
 
@@ -3094,7 +3094,7 @@ void LineEdit::_shape() {
 	Size2 size = TS->shaped_text_get_size(text_rid);
 
 	if ((expand_to_text_length && old_size.x != size.x) || (old_size.y != size.y)) {
-		update_minimum_size();
+		update_size_bounds();
 	}
 
 	if (accessibility_text_root_element.is_valid()) {
