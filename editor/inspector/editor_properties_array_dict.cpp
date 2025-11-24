@@ -41,6 +41,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_variant_type_selectors.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
 #include "editor/settings/editor_settings.h"
