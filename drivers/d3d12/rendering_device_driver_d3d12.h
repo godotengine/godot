@@ -144,7 +144,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	class CPUDescriptorsHeapPool;
 
 	struct CPUDescriptorsHeapHandle {
-		ID3D12DescriptorHeap *heap = nullptr;
+		ComPtr<ID3D12DescriptorHeap> heap;
 		CPUDescriptorsHeapPool *pool = nullptr;
 		uint32_t offset = 0;
 		uint32_t base_offset = 0;
@@ -158,7 +158,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		Mutex mutex;
 
 		struct FreeBlockInfo {
-			ID3D12DescriptorHeap *heap = nullptr;
+			ComPtr<ID3D12DescriptorHeap> heap;
 			uint32_t global_offset = 0; // Global offset in an address space shared by all the heaps.
 			uint32_t base_offset = 0; // The offset inside the space of this heap.
 			uint32_t size = 0;
@@ -792,7 +792,7 @@ public:
 	};
 
 	struct PipelineInfo {
-		ID3D12PipelineState *pso = nullptr;
+		ComPtr<ID3D12PipelineState> pso;
 		const ShaderInfo *shader_info = nullptr;
 		RenderPipelineInfo render_info;
 	};
