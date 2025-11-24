@@ -386,8 +386,8 @@ Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::allocate(ID3D12Device 
 		// Allow for more than 1024 descriptor.
 		descr_copy.NumDescriptors = MAX(p_desc.NumDescriptors, 1024u);
 
-		ID3D12DescriptorHeap *heap;
-		HRESULT res = p_device->CreateDescriptorHeap(&descr_copy, IID_PPV_ARGS(&heap));
+		ComPtr<ID3D12DescriptorHeap> heap;
+		HRESULT res = p_device->CreateDescriptorHeap(&descr_copy, IID_PPV_ARGS(heap.GetAddressOf()));
 		if (!SUCCEEDED(res)) {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CreateDescriptorHeap failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		}
@@ -516,8 +516,6 @@ Error RenderingDeviceDriverD3D12::CPUDescriptorsHeapPool::release(const CPUDescr
 RenderingDeviceDriverD3D12::CPUDescriptorsHeap::~CPUDescriptorsHeap() {
 	if (handle.pool) {
 		handle.pool->release(handle);
-	} else if (handle.heap && handle.offset == 0) {
-		handle.heap->Release();
 	}
 }
 
@@ -2801,21 +2799,21 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 		list_type = D3D12_COMMAND_LIST_TYPE(command_pool->queue_family.id - 1);
 	}
 
-	ID3D12CommandAllocator *cmd_allocator = nullptr;
+	ComPtr<ID3D12CommandAllocator> cmd_allocator;
 	{
-		HRESULT res = device->CreateCommandAllocator(list_type, IID_PPV_ARGS(&cmd_allocator));
+		HRESULT res = device->CreateCommandAllocator(list_type, IID_PPV_ARGS(cmd_allocator.GetAddressOf()));
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), CommandBufferID(), "CreateCommandAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
-	ID3D12GraphicsCommandList *cmd_list = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> cmd_list;
 	{
 		ComPtr<ID3D12Device4> device_4;
 		device->QueryInterface(device_4.GetAddressOf());
 		HRESULT res = E_FAIL;
 		if (device_4) {
-			res = device_4->CreateCommandList1(0, list_type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&cmd_list));
+			res = device_4->CreateCommandList1(0, list_type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(cmd_list.GetAddressOf()));
 		} else {
-			res = device->CreateCommandList(0, list_type, cmd_allocator, nullptr, IID_PPV_ARGS(&cmd_list));
+			res = device->CreateCommandList(0, list_type, cmd_allocator.Get(), nullptr, IID_PPV_ARGS(cmd_list.GetAddressOf()));
 		}
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), CommandBufferID(), "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		if (!device_4) {
@@ -4705,7 +4703,6 @@ void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID 
 
 void RenderingDeviceDriverD3D12::pipeline_free(PipelineID p_pipeline) {
 	PipelineInfo *pipeline_info = (PipelineInfo *)(p_pipeline.id);
-	pipeline_info->pso->Release();
 	memdelete(pipeline_info);
 }
 
@@ -5304,14 +5301,14 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
 
-	if (cmd_buf_info->graphics_pso == pipeline_info->pso) {
+	if (cmd_buf_info->graphics_pso == pipeline_info->pso.Get()) {
 		return;
 	}
 
 	const ShaderInfo *shader_info_in = pipeline_info->shader_info;
 	const RenderPipelineInfo &render_info = pipeline_info->render_info;
 
-	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso);
+	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso.Get());
 	if (cmd_buf_info->graphics_root_signature_crc != shader_info_in->root_signature_crc) {
 		cmd_buf_info->cmd_list->SetGraphicsRootSignature(shader_info_in->root_signature.Get());
 		cmd_buf_info->graphics_root_signature_crc = shader_info_in->root_signature_crc;
@@ -5331,7 +5328,7 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 
 	cmd_buf_info->render_pass_state.vf_info = render_info.vf_info;
 
-	cmd_buf_info->graphics_pso = pipeline_info->pso;
+	cmd_buf_info->graphics_pso = pipeline_info->pso.Get();
 	cmd_buf_info->compute_pso = nullptr;
 }
 
@@ -5818,16 +5815,16 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 
 	ComPtr<ID3D12Device2> device_2;
 	device->QueryInterface(device_2.GetAddressOf());
-	ID3D12PipelineState *pso = nullptr;
+	ComPtr<ID3D12PipelineState> pso;
 	HRESULT res = E_FAIL;
 	if (device_2) {
 		D3D12_PIPELINE_STATE_STREAM_DESC pssd = {};
 		pssd.pPipelineStateSubobjectStream = &pipeline_desc;
 		pssd.SizeInBytes = sizeof(pipeline_desc);
-		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(pso.GetAddressOf()));
 	} else {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = pipeline_desc.GraphicsDescV0();
-		res = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
+		res = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pso.GetAddressOf()));
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Graphics)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
@@ -5849,18 +5846,18 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
 
-	if (cmd_buf_info->compute_pso == pipeline_info->pso) {
+	if (cmd_buf_info->compute_pso == pipeline_info->pso.Get()) {
 		return;
 	}
 
 	const ShaderInfo *shader_info_in = pipeline_info->shader_info;
-	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso);
+	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso.Get());
 	if (cmd_buf_info->compute_root_signature_crc != shader_info_in->root_signature_crc) {
 		cmd_buf_info->cmd_list->SetComputeRootSignature(shader_info_in->root_signature.Get());
 		cmd_buf_info->compute_root_signature_crc = shader_info_in->root_signature_crc;
 	}
 
-	cmd_buf_info->compute_pso = pipeline_info->pso;
+	cmd_buf_info->compute_pso = pipeline_info->pso.Get();
 	cmd_buf_info->graphics_pso = nullptr;
 }
 
@@ -5919,16 +5916,16 @@ RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_s
 
 	ComPtr<ID3D12Device2> device_2;
 	device->QueryInterface(device_2.GetAddressOf());
-	ID3D12PipelineState *pso = nullptr;
+	ComPtr<ID3D12PipelineState> pso;
 	HRESULT res = E_FAIL;
 	if (device_2) {
 		D3D12_PIPELINE_STATE_STREAM_DESC pssd = {};
 		pssd.pPipelineStateSubobjectStream = &pipeline_desc;
 		pssd.SizeInBytes = sizeof(pipeline_desc);
-		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(pso.GetAddressOf()));
 	} else {
 		D3D12_COMPUTE_PIPELINE_STATE_DESC desc = pipeline_desc.ComputeDescV0();
-		res = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+		res = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(pso.GetAddressOf()));
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Compute)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
@@ -6094,7 +6091,7 @@ void RenderingDeviceDriverD3D12::set_object_name(ObjectType p_type, ID p_driver_
 		} break;
 		case OBJECT_TYPE_PIPELINE: {
 			const PipelineInfo *pipeline_info = (const PipelineInfo *)p_driver_id.id;
-			_set_object_name(pipeline_info->pso, p_name);
+			_set_object_name(pipeline_info->pso.Get(), p_name);
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -6735,7 +6732,7 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 	glsl_type_singleton_init_or_ref();
 
 	context_device = context_driver->device_get(p_device_index);
-	adapter = context_driver->create_adapter(p_device_index);
+	adapter.Attach(context_driver->create_adapter(p_device_index));
 	ERR_FAIL_NULL_V(adapter, ERR_CANT_CREATE);
 
 	HRESULT res = adapter->GetDesc(&adapter_desc);
