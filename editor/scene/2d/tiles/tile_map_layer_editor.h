@@ -33,6 +33,7 @@
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -337,8 +338,8 @@ public:
 	TileMapLayerEditorTerrainsPlugin();
 };
 
-class TileMapLayerEditor : public VBoxContainer {
-	GDCLASS(TileMapLayerEditor, VBoxContainer);
+class TileMapLayerEditor : public EditorDock {
+	GDCLASS(TileMapLayerEditor, EditorDock);
 
 private:
 	bool tile_map_layer_changed_needs_update = false;
