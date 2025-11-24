@@ -643,6 +643,8 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 h_area_height = area_height / 2.0;
 		vec3 area_width_norm = normalize(area_width);
 		vec3 area_height_norm = normalize(area_height);
+		float a_half_len = length(area_width) / 2.0;
+		float b_half_len = length(area_height) / 2.0;
 
 		vec3 points[4];
 		points[0] = light_data.position - h_area_width - h_area_height - p_position;
@@ -652,15 +654,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 		float ltc_diffuse = max(ltc_evaluate_diff(p_position, p_normal, points), 0);
 
-		mat4 light_mat = mat4(
-				vec4(area_width_norm, 0),
-				vec4(area_height_norm, 0),
-				vec4(-light_data.direction, 0),
-				vec4(light_data.position, 1));
-		float a_half_len = length(area_width) / 2.0;
-		float b_half_len = length(area_height) / 2.0;
-		mat4 light_mat_inv = inverse(light_mat);
-		vec3 pos_local_to_light = (light_mat_inv * vec4(p_position, 1)).xyz;
+		vec3 light_to_vert = p_position - light_data.position;
+		vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -light_data.direction)); // p_position in LIGHT SPACE
+
 		vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
 		dist = max(0.0001, distance(closest_point_local_to_light, pos_local_to_light));
 		// set light pos to closest point
