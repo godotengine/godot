@@ -730,11 +730,8 @@ uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa,
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msaa, bool p_storage) {
-	// TODO Our rendering engine does not support just having a depth attachment, it always assumed we combine with stencil.
-	// We thus can't configure our depth resolve with RD::DATA_FORMAT_R32_SFLOAT.
-	// We should add support for TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or add a TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT
-
-	if (p_resolve && !RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE)) {
+	if (p_resolve && (p_storage || !RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE))) {
+		// Use R32 for resolve on Forward+ (p_storage == true), or if we don't support depth resolve.
 		return RD::DATA_FORMAT_R32_SFLOAT;
 	} else {
 		const RenderingDeviceCommons::DataFormat preferred_formats[2] = {
