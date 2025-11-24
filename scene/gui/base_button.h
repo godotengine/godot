@@ -40,6 +40,15 @@ class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
 
 public:
+	enum DrawMode {
+		DRAW_AUTO = -1,
+		DRAW_NORMAL,
+		DRAW_PRESSED,
+		DRAW_HOVER,
+		DRAW_DISABLED,
+		DRAW_HOVER_PRESSED,
+	};
+
 	enum ActionMode {
 		ACTION_MODE_BUTTON_PRESS,
 		ACTION_MODE_BUTTON_RELEASE,
@@ -58,6 +67,8 @@ private:
 	bool shortcut_feedback = true;
 	Ref<Shortcut> shortcut;
 	ObjectID shortcut_context;
+
+	DrawMode custom_draw_mode = DRAW_AUTO;
 
 	ActionMode action_mode = ACTION_MODE_BUTTON_RELEASE;
 	struct Status {
@@ -97,19 +108,12 @@ protected:
 	GDVIRTUAL1(_toggled, bool)
 
 public:
-	enum DrawMode {
-		DRAW_NORMAL,
-		DRAW_PRESSED,
-		DRAW_HOVER,
-		DRAW_DISABLED,
-		DRAW_HOVER_PRESSED,
-	};
+	virtual bool has_point(const Point2 &p_point) const override;
 
 	DrawMode get_draw_mode() const;
 
-	virtual bool has_point(const Point2 &p_point) const override;
-
-	/* Signals */
+	void set_custom_draw_mode(DrawMode p_draw_mode);
+	DrawMode get_custom_draw_mode() const;
 
 	bool is_pressed() const; ///< return whether button is pressed (toggled in)
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)

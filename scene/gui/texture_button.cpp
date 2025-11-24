@@ -136,7 +136,6 @@ void TextureButton::_notification(int p_what) {
 						} else {
 							texdraw = hover;
 						}
-
 					} else {
 						texdraw = pressed;
 					}
@@ -160,6 +159,9 @@ void TextureButton::_notification(int p_what) {
 					} else {
 						texdraw = disabled;
 					}
+				} break;
+				case DRAW_AUTO: {
+					// Unreachable.
 				} break;
 			}
 
