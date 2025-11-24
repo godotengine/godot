@@ -31,6 +31,7 @@
 #include "theme_editor_plugin.h"
 
 #include "editor/doc/editor_help.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
@@ -3723,13 +3724,15 @@ void ThemeEditor::_theme_edit_button_cbk() {
 }
 
 void ThemeEditor::_theme_close_button_cbk() {
-	plugin->make_visible(false); // Enables auto hide.
+	close();
+	_dock_closed_cbk();
+}
+
+void ThemeEditor::_dock_closed_cbk() {
 	if (theme.is_valid() && InspectorDock::get_inspector_singleton()->get_edited_object() == theme.ptr()) {
 		EditorNode::get_singleton()->push_item(nullptr);
-	} else {
-		theme = Ref<Theme>();
-		EditorNode::get_singleton()->hide_unused_editors(plugin);
 	}
+	theme = Ref<Theme>();
 }
 
 void ThemeEditor::_scene_closed(const String &p_path) {
@@ -3917,6 +3920,7 @@ void ThemeEditor::_preview_tabs_resized() {
 void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			connect("closed", callable_mp(this, &ThemeEditor::_dock_closed_cbk));
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ThemeEditor::_scene_closed));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ThemeEditor::_resource_saved));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ThemeEditor::_files_moved));
@@ -3945,8 +3949,21 @@ void ThemeEditor::_notification(int p_what) {
 }
 
 ThemeEditor::ThemeEditor() {
+	set_name(TTRC("Theme"));
+	set_icon_name("ThemeDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+	set_closable(true);
+	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+
+	VBoxContainer *content_vb = memnew(VBoxContainer);
+	add_child(content_vb);
+
 	HBoxContainer *top_menu = memnew(HBoxContainer);
-	add_child(top_menu);
+	content_vb->add_child(top_menu);
 
 	Label *theme_label = memnew(Label);
 	theme_label->set_text(TTRC("Theme:"));
@@ -3997,7 +4014,7 @@ ThemeEditor::ThemeEditor() {
 
 	HSplitContainer *main_hs = memnew(HSplitContainer);
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(main_hs);
+	content_vb->add_child(main_hs);
 
 	main_hs->set_split_offset(520 * EDSCALE);
 
@@ -4065,14 +4082,9 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
+		theme_editor->make_visible();
 	} else {
-		if (theme_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-
-		button->hide();
+		theme_editor->close();
 	}
 }
 
@@ -4083,8 +4095,6 @@ bool ThemeEditorPlugin::can_auto_hide() const {
 ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->plugin = this;
-	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(theme_editor);
+	theme_editor->close();
 }
