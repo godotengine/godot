@@ -132,8 +132,8 @@ protected:
 	Error _load_settings_binary(const String &p_path);
 	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
-	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
-	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features);
+	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features);
 
 	Error _save_custom_bnd(const String &p_file);
 
@@ -145,11 +145,11 @@ protected:
 	void _convert_to_last_version(int p_from_version);
 
 	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override);
 
 	void _add_builtin_input_map();
 
