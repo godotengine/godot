@@ -33,6 +33,7 @@
 #include "d3d12_hooks.h"
 
 #include "core/config/project_settings.h"
+#include "core/crypto/hashing_context.h"
 #include "core/io/marshalls.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/zlib/zlib.h"
@@ -3494,6 +3495,26 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_container(const Ref
 	shader_info_in.root_signature_desc = shader_info_in.root_signature_deserializer->GetRootSignatureDesc();
 	shader_info_in.root_signature_crc = shader_refl_d3d12.root_signature_crc;
 
+	// Calculate hash for PSO caching purposes
+	Vector<uint8_t> bc;
+	for (const KeyValue<ShaderStage, Vector<uint8_t>> &E : shader_info_in.stages_bytecode) {
+		ShaderStage stage = E.key;
+		const Vector<uint8_t> &bytecode = E.value;
+		bc.resize(bc.size() + bytecode.size());
+	}
+	uint8_t *bc_ptr = bc.ptrw();
+	for (const KeyValue<ShaderStage, Vector<uint8_t>> &E : shader_info_in.stages_bytecode) {
+		ShaderStage stage = E.key;
+		const Vector<uint8_t> &bytecode = E.value;
+		memcpy(bc_ptr, bytecode.ptr(), bytecode.size());
+		bc_ptr += bytecode.size();
+	}
+	HashingContext hc;
+	hc.start(HashingContext::HASH_MD5);
+	hc.update(bc);
+	Vector<uint8_t> hash_bin = hc.finish();
+	shader_info_in.hash = String::hex_encode_buffer(hash_bin.ptr(), hash_bin.size());
+
 	// Bookkeep.
 	ShaderInfo *shader_info_ptr = VersatileResource::allocate<ShaderInfo>(resources_allocator);
 	*shader_info_ptr = shader_info_in;
@@ -4727,20 +4748,71 @@ void RenderingDeviceDriverD3D12::command_bind_push_constants(CommandBufferID p_c
 // ----- CACHE -----
 
 bool RenderingDeviceDriverD3D12::pipeline_cache_create(const Vector<uint8_t> &p_data) {
-	WARN_PRINT("PSO caching is not implemented yet in the Direct3D 12 driver.");
+	ComPtr<ID3D12Device1> device1;
+	HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&device1));
+
+	if (SUCCEEDED(hr)) {
+		if (p_data.size() > 0) {
+			pso_cache_data = p_data; // The init buffer must persist or else we get E_OUTOFMEMORY whenever loading a PSO
+			hr = device1->CreatePipelineLibrary(pso_cache_data.ptr(), pso_cache_data.size(), IID_PPV_ARGS(&pso_cache));
+
+			switch (hr) {
+				case DXGI_ERROR_UNSUPPORTED:
+					print_verbose("PipelineLibrary extension unavailable. Pipelines cache feature will be unavailable, which may result in stuttering during gameplay.");
+					pso_cache_data.clear();
+					break;
+				case E_INVALIDARG:
+					print_verbose("Invalid/corrupt D3D12 pipelines cache. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+					pso_cache_data.clear();
+					break;
+				case D3D12_ERROR_DRIVER_VERSION_MISMATCH:
+					print_verbose("Invalid D3D12 pipelines cache. This is due to graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+					pso_cache_data.clear();
+					break;
+				case D3D12_ERROR_ADAPTER_NOT_FOUND:
+					print_verbose("Invalid D3D12 pipelines cache. This is due to hardware changes. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
+					pso_cache_data.clear();
+					break;
+				case S_OK:
+					return true;
+				default:
+					break;
+			}
+		}
+
+		device1->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(&pso_cache));
+		bool ret = pso_cache != nullptr;
+		if (!ret) {
+			print_verbose("PipelineLibrary extension unavailable. Pipelines cache feature will be unavailable, which may result in stuttering during gameplay.")
+		}
+
+		return ret;
+	}
+
 	return false;
 }
 
 void RenderingDeviceDriverD3D12::pipeline_cache_free() {
-	ERR_FAIL_MSG("Not implemented.");
+	pso_cache_data.clear();
+	pso_cache = nullptr;
 }
 
 size_t RenderingDeviceDriverD3D12::pipeline_cache_query_size() {
-	ERR_FAIL_V_MSG(0, "Not implemented.");
+	if (pso_cache != nullptr) {
+		return pso_cache->GetSerializedSize();
+	}
+	return 0;
 }
 
 Vector<uint8_t> RenderingDeviceDriverD3D12::pipeline_cache_serialize() {
-	ERR_FAIL_V_MSG(Vector<uint8_t>(), "Not implemented.");
+	if (pso_cache != nullptr) {
+		Vector<uint8_t> out;
+		size_t sz = pso_cache->GetSerializedSize();
+		out.resize(sz);
+		pso_cache->Serialize((void *)out.ptrw(), sz);
+		return out;
+	}
+	return Vector<uint8_t>();
 }
 
 /*******************/
@@ -5582,6 +5654,151 @@ static const D3D12_BLEND_OP RD_TO_D3D12_BLEND_OP[RDD::BLEND_OP_MAX] = {
 	D3D12_BLEND_OP_MAX,
 };
 
+String RenderingDeviceDriverD3D12::hash_pipeline_state(CD3DX12_PIPELINE_STATE_STREAM1 *pipeline_desc, Vector<uint8_t> dyn_data) {
+	#define serialize_field(x) \
+		memcpy(p, &x, sizeof(x)); \
+		p += sizeof(x);
+
+	// Calculate serialization vector size
+	size_t sz = 0;
+
+	// Attachments.
+	sz += sizeof((&pipeline_desc->RTVFormats)->RTFormats[0]) * ARRAY_SIZE((&pipeline_desc->RTVFormats)->RTFormats);
+	sz += sizeof((&pipeline_desc->RTVFormats)->NumRenderTargets);
+	sz += sizeof(pipeline_desc->DSVFormat);
+
+	// Input assembly & tessellation.
+	sz += sizeof(pipeline_desc->PrimitiveTopologyType);
+	sz += sizeof(pipeline_desc->IBStripCutValue);
+
+	// Rasterization.
+	sz += sizeof((&pipeline_desc->RasterizerState)->DepthClipEnable);
+	sz += sizeof((&pipeline_desc->RasterizerState)->FillMode);
+	sz += sizeof((&pipeline_desc->RasterizerState)->CullMode);
+	sz += sizeof((&pipeline_desc->RasterizerState)->FrontCounterClockwise);
+	sz += sizeof((&pipeline_desc->RasterizerState)->MultisampleEnable);
+
+	// Multisample.
+	sz += sizeof((&pipeline_desc->SampleDesc)->Quality);
+	sz += sizeof((&pipeline_desc->SampleDesc)->Count);
+	sz += sizeof(pipeline_desc->SampleMask);
+
+	// Depth stencil.
+	sz += sizeof((&pipeline_desc->DepthStencilState)->DepthEnable);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->StencilEnable);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->DepthWriteMask);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->DepthFunc);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->DepthBoundsTestEnable);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->StencilReadMask);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->StencilWriteMask);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->FrontFace.StencilFailOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->FrontFace.StencilPassOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->FrontFace.StencilDepthFailOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->FrontFace.StencilFunc);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->BackFace.StencilFailOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->BackFace.StencilPassOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->BackFace.StencilDepthFailOp);
+	sz += sizeof((&pipeline_desc->DepthStencilState)->BackFace.StencilFunc);
+
+	// Blend states.
+	sz += sizeof((&pipeline_desc->BlendState)->AlphaToCoverageEnable);
+	sz += sizeof((&pipeline_desc->BlendState)->IndependentBlendEnable);
+	for (uint32_t i = 0; i < ARRAY_SIZE((&pipeline_desc->BlendState)->RenderTarget); i++) {
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].BlendEnable);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].LogicOpEnable);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].LogicOp);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].SrcBlend);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].DestBlend);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].BlendOp);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].SrcBlendAlpha);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].DestBlendAlpha);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].BlendOpAlpha);
+		sz += sizeof((&pipeline_desc->BlendState)->RenderTarget[i].RenderTargetWriteMask);
+	}
+
+	// Multiview
+	sz += sizeof((&pipeline_desc->ViewInstancingDesc)->ViewInstanceCount);
+	sz += sizeof((&pipeline_desc->ViewInstancingDesc)->pViewInstanceLocations);
+
+	Vector<uint8_t> v;
+	v.resize(sz);
+	uint8_t *p = v.ptrw();
+
+	// Serialization
+
+	// Attachments.
+	for (uint32_t i = 0; i < ARRAY_SIZE((&pipeline_desc->RTVFormats)->RTFormats); i++) {
+		serialize_field((&pipeline_desc->RTVFormats)->RTFormats[i]);
+	}
+	serialize_field((&pipeline_desc->RTVFormats)->NumRenderTargets);
+	serialize_field(pipeline_desc->DSVFormat);
+
+	// Input assembly & tessellation.
+	serialize_field(pipeline_desc->PrimitiveTopologyType);
+	serialize_field(pipeline_desc->IBStripCutValue);
+
+	// Rasterization.
+	serialize_field((&pipeline_desc->RasterizerState)->DepthClipEnable);
+	serialize_field((&pipeline_desc->RasterizerState)->FillMode);
+	serialize_field((&pipeline_desc->RasterizerState)->CullMode);
+	serialize_field((&pipeline_desc->RasterizerState)->FrontCounterClockwise);
+	serialize_field((&pipeline_desc->RasterizerState)->MultisampleEnable);
+
+	// Multisample.
+	serialize_field((&pipeline_desc->SampleDesc)->Quality);
+	serialize_field((&pipeline_desc->SampleDesc)->Count);
+	serialize_field(pipeline_desc->SampleMask);
+
+	// Depth stencil.
+	serialize_field((&pipeline_desc->DepthStencilState)->DepthEnable);
+	serialize_field((&pipeline_desc->DepthStencilState)->StencilEnable);
+	serialize_field((&pipeline_desc->DepthStencilState)->DepthWriteMask);
+	serialize_field((&pipeline_desc->DepthStencilState)->DepthFunc);
+	serialize_field((&pipeline_desc->DepthStencilState)->DepthBoundsTestEnable);
+	serialize_field((&pipeline_desc->DepthStencilState)->StencilReadMask);
+	serialize_field((&pipeline_desc->DepthStencilState)->StencilWriteMask);
+	serialize_field((&pipeline_desc->DepthStencilState)->FrontFace.StencilFailOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->FrontFace.StencilPassOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->FrontFace.StencilDepthFailOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->FrontFace.StencilFunc);
+	serialize_field((&pipeline_desc->DepthStencilState)->BackFace.StencilFailOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->BackFace.StencilPassOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->BackFace.StencilDepthFailOp);
+	serialize_field((&pipeline_desc->DepthStencilState)->BackFace.StencilFunc);
+
+	// Blend states.
+	serialize_field((&pipeline_desc->BlendState)->AlphaToCoverageEnable);
+	serialize_field((&pipeline_desc->BlendState)->IndependentBlendEnable);
+	for (uint32_t i = 0; i < ARRAY_SIZE((&pipeline_desc->BlendState)->RenderTarget); i++) {
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].BlendEnable);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].LogicOpEnable);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].LogicOp);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].SrcBlend);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].DestBlend);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].BlendOp);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].SrcBlendAlpha);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].DestBlendAlpha);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].BlendOpAlpha);
+		serialize_field((&pipeline_desc->BlendState)->RenderTarget[i].RenderTargetWriteMask);
+	}
+
+	// Multiview
+	serialize_field((&pipeline_desc->ViewInstancingDesc)->ViewInstanceCount);
+	serialize_field((&pipeline_desc->ViewInstancingDesc)->pViewInstanceLocations);
+
+	HashingContext hc;
+	hc.start(HashingContext::HASH_MD5);
+	hc.update(v);
+	if (dyn_data.size() > 0) {
+		hc.update(dyn_data);
+	}
+	Vector<uint8_t> hash = hc.finish();
+	String out = String::hex_encode_buffer(hash.ptr(), hash.size());
+	return out;
+
+	#undef serialize_field
+}
+
 RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		ShaderID p_shader,
 		VertexFormatID p_vertex_format,
@@ -5597,8 +5814,9 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
+	Vector<uint8_t> vertex_format_serialized;
 	CD3DX12_PIPELINE_STATE_STREAM1 pipeline_desc = {};
-
+	String pso_label;
 	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
 	RenderPipelineInfo render_info;
 
@@ -5635,6 +5853,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.InputLayout)->pInputElementDescs = vf_info->input_elem_descs.ptr();
 		(&pipeline_desc.InputLayout)->NumElements = vf_info->input_elem_descs.size();
 		render_info.vf_info = vf_info;
+		vertex_format_serialized = vf_info->serialize();
 	}
 
 	// Input assembly & tessellation.
@@ -5819,17 +6038,68 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	ComPtr<ID3D12Device2> device_2;
 	device->QueryInterface(device_2.GetAddressOf());
 	ID3D12PipelineState *pso = nullptr;
+	bool cache_miss = true;
 	HRESULT res = E_FAIL;
 	if (device_2) {
 		D3D12_PIPELINE_STATE_STREAM_DESC pssd = {};
 		pssd.pPipelineStateSubobjectStream = &pipeline_desc;
 		pssd.SizeInBytes = sizeof(pipeline_desc);
-		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		if (pso_cache) {
+			ComPtr<ID3D12PipelineLibrary1> pso_cache_1;
+			pso_cache->QueryInterface(pso_cache_1.GetAddressOf());
+			if (pso_cache_1) {
+				Vector<String> sc_str_pieces;
+				for (const ShaderInfo::SpecializationConstant &sc : shader_info_in->specialization_constants) {
+					uint32_t int_value = sc.constant_id;
+					for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+						const PipelineSpecializationConstant &psc = p_specialization_constants[i];
+						if (psc.constant_id == sc.constant_id) {
+							int_value = psc.int_value;
+							break;
+						}
+					}
+					sc_str_pieces.push_back(itos(sc.constant_id) + "=" + itos(int_value));
+				}
+				String state_hash = hash_pipeline_state(&pipeline_desc, vertex_format_serialized);
+				pso_label = state_hash + shader_info_in->hash + String("_").join(sc_str_pieces);
+				res = pso_cache_1->LoadPipeline((WCHAR *)pso_label.utf16().get_data(), &pssd, IID_PPV_ARGS(&pso));
+				cache_miss = (res == E_INVALIDARG);
+			} else {
+				cache_miss = true;
+			}
+		}
+		if (!pso) {
+			res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		}
 	} else {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = pipeline_desc.GraphicsDescV0();
-		res = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
+		if (pso_cache) {
+			Vector<String> sc_str_pieces;
+			for (const ShaderInfo::SpecializationConstant &sc : shader_info_in->specialization_constants) {
+				uint32_t int_value = sc.constant_id;
+				for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+					const PipelineSpecializationConstant &psc = p_specialization_constants[i];
+					if (psc.constant_id == sc.constant_id) {
+						int_value = psc.int_value;
+						break;
+					}
+				}
+				sc_str_pieces.push_back(itos(sc.constant_id) + "=" + itos(int_value));
+			}
+			String state_hash = hash_pipeline_state(&pipeline_desc, vertex_format_serialized);
+			pso_label = state_hash + shader_info_in->hash + String("_").join(sc_str_pieces);
+			res = pso_cache->LoadGraphicsPipeline((WCHAR *)pso_label.utf16().get_data(), &desc, IID_PPV_ARGS(&pso));
+			cache_miss = (res == E_INVALIDARG);
+		}
+		if (!pso) {
+			res = device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
+		}
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Graphics)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	if (pso_cache && cache_miss) {
+		res = pso_cache->StorePipeline((WCHAR *)pso_label.utf16().get_data(), pso);
+	}
 
 	PipelineInfo *pipeline_info = memnew(PipelineInfo);
 	pipeline_info->pso = pso;
@@ -5903,6 +6173,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_s
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
 	CD3DX12_PIPELINE_STATE_STREAM pipeline_desc = {};
+	String pso_label;
 
 	// Stages bytecodes + specialization constants.
 
@@ -5920,17 +6191,66 @@ RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_s
 	ComPtr<ID3D12Device2> device_2;
 	device->QueryInterface(device_2.GetAddressOf());
 	ID3D12PipelineState *pso = nullptr;
+	bool cache_miss = false;
 	HRESULT res = E_FAIL;
 	if (device_2) {
 		D3D12_PIPELINE_STATE_STREAM_DESC pssd = {};
 		pssd.pPipelineStateSubobjectStream = &pipeline_desc;
 		pssd.SizeInBytes = sizeof(pipeline_desc);
-		res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		if (pso_cache) {
+			ComPtr<ID3D12PipelineLibrary1> pso_cache_1;
+			pso_cache->QueryInterface(pso_cache_1.GetAddressOf());
+			if (pso_cache_1) {
+				Vector<String> sc_str_pieces;
+				for (const ShaderInfo::SpecializationConstant &sc : shader_info_in->specialization_constants) {
+					uint32_t int_value = sc.constant_id;
+					for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+						const PipelineSpecializationConstant &psc = p_specialization_constants[i];
+						if (psc.constant_id == sc.constant_id) {
+							int_value = psc.int_value;
+							break;
+						}
+					}
+					sc_str_pieces.push_back(itos(sc.constant_id) + "-" + itos(int_value));
+				}
+				pso_label = shader_info_in->hash + String("_").join(sc_str_pieces);
+				res = pso_cache_1->LoadPipeline((WCHAR *)pso_label.utf16().get_data(), &pssd, IID_PPV_ARGS(&pso));
+				cache_miss = (res == E_INVALIDARG);
+			} else {
+				cache_miss = true;
+			}
+		}
+		if (!pso) {
+			res = device_2->CreatePipelineState(&pssd, IID_PPV_ARGS(&pso));
+		}
 	} else {
 		D3D12_COMPUTE_PIPELINE_STATE_DESC desc = pipeline_desc.ComputeDescV0();
-		res = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+		if (pso_cache) {
+			Vector<String> sc_str_pieces;
+			for (const ShaderInfo::SpecializationConstant &sc : shader_info_in->specialization_constants) {
+				uint32_t int_value = sc.constant_id;
+				for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+					const PipelineSpecializationConstant &psc = p_specialization_constants[i];
+					if (psc.constant_id == sc.constant_id) {
+						int_value = psc.int_value;
+						break;
+					}
+				}
+				sc_str_pieces.push_back(itos(sc.constant_id) + "-" + itos(int_value));
+			}
+			pso_label = shader_info_in->hash + String("_").join(sc_str_pieces);
+			res = pso_cache->LoadComputePipeline((WCHAR *)pso_label.utf16().get_data(), &desc, IID_PPV_ARGS(&pso));
+			cache_miss = (res == E_INVALIDARG);
+		}
+		if (!pso) {
+			res = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+		}
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Compute)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	if (pso_cache && cache_miss) {
+		pso_cache->StorePipeline((WCHAR *)pso_label.utf16().get_data(), pso);
+	}
 
 	PipelineInfo *pipeline_info = memnew(PipelineInfo);
 	pipeline_info->pso = pso;
