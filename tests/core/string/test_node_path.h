@@ -222,4 +222,51 @@ TEST_CASE("[NodePath] Slice") {
 			"Slice of an empty absolute path should be an empty absolute path.");
 }
 
+TEST_CASE("[NodePath] Comparison operators") {
+	const NodePath node_path_relative1 = NodePath("Path2D/PathFollow2D/Sprite2D:position:x");
+	const NodePath node_path_relative2 = NodePath("Path2D/PathFollow2D/Sprite2D:position:x");
+	const NodePath node_path_relative3 = NodePath("Path3D/PathFollow3D/Sprite3D:position:x");
+	const NodePath node_path_absolute1 = NodePath("/Path2D/PathFollow2D/Sprite2D:position:x");
+	const NodePath node_path_absolute2 = NodePath("/Path2D/PathFollow2D/Sprite2D:position:x");
+	const NodePath node_path_absolute3 = NodePath("/Path3D/PathFollow3D/Sprite3D:position:x");
+	SUBCASE("Operator== identical relative paths") {
+		CHECK_MESSAGE(
+				node_path_relative1 == node_path_relative2, "Relative paths should be equal");
+	}
+	SUBCASE("Operator== identical absolute paths") {
+		CHECK_MESSAGE(
+				node_path_absolute1 == node_path_absolute2, "Absolute paths should be equal");
+	}
+	SUBCASE("Operator== empty paths") {
+		const NodePath node_path_empty1;
+		const NodePath node_path_empty2 = NodePath("");
+		CHECK_MESSAGE(
+				node_path_empty1 == node_path_empty2, "Empty paths must be same");
+	}
+	SUBCASE("Operator!= absolute vs relative") {
+		CHECK_MESSAGE(
+				node_path_absolute1 != node_path_relative1, "Absolute and relative paths should differ");
+	}
+	SUBCASE("Operator!= different relative paths") {
+		CHECK_MESSAGE(
+				node_path_relative1 != node_path_relative3, "Relative paths are different");
+	}
+	SUBCASE("Operator!= different absolute paths") {
+		CHECK_MESSAGE(
+				node_path_absolute1 != node_path_absolute3, "Absolute paths are different");
+	}
+	SUBCASE("Operator= copy paths") {
+		NodePath node_path_copy;
+		node_path_copy = node_path_relative1;
+		CHECK_MESSAGE(
+				node_path_relative1 == node_path_copy, "Copy assignment should make paths equal");
+	}
+	SUBCASE("Operator= assign empty path") {
+		NodePath node_path_empty = NodePath("root/path");
+		node_path_empty = NodePath("");
+		CHECK_MESSAGE(
+				node_path_empty.is_empty(), "Assigning an empty NodePath should result in an empty path");
+	}
+}
+
 } // namespace TestNodePath
