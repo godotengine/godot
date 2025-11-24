@@ -266,6 +266,8 @@ private:
 
 	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
 
+	void _reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas);
+
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance {
