@@ -67,6 +67,12 @@
 				Closes the dock, making its tab hidden.
 			</description>
 		</method>
+		<method name="make_visible">
+			<return type="void" />
+			<description>
+				Focuses the dock's tab (or window if it's floating). If the dock was closed, it will be opened. If it's a bottom dock, makes the bottom panel visible.
+			</description>
+		</method>
 		<method name="open">
 			<return type="void" />
 			<description>

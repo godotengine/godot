@@ -41,6 +41,7 @@ void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 
 void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
+	ClassDB::bind_method(D_METHOD("make_visible"), &EditorDock::make_visible);
 	ClassDB::bind_method(D_METHOD("close"), &EditorDock::close);
 
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &EditorDock::set_title);
@@ -106,6 +107,10 @@ void EditorDock::open() {
 	if (!is_open) {
 		EditorDockManager::get_singleton()->open_dock(this);
 	}
+}
+
+void EditorDock::make_visible() {
+	EditorDockManager::get_singleton()->focus_dock(this);
 }
 
 void EditorDock::close() {
