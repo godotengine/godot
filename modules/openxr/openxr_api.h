@@ -521,6 +521,7 @@ public:
 	void finish();
 
 	_FORCE_INLINE_ XrSpace get_play_space() const { return play_space; }
+	_FORCE_INLINE_ XrSpace get_view_space() const { return view_space; }
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {

@@ -46,6 +46,10 @@
 			Enables a technique called "hole punching", which allows putting the composition layer behind the main projection layer (i.e. setting [member sort_order] to a negative value) while "punching a hole" through everything rendered by Godot so that the layer is still visible.
 			This can be used to create the illusion that the composition layer exists in the same 3D space as everything rendered by Godot, allowing objects to appear to pass both behind or in front of the composition layer.
 		</member>
+		<member name="eye_visibility" type="int" setter="set_eye_visibility" getter="get_eye_visibility" enum="OpenXRCompositionLayer.EyeVisibility" default="0">
+			The eye(s) the composition layer is visible to.
+			[b]Note:[/b] Not all composition layer types or runtimes support restricting visibility to a single eye.
+		</member>
 		<member name="layer_viewport" type="SubViewport" setter="set_layer_viewport" getter="get_layer_viewport">
 			The [SubViewport] to render on the composition layer.
 		</member>
@@ -160,6 +164,15 @@
 		</constant>
 		<constant name="SWIZZLE_ONE" value="5" enum="Swizzle">
 			Maps a color channel to the value of one.
+		</constant>
+		<constant name="EYE_VISIBILITY_BOTH" value="0" enum="EyeVisibility">
+			The layer is visible to both the left and right eyes.
+		</constant>
+		<constant name="EYE_VISIBILITY_LEFT" value="1" enum="EyeVisibility">
+			The layer is visible only to the left eye.
+		</constant>
+		<constant name="EYE_VISIBILITY_RIGHT" value="2" enum="EyeVisibility">
+			The layer is visible only to the right eye.
 		</constant>
 	</constants>
 </class>
