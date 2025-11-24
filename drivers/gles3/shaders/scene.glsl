@@ -1974,14 +1974,9 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
 	vec3 light_center = area_lights[idx].position + (area_width + area_height) / 2.0;
+	vec3 light_to_vert = vertex - light_center;
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, normalize(area_width)), dot(light_to_vert, normalize(area_height)), dot(light_to_vert, -area_direction));
 
-	mat4 light_mat = mat4(
-			vec4(normalize(area_width), 0),
-			vec4(normalize(area_height), 0),
-			vec4(-area_direction, 0),
-			vec4(light_center, 1));
-	mat4 light_mat_inv = inverse(light_mat);
-	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
 	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
 

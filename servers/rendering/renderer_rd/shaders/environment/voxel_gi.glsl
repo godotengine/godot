@@ -545,15 +545,8 @@ bool compute_area_light(uint index, vec3 pos, vec3 normal, inout vec3 light) {
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
 	vec3 light_center = lights.data[index].position + (area_width + area_height) / 2.0;
-	float inv_center_range = lights.data[index].inv_spot_attenuation;
-
-	mat4 light_mat = mat4(
-			vec4(area_width_norm, 0),
-			vec4(area_height_norm, 0),
-			vec4(-area_direction, 0),
-			vec4(light_center, 1));
-	mat4 light_mat_inv = inverse(light_mat);
-	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz; // vertex in LIGHT SPACE
+	vec3 light_to_vert = vertex - light_center;
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction)); // vertex in LIGHT SPACE
 	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0); // LIGHT SPACE
 	vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm; // VIEW SPACE
 	float dist = length(closest_point_on_light - vertex);
