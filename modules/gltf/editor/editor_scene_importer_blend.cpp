@@ -194,19 +194,29 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_vertex_color"] = "MATERIAL";
+	if (p_options.has(SNAME("blender/meshes/vertex_colors"))) {
+		int32_t color_option = p_options["blender/meshes/vertex_colors"];
+		if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+			switch (color_option) {
+				case BLEND_VERTEX_COLOR_MATERIAL: {
+					parameters_map["export_vertex_color"] = "MATERIAL";
+				} break;
+				case BLEND_VERTEX_COLOR_ACTIVE: {
+					parameters_map["export_vertex_color"] = "ACTIVE";
+				} break;
+				case BLEND_VERTEX_COLOR_NONE: {
+					parameters_map["export_vertex_color"] = "NONE";
+				} break;
+			}
 		} else {
-			parameters_map["export_vertex_color"] = "NONE";
-		}
-	} else {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_colors"] = true;
-		} else {
-			parameters_map["export_colors"] = false;
+			if (color_option == BLEND_VERTEX_COLOR_NONE) {
+				parameters_map["export_colors"] = false;
+			} else {
+				parameters_map["export_colors"] = true;
+			}
 		}
 	}
+
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
@@ -372,7 +382,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
 	ADD_OPTION_ENUM("blender/nodes/modifiers", "No Modifiers,All Modifiers", BLEND_MODIFIERS_ALL);
-	ADD_OPTION_BOOL("blender/meshes/colors", false);
+	ADD_OPTION_ENUM("blender/meshes/vertex_colors", "Material,Active,None", BLEND_VERTEX_COLOR_ACTIVE);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
 	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
@@ -395,6 +405,14 @@ void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<String
 		// naming compatibility version, we need to use version 1.
 		// Version 1 is the behavior before this option was added.
 		p_import_params["gltf/naming_version"] = 1;
+	}
+	if (p_import_params.has("blender/meshes/colors")) { // Legacy boolean option support.
+		if (bool(p_import_params["blender/meshes/colors"])) {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_MATERIAL;
+		} else {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_NONE;
+		}
+		p_import_params.erase("blender/meshes/colors");
 	}
 }
 
