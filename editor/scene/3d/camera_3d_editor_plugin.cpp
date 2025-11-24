@@ -80,7 +80,14 @@ Camera3DEditor::Camera3DEditor() {
 }
 
 void Camera3DPreview::_update_sub_viewport_size() {
-	sub_viewport->set_size(Node3DEditor::get_camera_viewport_size(camera));
+	if(sub_viewport != nullptr) {
+		sub_viewport->set_size(Node3DEditor::get_camera_viewport_size(camera));
+	}
+}
+
+void Camera3DPreview::_camera_exiting() {
+	sub_viewport->queue_free();
+	sub_viewport = nullptr;
 }
 
 Camera3DPreview::Camera3DPreview(Camera3D *p_camera) :
@@ -95,6 +102,7 @@ Camera3DPreview::Camera3DPreview(Camera3D *p_camera) :
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Camera3DPreview::_update_sub_viewport_size));
 	_update_sub_viewport_size();
+	camera->connect(SceneStringName(tree_exiting), callable_mp(this, &Camera3DPreview::_camera_exiting));
 }
 
 bool EditorInspectorPluginCamera3DPreview::can_handle(Object *p_object) {
