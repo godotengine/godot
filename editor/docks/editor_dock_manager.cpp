@@ -1060,6 +1060,7 @@ void DockContextPopup::_tab_move_right() {
 
 void DockContextPopup::_close_dock() {
 	hide();
+	context_dock->emit_signal("closed");
 	dock_manager->close_dock(context_dock);
 }
 
@@ -1215,7 +1216,7 @@ void DockContextPopup::_dock_select_draw() {
 
 void DockContextPopup::_update_buttons() {
 	TabContainer *context_tab_container = dock_manager->get_dock_tab_container(context_dock);
-	if (context_dock->global) {
+	if (context_dock->global || context_dock->closable) {
 		close_button->set_tooltip_text(TTRC("Close this dock."));
 		close_button->set_disabled(false);
 	} else {
