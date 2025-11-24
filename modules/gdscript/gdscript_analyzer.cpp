@@ -912,7 +912,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				if (!result.is_set()) {
 					push_error(vformat(R"(Could not find type "%s" under base "%s".)", p_type->type_chain[i]->name, base.to_string()), p_type->type_chain[1]);
 					return bad_type;
-				} else if (!result.is_meta_type) {
+				} else if (!result.is_meta_type || !result.is_constant) {
 					push_error(vformat(R"(Member "%s" under base "%s" is not a valid type.)", p_type->type_chain[i]->name, base.to_string()), p_type->type_chain[1]);
 					return bad_type;
 				}
