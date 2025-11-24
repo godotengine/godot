@@ -20,7 +20,8 @@
 			Number of radial segments on the sphere.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
-			Radius of sphere.
+			Radius of the sphere's equator.
+			[b]Note:[/b] To get a regular sphere, the sphere's radius must be equal to half its height.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="32">
 			Number of segments along the height of the sphere.
