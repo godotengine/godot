@@ -515,7 +515,7 @@ if env["optimize"] == "auto":
         opt_level = "speed_trace"
     else:  # Release
         opt_level = "speed"
-    env["optimize"] = ARGUMENTS.get("optimize", opt_level)
+    env["optimize"] = opt_level
 
 env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
