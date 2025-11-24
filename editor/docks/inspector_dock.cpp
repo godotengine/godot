@@ -30,6 +30,7 @@
 
 #include "inspector_dock.h"
 
+#include "core/string/print_string.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"

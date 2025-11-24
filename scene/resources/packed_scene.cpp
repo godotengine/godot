@@ -31,12 +31,17 @@
 #include "packed_scene.h"
 
 #include "core/config/engine.h"
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/object.h"
 #include "core/object/script_language.h"
+#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -786,6 +791,32 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
+Error SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
+	print_line("parsing, size: " + String::num_int64(orig_array.size()));
+	for (int i = 0; i < orig_array.size(); i++) {
+		Variant elem = orig_array[i];
+
+		if (elem.get_type() == Variant::OBJECT) {
+			if (Node *n = Object::cast_to<Node>(elem)) {
+				out_array.push_back(p_node->get_path_to(n));
+			}
+		} else if (elem.get_type() == Variant::ARRAY) {
+			Array new_array;
+			Error err = _parse_array(new_array, p_node, elem);
+
+			if (err != OK) {
+				return err;
+			}
+
+			out_array.push_back(new_array);
+		} else {
+			out_array.push_back(elem);
+		}
+	}
+
+	return OK;
+}
+
 Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
@@ -925,6 +956,17 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value = new_array;
 				}
 			}
+		} else if (E.type == Variant::ARRAY) {
+			Array array = value;
+			Array new_array;
+
+			Error err = _parse_array(new_array, p_node, array);
+
+			if (err != OK) {
+				return err;
+			}
+
+			value = new_array;
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
 			int key_value_separator = E.hint_string.find_char(';');
 			if (key_value_separator >= 0) {

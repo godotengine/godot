@@ -332,6 +332,16 @@ void EditorPropertyArray::_create_new_property_slot() {
 	Button *edit_btn = nullptr;
 	Button *remove_btn = nullptr;
 	if (is_untyped_array) {
+		Array array = object->get_array();
+
+		for (int i = 0; i < array.size(); i++) {
+			Variant elem = array[i];
+			Node *n = Object::cast_to<Node>(elem);
+			if (elem.get_type() == Variant::OBJECT && n) {
+				print_line("Node: " + n->get_name());
+			}
+		}
+
 		edit_btn = memnew(Button);
 		edit_btn->set_accessibility_name(TTRC("Edit"));
 		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
