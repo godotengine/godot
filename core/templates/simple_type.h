@@ -33,4 +33,20 @@
 #include <type_traits>
 
 template <typename T>
-using GetSimpleTypeT = typename std::remove_cv_t<std::remove_reference_t<T>>;
+class Ref;
+
+template <typename T>
+struct RemoveRef {
+	using type = T;
+};
+
+template <typename T>
+struct RemoveRef<Ref<T>> {
+	using type = T;
+};
+
+template <typename T>
+using RemoveRefT = typename RemoveRef<T>::type;
+
+template <typename T>
+using GetSimpleTypeT = std::remove_cv_t<std::remove_reference_t<T>>;
