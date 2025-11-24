@@ -1144,50 +1144,30 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		return; // vertex is behind light
 	}
 
-	half theta = acos(dot(normal, eye_vec));
-
-	vec4 M_brdf_abcd;
-	vec3 M_brdf_e_mag_fres;
-
-	vec2 lut_uv = vec2(max(roughness, half(0.02)), theta / half(0.5 * M_PI));
-	float LTC_LUT_SIZE = 64.0;
-	lut_uv = lut_uv * (63.0 / LTC_LUT_SIZE) + vec2(0.5 / LTC_LUT_SIZE); // offset by 1 pixel
-	M_brdf_abcd = texture(ltc_lut1, lut_uv);
-	M_brdf_e_mag_fres = texture(ltc_lut2, lut_uv).xyz;
-
-	float scale = 1.0 / (M_brdf_abcd.x * M_brdf_e_mag_fres.x - M_brdf_abcd.y * M_brdf_abcd.w);
-
-	mat3 M_inv = mat3(
-			vec3(0, 0, 1.0 / M_brdf_abcd.z),
-			vec3(-M_brdf_abcd.w * scale, M_brdf_abcd.x * scale, 0),
-			vec3(-M_brdf_e_mag_fres.x * scale, M_brdf_abcd.y * scale, 0));
-
-	vec3 points[4];
-	points[0] = area_lights.data[idx].position - vertex;
-	points[1] = area_lights.data[idx].position + area_width - vertex;
-	points[2] = area_lights.data[idx].position + area_width + area_height - vertex;
-	points[3] = area_lights.data[idx].position + area_height - vertex;
-
-	hvec3 ltc_diffuse = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), hvec3(0));
-	hvec3 ltc_specular = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), hvec3(0));
-
 	float a_len = length(area_width);
 	float b_len = length(area_height);
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
-
+	vec3 light_center = area_lights.data[idx].position + (area_width + area_height) / 2.0;
 	mat4 light_mat = mat4(
 			vec4(normalize(area_width), 0),
 			vec4(normalize(area_height), 0),
 			vec4(-area_direction, 0),
-			vec4(area_lights.data[idx].position + (area_width + area_height) / 2.0, 1));
+			vec4(light_center, 1));
 	mat4 light_mat_inv = inverse(light_mat);
 	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
+	// alternative, more efficient calculation:
+	// vec3 pos_local_to_light = vec3(dot(light_to_vert.x, normalize(area_width)), dot(light_to_vert.y, normalize(area_height)), dot(light_to_vert.z, -area_direction));
+
 	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
 
 	float light_length = max(0, dist);
-	half light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	float decay = area_lights.data[idx].attenuation;
+#ifndef LIGHT_CODE_USED
+	decay -= 2.0; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+#endif
+	half light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, decay);
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
@@ -1310,6 +1290,85 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	light_attenuation *= shadow;
 	hvec3 color = hvec3(area_lights.data[idx].color);
 
+#if defined(LIGHT_CODE_USED)
+	// Light is written by the user shader.
+	mat4 inv_view_matrix = transpose(mat4(scene_data_block.data.inv_view_matrix[0],
+			scene_data_block.data.inv_view_matrix[1],
+			scene_data_block.data.inv_view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 read_view_matrix = transpose(mat4(scene_data_block.data.view_matrix[0],
+			scene_data_block.data.view_matrix[1],
+			scene_data_block.data.view_matrix[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+#ifdef USING_MOBILE_RENDERER
+	uint instance_index = draw_call.instance_index;
+#else
+	uint instance_index = instance_index_interp;
+#endif
+
+	mat4 read_model_matrix = transpose(mat4(instances.data[instance_index].transform[0],
+			instances.data[instance_index].transform[1],
+			instances.data[instance_index].transform[2],
+			vec4(0.0, 0.0, 0.0, 1.0)));
+
+#undef projection_matrix
+#define projection_matrix scene_data_block.data.projection_matrix
+#undef inv_projection_matrix
+#define inv_projection_matrix scene_data_block.data.inv_projection_matrix
+
+	vec2 read_viewport_size = scene_data_block.data.viewport_size;
+
+#ifdef LIGHT_BACKLIGHT_USED
+	vec3 backlight_highp = vec3(backlight);
+#endif
+	float roughness_highp = float(roughness);
+	float metallic_highp = float(metallic);
+	vec3 albedo_highp = vec3(albedo);
+	float alpha_highp = float(alpha);
+	vec3 normal_highp = vec3(normal);
+	vec3 light_highp = (light_center - vertex) / light_length;
+	vec3 view_highp = vec3(eye_vec);
+	float specular_amount_highp = float(area_lights.data[idx].specular_amount);
+	vec3 light_color_highp = vec3(color);
+	float attenuation_highp = float(light_attenuation);
+	vec3 diffuse_light_highp = vec3(diffuse_light);
+	vec3 specular_light_highp = vec3(specular_light);
+
+#CODE : LIGHT
+
+	alpha = half(alpha_highp);
+	diffuse_light = hvec3(diffuse_light_highp);
+	specular_light = hvec3(specular_light_highp);
+
+#else
+	half theta = acos(dot(normal, eye_vec));
+
+	vec4 M_brdf_abcd;
+	vec3 M_brdf_e_mag_fres;
+
+	vec2 lut_uv = vec2(max(roughness, half(0.02)), theta / half(0.5 * M_PI));
+	float LTC_LUT_SIZE = 64.0;
+	lut_uv = lut_uv * (63.0 / LTC_LUT_SIZE) + vec2(0.5 / LTC_LUT_SIZE); // offset by 1 pixel
+	M_brdf_abcd = texture(ltc_lut1, lut_uv);
+	M_brdf_e_mag_fres = texture(ltc_lut2, lut_uv).xyz;
+
+	float scale = 1.0 / (M_brdf_abcd.x * M_brdf_e_mag_fres.x - M_brdf_abcd.y * M_brdf_abcd.w);
+
+	mat3 M_inv = mat3(
+			vec3(0, 0, 1.0 / M_brdf_abcd.z),
+			vec3(-M_brdf_abcd.w * scale, M_brdf_abcd.x * scale, 0),
+			vec3(-M_brdf_e_mag_fres.x * scale, M_brdf_abcd.y * scale, 0));
+
+	vec3 points[4];
+	points[0] = area_lights.data[idx].position - vertex;
+	points[1] = area_lights.data[idx].position + area_width - vertex;
+	points[2] = area_lights.data[idx].position + area_width + area_height - vertex;
+	points[3] = area_lights.data[idx].position + area_height - vertex;
+
+	hvec3 ltc_diffuse = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), hvec3(0));
+	hvec3 ltc_specular = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), hvec3(0));
+
 	if (metallic < 1.0) {
 		diffuse_light += ltc_diffuse * color / half(2.0 * M_PI) * light_attenuation;
 	}
@@ -1319,6 +1378,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 	spec *= spec_color * max(half(M_brdf_e_mag_fres.y), half(0.0)) + (f90 - spec_color) * max(half(M_brdf_e_mag_fres.z), half(0.0));
 	specular_light += spec / half(2.0 * M_PI) * half(area_lights.data[idx].specular_amount) * light_attenuation;
+#endif // LIGHT_CODE_USED
 }
 
 void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light, inout hvec4 ambient_accum, inout hvec4 reflection_accum) {

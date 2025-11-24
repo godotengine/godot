@@ -1969,6 +1969,50 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		return; // vertex is behind light
 	}
 
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 light_center = area_lights[idx].position + (area_width + area_height) / 2.0;
+
+	mat4 light_mat = mat4(
+			vec4(normalize(area_width), 0),
+			vec4(normalize(area_height), 0),
+			vec4(-area_direction, 0),
+			vec4(light_center, 1));
+	mat4 light_mat_inv = inverse(light_mat);
+	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	float dist = length(closest_point_local_to_light - pos_local_to_light);
+
+	float light_length = max(0, dist);
+	float decay = area_lights[idx].attenuation;
+#ifndef LIGHT_CODE_USED
+	decay -= 2.0; // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+#endif
+	float attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, decay);
+
+	vec3 light_color = area_lights[idx].color;
+	attenuation *= shadow;
+
+#if defined(LIGHT_CODE_USED)
+	// light is written by the light shader
+
+	highp mat4 model_matrix = world_transform;
+	mat4 projection_matrix = scene_data_block.data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data_block.data.inv_projection_matrix;
+
+	vec3 light = (light_center - vertex) / light_length;
+	vec3 view = eye_vec;
+	float specular_amount = area_lights[idx].specular_amount;
+
+	/* clang-format off */
+
+#CODE : LIGHT
+
+	/* clang-format on */
+
+#else
 	float theta = acos(dot(normal, eye_vec));
 
 	vec4 M_brdf_abcd;
@@ -1996,35 +2040,15 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	vec3 ltc_diffuse = max(vec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), vec3(0));
 	vec3 ltc_specular = max(vec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), vec3(0));
 
-	float a_len = length(area_width);
-	float b_len = length(area_height);
-	float a_half_len = a_len / 2.0;
-	float b_half_len = b_len / 2.0;
-
-	mat4 light_mat = mat4(
-			vec4(normalize(area_width), 0),
-			vec4(normalize(area_height), 0),
-			vec4(-area_direction, 0),
-			vec4(area_lights[idx].position + (area_width + area_height) / 2.0, 1));
-	mat4 light_mat_inv = inverse(light_mat);
-	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
-	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
-	float dist = length(closest_point_local_to_light - pos_local_to_light);
-
-	float light_length = max(0, dist);
-	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation - 2.0); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
-
-	vec3 color = area_lights[idx].color;
-	light_attenuation *= shadow;
-
 	if (metallic < 1.0) {
-		diffuse_light += ltc_diffuse * color / (2.0 * M_PI) * light_attenuation;
+		diffuse_light += ltc_diffuse * light_color / (2.0 * M_PI) * attenuation;
 	}
-	vec3 spec = ltc_specular * color;
+	vec3 spec = ltc_specular * light_color;
 	vec3 spec_color = mix(vec3(0.04), albedo, vec3(metallic));
 
 	spec *= spec_color * max(M_brdf_e_mag_fres.y, 0.0) + (1.0 - spec_color) * max(M_brdf_e_mag_fres.z, 0.0);
-	specular_light += spec / (2.0 * M_PI) * area_lights[idx].specular_amount * light_attenuation;
+	specular_light += spec / (2.0 * M_PI) * area_lights[idx].specular_amount * attenuation;
+#endif // LIGHT_CODE_USED
 }
 #endif // !DISABLE_LIGHT_AREA
 
