@@ -3971,10 +3971,6 @@ ThemeEditor::ThemeEditor() {
 	theme_label->set_text(TTRC("Theme:"));
 	top_menu->add_child(theme_label);
 
-	Label *theme_label = memnew(Label);
-	theme_label->set_text(TTRC("Theme:"));
-	top_menu->add_child(theme_label);
-
 	theme_name = memnew(Label);
 	theme_name->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_name->set_theme_type_variation("HeaderSmall");
