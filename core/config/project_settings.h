@@ -146,6 +146,8 @@ protected:
 
 	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
+	bool _unload_resource_pack(const String &p_pack);
+	bool _is_pack_loaded(const String &p_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
