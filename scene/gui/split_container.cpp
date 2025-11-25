@@ -750,7 +750,7 @@ void SplitContainer::_resort() {
 
 void SplitContainer::_update_draggers() {
 	const int valid_child_count = (int)valid_children.size();
-	const int dragger_count = valid_child_count - 1;
+	const int dragger_count = MAX(valid_child_count - 1, 1);
 	const int draggers_size_diff = dragger_count - (int)dragging_area_controls.size();
 
 	// Add new draggers.
@@ -768,7 +768,10 @@ void SplitContainer::_update_draggers() {
 		const int remove_at = (int)dragging_area_controls.size() - 1;
 		SplitContainerDragger *dragger = dragging_area_controls[remove_at];
 		dragging_area_controls.remove_at(remove_at);
-		remove_child(dragger);
+		// replace_by removes all children, so make sure it is a child before removing.
+		if (dragger->get_parent() == this) {
+			remove_child(dragger);
+		}
 		memdelete(dragger);
 	}
 
