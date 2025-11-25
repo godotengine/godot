@@ -474,19 +474,19 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	if (pf.bundle) {
 		String simplified_path = p_path.simplify_path();
 		f = FileAccess::open(simplified_path, FileAccess::READ | FileAccess::SKIP_PACK);
+		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s".)", simplified_path, pf.pack));
 		off = 0; // For the sparse pack offset is always zero.
 	} else {
 		f = FileAccess::open(pf.pack, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
 		f->seek(pf.offset);
 		off = pf.offset;
 	}
 
-	ERR_FAIL_COND_MSG(f.is_null(), vformat("Can't open pack-referenced file '%s'.", String(pf.pack)));
-
 	if (pf.encrypted) {
 		Ref<FileAccessEncrypted> fae;
 		fae.instantiate();
-		ERR_FAIL_COND_MSG(fae.is_null(), vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
+		ERR_FAIL_COND_MSG(fae.is_null(), vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
 
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -495,7 +495,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		ERR_FAIL_COND_MSG(err, vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
+		ERR_FAIL_COND_MSG(err, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
 		f = fae;
 		off = 0;
 	}
