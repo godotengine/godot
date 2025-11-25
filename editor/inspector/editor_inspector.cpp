@@ -4478,10 +4478,7 @@ void EditorInspector::update_tree() {
 			// `|` separators used in `EditorHelpBit`.
 			if (theme_item_name.is_empty()) {
 				if (p.name.contains("shader_parameter/")) {
-					ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
-					if (shader_material) {
-						doc_tooltip_text = "property|" + shader_material->get_shader()->get_path() + "|" + propname;
-					}
+					doc_tooltip_text = "property|" + p.class_name + "|" + property_prefix + propname;
 				} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
 					doc_tooltip_text = "internal_property|" + classname + "|" + propname;
 				} else {
