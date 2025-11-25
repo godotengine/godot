@@ -645,7 +645,7 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 			export_plugins.write[i]->_export_end();
 		}
 		export_plugins.write[i]->_export_end_clear();
-		export_plugins.write[i]->set_export_preset(Ref<EditorExportPlugin>());
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>());
 	}
 }
 
