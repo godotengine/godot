@@ -35,6 +35,9 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/variant.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -513,6 +516,8 @@ void EditorPropertyArray::update_property() {
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
 			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+				Variant elem = array.get(idx);
+
 				slot.as_id = value_as_id;
 				slot.type = value_type;
 				EditorProperty *new_prop = nullptr;
@@ -521,6 +526,12 @@ void EditorPropertyArray::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
+					Variant e = array.get(idx);
+					if (Object::cast_to<Node>(e.get_validated_object())) {
+						subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						value_type = Variant::OBJECT;
+					}
+
 					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
 				}
 				new_prop->set_selectable(false);
