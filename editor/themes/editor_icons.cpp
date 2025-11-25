@@ -113,7 +113,8 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	native_menu_icons.insert("FileAccess");
 	native_menu_icons.insert("Folder");
 	native_menu_icons.insert("AnimationTrackList");
-	native_menu_icons.insert("Object");
+	native_menu_icons.insert("Signals");
+	native_menu_icons.insert("Groups");
 	native_menu_icons.insert("History");
 
 	// The names of the icons to exclude from the standard color conversion.
