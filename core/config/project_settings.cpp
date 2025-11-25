@@ -43,6 +43,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+#include "global_def.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
@@ -1329,6 +1330,10 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 
 Variant _GLOBAL_GET(const StringName &p_name) {
 	return ProjectSettings::get_singleton()->get_setting_with_override(p_name);
+}
+
+uint32_t _GLOBAL_GET_VERSION() {
+	return ProjectSettings::get_singleton()->get_version();
 }
 
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {

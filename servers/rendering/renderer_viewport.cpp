@@ -30,7 +30,7 @@
 
 #include "renderer_viewport.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/profiling/profiling.h"

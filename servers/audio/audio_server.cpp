@@ -30,7 +30,7 @@
 
 #include "audio_server.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"

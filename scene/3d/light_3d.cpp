@@ -30,7 +30,7 @@
 
 #include "light_3d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 void Light3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);

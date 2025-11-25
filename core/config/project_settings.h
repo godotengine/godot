@@ -252,26 +252,3 @@ public:
 	ProjectSettings(const String &p_path);
 	~ProjectSettings();
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Cached versions of GLOBAL_GET.
-// Cached but uses a typed variable for storage, this can be more efficient.
-// Variables prefixed with _ggc_ to avoid shadowing warnings.
-#define GLOBAL_GET_CACHED(m_type, m_setting_name) ([](const char *p_name) -> m_type {\
-static_assert(std::is_trivially_destructible<m_type>::value, "GLOBAL_GET_CACHED must use a trivial type that allows static lifetime.");\
-static m_type _ggc_local_var;\
-static uint32_t _ggc_local_version = 0;\
-static SpinLock _ggc_spin;\
-uint32_t _ggc_new_version = ProjectSettings::get_singleton()->get_version();\
-if (_ggc_local_version != _ggc_new_version) {\
-	_ggc_spin.lock();\
-	_ggc_local_version = _ggc_new_version;\
-	_ggc_local_var = ProjectSettings::get_singleton()->get_setting_with_override(p_name);\
-	m_type _ggc_temp = _ggc_local_var;\
-	_ggc_spin.unlock();\
-	return _ggc_temp;\
-}\
-_ggc_spin.lock();\
-m_type _ggc_temp2 = _ggc_local_var;\
-_ggc_spin.unlock();\
-return _ggc_temp2; })(m_setting_name)

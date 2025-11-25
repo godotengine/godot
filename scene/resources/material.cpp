@@ -31,7 +31,7 @@
 #include "material.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"

@@ -30,7 +30,7 @@
 
 #include "openxr_eye_gaze_interaction.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/os.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"

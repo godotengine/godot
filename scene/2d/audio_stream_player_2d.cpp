@@ -31,7 +31,7 @@
 #include "audio_stream_player_2d.h"
 #include "audio_stream_player_2d.compat.inc"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"

@@ -30,7 +30,7 @@
 
 #include "item_list.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/os.h"
 #include "scene/theme/theme_db.h"
 

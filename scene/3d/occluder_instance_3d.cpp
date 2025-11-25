@@ -30,7 +30,7 @@
 
 #include "occluder_instance_3d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"

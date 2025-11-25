@@ -37,7 +37,7 @@
 #include "nav_map_iteration_2d.h"
 #include "nav_region_iteration_2d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 using namespace Nav2D;
 

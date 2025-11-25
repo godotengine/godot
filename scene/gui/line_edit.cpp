@@ -31,7 +31,7 @@
 #include "line_edit.h"
 #include "line_edit.compat.inc"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
