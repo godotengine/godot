@@ -1380,6 +1380,11 @@ void EditorPropertyDictionary::update_property() {
 						editor->setup("Object");
 						new_prop = editor;
 					} else {
+						if (Object::cast_to<Node>(key.get_validated_object())) {
+							key_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+							key_type = Variant::OBJECT;
+						}
+
 						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
 					}
 					new_prop->set_read_only(true);
@@ -1427,6 +1432,11 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup("Object");
 					new_prop = editor;
 				} else {
+					if (Object::cast_to<Node>(value.get_validated_object())) {
+						value_subtype_hint = PropertyHint::PROPERTY_HINT_NODE_TYPE;
+						value_type = Variant::OBJECT;
+					}
+
 					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
 							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);

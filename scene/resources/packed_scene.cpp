@@ -40,6 +40,7 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
@@ -790,7 +791,9 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
-Error SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
+
+// Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
+void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
 	for (int i = 0; i < orig_array.size(); i++) {
 		Variant elem = orig_array[i];
 
@@ -800,19 +803,41 @@ Error SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array)
 			}
 		} else if (elem.get_type() == Variant::ARRAY) {
 			Array new_array;
-			Error err = _parse_array(new_array, p_node, elem);
-
-			if (err != OK) {
-				return err;
-			}
-
+			_parse_array(new_array, p_node, elem);
 			out_array.push_back(new_array);
 		} else {
 			out_array.push_back(elem);
 		}
 	}
+}
 
-	return OK;
+// Recursively parses dictionaries, mostly to look for Nodes to turn into NodePaths
+void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig_dict) {
+	Array keys = orig_dict.keys();
+
+	for (int i = 0; i < keys.size(); i++) {
+		Variant key = keys[i];
+
+		if (key.get_type() == Variant::DICTIONARY) {
+			Dictionary key_dict;
+			_parse_dict(key_dict, p_node, key);
+			key = key_dict;
+		} else if (Node *key_n = Object::cast_to<Node>(key)) {
+			key = p_node->get_path_to(key_n);
+		}
+
+		Variant value = orig_dict.get(keys[i], Variant::NIL);
+
+		if (value.get_type() == Variant::DICTIONARY) {
+			Dictionary value_dict;
+			_parse_dict(value_dict, p_node, value);
+			value = value_dict;
+		} else if (Node *value_n = Object::cast_to<Node>(value)) {
+			value = p_node->get_path_to(value_n);
+		}
+
+		out_dict.set(key, value);
+	}
 }
 
 Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved) {
@@ -958,11 +983,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			Array array = value;
 			Array new_array;
 
-			Error err = _parse_array(new_array, p_node, array);
-
-			if (err != OK) {
-				return err;
-			}
+			_parse_array(new_array, p_node, array);
 
 			value = new_array;
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
@@ -1012,6 +1033,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					value = new_dict;
 				}
 			}
+		} else if (E.type == Variant::DICTIONARY) {
+			Dictionary dict = value;
+			Dictionary new_dict;
+
+			_parse_dict(new_dict, p_node, dict);
+
+			value = new_dict;
 		}
 
 		if (!pinned_props.has(name)) {
