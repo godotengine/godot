@@ -30,10 +30,14 @@
 
 #include "texture_loader_dds.h"
 
+#include "core/io/dir_access.h"
 #include "dds_enums.h"
+#include "image_saver_dds.h"
 
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
+#include "core/io/image.h"
+#include "core/io/resource_loader.h"
 #include "scene/resources/image_texture.h"
 
 DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
@@ -722,25 +726,6 @@ static Ref<Resource> _dds_load_from_file(const String &p_path, Error *r_error) {
 	return _dds_load_from_buffer(f, r_error, p_path);
 }
 
-Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	return _dds_load_from_file(p_path, r_error);
-}
-
-void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("dds");
-}
-
-bool ResourceFormatDDS::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture");
-}
-
-String ResourceFormatDDS::get_resource_type(const String &p_path) const {
-	if (p_path.has_extension("dds")) {
-		return "Texture";
-	}
-	return "";
-}
-
 Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 	ERR_FAIL_NULL_V(p_dds, Ref<Image>());
 	ERR_FAIL_COND_V(!p_size, Ref<Image>());
@@ -758,6 +743,65 @@ Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 	return images[0];
 }
 
-ResourceFormatDDS::ResourceFormatDDS() {
+ResourceImporterDds *ResourceImporterDds::singleton = nullptr;
+
+String ResourceImporterDds::get_importer_name() const {
+	return "dds_texture";
+}
+
+String ResourceImporterDds::get_visible_name() const {
+	return "Texture";
+}
+
+void ResourceImporterDds::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("dds");
+}
+
+String ResourceImporterDds::get_save_extension() const {
+	return "dds";
+}
+
+String ResourceImporterDds::get_resource_type() const {
+	return "Texture";
+}
+
+void ResourceImporterDds::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+}
+
+bool ResourceImporterDds::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	return true;
+}
+
+Error ResourceImporterDds::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	// Simply copy the file as-is.
+	return DirAccess::copy_absolute(p_source_file, p_save_path + ".dds");
+}
+
+ResourceImporterDds::ResourceImporterDds(bool p_singleton) {
+	// This should only be set through the EditorNode.
+	if (p_singleton) {
+		singleton = this;
+	}
+
 	Image::_dds_mem_loader_func = load_mem_dds;
+}
+
+Ref<Resource> ResourceLoaderDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	return _dds_load_from_file(p_path, r_error);
+}
+
+void ResourceLoaderDDS::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("dds");
+}
+
+bool ResourceLoaderDDS::handles_type(const String &p_type) const {
+	return p_type == "Texture";
+}
+
+String ResourceLoaderDDS::get_resource_type(const String &p_path) const {
+	if (p_path.get_extension().to_lower() == "dds") {
+		return "Texture";
+	}
+
+	return "";
 }
