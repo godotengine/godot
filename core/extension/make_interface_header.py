@@ -60,6 +60,11 @@ extern "C" {
             check_type(kind, type, valid_data_types)
             valid_data_types[type["name"]] = True
 
+            deprecated = "deprecated" in type
+
+            if deprecated:
+                file.write("#ifndef DISABLE_DEPRECATED\n")
+
             if "description" in type:
                 write_doc(file, type["description"])
 
@@ -86,6 +91,9 @@ extern "C" {
             else:
                 raise Exception(f"Unknown kind of type: {kind}")
 
+            if deprecated:
+                file.write("#endif // DISABLE_DEPRECATED\n")
+
         for interface in data["interface"]:
             check_type("function", interface, valid_data_types)
             check_allowed_keys(
@@ -93,7 +101,15 @@ extern "C" {
                 ["name", "return_value", "arguments", "since", "description"],
                 ["see", "legacy_type_name", "deprecated"],
             )
+
+            deprecated = "deprecated" in interface
+            if deprecated:
+                file.write("#ifndef DISABLE_DEPRECATED\n\n")
+
             write_interface(file, interface)
+
+            if deprecated:
+                file.write("#endif // DISABLE_DEPRECATED\n\n")
 
         file.write("""\
 #ifdef __cplusplus
