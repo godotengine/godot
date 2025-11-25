@@ -800,7 +800,7 @@ void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) 
 			Array new_array;
 			_parse_array(new_array, p_node, elem);
 			elem = new_array;
-		}  else if (elem.get_type() == Variant::DICTIONARY) {
+		} else if (elem.get_type() == Variant::DICTIONARY) {
 			Dictionary new_dict;
 			_parse_dict(new_dict, p_node, elem);
 			elem = new_dict;
