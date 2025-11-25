@@ -292,7 +292,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Selecting a tab.
-				if (selecting) {
+				if (selecting && !tabs[found].disabled) {
 					if (deselect_enabled && get_current_tab() == found) {
 						set_current_tab(-1);
 					} else {
