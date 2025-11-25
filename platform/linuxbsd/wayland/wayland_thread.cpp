@@ -4652,9 +4652,9 @@ Error WaylandThread::init() {
 
 	KeyMappingXKB::initialize();
 
-#ifdef TOOLS_ENABLED
 	String embedder_socket_path;
 
+#ifdef TOOLS_ENABLED
 	bool embedder_enabled = true;
 
 	if (OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_EMBEDDER") == "1") {
@@ -4677,9 +4677,11 @@ Error WaylandThread::init() {
 			print_line("Pausing as per GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE.");
 			pause();
 		}
-	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
-		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+	}
+#endif // TOOLS_ENABLED
 
+	if (Engine::get_singleton()->is_embedded_in_editor()) {
+		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
 #if 0
 		// Debug
 		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
@@ -4696,7 +4698,6 @@ Error WaylandThread::init() {
 		print_verbose("Connecting to the Wayland embedder display.");
 		wl_display = wl_display_connect(embedder_socket_path.utf8().get_data());
 	}
-#endif // TOOLS_ENABLED
 
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
