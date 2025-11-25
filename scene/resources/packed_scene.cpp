@@ -787,9 +787,9 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 }
 
 // Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
-	for (int i = 0; i < orig_array.size(); i++) {
-		Variant elem = orig_array[i];
+void SceneState::_parse_array(Array &r_out_array, Node *p_node, const Array &p_orig_array) {
+	for (int i = 0; i < p_orig_array.size(); i++) {
+		Variant elem = p_orig_array[i];
 
 		if (elem.get_type() == Variant::OBJECT) {
 			if (Node *n = Object::cast_to<Node>(elem)) {
@@ -805,13 +805,13 @@ void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) 
 			elem = new_dict;
 		}
 
-		out_array.push_back(elem);
+		r_out_array.push_back(elem);
 	}
 }
 
 // Recursively parses dictionaries, mostly to look for Nodes to turn into NodePaths
-void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig_dict) {
-	Array keys = orig_dict.keys();
+void SceneState::_parse_dict(Dictionary &r_out_dict, Node *p_node, const Dictionary &p_orig_dict) {
+	Array keys = p_orig_dict.keys();
 
 	for (int i = 0; i < keys.size(); i++) {
 		Variant key = keys[i];
@@ -828,7 +828,7 @@ void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig
 			key = p_node->get_path_to(key_n);
 		}
 
-		Variant value = orig_dict.get(keys[i], Variant::NIL);
+		Variant value = p_orig_dict.get(keys[i], Variant::NIL);
 
 		if (value.get_type() == Variant::DICTIONARY) {
 			Dictionary value_dict;
@@ -842,7 +842,7 @@ void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig
 			value = p_node->get_path_to(value_n);
 		}
 
-		out_dict.set(key, value);
+		r_out_dict.set(key, value);
 	}
 }
 
