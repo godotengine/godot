@@ -37,6 +37,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
@@ -4397,6 +4398,16 @@ void TileMapLayerEditor::set_show_layer_selector(bool p_show_layer_selector) {
 
 TileMapLayerEditor::TileMapLayerEditor() {
 	set_process_internal(true);
+	set_name(TTRC("TileMap"));
+	set_icon_name("TileMapDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Open TileMap Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+
+	VBoxContainer *main_box_container = memnew(VBoxContainer);
+	add_child(main_box_container);
 
 	// Shortcuts.
 	ED_SHORTCUT("tiles_editor/select_next_layer", TTRC("Select Next Tile Map Layer"), Key::PAGEDOWN);
@@ -4422,7 +4433,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	// --- TileMap toolbar ---
 	tile_map_toolbar = memnew(HFlowContainer);
 	tile_map_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(tile_map_toolbar);
+	main_box_container->add_child(tile_map_toolbar);
 
 	// Tabs.
 	tile_map_toolbar->add_child(tabs_bar);
@@ -4509,10 +4520,10 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	cant_edit_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	cant_edit_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	cant_edit_label->hide();
-	add_child(cant_edit_label);
+	main_box_container->add_child(cant_edit_label);
 
 	for (unsigned int tab_index = 0; tab_index < tabs_data.size(); tab_index++) {
-		add_child(tabs_data[tab_index].panel);
+		main_box_container->add_child(tabs_data[tab_index].panel);
 		tabs_data[tab_index].panel->set_v_size_flags(SIZE_EXPAND_FILL);
 		tabs_data[tab_index].panel->set_visible(tab_index == 0);
 		tabs_data[tab_index].panel->set_h_size_flags(SIZE_EXPAND_FILL);

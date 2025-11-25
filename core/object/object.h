@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/object/gdtype.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
@@ -39,6 +39,7 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/required_ptr.h"
 #include "core/variant/variant.h"
 
 template <typename T>

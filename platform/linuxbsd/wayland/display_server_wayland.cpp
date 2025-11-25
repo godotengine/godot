@@ -688,7 +688,18 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			// Attach the inhibit request to the main window, not the last focused window,
+			// on the basis that inhibiting the screensaver is global state for the application.
+			WindowID window_id = MAIN_WINDOW_ID;
+			WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+			screensaver_inhibited = portal_desktop->inhibit(ws ? ws->exported_handle : String());
+		} else {
+			portal_desktop->uninhibit();
+			screensaver_inhibited = false;
+		}
+	} else if (screensaver) {
 		if (p_enable) {
 			screensaver->inhibit();
 		} else {
@@ -1536,10 +1547,11 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 		ERR_FAIL_NULL_V(ws, ERR_BUG);
 
 		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
-
+#ifdef LIBDECOR_ENABLED
 		if (toplevel == nullptr && ws->libdecor_frame) {
 			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
 		}
+#endif
 
 		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
 

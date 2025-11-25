@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import contextlib
 import glob
@@ -9,9 +11,9 @@ import sys
 import textwrap
 import zlib
 from collections import OrderedDict
-from io import StringIO, TextIOBase
+from io import StringIO
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
+from typing import Generator, TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -1553,8 +1555,8 @@ def generate_copyright_header(filename: str) -> str:
 @contextlib.contextmanager
 def generated_wrapper(
     path: str,
-    guard: Optional[bool] = None,
-) -> Generator[TextIOBase, None, None]:
+    guard: bool | None = None,
+) -> Generator[TextIO, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1626,13 +1628,13 @@ def to_escaped_cstring(value: str) -> str:
     return value.translate(C_ESCAPE_TABLE)
 
 
-def to_raw_cstring(value: Union[str, List[str]]) -> str:
+def to_raw_cstring(value: str | list[str]) -> str:
     MAX_LITERAL = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
 
-    split: List[bytes] = []
+    split: list[bytes] = []
     offset = 0
     encoded = value.encode()
 
