@@ -786,14 +786,15 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 		return;
 	}
 
+	p_dock->is_open = false;
+
 	EditorBottomPanel *bottom_panel = EditorNode::get_bottom_panel();
 	if (get_dock_tab_container(p_dock) == bottom_panel && bottom_panel->get_current_tab_control() == p_dock) {
 		bottom_panel->hide_bottom_panel();
 	}
-	_move_dock(p_dock, closed_dock_parent);
-
-	p_dock->is_open = false;
+	// Hide before moving to remove inconsistent signals.
 	p_dock->hide();
+	_move_dock(p_dock, closed_dock_parent);
 
 	_update_layout();
 }
@@ -807,7 +808,6 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	}
 
 	p_dock->is_open = true;
-	p_dock->show();
 
 	// Open dock to its previous location.
 	if (p_dock->dock_slot_index != DockConstants::DOCK_SLOT_NONE) {
@@ -822,6 +822,7 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 		return;
 	}
 
+	p_dock->show();
 	_update_layout();
 }
 
@@ -977,7 +978,9 @@ PopupMenu *EditorDockManager::get_docks_menu() {
 EditorDockManager::EditorDockManager() {
 	singleton = this;
 
-	closed_dock_parent = EditorNode::get_singleton()->get_gui_base();
+	closed_dock_parent = memnew(Control);
+	closed_dock_parent->hide();
+	EditorNode::get_singleton()->get_gui_base()->add_child(closed_dock_parent);
 
 	dock_context_popup = memnew(DockContextPopup);
 	EditorNode::get_singleton()->get_gui_base()->add_child(dock_context_popup);
