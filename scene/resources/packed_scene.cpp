@@ -786,7 +786,6 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
-
 // Recursively parses arrays, mostly to look for Nodes to turn into NodePaths
 void SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
 	for (int i = 0; i < orig_array.size(); i++) {
