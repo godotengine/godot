@@ -60,7 +60,7 @@ public:
 	static constexpr USize MAX_INT = INT64_MAX;
 
 private:
-	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ max_align_t
+	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ MAX_ALIGN
 	//             ┌────────────────────┬──┬───────────────┬──┬─────────────┬──┬───────────...
 	//             │ SafeNumeric<USize> │░░│ USize         │░░│ USize       │░░│ T[]
 	//             │ ref. count         │░░│ data capacity │░░│ data size   │░░│ data
@@ -70,7 +70,7 @@ private:
 	static constexpr size_t REF_COUNT_OFFSET = 0;
 	static constexpr size_t CAPACITY_OFFSET = Memory::get_aligned_address(REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>), alignof(USize));
 	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
-	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), alignof(max_align_t));
+	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
 
 	mutable T *_ptr = nullptr;
 
