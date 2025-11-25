@@ -840,10 +840,6 @@ void SceneState::_parse_dict(Dictionary &out_dict, Node *p_node, Dictionary orig
 			Dictionary value_dict;
 			_parse_dict(value_dict, p_node, value);
 			value = value_dict;
-		} else if (value.get_type() == Variant::ARRAY) {
-			Array value_array;
-			_parse_array(value_array, p_node, value);
-			value = value_array;
 		} else if (Node *value_n = Object::cast_to<Node>(value)) {
 			value = p_node->get_path_to(value_n);
 		}
