@@ -31,9 +31,6 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/object.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
 #include "scene/main/node.h"
 
 class SceneState : public RefCounted {
