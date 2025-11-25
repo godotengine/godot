@@ -109,17 +109,15 @@ static Ref<OpenXRInterface> openxr_interface;
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
-		// Only add our OpenXR action map editor if OpenXR is enabled for our project
-
 		if (openxr_interaction_profile_metadata == nullptr) {
 			// If we didn't initialize our actionmap metadata at startup, we initialize it now.
 			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
 			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 		}
-
-		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
-		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
+
+	OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+	EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 }
 #endif
 
