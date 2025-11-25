@@ -832,9 +832,10 @@ void EditorPropertyArray::_edit_pressed() {
 		initialize_array(array);
 		emit_changed(get_edited_property(), array);
 	}
-
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+	if (Object *obj = get_edited_object()) {
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyArray::_page_changed(int p_page) {
@@ -1552,9 +1553,10 @@ void EditorPropertyDictionary::_edit_pressed() {
 		initialize_dictionary(prop_val);
 		emit_changed(get_edited_property(), prop_val);
 	}
-
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+	if (Object *obj = get_edited_object()) {
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyDictionary::_page_changed(int p_page) {
@@ -1667,102 +1669,104 @@ void EditorPropertyLocalizableString::update_property() {
 
 	edit->set_text(vformat(TTR("Localizable String (size %d)"), dict.size()));
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
+		}
 
-	if (unfolded) {
-		updating = true;
+		if (unfolded) {
+			updating = true;
 
-		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
-			add_child(container);
-			set_bottom_editor(container);
+			if (!container) {
+				container = memnew(MarginContainer);
+				container->set_theme_type_variation("MarginContainer4px");
+				add_child(container);
+				set_bottom_editor(container);
 
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
-			container->add_child(vbox);
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+				container->add_child(vbox);
 
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
-			vbox->add_child(paginator);
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_free();
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
+				vbox->add_child(paginator);
+			} else {
+				// Queue children for deletion, deleting immediately might cause errors.
+				for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+					property_vbox->get_child(i)->queue_free();
+				}
 			}
-		}
 
-		int size = dict.size();
+			int size = dict.size();
 
-		int max_page = MAX(0, size - 1) / page_length;
-		page_index = MIN(page_index, max_page);
+			int max_page = MAX(0, size - 1) / page_length;
+			page_index = MIN(page_index, max_page);
 
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
 
-		int offset = page_index * page_length;
+			int offset = page_index * page_length;
 
-		int amount = MIN(size - offset, page_length);
+			int amount = MIN(size - offset, page_length);
 
-		for (int i = 0; i < amount; i++) {
-			String prop_name;
-			Variant key;
-			Variant value;
+			for (int i = 0; i < amount; i++) {
+				String prop_name;
+				Variant key;
+				Variant value;
 
-			prop_name = "indices/" + itos(i + offset);
-			key = dict.get_key_at_index(i + offset);
-			value = dict.get_value_at_index(i + offset);
+				prop_name = "indices/" + itos(i + offset);
+				key = dict.get_key_at_index(i + offset);
+				value = dict.get_value_at_index(i + offset);
 
-			EditorProperty *prop = memnew(EditorPropertyText);
+				EditorProperty *prop = memnew(EditorPropertyText);
 
-			prop->set_object_and_property(object.ptr(), prop_name);
-			int remove_index = 0;
+				prop->set_object_and_property(object.ptr(), prop_name);
+				int remove_index = 0;
 
-			String cs = key.get_construct_string();
-			prop->set_label(cs);
-			prop->set_tooltip_text(cs);
-			remove_index = i + offset;
+				String cs = key.get_construct_string();
+				prop->set_label(cs);
+				prop->set_tooltip_text(cs);
+				remove_index = i + offset;
 
-			prop->set_selectable(false);
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
+				prop->set_selectable(false);
+				prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
+				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
 
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			property_vbox->add_child(hbox);
-			hbox->add_child(prop);
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit_btn = memnew(Button);
-			edit_btn->set_accessibility_name(TTRC("Remove Translation"));
-			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-			hbox->add_child(edit_btn);
-			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				property_vbox->add_child(hbox);
+				hbox->add_child(prop);
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				Button *edit_btn = memnew(Button);
+				edit_btn->set_accessibility_name(TTRC("Remove Translation"));
+				edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+				hbox->add_child(edit_btn);
+				edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
-			prop->update_property();
-		}
+				prop->update_property();
+			}
 
-		if (page_index == max_page) {
-			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
-			button_add_item->set_accessibility_name(TTRC("Add Translation"));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
-			property_vbox->add_child(button_add_item);
-		}
+			if (page_index == max_page) {
+				button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
+				button_add_item->set_accessibility_name(TTRC("Add Translation"));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
+				property_vbox->add_child(button_add_item);
+			}
 
-		updating = false;
+			updating = false;
 
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			button_add_item = nullptr;
-			container = nullptr;
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				button_add_item = nullptr;
+				container = nullptr;
+			}
 		}
 	}
 }
@@ -1772,14 +1776,16 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 }
 
 void EditorPropertyLocalizableString::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
-		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
-		get_edited_object()->set(get_edited_property(), prop_val);
-	}
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+			VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
+			obj->set(get_edited_property(), prop_val);
+		}
 
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyLocalizableString::_page_changed(int p_page) {
