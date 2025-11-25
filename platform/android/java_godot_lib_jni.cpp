@@ -536,7 +536,7 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMe
 		String key = jstring_to_string(p_key, env);
 		Variant default_value = _jobject_to_variant(env, p_default_value);
 		Variant data = EditorSettings::get_singleton()->get_project_metadata(section, key, default_value);
-		result = _variant_to_jvalue(env, data.get_type(), &data, true);
+		result.l = _variant_to_jobject(env, data.get_type(), &data);
 	}
 #else
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
