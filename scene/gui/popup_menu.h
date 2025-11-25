@@ -249,6 +249,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
+	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -408,7 +409,6 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
-	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
 	virtual void set_visible(bool p_visible) override;
 
 	PopupMenu();

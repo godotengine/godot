@@ -290,6 +290,7 @@ private:
 protected:
 	virtual void _update_theme_item_cache() override;
 
+	virtual void _popup_base(const Rect2i &p_rect = Rect2i()) override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -300,7 +301,6 @@ protected:
 
 public:
 	virtual void set_visible(bool p_visible) override;
-	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	// Public for use with callable_mp.
 	void _file_submitted(const String &p_file);
