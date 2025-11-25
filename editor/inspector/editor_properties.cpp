@@ -3577,6 +3577,8 @@ void EditorPropertyResource::update_property() {
 	}
 
 	resource_picker->set_edited_resource_no_check(res);
+	const Ref<Resource> &real_res = get_edited_property_value();
+	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
 }
 
 void EditorPropertyResource::collapse_all_folding() {

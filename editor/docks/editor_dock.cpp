@@ -67,6 +67,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dock_icon"), &EditorDock::get_dock_icon);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "dock_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_dock_icon", "get_dock_icon");
 
+	ClassDB::bind_method(D_METHOD("set_force_show_icon", "force"), &EditorDock::set_force_show_icon);
+	ClassDB::bind_method(D_METHOD("get_force_show_icon"), &EditorDock::get_force_show_icon);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_show_icon"), "set_force_show_icon", "get_force_show_icon");
+
 	ClassDB::bind_method(D_METHOD("set_title_color", "color"), &EditorDock::set_title_color);
 	ClassDB::bind_method(D_METHOD("get_title_color"), &EditorDock::get_title_color);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "title_color"), "set_title_color", "get_title_color");
@@ -77,7 +81,7 @@ void EditorDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_default_slot", "slot"), &EditorDock::_set_default_slot_bind);
 	ClassDB::bind_method(D_METHOD("get_default_slot"), &EditorDock::_get_default_slot_bind);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_slot"), "set_default_slot", "get_default_slot");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_slot", PROPERTY_HINT_ENUM, "None:-1,Left Side Upper-Left,Left Side Bottom-Left,Left Side Upper-Right,Left Side Bottom-Right,Right Side Upper-Left,Right Side Bottom-Left,Right Side Upper-Right,Right Side Bottom-Right,Bottom"), "set_default_slot", "get_default_slot");
 
 	ClassDB::bind_method(D_METHOD("set_available_layouts", "layouts"), &EditorDock::set_available_layouts);
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
@@ -141,6 +145,14 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 		return;
 	}
 	dock_icon = p_icon;
+	emit_signal("tab_style_changed");
+}
+
+void EditorDock::set_force_show_icon(bool p_force) {
+	if (force_show_icon == p_force) {
+		return;
+	}
+	force_show_icon = p_force;
 	emit_signal("tab_style_changed");
 }
 

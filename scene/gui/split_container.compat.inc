@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_variant_type_selectors.h                                       */
+/*  split_container.compat.inc                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/variant/variant.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup_menu.h"
+void SplitContainer::_clamp_split_offset_compat_90411() {
+	clamp_split_offset(0);
+}
 
-class EditorVariantTypeOptionButton : public OptionButton {
-	GDCLASS(EditorVariantTypeOptionButton, OptionButton);
+void SplitContainer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("clamp_split_offset"), &SplitContainer::_clamp_split_offset_compat_90411);
+}
 
-	void _update_menu_icons();
-
-protected:
-	void _notification(int p_what);
-
-public:
-	Variant::Type get_selected_type() const;
-
-	void populate(const LocalVector<Variant::Type> &p_disabled_types, const HashMap<Variant::Type, String> &p_renames = {});
-};
-
-class EditorVariantTypePopupMenu : public PopupMenu {
-	GDCLASS(EditorVariantTypePopupMenu, PopupMenu);
-
-	bool remove_item = false;
-	bool icons_dirty = true;
-
-	void _populate();
-	void _update_menu_icons();
-
-protected:
-	void _notification(int p_what);
-	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
-
-public:
-	EditorVariantTypePopupMenu(bool p_remove_item);
-};
+#endif

@@ -1131,7 +1131,9 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 
 void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
 	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
-	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
+	Ref<Skin> skin = p_skeleton->create_skin_from_rest_transforms();
+	p_skeleton->register_skin(skin);
+	bones_mesh_preview->set_skin(skin);
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {

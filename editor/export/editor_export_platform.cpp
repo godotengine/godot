@@ -645,7 +645,7 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 			export_plugins.write[i]->_export_end();
 		}
 		export_plugins.write[i]->_export_end_clear();
-		export_plugins.write[i]->set_export_preset(Ref<EditorExportPlugin>());
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>());
 	}
 }
 
@@ -1339,8 +1339,6 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		bool do_export = true;
-		bool skip_all = false;
-		int skipped_i = export_plugins.size() - 1;
 		for (int i = 0; i < export_plugins.size(); i++) {
 			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
 				export_plugins.write[i]->_export_file_script(path, type, features_psa);
@@ -1356,30 +1354,26 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			}
 
-			if (export_plugins[i]->skipped) {
-				do_export = false;
-				skip_all = true;
-				skipped_i = i;
-				break;
-			}
-		}
-
-		for (int i = 0; i <= skipped_i; i++) {
-			if (!skip_all) {
-				for (const EditorExportPlugin::ExtraFile &extra_file : export_plugins[i]->extra_files) {
-					err = save_proxy.save_file(p_udata, extra_file.path, extra_file.data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
-					if (err != OK) {
-						return err;
-					}
-					if (extra_file.remap) {
-						do_export = false; // If remap, do not.
-						path_remaps.push_back(path);
-						path_remaps.push_back(extra_file.path);
-					}
+			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+				err = save_proxy.save_file(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
+				if (err != OK) {
+					return err;
+				}
+				if (export_plugins[i]->extra_files[j].remap) {
+					do_export = false; // If remap, do not.
+					path_remaps.push_back(path);
+					path_remaps.push_back(export_plugins[i]->extra_files[j].path);
 				}
 			}
 
+			if (export_plugins[i]->skipped) {
+				do_export = false;
+			}
 			export_plugins.write[i]->_clear();
+
+			if (!do_export) {
+				break;
+			}
 		}
 		if (!do_export) {
 			continue;
