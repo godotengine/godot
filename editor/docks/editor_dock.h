@@ -58,6 +58,7 @@ private:
 	String layout_key;
 	StringName icon_name;
 	Ref<Texture2D> dock_icon;
+	bool force_show_icon = false;
 	Color title_color = Color(0, 0, 0, 0);
 	Ref<Shortcut> shortcut;
 	DockConstants::DockSlot default_slot = DockConstants::DOCK_SLOT_NONE;
@@ -105,6 +106,9 @@ public:
 
 	void set_dock_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_dock_icon() const { return dock_icon; }
+
+	void set_force_show_icon(bool p_force);
+	bool get_force_show_icon() const { return force_show_icon; }
 
 	void set_title_color(const Color &p_color);
 	Color get_title_color() const { return title_color; }
