@@ -34,7 +34,7 @@
 #include "openxr_util.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/memory.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"

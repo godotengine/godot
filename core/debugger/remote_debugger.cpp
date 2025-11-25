@@ -30,7 +30,7 @@
 
 #include "remote_debugger.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/engine_profiler.h"

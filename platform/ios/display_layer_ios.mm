@@ -33,7 +33,7 @@
 #import "display_server_ios.h"
 #import "os_ios.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
 #include "servers/audio/audio_server.h"

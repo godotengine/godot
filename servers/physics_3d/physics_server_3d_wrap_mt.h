@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"

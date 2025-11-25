@@ -30,7 +30,7 @@
 
 #include "image_compress_betsy.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 #include "betsy_bc1.h"
 

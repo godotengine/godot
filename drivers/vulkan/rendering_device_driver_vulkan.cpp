@@ -30,7 +30,7 @@
 
 #include "rendering_device_driver_vulkan.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/marshalls.h"
 #include "vulkan_hooks.h"
 

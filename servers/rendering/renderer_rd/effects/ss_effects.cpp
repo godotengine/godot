@@ -30,7 +30,7 @@
 
 #include "ss_effects.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"

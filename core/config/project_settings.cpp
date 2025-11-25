@@ -1327,6 +1327,10 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 	return ret;
 }
 
+Variant _GLOBAL_GET(const StringName &p_name) {
+	return ProjectSettings::get_singleton()->get_setting_with_override(p_name);
+}
+
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
 	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");

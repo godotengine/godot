@@ -30,7 +30,7 @@
 
 #include "theme_db.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/resource_loader.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"

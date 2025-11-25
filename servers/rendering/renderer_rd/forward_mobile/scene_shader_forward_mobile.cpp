@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_mobile.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/math/math_defs.h"
 #include "render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"

@@ -30,7 +30,7 @@
 
 #include "packet_peer.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/marshalls.h"
 
 /* helpers / binders */

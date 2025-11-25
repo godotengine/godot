@@ -30,7 +30,7 @@
 
 #include "register_scene_types.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/animation/animation_blend_space_1d.h"

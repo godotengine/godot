@@ -34,7 +34,6 @@
 #include "godot_broad_phase_2d_bvh.h"
 #include "godot_collision_solver_2d.h"
 
-#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
 

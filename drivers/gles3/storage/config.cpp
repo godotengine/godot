@@ -34,6 +34,8 @@
 
 #include "../rasterizer_gles3.h"
 
+#include "core/config/global_def.h"
+
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
 #endif

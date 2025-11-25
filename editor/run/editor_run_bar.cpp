@@ -30,7 +30,7 @@
 
 #include "editor_run_bar.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"

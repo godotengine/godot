@@ -35,7 +35,7 @@
 #include "rasterizer_gles3.h"
 #include "rasterizer_scene_gles3.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/transform_interpolator.h"
 #include "servers/rendering/rendering_server_default.h"

@@ -31,7 +31,7 @@
 #include "register_server_types.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 #include "audio/audio_effect.h"
 #include "audio/audio_server.h"

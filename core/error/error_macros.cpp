@@ -38,7 +38,7 @@
 
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/main/node.h"
 #endif
 

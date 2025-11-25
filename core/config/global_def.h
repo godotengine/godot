@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resource_importer_texture_settings.cpp                                */
+/*  global_def.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "resource_importer_texture_settings.h"
+#pragma once
 
-#include "core/config/global_def.h"
-#include "core/os/os.h"
+struct PropertyInfo;
+class String;
+class StringName;
+class Variant;
 
-// ResourceImporterTextureSettings contains code used by
-// multiple texture importers and the export dialog.
-bool ResourceImporterTextureSettings::should_import_s3tc_bptc() {
-	if (GLOBAL_GET("rendering/textures/vram_compression/import_s3tc_bptc")) {
-		return true;
-	}
-	// If the project settings override is not enabled, import
-	// S3TC/BPTC only when the host operating system needs it.
-	return OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
-}
+// Not a macro any longer.
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
+Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed = false, bool p_ignore_value_in_docs = false, bool p_basic = false, bool p_internal = false);
+Variant _GLOBAL_GET(const StringName &p_name);
 
-bool ResourceImporterTextureSettings::should_import_etc2_astc() {
-	if (GLOBAL_GET("rendering/textures/vram_compression/import_etc2_astc")) {
-		return true;
-	}
-	// If the project settings override is not enabled, import
-	// ETC2/ASTC only when the host operating system needs it.
-	return OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_ETC2_ASTC;
-}
+#define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
+#define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
+#define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
+#define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
+#define GLOBAL_GET(m_var) _GLOBAL_GET(m_var)
+
+#define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
+#define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
+#define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
+#define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
+
+#define GLOBAL_DEF_INTERNAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, false, true)

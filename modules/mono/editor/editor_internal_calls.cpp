@@ -37,7 +37,7 @@
 #include "../utils/path_utils.h"
 #include "code_completion.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"

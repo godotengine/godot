@@ -30,7 +30,7 @@
 
 #include "editor_audio_buses.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"

@@ -52,7 +52,7 @@
 #import "embedded_debugger.h"
 #import "macos_quartz_core_spi.h"
 
-#import "core/config/project_settings.h"
+#import "core/config/global_def.h"
 #import "core/debugger/engine_debugger.h"
 #import "core/io/marshalls.h"
 #import "core/os/main_loop.h"

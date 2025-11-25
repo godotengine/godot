@@ -30,7 +30,7 @@
 
 #include "path_utils.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"

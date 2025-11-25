@@ -31,7 +31,7 @@
 #include "resource_importer_texture_atlas.h"
 
 #include "atlas_import_failed.xpm"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"

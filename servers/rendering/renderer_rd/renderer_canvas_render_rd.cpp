@@ -30,7 +30,7 @@
 
 #include "renderer_canvas_render_rd.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"

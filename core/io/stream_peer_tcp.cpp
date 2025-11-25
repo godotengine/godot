@@ -30,7 +30,7 @@
 
 #include "stream_peer_tcp.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, const NetSocket::Address &p_addr) {
 	_sock = p_sock;

@@ -30,7 +30,7 @@
 
 #include "tls_context_mbedtls.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"

@@ -30,7 +30,7 @@
 
 #include "raycast_occlusion_cull.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
 

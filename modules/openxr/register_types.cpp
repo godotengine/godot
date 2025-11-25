@@ -91,7 +91,7 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "main/main.h"
 
 #ifdef TOOLS_ENABLED

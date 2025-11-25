@@ -32,7 +32,7 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/os.h"
 #include "core/version.h"
 

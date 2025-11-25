@@ -30,7 +30,7 @@
 
 #include "movie_writer_ogv.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/file_access.h"
 #include "rgb2yuv.h"
 

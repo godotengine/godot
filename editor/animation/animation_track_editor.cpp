@@ -31,7 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/string/translation_server.h"
