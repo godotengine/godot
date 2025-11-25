@@ -1173,97 +1173,40 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotBoxShape3D, GodotCapsuleShape3D, withMargin> separator(box_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
 
-	if (!separator.test_previous_axis()) {
+	const Vector3 capsule_segment_a = p_transform_b.origin + capsule_axis;
+	const Vector3 capsule_segment_b = p_transform_b.origin - capsule_axis;
+
+	Vector3 capsule_closest = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_segment_a, capsule_segment_b);
+
+	Vector3 center = p_transform_a.affine_inverse().xform(capsule_closest);
+	Vector3 extents = box_A->get_half_extents();
+	Vector3 nearest = center.clamp(-extents, extents);
+	nearest = p_transform_a.xform(nearest);
+
+	Vector3 delta = nearest - capsule_closest;
+	real_t length = delta.length();
+	real_t radius = capsule_B->get_radius() * p_transform_b.basis[0].length();
+
+	if (length > radius + (withMargin ? p_margin_a + p_margin_b : 0.0)) {
 		return;
 	}
 
-	// faces of A
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
+	p_collector->collided = true;
+	if (!p_collector->callback) {
+		return;
 	}
-
-	Vector3 cyl_axis = p_transform_b.basis.get_column(1).normalized();
-
-	// edges of A, capsule cylinder
-
-	for (int i = 0; i < 3; i++) {
-		// cylinder
-		Vector3 box_axis = p_transform_a.basis.get_column(i);
-		Vector3 axis = box_axis.cross(cyl_axis);
-		if (Math::is_zero_approx(axis.length_squared())) {
-			continue;
-		}
-
-		if (!separator.test_axis(axis.normalized())) {
-			return;
-		}
+	Vector3 axis;
+	if (length == 0) {
+		axis = (p_transform_a.origin - nearest).normalized();
+	} else {
+		axis = delta / length;
 	}
+	Vector3 point_a = (withMargin ? nearest - p_margin_a * axis : nearest);
+	Vector3 point_b = capsule_closest + (radius + (withMargin ? p_margin_b : 0.0)) * axis;
 
-	// points of A, capsule cylinder
-	// this sure could be made faster somehow..
-
-	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < 2; j++) {
-			for (int k = 0; k < 2; k++) {
-				Vector3 he = box_A->get_half_extents();
-				he.x *= (i * 2 - 1);
-				he.y *= (j * 2 - 1);
-				he.z *= (k * 2 - 1);
-				Vector3 point = p_transform_a.origin;
-				for (int l = 0; l < 3; l++) {
-					point += p_transform_a.basis.get_column(l) * he[l];
-				}
-
-				//Vector3 axis = (point - cyl_axis * cyl_axis.dot(point)).normalized();
-				Vector3 axis = Plane(cyl_axis).project(point).normalized();
-
-				if (!separator.test_axis(axis)) {
-					return;
-				}
-			}
-		}
-	}
-
-	// capsule balls, edges of A
-
-	for (int i = 0; i < 2; i++) {
-		Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
-
-		Vector3 sphere_pos = p_transform_b.origin + ((i == 0) ? capsule_axis : -capsule_axis);
-
-		Vector3 cnormal = p_transform_a.xform_inv(sphere_pos);
-
-		Vector3 cpoint = p_transform_a.xform(Vector3(
-
-				(cnormal.x < 0) ? -box_A->get_half_extents().x : box_A->get_half_extents().x,
-				(cnormal.y < 0) ? -box_A->get_half_extents().y : box_A->get_half_extents().y,
-				(cnormal.z < 0) ? -box_A->get_half_extents().z : box_A->get_half_extents().z));
-
-		// use point to test axis
-		Vector3 point_axis = (sphere_pos - cpoint).normalized();
-
-		if (!separator.test_axis(point_axis)) {
-			return;
-		}
-
-		// test edges of A
-
-		for (int j = 0; j < 3; j++) {
-			Vector3 axis = point_axis.cross(p_transform_a.basis.get_column(j)).cross(p_transform_a.basis.get_column(j)).normalized();
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
-		}
-	}
-
-	separator.generate_contacts();
+	p_collector->call(point_a, point_b, axis);
 }
 
 template <bool withMargin>
