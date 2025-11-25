@@ -199,6 +199,10 @@ Size2 LinkButton::get_minimum_size() const {
 	return minsize;
 }
 
+Control::CursorShape LinkButton::get_cursor_shape(const Point2 &p_pos) const {
+	return is_disabled() ? CURSOR_ARROW : get_default_cursor_shape();
+}
+
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
