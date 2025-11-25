@@ -37,7 +37,6 @@
 #include "core/io/resource_loader.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
@@ -792,7 +791,6 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 }
 
 Error SceneState::_parse_array(Array &out_array, Node *p_node, Array orig_array) {
-	print_line("parsing, size: " + String::num_int64(orig_array.size()));
 	for (int i = 0; i < orig_array.size(); i++) {
 		Variant elem = orig_array[i];
 
