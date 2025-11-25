@@ -126,6 +126,7 @@ public:
 
 	static PackedData *get_singleton() { return singleton; }
 	Error add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset);
+	Error add_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset);
 
 	void clear();
 
@@ -144,13 +145,18 @@ public:
 class PackSource {
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) = 0;
+	virtual bool try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset) = 0;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {
+private:
+	bool _try_open_pack(Ref<FileAccess> p_file, const String &p_path, bool p_replace_files, uint64_t p_offset);
+
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
+	virtual bool try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset) override;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
 };
 
@@ -159,6 +165,7 @@ class PackedSourceDirectory : public PackSource {
 
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
+	virtual bool try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset) override;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
 };
 

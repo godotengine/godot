@@ -205,6 +205,10 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 	return true;
 }
 
+bool ZipArchive::try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset) {
+	return false; // loading from memory only supported for PCK files
+}
+
 bool ZipArchive::file_exists(const String &p_name) const {
 	return files.has(p_name);
 }
