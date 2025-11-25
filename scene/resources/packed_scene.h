@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
 #include "core/io/resource.h"
 #include "core/object/object.h"
 #include "core/variant/array.h"
