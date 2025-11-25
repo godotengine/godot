@@ -32,6 +32,7 @@
 package org.godotengine.godot.vulkan
 
 import android.util.Log
+import org.godotengine.godot.utils.isProblematicAdrenoGpu
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -43,6 +44,8 @@ import kotlin.concurrent.withLock
 internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vkRenderer: VkRenderer) : Thread(TAG) {
 	companion object {
 		private val TAG = VkThread::class.java.simpleName
+
+		private val shouldForceRestartOnSurfaceLoss = isProblematicAdrenoGpu()
 	}
 
 	/**
@@ -159,6 +162,11 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	fun onSurfaceDestroyed() {
 		lock.withLock {
 			hasSurface = false
+
+			if (shouldForceRestartOnSurfaceLoss && rendererInitialized) {
+				shouldExit = true
+			}
+
 			lockCondition.signalAll()
 		}
 	}

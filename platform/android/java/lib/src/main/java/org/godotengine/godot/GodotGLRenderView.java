@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.input.GodotInputHandler;
+import org.godotengine.godot.utils.DeviceUtils;
 import org.godotengine.godot.xr.XRMode;
 import org.godotengine.godot.xr.ovr.OvrConfigChooser;
 import org.godotengine.godot.xr.ovr.OvrContextFactory;
@@ -46,6 +47,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -235,7 +237,8 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	}
 
 	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
-		setPreserveEGLContextOnPause(true);
+		boolean shouldPreserveContext = !DeviceUtils.isProblematicAdrenoGpu();
+		setPreserveEGLContextOnPause(shouldPreserveContext);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
 			case OPENXR:
