@@ -38,7 +38,6 @@
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
-#include "core/variant/array.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
