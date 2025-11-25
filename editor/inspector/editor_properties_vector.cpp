@@ -112,11 +112,10 @@ void EditorPropertyVectorN::_update_ratio() {
 }
 
 void EditorPropertyVectorN::_store_link(bool p_linked) {
-	if (!get_edited_object()) {
-		return;
+	if (Object *object = get_edited_object()) {
+		const String key = vformat("%s:%s", object->get_class(), get_edited_property());
+		EditorSettings::get_singleton()->set_project_metadata("linked_properties", key, p_linked);
 	}
-	const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
-	EditorSettings::get_singleton()->set_project_metadata("linked_properties", key, p_linked);
 }
 
 void EditorPropertyVectorN::_grab_changed(bool p_grab) {
@@ -130,8 +129,8 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (linked->is_visible()) {
-				if (get_edited_object()) {
-					const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
+				if (Object *object = get_edited_object()) {
+					const String key = vformat("%s:%s", object->get_class(), get_edited_property());
 					linked->set_pressed_no_signal(EditorSettings::get_singleton()->get_project_metadata("linked_properties", key, true));
 					_update_ratio();
 				}

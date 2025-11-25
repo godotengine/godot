@@ -215,117 +215,121 @@ void EditorPropertyFontMetaOverride::update_property() {
 
 	edit->set_text(vformat(TTR("Overrides (%d)"), dict.size()));
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
-
-	if (unfolded) {
-		updating = true;
-
-		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
-			add_child(container);
-			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_v_size_flags(SIZE_EXPAND_FILL);
-			container->add_child(vbox);
-
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
-
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_page_changed));
-			vbox->add_child(paginator);
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_free();
-			}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
 		}
 
-		int size = dict.size();
+		if (unfolded) {
+			updating = true;
 
-		int max_page = MAX(0, size - 1) / page_length;
-		page_index = MIN(page_index, max_page);
+			if (!container) {
+				container = memnew(MarginContainer);
+				container->set_theme_type_variation("MarginContainer4px");
+				add_child(container);
+				set_bottom_editor(container);
 
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+				container->add_child(vbox);
 
-		int offset = page_index * page_length;
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-		int amount = MIN(size - offset, page_length);
-
-		dict = dict.duplicate();
-		object->set_dict(dict);
-
-		for (int i = 0; i < amount; i++) {
-			String name = dict.get_key_at_index(i);
-			EditorProperty *prop = memnew(EditorPropertyCheck);
-			prop->set_object_and_property(object.ptr(), "keys/" + name);
-
-			if (script_editor) {
-				prop->set_label(TranslationServer::get_singleton()->get_script_name(name));
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_page_changed));
+				vbox->add_child(paginator);
 			} else {
-				prop->set_label(TranslationServer::get_singleton()->get_locale_name(name));
+				// Queue children for deletion, deleting immediately might cause errors.
+				for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+					property_vbox->get_child(i)->queue_free();
+				}
 			}
-			prop->set_tooltip_text(name);
-			prop->set_selectable(false);
 
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyFontMetaOverride::_object_id_selected));
+			int size = dict.size();
 
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			property_vbox->add_child(hbox);
-			hbox->add_child(prop);
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *remove = memnew(Button);
-			remove->set_accessibility_name(TTRC("Remove"));
-			remove->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-			hbox->add_child(remove);
-			remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
+			int max_page = MAX(0, size - 1) / page_length;
+			page_index = MIN(page_index, max_page);
 
-			prop->update_property();
-		}
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
 
-		EditorInspectorActionButton *button_add;
-		if (script_editor) {
-			// This property editor is currently only used inside the font import settings dialog.
-			// Usually, the dialog needs to be closed in order to change the editor's language.
-			// So we can ignore the auto-translation here.
+			int offset = page_index * page_length;
 
-			// TRANSLATORS: Script refers to a writing system.
-			button_add = memnew(EditorInspectorActionButton(TTR("Add Script", "Locale"), SNAME("Add")));
-			button_add->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			int amount = MIN(size - offset, page_length);
+
+			dict = dict.duplicate();
+			object->set_dict(dict);
+
+			for (int i = 0; i < amount; i++) {
+				String name = dict.get_key_at_index(i);
+				EditorProperty *prop = memnew(EditorPropertyCheck);
+				prop->set_object_and_property(object.ptr(), "keys/" + name);
+
+				if (script_editor) {
+					prop->set_label(TranslationServer::get_singleton()->get_script_name(name));
+				} else {
+					prop->set_label(TranslationServer::get_singleton()->get_locale_name(name));
+				}
+				prop->set_tooltip_text(name);
+				prop->set_selectable(false);
+
+				prop->connect("property_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_property_changed));
+				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyFontMetaOverride::_object_id_selected));
+
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				property_vbox->add_child(hbox);
+				hbox->add_child(prop);
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				Button *remove = memnew(Button);
+				remove->set_accessibility_name(TTRC("Remove"));
+				remove->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+				hbox->add_child(remove);
+				remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
+
+				prop->update_property();
+			}
+
+			EditorInspectorActionButton *button_add;
+			if (script_editor) {
+				// This property editor is currently only used inside the font import settings dialog.
+				// Usually, the dialog needs to be closed in order to change the editor's language.
+				// So we can ignore the auto-translation here.
+
+				// TRANSLATORS: Script refers to a writing system.
+				button_add = memnew(EditorInspectorActionButton(TTR("Add Script", "Locale"), SNAME("Add")));
+				button_add->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			} else {
+				button_add = memnew(EditorInspectorActionButton(TTRC("Add Locale"), SNAME("Add")));
+			}
+			button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_menu));
+			property_vbox->add_child(button_add);
+
+			updating = false;
 		} else {
-			button_add = memnew(EditorInspectorActionButton(TTRC("Add Locale"), SNAME("Add")));
-		}
-		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFontMetaOverride::_add_menu));
-		property_vbox->add_child(button_add);
-
-		updating = false;
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			container = nullptr;
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				container = nullptr;
+			}
 		}
 	}
 }
 
 void EditorPropertyFontMetaOverride::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
-		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
-		get_edited_object()->set(get_edited_property(), prop_val);
-	}
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL) {
+			Callable::CallError ce;
+			Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+			obj->set(get_edited_property(), prop_val);
+		}
 
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyFontMetaOverride::_page_changed(int p_page) {
@@ -412,114 +416,118 @@ void EditorPropertyOTVariation::update_property() {
 
 	edit->set_text(vformat(TTR("Variation Coordinates (%d)"), supported.size()));
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
-
-	if (unfolded) {
-		updating = true;
-
-		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
-			add_child(container);
-			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_v_size_flags(SIZE_EXPAND_FILL);
-			container->add_child(vbox);
-
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
-
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyOTVariation::_page_changed));
-			vbox->add_child(paginator);
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_free();
-			}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
 		}
 
-		int size = supported.size();
+		if (unfolded) {
+			updating = true;
 
-		int max_page = MAX(0, size - 1) / page_length;
-		page_index = MIN(page_index, max_page);
+			if (!container) {
+				container = memnew(MarginContainer);
+				container->set_theme_type_variation("MarginContainer4px");
+				add_child(container);
+				set_bottom_editor(container);
 
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+				container->add_child(vbox);
 
-		int offset = page_index * page_length;
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-		int amount = MIN(size - offset, page_length);
-
-		dict = dict.duplicate();
-		object->set_dict(dict);
-		object->set_defaults(supported);
-
-		for (int i = 0; i < amount; i++) {
-			int name_tag = supported.get_key_at_index(i);
-			Vector3i range = supported.get_value_at_index(i);
-
-			EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
-			EditorPropertyRangeHint hint;
-			hint.min = range.x;
-			hint.max = range.y;
-			hint.or_greater = false;
-			hint.or_less = false;
-			prop->setup(hint);
-			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
-
-			String name = TS->tag_to_name(name_tag);
-			String name_cap;
-			{
-				String aux = name.replace_char('_', ' ').strip_edges();
-				for (int j = 0; j < aux.get_slice_count(" "); j++) {
-					String slice = aux.get_slicec(' ', j);
-					if (slice.length() > 0) {
-						slice[0] = String::char_uppercase(slice[0]);
-						if (i > 0) {
-							name_cap += " ";
-						}
-						name_cap += slice;
-					}
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyOTVariation::_page_changed));
+				vbox->add_child(paginator);
+			} else {
+				// Queue children for deletion, deleting immediately might cause errors.
+				for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+					property_vbox->get_child(i)->queue_free();
 				}
 			}
-			prop->set_label(name_cap);
-			prop->set_tooltip_text(name);
-			prop->set_selectable(false);
 
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyOTVariation::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyOTVariation::_object_id_selected));
+			int size = supported.size();
 
-			property_vbox->add_child(prop);
+			int max_page = MAX(0, size - 1) / page_length;
+			page_index = MIN(page_index, max_page);
 
-			prop->update_property();
-		}
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
 
-		updating = false;
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			container = nullptr;
+			int offset = page_index * page_length;
+
+			int amount = MIN(size - offset, page_length);
+
+			dict = dict.duplicate();
+			object->set_dict(dict);
+			object->set_defaults(supported);
+
+			for (int i = 0; i < amount; i++) {
+				int name_tag = supported.get_key_at_index(i);
+				Vector3i range = supported.get_value_at_index(i);
+
+				EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
+				EditorPropertyRangeHint hint;
+				hint.min = range.x;
+				hint.max = range.y;
+				hint.or_greater = false;
+				hint.or_less = false;
+				prop->setup(hint);
+				prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
+
+				String name = TS->tag_to_name(name_tag);
+				String name_cap;
+				{
+					String aux = name.replace_char('_', ' ').strip_edges();
+					for (int j = 0; j < aux.get_slice_count(" "); j++) {
+						String slice = aux.get_slicec(' ', j);
+						if (slice.length() > 0) {
+							slice[0] = String::char_uppercase(slice[0]);
+							if (i > 0) {
+								name_cap += " ";
+							}
+							name_cap += slice;
+						}
+					}
+				}
+				prop->set_label(name_cap);
+				prop->set_tooltip_text(name);
+				prop->set_selectable(false);
+
+				prop->connect("property_changed", callable_mp(this, &EditorPropertyOTVariation::_property_changed));
+				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyOTVariation::_object_id_selected));
+
+				property_vbox->add_child(prop);
+
+				prop->update_property();
+			}
+
+			updating = false;
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				container = nullptr;
+			}
 		}
 	}
 }
 
 void EditorPropertyOTVariation::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
-		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
-		get_edited_object()->set(get_edited_property(), prop_val);
-	}
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL) {
+			Callable::CallError ce;
+			Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+			obj->set(get_edited_property(), prop_val);
+		}
 
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyOTVariation::_page_changed(int p_page) {
@@ -625,197 +633,201 @@ void EditorPropertyOTFeatures::update_property() {
 	}
 	edit->set_text(vformat(TTR("Features (%d of %d set)"), dict.size(), supported.size()));
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
-
-	if (unfolded) {
-		updating = true;
-
-		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
-			add_child(container);
-			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			vbox->set_v_size_flags(SIZE_EXPAND_FILL);
-			container->add_child(vbox);
-
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
-
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyOTFeatures::_page_changed));
-			vbox->add_child(paginator);
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_free();
-			}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
 		}
 
-		// Update add menu items.
-		menu->clear(false);
-		bool have_sub[FGRP_MAX];
-		for (int i = 0; i < FGRP_MAX; i++) {
-			menu_sub[i]->clear();
-			have_sub[i] = false;
-		}
+		if (unfolded) {
+			updating = true;
 
-		bool show_hidden = EDITOR_GET("interface/inspector/show_low_level_opentype_features");
+			if (!container) {
+				container = memnew(MarginContainer);
+				container->set_theme_type_variation("MarginContainer4px");
+				add_child(container);
+				set_bottom_editor(container);
 
-		for (int i = 0; i < supported.size(); i++) {
-			int name_tag = supported.get_key_at_index(i);
-			Dictionary info = supported.get_value_at_index(i);
-			bool hidden = info["hidden"].operator bool();
-			String name = TS->tag_to_name(name_tag);
-			FeatureGroups grp = FGRP_MAX;
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+				container->add_child(vbox);
 
-			if (hidden && !show_hidden) {
-				continue;
-			}
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-			if (name.begins_with("stylistic_set_")) {
-				grp = FGRP_STYLISTIC_SET;
-			} else if (name.begins_with("character_variant_")) {
-				grp = FGRP_CHARACTER_VARIANT;
-			} else if (name.ends_with("_capitals")) {
-				grp = FGRP_CAPITLS;
-			} else if (name.ends_with("_ligatures")) {
-				grp = FGRP_LIGATURES;
-			} else if (name.ends_with("_alternates")) {
-				grp = FGRP_ALTERNATES;
-			} else if (name.ends_with("_kanji_forms") || name.begins_with("jis") || name == "simplified_forms" || name == "traditional_name_forms" || name == "traditional_forms") {
-				grp = FGRP_EAL;
-			} else if (name.ends_with("_widths")) {
-				grp = FGRP_EAW;
-			} else if (name == "tabular_figures" || name == "proportional_figures") {
-				grp = FGRP_NUMAL;
-			} else if (name.begins_with("custom_")) {
-				grp = FGRP_CUSTOM;
-			}
-			String disp_name = name.capitalize();
-			if (info.has("label")) {
-				disp_name = vformat("%s (%s)", disp_name, info["label"].operator String());
-			}
-
-			if (grp == FGRP_MAX) {
-				menu->add_item(disp_name, name_tag);
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyOTFeatures::_page_changed));
+				vbox->add_child(paginator);
 			} else {
-				menu_sub[grp]->add_item(disp_name, name_tag);
-				have_sub[grp] = true;
+				// Queue children for deletion, deleting immediately might cause errors.
+				for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+					property_vbox->get_child(i)->queue_free();
+				}
 			}
-		}
-		for (int i = 0; i < FGRP_MAX; i++) {
-			if (have_sub[i]) {
-				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
+
+			// Update add menu items.
+			menu->clear(false);
+			bool have_sub[FGRP_MAX];
+			for (int i = 0; i < FGRP_MAX; i++) {
+				menu_sub[i]->clear();
+				have_sub[i] = false;
 			}
-		}
 
-		int size = dict.size();
+			bool show_hidden = EDITOR_GET("interface/inspector/show_low_level_opentype_features");
 
-		int max_page = MAX(0, size - 1) / page_length;
-		page_index = MIN(page_index, max_page);
-
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
-
-		int offset = page_index * page_length;
-
-		int amount = MIN(size - offset, page_length);
-
-		dict = dict.duplicate();
-		object->set_dict(dict);
-
-		for (int i = 0; i < amount; i++) {
-			int name_tag = dict.get_key_at_index(i);
-
-			if (supported.has(name_tag)) {
-				Dictionary info = supported[name_tag];
-				Variant::Type vtype = Variant::Type(info["type"].operator int());
+			for (int i = 0; i < supported.size(); i++) {
+				int name_tag = supported.get_key_at_index(i);
+				Dictionary info = supported.get_value_at_index(i);
 				bool hidden = info["hidden"].operator bool();
+				String name = TS->tag_to_name(name_tag);
+				FeatureGroups grp = FGRP_MAX;
+
 				if (hidden && !show_hidden) {
 					continue;
 				}
 
-				EditorProperty *prop = nullptr;
-				switch (vtype) {
-					case Variant::NIL: {
-						prop = memnew(EditorPropertyNil);
-					} break;
-					case Variant::BOOL: {
-						prop = memnew(EditorPropertyCheck);
-					} break;
-					case Variant::INT: {
-						EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-						EditorPropertyRangeHint hint;
-						hint.min = 0;
-						hint.max = 255;
-						hint.hide_control = false;
-						hint.or_greater = false;
-						hint.or_less = false;
-						editor->setup(hint);
-						prop = editor;
-					} break;
-					default: {
-						ERR_CONTINUE_MSG(true, vformat("Unsupported OT feature data type %s", Variant::get_type_name(vtype)));
-					}
+				if (name.begins_with("stylistic_set_")) {
+					grp = FGRP_STYLISTIC_SET;
+				} else if (name.begins_with("character_variant_")) {
+					grp = FGRP_CHARACTER_VARIANT;
+				} else if (name.ends_with("_capitals")) {
+					grp = FGRP_CAPITLS;
+				} else if (name.ends_with("_ligatures")) {
+					grp = FGRP_LIGATURES;
+				} else if (name.ends_with("_alternates")) {
+					grp = FGRP_ALTERNATES;
+				} else if (name.ends_with("_kanji_forms") || name.begins_with("jis") || name == "simplified_forms" || name == "traditional_name_forms" || name == "traditional_forms") {
+					grp = FGRP_EAL;
+				} else if (name.ends_with("_widths")) {
+					grp = FGRP_EAW;
+				} else if (name == "tabular_figures" || name == "proportional_figures") {
+					grp = FGRP_NUMAL;
+				} else if (name.begins_with("custom_")) {
+					grp = FGRP_CUSTOM;
 				}
-				prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
-
-				String name = TS->tag_to_name(name_tag);
 				String disp_name = name.capitalize();
 				if (info.has("label")) {
 					disp_name = vformat("%s (%s)", disp_name, info["label"].operator String());
 				}
-				prop->set_label(disp_name);
-				prop->set_tooltip_text(name);
-				prop->set_selectable(false);
 
-				prop->connect("property_changed", callable_mp(this, &EditorPropertyOTFeatures::_property_changed));
-				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyOTFeatures::_object_id_selected));
-
-				HBoxContainer *hbox = memnew(HBoxContainer);
-				property_vbox->add_child(hbox);
-				hbox->add_child(prop);
-				prop->set_h_size_flags(SIZE_EXPAND_FILL);
-				Button *remove = memnew(Button);
-				remove->set_accessibility_name(TTRC("Remove"));
-				remove->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-				hbox->add_child(remove);
-				remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
-
-				prop->update_property();
+				if (grp == FGRP_MAX) {
+					menu->add_item(disp_name, name_tag);
+				} else {
+					menu_sub[grp]->add_item(disp_name, name_tag);
+					have_sub[grp] = true;
+				}
 			}
-		}
+			for (int i = 0; i < FGRP_MAX; i++) {
+				if (have_sub[i]) {
+					menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
+				}
+			}
 
-		EditorInspectorActionButton *button_add = memnew(EditorInspectorActionButton(TTRC("Add Feature"), SNAME("Add")));
-		button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
-		property_vbox->add_child(button_add);
+			int size = dict.size();
 
-		updating = false;
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			container = nullptr;
+			int max_page = MAX(0, size - 1) / page_length;
+			page_index = MIN(page_index, max_page);
+
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
+
+			int offset = page_index * page_length;
+
+			int amount = MIN(size - offset, page_length);
+
+			dict = dict.duplicate();
+			object->set_dict(dict);
+
+			for (int i = 0; i < amount; i++) {
+				int name_tag = dict.get_key_at_index(i);
+
+				if (supported.has(name_tag)) {
+					Dictionary info = supported[name_tag];
+					Variant::Type vtype = Variant::Type(info["type"].operator int());
+					bool hidden = info["hidden"].operator bool();
+					if (hidden && !show_hidden) {
+						continue;
+					}
+
+					EditorProperty *prop = nullptr;
+					switch (vtype) {
+						case Variant::NIL: {
+							prop = memnew(EditorPropertyNil);
+						} break;
+						case Variant::BOOL: {
+							prop = memnew(EditorPropertyCheck);
+						} break;
+						case Variant::INT: {
+							EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
+							EditorPropertyRangeHint hint;
+							hint.min = 0;
+							hint.max = 255;
+							hint.hide_control = false;
+							hint.or_greater = false;
+							hint.or_less = false;
+							editor->setup(hint);
+							prop = editor;
+						} break;
+						default: {
+							ERR_CONTINUE_MSG(true, vformat("Unsupported OT feature data type %s", Variant::get_type_name(vtype)));
+						}
+					}
+					prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
+
+					String name = TS->tag_to_name(name_tag);
+					String disp_name = name.capitalize();
+					if (info.has("label")) {
+						disp_name = vformat("%s (%s)", disp_name, info["label"].operator String());
+					}
+					prop->set_label(disp_name);
+					prop->set_tooltip_text(name);
+					prop->set_selectable(false);
+
+					prop->connect("property_changed", callable_mp(this, &EditorPropertyOTFeatures::_property_changed));
+					prop->connect("object_id_selected", callable_mp(this, &EditorPropertyOTFeatures::_object_id_selected));
+
+					HBoxContainer *hbox = memnew(HBoxContainer);
+					property_vbox->add_child(hbox);
+					hbox->add_child(prop);
+					prop->set_h_size_flags(SIZE_EXPAND_FILL);
+					Button *remove = memnew(Button);
+					remove->set_accessibility_name(TTRC("Remove"));
+					remove->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+					hbox->add_child(remove);
+					remove->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
+
+					prop->update_property();
+				}
+			}
+
+			EditorInspectorActionButton *button_add = memnew(EditorInspectorActionButton(TTRC("Add Feature"), SNAME("Add")));
+			button_add->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
+			property_vbox->add_child(button_add);
+
+			updating = false;
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				container = nullptr;
+			}
 		}
 	}
 }
 
 void EditorPropertyOTFeatures::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL) {
-		Callable::CallError ce;
-		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
-		get_edited_object()->set(get_edited_property(), prop_val);
-	}
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL) {
+			Callable::CallError ce;
+			Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
+			obj->set(get_edited_property(), prop_val);
+		}
 
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyOTFeatures::_page_changed(int p_page) {

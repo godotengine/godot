@@ -143,7 +143,7 @@ private:
 	String label;
 	int text_size;
 	friend class EditorInspector;
-	Object *object = nullptr;
+	ObjectID edited_object;
 	StringName property;
 	String property_path;
 	String doc_path;
@@ -251,12 +251,10 @@ public:
 	void set_draw_background(bool p_draw_background);
 	bool is_draw_background() const;
 
+	void set_edited_object(Object *p_object);
 	Object *get_edited_object();
 	StringName get_edited_property() const;
-	inline Variant get_edited_property_value() const {
-		ERR_FAIL_NULL_V(object, Variant());
-		return object->get(property);
-	}
+	Variant get_edited_property_value() const;
 	Variant get_edited_property_display_value() const;
 	EditorInspector *get_parent_inspector() const;
 
@@ -503,7 +501,7 @@ class EditorInspectorSection : public Container {
 	} theme_cache;
 
 protected:
-	Object *object = nullptr;
+	mutable ObjectID edited_object;
 	VBoxContainer *vbox = nullptr;
 
 	void _notification(int p_what);
@@ -534,6 +532,9 @@ public:
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
 	void _property_edited(const String &p_property);
 	void update_property();
+
+	void set_edited_object(Object *p_object);
+	Object *get_edited_object() const;
 
 	EditorInspectorSection();
 	~EditorInspectorSection();
@@ -729,12 +730,14 @@ class EditorInspector : public ScrollContainer {
 	HashSet<StringName> pending;
 
 	void _clear(bool p_hide_plugins = true);
-	Object *object = nullptr;
+	ObjectID edited_object;
 	Object *next_object = nullptr;
+	ObjectID pinned_object;
 
 	//
 
 	LineEdit *search_box = nullptr;
+	bool pinned = false;
 	bool show_standard_categories = false;
 	bool show_custom_categories = false;
 	bool hide_script = true;
@@ -851,9 +854,16 @@ public:
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
 
+	void set_pinned(bool p_pinned) { pinned = p_pinned; }
+	bool is_pinned() const;
+
+	void set_pinned_object(Object *p_object);
+	Object *get_pinned_object();
+
 	void update_tree();
 	void update_property(const String &p_prop);
 	void edit(Object *p_object);
+	void set_edited_object(Object *p_object);
 	Object *get_edited_object();
 	Object *get_next_edited_object();
 

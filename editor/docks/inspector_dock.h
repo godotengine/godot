@@ -83,6 +83,7 @@ class InspectorDock : public EditorDock {
 
 	EditorFileDialog *load_resource_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
+	Button *pin_button = nullptr;
 	Button *resource_new_button = nullptr;
 	Button *resource_load_button = nullptr;
 	MenuButton *resource_save_button = nullptr;
@@ -111,6 +112,7 @@ class InspectorDock : public EditorDock {
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
+	void _toggle_pin(bool p_toggled);
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
 	void _open_resource_selector() { _load_resource(); } // just used to call from arg-less signal
@@ -154,6 +156,9 @@ public:
 	void clear();
 	void set_info(const String &p_button_text, const String &p_message, bool p_is_warning);
 	void update(Object *p_object);
+
+	bool selector_has_object() const;
+
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
 
