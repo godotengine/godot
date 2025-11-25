@@ -2854,20 +2854,22 @@ void EditorPropertyTilePolygon::update_property() {
 			}
 		}
 	} else {
-		int count = get_edited_object()->get(count_property);
-		if (base_type.is_empty()) {
-			// Multiple array of vertices.
-			generic_tile_polygon_editor->clear_polygons();
-			for (int i = 0; i < count; i++) {
-				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
-			}
-		} else if (base_type == "OccluderPolygon2D") {
-			// Multiple OccluderPolygon2D.
-			generic_tile_polygon_editor->clear_polygons();
-			for (int i = 0; i < count; i++) {
-				Ref<OccluderPolygon2D> occluder = get_edited_object()->get(vformat(element_pattern, i));
-				if (occluder.is_valid()) {
-					generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+		if (Object *object = get_edited_object()) {
+			int count = object->get(count_property);
+			if (base_type.is_empty()) {
+				// Multiple array of vertices.
+				generic_tile_polygon_editor->clear_polygons();
+				for (int i = 0; i < count; i++) {
+					generic_tile_polygon_editor->add_polygon(object->get(vformat(element_pattern, i)));
+				}
+			} else if (base_type == "OccluderPolygon2D") {
+				// Multiple OccluderPolygon2D.
+				generic_tile_polygon_editor->clear_polygons();
+				for (int i = 0; i < count; i++) {
+					Ref<OccluderPolygon2D> occluder = object->get(vformat(element_pattern, i));
+					if (occluder.is_valid()) {
+						generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+					}
 				}
 			}
 		}

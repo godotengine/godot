@@ -428,135 +428,137 @@ void EditorPropertyArray::update_property() {
 		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
 	}
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
-
-	if (unfolded) {
-		updating = true;
-
-		if (!container) {
-			container = memnew(PanelContainer);
-			add_child(container);
-			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			container->add_child(vbox);
-
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			vbox->add_child(hbox);
-
-			Label *size_label = memnew(Label(TTR("Size:")));
-			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbox->add_child(size_label);
-
-			size_slider = memnew(EditorSpinSlider);
-			size_slider->set_step(1);
-			size_slider->set_max(INT32_MAX);
-			size_slider->set_editing_integer(true);
-			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
-			size_slider->set_read_only(is_read_only());
-			size_slider->set_accessibility_name(TTRC("Size"));
-			size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
-			hbox->add_child(size_slider);
-
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
-
-			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
-			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
-			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
-			button_add_item->set_disabled(is_read_only());
-			button_add_item->set_accessibility_name(TTRC("Add"));
-			vbox->add_child(button_add_item);
-
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
-			vbox->add_child(paginator);
-
-			for (int i = 0; i < page_length; i++) {
-				_create_new_property_slot();
-			}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
 		}
 
-		size_slider->set_value(size);
-		property_vbox->set_visible(size > 0);
-		button_add_item->set_visible(page_index == max_page);
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+		if (unfolded) {
+			updating = true;
 
-		for (Slot &slot : slots) {
-			bool slot_visible = &slot != &reorder_slot && slot.index < size;
-			slot.container->set_visible(slot_visible);
-			// If not visible no need to update it
-			if (!slot_visible) {
-				continue;
+			if (!container) {
+				container = memnew(PanelContainer);
+				add_child(container);
+				set_bottom_editor(container);
+
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				container->add_child(vbox);
+
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				vbox->add_child(hbox);
+
+				Label *size_label = memnew(Label(TTR("Size:")));
+				size_label->set_h_size_flags(SIZE_EXPAND_FILL);
+				hbox->add_child(size_label);
+
+				size_slider = memnew(EditorSpinSlider);
+				size_slider->set_step(1);
+				size_slider->set_max(INT32_MAX);
+				size_slider->set_editing_integer(true);
+				size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+				size_slider->set_read_only(is_read_only());
+				size_slider->set_accessibility_name(TTRC("Size"));
+				size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
+				hbox->add_child(size_slider);
+
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
+
+				button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+				button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+				SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
+				button_add_item->set_disabled(is_read_only());
+				button_add_item->set_accessibility_name(TTRC("Add"));
+				vbox->add_child(button_add_item);
+
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
+				vbox->add_child(paginator);
+
+				for (int i = 0; i < page_length; i++) {
+					_create_new_property_slot();
+				}
 			}
 
-			int idx = slot.index;
-			Variant::Type value_type = subtype;
+			size_slider->set_value(size);
+			property_vbox->set_visible(size > 0);
+			button_add_item->set_visible(page_index == max_page);
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
 
-			if (value_type == Variant::NIL) {
-				value_type = array.get(idx).get_type();
+			for (Slot &slot : slots) {
+				bool slot_visible = &slot != &reorder_slot && slot.index < size;
+				slot.container->set_visible(slot_visible);
+				// If not visible no need to update it
+				if (!slot_visible) {
+					continue;
+				}
+
+				int idx = slot.index;
+				Variant::Type value_type = subtype;
+
+				if (value_type == Variant::NIL) {
+					value_type = array.get(idx).get_type();
+				}
+
+				// Check if the editor property needs to be updated.
+				bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
+				if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+					slot.as_id = value_as_id;
+					slot.type = value_type;
+					EditorProperty *new_prop = nullptr;
+					if (value_type == Variant::OBJECT && value_as_id) {
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("Object");
+						new_prop = editor;
+					} else {
+						new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+					}
+					new_prop->set_selectable(false);
+					new_prop->set_use_folding(is_using_folding());
+					new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
+					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
+					if (value_type == Variant::OBJECT) {
+						new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
+					}
+					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+					new_prop->set_read_only(is_read_only());
+
+					if (slot.reorder_button) {
+						new_prop->add_inline_control(slot.reorder_button, INLINE_CONTROL_LEFT);
+						slot.reorder_button->get_parent()->move_child(slot.reorder_button, 0);
+					}
+					if (slot.edit_button) {
+						new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
+					} else if (slot.remove_button) {
+						new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
+					}
+
+					slot.prop->add_sibling(new_prop, false);
+					slot.prop->queue_free();
+					slot.prop = new_prop;
+					slot.set_index(idx);
+				}
+				if (slot.index == changing_type_index) {
+					callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+					changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
+				}
+				slot.prop->update_property();
 			}
 
-			// Check if the editor property needs to be updated.
-			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
-			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
-				slot.as_id = value_as_id;
-				slot.type = value_type;
-				EditorProperty *new_prop = nullptr;
-				if (value_type == Variant::OBJECT && value_as_id) {
-					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-					editor->setup("Object");
-					new_prop = editor;
-				} else {
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
-				}
-				new_prop->set_selectable(false);
-				new_prop->set_use_folding(is_using_folding());
-				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
-				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
-				if (value_type == Variant::OBJECT) {
-					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
-				}
-				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
-				new_prop->set_read_only(is_read_only());
+			updating = false;
 
-				if (slot.reorder_button) {
-					new_prop->add_inline_control(slot.reorder_button, INLINE_CONTROL_LEFT);
-					slot.reorder_button->get_parent()->move_child(slot.reorder_button, 0);
-				}
-				if (slot.edit_button) {
-					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
-				} else if (slot.remove_button) {
-					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
-				}
-
-				slot.prop->add_sibling(new_prop, false);
-				slot.prop->queue_free();
-				slot.prop = new_prop;
-				slot.set_index(idx);
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				button_add_item = nullptr;
+				container = nullptr;
+				slots.clear();
 			}
-			if (slot.index == changing_type_index) {
-				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
-				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
-			}
-			slot.prop->update_property();
-		}
-
-		updating = false;
-
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			button_add_item = nullptr;
-			container = nullptr;
-			slots.clear();
 		}
 	}
 }
@@ -797,14 +799,15 @@ void EditorPropertyArray::_notification(int p_what) {
 }
 
 void EditorPropertyArray::_edit_pressed() {
-	Variant array = get_edited_property_value();
-	if (!array.is_array() && edit->is_pressed()) {
-		initialize_array(array);
-		emit_changed(get_edited_property(), array);
+	if (Object *obj = get_edited_object()) {
+		Variant array = get_edited_property_value();
+		if (!array.is_array() && edit->is_pressed()) {
+			initialize_array(array);
+			emit_changed(get_edited_property(), array);
+		}
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
 	}
-
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
 }
 
 void EditorPropertyArray::_page_changed(int p_page) {
@@ -1287,190 +1290,192 @@ void EditorPropertyDictionary::update_property() {
 		edit->set_text(vformat(TTR("%s (size %d)"), dict_type_name, dict.size()));
 	}
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
-
-	if (unfolded) {
-		updating = true;
-
-		if (!container) {
-			container = memnew(PanelContainer);
-			add_child(container);
-			set_bottom_editor(container);
-
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			container->add_child(vbox);
-
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
-
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
-			vbox->add_child(paginator);
-
-			for (int i = 0; i < page_length; i++) {
-				_create_new_property_slot(slots.size());
-			}
-
-			add_panel = memnew(PanelContainer);
-			property_vbox->add_child(add_panel);
-			add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
-			VBoxContainer *add_vbox = memnew(VBoxContainer);
-			add_panel->add_child(add_vbox);
-
-			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_KEY_INDEX);
-			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
-
-			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Key/Value Pair"), SNAME("Add")));
-			button_add_item->set_disabled(is_read_only());
-			button_add_item->set_accessibility_name(TTRC("Add"));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
-			add_vbox->add_child(button_add_item);
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
 		}
 
-		int size = dict.size();
+		if (unfolded) {
+			updating = true;
 
-		int max_page = MAX(0, size - 1) / page_length;
-		if (page_index > max_page) {
-			_page_changed(max_page);
-		}
+			if (!container) {
+				container = memnew(PanelContainer);
+				add_child(container);
+				set_bottom_editor(container);
 
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				container->add_child(vbox);
 
-		add_panel->set_visible(page_index == max_page);
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-		for (Slot &slot : slots) {
-			bool slot_visible = slot.index < size;
-			slot.container->set_visible(slot_visible);
-			// If not visible no need to update it.
-			if (!slot_visible) {
-				continue;
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
+				vbox->add_child(paginator);
+
+				for (int i = 0; i < page_length; i++) {
+					_create_new_property_slot(slots.size());
+				}
+
+				add_panel = memnew(PanelContainer);
+				property_vbox->add_child(add_panel);
+				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
+				VBoxContainer *add_vbox = memnew(VBoxContainer);
+				add_panel->add_child(add_vbox);
+
+				_create_new_property_slot(EditorPropertyDictionaryObject::NEW_KEY_INDEX);
+				_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
+
+				button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Key/Value Pair"), SNAME("Add")));
+				button_add_item->set_disabled(is_read_only());
+				button_add_item->set_accessibility_name(TTRC("Add"));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+				add_vbox->add_child(button_add_item);
 			}
 
-			// Check if the editor property key needs to be updated.
-			if (slot.prop_key) {
-				Variant key;
-				object->get_by_property_name(slot.key_name, key);
-				Variant::Type key_type = key.get_type();
+			int size = dict.size();
 
-				bool key_as_id = Object::cast_to<EncodedObjectAsID>(key);
-				if (key_type != slot.key_type || (key_type == Variant::OBJECT && key_as_id != slot.key_as_id)) {
-					slot.key_as_id = key_as_id;
-					slot.key_type = key_type;
+			int max_page = MAX(0, size - 1) / page_length;
+			if (page_index > max_page) {
+				_page_changed(max_page);
+			}
+
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
+
+			add_panel->set_visible(page_index == max_page);
+
+			for (Slot &slot : slots) {
+				bool slot_visible = slot.index < size;
+				slot.container->set_visible(slot_visible);
+				// If not visible no need to update it.
+				if (!slot_visible) {
+					continue;
+				}
+
+				// Check if the editor property key needs to be updated.
+				if (slot.prop_key) {
+					Variant key;
+					object->get_by_property_name(slot.key_name, key);
+					Variant::Type key_type = key.get_type();
+
+					bool key_as_id = Object::cast_to<EncodedObjectAsID>(key);
+					if (key_type != slot.key_type || (key_type == Variant::OBJECT && key_as_id != slot.key_as_id)) {
+						slot.key_as_id = key_as_id;
+						slot.key_type = key_type;
+						EditorProperty *new_prop = nullptr;
+						if (key_type == Variant::OBJECT && key_as_id) {
+							EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+							editor->setup("Object");
+							new_prop = editor;
+						} else {
+							new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+						}
+						new_prop->set_read_only(true);
+						new_prop->set_selectable(false);
+						new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+						new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+						new_prop->set_draw_background(false);
+						new_prop->set_use_folding(is_using_folding());
+						new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+						new_prop->set_draw_label(false);
+						EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
+						if (arr_prop) {
+							arr_prop->set_preview_value(true);
+						}
+						EditorPropertyDictionary *dict_prop = Object::cast_to<EditorPropertyDictionary>(new_prop);
+						if (dict_prop) {
+							dict_prop->set_preview_value(true);
+						}
+						slot.set_key_prop(new_prop);
+						if (slot.prop) {
+							slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
+						}
+					}
+				}
+
+				Variant value;
+				object->get_by_property_name(slot.prop_name, value);
+
+				Variant::Type value_type;
+
+				if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
+					value_type = value_subtype;
+				} else {
+					value_type = value.get_type();
+				}
+
+				// Check if the editor property needs to be updated.
+				bool value_as_id = Object::cast_to<EncodedObjectAsID>(value);
+				if (value_type != slot.type || (value_type == Variant::OBJECT && value_as_id != slot.as_id)) {
+					slot.as_id = value_as_id;
+					slot.type = value_type;
 					EditorProperty *new_prop = nullptr;
-					if (key_type == Variant::OBJECT && key_as_id) {
+					if (value_type == Variant::OBJECT && value_as_id) {
 						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 						editor->setup("Object");
 						new_prop = editor;
 					} else {
-						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+						bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+						new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
+								use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
 					}
-					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
-					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
-					new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-					new_prop->set_draw_background(false);
 					new_prop->set_use_folding(is_using_folding());
+					new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
+					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+					if (value_type == Variant::OBJECT) {
+						new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
+					}
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
-					new_prop->set_draw_label(false);
-					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
-					if (arr_prop) {
-						arr_prop->set_preview_value(true);
+					if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+						new_prop->set_label(" ");
+						new_prop->set_label_overlayed(true);
 					}
-					EditorPropertyDictionary *dict_prop = Object::cast_to<EditorPropertyDictionary>(new_prop);
-					if (dict_prop) {
-						dict_prop->set_preview_value(true);
+					new_prop->set_read_only(is_read_only());
+					if (slot.remove_button) {
+						new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
 					}
-					slot.set_key_prop(new_prop);
-					if (slot.prop) {
-						slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
+					if (slot.edit_button) {
+						new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
 					}
-				}
-			}
+					if (slot.prop_key) {
+						new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
+					}
 
-			Variant value;
-			object->get_by_property_name(slot.prop_name, value);
+					slot.set_prop(new_prop);
 
-			Variant::Type value_type;
+				} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+					Variant key = dict.get_key_at_index(slot.index);
+					String cs = key.get_construct_string();
+					slot.prop->set_tooltip_text(cs);
+				}
 
-			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
-				value_type = value_subtype;
-			} else {
-				value_type = value.get_type();
-			}
+				// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
+				// Otherwise, focus will stay on the change type button, which is not very user friendly.
+				if (changing_type_index == slot.index) {
+					callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+					changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
+				}
 
-			// Check if the editor property needs to be updated.
-			bool value_as_id = Object::cast_to<EncodedObjectAsID>(value);
-			if (value_type != slot.type || (value_type == Variant::OBJECT && value_as_id != slot.as_id)) {
-				slot.as_id = value_as_id;
-				slot.type = value_type;
-				EditorProperty *new_prop = nullptr;
-				if (value_type == Variant::OBJECT && value_as_id) {
-					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-					editor->setup("Object");
-					new_prop = editor;
-				} else {
-					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
-					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
-							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
-				}
-				new_prop->set_selectable(false);
-				new_prop->set_use_folding(is_using_folding());
-				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
-				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
-				if (value_type == Variant::OBJECT) {
-					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
-				}
-				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
-				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-					new_prop->set_label(" ");
-					new_prop->set_label_overlayed(true);
-				}
-				new_prop->set_read_only(is_read_only());
-				if (slot.remove_button) {
-					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
-				}
-				if (slot.edit_button) {
-					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
-				}
+				slot.prop->update_property();
 				if (slot.prop_key) {
-					new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
+					slot.prop_key->update_property();
 				}
-
-				slot.set_prop(new_prop);
-
-			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-				Variant key = dict.get_key_at_index(slot.index);
-				String cs = key.get_construct_string();
-				slot.prop->set_tooltip_text(cs);
 			}
+			updating = false;
 
-			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
-			// Otherwise, focus will stay on the change type button, which is not very user friendly.
-			if (changing_type_index == slot.index) {
-				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
-				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				button_add_item = nullptr;
+				container = nullptr;
+				add_panel = nullptr;
+				slots.clear();
 			}
-
-			slot.prop->update_property();
-			if (slot.prop_key) {
-				slot.prop_key->update_property();
-			}
-		}
-		updating = false;
-
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			button_add_item = nullptr;
-			container = nullptr;
-			add_panel = nullptr;
-			slots.clear();
 		}
 	}
 }
@@ -1502,14 +1507,15 @@ void EditorPropertyDictionary::_notification(int p_what) {
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
-		initialize_dictionary(prop_val);
-		emit_changed(get_edited_property(), prop_val);
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+			initialize_dictionary(prop_val);
+			emit_changed(get_edited_property(), prop_val);
+		}
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
 	}
-
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
 }
 
 void EditorPropertyDictionary::_page_changed(int p_page) {
@@ -1621,100 +1627,102 @@ void EditorPropertyLocalizableString::update_property() {
 
 	edit->set_text(vformat(TTR("Localizable String (size %d)"), dict.size()));
 
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (edit->is_pressed() != unfolded) {
-		edit->set_pressed(unfolded);
-	}
+	if (Object *obj = get_edited_object()) {
+		bool unfolded = obj->editor_is_section_unfolded(get_edited_property());
+		if (edit->is_pressed() != unfolded) {
+			edit->set_pressed(unfolded);
+		}
 
-	if (unfolded) {
-		updating = true;
+		if (unfolded) {
+			updating = true;
 
-		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
-			add_child(container);
-			set_bottom_editor(container);
+			if (!container) {
+				container = memnew(MarginContainer);
+				container->set_theme_type_variation("MarginContainer4px");
+				add_child(container);
+				set_bottom_editor(container);
 
-			VBoxContainer *vbox = memnew(VBoxContainer);
-			container->add_child(vbox);
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				container->add_child(vbox);
 
-			property_vbox = memnew(VBoxContainer);
-			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
+				property_vbox = memnew(VBoxContainer);
+				property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+				vbox->add_child(property_vbox);
 
-			paginator = memnew(EditorPaginator);
-			paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
-			vbox->add_child(paginator);
-		} else {
-			// Queue children for deletion, deleting immediately might cause errors.
-			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
-				property_vbox->get_child(i)->queue_free();
+				paginator = memnew(EditorPaginator);
+				paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
+				vbox->add_child(paginator);
+			} else {
+				// Queue children for deletion, deleting immediately might cause errors.
+				for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+					property_vbox->get_child(i)->queue_free();
+				}
 			}
-		}
 
-		int size = dict.size();
+			int size = dict.size();
 
-		int max_page = MAX(0, size - 1) / page_length;
-		page_index = MIN(page_index, max_page);
+			int max_page = MAX(0, size - 1) / page_length;
+			page_index = MIN(page_index, max_page);
 
-		paginator->update(page_index, max_page);
-		paginator->set_visible(max_page > 0);
+			paginator->update(page_index, max_page);
+			paginator->set_visible(max_page > 0);
 
-		int offset = page_index * page_length;
+			int offset = page_index * page_length;
 
-		int amount = MIN(size - offset, page_length);
+			int amount = MIN(size - offset, page_length);
 
-		for (int i = 0; i < amount; i++) {
-			String prop_name;
-			Variant key;
-			Variant value;
+			for (int i = 0; i < amount; i++) {
+				String prop_name;
+				Variant key;
+				Variant value;
 
-			prop_name = "indices/" + itos(i + offset);
-			key = dict.get_key_at_index(i + offset);
-			value = dict.get_value_at_index(i + offset);
+				prop_name = "indices/" + itos(i + offset);
+				key = dict.get_key_at_index(i + offset);
+				value = dict.get_value_at_index(i + offset);
 
-			EditorProperty *prop = memnew(EditorPropertyText);
+				EditorProperty *prop = memnew(EditorPropertyText);
 
-			prop->set_object_and_property(object.ptr(), prop_name);
-			int remove_index = 0;
+				prop->set_object_and_property(object.ptr(), prop_name);
+				int remove_index = 0;
 
-			String cs = key.get_construct_string();
-			prop->set_label(cs);
-			prop->set_tooltip_text(cs);
-			remove_index = i + offset;
+				String cs = key.get_construct_string();
+				prop->set_label(cs);
+				prop->set_tooltip_text(cs);
+				remove_index = i + offset;
 
-			prop->set_selectable(false);
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
+				prop->set_selectable(false);
+				prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
+				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
 
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			property_vbox->add_child(hbox);
-			hbox->add_child(prop);
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit_btn = memnew(Button);
-			edit_btn->set_accessibility_name(TTRC("Remove Translation"));
-			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-			hbox->add_child(edit_btn);
-			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				property_vbox->add_child(hbox);
+				hbox->add_child(prop);
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				Button *edit_btn = memnew(Button);
+				edit_btn->set_accessibility_name(TTRC("Remove Translation"));
+				edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+				hbox->add_child(edit_btn);
+				edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
-			prop->update_property();
-		}
+				prop->update_property();
+			}
 
-		if (page_index == max_page) {
-			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
-			button_add_item->set_accessibility_name(TTRC("Add Translation"));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
-			property_vbox->add_child(button_add_item);
-		}
+			if (page_index == max_page) {
+				button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
+				button_add_item->set_accessibility_name(TTRC("Add Translation"));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
+				property_vbox->add_child(button_add_item);
+			}
 
-		updating = false;
+			updating = false;
 
-	} else {
-		if (container) {
-			set_bottom_editor(nullptr);
-			memdelete(container);
-			button_add_item = nullptr;
-			container = nullptr;
+		} else {
+			if (container) {
+				set_bottom_editor(nullptr);
+				memdelete(container);
+				button_add_item = nullptr;
+				container = nullptr;
+			}
 		}
 	}
 }
@@ -1724,14 +1732,16 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 }
 
 void EditorPropertyLocalizableString::_edit_pressed() {
-	Variant prop_val = get_edited_property_value();
-	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
-		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
-		get_edited_object()->set(get_edited_property(), prop_val);
-	}
+	if (Object *obj = get_edited_object()) {
+		Variant prop_val = get_edited_property_value();
+		if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+			VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
+			obj->set(get_edited_property(), prop_val);
+		}
 
-	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
-	update_property();
+		obj->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+		update_property();
+	}
 }
 
 void EditorPropertyLocalizableString::_page_changed(int p_page) {

@@ -227,6 +227,14 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 	}
 }
 
+void InspectorDock::_toggle_pin(bool p_toggled) {
+	inspector->set_pinned(p_toggled);
+	inspector->set_pinned_object(p_toggled ? current : nullptr);
+	if (!p_toggled) {
+		EditorNode::get_singleton()->edit_current();
+	}
+}
+
 void InspectorDock::_new_resource() {
 	new_resource_dialog->popup_create(true);
 }
@@ -462,6 +470,7 @@ void InspectorDock::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			resource_new_button->set_button_icon(get_editor_theme_icon(SNAME("New")));
 			resource_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			resource_save_button->set_button_icon(get_editor_theme_icon(SNAME("Save")));
@@ -524,6 +533,10 @@ void InspectorDock::open_resource(const String &p_type) {
 }
 
 void InspectorDock::set_info(const String &p_button_text, const String &p_message, bool p_is_warning) {
+	if (inspector->has_valid_pin()) {
+		return;
+	}
+
 	info->hide();
 	info_is_warning = p_is_warning;
 
@@ -546,24 +559,30 @@ void InspectorDock::clear() {
 }
 
 void InspectorDock::update(Object *p_object) {
-	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+	Object *pinned_object = inspector->get_pinned_object();
+	if (inspector->has_valid_pin() && object_selector->has_object()) {
+		current = pinned_object;
+	} else {
+		EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 
-	backward_button->set_disabled(editor_history->is_at_beginning());
-	forward_button->set_disabled(editor_history->is_at_end());
+		backward_button->set_disabled(editor_history->is_at_beginning());
+		forward_button->set_disabled(editor_history->is_at_end());
 
-	history_menu->set_disabled(true);
-	if (editor_history->get_history_len() > 0) {
-		history_menu->set_disabled(false);
+		history_menu->set_disabled(true);
+		if (editor_history->get_history_len() > 0) {
+			history_menu->set_disabled(false);
+		}
+		object_selector->update_path();
+
+		current = p_object;
 	}
-	object_selector->update_path();
 
-	current = p_object;
+	const bool is_object = current != nullptr;
+	const bool is_resource = is_object && current->is_class("Resource");
+	const bool is_text_file = is_object && current->is_class("TextFile");
+	const bool is_node = is_object && current->is_class("Node");
 
-	const bool is_object = p_object != nullptr;
-	const bool is_resource = is_object && p_object->is_class("Resource");
-	const bool is_text_file = is_object && p_object->is_class("TextFile");
-	const bool is_node = is_object && p_object->is_class("Node");
-
+	pin_button->set_pressed_no_signal(inspector->has_valid_pin());
 	object_menu->set_disabled(!is_object || is_text_file);
 	search->set_editable(is_object && !is_text_file);
 	resource_save_button->set_disabled(!is_resource || is_text_file);
@@ -611,7 +630,7 @@ void InspectorDock::update(Object *p_object) {
 	}
 
 	List<MethodInfo> methods;
-	p_object->get_method_list(&methods);
+	current->get_method_list(&methods);
 
 	if (!methods.is_empty()) {
 		bool found = false;
@@ -730,6 +749,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	main_vb->add_child(general_options_hb);
+
+	pin_button = memnew(Button);
+	pin_button->set_toggle_mode(true);
+	pin_button->set_theme_type_variation("FlatMenuButton");
+	pin_button->set_tooltip_text(TTRC("Pin the inspector to the current object and prevent it from updating when selecting other objects."));
+	general_options_hb->add_child(pin_button);
+	pin_button->connect(SceneStringName(toggled), callable_mp(this, &InspectorDock::_toggle_pin));
+	pin_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	resource_new_button = memnew(Button);
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
