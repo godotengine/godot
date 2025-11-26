@@ -65,21 +65,20 @@ private:
 	bool is_stopping = false;
 
 	struct PlaybackData {
-		String animation_name;
-		int animation_length = 0;
+		AnimationData *from = nullptr;
 		double pos = 0.0;
 		float speed_scale = 1.0;
 		double start_time = 0.0;
 		double end_time = 0.0;
 		double get_start_time() const {
-			if ((!animation_name.is_empty()) && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, animation_length))) {
+			if (from && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, from->animation->get_length()))) {
 				return 0;
 			}
 			return start_time;
 		}
 		double get_end_time() const {
-			if ((!animation_name.is_empty()) && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, animation_length))) {
-				return animation_length;
+			if (from && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, from->animation->get_length()))) {
+				return from->animation->get_length();
 			}
 			return end_time;
 		}
