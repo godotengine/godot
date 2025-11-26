@@ -1062,6 +1062,12 @@
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
 		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
+			Defines if and how the aspect ratio of the root [Viewport] should be preserved when stretching is applied.
+			[b]"ignore"[/b]: Keep the width and height of the viewport. If the aspect ratio of the window or screen does not match that of the viewport, stretch the render to fill it.
+			[b]"keep"[/b]: Keep the width and height of the viewport. If the aspect ratio of the window or screen does not match that of the viewport, empty space is filled with black.
+			[b]"keep_width"[/b]: Keep the width of the viewport, but allow its height to expand. If the aspect ratio of the window or screen is greater, the game is shown centered with vertical black bars. If the aspect ratio is smaller, the viewport is expanded vertically downwards.
+			[b]"keep_height"[/b]: Keep the height of the viewport, but allow its width to expand. If the aspect ratio of the window or screen is smaller, the game is shown centered with horizontal black bars. If the aspect ratio is greater, the viewport is expanded horizontally to the right.
+			[b]"expand"[/b]: Allow the viewport to expand in either direction to fill the screen or window. If the aspect ratio of the window or screen is greater, the game is expanded horizontally to the right. If the aspect ratio is smaller, the viewport is expanded vertically downwards.
 		</member>
 		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">
 			Defines how the base size is stretched to fit the resolution of the window or screen.
