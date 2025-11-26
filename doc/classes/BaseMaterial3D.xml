@@ -278,6 +278,12 @@
 			For best results, the texture should be normalized (with [member heightmap_scale] reduced to compensate). In [url=https://gimp.org]GIMP[/url], this can be done using [b]Colors &gt; Auto &gt; Equalize[/b]. If the texture only uses a small part of its available range, the parallax effect may look strange, especially when the camera moves.
 			[b]Note:[/b] To reduce memory usage and improve loading times, you may be able to use a lower-resolution heightmap texture as most heightmaps are only comprised of low-frequency data.
 		</member>
+		<member name="keep_backface_normals" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], each backface will be shaded with the same normal vector as the frontface instead of pointing the normal vector of backfaces into the opposite direction. This means that frontfaces and backfaces will receive the same shading.
+			This is useful when using custom normals which differ from the actual geometry, e.g. stylized foliage billboards with spherical normals.
+			For example, when using billboards with a normal vector pointing straight up, this setting should be enabled; otherwise, backfaces will have their normal vector point straight [i]down[/i].
+			[b]Note:[/b] Only relevant if [member cull_mode] is not set to [constant CULL_BACK].
+		</member>
 		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
 			A high value makes the material appear more like a metal. Non-metals use their albedo as the diffuse color and add diffuse to the specular reflection. With non-metals, the reflection appears on top of the albedo color. Metals use their albedo as a multiplier to the specular reflection and set the diffuse color to black resulting in a tinted reflection. Materials work better when fully metal or fully non-metal, values between [code]0[/code] and [code]1[/code] should only be used for blending between metal and non-metal sections. To alter the amount of reflection use [member roughness].
 		</member>
@@ -775,7 +781,10 @@
 		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
 			Enables using [member fov_override].
 		</constant>
-		<constant name="FLAG_MAX" value="25" enum="Flags">
+		<constant name="FLAG_KEEP_BACKFACE_NORMALS" value="25" enum="Flags">
+			Enables using [member keep_backface_normals].
+		</constant>
+		<constant name="FLAG_MAX" value="26" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
