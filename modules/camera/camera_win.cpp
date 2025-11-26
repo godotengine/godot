@@ -150,11 +150,10 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 				video_format == MFVideoFormat_YVYU ||
 				video_format == MFVideoFormat_I420 ||
 				video_format == MFVideoFormat_IYUV ||
-				video_format == MFVideoFormat_YV12) {
+				video_format == MFVideoFormat_YV12 ||
+				video_format == MFVideoFormat_H264) {
 			supported_fmt = true;
 		}
-		// H264 requires codec availability - exclude by default.
-		// Users can install Media Feature Pack if needed.
 
 		if (!supported_fmt) {
 			uint32_t format = video_format.Data1;
@@ -219,6 +218,8 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			format.format = "YV12";
 		} else if (video_format == MFVideoFormat_MJPG) {
 			format.format = "MJPG";
+		} else if (video_format == MFVideoFormat_H264) {
+			format.format = "H264";
 		}
 		format.width = width;
 		format.height = height;
