@@ -17,6 +17,7 @@ files = [
     "embedded_gl_manager.mm",
     "godot_button_view.mm",
     "godot_content_view.mm",
+    "godot_core_cursor.mm",
     "godot_status_item.mm",
     "godot_window_delegate.mm",
     "godot_window.mm",
