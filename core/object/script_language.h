@@ -444,7 +444,6 @@ public:
 
 	virtual bool handles_global_class_type(const String &p_type) const { return false; }
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const { return String(); }
-	virtual String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, HashSet<String> &r_visited) const { return String(); }
 
 	virtual ~ScriptLanguage() {}
 };

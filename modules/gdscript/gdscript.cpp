@@ -2813,16 +2813,22 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
-	HashSet<String> r_val = HashSet<String>();
-	return _get_global_class_name(p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_val);
+	LocalVector<String> r_vec;
+	return _get_global_class_name(p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_vec);
 }
 
-String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, HashSet<String> &r_visited) const {
+String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
 		return String();
 	}
+
+	if (r_visited.has(p_path)) {
+		return String();
+	}
+
+	r_visited.push_back(p_path);
 
 	String source = f->get_as_utf8_string();
 
@@ -2832,10 +2838,6 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 	const GDScriptParser::ClassNode *c = parser.get_tree();
 	if (!c) {
 		return String(); // No class parsed.
-	}
-
-	if (!c->extends_path.is_empty() && r_visited.has(c->extends_path)) {
-		return String();
 	}
 
 	/* **WARNING**
@@ -2861,9 +2863,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 				if (!subclass->extends_path.is_empty()) {
 					if (subclass->extends.is_empty()) {
 						// We only care about the referenced class_name.
-						r_visited.insert(subclass->extends_path);
-						_ALLOW_DISCARD_ _get_global_class_name(subclass->extends_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_visited);
-						r_visited.erase(subclass->extends_path);
+						_ALLOW_DISCARD_ _get_global_class_name(subclass->extends_path, r_base_type, nullptr, nullptr, nullptr, r_visited);
 						subclass = nullptr;
 						break;
 					} else {
