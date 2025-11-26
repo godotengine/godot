@@ -220,6 +220,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
+#include "scene/3d/bone_twist_disperser_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/ccd_ik_3d.h"
 #include "scene/3d/chain_ik_3d.h"
@@ -684,6 +685,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CCDIK3D);
 	GDREGISTER_CLASS(JacobianIK3D);
 	GDREGISTER_CLASS(LimitAngularVelocityModifier3D);
+	GDREGISTER_CLASS(BoneTwistDisperser3D);
 
 #ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
