@@ -41,6 +41,7 @@ class OpenXRExportPlugin : public EditorExportPlugin {
 	GDCLASS(OpenXRExportPlugin, EditorExportPlugin)
 
 public:
+	virtual String get_name() const override { return "OpenXRExportPlugin"; }
 	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const override;
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const override;
 
