@@ -138,6 +138,16 @@
 				Sets the resource's path to [param path] without involving the resource cache. Useful for handling [enum ResourceFormatLoader.CacheMode] values when implementing a custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			</description>
 		</method>
+		<method name="set_resource_id_for_path" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="original_path" type="String" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="id" type="String" />
+			<description>
+				Static version of [method set_id_for_path] that allows you to change the resource at [param original_path] without the need to load the resource first with this class.
+				[b]Note:[/b] This method is only implemented when running in an editor context.
+			</description>
+		</method>
 		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
 			<return type="void" />
 			<description>

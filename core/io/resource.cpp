@@ -726,6 +726,7 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 	ClassDB::bind_method(D_METHOD("reset_state"), &Resource::reset_state);
 
+	ClassDB::bind_static_method("Resource", D_METHOD("set_resource_id_for_path", "original_path", "path", "id"), &Resource::set_resource_id_for_path);
 	ClassDB::bind_method(D_METHOD("set_id_for_path", "path", "id"), &Resource::set_id_for_path);
 	ClassDB::bind_method(D_METHOD("get_id_for_path", "path"), &Resource::get_id_for_path);
 
