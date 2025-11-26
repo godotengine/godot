@@ -33,6 +33,7 @@
 #include "core/io/config_file.h"
 #include "scene/gui/margin_container.h"
 
+class DockTabContainer;
 class Shortcut;
 class WindowWrapper;
 
@@ -85,6 +86,7 @@ private:
 	bool enabled = true;
 	int previous_tab_index = -1;
 	WindowWrapper *dock_window = nullptr;
+	DockTabContainer *parent_dock_container = nullptr;
 	int dock_slot_index = DOCK_SLOT_NONE;
 
 	void _set_default_slot_bind(DockSlot p_slot);
@@ -103,6 +105,7 @@ protected:
 public:
 	void open();
 	void make_visible();
+	void make_floating();
 	void close();
 
 	void set_title(const String &p_title);
@@ -143,6 +146,11 @@ public:
 
 	String get_display_title() const;
 	String get_effective_layout_key() const;
+
+	DockTabContainer *get_parent_container() const { return parent_dock_container; }
+	void set_tab_index(int p_index, bool p_set_current);
+	void update_tab_style();
+	Ref<Texture2D> get_effective_icon(const Callable &p_icon_fetch);
 
 	virtual void update_layout(DockLayout p_layout) { GDVIRTUAL_CALL(_update_layout, p_layout); }
 	DockLayout get_current_layout() const { return current_layout; }

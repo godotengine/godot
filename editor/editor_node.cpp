@@ -1460,7 +1460,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 			if (SceneTreeDock::get_singleton()->is_visible_in_tree()) {
 				SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->grab_focus();
 			} else {
-				TabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_tab_container(SceneTreeDock::get_singleton());
+				TabContainer *tab_container = SceneTreeDock::get_singleton()->get_parent_container();
 				if (tab_container) {
 					// Another tab is active (e.g., Import) - focus the tab bar so user can switch.
 					tab_container->get_tab_bar()->grab_focus();
@@ -8518,24 +8518,36 @@ EditorNode::EditorNode() {
 	left_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_l_vsplit);
 
-	TabContainer *dock_slot[EditorDock::DOCK_SLOT_MAX];
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_UL]->set_name("DockSlotLeftUL");
-	left_l_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_LEFT_UL]);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_BL] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_BL]->set_name("DockSlotLeftBL");
-	left_l_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_LEFT_BL]);
+	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UL));
+		dock_container->set_name("DockSlotLeftUL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BL));
+		dock_container->set_name("DockSlotLeftBL");
+		left_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	left_r_vsplit = memnew(DockSplitContainer);
 	left_r_vsplit->set_name("DockVSplitLeftR");
 	left_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(left_r_vsplit);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_UR]->set_name("DockSlotLeftUR");
-	left_r_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_LEFT_UR]);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_BR] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_LEFT_BR]->set_name("DockSlotLeftBR");
-	left_r_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_LEFT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_UR));
+		dock_container->set_name("DockSlotLeftUR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_LEFT_BR));
+		dock_container->set_name("DockSlotLeftBR");
+		left_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	VBoxContainer *center_vb = memnew(VBoxContainer);
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -8553,23 +8565,35 @@ EditorNode::EditorNode() {
 	right_l_vsplit->set_name("DockVSplitRightL");
 	right_l_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_l_vsplit);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_UL]->set_name("DockSlotRightUL");
-	right_l_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_RIGHT_UL]);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_BL] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_BL]->set_name("DockSlotRightBL");
-	right_l_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_RIGHT_BL]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UL));
+		dock_container->set_name("DockSlotRightUL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BL));
+		dock_container->set_name("DockSlotRightBL");
+		right_l_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	right_r_vsplit = memnew(DockSplitContainer);
 	right_r_vsplit->set_name("DockVSplitRightR");
 	right_r_vsplit->set_vertical(true);
 	main_hsplit->add_child(right_r_vsplit);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_UR]->set_name("DockSlotRightUR");
-	right_r_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_RIGHT_UR]);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_BR] = memnew(TabContainer);
-	dock_slot[EditorDock::DOCK_SLOT_RIGHT_BR]->set_name("DockSlotRightBR");
-	right_r_vsplit->add_child(dock_slot[EditorDock::DOCK_SLOT_RIGHT_BR]);
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_UR));
+		dock_container->set_name("DockSlotRightUR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
+	{
+		DockTabContainer *dock_container = memnew(SideDockTabContainer(EditorDock::DOCK_SLOT_RIGHT_BR));
+		dock_container->set_name("DockSlotRightBR");
+		right_r_vsplit->add_child(dock_container);
+		dock_slots[dock_container->dock_slot] = dock_container;
+	}
 
 	editor_dock_manager = memnew(EditorDockManager);
 
@@ -8582,7 +8606,7 @@ EditorNode::EditorNode() {
 	editor_dock_manager->set_hsplit(main_hsplit);
 
 	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot((EditorDock::DockSlot)i, dock_slot[i], EditorDock::DOCK_LAYOUT_VERTICAL);
+		editor_dock_manager->register_dock_slot(dock_slots[i]);
 	}
 
 	editor_layout_save_delay_timer = memnew(Timer);
@@ -8988,8 +9012,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
-	editor_dock_manager->register_dock_slot(EditorDock::DOCK_SLOT_BOTTOM, bottom_panel, EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	bottom_panel->set_theme_type_variation("BottomPanel");
+	editor_dock_manager->register_dock_slot(bottom_panel);
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 
