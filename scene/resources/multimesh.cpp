@@ -269,8 +269,18 @@ void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_t
 
 Transform3D MultiMesh::get_instance_transform(int p_instance) const {
 	ERR_FAIL_INDEX_V_MSG(p_instance, instance_count, Transform3D(), "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
-	ERR_FAIL_COND_V_MSG(transform_format == TRANSFORM_2D, Transform3D(), "Can't get Transform3D on a Multimesh configured to use Transform2D. Ensure that you have set the `transform_format` to `TRANSFORM_3D`.");
-	return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
+	if (likely(transform_format == TRANSFORM_3D)) {
+		return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
+	}
+	// Otherwise, convert 2D to 3D.
+	Transform3D ret;
+	const Transform2D transform_2d = RenderingServer::get_singleton()->multimesh_instance_get_transform_2d(multimesh, p_instance);
+	ret.basis.rows[0][0] = transform_2d.columns[0][0];
+	ret.basis.rows[1][0] = transform_2d.columns[0][1];
+	ret.basis.rows[0][1] = transform_2d.columns[1][0];
+	ret.basis.rows[1][1] = transform_2d.columns[1][1];
+	ret.origin = Vector3(transform_2d.columns[2][0], transform_2d.columns[2][1], 0.0f);
+	return ret;
 }
 
 Transform2D MultiMesh::get_instance_transform_2d(int p_instance) const {
