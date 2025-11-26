@@ -99,49 +99,6 @@ static void _attach_meta_to_extras(Ref<Resource> p_node, Dictionary &p_json) {
 	}
 }
 
-static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	if (p_mesh.is_null()) {
-		return importer_mesh;
-	}
-
-	Ref<ArrayMesh> array_mesh = p_mesh;
-	if (p_mesh->get_blend_shape_count()) {
-		ArrayMesh::BlendShapeMode shape_mode = ArrayMesh::BLEND_SHAPE_MODE_NORMALIZED;
-		if (array_mesh.is_valid()) {
-			shape_mode = array_mesh->get_blend_shape_mode();
-		}
-		importer_mesh->set_blend_shape_mode(shape_mode);
-		for (int morph_i = 0; morph_i < p_mesh->get_blend_shape_count(); morph_i++) {
-			importer_mesh->add_blend_shape(p_mesh->get_blend_shape_name(morph_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
-		Array array = p_mesh->surface_get_arrays(surface_i);
-		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
-		const String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
-		String mat_name;
-		if (mat.is_valid()) {
-			mat_name = mat->get_name();
-			if (mat_name.is_empty()) {
-				mat_name = surface_name;
-			}
-		} else {
-			mat_name = surface_name;
-			// Assign default material when no material is assigned.
-			mat.instantiate();
-			mat->set_name(mat_name);
-		}
-		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
-				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
-				mat_name, p_mesh->surface_get_format(surface_i));
-	}
-	importer_mesh->merge_meta_from(*p_mesh);
-	importer_mesh->set_name(p_mesh->get_name());
-	return importer_mesh;
-}
-
 Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -4074,7 +4031,6 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 		Ref<Material> mat = p_mesh_instance->get_active_material(surface_i);
 		instance_materials.append(mat);
 	}
-	Ref<ImporterMesh> current_mesh = _mesh_to_importer_mesh(mesh_resource);
 	Vector<float> blend_weights;
 	int32_t blend_count = mesh_resource->get_blend_shape_count();
 	blend_weights.resize(blend_count);
@@ -4089,7 +4045,7 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 		gltf_mesh->set_name(_gen_unique_name(p_state, mesh_resource->get_name()));
 	}
 	gltf_mesh->set_instance_materials(instance_materials);
-	gltf_mesh->set_mesh(current_mesh);
+	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh_resource));
 	gltf_mesh->set_blend_weights(blend_weights);
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
@@ -4354,7 +4310,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();
-		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
+		gltf_mesh->set_mesh(ImporterMesh::from_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		const String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
 		gltf_mesh->set_name(unique_name);
@@ -4385,29 +4341,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 	}
 	gltf_mesh->set_original_name(multi_mesh->get_name());
 	gltf_mesh->set_name(multi_mesh->get_name());
-	Ref<ImporterMesh> importer_mesh;
-	importer_mesh.instantiate();
-	Ref<ArrayMesh> array_mesh = multi_mesh->get_mesh();
-	if (array_mesh.is_valid()) {
-		importer_mesh->set_blend_shape_mode(array_mesh->get_blend_shape_mode());
-		for (int32_t blend_i = 0; blend_i < array_mesh->get_blend_shape_count(); blend_i++) {
-			importer_mesh->add_blend_shape(array_mesh->get_blend_shape_name(blend_i));
-		}
-	}
-	for (int32_t surface_i = 0; surface_i < mesh->get_surface_count(); surface_i++) {
-		Ref<Material> mat = mesh->surface_get_material(surface_i);
-		String material_name;
-		if (mat.is_valid()) {
-			material_name = mat->get_name();
-		}
-		Array blend_arrays;
-		if (array_mesh.is_valid()) {
-			blend_arrays = array_mesh->surface_get_blend_shape_arrays(surface_i);
-		}
-		importer_mesh->add_surface(mesh->surface_get_primitive_type(surface_i), mesh->surface_get_arrays(surface_i),
-				blend_arrays, mesh->surface_get_lods(surface_i), mat, material_name, mesh->surface_get_format(surface_i));
-	}
-	gltf_mesh->set_mesh(importer_mesh);
+	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh));
 	GLTFMeshIndex mesh_index = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();

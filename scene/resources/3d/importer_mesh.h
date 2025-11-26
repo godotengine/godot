@@ -93,7 +93,7 @@ public:
 
 	static String validate_blend_shape_name(const String &p_name);
 
-	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_name = String(), const uint64_t p_flags = 0);
+	void add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), const Ref<Material> &p_material = Ref<Material>(), const String &p_surface_name = String(), const uint64_t p_flags = 0);
 	int get_surface_count() const;
 
 	void set_blend_shape_mode(Mesh::BlendShapeMode p_blend_shape_mode);
@@ -133,5 +133,6 @@ public:
 
 	bool has_mesh() const;
 	Ref<ArrayMesh> get_mesh(const Ref<ArrayMesh> &p_base = Ref<ArrayMesh>());
+	static Ref<ImporterMesh> from_mesh(const Ref<Mesh> &p_mesh);
 	void clear();
 };
