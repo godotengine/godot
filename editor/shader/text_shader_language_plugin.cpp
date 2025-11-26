@@ -81,6 +81,11 @@ void fragment() {
 //	// Called for every pixel for every light affecting the material.
 //	// Uncomment to replace the default light processing function with this one.
 //}
+
+//void compose() {
+//	// Similar to fragment(), but runs after light().
+//	// Uncomment to replace the default composing function with this one.
+//}
 )";
 			} break;
 			case Shader::MODE_CANVAS_ITEM: {

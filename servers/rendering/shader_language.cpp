@@ -5403,7 +5403,7 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 }
 
 bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message) {
-	if (current_function != "vertex" && current_function != "fragment") {
+	if (current_function != "vertex" && current_function != "fragment" && current_function != "light") {
 		*r_message = vformat(RTR("Varying may not be assigned in the '%s' function."), current_function);
 		return false;
 	}
@@ -5417,17 +5417,20 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX;
 			} else if (current_function == varying_function_names.fragment) {
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT;
+			} else if (current_function == varying_function_names.light) {
+				*r_message = vformat(RTR("Varying may not be first assigned in the '%s' function."), current_function);
+				return false;
 			}
 			break;
 		case ShaderNode::Varying::STAGE_VERTEX:
-			if (current_function == varying_function_names.fragment) {
-				*r_message = vformat(RTR("Varyings which assigned in '%s' function may not be reassigned in '%s' or '%s'."), "vertex", "fragment", "light");
+			if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
+				*r_message = vformat(RTR("Varyings which assigned in '%s' function may not be reassigned in any of these functions: [%s]."), "vertex", String(", ").join({ "fragment", "light", "compose" }));
 				return false;
 			}
 			break;
 		case ShaderNode::Varying::STAGE_FRAGMENT:
 			if (current_function == varying_function_names.vertex) {
-				*r_message = vformat(RTR("Varyings which assigned in '%s' function may not be reassigned in '%s' or '%s'."), "fragment", "vertex", "light");
+				*r_message = vformat(RTR("Varyings which assigned in '%s' function may not be reassigned in any of these functions: [%s]."), "fragment", String(", ").join({ "vertex", "compose" }));
 				return false;
 			}
 			break;

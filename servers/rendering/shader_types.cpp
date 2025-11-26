@@ -227,6 +227,45 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].can_discard = true;
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].main_function = true;
 
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["DIFFUSE_COLOR"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["SPECULAR_COLOR"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
+
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["TANGENT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["BINORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["VIEW"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["SCREEN_UV"] = constt(ShaderLanguage::TYPE_VEC2);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["AMBIENT_LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["DIFFUSE_LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["SPECULAR_LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["INDIRECT_SPECULAR_LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["FINAL_FOG"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["BACKLIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["AO"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["AO_LIGHT_AFFECT"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["SSS_STRENGTH"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["EMISSION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["ALBEDO"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["SPECULAR"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["METALLIC"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].built_ins["ROUGHNESS"] = constt(ShaderLanguage::TYPE_FLOAT);
+
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].can_discard = true;
+	shader_modes[RS::SHADER_SPATIAL].functions["compose"].main_function = true;
+
 	// spatial render modes
 	{
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "premul_alpha" });
