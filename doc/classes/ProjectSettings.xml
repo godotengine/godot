@@ -3309,15 +3309,15 @@
 			- [code]d3d12[/code], Direct3D 12 from native drivers. If [member rendering/rendering_device/fallback_to_d3d12] is enabled, this is used as a fallback if Vulkan is not supported.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
+			If [code]true[/code], the Forward+ renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
+			If [code]true[/code], the Forward+ renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
 			[b]Note:[/b] This setting is implemented on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
+			If [code]true[/code], the Forward+ renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
@@ -3443,7 +3443,7 @@
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
+			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.
 		</member>
 		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
@@ -3498,7 +3498,7 @@
 			The ratio of [WorkerThreadPool]'s threads that will be reserved for low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], 3 of the worker threads will be reserved for low-priority tasks. The actual value won't exceed the number of CPU cores minus one, and if possible, at least one worker thread will be dedicated to low-priority tasks.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
-			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means [code]1[/code] on Web, or a number of [i]logical[/i] CPU cores available on other platforms (see [method OS.get_processor_count]).
+			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
 		</member>
 		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.
@@ -3592,7 +3592,7 @@
 			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
-			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
+			Applied foveation level if supported.
 			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
