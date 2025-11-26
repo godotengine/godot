@@ -30,6 +30,7 @@
 
 #include "editor_export_platform_apple_embedded.h"
 
+#include "core/config/global_def.h"
 #include "core/io/json.h"
 #include "core/io/plist.h"
 #include "core/string/translation_server.h"

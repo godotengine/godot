@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/global_def.h"
 #include "core/input/input.h"
 #include "servers/display/display_server.h"
 

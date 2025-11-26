@@ -30,7 +30,7 @@
 
 #include "openxr_action_map_editor.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"

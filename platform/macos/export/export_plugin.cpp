@@ -33,7 +33,7 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/io/image_loader.h"
+#include "core/config/global_def.h"
 #include "core/io/plist.h"
 #include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"

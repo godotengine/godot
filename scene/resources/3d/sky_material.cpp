@@ -30,7 +30,7 @@
 
 #include "sky_material.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/version.h"
 
 Mutex ProceduralSkyMaterial::shader_mutex;

@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/config/global_def.h"
 #include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 

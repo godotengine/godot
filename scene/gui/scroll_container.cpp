@@ -30,7 +30,7 @@
 
 #include "scroll_container.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"

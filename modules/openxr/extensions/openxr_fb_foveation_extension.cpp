@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "openxr_fb_foveation_extension.h"
-#include "core/config/project_settings.h"
+
+#include "core/config/global_def.h"
 #include "openxr_eye_gaze_interaction.h"
 
 #include "../openxr_platform_inc.h"

@@ -30,7 +30,7 @@
 
 #include "template_generator.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
 

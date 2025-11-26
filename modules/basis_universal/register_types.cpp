@@ -32,7 +32,7 @@
 
 #include "image_compress_basisu.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

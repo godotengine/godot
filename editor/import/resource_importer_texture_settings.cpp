@@ -30,7 +30,7 @@
 
 #include "resource_importer_texture_settings.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/os/os.h"
 
 // ResourceImporterTextureSettings contains code used by

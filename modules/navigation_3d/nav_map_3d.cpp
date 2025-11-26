@@ -38,7 +38,7 @@
 #include "nav_obstacle_3d.h"
 #include "nav_region_3d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/object/worker_thread_pool.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 

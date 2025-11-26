@@ -30,7 +30,7 @@
 
 #include "openxr_frame_synthesis_extension.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_server.h"
 

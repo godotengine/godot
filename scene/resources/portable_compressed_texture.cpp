@@ -30,7 +30,7 @@
 
 #include "portable_compressed_texture.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/marshalls.h"
 #include "scene/resources/bit_map.h"
 #include "servers/rendering/rendering_server.h"

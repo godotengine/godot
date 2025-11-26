@@ -32,7 +32,8 @@
 
 #ifdef DBUS_ENABLED
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
+#include "core/variant/variant.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"

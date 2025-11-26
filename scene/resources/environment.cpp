@@ -30,7 +30,7 @@
 
 #include "environment.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/resources/gradient_texture.h"
 #include "servers/rendering/rendering_server.h"
 

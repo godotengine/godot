@@ -30,7 +30,7 @@
 
 #include "smaa.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/image_loader.h"
 #include "servers/rendering/renderer_rd/effects/smaa_area_tex.gen.h"
 #include "servers/rendering/renderer_rd/effects/smaa_search_tex.gen.h"

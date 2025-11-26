@@ -30,7 +30,7 @@
 
 #include "editor_build_profile.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/json.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

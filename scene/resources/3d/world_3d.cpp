@@ -30,7 +30,7 @@
 
 #include "world_3d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"

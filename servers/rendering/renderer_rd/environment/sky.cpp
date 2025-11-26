@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "sky.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/math/math_defs.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"

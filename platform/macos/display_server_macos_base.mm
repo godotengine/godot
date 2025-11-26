@@ -32,7 +32,7 @@
 #import "key_mapping_macos.h"
 #import "tts_macos.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "drivers/png/png_driver_common.h"
 
 #import <Carbon/Carbon.h>

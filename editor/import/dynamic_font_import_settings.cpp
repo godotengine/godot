@@ -32,7 +32,7 @@
 
 #include "unicode_ranges.inc"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

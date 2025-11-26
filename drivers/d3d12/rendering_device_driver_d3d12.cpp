@@ -32,7 +32,7 @@
 
 #include "d3d12_hooks.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/marshalls.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/zlib/zlib.h"

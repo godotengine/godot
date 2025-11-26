@@ -30,7 +30,7 @@
 
 #include "xr_hand_modifier_3d.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "servers/xr/xr_server.h"
 
 void XRHandModifier3D::_bind_methods() {

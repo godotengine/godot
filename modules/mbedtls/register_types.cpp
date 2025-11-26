@@ -35,7 +35,7 @@
 #include "packet_peer_mbed_dtls.h"
 #include "stream_peer_mbedtls.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 #if MBEDTLS_VERSION_MAJOR >= 3
 #include <psa/crypto.h>

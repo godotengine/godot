@@ -30,7 +30,7 @@
 
 #include "renderer_compositor.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"

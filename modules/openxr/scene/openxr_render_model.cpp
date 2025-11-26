@@ -31,7 +31,7 @@
 #include "openxr_render_model.h"
 
 #include "../extensions/openxr_render_model_extension.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/xr/xr_nodes.h"
 #include "scene/resources/3d/primitive_meshes.h"

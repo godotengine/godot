@@ -33,7 +33,6 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

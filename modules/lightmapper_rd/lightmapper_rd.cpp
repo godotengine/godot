@@ -35,7 +35,7 @@
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "core/io/dir_access.h"
 #include "core/math/geometry_2d.h"
 #include "editor/file_system/editor_paths.h"

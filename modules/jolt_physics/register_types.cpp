@@ -34,6 +34,7 @@
 #include "jolt_physics_server_3d.h"
 #include "jolt_project_settings.h"
 
+#include "core/config/global_def.h"
 #include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 PhysicsServer3D *create_jolt_physics_server() {

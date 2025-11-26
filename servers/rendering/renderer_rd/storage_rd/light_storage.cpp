@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "light_storage.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "texture_storage.h"
 

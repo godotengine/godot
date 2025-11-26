@@ -30,6 +30,7 @@
 
 #include "register_editor_types.h"
 
+#include "core/config/global_def.h"
 #include "core/object/script_language.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/audio/audio_stream_editor_plugin.h"

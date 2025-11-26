@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "movie_writer_mjpeg.h"
-#include "core/config/project_settings.h"
+
+#include "core/config/global_def.h"
 #include "core/io/file_access.h"
 
 uint32_t MovieWriterMJPEG::get_audio_mix_rate() const {

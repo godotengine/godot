@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "godot_physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_wrap_mt.h"

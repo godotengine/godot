@@ -37,7 +37,7 @@
 #include "editor/editor_scene_importer_fbx2gltf.h"
 #include "editor/editor_scene_importer_ufbx.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 #include "editor/editor_node.h"
 
 static void _editor_init() {

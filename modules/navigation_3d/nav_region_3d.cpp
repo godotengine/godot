@@ -35,7 +35,7 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_builder_3d.h"
 #include "3d/nav_region_iteration_3d.h"
-#include "core/config/project_settings.h"
+#include "core/config/global_def.h"
 
 using namespace Nav3D;
 
