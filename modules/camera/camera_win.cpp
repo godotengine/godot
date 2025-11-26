@@ -544,6 +544,7 @@ void CameraFeedWindows::read() {
 					StreamingBuffer streaming_buffer;
 					streaming_buffer.start = data;
 					streaming_buffer.length = buffer_length;
+					streaming_buffer.stride = abs(pitch);
 
 					if (buffer_decoder) {
 						buffer_decoder->decode(streaming_buffer);

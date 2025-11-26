@@ -260,20 +260,53 @@ Nv12BufferDecoder::Nv12BufferDecoder(CameraFeed *p_camera_feed) :
 
 void Nv12BufferDecoder::decode(StreamingBuffer p_buffer) {
 	// NV12 format: Y plane followed by interleaved UV plane.
-	// Create separate Y and UV images for YUV2 format.
+	// Stride may be larger than width due to memory alignment.
+	int stride = p_buffer.stride > 0 ? p_buffer.stride : width;
+	int y_plane_size = stride * height;
+
 	int y_size = width * height;
 	int uv_size = width * height / 2;
 
-	// Y image data.
 	data_y.resize(y_size);
-	uint8_t *y_dst = (uint8_t *)data_y.ptrw();
-
-	// UV image data (interleaved U and V).
 	data_uv.resize(uv_size);
+
+	uint8_t *src = (uint8_t *)p_buffer.start;
+	uint8_t *y_dst = (uint8_t *)data_y.ptrw();
 	uint8_t *uv_dst = (uint8_t *)data_uv.ptrw();
 
-	memcpy(y_dst, p_buffer.start, y_size);
-	memcpy(uv_dst, (uint8_t *)p_buffer.start + y_size, uv_size);
+	// Copy Y plane (row by row if stride differs from width).
+	if (stride == width) {
+		if (flip_vertical) {
+			for (int y = 0; y < height; y++) {
+				memcpy(y_dst + y * width, src + (height - 1 - y) * stride, width);
+			}
+		} else {
+			memcpy(y_dst, src, y_size);
+		}
+	} else {
+		for (int y = 0; y < height; y++) {
+			int src_row = flip_vertical ? (height - 1 - y) : y;
+			memcpy(y_dst + y * width, src + src_row * stride, width);
+		}
+	}
+
+	// Copy UV plane (row by row if stride differs from width).
+	uint8_t *uv_src = src + y_plane_size;
+	int uv_height = height / 2;
+	if (stride == width) {
+		if (flip_vertical) {
+			for (int y = 0; y < uv_height; y++) {
+				memcpy(uv_dst + y * width, uv_src + (uv_height - 1 - y) * stride, width);
+			}
+		} else {
+			memcpy(uv_dst, uv_src, uv_size);
+		}
+	} else {
+		for (int y = 0; y < uv_height; y++) {
+			int src_row = flip_vertical ? (uv_height - 1 - y) : y;
+			memcpy(uv_dst + y * width, uv_src + src_row * stride, width);
+		}
+	}
 
 	// Create Y image.
 	if (image_y.is_valid()) {
@@ -289,7 +322,6 @@ void Nv12BufferDecoder::decode(StreamingBuffer p_buffer) {
 		image_uv.instantiate(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
 	}
 
-	// Set the YCbCr images.
 	camera_feed->set_ycbcr_images(image_y, image_uv);
 }
 
