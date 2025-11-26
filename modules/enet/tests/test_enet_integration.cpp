@@ -154,7 +154,7 @@ TEST_CASE("[ENet Integration] Statistics") {
 	server.instantiate();
 
 	Error server_err = server->create_host_bound(IPAddress("127.0.0.1"), 0);
-	CHECK_EQ(server_err, OK);;
+	CHECK_EQ(server_err, OK);
 
 	int server_port = server->get_local_port();
 
