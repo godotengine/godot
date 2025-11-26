@@ -3403,8 +3403,20 @@ RID RenderingDevice::index_array_create(RID p_index_buffer, uint32_t p_index_off
 /**** SHADER ****/
 /****************/
 
+// Keep the values in sync with the `UniformType` enum (file rendering_device_commons.h).
 static const char *SHADER_UNIFORM_NAMES[RenderingDevice::UNIFORM_TYPE_MAX] = {
-	"Sampler", "CombinedSampler", "Texture", "Image", "TextureBuffer", "SamplerTextureBuffer", "ImageBuffer", "UniformBuffer", "UniformBufferDynamic", "StorageBuffer", "StorageBufferDynamic", "InputAttachment"
+	"Sampler",
+	"CombinedSampler", // UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	"Texture",
+	"Image",
+	"TextureBuffer",
+	"SamplerTextureBuffer",
+	"ImageBuffer",
+	"UniformBuffer",
+	"StorageBuffer",
+	"InputAttachment",
+	"UniformBufferDynamic",
+	"StorageBufferDynamic",
 };
 
 String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
