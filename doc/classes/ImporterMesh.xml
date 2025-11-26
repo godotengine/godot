@@ -42,6 +42,13 @@
 				Removes all surfaces and blend shapes from this [ImporterMesh].
 			</description>
 		</method>
+		<method name="from_mesh" qualifiers="static">
+			<return type="ImporterMesh" />
+			<param index="0" name="mesh" type="Mesh" />
+			<description>
+				Converts the given [Mesh] into an [ImporterMesh] by copying all its surfaces, blend shapes, materials, and metadata into a new [ImporterMesh] object.
+			</description>
+		</method>
 		<method name="generate_lods">
 			<return type="void" />
 			<param index="0" name="normal_merge_angle" type="float" />
