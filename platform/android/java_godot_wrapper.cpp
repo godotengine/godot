@@ -80,7 +80,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
-	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
+	_check_internal_feature_support = p_env->GetMethodID(godot_class, "checkInternalFeatureSupport", "(Ljava/lang/String;)Z");
 	_sign_apk = p_env->GetMethodID(godot_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
 	_verify_apk = p_env->GetMethodID(godot_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
 	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
@@ -517,13 +517,13 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 	}
 }
 
-bool GodotJavaWrapper::has_feature(const String &p_feature) const {
-	if (_has_feature) {
+bool GodotJavaWrapper::check_internal_feature_support(const String &p_feature) const {
+	if (_check_internal_feature_support) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
 
 		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
-		bool result = env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		bool result = env->CallBooleanMethod(godot_instance, _check_internal_feature_support, j_feature);
 		env->DeleteLocalRef(j_feature);
 		return result;
 	} else {
