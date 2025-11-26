@@ -30,6 +30,78 @@
 
 #include "camera_win.h"
 
+// Supported formats for BufferDecoder (manual conversion).
+static const GUID BUFFER_DECODER_FORMATS[] = {
+	MFVideoFormat_RGB24,
+	MFVideoFormat_NV12,
+	MFVideoFormat_YUY2,
+	MFVideoFormat_MJPG,
+};
+
+// Additional formats supported via Media Foundation automatic conversion.
+static const GUID MF_CONVERSION_FORMATS[] = {
+	MFVideoFormat_RGB32,
+	MFVideoFormat_ARGB32,
+	MFVideoFormat_UYVY,
+	MFVideoFormat_YVYU,
+	MFVideoFormat_I420,
+	MFVideoFormat_IYUV,
+	MFVideoFormat_YV12,
+	MFVideoFormat_H264,
+};
+
+static bool _is_format_supported(const GUID &p_format) {
+	for (const GUID &fmt : BUFFER_DECODER_FORMATS) {
+		if (p_format == fmt) {
+			return true;
+		}
+	}
+	for (const GUID &fmt : MF_CONVERSION_FORMATS) {
+		if (p_format == fmt) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool _is_buffer_decoder_format(const GUID &p_format) {
+	for (const GUID &fmt : BUFFER_DECODER_FORMATS) {
+		if (p_format == fmt) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static String _get_format_name(const GUID &p_format) {
+	if (p_format == MFVideoFormat_RGB24) {
+		return "RGB24";
+	} else if (p_format == MFVideoFormat_RGB32) {
+		return "RGB32";
+	} else if (p_format == MFVideoFormat_ARGB32) {
+		return "ARGB32";
+	} else if (p_format == MFVideoFormat_NV12) {
+		return "NV12";
+	} else if (p_format == MFVideoFormat_YUY2) {
+		return "YUY2";
+	} else if (p_format == MFVideoFormat_UYVY) {
+		return "UYVY";
+	} else if (p_format == MFVideoFormat_YVYU) {
+		return "YVYU";
+	} else if (p_format == MFVideoFormat_I420) {
+		return "I420";
+	} else if (p_format == MFVideoFormat_IYUV) {
+		return "IYUV";
+	} else if (p_format == MFVideoFormat_YV12) {
+		return "YV12";
+	} else if (p_format == MFVideoFormat_MJPG) {
+		return "MJPG";
+	} else if (p_format == MFVideoFormat_H264) {
+		return "H264";
+	}
+	return "Unknown";
+}
+
 //////////////////////////////////////////////////////////////////////////
 // CameraFeedWindows - Subclass for our camera feed on windows
 
@@ -133,29 +205,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			continue;
 		}
 
-		// Check if this format can be converted to RGB24.
-		bool supported_fmt = false;
-
-		// Formats directly supported by BufferDecoder.
-		if (video_format == MFVideoFormat_RGB24 ||
-				video_format == MFVideoFormat_NV12 ||
-				video_format == MFVideoFormat_YUY2 ||
-				video_format == MFVideoFormat_MJPG) {
-			supported_fmt = true;
-		}
-		// Additional formats commonly supported by Media Foundation conversion.
-		else if (video_format == MFVideoFormat_RGB32 ||
-				video_format == MFVideoFormat_ARGB32 ||
-				video_format == MFVideoFormat_UYVY ||
-				video_format == MFVideoFormat_YVYU ||
-				video_format == MFVideoFormat_I420 ||
-				video_format == MFVideoFormat_IYUV ||
-				video_format == MFVideoFormat_YV12 ||
-				video_format == MFVideoFormat_H264) {
-			supported_fmt = true;
-		}
-
-		if (!supported_fmt) {
+		if (!_is_format_supported(video_format)) {
 			uint32_t format = video_format.Data1;
 			if (!warned_formats.has(format)) {
 				if (format <= 255) {
@@ -194,33 +244,8 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		temp.media_type_index = i;
 		temp.is_rgb24 = (video_format == MFVideoFormat_RGB24);
 
-		// Set format string.
 		FeedFormat format;
-		if (video_format == MFVideoFormat_RGB24) {
-			format.format = "RGB24";
-		} else if (video_format == MFVideoFormat_RGB32) {
-			format.format = "RGB32";
-		} else if (video_format == MFVideoFormat_ARGB32) {
-			format.format = "ARGB32";
-		} else if (video_format == MFVideoFormat_NV12) {
-			format.format = "NV12";
-		} else if (video_format == MFVideoFormat_YUY2) {
-			format.format = "YUY2";
-		} else if (video_format == MFVideoFormat_UYVY) {
-			format.format = "UYVY";
-		} else if (video_format == MFVideoFormat_YVYU) {
-			format.format = "YVYU";
-		} else if (video_format == MFVideoFormat_I420) {
-			format.format = "I420";
-		} else if (video_format == MFVideoFormat_IYUV) {
-			format.format = "IYUV";
-		} else if (video_format == MFVideoFormat_YV12) {
-			format.format = "YV12";
-		} else if (video_format == MFVideoFormat_MJPG) {
-			format.format = "MJPG";
-		} else if (video_format == MFVideoFormat_H264) {
-			format.format = "H264";
-		}
+		format.format = _get_format_name(video_format);
 		format.width = width;
 		format.height = height;
 		format.frame_numerator = numerator;
@@ -393,16 +418,11 @@ bool CameraFeedWindows::activate_feed() {
 						} else {
 							// Fallback to manual conversion for formats that support it.
 							const GUID &video_format = format_guids[selected_format];
-							if (video_format == MFVideoFormat_MJPG ||
-									video_format == MFVideoFormat_NV12 ||
-									video_format == MFVideoFormat_YUY2 ||
-									video_format == MFVideoFormat_RGB24) {
+							if (_is_buffer_decoder_format(video_format)) {
 								result = true;
 								use_mf_conversion = false;
-								// Create buffer decoder.
 								buffer_decoder = _create_buffer_decoder();
 							} else {
-								// Format not supported by either method.
 								ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder.");
 								result = false;
 							}
