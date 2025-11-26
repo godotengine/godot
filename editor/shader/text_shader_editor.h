@@ -191,7 +191,7 @@ protected:
 public:
 	virtual void edit_shader(const Ref<Shader> &p_shader) override;
 	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
-	virtual void use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) override;
+	virtual void use_menu_bar(MenuButton *p_file_menu) override;
 
 	virtual void apply_shaders() override;
 	virtual bool is_unsaved() const override;
