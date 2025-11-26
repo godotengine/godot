@@ -513,6 +513,8 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
 			colors["text_editor/theme/highlighting/completion_selected_color"] = alpha1;
 			colors["text_editor/theme/highlighting/completion_existing_color"] = alpha2;
+			colors["text_editor/theme/highlighting/inline_parameter_hint_background_color"] = alpha1;
+
 			// Same opacity as the scroll grabber editor icon.
 			colors["text_editor/theme/highlighting/completion_scroll_color"] = Color(mono_value, mono_value, mono_value, 0.29);
 			colors["text_editor/theme/highlighting/completion_scroll_hovered_color"] = Color(mono_value, mono_value, mono_value, 0.4);
@@ -599,6 +601,10 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
+
+	const Color inline_parameter_hint_background_color = EDITOR_GET("text_editor/theme/highlighting/inline_parameter_hint_background_color");
+	Ref<StyleBoxFlat> code_edit_parameter_hint_stylebox = make_flat_stylebox(inline_parameter_hint_background_color, -1, -1, -1, -1, p_config.corner_radius);
+	p_theme->set_stylebox("inline_parameter_hint", "CodeEdit", code_edit_parameter_hint_stylebox);
 
 	/* clang-format off */
 	p_theme->set_color("completion_background_color",     "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));

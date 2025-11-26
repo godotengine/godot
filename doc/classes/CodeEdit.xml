@@ -725,6 +725,9 @@
 		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.
 		</theme_item>
+		<theme_item name="inline_hint_font_scale_percentage" data_type="constant" type="int" default="70">
+			Font size of inline hints as a percentage of the text font size.
+		</theme_item>
 		<theme_item name="bookmark" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
 		</theme_item>
@@ -754,6 +757,9 @@
 		</theme_item>
 		<theme_item name="completion" data_type="style" type="StyleBox">
 			[StyleBox] for the code completion popup.
+		</theme_item>
+		<theme_item name="inline_parameter_hint" data_type="style" type="StyleBox">
+			[StyleBox] for inline parameter hints.
 		</theme_item>
 	</theme_items>
 </class>
