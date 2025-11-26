@@ -217,6 +217,7 @@
 /scene/gui/                                   @godotengine/gui-nodes
 /scene/main/                                  @godotengine/core
 /scene/resources/2d/                          @godotengine/2d-nodes
+/scene/resources/2d/skeleton/                 @godotengine/2d-nodes @godotengine/animation
 /scene/resources/3d/                          @godotengine/3d-nodes
 /scene/resources/animated*                    @godotengine/animation
 /scene/resources/animation*                   @godotengine/animation
