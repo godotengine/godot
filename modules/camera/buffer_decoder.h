@@ -38,6 +38,7 @@ class CameraFeed;
 struct StreamingBuffer {
 	void *start = nullptr;
 	size_t length = 0;
+	int stride = 0; // Row stride in bytes (0 = use width)
 };
 
 class BufferDecoder {
