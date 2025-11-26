@@ -660,6 +660,7 @@ bool AnimationMixer::_update_caches() {
 
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {
+		WARN_PRINT_ONCE(vformat("'%s' is an invalid root_node path, caches will not be built, please check the root_node assignment on: %s", root_node, get_path()));
 		cache_valid = false;
 		return false;
 	}
@@ -1000,7 +1001,7 @@ bool AnimationMixer::_update_caches() {
 
 void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	_blend_init();
-	if (_blend_pre_process(p_delta, track_count, track_map)) {
+	if (cache_valid && _blend_pre_process(p_delta, track_count, track_map)) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
