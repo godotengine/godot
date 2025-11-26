@@ -50,14 +50,14 @@ Ref<FileAccess> FileAccess::create(AccessType p_access) {
 	return ret;
 }
 
-bool FileAccess::exists(const String &p_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name)) {
+bool FileAccess::exists(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_path)) {
 		return true;
 	}
 
 	// Using file_exists because it's faster than trying to open the file.
-	Ref<FileAccess> ret = create_for_path(p_name);
-	return ret->file_exists(p_name);
+	Ref<FileAccess> ret = create_for_path(p_path);
+	return ret->file_exists(p_path);
 }
 
 void FileAccess::_set_access_type(AccessType p_access) {
@@ -669,152 +669,152 @@ bool FileAccess::store_double(double p_dest) {
 	return store_64(m.l);
 }
 
-uint64_t FileAccess::get_modified_time(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+uint64_t FileAccess::get_modified_time(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return 0;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_modified_time(p_file);
+	return fa->_get_modified_time(p_path);
 }
 
-uint64_t FileAccess::get_access_time(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+uint64_t FileAccess::get_access_time(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return 0;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_path + "'.");
 
-	return fa->_get_access_time(p_file);
+	return fa->_get_access_time(p_path);
 }
 
-int64_t FileAccess::get_size(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
-		return PackedData::get_singleton()->get_size(p_file);
+int64_t FileAccess::get_size(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
+		return PackedData::get_singleton()->get_size(p_path);
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), -1, "Cannot create FileAccess for path '" + p_file + "'.");
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), -1, "Cannot create FileAccess for path '" + p_path + "'.");
 
-	return fa->_get_size(p_file);
+	return fa->_get_size(p_path);
 }
 
-BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return 0;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_unix_permissions(p_file);
+	return fa->_get_unix_permissions(p_path);
 }
 
-Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::set_unix_permissions(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	Error err = fa->_set_unix_permissions(p_file, p_permissions);
+	Error err = fa->_set_unix_permissions(p_path, p_permissions);
 	return err;
 }
 
-bool FileAccess::get_hidden_attribute(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+bool FileAccess::get_hidden_attribute(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return false;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_hidden_attribute(p_file);
+	return fa->_get_hidden_attribute(p_path);
 }
 
-Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::set_hidden_attribute(const String &p_path, bool p_hidden) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
+	Error err = fa->_set_hidden_attribute(p_path, p_hidden);
 	return err;
 }
 
-bool FileAccess::get_read_only_attribute(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+bool FileAccess::get_read_only_attribute(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return false;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_read_only_attribute(p_file);
+	return fa->_get_read_only_attribute(p_path);
 }
 
-Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::set_read_only_attribute(const String &p_path, bool p_ro) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	Error err = fa->_set_read_only_attribute(p_file, p_ro);
+	Error err = fa->_set_read_only_attribute(p_path, p_ro);
 	return err;
 }
 
-PackedByteArray FileAccess::get_extended_attribute(const String &p_file, const String &p_attribute_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+PackedByteArray FileAccess::get_extended_attribute(const String &p_path, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return PackedByteArray();
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_extended_attribute(p_file, p_attribute_name);
+	return fa->_get_extended_attribute(p_path, p_attribute_name);
 }
 
-String FileAccess::get_extended_attribute_string(const String &p_file, const String &p_attribute_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+String FileAccess::get_extended_attribute_string(const String &p_path, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return String();
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	PackedByteArray data = fa->_get_extended_attribute(p_file, p_attribute_name);
+	PackedByteArray data = fa->_get_extended_attribute(p_path, p_attribute_name);
 	if (data.is_empty()) {
 		return String();
 	}
 	return String::utf8((const char *)data.ptr(), data.size());
 }
 
-Error FileAccess::set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::set_extended_attribute(const String &p_path, const String &p_attribute_name, const PackedByteArray &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_set_extended_attribute(p_file, p_attribute_name, p_data);
+	return fa->_set_extended_attribute(p_path, p_attribute_name, p_data);
 }
 
-Error FileAccess::set_extended_attribute_string(const String &p_file, const String &p_attribute_name, const String &p_data) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::set_extended_attribute_string(const String &p_path, const String &p_attribute_name, const String &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
 	PackedByteArray data;
 	CharString cs = p_data.utf8();
@@ -823,29 +823,29 @@ Error FileAccess::set_extended_attribute_string(const String &p_file, const Stri
 		memcpy(data.ptrw(), cs.get_data(), cs.size());
 	}
 
-	return fa->_set_extended_attribute(p_file, p_attribute_name, data);
+	return fa->_set_extended_attribute(p_path, p_attribute_name, data);
 }
 
-Error FileAccess::remove_extended_attribute(const String &p_file, const String &p_attribute_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+Error FileAccess::remove_extended_attribute(const String &p_path, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return ERR_UNAVAILABLE;
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_remove_extended_attribute(p_file, p_attribute_name);
+	return fa->_remove_extended_attribute(p_path, p_attribute_name);
 }
 
-PackedStringArray FileAccess::get_extended_attributes_list(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+PackedStringArray FileAccess::get_extended_attributes_list(const String &p_path) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_path) || PackedData::get_singleton()->has_directory(p_path))) {
 		return PackedStringArray();
 	}
 
-	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+	Ref<FileAccess> fa = create_for_path(p_path);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), vformat("Cannot create FileAccess for path '%s'.", p_path));
 
-	return fa->_get_extended_attributes_list(p_file);
+	return fa->_get_extended_attributes_list(p_path);
 }
 
 bool FileAccess::store_string(const String &p_string) {
@@ -966,8 +966,8 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	return ret;
 }
 
-String FileAccess::get_md5(const String &p_file) {
-	Ref<FileAccess> f = FileAccess::open(p_file, READ);
+String FileAccess::get_md5(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, READ);
 	if (f.is_null()) {
 		return String();
 	}
@@ -993,12 +993,12 @@ String FileAccess::get_md5(const String &p_file) {
 	return String::md5(hash);
 }
 
-String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
+String FileAccess::get_multiple_md5(const Vector<String> &p_paths) {
 	CryptoCore::MD5Context ctx;
 	ctx.start();
 
-	for (int i = 0; i < p_file.size(); i++) {
-		Ref<FileAccess> f = FileAccess::open(p_file[i], READ);
+	for (int i = 0; i < p_paths.size(); i++) {
+		Ref<FileAccess> f = FileAccess::open(p_paths[i], READ);
 		ERR_CONTINUE(f.is_null());
 
 		unsigned char step[32768];
@@ -1020,8 +1020,8 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 	return String::md5(hash);
 }
 
-String FileAccess::get_sha256(const String &p_file) {
-	Ref<FileAccess> f = FileAccess::open(p_file, READ);
+String FileAccess::get_sha256(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, READ);
 	if (f.is_null()) {
 		return String();
 	}
@@ -1107,24 +1107,24 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_access_time", "file"), &FileAccess::get_access_time);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_size", "file"), &FileAccess::get_size);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "path"), &FileAccess::get_modified_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_access_time", "path"), &FileAccess::get_access_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_size", "path"), &FileAccess::get_size);
 
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "path"), &FileAccess::get_unix_permissions);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "path", "permissions"), &FileAccess::set_unix_permissions);
 
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_hidden_attribute", "file"), &FileAccess::get_hidden_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_hidden_attribute", "path"), &FileAccess::get_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "path", "hidden"), &FileAccess::set_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "path", "ro"), &FileAccess::set_read_only_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "path"), &FileAccess::get_read_only_attribute);
 
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "file", "attribute_name"), &FileAccess::get_extended_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "file", "attribute_name"), &FileAccess::get_extended_attribute_string);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "_data"), &FileAccess::set_extended_attribute_string);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "path", "attribute_name"), &FileAccess::get_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "path", "attribute_name"), &FileAccess::get_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "path", "attribute_name", "data"), &FileAccess::set_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "path", "attribute_name", "data"), &FileAccess::set_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "path", "attribute_name"), &FileAccess::remove_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "path"), &FileAccess::get_extended_attributes_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
