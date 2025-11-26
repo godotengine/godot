@@ -2962,7 +2962,9 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 
 WaylandEmbedder::~WaylandEmbedder() {
 	shutdown();
-	proxy_thread.wait_to_finish();
+	if (proxy_thread.is_started()) {
+		proxy_thread.wait_to_finish();
+	}
 }
 
 #endif // TOOLS_ENABLED
