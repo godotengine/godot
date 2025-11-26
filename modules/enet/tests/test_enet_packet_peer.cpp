@@ -52,10 +52,10 @@ TEST_CASE("[ENetPacketPeer] Basic peer properties") {
 
 	CHECK(peer->is_active());
 	CHECK_EQ(peer->get_state(), ENetPacketPeer::STATE_CONNECTING);
-	CHECK(peer->get_max_packet_size() > 0);
-	CHECK(peer->get_available_packet_count() == 0);
-	CHECK(peer->get_channels() > 0);
-	CHECK(peer->get_remote_port() == 54321);
+	CHECK_GT(peer->get_max_packet_size(), 0);
+	CHECK_EQ(peer->get_available_packet_count(), 0);
+	CHECK_GT(peer->get_channels(), 0);
+	CHECK_EQ(peer->get_remote_port(), 54321);
 }
 
 TEST_CASE("[ENetPacketPeer] Packet operations") {
@@ -67,7 +67,7 @@ TEST_CASE("[ENetPacketPeer] Packet operations") {
 	data.push_back(3);
 
 	Error err = peer->put_packet(data.ptr(), data.size());
-	CHECK(err == OK);
+	CHECK_EQ(err, OK);
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -83,8 +83,8 @@ TEST_CASE("[ENetPacketPeer] Statistics") {
 	double rtt = peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME);
 	double packet_loss = peer->get_statistic(ENetPacketPeer::PEER_PACKET_LOSS);
 
-	CHECK(rtt >= 0);
-	CHECK(packet_loss >= 0);
+	CHECK_GE(rtt, 0);
+	CHECK_GE(packet_loss, 0);
 }
 
 TEST_CASE("[ENetPacketPeer] Control operations") {

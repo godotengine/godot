@@ -43,17 +43,17 @@ TEST_CASE("[ENet Integration] Basic client-server setup") {
 	CHECK_EQ(server_err, OK);
 
 	int server_port = server->get_local_port();
-	CHECK(server_port > 0);
+	CHECK_GT(server_port, 0);
 
 	Ref<ENetConnection> client;
 	client.instantiate();
 
 	Error client_err = client->create_host();
-	CHECK(client_err == OK);
+	CHECK_EQ(client_err, OK);
 
 	Ref<ENetPacketPeer> client_peer = client->connect_to_host("127.0.0.1", server_port, 1, 42);
 	CHECK(client_peer.is_valid());
-	CHECK(client_peer->get_state() == ENetPacketPeer::STATE_CONNECTING);
+	CHECK_EQ(client_peer->get_state(), ENetPacketPeer::STATE_CONNECTING);
 
 	for (int i = 0; i < 50; i++) {
 		ENetConnection::Event server_event;
@@ -72,7 +72,7 @@ TEST_CASE("[ENet Integration] Multiple clients") {
 	server.instantiate();
 
 	Error server_err = server->create_host_bound(IPAddress("127.0.0.1"), 0, 10);
-	CHECK(server_err == OK);
+	CHECK_EQ(server_err, OK);
 
 	int server_port = server->get_local_port();
 	const int client_count = 3;
@@ -83,7 +83,7 @@ TEST_CASE("[ENet Integration] Multiple clients") {
 		client.instantiate();
 
 		Error err = client->create_host();
-		CHECK(err == OK);
+		CHECK_EQ(err, OK);
 
 		Ref<ENetPacketPeer> peer = client->connect_to_host("127.0.0.1", server_port, 1, i);
 		CHECK(peer.is_valid());
@@ -114,7 +114,7 @@ TEST_CASE("[ENet Integration] Compression") {
 	server.instantiate();
 
 	Error server_err = server->create_host_bound(IPAddress("127.0.0.1"), 0);
-	CHECK(server_err == OK);
+	CHECK_EQ(server_err, OK);
 
 	server->compress(ENetConnection::COMPRESS_FASTLZ);
 	int server_port = server->get_local_port();
@@ -123,7 +123,7 @@ TEST_CASE("[ENet Integration] Compression") {
 	client.instantiate();
 
 	Error client_err = client->create_host();
-	CHECK(client_err == OK);
+	CHECK_EQ(client_err, OK);
 
 	client->compress(ENetConnection::COMPRESS_FASTLZ);
 
@@ -137,7 +137,7 @@ TEST_CASE("[ENet Integration] Compression") {
 	}
 
 	Error send_err = client_peer->put_packet(large_data.ptr(), large_data.size());
-	CHECK(send_err == OK);
+	CHECK_EQ(send_err, OK);
 
 	for (int i = 0; i < 20; i++) {
 		ENetConnection::Event event;
@@ -154,7 +154,7 @@ TEST_CASE("[ENet Integration] Statistics") {
 	server.instantiate();
 
 	Error server_err = server->create_host_bound(IPAddress("127.0.0.1"), 0);
-	CHECK(server_err == OK);
+	CHECK_EQ(server_err, OK);;
 
 	int server_port = server->get_local_port();
 
@@ -162,7 +162,7 @@ TEST_CASE("[ENet Integration] Statistics") {
 	client.instantiate();
 
 	Error client_err = client->create_host();
-	CHECK(client_err == OK);
+	CHECK_EQ(client_err, OK);
 
 	Ref<ENetPacketPeer> client_peer = client->connect_to_host("127.0.0.1", server_port, 1, 0);
 	CHECK(client_peer.is_valid());
@@ -182,8 +182,8 @@ TEST_CASE("[ENet Integration] Statistics") {
 	double server_sent = server->pop_statistic(ENetConnection::HOST_TOTAL_SENT_DATA);
 	double client_received = client->pop_statistic(ENetConnection::HOST_TOTAL_RECEIVED_DATA);
 
-	CHECK(server_sent >= 0);
-	CHECK(client_received >= 0);
+	CHECK_GE(server_sent, 0);
+	CHECK_GE(client_received, 0);
 
 	server->destroy();
 	client->destroy();
