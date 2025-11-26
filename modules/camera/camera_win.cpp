@@ -596,7 +596,10 @@ Array CameraFeedWindows::get_formats() const {
 
 CameraFeed::FeedFormat CameraFeedWindows::get_format() const {
 	FeedFormat feed_format = {};
-	return selected_format == -1 ? feed_format : formats[selected_format];
+	if (selected_format == -1 || selected_format >= formats.size()) {
+		return feed_format;
+	}
+	return formats[selected_format];
 }
 
 bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) {
