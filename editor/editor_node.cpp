@@ -5521,7 +5521,13 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 				}
 			}
 			if (theme.is_valid()) {
-				bool instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				bool instantiable = false;
+
+				// If the class doesn't exist or isn't global, then it's not instantiable
+				if (ClassDB::class_exists(p_class) || ScriptServer::is_global_class(p_class)) {
+					instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				}
+
 				return _get_class_or_script_icon(base_type, "", "", false, p_skip_fallback_virtual || instantiable);
 			}
 		}
