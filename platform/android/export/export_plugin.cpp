@@ -283,11 +283,11 @@ static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
 static const char *APK_ASSETS_DIRECTORY = "assets";
-static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
+static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
 static const int OPENGL_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int VULKAN_MIN_SDK_VERSION = 24;
-static const int DEFAULT_TARGET_SDK_VERSION = 34; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 35; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
@@ -791,7 +791,7 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 			String abi = abis[abi_index].abi;
 			String dst_path = String("lib").path_join(abi).path_join(p_so.path.get_file());
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_so.path);
-			Error store_err = store_in_apk(ed, dst_path, array);
+			Error store_err = store_in_apk(ed, dst_path, array, Z_NO_COMPRESSION);
 			ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 		}
 	}
@@ -2542,6 +2542,7 @@ bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
 	List<String> args;
 	args.push_back("build");
 	args.push_back(project_path);
+	args.push_back("/p:GodotTargetPlatform=android");
 	args.push_back("--getProperty:TargetFramework");
 
 	int exitcode;
@@ -2576,9 +2577,9 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
 
 	if (!gradle_build_enabled) {
-		// For template exports we only support .NET 8 because the template
-		// includes .jar dependencies that may only be compatible with .NET 8.
-		if (!_validate_dotnet_tfm("net8.0", err)) {
+		// For template exports we only support .NET 9 because the template
+		// includes .jar dependencies that may only be compatible with .NET 9.
+		if (!_validate_dotnet_tfm("net9.0", err)) {
 			r_error = err;
 			return false;
 		}

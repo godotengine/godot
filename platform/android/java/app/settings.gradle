@@ -15,4 +15,4 @@ pluginManagement {
     }
 }
 
-include ':assetPacks:installTime'
+include ':assetPackInstallTime'
