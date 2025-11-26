@@ -1564,11 +1564,10 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	}
 }
 
-void VisualShaderEditor::use_menu_bar_items(MenuButton *p_file_menu, Button *p_make_floating) {
+void VisualShaderEditor::use_menu_bar(MenuButton *p_file_menu) {
 	p_file_menu->set_switch_on_hover(false);
 	toolbar_hflow->add_child(p_file_menu);
 	toolbar_hflow->move_child(p_file_menu, 2); // Toggle Files Panel button + separator.
-	toolbar_hflow->add_child(p_make_floating);
 }
 
 void VisualShaderEditor::apply_shaders() {
@@ -6735,7 +6734,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 	toolbar_hflow->add_child(site_search);
-	toolbar_hflow->add_child(memnew(VSeparator));
 
 	VSeparator *separator = memnew(VSeparator);
 	toolbar_hflow->add_child(separator);

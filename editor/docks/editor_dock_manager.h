@@ -146,6 +146,7 @@ public:
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void make_dock_floating(EditorDock *p_dock);
 
 	TabContainer *get_dock_tab_container(Control *p_dock) const;
 

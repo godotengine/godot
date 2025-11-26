@@ -834,6 +834,15 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	_update_layout();
 }
 
+void EditorDockManager::make_dock_floating(EditorDock *p_dock) {
+	ERR_FAIL_NULL(p_dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot make unknown dock '%s' floating.", p_dock->get_display_title()));
+
+	if (!p_dock->dock_window) {
+		_open_dock_in_window(p_dock);
+	}
+}
+
 TabContainer *EditorDockManager::get_dock_tab_container(Control *p_dock) const {
 	return Object::cast_to<TabContainer>(p_dock->get_parent());
 }
