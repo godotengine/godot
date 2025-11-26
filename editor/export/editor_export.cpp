@@ -83,7 +83,13 @@ void EditorExport::_save() {
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
+
 		config->set_value(section, "patches", preset->get_patches());
+		config->set_value(section, "patch_delta_encoding", preset->is_patch_delta_encoding_enabled());
+		config->set_value(section, "patch_delta_compression_level_zstd", preset->get_patch_delta_zstd_level());
+		config->set_value(section, "patch_delta_min_reduction", preset->get_patch_delta_min_reduction());
+		config->set_value(section, "patch_delta_include_filters", preset->get_patch_delta_include_filter());
+		config->set_value(section, "patch_delta_exclude_filters", preset->get_patch_delta_exclude_filter());
 
 		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
@@ -331,6 +337,22 @@ void EditorExport::load_config() {
 		preset->set_export_path(config->get_value(section, "export_path", ""));
 		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 		preset->set_patches(config->get_value(section, "patches", Vector<String>()));
+
+		if (config->has_section_key(section, "patch_delta_encoding")) {
+			preset->set_patch_delta_encoding_enabled(config->get_value(section, "patch_delta_encoding"));
+		}
+		if (config->has_section_key(section, "patch_delta_compression_level_zstd")) {
+			preset->set_patch_delta_zstd_level(config->get_value(section, "patch_delta_compression_level_zstd"));
+		}
+		if (config->has_section_key(section, "patch_delta_min_reduction")) {
+			preset->set_patch_delta_min_reduction(config->get_value(section, "patch_delta_min_reduction"));
+		}
+		if (config->has_section_key(section, "patch_delta_include_filters")) {
+			preset->set_patch_delta_include_filter(config->get_value(section, "patch_delta_include_filters"));
+		}
+		if (config->has_section_key(section, "patch_delta_exclude_filters")) {
+			preset->set_patch_delta_exclude_filter(config->get_value(section, "patch_delta_exclude_filters"));
+		}
 
 		if (config->has_section_key(section, "seed")) {
 			preset->set_seed(config->get_value(section, "seed"));

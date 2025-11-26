@@ -73,6 +73,11 @@ private:
 	bool dedicated_server = false;
 
 	Vector<String> patches;
+	bool patch_delta_encoding_enabled = false;
+	int patch_delta_zstd_level = 19;
+	double patch_delta_min_reduction = 0.1;
+	String patch_delta_include_filter = "*";
+	String patch_delta_exclude_filter;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
@@ -148,10 +153,27 @@ public:
 
 	void add_patch(const String &p_path, int p_at_pos = -1);
 	void set_patch(int p_index, const String &p_path);
+
 	String get_patch(int p_index);
 	void remove_patch(int p_index);
+
 	void set_patches(const Vector<String> &p_patches);
 	Vector<String> get_patches() const;
+
+	void set_patch_delta_encoding_enabled(bool p_enable);
+	bool is_patch_delta_encoding_enabled() const;
+
+	void set_patch_delta_zstd_level(int p_level);
+	int get_patch_delta_zstd_level() const;
+
+	void set_patch_delta_min_reduction(double p_ratio);
+	double get_patch_delta_min_reduction() const;
+
+	void set_patch_delta_include_filter(const String &p_filter);
+	String get_patch_delta_include_filter() const;
+
+	void set_patch_delta_exclude_filter(const String &p_filter);
+	String get_patch_delta_exclude_filter() const;
 
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;
