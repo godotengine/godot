@@ -833,6 +833,7 @@ public:
 	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false) = 0;
 	virtual void canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0) = 0;
 	virtual void canvas_item_add_lcd_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1)) = 0;
+	// Looking here
 	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RSE::NinePatchAxisMode p_x_axis_mode = RSE::NINE_PATCH_STRETCH, RSE::NinePatchAxisMode p_y_axis_mode = RSE::NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1)) = 0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) = 0;
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID()) = 0;
@@ -970,7 +971,7 @@ public:
 
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
-	virtual bool has_changed() const = 0;
+	virtual bool has_changed(RSE::ChangedPriority p_priority = RSE::CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init();
 	virtual void finish() = 0;
 	virtual void tick() = 0;
@@ -1167,6 +1168,7 @@ VARIANT_ENUM_CAST_EXT(RSE::CanvasLightBlendMode, RenderingServer::CanvasLightBle
 VARIANT_ENUM_CAST_EXT(RSE::CanvasLightShadowFilter, RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST_EXT(RSE::CanvasOccluderPolygonCullMode, RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST_EXT(RSE::GlobalShaderParameterType, RenderingServer::GlobalShaderParameterType);
+VARIANT_ENUM_CAST_EXT(RSE::ChangedPriority, RenderingServer::ChangedPriority);
 VARIANT_ENUM_CAST_EXT(RSE::RenderingInfo, RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST_EXT(RSE::SplashStretchMode, RenderingServer::SplashStretchMode);
 VARIANT_ENUM_CAST_EXT(RSE::CanvasTextureChannel, RenderingServer::CanvasTextureChannel);
