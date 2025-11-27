@@ -480,8 +480,11 @@ public:
 
 		xkb_layout_index_t current_layout_index = 0;
 
-		int32_t repeat_key_delay_msec = 0;
-		int32_t repeat_start_delay_msec = 0;
+		// Clients with `wl_seat`s older than version 4 do not support
+		// `wl_keyboard::repeat_info`, so we'll provide a reasonable default of 25
+		// keys per second, with a start delay of 600 milliseconds.
+		int32_t repeat_key_delay_msec = 1000 / 25;
+		int32_t repeat_start_delay_msec = 600;
 
 		xkb_keycode_t repeating_keycode = XKB_KEYCODE_INVALID;
 		uint64_t last_repeat_start_msec = 0;
