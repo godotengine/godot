@@ -102,8 +102,8 @@ TEST_CASE("[ShaderLanguage] Ensure no reserved keywords are valid identifiers") 
 	static const char *varying_template = "shader_type %s;\nvarying float %s;\n";
 	Vector<String> non_varying_types = { "particles", "sky", "fog" };
 
-	auto shader_types_to_test = ShaderTypes::get_singleton()->get_types();
-	for (auto shader_type : shader_types_to_test) {
+	HashSet<String> shader_types_to_test = ShaderTypes::get_singleton()->get_types();
+	for (const String &shader_type : shader_types_to_test) {
 		ShaderLanguage::ShaderCompileInfo info;
 		get_compile_info(info, get_shader_mode(shader_type));
 		// test templates with non-keyword identifiers

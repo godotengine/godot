@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/error/error_macros.h"
-#include "core/templates/pair.h"
-#include "core/typedefs.h"
 #ifndef DISABLE_DEPRECATED
 
 #include "shader_converter.h"
@@ -200,9 +197,9 @@ HashSet<String> ShaderDeprecatedConverter::_construct_new_builtin_funcs() {
 		old_funcs.insert(old_builtin_funcs[i]);
 	}
 	HashSet<String> new_funcs;
-	for (List<String>::Element *E = current_builtin_funcs.front(); E; E = E->next()) {
-		if (!old_funcs.has(E->get())) {
-			new_funcs.insert(E->get());
+	for (const String &E : current_builtin_funcs) {
+		if (!old_funcs.has(E)) {
+			new_funcs.insert(E);
 		}
 	}
 	return new_funcs;
@@ -660,7 +657,7 @@ bool ShaderDeprecatedConverter::token_is_skippable(const Token &p_tk) {
 }
 
 List<SL::Token>::Element *ShaderDeprecatedConverter::_get_next_token_ptr(List<Token>::Element *p_curr_ptr) const {
-	ERR_FAIL_COND_V(p_curr_ptr == nullptr, p_curr_ptr);
+	ERR_FAIL_NULL_V(p_curr_ptr, p_curr_ptr);
 	if (p_curr_ptr->next() == nullptr) {
 		return p_curr_ptr;
 	}
@@ -700,7 +697,7 @@ List<SL::Token>::Element *ShaderDeprecatedConverter::get_prev_token() {
 }
 
 List<SL::Token>::Element *ShaderDeprecatedConverter::remove_cur_and_get_next() {
-	ERR_FAIL_COND_V(!curr_ptr, nullptr);
+	ERR_FAIL_NULL_V(curr_ptr, nullptr);
 	List<Token>::Element *prev = curr_ptr->prev();
 	if (!prev) {
 		prev = curr_ptr->next();
@@ -804,8 +801,9 @@ bool ShaderDeprecatedConverter::insert_before(const Token &p_token, List<Token>:
 	return true;
 }
 
-List<SL::Token>::Element *ShaderDeprecatedConverter::replace_curr(const Token &p_token, String comment_format) {
+List<SL::Token>::Element *ShaderDeprecatedConverter::replace_curr(const Token &p_token, const String &p_comment_format) {
 	ERR_FAIL_COND_V(curr_ptr == nullptr, nullptr);
+	String comment_format = p_comment_format;
 	Token new_token = p_token;
 	new_token.pos = NEW_IDENT;
 	List<Token>::Element *prev = curr_ptr;
@@ -823,7 +821,7 @@ List<SL::Token>::Element *ShaderDeprecatedConverter::replace_curr(const Token &p
 	return curr_ptr;
 }
 
-SL::Token ShaderDeprecatedConverter::mkTok(TokenType p_type, const StringName &p_text, double p_constant, uint16_t p_line) {
+SL::Token ShaderDeprecatedConverter::mk_tok(TokenType p_type, const StringName &p_text, double p_constant, uint16_t p_line) {
 	return { p_type, p_text, p_constant, p_line, 0, NEW_IDENT };
 }
 
@@ -833,17 +831,17 @@ bool ShaderDeprecatedConverter::_insert_uniform_declaration(const String &p_name
 	}
 	TokenType type = get_removed_builtin_uniform_type(p_name);
 	Vector<TokenType> hints = get_removed_builtin_hints(p_name);
-	Vector<Token> uni_decl = { mkTok(TT::TK_NEWLINE), mkTok(TT::TK_UNIFORM), mkTok(TT::TK_SPACE), mkTok(type),
-		mkTok(TT::TK_SPACE), mkTok(TT::TK_IDENTIFIER, p_name), mkTok(TT::TK_SPACE), mkTok(TT::TK_COLON),
-		mkTok(TT::TK_SPACE) };
+	Vector<Token> uni_decl = { mk_tok(TT::TK_NEWLINE), mk_tok(TT::TK_UNIFORM), mk_tok(TT::TK_SPACE), mk_tok(type),
+		mk_tok(TT::TK_SPACE), mk_tok(TT::TK_IDENTIFIER, p_name), mk_tok(TT::TK_SPACE), mk_tok(TT::TK_COLON),
+		mk_tok(TT::TK_SPACE) };
 	for (int i = 0; i < hints.size(); i++) {
-		uni_decl.append(mkTok(hints[i]));
+		uni_decl.append(mk_tok(hints[i]));
 		if (i < hints.size() - 1) {
-			uni_decl.append(mkTok(TT::TK_COMMA));
-			uni_decl.append(mkTok(TT::TK_SPACE));
+			uni_decl.append(mk_tok(TT::TK_COMMA));
+			uni_decl.append(mk_tok(TT::TK_SPACE));
 		}
 	}
-	uni_decl.append_array({ mkTok(TT::TK_SEMICOLON), mkTok(TT::TK_NEWLINE) });
+	uni_decl.append_array({ mk_tok(TT::TK_SEMICOLON), mk_tok(TT::TK_NEWLINE) });
 	if (!insert_after(uni_decl, after_shader_decl)) {
 		return false;
 	}
@@ -985,7 +983,7 @@ String ShaderDeprecatedConverter::get_token_literal_text(const Token &p_tk) cons
 					return p_tk.text;
 				}
 				String const_str = rtos(p_tk.constant);
-				if (!p_tk.is_integer_constant() && !const_str.contains(".")) {
+				if (!p_tk.is_integer_constant() && !const_str.contains_char('.')) {
 					const_str += ".0";
 				}
 				return const_str;
@@ -1159,11 +1157,11 @@ String ShaderDeprecatedConverter::get_report() {
 	return report_str;
 }
 
-bool ShaderDeprecatedConverter::_add_to_report(int p_line, const String &p_msg, int level) {
+bool ShaderDeprecatedConverter::_add_to_report(int p_line, const String &p_msg, int p_level) {
 	String message = p_msg;
-	if (level == 1) {
+	if (p_level == 1) {
 		message = "WARNING: " + message;
-	} else if (level == 2) {
+	} else if (p_level == 2) {
 		message = "ERROR: " + message;
 	}
 	if (!report.has(p_line)) {
@@ -1176,20 +1174,20 @@ bool ShaderDeprecatedConverter::_add_to_report(int p_line, const String &p_msg, 
 	return true;
 }
 
-bool ShaderDeprecatedConverter::_add_comment_before(const String &p_comment, List<Token>::Element *p_pos, bool warning) {
+bool ShaderDeprecatedConverter::_add_comment_before(const String &p_comment, List<Token>::Element *p_pos, bool p_warning) {
 	// Peek back until we hit a newline or the start of the file (EOF).
 	TokenE *start_pos = p_pos;
 	if (!start_pos) {
 		return false;
 	}
-	if (!_add_to_report(start_pos->get().line, p_comment, warning ? 1 : 0)) {
+	if (!_add_to_report(start_pos->get().line, p_comment, p_warning ? 1 : 0)) {
 		// Already added.
 		return true;
 	}
 	while (start_pos->prev() && start_pos->get().type != TT::TK_NEWLINE && start_pos->get().type != TT::TK_EOF) {
 		start_pos = start_pos->prev();
 	}
-	String block_comment = vformat("/* !convert%s */\n", (warning ? " WARNING: " : ": ") + p_comment);
+	String block_comment = vformat("/* !convert%s */\n", (p_warning ? " WARNING: " : ": ") + p_comment);
 	// In case this has been run through the converter before, check if the token before this is a block comment and has the same comment.
 	TokenE *prev = start_pos->prev();
 	while (prev && prev->get().type == TT::TK_BLOCK_COMMENT) {
@@ -1198,7 +1196,7 @@ bool ShaderDeprecatedConverter::_add_comment_before(const String &p_comment, Lis
 		}
 		prev = prev->prev();
 	}
-	return insert_after(mkTok(TT::TK_BLOCK_COMMENT, block_comment), start_pos);
+	return insert_after(mk_tok(TT::TK_BLOCK_COMMENT, block_comment), start_pos);
 }
 
 bool ShaderDeprecatedConverter::_add_comment_at_eol(const String &p_comment, List<Token>::Element *p_pos) {
@@ -1214,7 +1212,7 @@ bool ShaderDeprecatedConverter::_add_comment_at_eol(const String &p_comment, Lis
 	if (start_pos->prev() && start_pos->prev()->get().type == TT::TK_BLOCK_COMMENT && get_token_literal_text(start_pos->prev()->get()) == comment) {
 		return true;
 	}
-	return insert_before(mkTok(TT::TK_BLOCK_COMMENT, comment), start_pos);
+	return insert_before(mk_tok(TT::TK_BLOCK_COMMENT, comment), start_pos);
 }
 
 void ShaderDeprecatedConverter::reset() {
@@ -1619,7 +1617,7 @@ bool ShaderDeprecatedConverter::_parse_decls(bool p_first_pass) {
 	return true;
 }
 
-bool ShaderDeprecatedConverter::_process_decl_if_exist(String p_curr_func, bool p_first_pass) {
+bool ShaderDeprecatedConverter::_process_decl_if_exist(const String &p_curr_func, bool p_first_pass) {
 	TokenE *cur_tok = get_pos();
 
 	TokenE *start_pos = cur_tok;
@@ -1994,7 +1992,7 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 			case TT::TK_FLOAT_CONSTANT: {
 				String const_str = get_token_literal_text(cur_tok->get()).to_lower();
 				// 3.x float constants allowed for a value without a decimal point if it ended in `f` (e.g. `1f`).
-				if (const_str.ends_with("f") && const_str.find(".") == -1 && const_str.find("e") == -1) {
+				if (const_str.ends_with("f") && !const_str.contains_char('.') && !const_str.contains_char('e')) {
 					return true;
 				}
 			} break;
@@ -2017,7 +2015,7 @@ bool ShaderDeprecatedConverter::_is_code_deprecated() {
 			case TT::TK_IDENTIFIER: {
 				String id = get_token_literal_text(cur_tok->get());
 				if (has_builtin_rename(shader_mode, id, curr_func) || is_removed_builtin(shader_mode, id, curr_func)) {
-					if ((!scope_has_decl(curr_func, id) && !function_decls.has(id))) {
+					if (!scope_has_decl(curr_func, id) && !function_decls.has(id)) {
 						return true;
 					}
 				} else if (has_removed_type(id) && peek_next_tk_type() == TT::TK_IDENTIFIER) {
@@ -2045,23 +2043,23 @@ bool ShaderDeprecatedConverter::_check_deprecated_type(TokenE *p_type_pos) {
 	return true;
 }
 
-ShaderDeprecatedConverter::TokenE *ShaderDeprecatedConverter::_rename_keyword_id(TokenE *pos, bool p_detected_3x, const HashMap<TokenType, String> &p_new_reserved_word_renames) {
-	String rename = p_new_reserved_word_renames[pos->get().type];
-	reset_to(pos);
-	return replace_curr(mkTok(TT::TK_IDENTIFIER, rename), "Identifier '%s' is a reserved word in this version of Godot, renamed to '%s'.");
+ShaderDeprecatedConverter::TokenE *ShaderDeprecatedConverter::_rename_keyword_id(TokenE *p_pos, bool p_detected_3x, const HashMap<TokenType, String> &p_new_reserved_word_renames) {
+	String rename = p_new_reserved_word_renames[p_pos->get().type];
+	reset_to(p_pos);
+	return replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Identifier '%s' is a reserved word in this version of Godot, renamed to '%s'.");
 }
 
-bool ShaderDeprecatedConverter::_handle_new_keyword_rename(TokenE *pos, bool p_detected_3x, HashMap<TokenType, String> &p_new_reserved_word_renames) {
-	TokenType tk_type = pos->get().type;
-	String p_name = get_token_literal_text(pos->get());
+bool ShaderDeprecatedConverter::_handle_new_keyword_rename(TokenE *p_pos, bool p_detected_3x, HashMap<TokenType, String> &p_new_reserved_word_renames) {
+	TokenType tk_type = p_pos->get().type;
+	String name = get_token_literal_text(p_pos->get());
 	if (tokentype_is_new_reserved_keyword(tk_type)) {
 		if (!p_detected_3x) {
 			// If we're not sure it's a 3.x shader, just add a comment.
-			_add_comment_before(vformat(RTR("Identifier '%s' is a reserved word in this version of Godot."), p_name), pos);
+			_add_comment_before(vformat(RTR("Identifier '%s' is a reserved word in this version of Godot."), name), p_pos);
 			return false;
 		}
 		if (!p_new_reserved_word_renames.has(tk_type)) {
-			String rename = p_name + String("_");
+			String rename = name + String("_");
 			while (function_decls.has(rename) || uniform_decls.has(rename) || var_decls.has(rename) || struct_decls.has(rename)) {
 				rename += "_";
 			}
@@ -2130,7 +2128,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 				// replace the hint
 				reset_to(hint);
 				TT hint_rename = get_hint_replacement(hint_name);
-				hint = replace_curr(mkTok(hint_rename), "Hint '%s' renamed to '%s'.");
+				hint = replace_curr(mk_tok(hint_rename), "Hint '%s' renamed to '%s'.");
 				uni.hint_poses.write[i] = hint;
 				reset_to(after_shader_decl);
 			}
@@ -2178,7 +2176,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			}
 			if (struct_renames.has(type)) {
 				reset_to(var.type_pos);
-				var.type_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
+				var.type_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
 				reset_to(after_shader_decl);
 			}
 		}
@@ -2195,20 +2193,20 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			String type = get_token_literal_text(var.type_pos->get());
 			if (struct_renames.has(type)) {
 				reset_to(var.type_pos);
-				var.type_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
+				var.type_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
 				reset_to(after_shader_decl);
 			}
 		}
 
 		if (_handle_new_keyword_rename(E.value[0].name_pos, detected_3x, new_reserved_word_renames)) {
-			for (VarDecl &varDecl : E.value) {
+			for (VarDecl &var_decl : E.value) {
 				// replace the identifier
-				reset_to(varDecl.name_pos);
-				if (varDecl.name_pos == varDecl.start_pos) {
-					varDecl.name_pos = _rename_keyword_id(varDecl.name_pos, detected_3x, new_reserved_word_renames);
-					varDecl.start_pos = varDecl.name_pos;
+				reset_to(var_decl.name_pos);
+				if (var_decl.name_pos == var_decl.start_pos) {
+					var_decl.name_pos = _rename_keyword_id(var_decl.name_pos, detected_3x, new_reserved_word_renames);
+					var_decl.start_pos = var_decl.name_pos;
 				} else {
-					varDecl.name_pos = _rename_keyword_id(varDecl.name_pos, detected_3x, new_reserved_word_renames);
+					var_decl.name_pos = _rename_keyword_id(var_decl.name_pos, detected_3x, new_reserved_word_renames);
 				}
 				reset_to(after_shader_decl);
 			}
@@ -2231,7 +2229,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 		String type = get_token_literal_text(var.type_pos->get());
 		if (struct_renames.has(type)) {
 			reset_to(var.type_pos);
-			var.type_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
+			var.type_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, struct_renames[type]), "Struct type '%s' renamed to '%s'.");
 			reset_to(after_shader_decl);
 		}
 		String name = get_token_literal_text(var.name_pos->get());
@@ -2239,7 +2237,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			// replace the function name
 			String rename = get_main_function_rename(name);
 			reset_to(var.name_pos);
-			var.name_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, rename), "Function '%s' renamed to '%s' in this version of Godot.");
+			var.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Function '%s' renamed to '%s' in this version of Godot.");
 			reset_to(after_shader_decl);
 			func_renames[name] = rename;
 			// Only doing this because "process" is a common word and we don't want to clobber an existing function/global named that.
@@ -2253,20 +2251,20 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 					func_renames[rename] = rerename;
 					FunctionDecl &rere_func = function_decls[rename];
 					reset_to(rere_func.name_pos);
-					rere_func.name_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
+					rere_func.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
 					reset_to(after_shader_decl);
 				} else if (uniform_decls.has(rename)) {
 					nonfunc_globals_renames[rename] = rerename;
 					UniformDecl &rere_uni = uniform_decls[rename];
 					reset_to(rere_uni.name_pos);
-					rere_uni.name_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
+					rere_uni.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
 					reset_to(after_shader_decl);
 				} else if (var_decls.has(rename) && scope_declarations.has("<global>") && scope_declarations["<global>"].has(rename)) {
 					nonfunc_globals_renames[rename] = rerename;
 					for (int i = 0; i < var_decls[rename].size(); i++) {
 						VarDecl &rere_var = var_decls[rename].write[i];
 						reset_to(rere_var.name_pos);
-						rere_var.name_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
+						rere_var.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rerename), conflict_comment_prefix);
 						reset_to(after_shader_decl);
 					}
 				}
@@ -2279,7 +2277,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 			func_renames[name] = rename;
 			// replace the function name
 			reset_to(var.name_pos);
-			var.name_pos = replace_curr(mkTok(TT::TK_IDENTIFIER, rename), "Function '%s' is a built-in function in this version of Godot, renamed to '%s'.");
+			var.name_pos = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Function '%s' is a built-in function in this version of Godot, renamed to '%s'.");
 			reset_to(after_shader_decl);
 		} else if (_handle_new_keyword_rename(var.name_pos, detected_3x, new_reserved_word_renames)) {
 			var.name_pos = _rename_keyword_id(var.name_pos, detected_3x, new_reserved_word_renames);
@@ -2334,10 +2332,10 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 		switch (cur_tok->get().type) {
 			case TT::TK_FLOAT_CONSTANT: {
 				// Earlier versions of Godot 3.x (< 3.5) allowed the use of the `f` sigil with float constants without a decimal place.
-				if (cur_tok_text.ends_with("f") && !cur_tok_text.contains(".") && !cur_tok_text.contains("e")) {
+				if (cur_tok_text.ends_with("f") && !cur_tok_text.contains_char('.') && !cur_tok_text.contains_char('e')) {
 					cur_tok_text = cur_tok_text.substr(0, cur_tok_text.length() - 1) + ".0f";
 					_add_comment_before(RTR("Float constant without decimal point requires a trailing '.0' in this version of Godot."), cur_tok, false);
-					cur_tok = replace_curr(mkTok(TT::TK_FLOAT_CONSTANT, cur_tok_text, 0xdeadbeef));
+					cur_tok = replace_curr(mk_tok(TT::TK_FLOAT_CONSTANT, cur_tok_text, 0xdeadbeef));
 				}
 			} break;
 			case TT::TK_RENDER_MODE: {
@@ -2381,7 +2379,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 									}
 								}
 							} else if (is_renamed_render_mode(shader_mode, id_text)) {
-								next_tk = replace_curr(mkTok(TT::TK_IDENTIFIER, get_render_mode_rename(id_text)), "Render mode ");
+								next_tk = replace_curr(mk_tok(TT::TK_IDENTIFIER, get_render_mode_rename(id_text)), "Render mode ");
 							}
 						} else {
 							COND_LINE_MSG_FAIL(next_tk->get().type != TT::TK_COMMA && next_tk->get().type != TT::TK_SEMICOLON, next_tk->get().line, RTR("Expected ',' or ';' after render mode declaration."));
@@ -2400,9 +2398,9 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 					break; // Struct member access, don't replace it.
 				}
 				if (func_renames.has(cur_tok_text) && peek_next_tk_type() == TT::TK_PARENTHESIS_OPEN) { // Function call.
-					cur_tok = replace_curr(mkTok(TT::TK_IDENTIFIER, func_renames[cur_tok_text]), "Function call ");
+					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, func_renames[cur_tok_text]), "Function call ");
 				} else if (nonfunc_globals_renames.has(cur_tok_text) && peek_next_tk_type() != TT::TK_PARENTHESIS_OPEN) {
-					cur_tok = replace_curr(mkTok(TT::TK_IDENTIFIER, nonfunc_globals_renames[cur_tok_text]), conflict_comment_prefix);
+					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, nonfunc_globals_renames[cur_tok_text]), conflict_comment_prefix);
 				} else if (is_removed_builtin(shader_mode, cur_tok_text, curr_func) && !scope_has_decl(curr_func, cur_tok_text)) {
 					if (get_removed_builtin_uniform_type(cur_tok_text) == TT::TK_ERROR) {
 						const String i_err_str = vformat(RTR("Deprecated built-in '%s' is not supported by this version of Godot"), cur_tok_text);
@@ -2423,10 +2421,10 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 						}
 					}
 					_add_comment_before(vformat(RTR("INDEX is uint in this version of Godot, wrapped INDEX in 'int()' cast.")), cur_tok, false);
-					insert_before({ mkTok(TT::TK_TYPE_INT), mkTok(TT::TK_PARENTHESIS_OPEN) }, cur_tok);
-					insert_after(mkTok(TT::TK_PARENTHESIS_CLOSE), cur_tok);
+					insert_before({ mk_tok(TT::TK_TYPE_INT), mk_tok(TT::TK_PARENTHESIS_OPEN) }, cur_tok);
+					insert_after(mk_tok(TT::TK_PARENTHESIS_CLOSE), cur_tok);
 				} else if (cur_tok_text == "CLEARCOAT_GLOSS" && has_builtin_rename(shader_mode, cur_tok_text, curr_func) && !scope_has_decl(curr_func, cur_tok_text)) {
-					cur_tok = replace_curr(mkTok(TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS"), "Inverting usage of '%s' to '%s'.");
+					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS"), "Inverting usage of '%s' to '%s'.");
 					List<Token>::Element *assign_closure_end = nullptr;
 					switch (peek_next_tk_type()) {
 						case TT::TK_OP_ASSIGN:
@@ -2444,39 +2442,39 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 							}
 							// " = (1.0 - ("
 							Vector<Token> assign_prefix = {
-								mkTok(TT::TK_OP_ASSIGN),
-								mkTok(TT::TK_SPACE),
-								mkTok(TT::TK_PARENTHESIS_OPEN),
-								mkTok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
-								mkTok(TT::TK_SPACE),
-								mkTok(TT::TK_OP_SUB),
-								mkTok(TT::TK_SPACE),
-								mkTok(TT::TK_PARENTHESIS_OPEN),
+								mk_tok(TT::TK_OP_ASSIGN),
+								mk_tok(TT::TK_SPACE),
+								mk_tok(TT::TK_PARENTHESIS_OPEN),
+								mk_tok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
+								mk_tok(TT::TK_SPACE),
+								mk_tok(TT::TK_OP_SUB),
+								mk_tok(TT::TK_SPACE),
+								mk_tok(TT::TK_PARENTHESIS_OPEN),
 							};
 							if (assign_tk->get().type != TT::TK_OP_ASSIGN) {
 								// " = (1.0 - ((1.0 - CLEARCOAT_ROUGHNESS) {op}
 								assign_prefix.append_array(
-										{ mkTok(TT::TK_PARENTHESIS_OPEN),
-												mkTok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
-												mkTok(TT::TK_SPACE),
-												mkTok(TT::TK_OP_SUB),
-												mkTok(TT::TK_SPACE),
-												mkTok(TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS"),
-												mkTok(TT::TK_PARENTHESIS_CLOSE),
-												mkTok(TT::TK_SPACE) });
+										{ mk_tok(TT::TK_PARENTHESIS_OPEN),
+												mk_tok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
+												mk_tok(TT::TK_SPACE),
+												mk_tok(TT::TK_OP_SUB),
+												mk_tok(TT::TK_SPACE),
+												mk_tok(TT::TK_IDENTIFIER, "CLEARCOAT_ROUGHNESS"),
+												mk_tok(TT::TK_PARENTHESIS_CLOSE),
+												mk_tok(TT::TK_SPACE) });
 							}
 							switch (assign_tk->get().type) {
 								case TT::TK_OP_ASSIGN_ADD: {
-									assign_prefix.append_array({ mkTok(TT::TK_OP_ADD), mkTok(TT::TK_SPACE) });
+									assign_prefix.append_array({ mk_tok(TT::TK_OP_ADD), mk_tok(TT::TK_SPACE) });
 								} break;
 								case TT::TK_OP_ASSIGN_SUB: {
-									assign_prefix.append_array({ mkTok(TT::TK_OP_SUB), mkTok(TT::TK_SPACE) });
+									assign_prefix.append_array({ mk_tok(TT::TK_OP_SUB), mk_tok(TT::TK_SPACE) });
 								} break;
 								case TT::TK_OP_ASSIGN_MUL: {
-									assign_prefix.append_array({ mkTok(TT::TK_OP_MUL), mkTok(TT::TK_SPACE) });
+									assign_prefix.append_array({ mk_tok(TT::TK_OP_MUL), mk_tok(TT::TK_SPACE) });
 								} break;
 								case TT::TK_OP_ASSIGN_DIV: {
-									assign_prefix.append_array({ mkTok(TT::TK_OP_DIV), mkTok(TT::TK_SPACE) });
+									assign_prefix.append_array({ mk_tok(TT::TK_OP_DIV), mk_tok(TT::TK_SPACE) });
 								} break;
 								default:
 									break;
@@ -2491,7 +2489,7 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 								remove_cur_and_get_next();
 							}
 							// "))"
-							insert_after({ mkTok(TT::TK_PARENTHESIS_CLOSE), mkTok(TT::TK_PARENTHESIS_CLOSE) }, assign_closure_end);
+							insert_after({ mk_tok(TT::TK_PARENTHESIS_CLOSE), mk_tok(TT::TK_PARENTHESIS_CLOSE) }, assign_closure_end);
 							reset_to(cur_tok);
 
 						} break;
@@ -2509,22 +2507,22 @@ bool ShaderDeprecatedConverter::convert_code(const String &p_code) {
 
 					// Invert right-hand usage.
 					Vector<Token> right_hand_prefix = { // "(1.0 - (";
-						mkTok(TT::TK_PARENTHESIS_OPEN),
-						mkTok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
-						mkTok(TT::TK_SPACE),
-						mkTok(TT::TK_OP_SUB),
-						mkTok(TT::TK_SPACE)
+						mk_tok(TT::TK_PARENTHESIS_OPEN),
+						mk_tok(TT::TK_FLOAT_CONSTANT, {}, 1.0),
+						mk_tok(TT::TK_SPACE),
+						mk_tok(TT::TK_OP_SUB),
+						mk_tok(TT::TK_SPACE)
 					};
 					if (assign_closure_end) {
-						right_hand_prefix.append_array({ mkTok(TT::TK_PARENTHESIS_OPEN) });
-						insert_after({ mkTok(TT::TK_PARENTHESIS_CLOSE), mkTok(TT::TK_PARENTHESIS_CLOSE) }, assign_closure_end);
+						right_hand_prefix.append_array({ mk_tok(TT::TK_PARENTHESIS_OPEN) });
+						insert_after({ mk_tok(TT::TK_PARENTHESIS_CLOSE), mk_tok(TT::TK_PARENTHESIS_CLOSE) }, assign_closure_end);
 					} else {
-						insert_after(mkTok(TT::TK_PARENTHESIS_CLOSE), cur_tok);
+						insert_after(mk_tok(TT::TK_PARENTHESIS_CLOSE), cur_tok);
 					}
 					insert_before(right_hand_prefix, cur_tok);
 				} else if (has_builtin_rename(shader_mode, cur_tok_text, curr_func) && !scope_has_decl(curr_func, cur_tok_text)) {
 					String rename = get_builtin_rename(cur_tok_text);
-					cur_tok = replace_curr(mkTok(TT::TK_IDENTIFIER, rename), "Built-in '%s' is renamed to '%s'.");
+					cur_tok = replace_curr(mk_tok(TT::TK_IDENTIFIER, rename), "Built-in '%s' is renamed to '%s'.");
 				}
 			} break; // End of identifier case.
 			case TT::TK_ERROR: {
