@@ -294,10 +294,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
-			if (autoloads.has(node_name)) {
-				remove_autoload(node_name);
-			}
+			const StringName node_name = p_name.operator String().get_slicec('/', 1);
+			pending_autoloads.erase(node_name);
+			autoloads.erase(node_name);
 		} else if (p_name.operator String().begins_with("global_group/")) {
 			String group_name = p_name.operator String().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
@@ -340,17 +339,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
 		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
-			AutoloadInfo autoload;
-			autoload.name = node_name;
-			String path = p_value;
-			if (path.begins_with("*")) {
-				autoload.is_singleton = true;
-				autoload.path = path.substr(1).simplify_path();
-			} else {
-				autoload.path = path.simplify_path();
-			}
-			add_autoload(autoload);
+			const StringName node_name = p_name.operator String().get_slicec('/', 1);
+			autoloads.erase(node_name);
+			pending_autoloads[node_name] = p_value;
 		} else if (p_name.operator String().begins_with("global_group/")) {
 			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
@@ -1465,26 +1456,73 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 }
 
 const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_autoload_list() const {
+	for (const KeyValue<StringName, String> &E : pending_autoloads) {
+		AutoloadInfo info;
+		parse_autoload_value(E.value, info.path, info.is_singleton);
+		autoloads[E.key] = info;
+	}
+	pending_autoloads.clear();
 	return autoloads;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
-	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
-}
-
-void ProjectSettings::remove_autoload(const StringName &p_autoload) {
-	ERR_FAIL_COND_MSG(!autoloads.has(p_autoload), "Trying to remove non-existent autoload.");
-	autoloads.erase(p_autoload);
-}
-
 bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
-	return autoloads.has(p_autoload);
+	return autoloads.has(p_autoload) || pending_autoloads.has(p_autoload);
 }
 
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
+	const String *raw = pending_autoloads.getptr(p_name);
+	if (raw) {
+		AutoloadInfo info;
+		parse_autoload_value(*raw, info.path, info.is_singleton);
+		autoloads[p_name] = info;
+		pending_autoloads.erase(p_name);
+	}
+
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];
+}
+
+void ProjectSettings::parse_autoload_value(const String &p_value, String &r_path, bool &r_is_singleton) {
+	String raw = p_value;
+
+	if (raw.begins_with("*")) {
+		r_is_singleton = true;
+		raw = raw.substr(1);
+	} else {
+		r_is_singleton = false;
+	}
+
+	String path;
+	int sep = raw.find("::");
+	if (sep == -1) {
+		// Could be assigned directly. But it does not hurt to be compatible with 4.6.dev builds.
+		path = ResourceUID::ensure_path(raw);
+	} else {
+		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(raw.substr(sep + 2));
+		if (uid != ResourceUID::INVALID_ID) {
+			path = ResourceUID::get_singleton()->get_id_path(uid);
+		}
+		if (path.is_empty()) {
+			path = raw.substr(0, sep); // Fall back to the stored path.
+		}
+	}
+
+	r_path = path.simplify_path();
+}
+
+String ProjectSettings::stringify_autoload_value(const String &p_path, bool p_is_singleton) {
+	String res = p_path;
+
+	if (p_is_singleton) {
+		res = "*" + res;
+	}
+
+	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_path);
+	if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+		res += "::" + ResourceUID::get_singleton()->id_to_text(uid);
+	}
+
+	return res;
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {

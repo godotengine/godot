@@ -145,7 +145,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
-			highlighter->add_keyword_color(info.name, usertype_color);
+			highlighter->add_keyword_color(E.key, usertype_color);
 		}
 	}
 
