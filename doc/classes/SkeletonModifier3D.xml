@@ -39,13 +39,13 @@
 		<method name="_validate_bone_names" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when bone name and index need to be validated such as the timing of the entering tree or changing skeleton.
+				Called when bone names and indices need to be validated, such as when entering the scene tree or changing skeleton.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
-				Get parent [Skeleton3D] node if found.
+				Returns the parent [Skeleton3D] node if it exists. Otherwise, returns [code]null[/code].
 			</description>
 		</method>
 	</methods>

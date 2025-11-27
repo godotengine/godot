@@ -229,7 +229,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="deep_subresources_mode" type="int" default="1" />
 			<description>
-				Duplicates this dictionary, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				Duplicates this dictionary, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
 				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
@@ -508,7 +508,7 @@
 			<param index="0" name="key" type="Variant" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the value of the element at the given [param key] to the given [param value]. This is the same as using the [code][][/code] operator ([code]dict[key] = value[/code]). Returns [code]true[/code] if the value is set successfully. Fails and returns [code]false[/code] if the dictionary is read-only, or if [param key] and [param value] don't match the dictionary's types.
+				Sets the value of the element at the given [param key] to the given [param value]. Returns [code]true[/code] if the value is set successfully. Fails and returns [code]false[/code] if the dictionary is read-only, or if [param key] and [param value] don't match the dictionary's types. This is the same as using the [code][][/code] operator ([code]dict[key] = value[/code]).
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

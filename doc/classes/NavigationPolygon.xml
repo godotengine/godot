@@ -207,10 +207,10 @@
 	</members>
 	<constants>
 		<constant name="SAMPLE_PARTITION_CONVEX_PARTITION" value="0" enum="SamplePartitionType">
-			Convex partitioning that yields navigation mesh with convex polygons.
+			Convex partitioning that results in a navigation mesh with convex polygons.
 		</constant>
 		<constant name="SAMPLE_PARTITION_TRIANGULATE" value="1" enum="SamplePartitionType">
-			Triangulation partitioning that yields navigation mesh with triangle polygons.
+			Triangulation partitioning that results in a navigation mesh with triangle polygons.
 		</constant>
 		<constant name="SAMPLE_PARTITION_MAX" value="2" enum="SamplePartitionType">
 			Represents the size of the [enum SamplePartitionType] enum.

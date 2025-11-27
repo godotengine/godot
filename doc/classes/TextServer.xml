@@ -583,14 +583,14 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="font_is_modulate_color_glyphs" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+				Returns [code]true[/code] if color modulation is applied when drawing the font's colored glyphs.
 			</description>
 		</method>
 		<method name="font_is_multichannel_signed_distance_field" qualifiers="const">
@@ -605,7 +605,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script (ISO 15924 code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="font_remove_glyph">

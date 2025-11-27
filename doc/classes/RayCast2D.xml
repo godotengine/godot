@@ -105,7 +105,7 @@
 			<return type="void" />
 			<param index="0" name="node" type="CollisionObject2D" />
 			<description>
-				Removes a collision exception so the ray can report collisions with the specified specified [param node].
+				Removes a collision exception so the ray can report collisions with the specified [param node].
 			</description>
 		</method>
 		<method name="remove_exception_rid">

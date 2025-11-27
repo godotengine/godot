@@ -129,7 +129,7 @@
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+				Sets the specified customization [param flag], allowing to customize the features available in this [FileDialog].
 			</description>
 		</method>
 		<method name="set_favorite_list" qualifiers="static">
