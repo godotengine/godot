@@ -1641,6 +1641,9 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 	ERR_FAIL_COND_V_MSG(required_size != (uint32_t)p_data.size(), ERR_INVALID_PARAMETER,
 			"Required size for texture update (" + itos(required_size) + ") does not match data supplied size (" + itos(p_data.size()) + ").");
 
+	// Clear the texture if the driver requires it during its first use.
+	_texture_check_pending_clear(p_texture, texture);
+
 	_check_transfer_worker_texture(texture);
 
 	uint32_t block_w, block_h;
@@ -2000,6 +2003,9 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 
 	ERR_FAIL_COND_V(p_layer >= tex->layers, Vector<uint8_t>());
 
+	// Clear the texture if the driver requires it during its first use.
+	_texture_check_pending_clear(p_texture, tex);
+
 	_check_transfer_worker_texture(tex);
 
 	if (tex->usage_flags & TEXTURE_USAGE_CPU_READ_BIT) {
@@ -2112,6 +2118,9 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	ERR_FAIL_COND_V_MSG(tex->bound, ERR_INVALID_PARAMETER, "Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
 	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER, "Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
 	ERR_FAIL_COND_V(p_layer >= tex->layers, ERR_INVALID_PARAMETER);
+
+	// Clear the texture if the driver requires it during its first use.
+	_texture_check_pending_clear(p_texture, tex);
 
 	_check_transfer_worker_texture(tex);
 
@@ -2307,6 +2316,10 @@ Error RenderingDevice::texture_copy(RID p_from_texture, RID p_to_texture, const 
 	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_flags != dst_tex->read_aspect_flags, ERR_INVALID_PARAMETER,
 			"Source and destination texture must be of the same type (color or depth).");
 
+	// Clear the textures if the driver requires it during its first use.
+	_texture_check_pending_clear(p_from_texture, src_tex);
+	_texture_check_pending_clear(p_to_texture, dst_tex);
+
 	_check_transfer_worker_texture(src_tex);
 	_check_transfer_worker_texture(dst_tex);
 
@@ -2374,6 +2387,10 @@ Error RenderingDevice::texture_resolve_multisample(RID p_from_texture, RID p_to_
 	// Indicate the texture will get modified for the shared texture fallback.
 	_texture_update_shared_fallback(p_to_texture, dst_tex, true);
 
+	// Clear the textures if the driver requires it during its first use.
+	_texture_check_pending_clear(p_from_texture, src_tex);
+	_texture_check_pending_clear(p_to_texture, dst_tex);
+
 	_check_transfer_worker_texture(src_tex);
 	_check_transfer_worker_texture(dst_tex);
 
@@ -2432,6 +2449,9 @@ Error RenderingDevice::texture_clear(RID p_texture, const Color &p_color, uint32
 
 	ERR_FAIL_COND_V(p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_base_layer + p_layers > src_tex->layers, ERR_INVALID_PARAMETER);
+
+	// Clear the texture if the driver requires it during its first use.
+	_texture_check_pending_clear(p_texture, src_tex);
 
 	_texture_clear(p_texture, src_tex, p_color, p_base_mipmap, p_mipmaps, p_base_layer, p_layers);
 
