@@ -70,7 +70,7 @@ private:
 	IMFMediaSource *imf_media_source = NULL;
 
 	IMFSourceReader *imf_source_reader = NULL;
-	std::thread *worker = nullptr;
+	std::thread worker;
 	Vector<GUID> format_guids;
 	Vector<uint32_t> format_mediatypes;
 

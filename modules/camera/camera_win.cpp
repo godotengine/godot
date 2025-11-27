@@ -433,7 +433,7 @@ bool CameraFeedWindows::activate_feed() {
 
 					if (result) {
 						// Start reading.
-						worker = memnew(std::thread(capture, this));
+						worker = std::thread(capture, this);
 					}
 				}
 			}
@@ -450,16 +450,14 @@ bool CameraFeedWindows::activate_feed() {
 }
 
 void CameraFeedWindows::deactivate_feed() {
-	if (worker != nullptr) {
+	if (worker.joinable()) {
 		active = false;
 		// Attempt to unblock ReadSample by deselecting and flushing the stream.
 		if (imf_source_reader) {
 			imf_source_reader->SetStreamSelection(MF_SOURCE_READER_FIRST_VIDEO_STREAM, FALSE);
 			imf_source_reader->Flush(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 		}
-		worker->join();
-		memdelete(worker);
-		worker = nullptr;
+		worker.join();
 	}
 
 	if (buffer_decoder != nullptr) {
