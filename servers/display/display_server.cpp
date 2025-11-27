@@ -1530,6 +1530,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_flag", "flag", "enabled", "window_id"), &DisplayServer::window_set_flag, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_flag", "flag", "window_id"), &DisplayServer::window_get_flag, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_icon", "icon", "window_id"), &DisplayServer::window_set_icon, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("window_set_window_buttons_offset", "offset", "window_id"), &DisplayServer::window_set_window_buttons_offset, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_safe_title_margins", "window_id"), &DisplayServer::window_get_safe_title_margins, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 

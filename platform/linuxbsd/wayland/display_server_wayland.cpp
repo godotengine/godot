@@ -1273,6 +1273,13 @@ void DisplayServerWayland::window_set_mode(DisplayServerEnums::WindowMode p_mode
 	wayland_thread.window_try_set_mode(p_window_id, p_mode);
 }
 
+void DisplayServerWayland::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	wayland_thread.set_icon(p_icon, p_window_id);
+}
+
 DisplayServerEnums::WindowMode DisplayServerWayland::window_get_mode(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -2143,7 +2150,8 @@ void DisplayServerWayland::swap_buffers() {
 
 void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
 	MutexLock mutex_lock(wayland_thread.mutex);
-	wayland_thread.set_icon(p_icon);
+
+	wayland_thread.set_default_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(DisplayServerEnums::Context p_context) {

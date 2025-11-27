@@ -270,11 +270,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	RBMap<int, Vector2> touch_state;
 
-	Vector<BYTE> icon_buffer_big;
-	HICON icon_big = nullptr;
-	Vector<BYTE> icon_buffer_small;
-	HICON icon_small = nullptr;
-
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
@@ -355,6 +350,11 @@ class DisplayServerWindows : public DisplayServer {
 		Point2 last_pos;
 
 		ObjectID instance_id;
+		bool icon_set = false;
+		Vector<BYTE> icon_buffer_big;
+		HICON icon_big = nullptr;
+		Vector<BYTE> icon_buffer_small;
+		HICON icon_small = nullptr;
 
 		// IME
 		HIMC im_himc;
@@ -401,6 +401,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	Error _create_window(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
+
+	void _window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
 
 #ifdef RD_ENABLED
 	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);
@@ -673,6 +675,8 @@ public:
 
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
