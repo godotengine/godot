@@ -171,6 +171,8 @@ class DisplayServerX11 : public DisplayServer {
 #ifdef XKB_ENABLED
 		xkb_compose_state *xkb_state = nullptr;
 #endif
+		Ref<Image> icon;
+		bool icon_set = false;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -290,6 +292,9 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2 old_raw_pos;
 		::Time last_relative_time;
 	} xi;
+
+	Ref<Image> icon;
+	void _update_window_icon(WindowData &p_wd);
 
 	bool _refresh_device_info();
 
@@ -518,6 +523,8 @@ public:
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override;
 
