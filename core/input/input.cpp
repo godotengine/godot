@@ -415,9 +415,9 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
-bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -472,9 +472,9 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 }
 
-bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -1227,10 +1227,10 @@ void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::parse_input_event(const Ref<InputEvent> &p_event) {
+void Input::parse_input_event(RequiredParam<InputEvent> rp_event) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 #ifdef DEBUG_ENABLED
 	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();

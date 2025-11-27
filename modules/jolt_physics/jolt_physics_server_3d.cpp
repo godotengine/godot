@@ -985,9 +985,10 @@ RID JoltPhysicsServer3D::soft_body_create() {
 	return rid;
 }
 
-void JoltPhysicsServer3D::soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
+void JoltPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
+	EXTRACT_PARAM_OR_FAIL(p_rendering_server_handler, rp_rendering_server_handler);
 
 	return body->update_rendering_server(p_rendering_server_handler);
 }

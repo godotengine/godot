@@ -80,7 +80,7 @@ public:
 
 	virtual String as_text() const = 0;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
@@ -246,7 +246,7 @@ public:
 	void set_double_click(bool p_double_click);
 	bool is_double_click() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
@@ -294,7 +294,7 @@ public:
 	void set_screen_velocity(const Vector2 &p_velocity);
 	Vector2 get_screen_velocity() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 
@@ -384,7 +384,7 @@ public:
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 
@@ -434,7 +434,7 @@ public:
 	void set_screen_velocity(const Vector2 &p_velocity);
 	Vector2 get_screen_velocity() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 
@@ -502,7 +502,7 @@ public:
 	void set_factor(real_t p_factor);
 	real_t get_factor() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 
@@ -520,7 +520,7 @@ public:
 	void set_delta(const Vector2 &p_delta);
 	Vector2 get_delta() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String _to_string() override;
 

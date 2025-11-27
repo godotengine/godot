@@ -95,8 +95,8 @@ void Tween::_stop_internal(bool p_reset) {
 	}
 }
 
-RequiredResult<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePath &p_property, Variant p_to, double p_duration) {
-	ERR_FAIL_NULL_V(p_target, nullptr);
+RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_to, double p_duration) {
+	EXTRACT_PARAM_OR_FAIL_V(p_target, rp_target, nullptr);
 	CHECK_VALID();
 
 	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
@@ -149,11 +149,11 @@ RequiredResult<MethodTweener> Tween::tween_method(const Callable &p_callback, co
 	return tweener;
 }
 
-RequiredResult<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
+RequiredResult<SubtweenTweener> Tween::tween_subtween(RequiredParam<Tween> rp_subtween) {
 	CHECK_VALID();
 
 	// Ensure that the subtween being added is not null.
-	ERR_FAIL_COND_V(p_subtween.is_null(), nullptr);
+	EXTRACT_PARAM_OR_FAIL_V(p_subtween, rp_subtween, nullptr);
 
 	Ref<SubtweenTweener> tweener;
 	tweener.instantiate(p_subtween);
@@ -221,8 +221,8 @@ void Tween::clear() {
 	tweeners.clear();
 }
 
-RequiredResult<Tween> Tween::bind_node(const Node *p_node) {
-	ERR_FAIL_NULL_V(p_node, this);
+RequiredResult<Tween> Tween::bind_node(RequiredParam<const Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, this);
 
 	bound_node = p_node->get_instance_id();
 	is_bound = true;

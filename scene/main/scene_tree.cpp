@@ -1609,9 +1609,9 @@ void SceneTree::_flush_delete_queue() {
 	}
 }
 
-void SceneTree::queue_delete(Object *p_object) {
+void SceneTree::queue_delete(RequiredParam<Object> rp_object) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_NULL(p_object);
+	EXTRACT_PARAM_OR_FAIL(p_object, rp_object);
 	p_object->_is_queued_for_deletion = true;
 	delete_queue.push_back(p_object->get_instance_id());
 }
@@ -1684,8 +1684,8 @@ Error SceneTree::change_scene_to_file(const String &p_path) {
 	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
-	ERR_FAIL_COND_V_MSG(p_scene.is_null(), ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
+Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(p_scene, rp_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
@@ -1693,8 +1693,8 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	return change_scene_to_node(new_scene);
 }
 
-Error SceneTree::change_scene_to_node(Node *p_node) {
-	ERR_FAIL_NULL_V_MSG(p_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(p_node, rp_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
 	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
 
 	// If called again while a change is pending.
@@ -1739,7 +1739,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
+RequiredResult<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
 	_THREAD_SAFE_METHOD_
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();

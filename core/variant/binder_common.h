@@ -670,9 +670,9 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif
 }
 
@@ -681,9 +681,9 @@ void call_with_variant_args_static_ret(R (*p_method)(P...), const Variant **p_ar
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 }
 
@@ -721,9 +721,9 @@ void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) co
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 	(void)p_args;
 }
@@ -787,9 +787,9 @@ void call_with_variant_args_retc_static_helper(T *p_instance, R (*p_method)(T *,
 	r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-	r_ret = (p_method)(p_instance, VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
+	r_ret = VariantInternal::make((p_method)(p_instance, VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...));
 #else
-	r_ret = (p_method)(p_instance, VariantCaster<P>::cast(*p_args[Is])...);
+	r_ret = VariantInternal::make((p_method)(p_instance, VariantCaster<P>::cast(*p_args[Is])...));
 #endif // DEBUG_ENABLED
 
 	(void)p_args;

@@ -88,7 +88,7 @@ bool InputEvent::is_echo() const {
 	return false;
 }
 
-Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	return Ref<InputEvent>(const_cast<InputEvent *>(this));
 }
 
@@ -736,7 +736,7 @@ bool InputEventMouseButton::is_double_click() const {
 	return double_click;
 }
 
-Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
@@ -958,7 +958,7 @@ Vector2 InputEventMouseMotion::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
@@ -1364,7 +1364,7 @@ bool InputEventScreenTouch::is_double_tap() const {
 	return double_tap;
 }
 
-Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
 	st->set_device(get_device());
@@ -1487,7 +1487,7 @@ Vector2 InputEventScreenDrag::get_screen_velocity() const {
 	return screen_velocity;
 }
 
-Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenDrag> sd;
 
 	sd.instantiate();
@@ -1706,7 +1706,7 @@ real_t InputEventMagnifyGesture::get_factor() const {
 	return factor;
 }
 
-Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instantiate();
 
@@ -1748,7 +1748,7 @@ Vector2 InputEventPanGesture::get_delta() const {
 	return delta;
 }
 
-Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+RequiredResult<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventPanGesture> ev;
 	ev.instantiate();
 

@@ -336,8 +336,8 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query) {
-	ERR_FAIL_COND_V(p_ray_query.is_null(), Dictionary());
+Dictionary PhysicsDirectSpaceState2D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters2D> rp_ray_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
 
 	RayResult result;
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
@@ -357,8 +357,8 @@ Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	return d;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_point_query.is_null(), Array());
+TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point(RequiredParam<PhysicsPointQueryParameters2D> rp_point_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
 
 	Vector<ShapeResult> ret;
 	ret.resize(p_max_results);
@@ -382,8 +382,8 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_point(const Ref<Phy
 	return r;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Dictionary>());
+TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Dictionary>());
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
@@ -402,8 +402,8 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape(const Ref<Phy
 	return ret;
 }
 
-Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), Vector<real_t>());
+Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
 
 	real_t closest_safe, closest_unsafe;
 	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
@@ -417,8 +417,8 @@ Vector<real_t> PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQue
 	return ret;
 }
 
-TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Vector2>());
+TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Vector2>());
 
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
@@ -435,8 +435,8 @@ TypedArray<Vector2> PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsS
 	return r;
 }
 
-Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), Dictionary());
+Dictionary PhysicsDirectSpaceState2D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> rp_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Dictionary());
 
 	ShapeRestInfo sri;
 
@@ -613,8 +613,8 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer2D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters2D> &p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
-	ERR_FAIL_COND_V(p_parameters.is_null(), false);
+bool PhysicsServer2D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> rp_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_parameters, rp_parameters, false);
 
 	MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
