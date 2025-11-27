@@ -90,7 +90,7 @@
 	<members>
 		<member name="alpha_curve" type="Texture2D" setter="set_alpha_curve" getter="get_alpha_curve">
 			The alpha value of each particle's color will be multiplied by this [CurveTexture] over its lifetime.
-			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
+			[b]Note:[/b] [member alpha_curve] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALPHA *= COLOR.a;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member alpha_curve] will have no visible effect.
 		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
