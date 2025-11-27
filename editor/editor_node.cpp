@@ -65,6 +65,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/portable_compressed_texture.h"
@@ -166,6 +167,7 @@
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
 #include "editor/shader/visual_shader_editor_plugin.h"
+#include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation_parser.h"
@@ -683,10 +685,10 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 		distraction_free->set_button_icon(theme->get_icon(SNAME("DistractionFree"), EditorStringName(EditorIcons)));
 		update_distraction_free_button_theme();
 
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), _get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), _get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), _get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), _get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
 
 		_update_renderer_color();
 	}
@@ -703,16 +705,27 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 #endif
 }
 
-Ref<Texture2D> EditorNode::_get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const {
-	if (!p_global_menu) {
-		return theme->get_icon(p_name, SNAME("EditorIcons"));
+Ref<Texture2D> EditorNode::get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const {
+	Ref<Texture2D> tx = theme->get_icon(p_name, SNAME("EditorIcons"));
+	if (!p_global_menu || p_dark_mode == EditorThemeManager::is_dark_icon_and_font()) {
+		return tx;
 	}
-	if (p_dark_mode && theme->has_icon(String(p_name) + "Dark", SNAME("EditorIcons"))) {
-		return theme->get_icon(String(p_name) + "Dark", SNAME("EditorIcons"));
-	} else if (!p_dark_mode && theme->has_icon(String(p_name) + "Light", SNAME("EditorIcons"))) {
-		return theme->get_icon(String(p_name) + "Light", SNAME("EditorIcons"));
+
+	Ref<DPITexture> new_tx = tx;
+	if (new_tx.is_null()) {
+		return tx;
 	}
-	return theme->get_icon(p_name, SNAME("EditorIcons"));
+	new_tx = new_tx->duplicate();
+
+	Dictionary color_conversion_map;
+	if (!p_dark_mode) {
+		for (KeyValue<Color, Color> &E : EditorColorMap::get_color_conversion_map()) {
+			color_conversion_map[E.key] = E.value;
+		}
+	}
+	new_tx->set_color_map(color_conversion_map);
+
+	return new_tx;
 }
 
 void EditorNode::update_preview_themes(int p_mode) {
@@ -3905,10 +3918,10 @@ void EditorNode::_check_system_theme_changed() {
 		// Update system menus.
 		bool dark_mode = DisplayServer::get_singleton()->is_dark_mode();
 
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), _get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), _get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), _get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
-		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), _get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_ABOUT), get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode));
+		help_menu->set_item_icon(help_menu->get_item_index(HELP_SUPPORT_GODOT_DEVELOPMENT), get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode));
 		editor_dock_manager->update_docks_menu();
 	}
 }
@@ -8636,13 +8649,13 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_help", TTRC("Search Help..."), Key::F1);
 	ED_SHORTCUT_OVERRIDE("editor/editor_help", "macos", KeyModifierMask::ALT | Key::SPACE);
-	help_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
+	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("HelpSearch"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
 	help_menu->add_separator();
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTRC("Online Documentation")), HELP_DOCS);
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/forum", TTRC("Forum")), HELP_FORUM);
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/community", TTRC("Community")), HELP_COMMUNITY);
 	help_menu->add_separator();
-	help_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTRC("Copy System Info")), HELP_COPY_SYSTEM_INFO);
+	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ActionCopy"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTRC("Copy System Info")), HELP_COPY_SYSTEM_INFO);
 	help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTRC("Report a Bug")), HELP_REPORT_A_BUG);
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTRC("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
@@ -8650,9 +8663,9 @@ EditorNode::EditorNode() {
 	help_menu->add_separator();
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
 		// On macOS  "Quit" and "About" options are in the "app" menu.
-		help_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/about", TTRC("About Godot...")), HELP_ABOUT);
+		help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Godot"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/about", TTRC("About Godot...")), HELP_ABOUT);
 	}
-	help_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTRC("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
+	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTRC("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
 	// Spacer to center 2D / 3D / Script buttons.
 	right_spacer = memnew(Control);
