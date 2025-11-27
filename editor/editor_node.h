@@ -698,7 +698,6 @@ private:
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
 	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "", bool p_fallback_script_to_theme = false, bool p_skip_fallback_virtual = false);
-	Ref<Texture2D> _get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -786,6 +785,8 @@ public:
 	static HashMap<String, Variant> get_initial_settings();
 
 	static void cleanup();
+
+	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }
 	EditorPluginList *get_editor_plugins_force_over() { return editor_plugins_force_over; }
