@@ -105,33 +105,34 @@ static String _get_format_name(const GUID &p_format) {
 //////////////////////////////////////////////////////////////////////////
 // CameraFeedWindows - Subclass for our camera feed on windows
 
-Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device) {
-	Ref<CameraFeedWindows> feed = memnew(CameraFeedWindows);
+Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *p_imf_camera_device) {
+	Ref<CameraFeedWindows> feed;
+	feed.instantiate();
 
 	UINT32 len;
 	HRESULT hr;
 
 	// Store IMFActivate for reactivation.
-	feed->imf_activate = imf_camera_device;
+	feed->imf_activate = p_imf_camera_device;
 	feed->imf_activate->AddRef();
 
 	// Get camera ID.
 	wchar_t *camera_id = nullptr;
-	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
+	hr = p_imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera id.");
 	feed->device_id = camera_id;
 	CoTaskMemFree(camera_id);
 
 	// Get name.
 	wchar_t *camera_name = nullptr;
-	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &camera_name, &len);
+	hr = p_imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &camera_name, &len);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera name.");
 	feed->name = camera_name;
 	CoTaskMemFree(camera_name);
 
 	// Get media imf_media_source.
 	IMFMediaSource *imf_media_source = nullptr;
-	hr = imf_camera_device->ActivateObject(IID_PPV_ARGS(&imf_media_source));
+	hr = p_imf_camera_device->ActivateObject(IID_PPV_ARGS(&imf_media_source));
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to activate device.");
 
 	// Get information about device.
@@ -155,8 +156,8 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	}
 
 	// Get information about supported media types.
-	IMFMediaTypeHandler *imf_media_type_handler = nullptr;
-	hr = imf_stream_descriptor->GetMediaTypeHandler(&imf_media_type_handler);
+	IMFMediaTypeHandler *p_imf_media_type_handler = nullptr;
+	hr = imf_stream_descriptor->GetMediaTypeHandler(&p_imf_media_type_handler);
 	if (FAILED(hr)) {
 		ERR_PRINT("Unable to get media type handler.");
 		imf_stream_descriptor->Release();
@@ -166,10 +167,10 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	}
 
 	// Actually fill the feed formats.
-	feed->fill_formats(imf_media_type_handler);
+	feed->fill_formats(p_imf_media_type_handler);
 
 	// Release all COM objects.
-	imf_media_type_handler->Release();
+	p_imf_media_type_handler->Release();
 	imf_stream_descriptor->Release();
 	imf_presentation_descriptor->Release();
 	imf_media_source->Release();
@@ -177,11 +178,11 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	return feed;
 }
 
-void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler) {
+void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *p_imf_media_type_handler) {
 	HRESULT hr;
 	// Get supported media types.
 	DWORD media_type_count = 0;
-	hr = imf_media_type_handler->GetMediaTypeCount(&media_type_count);
+	hr = p_imf_media_type_handler->GetMediaTypeCount(&media_type_count);
 	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to get media type count.");
 
 	// Track unique format combinations after RGB24 conversion.
@@ -193,7 +194,7 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 	for (DWORD i = 0; i < media_type_count; i++) {
 		// Get media type.
 		IMFMediaType *imf_media_type;
-		hr = imf_media_type_handler->GetMediaTypeByIndex(i, &imf_media_type);
+		hr = p_imf_media_type_handler->GetMediaTypeByIndex(i, &imf_media_type);
 		ERR_CONTINUE_MSG(FAILED(hr), "Unable to get media type at index.");
 
 		// Get video_format.
@@ -222,7 +223,8 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		}
 
 		// Get image size.
-		UINT32 width, height = 0;
+		UINT32 width = 0;
+		UINT32 height = 0;
 		hr = MFGetAttributeSize(imf_media_type, MF_MT_FRAME_SIZE, &width, &height);
 		if (FAILED(hr)) {
 			ERR_PRINT("Unable to get frame size for media type.");
@@ -230,7 +232,8 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			continue;
 		}
 
-		UINT32 numerator, denominator = 0;
+		UINT32 numerator = 0;
+		UINT32 denominator = 0;
 		hr = MFGetAttributeRatio(imf_media_type, MF_MT_FRAME_RATE, &numerator, &denominator);
 		if (FAILED(hr)) {
 			ERR_PRINT("Unable to get frame rate for media type.");
@@ -340,21 +343,21 @@ bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t me
 		hr = imf_presentation_descriptor->GetStreamDescriptorByIndex(0, &_selected, &imf_stream_descriptor);
 		if (SUCCEEDED(hr)) {
 			// Get information about supported media types.
-			IMFMediaTypeHandler *imf_media_type_handler;
-			hr = imf_stream_descriptor->GetMediaTypeHandler(&imf_media_type_handler);
+			IMFMediaTypeHandler *p_imf_media_type_handler;
+			hr = imf_stream_descriptor->GetMediaTypeHandler(&p_imf_media_type_handler);
 			if (SUCCEEDED(hr)) {
 				IMFMediaType *imf_media_type;
-				hr = imf_media_type_handler->GetMediaTypeByIndex(media_type_index, &imf_media_type);
+				hr = p_imf_media_type_handler->GetMediaTypeByIndex(media_type_index, &imf_media_type);
 				if (SUCCEEDED(hr)) {
 					// Set media type.
-					hr = imf_media_type_handler->SetCurrentMediaType(imf_media_type);
+					hr = p_imf_media_type_handler->SetCurrentMediaType(imf_media_type);
 					if (SUCCEEDED(hr)) {
 						result = true;
 					}
 					imf_media_type->Release();
 				}
 
-				imf_media_type_handler->Release();
+				p_imf_media_type_handler->Release();
 			}
 
 			imf_stream_descriptor->Release();
@@ -369,7 +372,7 @@ bool IMFMediaSource_set_media_type(IMFMediaSource *imf_media_source, uint32_t me
 bool CameraFeedWindows::activate_feed() {
 	ERR_FAIL_COND_V_MSG(selected_format == -1, false, "CameraFeed format needs to be set before activating.");
 	ERR_FAIL_INDEX_V_MSG(selected_format, formats.size(), false, "Invalid format index for CameraFeed.");
-	ERR_FAIL_COND_V_MSG(imf_activate == nullptr, false, "IMFActivate is null, cannot activate camera feed.");
+	ERR_FAIL_NULL_V_MSG(imf_activate, false, "IMFActivate is null, cannot activate camera feed.");
 
 	bool result = false;
 	HRESULT hr;
@@ -414,7 +417,7 @@ bool CameraFeedWindows::activate_feed() {
 							use_mf_conversion = true;
 							// Windows RGB24 uses BGR byte order. See:
 							// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
-							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::bgr));
+							buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::BGR));
 						} else {
 							// Fallback to manual conversion for formats that support it.
 							const GUID &video_format = format_guids[selected_format];
@@ -482,13 +485,13 @@ void CameraFeedWindows::deactivate_feed() {
 	}
 }
 
-void CameraFeedWindows::capture(CameraFeedWindows *feed) {
+void CameraFeedWindows::capture(CameraFeedWindows *p_feed) {
 	print_verbose("Camera feed is now streaming.");
 	// Initialize COM on this worker thread to safely use MF objects here.
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	feed->active = true;
-	while (feed->active) {
-		feed->read();
+	p_feed->active = true;
+	while (p_feed->active) {
+		p_feed->read();
 	}
 	if (SUCCEEDED(hr)) {
 		CoUninitialize();
@@ -510,10 +513,7 @@ void CameraFeedWindows::read() {
 			&pSample // Receives the sample or nullptr.
 	);
 
-	if (FAILED(hr)) {
-		ERR_PRINT(vformat("ReadSample failed: 0x%08x.", (uint32_t)hr));
-		return;
-	}
+	ERR_FAIL_COND_MSG(FAILED(hr), vformat("ReadSample failed: 0x%08x.", (uint32_t)hr));
 
 	// End of stream.
 	if (flags & MF_SOURCE_READERF_ENDOFSTREAM) {
@@ -642,7 +642,7 @@ BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 	} else if (video_format == MFVideoFormat_RGB24) {
 		// Windows RGB24 uses BGR byte order. See:
 		// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
-		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::bgr));
+		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::BGR));
 	}
 
 	// Default to null decoder for unsupported formats.

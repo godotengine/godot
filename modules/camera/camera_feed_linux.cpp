@@ -260,12 +260,12 @@ BufferDecoder *CameraFeedLinux::_create_buffer_decoder() {
 				return memnew(YuyvToGrayscaleBufferDecoder(this));
 			}
 			if (output == "copy") {
-				return memnew(CopyBufferDecoder(this, CopyBufferDecoder::la));
+				return memnew(CopyBufferDecoder(this, CopyBufferDecoder::LA));
 			}
 			return memnew(YuyvToRgbBufferDecoder(this));
 		}
 		default:
-			return memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgba));
+			return memnew(CopyBufferDecoder(this, CopyBufferDecoder::RGBA));
 	}
 }
 
