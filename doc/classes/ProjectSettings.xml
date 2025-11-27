@@ -272,7 +272,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
+		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0" keywords="screen reader">
 			Accessibility support mode:
 			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
 			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
@@ -307,7 +307,7 @@
 		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
 		</member>
-		<member name="application/boot_splash/stretch_mode" type="int" setter="" getter="" default="1">
+		<member name="application/boot_splash/stretch_mode" type="int" setter="" getter="" default="1" keywords="disabled, keep, keep_width, keep_height, cover, ignore">
 			Specifies how the splash image will be stretched. For the original size without stretching, set to disabled. See [enum RenderingServer.SplashStretchMode] constants for more information.
 		</member>
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
@@ -469,7 +469,7 @@
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
-		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="">
+		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="" keywords="stream, sample">
 			Specifies the default playback type of the platform.
 			The default value is set to [b]Stream[/b], as most platforms have no issues mixing streams.
 		</member>
@@ -482,7 +482,7 @@
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosession/categoryoptions/1616611-mixwithothers]mixWithOthers[/url] option for the AVAudioSession on iOS. This will override the mix behavior, if the category is set to [code]Play and Record[/code], [code]Playback[/code], or [code]Multi Route[/code].
 			[code]Ambient[/code] always has this set per default.
 		</member>
-		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0">
+		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0" keywords="ambient, play, record, solo">
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
@@ -962,14 +962,14 @@
 			Enable Swappy for stable frame pacing on Android. Highly recommended.
 			[b]Note:[/b] This option will be forced off when using OpenXR.
 		</member>
-		<member name="display/window/frame_pacing/android/swappy_mode" type="int" setter="" getter="" default="2">
+		<member name="display/window/frame_pacing/android/swappy_mode" type="int" setter="" getter="" default="2" keywords="pipeline">
 			Swappy mode to use. The options are:
 			- [code]pipeline_forced_on[/code]: Try to honor [member Engine.max_fps]. Pipelining is always on. This is the same behavior as a desktop PC.
 			- [code]auto_fps_pipeline_forced_on[/code]: Calculate the max FPS automatically. The actual max FPS will be between [code]0[/code] and [member Engine.max_fps]. While this sounds convenient, beware that Swappy will often downgrade the max FPS until it finds a value that can be maintained. That means, if your game runs between 40fps and 60fps on a 60hz screen, after some time Swappy will downgrade the max FPS so that the game renders at a perfect 30fps.
 			- [code]auto_fps_auto_pipeline[/code]: Same as [code]auto_fps_pipeline_forced_on[/code], but if Swappy detects that rendering is very fast (for example it takes less than 8ms to render on a 60hz screen), Swappy will disable pipelining to minimize input latency. This is the default.
 			[b]Note:[/b] If [member Engine.max_fps] is [code]0[/code], the actual max FPS will be considered to be the screen's refresh rate (often 60hz, 90hz, or 120hz, depending on device model and OS settings).
 		</member>
-		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
+		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0" keywords="landscape, portrait, sensor, reverse">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
 		</member>
@@ -1005,7 +1005,7 @@
 			Main window initial position (in virtual desktop coordinates), this setting is used only if [member display/window/size/initial_position_type] is set to "Absolute" ([code]0[/code]).
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/rect_custom_position] is used instead.
 		</member>
-		<member name="display/window/size/initial_position_type" type="int" setter="" getter="" default="1">
+		<member name="display/window/size/initial_position_type" type="int" setter="" getter="" default="1" keywords="absolute, center, screen">
 			Main window initial position.
 			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
 			[code]1[/code] - "Primary Screen Center".
@@ -1024,7 +1024,7 @@
 		<member name="display/window/size/minimize_disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the main window's minimize button is disabled.
 		</member>
-		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
+		<member name="display/window/size/mode" type="int" setter="" getter="" default="0" keywords="windowed, fullscreen, borderless, exclusive">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
 			[b]Note:[/b] Game embedding is available only in the "Windowed" mode.
 		</member>
@@ -1061,21 +1061,27 @@
 			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and Web.
 		</member>
-		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;">
+		<member name="display/window/stretch/aspect" type="String" setter="" getter="" default="&quot;keep&quot;" keywords="ignore, keep, keep_width, keep_height, expand">
+			Defines how the aspect ratio of the base size is preserved when stretching to fit the resolution of the window or screen.
+			[code]"ignore"[/code]: Ignore the aspect ratio when stretching the screen. This means that the original resolution will be stretched to exactly fill the screen, even if it's wider or narrower. This may result in non-uniform stretching: things looking wider or taller than designed.
+			[code]"keep"[/code]: Keep aspect ratio when stretching the screen. This means that the viewport retains its original size regardless of the screen resolution, and black bars will be added to the top/bottom of the screen ("letterboxing") or the sides ("pillarboxing").
+			[code]"keep_width"[/code]: Keep aspect ratio when stretching the screen. If the screen is wider than the base size, black bars are added at the left and right (pillarboxing). But if the screen is taller than the base resolution, the viewport will be grown in the vertical direction (and more content will be visible at the bottom). You can also think of this as "Expand Vertically".
+			[code]"keep_height"[/code]: Keep aspect ratio when stretching the screen. If the screen is taller than the base size, black bars are added at the top and bottom (letterboxing). But if the screen is wider than the base resolution, the viewport will be grown in the horizontal direction (and more content will be visible to the right). You can also think of this as "Expand Horizontally".
+			[code]"expand"[/code]: Keep aspect ratio when stretching the screen, but keep neither the base width nor height. Depending on the screen aspect ratio, the viewport will either be larger in the horizontal direction (if the screen is wider than the base size) or in the vertical direction (if the screen is taller than the original size).
 		</member>
-		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;">
+		<member name="display/window/stretch/mode" type="String" setter="" getter="" default="&quot;disabled&quot;" keywords="disabled, canvas_items, viewport">
 			Defines how the base size is stretched to fit the resolution of the window or screen.
-			[b]"disabled"[/b]: No stretching happens. One unit in the scene corresponds to one pixel on the screen. In this mode, [member display/window/stretch/aspect] has no effect. Recommended for non-game applications.
-			[b]"canvas_items"[/b]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art aesthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D).
-			[b]"viewport"[/b]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art aesthetic.
+			[code]"disabled"[/code]: No stretching happens. One unit in the scene corresponds to one pixel on the screen. In this mode, [member display/window/stretch/aspect] has no effect. Recommended for non-game applications.
+			[code]"canvas_items"[/code]: The base size specified in width and height in the project settings is stretched to cover the whole screen (taking [member display/window/stretch/aspect] into account). This means that everything is rendered directly at the target resolution. 3D is unaffected, while in 2D, there is no longer a 1:1 correspondence between sprite pixels and screen pixels, which may result in scaling artifacts. Recommended for most games that don't use a pixel art aesthetic, although it is possible to use this stretch mode for pixel art games too (especially in 3D).
+			[code]"viewport"[/code]: The size of the root [Viewport] is set precisely to the base size specified in the Project Settings' Display section. The scene is rendered to this viewport first. Finally, this viewport is scaled to fit the screen (taking [member display/window/stretch/aspect] into account). Recommended for games that use a pixel art aesthetic.
 		</member>
 		<member name="display/window/stretch/scale" type="float" setter="" getter="" default="1.0">
 			The scale factor multiplier to use for 2D elements. This multiplies the final scale factor determined by [member display/window/stretch/mode]. If using the [b]Disabled[/b] stretch mode, this scale factor is applied as-is. This can be adjusted to make the UI easier to read on certain displays.
 		</member>
-		<member name="display/window/stretch/scale_mode" type="String" setter="" getter="" default="&quot;fractional&quot;">
+		<member name="display/window/stretch/scale_mode" type="String" setter="" getter="" default="&quot;fractional&quot;" keywords="fractional, integer">
 			The policy to use to determine the final scale factor for 2D elements. This affects how [member display/window/stretch/scale] is applied, in addition to the automatic scale factor determined by [member display/window/stretch/mode].
-			[b]"fractional"[/b]: The scale factor will not be modified.
-			[b]"integer"[/b]: The scale factor will be floored to an integer value, which means that the screen size will always be an integer multiple of the base viewport size. This provides a crisp pixel art appearance.
+			[code]"fractional"[/code]: The scale factor will not be modified.
+			[code]"integer"[/code]: The scale factor will be floored to an integer value, which means that the screen size will always be an integer multiple of the base viewport size. This provides a crisp pixel art appearance.
 			[b]Note:[/b] When using integer scaling with a stretch mode, resizing the window to be smaller than the base viewport size will clip the contents. Consider preventing that by setting [member Window.min_size] to the same value as the base viewport size defined in [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 		</member>
 		<member name="display/window/subwindows/embed_subwindows" type="bool" setter="" getter="" default="true">
@@ -1083,7 +1089,7 @@
 			If [code]false[/code], subwindows are created as separate windows (this is also called multi-window mode). This allows them to be moved outside the main window and use native operating system window decorations.
 			This is equivalent to [member EditorSettings.interface/editor/single_window_mode] in the editor.
 		</member>
-		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
+		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1" keywords="adaptive, mailbox">
 			Sets the V-Sync mode for the main game window. The editor's own V-Sync mode can be set using [member EditorSettings.interface/editor/vsync_mode].
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and rendering method, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
@@ -1137,17 +1143,17 @@
 			If you need to encode to a different format or pipe a stream through third-party software, you can extend this [MovieWriter] class to create your own movie writers.
 			When using PNG output, the frame number will be appended at the end of the file name. It starts from 0 and is padded with 8 digits to ensure correct sorting and easier processing. For example, if the output path is [code]/tmp/hello.png[/code], the first two frames will be [code]/tmp/hello00000000.png[/code] and [code]/tmp/hello00000001.png[/code]. The audio will be saved at [code]/tmp/hello.wav[/code].
 		</member>
-		<member name="editor/movie_writer/ogv/audio_quality" type="float" setter="" getter="" default="0.5">
+		<member name="editor/movie_writer/ogv/audio_quality" type="float" setter="" getter="" default="0.5" keywords="theora">
 			The audio encoding quality to use when writing Vorbis audio to a file, between [code]-0.1[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-sounding output at the cost of larger file sizes. Even at quality [code]1.0[/code], compression remains lossy.
 			[b]Note:[/b] This does not affect video quality, which is controlled by [member editor/movie_writer/video_quality] instead.
 		</member>
-		<member name="editor/movie_writer/ogv/encoding_speed" type="int" setter="" getter="" default="4">
+		<member name="editor/movie_writer/ogv/encoding_speed" type="int" setter="" getter="" default="4" keywords="theora">
 			The tradeoff between encoding speed and compression efficiency. Speed [code]1[/code] is the slowest but provides the best compression. Speed [code]4[/code] is the fastest but provides the worst compression. Video quality is generally not affected significantly by this setting.
 		</member>
-		<member name="editor/movie_writer/ogv/keyframe_interval" type="int" setter="" getter="" default="64">
+		<member name="editor/movie_writer/ogv/keyframe_interval" type="int" setter="" getter="" default="64" keywords="theora">
 			Forces keyframes at the specified interval (in frame count). Higher values can improve compression up to a certain level at the expense of higher latency when seeking.
 		</member>
-		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
+		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0" keywords="stereo, surround">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
 		<member name="editor/movie_writer/video_quality" type="float" setter="" getter="" default="0.75">
@@ -1235,7 +1241,7 @@
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [b]"canvas_items"[/b], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
+			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [code]"canvas_items"[/code], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
@@ -2519,7 +2525,7 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code], where [code]combined_damp[/code] is the sum of the linear damp of the body and this value, or the area's value the body is in, assuming the body defaults to combine damp values. See [enum RigidBody2D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+		<member name="physics/2d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="godotphysics">
 			Sets which physics engine to use for 2D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics2D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics2D[/b] is Godot's internal 2D physics engine.
@@ -2600,7 +2606,7 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody3D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="godotphysics, jolt">
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
@@ -2827,7 +2833,7 @@
 			Sets the number of multisample antialiasing (MSAA) samples to use for 3D rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. See also [member rendering/scaling_3d/mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
 			[b]Note:[/b] This property is only read when the project starts. To set the number of 3D MSAA samples at runtime, set [member Viewport.msaa_3d] or use [method RenderingServer.viewport_set_msaa_3d].
 		</member>
-		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0">
+		<member name="rendering/anti_aliasing/quality/screen_space_aa" type="int" setter="" getter="" default="0" keywords="fxaa, smaa">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry. The blurriness is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
@@ -2884,14 +2890,14 @@
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, you do not need to set this property.
 		</member>
-		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1">
+		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1" keywords="bicubic">
 			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
 			[b]Note:[/b] [member rendering/environment/glow/upscale_mode] is only effective when using the Forward+ or Mobile rendering methods, as Compatibility uses a different glow implementation.
 		</member>
 		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/environment/screen_space_reflection/half_size" type="bool" setter="" getter="" default="true">
+		<member name="rendering/environment/screen_space_reflection/half_size" type="bool" setter="" getter="" default="true" keywords="resolution">
 			If [code]true[/code], screen-space reflections will be rendered at half size and then upscaled before being added to the scene. This is faster but may look pixelated or cause flickering. If [code]false[/code], screen-space reflections will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
@@ -2906,7 +2912,7 @@
 		<member name="rendering/environment/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
 			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion from far away.
 		</member>
-		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="true">
+		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="true" keywords="resolution">
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/quality" type="int" setter="" getter="" default="2">
@@ -2924,7 +2930,7 @@
 		<member name="rendering/environment/ssil/fadeout_to" type="float" setter="" getter="" default="300.0">
 			Distance at which the screen-space indirect lighting is fully faded out. Use this to hide screen-space indirect lighting from far away.
 		</member>
-		<member name="rendering/environment/ssil/half_size" type="bool" setter="" getter="" default="true">
+		<member name="rendering/environment/ssil/half_size" type="bool" setter="" getter="" default="true" keywords="resolution">
 			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
 		</member>
 		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
@@ -3018,7 +3024,7 @@
 			If [code]true[/code], disables the threaded optimization feature from the NVIDIA drivers, which are known to cause stuttering in most OpenGL applications.
 			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
 		</member>
-		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
+		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false" keywords="size">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
@@ -3410,14 +3416,14 @@
 		<member name="rendering/textures/basis_universal/zstd_supercompression_level" type="int" setter="" getter="" default="6">
 			Specify the compression level for Basis Universal Zstandard supercompression, ranging from [code]1[/code] to [code]22[/code].
 		</member>
-		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
+		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1" keywords="nearest, linear">
 			The default texture filtering mode to use for [CanvasItem]s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
 			[b]Note:[/b] For pixel art aesthetics, see also [member rendering/2d/snap/snap_2d_vertices_to_pixel] and [member rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_repeat" type="int" setter="" getter="" default="0">
 			The default texture repeating mode to use for [CanvasItem]s built-in texture. In shaders, this texture is accessed as [code]TEXTURE[/code].
 		</member>
-		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
+		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3" keywords="nearest, linear, anisotropic">
 			The filtering quality to use for [Decal] nodes. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
@@ -3436,7 +3442,7 @@
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
-		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3">
+		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3" keywords="nearest, linear, anisotropic">
 			The filtering quality to use for [OmniLight3D] and [SpotLight3D] projectors. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
@@ -3603,7 +3609,7 @@
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
 		</member>
-		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
+		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;" keywords="mono, stereo">
 			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
 		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
