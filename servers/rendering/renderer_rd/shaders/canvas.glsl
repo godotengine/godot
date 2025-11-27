@@ -24,21 +24,84 @@ layout(location = 11) in vec4 weight_attrib;
 
 #include "canvas_uniforms_inc.glsl"
 
-#ifndef USE_ATTRIBUTES
-layout(location = 4) out flat uint instance_index;
-#else
-#define instance_index params.base_instance_index
-#endif // USE_ATTRIBUTES
-
-layout(location = 0) out vec2 uv_interp;
+layout(location = 0) out vec4 uv_vertex_interp;
 layout(location = 1) out vec4 color_interp;
-layout(location = 2) out vec2 vertex_interp;
+
+#ifndef USE_ATTRIBUTES
+// Varyings so the per-instance info can be used in the fragment shader
+layout(location = 2) out flat vec4 varying_A;
+layout(location = 3) out flat uvec4 varying_B;
+layout(location = 4) out flat uvec4 varying_C;
 
 #ifdef USE_NINEPATCH
+layout(location = 5) out flat vec4 varying_D;
+layout(location = 6) out flat vec4 varying_E;
+layout(location = 7) out vec2 pixel_size_interp;
+#endif // USE_NINEPATCH
+#endif // !USE_ATTRIBUTES
 
-layout(location = 3) out vec2 pixel_size_interp;
+#define read_draw_data_color_texture_pixel_size params.color_texture_pixel_size
 
-#endif
+#ifdef USE_ATTRIBUTES
+
+#define read_draw_data_world_x params.world_x
+#define read_draw_data_world_y params.world_y
+#define read_draw_data_world_ofs params.world_ofs
+#define read_draw_data_modulation params.modulation
+#define read_draw_data_flags params.flags
+#define read_draw_data_instance_offset params.instance_uniforms_ofs
+#define read_draw_data_lights params.lights
+
+#else // !USE_ATTRIBUTES
+
+layout(location = 8) in vec4 attrib_A;
+layout(location = 9) in vec4 attrib_B;
+layout(location = 10) in vec4 attrib_C;
+layout(location = 11) in vec4 attrib_D;
+layout(location = 12) in vec4 attrib_E;
+#ifdef USE_PRIMITIVE
+layout(location = 13) in uvec4 attrib_F;
+#else // !USE_PRIMITIVE
+layout(location = 13) in vec4 attrib_F;
+#endif // USE_PRIMITIVE
+layout(location = 14) in uvec4 attrib_G;
+layout(location = 15) in uvec4 attrib_H;
+
+#define read_draw_data_world_x attrib_A.xy
+#define read_draw_data_world_y attrib_A.zw
+#define read_draw_data_world_ofs attrib_B.xy
+
+#ifdef USE_PRIMITIVE
+
+#define read_draw_data_point_a attrib_C.xy
+#define read_draw_data_point_b attrib_C.zw
+#define read_draw_data_point_c attrib_D.xy
+#define read_draw_data_uv_a attrib_D.zw
+#define read_draw_data_uv_b attrib_E.xy
+#define read_draw_data_uv_c attrib_E.zw
+
+#define read_draw_data_color_a_rg attrib_F.x
+#define read_draw_data_color_a_ba attrib_F.y
+#define read_draw_data_color_b_rg attrib_F.z
+#define read_draw_data_color_b_ba attrib_F.w
+#define read_draw_data_color_c_rg attrib_G.x
+#define read_draw_data_color_c_ba attrib_G.y
+
+#else // !USE_PRIMITIVE
+
+#define read_draw_data_ninepatch_pixel_size (attrib_B.zw)
+#define read_draw_data_modulation attrib_C
+#define read_draw_data_ninepatch_margins attrib_D
+#define read_draw_data_dst_rect attrib_E
+#define read_draw_data_src_rect attrib_F
+
+#endif // USE_PRIMITIVE
+
+#define read_draw_data_flags attrib_G.z
+#define read_draw_data_instance_offset attrib_G.w
+#define read_draw_data_lights attrib_H
+
+#endif // USE_ATTRIBUTES
 
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
@@ -57,6 +120,20 @@ vec3 srgb_to_linear(vec3 color) {
 #endif
 
 void main() {
+#ifndef USE_ATTRIBUTES
+	varying_A = vec4(read_draw_data_world_x, read_draw_data_world_y);
+#ifdef USE_PRIMITIVE
+	varying_B = uvec4(read_draw_data_flags, read_draw_data_instance_offset, 0.0, 0.0);
+#else
+	varying_B = uvec4(read_draw_data_flags, read_draw_data_instance_offset, packHalf2x16(read_draw_data_src_rect.xy), packHalf2x16(read_draw_data_src_rect.zw));
+#endif
+	varying_C = read_draw_data_lights;
+#ifdef USE_NINEPATCH
+	varying_D = read_draw_data_ninepatch_margins;
+	varying_E = vec4(read_draw_data_dst_rect.z, read_draw_data_dst_rect.w, read_draw_data_ninepatch_pixel_size.x, read_draw_data_ninepatch_pixel_size.y);
+#endif // USE_NINEPATCH
+#endif // !USE_ATTRIBUTES
+
 	vec4 instance_custom = vec4(0.0);
 #if defined(CUSTOM0_USED)
 	vec4 custom0 = vec4(0.0);
@@ -64,11 +141,6 @@ void main() {
 #if defined(CUSTOM1_USED)
 	vec4 custom1 = vec4(0.0);
 #endif
-
-#ifndef USE_ATTRIBUTES
-	instance_index = gl_InstanceIndex + params.base_instance_index;
-#endif // USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[instance_index];
 
 #ifdef USE_PRIMITIVE
 
@@ -79,18 +151,19 @@ void main() {
 	vec4 color;
 
 	if (gl_VertexIndex == 0) {
-		vertex = draw_data.points[0];
-		uv = draw_data.uvs[0];
-		color = vec4(unpackHalf2x16(draw_data.colors[0]), unpackHalf2x16(draw_data.colors[1]));
+		vertex = read_draw_data_point_a;
+		uv = read_draw_data_uv_a;
+		color = vec4(unpackHalf2x16(read_draw_data_color_a_rg), unpackHalf2x16(read_draw_data_color_a_ba));
 	} else if (gl_VertexIndex == 1) {
-		vertex = draw_data.points[1];
-		uv = draw_data.uvs[1];
-		color = vec4(unpackHalf2x16(draw_data.colors[2]), unpackHalf2x16(draw_data.colors[3]));
+		vertex = read_draw_data_point_b;
+		uv = read_draw_data_uv_b;
+		color = vec4(unpackHalf2x16(read_draw_data_color_b_rg), unpackHalf2x16(read_draw_data_color_b_ba));
 	} else {
-		vertex = draw_data.points[2];
-		uv = draw_data.uvs[2];
-		color = vec4(unpackHalf2x16(draw_data.colors[4]), unpackHalf2x16(draw_data.colors[5]));
+		vertex = read_draw_data_point_c;
+		uv = read_draw_data_uv_c;
+		color = vec4(unpackHalf2x16(read_draw_data_color_c_rg), unpackHalf2x16(read_draw_data_color_c_ba));
 	}
+
 	uvec4 bones = uvec4(0, 0, 0, 0);
 	vec4 bone_weights = vec4(0.0);
 
@@ -101,7 +174,7 @@ void main() {
 	if (bool(canvas_data.flags & CANVAS_FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR)) {
 		color.rgb = srgb_to_linear(color.rgb);
 	}
-	color *= draw_data.modulation;
+	color *= read_draw_data_modulation;
 	vec2 uv = uv_attrib;
 
 #if defined(CUSTOM0_USED)
@@ -119,14 +192,14 @@ void main() {
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
 
-	vec2 uv = draw_data.src_rect.xy + abs(draw_data.src_rect.zw) * ((draw_data.flags & INSTANCE_FLAGS_TRANSPOSE_RECT) != 0 ? vertex_base.yx : vertex_base.xy);
-	vec4 color = draw_data.modulation;
-	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
+	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT) != 0 ? vertex_base.yx : vertex_base.xy);
+	vec4 color = read_draw_data_modulation;
+	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(read_draw_data_src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
 #endif // USE_ATTRIBUTES
 
-	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
+	mat4 model_matrix = mat4(vec4(read_draw_data_world_x, 0.0, 0.0), vec4(read_draw_data_world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(read_draw_data_world_ofs, 0.0, 1.0));
 
 #ifdef USE_ATTRIBUTES
 
@@ -200,7 +273,7 @@ void main() {
 	}
 
 #ifdef USE_NINEPATCH
-	pixel_size_interp = abs(draw_data.dst_rect.zw) * vertex_base;
+	pixel_size_interp = abs(read_draw_data_dst_rect.zw) * vertex_base;
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && !defined(USE_WORLD_VERTEX_COORDS)
@@ -218,8 +291,7 @@ void main() {
 		uv += 1e-5;
 	}
 
-	vertex_interp = vertex;
-	uv_interp = uv;
+	uv_vertex_interp = vec4(uv, vertex);
 
 	gl_Position = canvas_data.screen_transform * vec4(vertex, 0.0, 1.0);
 
@@ -236,21 +308,45 @@ void main() {
 
 #include "canvas_uniforms_inc.glsl"
 
-#ifndef USE_ATTRIBUTES
-layout(location = 4) in flat uint instance_index;
-#else
-#define instance_index params.base_instance_index
-#endif // USE_ATTRIBUTES
-
-layout(location = 0) in vec2 uv_interp;
+layout(location = 0) in vec4 uv_vertex_interp;
 layout(location = 1) in vec4 color_interp;
-layout(location = 2) in vec2 vertex_interp;
+
+#define read_draw_data_color_texture_pixel_size params.color_texture_pixel_size
+
+#ifdef USE_ATTRIBUTES
+
+#define read_draw_data_world_x params.world_x
+#define read_draw_data_world_y params.world_y
+#define read_draw_data_flags params.flags
+#define read_draw_data_instance_offset params.instance_uniforms_ofs
+#define read_draw_data_lights params.lights
+
+#else // !USE_ATTRIBUTES
+
+// Can all be flat as they are the same for the whole batched instance
+layout(location = 2) in flat vec4 varying_A;
+
+#define read_draw_data_world_x varying_A.xy
+#define read_draw_data_world_y varying_A.zw
+
+layout(location = 3) in flat uvec4 varying_B;
+layout(location = 4) in flat uvec4 varying_C;
+#define read_draw_data_flags varying_B.x
+#define read_draw_data_instance_offset varying_B.y
+#define read_draw_data_src_rect (varying_B.zw)
+#define read_draw_data_lights varying_C
 
 #ifdef USE_NINEPATCH
+layout(location = 5) in flat vec4 varying_D;
+layout(location = 6) in flat vec4 varying_E;
+layout(location = 7) in vec2 pixel_size_interp;
+#define read_draw_data_ninepatch_margins varying_D
+#define read_draw_data_dst_rect_z varying_E.x
+#define read_draw_data_dst_rect_w varying_E.y
+#define read_draw_data_ninepatch_pixel_size (varying_E.zw)
+#endif // USE_NINEPATCH
 
-layout(location = 3) in vec2 pixel_size_interp;
-
-#endif
+#endif // USE_ATTRIBUTES
 
 layout(location = 0) out vec4 frag_color;
 
@@ -312,7 +408,6 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
-	const InstanceData draw_data = instances.data[instance_index];
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
@@ -333,8 +428,6 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-	const InstanceData draw_data = instances.data[instance_index];
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -342,7 +435,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	} else if (pixel >= draw_size - margin_end) {
 		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
 	} else {
-		draw_center -= 1 - int(bitfieldExtract(draw_data.flags, INSTANCE_FLAGS_NINEPATCH_DRAW_CENTER_SHIFT, 1));
+		draw_center -= 1 - int(bitfieldExtract(read_draw_data_flags, INSTANCE_FLAGS_NINEPATCH_DRAW_CENTER_SHIFT, 1));
 
 		// np_repeat is passed as uniform using NinePatchRect::AxisStretchMode enum.
 		if (np_repeat == 0) { // Stretch.
@@ -407,7 +500,9 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
 
 	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
-		shadow = texture_shadow(shadow_uv);
+		vec2 unit_p = floor(shadow_uv.xy / canvas_data.shadow_pixel_size) * canvas_data.shadow_pixel_size;
+		float depth_sample = texture(sampler2D(shadow_atlas_texture, shadow_sampler), unit_p.xy).r;
+		shadow = step(depth_sample, shadow_uv.z);
 	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
 		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;
@@ -468,15 +563,14 @@ float msdf_median(float r, float g, float b) {
 
 void main() {
 	vec4 color = color_interp;
-	vec2 uv = uv_interp;
-	vec2 vertex = vertex_interp;
-
-	const InstanceData draw_data = instances.data[instance_index];
+	vec2 uv = uv_vertex_interp.xy;
+	vec2 vertex = uv_vertex_interp.zw;
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	vec4 region_rect = draw_data.src_rect;
+	vec4 src_rect = vec4(unpackHalf2x16(read_draw_data_src_rect.x), unpackHalf2x16(read_draw_data_src_rect.y));
+	vec4 region_rect = src_rect;
 #else
-	vec4 region_rect = vec4(0.0, 0.0, 1.0 / draw_data.color_texture_pixel_size);
+	vec4 region_rect = vec4(0.0, 0.0, 1.0 / read_draw_data_color_texture_pixel_size);
 #endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
@@ -485,29 +579,28 @@ void main() {
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, int(bitfieldExtract(draw_data.flags, INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT, 2)), draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, int(bitfieldExtract(draw_data.flags, INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT, 2)), draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(read_draw_data_dst_rect_z), read_draw_data_ninepatch_pixel_size.x, read_draw_data_ninepatch_margins.x, read_draw_data_ninepatch_margins.z, int(bitfieldExtract(read_draw_data_flags, INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT, 2)), draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(read_draw_data_dst_rect_w), read_draw_data_ninepatch_pixel_size.y, read_draw_data_ninepatch_margins.y, read_draw_data_ninepatch_margins.w, int(bitfieldExtract(read_draw_data_flags, INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT, 2)), draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
 
-	uv = uv * draw_data.src_rect.zw + draw_data.src_rect.xy; //apply region if needed
+	uv = uv * src_rect.zw + src_rect.xy; //apply region if needed
 
 #endif
-	if (bool(draw_data.flags & INSTANCE_FLAGS_CLIP_RECT_UV)) {
-		vec2 half_texpixel = draw_data.color_texture_pixel_size * 0.5;
-		uv = clamp(uv, draw_data.src_rect.xy + half_texpixel, draw_data.src_rect.xy + abs(draw_data.src_rect.zw) - half_texpixel);
+	if (bool(read_draw_data_flags & INSTANCE_FLAGS_CLIP_RECT_UV)) {
+		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
+		uv = clamp(uv, src_rect.xy + half_texpixel, src_rect.xy + abs(src_rect.zw) - half_texpixel);
 	}
 
 #endif
 
-#ifndef USE_PRIMITIVE
-	if (bool(draw_data.flags & INSTANCE_FLAGS_USE_MSDF)) {
-		float px_range = draw_data.ninepatch_margins.x;
-		float outline_thickness = draw_data.ninepatch_margins.y;
-		//float reserved1 = draw_data.ninepatch_margins.z;
-		//float reserved2 = draw_data.ninepatch_margins.w;
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+	// only used by TYPE_RECT
+	if (sc_use_msdf()) {
+		float px_range = params.msdf.x;
+		float outline_thickness = params.msdf.y;
 
 		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
 		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
@@ -524,7 +617,7 @@ void main() {
 			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
-	} else if (bool(draw_data.flags & INSTANCE_FLAGS_USE_LCD)) {
+	} else if (sc_use_lcd()) {
 		vec4 lcd_sample = texture(sampler2D(color_texture, texture_sampler), uv);
 		if (lcd_sample.a == 1.0) {
 			color.rgb = lcd_sample.rgb * color.a;
@@ -538,8 +631,8 @@ void main() {
 		color *= texture(sampler2D(color_texture, texture_sampler), uv);
 	}
 
-	uint light_count = draw_data.flags & 15u; //max 15 lights
-	bool using_light = (light_count + canvas_data.directional_light_count) > 0;
+	uint light_count = read_draw_data_flags & 15u; //max 15 lights
+	bool using_light = ((light_count + canvas_data.directional_light_count) > 0) && sc_use_lighting();
 
 	vec3 normal;
 
@@ -553,10 +646,10 @@ void main() {
 		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-		if (bool(draw_data.flags & INSTANCE_FLAGS_TRANSPOSE_RECT)) {
+		if (bool(read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT)) {
 			normal.xy = normal.yx;
 		}
-		normal.xy *= sign(draw_data.src_rect.zw);
+		normal.xy *= sign(src_rect.zw);
 #endif
 		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
@@ -607,7 +700,7 @@ void main() {
 
 	if (normal_used) {
 		//convert by item transform
-		normal.xy = mat2(normalize(draw_data.world_x), normalize(draw_data.world_y)) * normal.xy;
+		normal.xy = mat2(normalize(read_draw_data_world_x), normalize(read_draw_data_world_y)) * normal.xy;
 		//convert by canvas transform
 		normal = normalize((canvas_data.canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
@@ -669,7 +762,7 @@ void main() {
 			if (i >= light_count) {
 				break;
 			}
-			uint light_base = bitfieldExtract(draw_data.lights[i >> 2], (int(i) & 0x3) * 8, 8);
+			uint light_base = bitfieldExtract(read_draw_data_lights[i >> 2], (int(i) & 0x3) * 8, 8);
 
 			vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 			vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
@@ -704,7 +797,7 @@ void main() {
 			}
 #endif
 
-			if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW) && bool(draw_data.flags & (INSTANCE_FLAGS_SHADOW_MASKED << i))) {
+			if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW) && bool(read_draw_data_flags & (INSTANCE_FLAGS_SHADOW_MASKED << i))) {
 				vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
 				vec2 pos_norm = normalize(shadow_pos);

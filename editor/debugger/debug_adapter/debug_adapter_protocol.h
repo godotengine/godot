@@ -31,11 +31,10 @@
 #pragma once
 
 #include "core/debugger/debugger_marshalls.h"
+#include "core/debugger/remote_debugger.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
-
-#include "debug_adapter_parser.h"
-#include "debug_adapter_types.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "scene/debugger/scene_debugger.h"
 
 #define DAP_MAX_BUFFER_SIZE 4194304 // 4MB

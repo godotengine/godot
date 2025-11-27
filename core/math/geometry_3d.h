@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "core/math/color.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
+#include "core/math/vector2.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
@@ -292,6 +294,10 @@ public:
 			real_t den = p.normal.dot(dir);
 
 			if (Math::abs(den) <= (real_t)CMP_EPSILON) {
+				if (p.is_point_over(p_from)) {
+					// Separating plane.
+					return false;
+				}
 				continue; // Ignore parallel plane.
 			}
 

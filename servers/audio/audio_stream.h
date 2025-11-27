@@ -32,7 +32,7 @@
 
 #include "core/io/resource.h"
 #include "scene/property_list_helper.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
@@ -324,6 +324,9 @@ public:
 
 	void set_streams_count(int p_count);
 	int get_streams_count() const;
+
+	void set_random_pitch_semitones(float p_pitch_semitones);
+	float get_random_pitch_semitones() const;
 
 	void set_random_pitch(float p_pitch_scale);
 	float get_random_pitch() const;

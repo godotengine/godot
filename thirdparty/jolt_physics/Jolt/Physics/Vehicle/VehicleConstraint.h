@@ -74,9 +74,11 @@ public:
 
 	/// Defines the maximum pitch/roll angle (rad), can be used to avoid the car from getting upside down. The vehicle up direction will stay within a cone centered around the up axis with half top angle mMaxPitchRollAngle, set to pi to turn off.
 	void						SetMaxPitchRollAngle(float inMaxPitchRollAngle) { mCosMaxPitchRollAngle = Cos(inMaxPitchRollAngle); }
+	float						GetMaxPitchRollAngle() const				{ return ACos(mCosMaxPitchRollAngle); }
 
 	/// Set the interface that tests collision between wheel and ground
 	void						SetVehicleCollisionTester(const VehicleCollisionTester *inTester) { mVehicleCollisionTester = inTester; }
+	const VehicleCollisionTester *GetVehicleCollisionTester() const			{ return mVehicleCollisionTester; }
 
 	/// Callback function to combine the friction of a tire with the friction of the body it is colliding with.
 	/// On input ioLongitudinalFriction and ioLateralFriction contain the friction of the tire, on output they should contain the combined friction with inBody2.

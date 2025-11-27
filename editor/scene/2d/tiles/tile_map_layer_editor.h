@@ -33,6 +33,7 @@
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -47,6 +48,7 @@
 
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileSetSourceItemList;
 
 class TileMapLayerSubEditorPlugin : public Object {
 	GDSOFTCLASS(TileMapLayerSubEditorPlugin, Object);
@@ -54,6 +56,7 @@ class TileMapLayerSubEditorPlugin : public Object {
 protected:
 	ObjectID edited_tile_map_layer_id;
 	TileMapLayer *_get_edited_layer() const;
+	static void _add_to_output_if_tile_changed(HashMap<Vector2i, TileMapCell> &p_output, const TileMapLayer *p_layer, Vector2i p_coords, const TileMapCell &p_cell);
 
 public:
 	struct TabData {
@@ -178,7 +181,7 @@ private:
 	Label *missing_source_label = nullptr;
 	Label *invalid_source_label = nullptr;
 
-	ItemList *sources_list = nullptr;
+	TileSetSourceItemList *sources_list = nullptr;
 	MenuButton *source_sort_button = nullptr;
 
 	Ref<Texture2D> missing_atlas_texture_icon;
@@ -335,8 +338,8 @@ public:
 	TileMapLayerEditorTerrainsPlugin();
 };
 
-class TileMapLayerEditor : public VBoxContainer {
-	GDCLASS(TileMapLayerEditor, VBoxContainer);
+class TileMapLayerEditor : public EditorDock {
+	GDCLASS(TileMapLayerEditor, EditorDock);
 
 private:
 	bool tile_map_layer_changed_needs_update = false;

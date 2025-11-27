@@ -114,7 +114,6 @@ public:
 	virtual Error update(const PackedByteArray &p_data) = 0;
 	virtual PackedByteArray finish() = 0;
 
-	HMACContext() {}
 	virtual ~HMACContext() {}
 };
 
@@ -144,8 +143,6 @@ public:
 	// Compares two PackedByteArrays for equality without leaking timing information in order to prevent timing attacks.
 	// @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
 	bool constant_time_compare(const PackedByteArray &p_trusted, const PackedByteArray &p_received);
-
-	Crypto() {}
 };
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {

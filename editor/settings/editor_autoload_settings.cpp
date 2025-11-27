@@ -395,14 +395,14 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from UID or path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
 		}
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path);
-		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Failed to create an autoload, can't load from UID or path: %s.", p_path));
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
@@ -427,7 +427,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 void EditorAutoloadSettings::init_autoloads() {
 	for (AutoloadInfo &info : autoload_cache) {
-		info.node = _create_autoload(info.path);
+		info.node = _create_autoload(ResourceUID::ensure_path(info.path));
 
 		if (info.node) {
 			Ref<Script> scr = info.node->get_script();
@@ -498,7 +498,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 
 		info.name = name;
-		info.path = scr_path;
+		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		bool need_to_add = true;
@@ -530,7 +530,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_text(0, name);
 		item->set_editable(0, true);
 
-		item->set_text(1, scr_path);
+		item->set_text(1, ResourceUID::ensure_path(scr_path));
 		item->set_selectable(1, true);
 
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
@@ -800,7 +800,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + ResourceUID::get_singleton()->path_to_uid(p_path));
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
@@ -876,7 +876,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 
 		info.name = name;
-		info.path = scr_path;
+		info.path = ResourceUID::get_singleton()->path_to_uid(scr_path);
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		if (info.is_singleton) {

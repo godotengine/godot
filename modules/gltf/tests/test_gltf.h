@@ -57,7 +57,7 @@ namespace TestGltf {
 static Node *gltf_import(const String &p_file) {
 	// Setting up importers.
 	Ref<ResourceImporterScene> import_scene;
-	import_scene.instantiate("PackedScene", true);
+	import_scene.instantiate("PackedScene");
 	ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
@@ -134,20 +134,21 @@ static Node *gltf_export_then_import(Node *p_root, const String &p_test_name) {
 void init(const String &p_test, const String &p_copy_target = String()) {
 	Error err;
 
-	// Setup project settings since it's needed for the import process.
+	// Setup project settings with `res://` set to a temporary path.
 	String project_folder = TestUtils::get_temp_path(p_test.get_file().get_basename());
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(project_folder.path_join(".godot").path_join("imported"));
-	// Initialize res:// to `project_folder`.
 	TestProjectSettingsInternalsAccessor::resource_path() = project_folder;
-	err = ProjectSettings::get_singleton()->setup(project_folder, String(), true);
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	err = ps->setup(project_folder, String(), true);
+
+	// Create the imported files folder as the editor import process expects it to exist.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	da->make_dir_recursive(ps->globalize_path(ps->get_imported_files_path()));
 
 	if (p_copy_target.is_empty()) {
 		return;
 	}
 
 	// Copy all the necessary test data files to the res:// directory.
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String test_data = String("modules/gltf/tests/data/").path_join(p_test);
 	da = DirAccess::open(test_data);
 	CHECK_MESSAGE(da.is_valid(), "Unable to open folder.");

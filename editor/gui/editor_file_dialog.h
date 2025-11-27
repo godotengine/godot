@@ -122,7 +122,6 @@ private:
 	ConfirmationDialog *confirm_save = nullptr;
 	DependencyRemoveDialog *dep_remove_dialog = nullptr;
 	ConfirmationDialog *global_remove_dialog = nullptr;
-	VBoxContainer *side_vbox = nullptr;
 	VBoxContainer *vbc = nullptr;
 	HBoxContainer *pathhb = nullptr;
 
@@ -280,8 +279,6 @@ private:
 
 	bool _is_open_should_be_disabled();
 
-	void _update_side_menu_visibility(bool p_native_dlg);
-
 	void _native_popup();
 	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
@@ -293,6 +290,7 @@ private:
 protected:
 	virtual void _update_theme_item_cache() override;
 
+	virtual void _popup_base(const Rect2i &p_rect = Rect2i()) override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -303,7 +301,6 @@ protected:
 
 public:
 	virtual void set_visible(bool p_visible) override;
-	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 
 	// Public for use with callable_mp.
 	void _file_submitted(const String &p_file);
@@ -367,7 +364,9 @@ public:
 	void set_previews_enabled(bool p_enabled);
 	bool are_previews_enabled();
 
-	void add_side_menu(Control *p_menu, const String &p_title = "");
+#ifndef DISABLE_DEPRECATED
+	void add_side_menu(Control *p_menu, const String &p_title = "") { ERR_FAIL_MSG("add_side_menu() is kept for compatibility and does nothing. For similar functionality, you can show another dialog after file dialog."); }
+#endif
 
 	EditorFileDialog();
 	~EditorFileDialog();

@@ -37,6 +37,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 
@@ -455,7 +456,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(std::size(stack_buffer)) {
+			capacity(std_size(stack_buffer)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {
@@ -579,6 +580,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 		return data;
 	}
 
+	data.reserve_exact(p_length);
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V_MSG(err != OK, data, vformat("Can't resize data to %d elements.", p_length));
 
@@ -779,6 +781,83 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	return err;
 }
 
+PackedByteArray FileAccess::get_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedByteArray();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_get_extended_attribute(p_file, p_attribute_name);
+}
+
+String FileAccess::get_extended_attribute_string(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return String();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), String(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	PackedByteArray data = fa->_get_extended_attribute(p_file, p_attribute_name);
+	if (data.is_empty()) {
+		return String();
+	}
+	return String::utf8((const char *)data.ptr(), data.size());
+}
+
+Error FileAccess::set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_set_extended_attribute(p_file, p_attribute_name, p_data);
+}
+
+Error FileAccess::set_extended_attribute_string(const String &p_file, const String &p_attribute_name, const String &p_data) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	PackedByteArray data;
+	CharString cs = p_data.utf8();
+	data.resize(cs.size());
+	if (cs.size() > 0) {
+		memcpy(data.ptrw(), cs.get_data(), cs.size());
+	}
+
+	return fa->_set_extended_attribute(p_file, p_attribute_name, data);
+}
+
+Error FileAccess::remove_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_remove_extended_attribute(p_file, p_attribute_name);
+}
+
+PackedStringArray FileAccess::get_extended_attributes_list(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedStringArray();
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), vformat("Cannot create FileAccess for path '%s'.", p_file));
+
+	return fa->_get_extended_attributes_list(p_file);
+}
+
 bool FileAccess::store_string(const String &p_string) {
 	if (p_string.length() == 0) {
 		return true;
@@ -873,6 +952,7 @@ Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_err
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Can't open file from path '%s'.", String(p_path)));
 	}
 	Vector<uint8_t> data;
+	data.reserve_exact(f->get_length());
 	data.resize(f->get_length());
 	f->get_buffer(data.ptrw(), data.size());
 	return data;
@@ -1048,6 +1128,13 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute", "file", "attribute_name"), &FileAccess::get_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attribute_string", "file", "attribute_name"), &FileAccess::get_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute", "file", "attribute_name", "data"), &FileAccess::set_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_extended_attribute_string", "file", "attribute_name", "_data"), &FileAccess::set_extended_attribute_string);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("remove_extended_attribute", "file", "attribute_name"), &FileAccess::remove_extended_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_extended_attributes_list", "file"), &FileAccess::get_extended_attributes_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 

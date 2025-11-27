@@ -97,12 +97,17 @@ struct Coverage
     }
   }
   unsigned int get_coverage (hb_codepoint_t glyph_id,
-			     hb_ot_lookup_cache_t *cache) const
+			     hb_ot_layout_mapping_cache_t *cache) const
   {
     unsigned coverage;
-    if (cache && cache->get (glyph_id, &coverage)) return coverage;
+    if (cache && cache->get (glyph_id, &coverage)) return coverage < cache->MAX_VALUE ? coverage : NOT_COVERED;
     coverage = get_coverage (glyph_id);
-    if (cache) cache->set (glyph_id, coverage);
+    if (cache) {
+      if (coverage == NOT_COVERED)
+	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
+      else if (likely (coverage < cache->MAX_VALUE))
+	cache->set_unchecked (glyph_id, coverage);
+    }
     return coverage;
   }
 
@@ -332,7 +337,7 @@ struct Coverage
     }
     iter_t __end__ () const
     {
-      iter_t it = {};
+      iter_t it;
       it.format = format;
       switch (format)
       {

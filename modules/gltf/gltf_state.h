@@ -51,6 +51,14 @@ class GLTFState : public Resource {
 	friend class GLTFDocument;
 	friend class GLTFNode;
 
+public:
+	enum HandleBinaryImageMode {
+		HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+	};
+
 protected:
 	String base_path;
 	String extract_path;
@@ -71,7 +79,7 @@ protected:
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
 
-	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
+	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -133,14 +141,16 @@ public:
 		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
-		return handle_binary_image;
+		return handle_binary_image_mode;
 	}
 	void set_handle_binary_image(int32_t p_handle_binary_image) {
-		handle_binary_image = p_handle_binary_image;
+		handle_binary_image_mode = (HandleBinaryImageMode)p_handle_binary_image;
 	}
+	HandleBinaryImageMode get_handle_binary_image_mode() { return handle_binary_image_mode; }
+	void set_handle_binary_image_mode(HandleBinaryImageMode p_handle_binary_image) { handle_binary_image_mode = p_handle_binary_image; }
 
 	Dictionary get_json();
-	void set_json(Dictionary p_json);
+	void set_json(const Dictionary &p_json);
 
 	int get_major_version();
 	void set_major_version(int p_major_version);
@@ -152,7 +162,7 @@ public:
 	void set_copyright(const String &p_copyright);
 
 	Vector<uint8_t> get_glb_data();
-	void set_glb_data(Vector<uint8_t> p_glb_data);
+	void set_glb_data(const Vector<uint8_t> &p_glb_data);
 
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
@@ -170,25 +180,25 @@ public:
 	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
 
 	TypedArray<GLTFNode> get_nodes();
-	void set_nodes(TypedArray<GLTFNode> p_nodes);
+	void set_nodes(const TypedArray<GLTFNode> &p_nodes);
 
 	TypedArray<PackedByteArray> get_buffers();
-	void set_buffers(TypedArray<PackedByteArray> p_buffers);
+	void set_buffers(const TypedArray<PackedByteArray> &p_buffers);
 
 	TypedArray<GLTFBufferView> get_buffer_views();
-	void set_buffer_views(TypedArray<GLTFBufferView> p_buffer_views);
+	void set_buffer_views(const TypedArray<GLTFBufferView> &p_buffer_views);
 
 	TypedArray<GLTFAccessor> get_accessors();
-	void set_accessors(TypedArray<GLTFAccessor> p_accessors);
+	void set_accessors(const TypedArray<GLTFAccessor> &p_accessors);
 
 	TypedArray<GLTFMesh> get_meshes();
-	void set_meshes(TypedArray<GLTFMesh> p_meshes);
+	void set_meshes(const TypedArray<GLTFMesh> &p_meshes);
 
 	TypedArray<Material> get_materials();
-	void set_materials(TypedArray<Material> p_materials);
+	void set_materials(const TypedArray<Material> &p_materials);
 
 	String get_scene_name();
-	void set_scene_name(String p_scene_name);
+	void set_scene_name(const String &p_scene_name);
 
 	String get_base_path();
 	void set_base_path(const String &p_base_path);
@@ -203,34 +213,34 @@ public:
 	void set_filename(const String &p_filename);
 
 	PackedInt32Array get_root_nodes();
-	void set_root_nodes(PackedInt32Array p_root_nodes);
+	void set_root_nodes(const PackedInt32Array &p_root_nodes);
 
 	TypedArray<GLTFTexture> get_textures();
-	void set_textures(TypedArray<GLTFTexture> p_textures);
+	void set_textures(const TypedArray<GLTFTexture> &p_textures);
 
 	TypedArray<GLTFTextureSampler> get_texture_samplers();
-	void set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers);
+	void set_texture_samplers(const TypedArray<GLTFTextureSampler> &p_texture_samplers);
 
 	TypedArray<Texture2D> get_images();
-	void set_images(TypedArray<Texture2D> p_images);
+	void set_images(const TypedArray<Texture2D> &p_images);
 
 	TypedArray<GLTFSkin> get_skins();
-	void set_skins(TypedArray<GLTFSkin> p_skins);
+	void set_skins(const TypedArray<GLTFSkin> &p_skins);
 
 	TypedArray<GLTFCamera> get_cameras();
-	void set_cameras(TypedArray<GLTFCamera> p_cameras);
+	void set_cameras(const TypedArray<GLTFCamera> &p_cameras);
 
 	TypedArray<GLTFLight> get_lights();
-	void set_lights(TypedArray<GLTFLight> p_lights);
+	void set_lights(const TypedArray<GLTFLight> &p_lights);
 
 	TypedArray<String> get_unique_names();
-	void set_unique_names(TypedArray<String> p_unique_names);
+	void set_unique_names(const TypedArray<String> &p_unique_names);
 
 	TypedArray<String> get_unique_animation_names();
-	void set_unique_animation_names(TypedArray<String> p_unique_names);
+	void set_unique_animation_names(const TypedArray<String> &p_unique_names);
 
 	TypedArray<GLTFSkeleton> get_skeletons();
-	void set_skeletons(TypedArray<GLTFSkeleton> p_skeletons);
+	void set_skeletons(const TypedArray<GLTFSkeleton> &p_skeletons);
 
 	bool get_create_animations();
 	void set_create_animations(bool p_create_animations);
@@ -239,7 +249,7 @@ public:
 	void set_import_as_skeleton_bones(bool p_import_as_skeleton_bones);
 
 	TypedArray<GLTFAnimation> get_animations();
-	void set_animations(TypedArray<GLTFAnimation> p_animations);
+	void set_animations(const TypedArray<GLTFAnimation> &p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
 	GLTFNodeIndex get_node_index(Node *p_node);
@@ -251,3 +261,5 @@ public:
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
+
+VARIANT_ENUM_CAST(GLTFState::HandleBinaryImageMode);

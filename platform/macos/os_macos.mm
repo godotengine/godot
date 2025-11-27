@@ -39,6 +39,9 @@
 #import "godot_application_delegate.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
@@ -104,7 +107,7 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (p_name == "macos.permission.RECORD_SCREEN") {
 			if (CGPreflightScreenCaptureAccess()) {
 				return true;
@@ -124,7 +127,7 @@ bool OS_MacOS::request_permission(const String &p_name) {
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
 
-	if (@available(macOS 10.15, *)) {
+	if (@available(macOS 11.0, *)) {
 		if (CGPreflightScreenCaptureAccess()) {
 			ret.push_back("macos.permission.RECORD_SCREEN");
 		}
@@ -1079,6 +1082,8 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
@@ -1102,6 +1107,9 @@ void OS_MacOS_NSApp::start_main() {
 				pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
 					@autoreleasepool {
 						@try {
+							GodotProfileFrameMark;
+							GodotProfileZone("macOS main loop");
+
 							if (ds_mac) {
 								ds_mac->_process_events(false);
 							} else if (ds) {
@@ -1167,7 +1175,7 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -1275,6 +1283,9 @@ void OS_MacOS_Embedded::run() {
 		while (true) {
 			@autoreleasepool {
 				@try {
+					GodotProfileFrameMark;
+					GodotProfileZone("macOS embedded main loop");
+
 					ds->process_events();
 
 #ifdef SDL_ENABLED

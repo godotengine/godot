@@ -30,7 +30,7 @@
 
 #include "camera_feed.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);
@@ -50,6 +50,7 @@ void CameraFeed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_rgb_image", "rgb_image"), &CameraFeed::set_rgb_image);
 	ClassDB::bind_method(D_METHOD("set_ycbcr_image", "ycbcr_image"), &CameraFeed::set_ycbcr_image);
+	ClassDB::bind_method(D_METHOD("set_ycbcr_images", "y_image", "cbcr_image"), &CameraFeed::set_ycbcr_images);
 	ClassDB::bind_method(D_METHOD("set_external", "width", "height"), &CameraFeed::set_external);
 	ClassDB::bind_method(D_METHOD("get_texture_tex_id", "feed_image_type"), &CameraFeed::get_texture_tex_id);
 
@@ -178,8 +179,8 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 CameraFeed::~CameraFeed() {
 	// Free our textures
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_Y_IMAGE]);
-	RenderingServer::get_singleton()->free(texture[CameraServer::FEED_CBCR_IMAGE]);
+	RenderingServer::get_singleton()->free_rid(texture[CameraServer::FEED_Y_IMAGE]);
+	RenderingServer::get_singleton()->free_rid(texture[CameraServer::FEED_CBCR_IMAGE]);
 }
 
 void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {
@@ -188,6 +189,14 @@ void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {
 		int new_width = p_rgb_img->get_width();
 		int new_height = p_rgb_img->get_height();
 
+		// Emit `format_changed` signal if feed datatype or frame size is changed.
+		// The signal is deferred to ensure:
+		// - They are emitted on Godot's main thread.
+		// - Both datatype and frame size are updated before the emission.
+		if (datatype != CameraFeed::FEED_RGB || (base_width != new_width) || (base_height != new_height)) {
+			call_deferred("emit_signal", format_changed_signal_name);
+		}
+
 		if ((base_width != new_width) || (base_height != new_height)) {
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_width;
@@ -195,10 +204,6 @@ void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {
 
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-
-			// Defer `format_changed` signals to ensure they are emitted on Godot's main thread.
-			// This also makes sure the datatype of the feed is updated before the emission.
-			call_deferred("emit_signal", format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
 		}
@@ -216,6 +221,14 @@ void CameraFeed::set_ycbcr_image(const Ref<Image> &p_ycbcr_img) {
 		int new_width = p_ycbcr_img->get_width();
 		int new_height = p_ycbcr_img->get_height();
 
+		// Emit `format_changed` signal if feed datatype or frame size is changed.
+		// The signal is deferred to ensure:
+		// - They are emitted on Godot's main thread.
+		// - Both datatype and frame size are updated before the emission.
+		if (datatype != CameraFeed::FEED_YCBCR || (base_width != new_width) || (base_height != new_height)) {
+			call_deferred("emit_signal", format_changed_signal_name);
+		}
+
 		if ((base_width != new_width) || (base_height != new_height)) {
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_width;
@@ -223,10 +236,6 @@ void CameraFeed::set_ycbcr_image(const Ref<Image> &p_ycbcr_img) {
 
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
-
-			// Defer `format_changed` signals to ensure they are emitted on Godot's main thread.
-			// This also makes sure the datatype of the feed is updated before the emission.
-			call_deferred("emit_signal", format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
 		}
@@ -249,6 +258,14 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 		int new_y_width = p_y_img->get_width();
 		int new_y_height = p_y_img->get_height();
 
+		// Emit `format_changed` signal if feed datatype or frame size is changed.
+		// The signal is deferred to ensure:
+		// - They are emitted on Godot's main thread.
+		// - Both datatype and frame size are updated before the emission.
+		if (datatype != CameraFeed::FEED_YCBCR_SEP || (base_width != new_y_width) || (base_height != new_y_height)) {
+			call_deferred("emit_signal", format_changed_signal_name);
+		}
+
 		if ((base_width != new_y_width) || (base_height != new_y_height)) {
 			// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 			base_width = new_y_width;
@@ -261,10 +278,6 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 				RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_cbcr_img);
 				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_CBCR_IMAGE], new_texture);
 			}
-
-			// Defer `format_changed` signals to ensure they are emitted on Godot's main thread.
-			// This also makes sure the datatype of the feed is updated before the emission.
-			call_deferred("emit_signal", format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
@@ -278,6 +291,14 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 }
 
 void CameraFeed::set_external(int p_width, int p_height) {
+	// Emit `format_changed` signal if feed datatype or frame size is changed.
+	// The signal is deferred to ensure:
+	// - They are emitted on Godot's main thread.
+	// - Both datatype and frame size are updated before the emission.
+	if (datatype != CameraFeed::FEED_EXTERNAL || (base_width != p_width) || (base_height != p_height)) {
+		call_deferred("emit_signal", format_changed_signal_name);
+	}
+
 	if ((base_width != p_width) || (base_height != p_height)) {
 		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 		base_width = p_width;

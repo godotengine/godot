@@ -30,6 +30,7 @@
 
 #include "http_request.h"
 
+#include "core/io/file_access.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -666,6 +667,7 @@ HTTPRequest::HTTPRequest() {
 	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
+	timer->set_ignore_time_scale(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
 }

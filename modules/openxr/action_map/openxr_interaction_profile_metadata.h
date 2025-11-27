@@ -81,8 +81,8 @@ public:
 		String openxr_extension_name; // If set, only available if extension is enabled (i.e. XR_HTCX_vive_tracker_interaction)
 		Vector<IOPath> io_paths; // Inputs and outputs for this device
 
-		bool has_io_path(const String p_io_path) const;
-		const IOPath *get_io_path(const String p_io_path) const;
+		bool has_io_path(const String &p_io_path) const;
+		const IOPath *get_io_path(const String &p_io_path) const;
 	};
 
 private:
@@ -107,16 +107,16 @@ public:
 	String check_profile_name(const String &p_name) const;
 
 	void register_top_level_path(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name);
-	bool has_top_level_path(const String p_openxr_path) const;
-	String get_top_level_name(const String p_openxr_path) const;
-	String get_top_level_extension(const String p_openxr_path) const;
+	bool has_top_level_path(const String &p_openxr_path) const;
+	String get_top_level_name(const String &p_openxr_path) const;
+	String get_top_level_extension(const String &p_openxr_path) const;
 
 	void register_interaction_profile(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name);
-	bool has_interaction_profile(const String p_openxr_path) const;
-	String get_interaction_profile_extension(const String p_openxr_path) const;
-	const InteractionProfile *get_profile(const String p_openxr_path) const;
+	bool has_interaction_profile(const String &p_openxr_path) const;
+	String get_interaction_profile_extension(const String &p_openxr_path) const;
+	const InteractionProfile *get_profile(const String &p_openxr_path) const;
 	PackedStringArray get_interaction_profile_paths() const;
 
 	void register_io_path(const String &p_interaction_profile, const String &p_display_name, const String &p_toplevel_path, const String &p_openxr_path, const String &p_openxr_extension_name, OpenXRAction::ActionType p_action_type);
-	const IOPath *get_io_path(const String p_interaction_profile, const String p_io_path) const;
+	const IOPath *get_io_path(const String &p_interaction_profile, const String &p_io_path) const;
 };

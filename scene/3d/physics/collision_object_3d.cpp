@@ -31,6 +31,7 @@
 #include "collision_object_3d.h"
 
 #include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/mesh.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -386,7 +387,7 @@ void CollisionObject3D::_update_debug_shapes() {
 				ShapeData::ShapeBase &s = shape_bases[i];
 				if (s.shape.is_null() || shapedata.disabled) {
 					if (s.debug_shape.is_valid()) {
-						RS::get_singleton()->free(s.debug_shape);
+						RS::get_singleton()->free_rid(s.debug_shape);
 						s.debug_shape = RID();
 						--debug_shapes_count;
 					}
@@ -418,7 +419,7 @@ void CollisionObject3D::_clear_debug_shapes() {
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.debug_shape.is_valid()) {
-				RS::get_singleton()->free(s.debug_shape);
+				RS::get_singleton()->free_rid(s.debug_shape);
 				s.debug_shape = RID();
 				if (s.shape.is_valid()) {
 					s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_update_shape_data));
@@ -664,7 +665,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	}
 
 	if (s.debug_shape.is_valid()) {
-		RS::get_singleton()->free(s.debug_shape);
+		RS::get_singleton()->free_rid(s.debug_shape);
 		if (s.shape.is_valid()) {
 			s.shape->disconnect_changed(callable_mp(this, &CollisionObject3D::_shape_changed));
 		}
@@ -757,5 +758,5 @@ CollisionObject3D::CollisionObject3D() {
 
 CollisionObject3D::~CollisionObject3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(rid);
+	PhysicsServer3D::get_singleton()->free_rid(rid);
 }

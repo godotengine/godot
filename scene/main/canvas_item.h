@@ -32,10 +32,12 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/font.h"
+#include "servers/rendering/rendering_server.h"
 
 class CanvasLayer;
 class MultiMesh;
 class StyleBox;
+class SubViewport;
 class Window;
 class World2D;
 
@@ -104,6 +106,7 @@ private:
 	bool visible = true;
 	bool parent_visible_in_tree = false;
 	bool pending_update = false;
+	bool draw_commands_dirty = false;
 	bool top_level = false;
 	bool drawing = false;
 	bool block_transform_notify = false;
@@ -147,8 +150,6 @@ private:
 
 	void _notify_transform(CanvasItem *p_node);
 
-	virtual void _physics_interpolated_changed() override;
-
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
 	void _refresh_texture_repeat_cache() const;
@@ -163,6 +164,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual void _physics_interpolated_changed() override;
 
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);

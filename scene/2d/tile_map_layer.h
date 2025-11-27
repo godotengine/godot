@@ -369,6 +369,7 @@ public:
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
 		DIRTY_FLAGS_LAYER_RUNTIME_UPDATE,
+		DIRTY_FLAGS_LAYER_HIGHLIGHT_MODE,
 
 		DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE, // For compatibility.
 
@@ -451,6 +452,7 @@ private:
 	bool _occlusion_was_cleaned_up = true;
 	void _rendering_update(bool p_force_cleanup);
 	void _rendering_notification(int p_what);
+	Color _highlight_color(const Color &p_modulate) const;
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
@@ -490,6 +492,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _scenes_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+	void _set_scene_transform_with_alternative(Node2D *p_scene, const Vector2 &p_cell_position, const int p_alternative_id);
 
 	// Terrains.
 	TileSet::TerrainsPattern _get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const;

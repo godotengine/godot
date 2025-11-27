@@ -43,7 +43,8 @@ void ItemList::_shape_text(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, item.language);
+	const String &lang = item.language.is_empty() ? _get_locale() : item.language;
+	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, lang);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	} else {
@@ -208,11 +209,20 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].icon == p_icon) {
+	Item &item = items.write[p_idx];
+	if (item.icon == p_icon) {
 		return;
 	}
 
-	items.write[p_idx].icon = p_icon;
+	const Callable redraw = callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw);
+	if (item.icon.is_valid()) {
+		item.icon->disconnect_changed(redraw);
+	}
+	item.icon = p_icon;
+	if (p_icon.is_valid()) {
+		p_icon->connect_changed(redraw);
+	}
+
 	queue_redraw();
 	shape_changed = true;
 }

@@ -46,7 +46,7 @@
 #include "thirdparty/swappy-frame-pacing/swappyVk.h"
 #endif
 
-#define ARRAY_SIZE(a) std::size(a)
+#define ARRAY_SIZE(a) std_size(a)
 
 #define PRINT_NATIVE_COMMANDS 0
 
@@ -57,6 +57,8 @@
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 static const uint32_t BREADCRUMB_BUFFER_ENTRIES = 512u;
 #endif
+
+static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
 
 static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_R4G4_UNORM_PACK8,
@@ -521,6 +523,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
@@ -533,6 +536,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -743,6 +747,9 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 	device_capabilities.version_major = VK_API_VERSION_MAJOR(physical_device_properties.apiVersion);
 	device_capabilities.version_minor = VK_API_VERSION_MINOR(physical_device_properties.apiVersion);
 
+	// Cache extension availability we query often.
+	framebuffer_depth_resolve = enabled_device_extension_names.has(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
+
 	// References:
 	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_multiview.html
 	// https://www.khronos.org/blog/vulkan-subgroup-tutorial
@@ -758,6 +765,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDeviceVulkanMemoryModelFeaturesKHR vulkan_memory_model_features = {};
 		VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
 		VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
+		VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM fdmo_features_qcom = {};
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
@@ -795,6 +803,12 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			fdm_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
 			fdm_features.pNext = next_features;
 			next_features = &fdm_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME)) {
+			fdmo_features_qcom.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM;
+			fdmo_features_qcom.pNext = next_features;
+			next_features = &fdmo_features_qcom;
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
@@ -861,6 +875,10 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			fdm_capabilities.non_subsampled_images_supported = fdm_features.fragmentDensityMapNonSubsampledImages;
 		}
 
+		if (enabled_device_extension_names.has(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME)) {
+			fdm_capabilities.offset_supported = fdmo_features_qcom.fragmentDensityMapOffset;
+		}
+
 		// Multiple VRS techniques can't co-exist during the existence of one device, so we must
 		// choose one at creation time and only report one of them as available.
 		_choose_vrs_capabilities();
@@ -896,6 +914,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		void *next_properties = nullptr;
 		VkPhysicalDeviceFragmentShadingRatePropertiesKHR fsr_properties = {};
 		VkPhysicalDeviceFragmentDensityMapPropertiesEXT fdm_properties = {};
+		VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM fdmo_properties = {};
 		VkPhysicalDeviceMultiviewProperties multiview_properties = {};
 		VkPhysicalDeviceSubgroupProperties subgroup_properties = {};
 		VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_properties = {};
@@ -931,6 +950,12 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			fdm_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
 			fdm_properties.pNext = next_properties;
 			next_properties = &fdm_properties;
+		}
+
+		if (fdm_capabilities.offset_supported) {
+			fdmo_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM;
+			fdmo_properties.pNext = next_properties;
+			next_properties = &fdmo_properties;
 		}
 
 		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -998,6 +1023,17 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			}
 		} else {
 			print_verbose("- Vulkan Fragment Density Map not supported");
+		}
+
+		if (fdm_capabilities.offset_supported) {
+			print_verbose("- Vulkan Fragment Density Map Offset supported");
+
+			fdm_capabilities.offset_granularity.x = fdmo_properties.fragmentDensityOffsetGranularity.width;
+			fdm_capabilities.offset_granularity.y = fdmo_properties.fragmentDensityOffsetGranularity.height;
+
+			print_verbose(vformat("  Offset granularity: (%d, %d)", fdm_capabilities.offset_granularity.x, fdm_capabilities.offset_granularity.y));
+		} else {
+			print_verbose("- Vulkan Fragment Density Map Offset not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {
@@ -1569,7 +1605,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
+	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
 #endif
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
@@ -1634,11 +1670,28 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_V
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 
-RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
+RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
+	uint32_t alignment = 16u; // 16 bytes is reasonable.
+	if (p_usage.has_flag(BUFFER_USAGE_UNIFORM_BIT)) {
+		// Some GPUs (e.g. NVIDIA) have absurdly high alignments, like 256 bytes.
+		alignment = MAX(alignment, physical_device_properties.limits.minUniformBufferOffsetAlignment);
+	}
+	if (p_usage.has_flag(BUFFER_USAGE_STORAGE_BIT)) {
+		// This shouldn't be a problem since it's often <= 16 bytes. But do it just in case.
+		alignment = MAX(alignment, physical_device_properties.limits.minStorageBufferOffsetAlignment);
+	}
+	// Align the size. This is specially important for BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT buffers.
+	// For the rest, it should work thanks to VMA taking care of the details. But still align just in case.
+	p_size = STEPIFY(p_size, alignment);
+
+	const size_t original_size = p_size;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		p_size = p_size * frame_count;
+	}
 	VkBufferCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	create_info.size = p_size;
-	create_info.usage = p_usage;
+	create_info.usage = p_usage & ~BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_UNKNOWN;
@@ -1670,6 +1723,9 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 				// We must set it right now or else vmaFindMemoryTypeIndexForBufferInfo will use wrong parameters.
 				alloc_create_info.usage = vma_usage;
 			}
+			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+			}
 			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
@@ -1698,11 +1754,26 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	}
 
 	// Bookkeep.
-	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		void *persistent_ptr = nullptr;
+		VkResult err = vmaMapMemory(allocator, allocation, &persistent_ptr);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "vmaMapMemory failed with error " + itos(err) + ".");
+
+		BufferDynamicInfo *dyn_buffer = VersatileResource::allocate<BufferDynamicInfo>(resources_allocator);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+		dyn_buffer->frame_idx = 0u;
+		dyn_buffer->persistent_ptr = (uint8_t *)persistent_ptr;
+	} else {
+		buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	}
 	buf_info->vk_buffer = vk_buffer;
 	buf_info->allocation.handle = allocation;
 	buf_info->allocation.size = alloc_info.size;
-	buf_info->size = p_size;
+	buf_info->size = original_size;
 
 	return BufferID(buf_info);
 }
@@ -1730,6 +1801,10 @@ void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
 	}
 
+	if (buf_info->is_dynamic()) {
+		vmaUnmapMemory(allocator, buf_info->allocation.handle);
+	}
+
 	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
 		vmaDestroyBuffer(allocator, buf_info->vk_buffer, buf_info->allocation.handle);
 	} else {
@@ -1737,7 +1812,11 @@ void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 		vmaFreeMemory(allocator, buf_info->allocation.handle);
 	}
 
-	VersatileResource::free(resources_allocator, buf_info);
+	if (buf_info->is_dynamic()) {
+		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
+	} else {
+		VersatileResource::free(resources_allocator, buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverVulkan::buffer_get_allocation_size(BufferID p_buffer) {
@@ -1747,6 +1826,7 @@ uint64_t RenderingDeviceDriverVulkan::buffer_get_allocation_size(BufferID p_buff
 
 uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), nullptr, "Buffer must NOT have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_persistent_map_advance() instead.");
 	void *data_ptr = nullptr;
 	VkResult err = vmaMapMemory(allocator, buf_info->allocation.handle, &data_ptr);
 	ERR_FAIL_COND_V_MSG(err, nullptr, "vmaMapMemory failed with error " + itos(err) + ".");
@@ -1756,6 +1836,55 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 void RenderingDeviceDriverVulkan::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	vmaUnmapMemory(allocator, buf_info->allocation.handle);
+}
+
+uint8_t *RenderingDeviceDriverVulkan::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	buf_info->frame_idx = (buf_info->frame_idx + 1u) % frame_count;
+	return buf_info->persistent_ptr + buf_info->frame_idx * buf_info->size;
+}
+
+uint64_t RenderingDeviceDriverVulkan::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
+	uint64_t mask = 0u;
+	uint64_t shift = 0u;
+
+	for (const BufferID &buf : p_buffers) {
+		const BufferInfo *buf_info = (const BufferInfo *)buf.id;
+		if (!buf_info->is_dynamic()) {
+			continue;
+		}
+		mask |= buf_info->frame_idx << shift;
+		// We can encode the frame index in 2 bits since frame_count won't be > 4.
+		shift += 2UL;
+	}
+
+	return mask;
+}
+
+void RenderingDeviceDriverVulkan::buffer_flush(BufferID p_buffer) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+
+	VkMemoryPropertyFlags mem_props_flags;
+	vmaGetAllocationMemoryProperties(allocator, buf_info->allocation.handle, &mem_props_flags);
+
+	const bool needs_flushing = !(mem_props_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	if (needs_flushing) {
+		if (buf_info->is_dynamic()) {
+			pending_flushes.allocations.push_back(buf_info->allocation.handle);
+			pending_flushes.offsets.push_back(buf_info->frame_idx * buf_info->size);
+			pending_flushes.sizes.push_back(buf_info->size);
+		} else {
+			pending_flushes.allocations.push_back(buf_info->allocation.handle);
+			pending_flushes.offsets.push_back(0u);
+			pending_flushes.sizes.push_back(VK_WHOLE_SIZE);
+		}
+	}
 }
 
 uint64_t RenderingDeviceDriverVulkan::buffer_get_device_address(BufferID p_buffer) {
@@ -1887,7 +2016,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if ((p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
 		create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
@@ -1978,7 +2107,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	image_view_create_info.components.a = (VkComponentSwizzle)p_view.swizzle_a;
 	image_view_create_info.subresourceRange.levelCount = create_info.mipLevels;
 	image_view_create_info.subresourceRange.layerCount = create_info.arrayLayers;
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	} else {
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2236,6 +2365,78 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 	}
 }
 
+Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_texture, uint32_t p_layer) {
+	const TextureInfo *tex = (const TextureInfo *)p_texture.id;
+
+	DataFormat tex_format = tex->rd_format;
+	uint32_t tex_width = tex->vk_create_info.extent.width;
+	uint32_t tex_height = tex->vk_create_info.extent.height;
+	uint32_t tex_depth = tex->vk_create_info.extent.depth;
+	uint32_t tex_mipmaps = tex->vk_create_info.mipLevels;
+
+	uint32_t width, height, depth;
+	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, tex_mipmaps, &width, &height, &depth);
+
+	Vector<uint8_t> image_data;
+	image_data.resize(tight_mip_size);
+
+	uint32_t blockw, blockh;
+	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_format);
+	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
+
+	{
+		uint8_t *w = image_data.ptrw();
+
+		uint32_t mipmap_offset = 0;
+		for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
+			uint32_t image_total = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, mm_i + 1, &width, &height, &depth);
+
+			uint8_t *write_ptr_mipmap = w + mipmap_offset;
+			tight_mip_size = image_total - mipmap_offset;
+
+			RDD::TextureSubresource subres;
+			subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
+			subres.layer = p_layer;
+			subres.mipmap = mm_i;
+			RDD::TextureCopyableLayout layout;
+			texture_get_copyable_layout(p_texture, subres, &layout);
+
+			uint8_t *img_mem = texture_map(p_texture, subres);
+			ERR_FAIL_NULL_V(img_mem, Vector<uint8_t>());
+
+			for (uint32_t z = 0; z < depth; z++) {
+				uint8_t *write_ptr = write_ptr_mipmap + z * tight_mip_size / depth;
+				const uint8_t *slice_read_ptr = img_mem + z * layout.depth_pitch;
+
+				if (block_size > 1) {
+					// Compressed.
+					uint32_t line_width = (block_size * (width / blockw));
+					for (uint32_t y = 0; y < height / blockh; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						uint8_t *wptr = write_ptr + y * line_width;
+
+						memcpy(wptr, rptr, line_width);
+					}
+				} else {
+					// Uncompressed.
+					for (uint32_t y = 0; y < height; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * layout.row_pitch;
+						uint8_t *wptr = write_ptr + y * pixel_size * width;
+						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+					}
+				}
+			}
+
+			texture_unmap(p_texture);
+
+			mipmap_offset = image_total;
+		}
+	}
+
+	return image_data;
+}
+
 uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
 
@@ -2287,6 +2488,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	}
 	if (!(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		supported.clear_flag(TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT);
 	}
 	if (!(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_STORAGE_BIT);
@@ -2375,19 +2577,23 @@ bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFor
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) {
 	// Pre-bookkeep.
 	VertexFormatInfo *vf_info = VersatileResource::allocate<VertexFormatInfo>(resources_allocator);
 
-	vf_info->vk_bindings.resize(p_vertex_attribs.size());
+	vf_info->vk_bindings.reserve(p_vertex_bindings.size());
+	for (const VertexAttributeBindingsMap::KV &E : p_vertex_bindings) {
+		const VertexAttributeBinding &binding = E.value;
+		VkVertexInputBindingDescription vk_binding = {};
+		vk_binding.binding = E.key;
+		vk_binding.stride = binding.stride;
+		vk_binding.inputRate = binding.frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+		vf_info->vk_bindings.push_back(vk_binding);
+	}
 	vf_info->vk_attributes.resize(p_vertex_attribs.size());
 	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
-		vf_info->vk_bindings[i] = {};
-		vf_info->vk_bindings[i].binding = i;
-		vf_info->vk_bindings[i].stride = p_vertex_attribs[i].stride;
-		vf_info->vk_bindings[i].inputRate = p_vertex_attribs[i].frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
 		vf_info->vk_attributes[i] = {};
-		vf_info->vk_attributes[i].binding = i;
+		vf_info->vk_attributes[i].binding = p_vertex_attribs[i].binding;
 		vf_info->vk_attributes[i].location = p_vertex_attribs[i].location;
 		vf_info->vk_attributes[i].format = RD_TO_VK_FORMAT[p_vertex_attribs[i].format];
 		vf_info->vk_attributes[i].offset = p_vertex_attribs[i].offset;
@@ -2706,6 +2912,18 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		// FIXME: Allow specifying the stage mask in more detail.
 		wait_semaphores.push_back(VkSemaphore(p_wait_semaphores[i].id));
 		wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+	}
+
+	if (!pending_flushes.allocations.is_empty()) {
+		// We must do this now, even if p_cmd_buffers is empty; because afterwards pending_flushes.allocations
+		// could become dangling. We cannot delay this call for the next frame(s).
+		err = vmaFlushAllocations(allocator, pending_flushes.allocations.size(),
+				pending_flushes.allocations.ptr(), pending_flushes.offsets.ptr(),
+				pending_flushes.sizes.ptr());
+		pending_flushes.allocations.clear();
+		pending_flushes.offsets.clear();
+		pending_flushes.sizes.clear();
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 	}
 
 	if (p_cmd_buffers.size() > 0) {
@@ -3525,11 +3743,6 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
 		const TextureInfo *texture = (const TextureInfo *)p_attachments[i].id;
 		vk_img_views[i] = texture->vk_view;
-
-		if (render_pass->uses_fragment_density_map_offsets && (texture->vk_create_info.usage & VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) {
-			// If the render pass uses the FDM and the usage fits, we store the amount of layers to use it later on the render pass's end.
-			fragment_density_map_offsets_layers = texture->vk_create_info.arrayLayers;
-		}
 	}
 
 	VkFramebufferCreateInfo framebuffer_create_info = {};
@@ -3641,8 +3854,14 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				case UNIFORM_TYPE_UNIFORM_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				} break;
+				case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				} break;
+				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
 				} break;
 				case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
@@ -3870,10 +4089,24 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 			curr_vk_size++;
 			vk_sizes_count++;
 		}
+		if (p_key.uniform_type[UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC]) {
+			*curr_vk_size = {};
+			curr_vk_size->type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC] * max_descriptor_sets_per_pool;
+			curr_vk_size++;
+			vk_sizes_count++;
+		}
 		if (p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER]) {
 			*curr_vk_size = {};
 			curr_vk_size->type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER] * max_descriptor_sets_per_pool;
+			curr_vk_size++;
+			vk_sizes_count++;
+		}
+		if (p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC]) {
+			*curr_vk_size = {};
+			curr_vk_size->type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC] * max_descriptor_sets_per_pool;
 			curr_vk_size++;
 			vk_sizes_count++;
 		}
@@ -3940,6 +4173,12 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		p_linear_pool_index = -1;
 	}
 	DescriptorSetPoolKey pool_key;
+
+	// We first gather dynamic arrays in a local array because TightLocalVector's
+	// growth is not efficient when the number of elements is unknown.
+	const BufferInfo *dynamic_buffers[MAX_DYNAMIC_BUFFERS];
+	uint32_t num_dynamic_buffers = 0u;
+
 	// Immutable samplers will be skipped so we need to track the number of vk_writes used.
 	VkWriteDescriptorSet *vk_writes = ALLOCA_ARRAY(VkWriteDescriptorSet, p_uniforms.size());
 	uint32_t writes_amount = 0;
@@ -4075,7 +4314,26 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_buf_info->buffer = buf_info->vk_buffer;
 				vk_buf_info->range = buf_info->size;
 
+				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER instead of UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC.");
+
 				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+			} break;
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
+				*vk_buf_info = {};
+				vk_buf_info->buffer = buf_info->vk_buffer;
+				vk_buf_info->range = buf_info->size;
+
+				ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC instead of UNIFORM_TYPE_UNIFORM_BUFFER.");
+				ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+						"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+				dynamic_buffers[num_dynamic_buffers++] = buf_info;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
@@ -4085,7 +4343,26 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_buf_info->buffer = buf_info->vk_buffer;
 				vk_buf_info->range = buf_info->size;
 
+				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+
 				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+			} break;
+			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
+				*vk_buf_info = {};
+				vk_buf_info->buffer = buf_info->vk_buffer;
+				vk_buf_info->range = buf_info->size;
+
+				ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC instead of UNIFORM_TYPE_STORAGE_BUFFER.");
+				ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+						"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+				dynamic_buffers[num_dynamic_buffers++] = buf_info;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
 				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_INPUT_ATTACHMENT: {
@@ -4151,6 +4428,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		usi->vk_descriptor_pool = vk_pool;
 	}
 	usi->pool_sets_it = pool_sets_it;
+	usi->dynamic_buffers.resize(num_dynamic_buffers);
+	for (uint32_t i = 0u; i < num_dynamic_buffers; ++i) {
+		usi->dynamic_buffers[i] = dynamic_buffers[i];
+	}
 
 	return UniformSetID(usi);
 }
@@ -4175,6 +4456,31 @@ void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 
 bool RenderingDeviceDriverVulkan::uniform_sets_have_linear_pools() const {
 	return true;
+}
+
+uint32_t RenderingDeviceDriverVulkan::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+#ifdef DEV_ENABLED
+	uint32_t curr_dynamic_offset = 0u;
+#endif
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		for (const BufferInfo *dynamic_buffer : usi->dynamic_buffers) {
+			DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+			mask |= dynamic_buffer->frame_idx << shift;
+			shift += 4u;
+		}
+#ifdef DEV_ENABLED
+		curr_dynamic_offset += usi->dynamic_buffers.size();
+#endif
+	}
+
+	return mask;
 }
 
 void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
@@ -4575,11 +4881,31 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 			VkFragmentShadingRateAttachmentInfoKHR *vk_fsr_info = ALLOCA_SINGLE(VkFragmentShadingRateAttachmentInfoKHR);
 			*vk_fsr_info = {};
 			vk_fsr_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+			vk_fsr_info->pNext = vk_subpasses[i].pNext;
 			vk_fsr_info->pFragmentShadingRateAttachment = vk_subpass_fsr_attachment;
 			vk_fsr_info->shadingRateAttachmentTexelSize.width = p_subpasses[i].fragment_shading_rate_texel_size.x;
 			vk_fsr_info->shadingRateAttachmentTexelSize.height = p_subpasses[i].fragment_shading_rate_texel_size.y;
 
 			vk_subpasses[i].pNext = vk_fsr_info;
+		}
+
+		// Depth resolve.
+		if (framebuffer_depth_resolve && p_subpasses[i].depth_resolve_reference.attachment != AttachmentReference::UNUSED) {
+			VkAttachmentReference2KHR *vk_subpass_depth_resolve_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
+			*vk_subpass_depth_resolve_attachment = {};
+			vk_subpass_depth_resolve_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			vk_subpass_depth_resolve_attachment->attachment = p_subpasses[i].depth_resolve_reference.attachment;
+			vk_subpass_depth_resolve_attachment->layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescriptionDepthStencilResolveKHR *vk_depth_resolve_info = ALLOCA_SINGLE(VkSubpassDescriptionDepthStencilResolveKHR);
+			*vk_depth_resolve_info = {};
+			vk_depth_resolve_info->sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
+			vk_depth_resolve_info->pNext = vk_subpasses[i].pNext;
+			vk_depth_resolve_info->depthResolveMode = VK_RESOLVE_MODE_MAX_BIT_KHR;
+			vk_depth_resolve_info->stencilResolveMode = VK_RESOLVE_MODE_NONE_KHR; // we don't resolve our stencil (for now)
+			vk_depth_resolve_info->pDepthStencilResolveAttachment = vk_subpass_depth_resolve_attachment;
+
+			vk_subpasses[i].pNext = vk_depth_resolve_info;
 		}
 	}
 
@@ -4645,6 +4971,7 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 
 	RenderPassInfo *render_pass = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
 	render_pass->vk_render_pass = vk_render_pass;
+	render_pass->uses_fragment_density_map = uses_fragment_density_map;
 	return RenderPassID(render_pass);
 }
 
@@ -4706,7 +5033,25 @@ void RenderingDeviceDriverVulkan::command_end_render_pass(CommandBufferID p_cmd_
 	DEV_ASSERT(command_buffer->active_framebuffer != nullptr && "A framebuffer must be active.");
 	DEV_ASSERT(command_buffer->active_render_pass != nullptr && "A render pass must be active.");
 
-	vkCmdEndRenderPass(command_buffer->vk_command_buffer);
+	if (device_functions.EndRenderPass2KHR != nullptr && fdm_capabilities.offset_supported && command_buffer->active_render_pass->uses_fragment_density_map) {
+		LocalVector<VkOffset2D> fragment_density_offsets;
+		if (VulkanHooks::get_singleton() != nullptr) {
+			fragment_density_offsets = VulkanHooks::get_singleton()->get_fragment_density_offsets();
+		}
+
+		VkSubpassFragmentDensityMapOffsetEndInfoQCOM offset_info = {};
+		offset_info.sType = VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM;
+		offset_info.pFragmentDensityOffsets = fragment_density_offsets.is_empty() ? nullptr : fragment_density_offsets.ptr();
+		offset_info.fragmentDensityOffsetCount = fragment_density_offsets.size();
+
+		VkSubpassEndInfo subpass_end_info = {};
+		subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO;
+		subpass_end_info.pNext = &offset_info;
+
+		device_functions.EndRenderPass2KHR(command_buffer->vk_command_buffer, &subpass_end_info);
+	} else {
+		vkCmdEndRenderPass(command_buffer->vk_command_buffer);
+	}
 
 	command_buffer->active_render_pass = nullptr;
 	command_buffer->active_framebuffer = nullptr;
@@ -4772,14 +5117,7 @@ void RenderingDeviceDriverVulkan::command_bind_render_pipeline(CommandBufferID p
 	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
-}
-
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -4788,13 +5126,29 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBuffer
 	sets.clear();
 	sets.resize(p_set_count);
 
+	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
+	uint32_t curr_dynamic_offset = 0u;
+
 	for (uint32_t i = 0; i < p_set_count; i++) {
-		sets[i] = ((const UniformSetInfo *)p_uniform_sets[i].id)->vk_descriptor_set;
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+
+		sets[i] = usi->vk_descriptor_set;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
+		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
+		}
 	}
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], 0, nullptr);
+	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], curr_dynamic_offset, dynamic_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
@@ -4833,14 +5187,22 @@ void RenderingDeviceDriverVulkan::command_render_draw_indirect_count(CommandBuff
 	vkCmdDrawIndirectCount(command_buffer->vk_command_buffer, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
-void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
+void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-
 	VkBuffer *vk_buffers = ALLOCA_ARRAY(VkBuffer, p_binding_count);
+	uint64_t *vk_offsets = ALLOCA_ARRAY(uint64_t, p_binding_count);
 	for (uint32_t i = 0; i < p_binding_count; i++) {
+		const BufferInfo *buf_info = (const BufferInfo *)p_buffers[i].id;
+		uint64_t offset = p_offsets[i];
+		if (buf_info->is_dynamic()) {
+			uint64_t frame_idx = p_dynamic_offsets & 0x3; // Assuming max 4 frames.
+			p_dynamic_offsets >>= 2;
+			offset += frame_idx * buf_info->size;
+		}
 		vk_buffers[i] = ((const BufferInfo *)p_buffers[i].id)->vk_buffer;
+		vk_offsets[i] = offset;
 	}
-	vkCmdBindVertexBuffers(command_buffer->vk_command_buffer, 0, p_binding_count, vk_buffers, p_offsets);
+	vkCmdBindVertexBuffers(command_buffer->vk_command_buffer, 0, p_binding_count, vk_buffers, vk_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {
@@ -5218,14 +5580,7 @@ void RenderingDeviceDriverVulkan::command_bind_compute_pipeline(CommandBufferID 
 	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
-}
-
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -5234,13 +5589,29 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBuffe
 	sets.clear();
 	sets.resize(p_set_count);
 
+	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
+	uint32_t curr_dynamic_offset = 0u;
+
 	for (uint32_t i = 0; i < p_set_count; i++) {
-		sets[i] = ((const UniformSetInfo *)p_uniform_sets[i].id)->vk_descriptor_set;
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+
+		sets[i] = usi->vk_descriptor_set;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
+		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
+		}
 	}
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], 0, nullptr);
+	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], curr_dynamic_offset, dynamic_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
@@ -5923,6 +6294,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #endif
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return framebuffer_depth_resolve;
 		default:
 			return false;
 	}
@@ -5979,7 +6352,9 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	buffer_free(breadcrumb_buffer);
+	if (breadcrumb_buffer != BufferID()) {
+		buffer_free(breadcrumb_buffer);
+	}
 #endif
 
 	while (small_allocs_pools.size()) {

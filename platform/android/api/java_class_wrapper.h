@@ -34,6 +34,8 @@
 #include "core/variant/typed_array.h"
 
 #ifdef ANDROID_ENABLED
+#include "core/templates/rb_map.h"
+
 #include <android/log.h>
 #include <jni.h>
 #endif
@@ -68,6 +70,7 @@ class JavaClass : public RefCounted {
 	RBMap<StringName, Variant> constant_map;
 
 	struct MethodInfo {
+		bool _public = false;
 		bool _static = false;
 		bool _constructor = false;
 		Vector<uint32_t> param_types;
@@ -203,7 +206,7 @@ public:
 	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 #endif
 
 	JavaClass();
@@ -230,7 +233,7 @@ public:
 	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	jobject get_instance() { return instance; }
 
@@ -274,7 +277,7 @@ class JavaClassWrapper : public Object {
 
 	Ref<JavaObject> exception;
 
-	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access);
+	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access = false);
 
 	static JavaClassWrapper *singleton;
 
@@ -293,7 +296,7 @@ public:
 	}
 
 #ifdef ANDROID_ENABLED
-	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_private_methods_access = false);
+	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access = false);
 #endif
 	JavaClassWrapper();
 };

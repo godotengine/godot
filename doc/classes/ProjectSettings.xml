@@ -54,11 +54,24 @@
 				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
+		<method name="check_changed_settings_in_group" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="setting_prefix" type="String" />
+			<description>
+				Checks if any settings with the prefix [param setting_prefix] exist in the set of changed settings. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Clears the whole configuration (not recommended, may break things).
+			</description>
+		</method>
+		<method name="get_changed_settings" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [signal settings_changed].
 			</description>
 		</method>
 		<method name="get_global_class_list">
@@ -269,6 +282,10 @@
 		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
 			The number of accessibility information updates per second.
 		</member>
+		<member name="animation/compatibility/default_parent_skeleton_in_mesh_instance_3d" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [member MeshInstance3D.skeleton] will point to the parent node ([code]..[/code]) by default, which was the behavior before Godot 4.6. It's recommended to keep this setting disabled unless the old behavior is needed for compatibility.
+			[b]Note:[/b] If you disable this option in an existing project, it's strongly recommended to use the [code]Project &gt; Tools &gt; Upgrade Project Files...[/code] option to ensure existing scenes do not break.
+		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
 		</member>
@@ -277,9 +294,6 @@
 		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
-		</member>
-		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scale the boot splash image to the full window size (preserving the aspect ratio) when the engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
 		</member>
 		<member name="application/boot_splash/image" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
@@ -292,6 +306,9 @@
 		</member>
 		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
+		</member>
+		<member name="application/boot_splash/stretch_mode" type="int" setter="" getter="" default="1">
+			Specifies how the splash image will be stretched. For the original size without stretching, set to disabled. See [enum RenderingServer.SplashStretchMode] constants for more information.
 		</member>
 		<member name="application/boot_splash/use_filter" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], applies linear filtering when scaling the image (recommended for high-resolution artwork). If [code]false[/code], uses nearest-neighbor interpolation (recommended for pixel art).
@@ -307,6 +324,9 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/disable_project_settings_override" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables loading of project settings overrides (file defined in [member application/config/project_settings_override] and [code]res://override.cfg[/code]) and related CLI arguments.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>
@@ -319,6 +339,7 @@
 		</member>
 		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
 			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
+			[b]Note:[/b] When left empty, the application name is translated using the project translations.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
@@ -510,148 +531,154 @@
 			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
 		</member>
 		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_local_declaration" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier declared in the nested block has the same name as an identifier declared below in the parent block.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier declared in the nested block has the same name as an identifier declared below in the parent block.
 		</member>
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when deprecated keywords are used.
 			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
 		</member>
+		<member name="debug/gdscript/warnings/directory_rules" type="Dictionary" setter="" getter="" default="{ &quot;res://addons&quot;: 0 }">
+			The rules for including or excluding scripts when generating warnings, as a dictionary. Each rule is an entry consisting of a directory path (key) and a decision (value). When trying to generate a warning, the GDScript parser chooses the most specific rule, i.e. the most nested directory containing the script. If the decision is [b]Exclude[/b], warnings are not generated for this script. If the decision is [b]Include[/b] or the script doesn't satisfy any of the rules, the warning configuration specified in the Project Settings is applied.
+			It is recommended to include your own addons/libraries, either project-specific or actively being developed at the moment. Third-party or project-agnostic addons/libraries should be excluded, as they may be incompatible with the project's warning configuration.
+			[b]Note:[/b] It is not recommended to remove or change the rule for [code]"res://addons"[/code] as the project's warning configuration may break third-party addons. Instead, consider including individual addons, if necessary.
+			[b]Note:[/b] The editor does not check whether the specified paths are existing directories. It also does not automatically update these paths when directories are moved.
+		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
 		<member name="debug/gdscript/warnings/enum_variable_without_default" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
-		</member>
-		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
 		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>
 		<member name="debug/gdscript/warnings/inference_on_variant" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
 		<member name="debug/gdscript/warnings/inferred_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable, constant, or parameter has an implicitly inferred static type. In GDScript, type inference is performed by declaring a variable with [code]:=[/code] instead of [code]=[/code] and leaving out the type specifier. For example, [code]var x := 1[/code] will [i]infer[/i] the [int] type, while [code]var x: int = 1[/code] explicitly declares the variable as [int].
 			[b]Note:[/b] This warning is recommended [i]in addition[/i] to [member debug/gdscript/warnings/untyped_declaration] if you want to always specify the type explicitly. Having [code]INFERRED_DECLARATION[/code] warning level higher than [code]UNTYPED_DECLARATION[/code] warning level makes little sense and is not recommended.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_match" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum when there is no matching enum member for that numeric value.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when trying to use an integer as an enum when there is no matching enum member for that numeric value.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
+		</member>
+		<member name="debug/gdscript/warnings/missing_await" type="int" setter="" getter="" default="0">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a coroutine without [code]await[/code].
 		</member>
 		<member name="debug/gdscript/warnings/missing_tool" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the base class script has the [code]@tool[/code] annotation, but the current class script does not have it.
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
 		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_static_unload" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@static_unload[/code] annotation is used in a script without any static variables.
 		</member>
 		<member name="debug/gdscript/warnings/renamed_in_godot_4_hint" type="bool" setter="" getter="" default="true">
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in the current class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable or local constant shadows a member declared in the current class.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in a base class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable or local constant shadows a member declared in a base class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when using a variable that wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a [Variant] value is cast to a non-Variant.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a [Variant] value is cast to a non-Variant.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
 		</member>
 		<member name="debug/gdscript/warnings/untyped_declaration" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a variable or parameter has no static type, or if a function has no static return type.
 			[b]Note:[/b] This warning is recommended together with [member EditorSettings.text_editor/completion/add_type_hints] to help achieve type safety.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local constant is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function parameter is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a function parameter is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a local variable is unused.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
 			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
@@ -982,7 +1009,9 @@
 			Main window initial position.
 			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
 			[code]1[/code] - "Primary Screen Center".
-			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
+			[code]3[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
+			[code]4[/code] - "Center of Screen With Mouse Pointer".
+			[code]5[/code] - "Center of Screen With Keyboard Focus".
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/rect] is used instead.
 		</member>
 		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
@@ -1085,6 +1114,9 @@
 		<member name="editor/import/use_multiple_threads" type="bool" setter="" getter="" default="true">
 			If [code]true[/code] importing of resources is run on multiple threads.
 		</member>
+		<member name="editor/movie_writer/audio_bit_depth" type="int" setter="" getter="" default="16">
+			Number of bits per audio sample written to the [code].avi[/code] file. Only 16 and 32-bit are supported.
+		</member>
 		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
 			[b]Note:[/b] [member editor/movie_writer/disable_vsync] has no effect if the operating system or graphics driver forces V-Sync with no way for applications to disable it.
@@ -1177,11 +1209,17 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
-		<member name="gui/common/always_show_focus_state" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [Control]s will always show if they're focused, even if said focus was gained via mouse/touch input.
-		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
+		<member name="gui/common/drag_threshold" type="int" setter="" getter="" default="10">
+			The minimum distance the mouse cursor must move while pressed before a drag operation begins in the default viewport. For custom viewports see [member Viewport.gui_drag_threshold].
+		</member>
+		<member name="gui/common/show_focus_state_on_pointer_event" type="int" setter="" getter="" default="1">
+			Determines whether a [Control] should visually indicate focus when said focus is gained using a mouse or touch input.
+			- [b]Never[/b] ([code]0[/code]) show the focused state for mouse/touch input.
+			- [b]Control Supports Keyboard Input[/b] ([code]1[/code]) shows the focused state even when gained via mouse/touch input (similar to how browsers handle focus).
+			- [b]Always[/b] ([code]2[/code]) show the focused state, even if said focus was gained via mouse/touch input.
 		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
@@ -1261,6 +1299,13 @@
 			Default [InputEventAction] to discard a modal or pending input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_close_dialog" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to close a dialog window.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_close_dialog.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to close a dialog window.
+		</member>
 		<member name="input/ui_colorpicker_delete_preset" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete a color preset in a [ColorPicker].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -1280,6 +1325,21 @@
 		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the end position of a [Control] (e.g. last item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_END] on typical desktop UI systems.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the selected file in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_find" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open file filter in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to focus path edit field in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_filedialog_focus_path.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to focus path edit field in [FileDialog].
 		</member>
 		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to refresh the contents of the current directory of a [FileDialog].
@@ -2311,6 +2371,13 @@
 		<member name="navigation/2d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
 			Default merge rasterizer cell scale for 2D navigation maps. See [method NavigationServer2D.map_set_merge_rasterizer_cell_scale].
 		</member>
+		<member name="navigation/2d/navigation_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation engine to use for 2D navigation.
+			[b]DEFAULT[/b] is equivalent to [b]GodotNavigation2D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
+			[b]GodotNavigation2D[/b] is Godot's internal 2D navigation engine.
+			[b]Dummy[/b] is a 2D navigation server that does nothing and returns only dummy values, effectively disabling all 2D navigation functionality.
+			Third-party modules can add other navigation engines to select with this setting.
+		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
@@ -2337,6 +2404,13 @@
 		</member>
 		<member name="navigation/3d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
 			Default merge rasterizer cell scale for 3D navigation maps. See [method NavigationServer3D.map_set_merge_rasterizer_cell_scale].
+		</member>
+		<member name="navigation/3d/navigation_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation engine to use for 3D navigation.
+			[b]DEFAULT[/b] is equivalent to [b]GodotNavigation3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
+			[b]GodotNavigation3D[/b] is Godot's internal 3D navigation engine.
+			[b]Dummy[/b] is a 3D navigation server that does nothing and returns only dummy values, effectively disabling all 3D navigation functionality.
+			Third-party modules can add other navigation engines to select with this setting.
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.
@@ -2388,6 +2462,9 @@
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 			Timeout (in seconds) for connection attempts using TCP.
+		</member>
+		<member name="network/limits/unix/connect_timeout_seconds" type="int" setter="" getter="" default="30">
+			Timeout (in seconds) for connection attempts using UNIX domain socket.
 		</member>
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
@@ -2527,7 +2604,7 @@
 			Sets which physics engine to use for 3D physics.
 			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
 			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
-			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. As it was recently implemented, it is currently considered experimental and its behavior may change in future releases.
+			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. Jolt Physics is the default for projects created starting in Godot 4.6.
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
@@ -2761,9 +2838,9 @@
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member rendering/viewport/hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member rendering/viewport/hdr_2d] is [code]true[/code], debanding will affect all 2D and 3D rendering, including canvas items.
+			If [code]true[/code], uses a fast dithering filter just before transforming floating point color values to integer color values to make banding significantly less visible. Debanding is applied at different steps of the rendering process depending on the rendering method and [member rendering/viewport/hdr_2d] setting.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
-			[b]Note:[/b] This property is only read when the project starts. To set debanding at runtime, set [member Viewport.use_debanding] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_use_debanding].
+			[b]Note:[/b] This property is only read when the project starts and configures [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding] of the root [Viewport]. When [member rendering/viewport/hdr_2d] is disabled, you should additionally set the [member Viewport.use_debanding] of other viewports in your project. To set debanding at run-time, the property that should be set depends on the renderer: Forward+ only uses [member Viewport.use_debanding] and Mobile uses both [method RenderingServer.material_set_use_debanding] and [member Viewport.use_debanding].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables temporal antialiasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -2814,8 +2891,8 @@
 		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/environment/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
-			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
+		<member name="rendering/environment/screen_space_reflection/half_size" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], screen-space reflections will be rendered at half size and then upscaled before being added to the scene. This is faster but may look pixelated or cause flickering. If [code]false[/code], screen-space reflections will be rendered at full size.
 		</member>
 		<member name="rendering/environment/ssao/adaptive_target" type="float" setter="" getter="" default="0.5">
 			Quality target to use when [member rendering/environment/ssao/quality] is set to [code]Ultra[/code]. A value of [code]0.0[/code] provides a quality and speed similar to [code]Medium[/code] while a value of [code]1.0[/code] provides much higher quality than any of the other settings at the cost of performance.
@@ -3042,19 +3119,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
@@ -3232,15 +3309,15 @@
 			- [code]d3d12[/code], Direct3D 12 from native drivers. If [member rendering/rendering_device/fallback_to_d3d12] is enabled, this is used as a fallback if Vulkan is not supported.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
+			If [code]true[/code], the Forward+ renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
+			If [code]true[/code], the Forward+ renderer will fall back to OpenGL 3 if Direct3D 12, Metal, and Vulkan are not supported.
 			[b]Note:[/b] This setting is implemented on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
+			If [code]true[/code], the Forward+ renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
@@ -3279,7 +3356,7 @@
 			Double-buffering may give you the lowest lag/latency but if V-Sync is on and the system can't render at 60 fps, the framerate will go down in multiples of it (e.g. 30 fps, 15, 7.5, etc.). Triple buffering gives you higher framerate (specially if the system can't reach a constant 60 fps) at the cost of up to 1 frame of latency, with [constant DisplayServer.VSYNC_ENABLED] (FIFO).
 			Use double-buffering with [constant DisplayServer.VSYNC_ENABLED]. Triple-buffering is a must if you plan on using [constant DisplayServer.VSYNC_MAILBOX] mode.
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.
-			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+			[b]Note:[/b] Changes to this setting will only be applied on startup or when the swapchain is recreated (e.g. when setting the V-Sync mode).
 			[b]Note:[/b] Some platforms may restrict the actual value.
 		</member>
 		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
@@ -3366,7 +3443,7 @@
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), allowing for faster subsequent imports at a memory cost.
+			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.
 		</member>
 		<member name="rendering/textures/vram_compression/compress_with_gpu" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will utilize the GPU for compressing textures, improving the import time of large images.
@@ -3390,8 +3467,7 @@
 			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility renderer, this will be an [code]RGBA16[/code] framebuffer. When using the Mobile renderer, it will be an [code]RGB10_A2[/code] framebuffer.
-			Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root Viewport. 2D rendering will use a high dynamic range (HDR) [code]RGBA16[/code] format framebuffer. Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen.
 			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
@@ -3421,7 +3497,7 @@
 			The ratio of [WorkerThreadPool]'s threads that will be reserved for low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], 3 of the worker threads will be reserved for low-priority tasks. The actual value won't exceed the number of CPU cores minus one, and if possible, at least one worker thread will be dedicated to low-priority tasks.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
-			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means [code]1[/code] on Web, or a number of [i]logical[/i] CPU cores available on other platforms (see [method OS.get_processor_count]).
+			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
 		</member>
 		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.
@@ -3446,6 +3522,10 @@
 		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
+		</member>
+		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
+			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
@@ -3511,7 +3591,7 @@
 			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
-			Applied foveation level if supported: 0 = off, 1 = low, 2 = medium, 3 = high.
+			Applied foveation level if supported.
 			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
 		</member>
 		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">

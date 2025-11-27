@@ -67,6 +67,7 @@ class EditorSpinSlider : public Range {
 	LineEdit *value_input = nullptr;
 	uint64_t value_input_closed_frame = 0;
 	bool value_input_dirty = false;
+	bool value_input_focus_visible = false;
 
 public:
 	enum ControlState {

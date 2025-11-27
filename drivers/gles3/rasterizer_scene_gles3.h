@@ -42,7 +42,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "shader_gles3.h"
 #include "storage/light_storage.h"
 #include "storage/material_storage.h"
@@ -62,6 +62,7 @@ enum PassMode {
 	PASS_MODE_SHADOW,
 	PASS_MODE_DEPTH,
 	PASS_MODE_MATERIAL,
+	PASS_MODE_MOTION_VECTORS,
 };
 
 // These should share as much as possible with SkyUniform Location
@@ -202,10 +203,11 @@ private:
 		float color[3];
 		float size;
 
-		uint32_t enabled; // For use by SkyShaders
-		uint32_t bake_mode;
+		uint32_t enabled : 1; // For use by SkyShaders
+		uint32_t bake_mode : 2;
 		float shadow_opacity;
 		float specular;
+		uint32_t mask;
 	};
 	static_assert(sizeof(DirectionalLightData) % 16 == 0, "DirectionalLightData size must be a multiple of 16 bytes");
 
@@ -300,6 +302,10 @@ private:
 	public:
 		//used during rendering
 		bool store_transform_cache = true;
+
+		// Used for generating motion vectors.
+		Transform3D prev_transform;
+		bool is_prev_transform_stored = false;
 
 		int32_t instance_count = 0;
 
@@ -396,7 +402,7 @@ private:
 			float ambient_light_color_energy[4];
 
 			float ambient_color_sky_mix;
-			uint32_t pad2;
+			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;
 			uint32_t use_ambient_light = 0;
 
@@ -454,11 +460,15 @@ private:
 		};
 		static_assert(sizeof(TonemapUBO) % 16 == 0, "Tonemap UBO size must be a multiple of 16 bytes");
 
-		UBO ubo;
+		UBO data;
+		UBO prev_data;
 		GLuint ubo_buffer = 0;
-		MultiviewUBO multiview_ubo;
+		MultiviewUBO multiview_data;
+		MultiviewUBO prev_multiview_data;
 		GLuint multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
+
+		bool is_prev_data_stored = false;
 
 		bool used_depth_prepass = false;
 
@@ -747,7 +757,6 @@ protected:
 	float ssao_fadeout_to = 300.0;
 
 	bool glow_bicubic_upscale = false;
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
 	bool lightmap_bicubic_upscale = false;
 
@@ -868,6 +877,7 @@ public:
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
 
+	void environment_set_ssr_half_size(bool p_half_size) override;
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
@@ -940,6 +950,7 @@ public:
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
+	virtual void material_set_use_debanding(bool p_enable) override;
 
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();

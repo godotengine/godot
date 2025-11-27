@@ -5,7 +5,7 @@
  *   PostScript name table processing for TrueType and OpenType fonts
  *   (body).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

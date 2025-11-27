@@ -78,12 +78,17 @@ private:
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
+
+		int scrollbar_h_separation = 0;
+		int scrollbar_v_separation = 0;
 	} theme_cache;
 
 	void _cancel_drag();
 
 	bool _is_h_scroll_visible() const;
 	bool _is_v_scroll_visible() const;
+
+	Rect2 _get_margins() const;
 
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;

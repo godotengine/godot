@@ -172,6 +172,5 @@ public:
 	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const;
 
 public:
-	DirAccess() {}
 	virtual ~DirAccess();
 };

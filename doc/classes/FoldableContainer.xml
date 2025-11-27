@@ -50,7 +50,7 @@
 			If [code]true[/code], the container will becomes folded and will hide all its children.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for text shaping algorithms. If left empty, current locale is used instead.
+			Language code used for text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">

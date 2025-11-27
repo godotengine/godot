@@ -374,6 +374,9 @@
 		<member name="permissions/manage_external_storage" type="bool" setter="" getter="">
 			Allows an application a broad access to external storage in scoped storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE]MANAGE_EXTERNAL_STORAGE[/url].
 		</member>
+		<member name="permissions/manage_media" type="bool" setter="" getter="">
+			Allows an application to modify and delete media files on this device or any connected storage device without user confirmation. Applications must already be granted the [code]READ_EXTERNAL_STORAGE[/code] or [code]MANAGE_EXTERNAL_STORAGE[/code] permissions for this permission to take effect. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_MEDIA]MANAGE_MEDIA[/url].
+		</member>
 		<member name="permissions/master_clear" type="bool" setter="" getter="">
 			See [url=https://developer.android.com/reference/android/Manifest.permission#MASTER_CLEAR]MASTER_CLEAR[/url].
 		</member>

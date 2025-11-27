@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/timer.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -48,7 +49,6 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "advanced_options", preset->are_advanced_options_enabled());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -83,7 +83,13 @@ void EditorExport::_save() {
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
+
 		config->set_value(section, "patches", preset->get_patches());
+		config->set_value(section, "patch_delta_encoding", preset->is_patch_delta_encoding_enabled());
+		config->set_value(section, "patch_delta_compression_level_zstd", preset->get_patch_delta_zstd_level());
+		config->set_value(section, "patch_delta_min_reduction", preset->get_patch_delta_min_reduction());
+		config->set_value(section, "patch_delta_include_filters", preset->get_patch_delta_include_filter());
+		config->set_value(section, "patch_delta_exclude_filters", preset->get_patch_delta_exclude_filter());
 
 		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
@@ -127,6 +133,7 @@ void EditorExport::_bind_methods() {
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	p_platform->initialize();
 	export_platforms.push_back(p_platform);
 
 	should_update_presets = true;
@@ -141,8 +148,31 @@ void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_pla
 	should_reload_presets = true;
 }
 
-int EditorExport::get_export_platform_count() {
+int EditorExport::get_export_platform_count() const {
 	return export_platforms.size();
+}
+
+int EditorExport::get_export_platform_index_by_name(const String &p_name) {
+	for (int j = 0; j < get_export_platform_count(); j++) {
+		Ref<EditorExportPlatform> plat = get_export_platform(j);
+		if (!plat.is_null() && plat->get_name().nocasecmp_to(p_name) == 0) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+bool EditorExport::has_preset_with_name(const String &p_name, int p_exclude_index) const {
+	for (int i = 0; i < export_presets.size(); i++) {
+		if (i == p_exclude_index) {
+			continue;
+		}
+		if (export_presets[i]->get_name() == p_name) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
@@ -262,7 +292,6 @@ void EditorExport::load_config() {
 		}
 
 		preset->set_name(config->get_value(section, "name"));
-		preset->set_advanced_options_enabled(config->get_value(section, "advanced_options", false));
 		preset->set_runnable(config->get_value(section, "runnable"));
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 
@@ -308,6 +337,22 @@ void EditorExport::load_config() {
 		preset->set_export_path(config->get_value(section, "export_path", ""));
 		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 		preset->set_patches(config->get_value(section, "patches", Vector<String>()));
+
+		if (config->has_section_key(section, "patch_delta_encoding")) {
+			preset->set_patch_delta_encoding_enabled(config->get_value(section, "patch_delta_encoding"));
+		}
+		if (config->has_section_key(section, "patch_delta_compression_level_zstd")) {
+			preset->set_patch_delta_zstd_level(config->get_value(section, "patch_delta_compression_level_zstd"));
+		}
+		if (config->has_section_key(section, "patch_delta_min_reduction")) {
+			preset->set_patch_delta_min_reduction(config->get_value(section, "patch_delta_min_reduction"));
+		}
+		if (config->has_section_key(section, "patch_delta_include_filters")) {
+			preset->set_patch_delta_include_filter(config->get_value(section, "patch_delta_include_filters"));
+		}
+		if (config->has_section_key(section, "patch_delta_exclude_filters")) {
+			preset->set_patch_delta_exclude_filter(config->get_value(section, "patch_delta_exclude_filters"));
+		}
 
 		if (config->has_section_key(section, "seed")) {
 			preset->set_seed(config->get_value(section, "seed"));

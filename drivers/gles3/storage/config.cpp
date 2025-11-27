@@ -112,6 +112,7 @@ Config::Config() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
 	GLint max_vertex_output;
 	glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &max_vertex_output);
@@ -235,7 +236,7 @@ Config::Config() {
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;
 		}
-	} else if (rendering_device_name == "PowerVR Rogue GE8320") {
+	} else if (rendering_device_name.contains("PowerVR")) {
 		disable_transform_feedback_shader_cache = true;
 	}
 

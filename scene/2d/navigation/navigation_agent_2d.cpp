@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/2d/navigation/navigation_link_2d.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
@@ -349,7 +349,7 @@ NavigationAgent2D::NavigationAgent2D() {
 
 NavigationAgent2D::~NavigationAgent2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(agent);
+	NavigationServer2D::get_singleton()->free_rid(agent);
 	agent = RID(); // Pointless
 
 #ifdef DEBUG_ENABLED
@@ -357,7 +357,7 @@ NavigationAgent2D::~NavigationAgent2D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
+		RenderingServer::get_singleton()->free_rid(debug_path_instance);
 	}
 #endif // DEBUG_ENABLED
 }

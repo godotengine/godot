@@ -223,6 +223,9 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="switch_on_drag_hover" type="bool" setter="set_switch_on_drag_hover" getter="get_switch_on_drag_hover" default="true">
+			If [code]true[/code], hovering over a tab while dragging something will switch to that tab. Does not have effect when hovering another tab to rearrange.
+		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			The position at which tabs will be placed.
 		</member>
@@ -230,7 +233,7 @@
 			The focus access mode for the internal [TabBar] node.
 		</member>
 		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
-			The position of the tab bar.
+			The horizontal alignment of the tabs.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -305,7 +308,7 @@
 			Font color of disabled tabs.
 		</theme_item>
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
-			Font color of the currently hovered tab.
+			Font color of the currently hovered tab. Does not apply to the selected tab.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the tab name.
@@ -315,6 +318,18 @@
 		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="icon_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of disabled tabs.
+		</theme_item>
+		<theme_item name="icon_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
+		<theme_item name="icon_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the currently selected tab.
+		</theme_item>
+		<theme_item name="icon_unselected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
 			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method TabBar.set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.

@@ -39,7 +39,7 @@
 #include "objects/jolt_area_3d.h"
 #include "objects/jolt_body_3d.h"
 #include "objects/jolt_soft_body_3d.h"
-#include "servers/physics_server_3d_wrap_mt.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 #include "shapes/jolt_box_shape_3d.h"
 #include "shapes/jolt_capsule_shape_3d.h"
 #include "shapes/jolt_concave_polygon_shape_3d.h"
@@ -1580,7 +1580,7 @@ bool JoltPhysicsServer3D::joint_is_disabled_collisions_between_bodies(RID p_join
 	return joint->is_collision_disabled();
 }
 
-void JoltPhysicsServer3D::free(RID p_rid) {
+void JoltPhysicsServer3D::free_rid(RID p_rid) {
 	if (JoltShape3D *shape = shape_owner.get_or_null(p_rid)) {
 		free_shape(shape);
 	} else if (JoltBody3D *body = body_owner.get_or_null(p_rid)) {

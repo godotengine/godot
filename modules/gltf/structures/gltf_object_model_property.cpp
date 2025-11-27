@@ -103,11 +103,30 @@ GLTFAccessor::GLTFAccessorType GLTFObjectModelProperty::get_accessor_type() cons
 	}
 }
 
+GLTFAccessor::GLTFComponentType GLTFObjectModelProperty::get_component_type(const Vector<Variant> &p_values) const {
+	switch (object_model_type) {
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL: {
+			return GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE;
+		} break;
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_INT: {
+			PackedInt64Array int_values;
+			for (int i = 0; i < p_values.size(); i++) {
+				int_values.append(p_values[i]);
+			}
+			return GLTFAccessor::get_minimal_integer_component_type_from_ints(int_values);
+		} break;
+		default: {
+			// The base glTF specification only supports 32-bit float accessors for floating point data.
+			return GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT;
+		} break;
+	}
+}
+
 Ref<Expression> GLTFObjectModelProperty::get_gltf_to_godot_expression() const {
 	return gltf_to_godot_expr;
 }
 
-void GLTFObjectModelProperty::set_gltf_to_godot_expression(Ref<Expression> p_gltf_to_godot_expr) {
+void GLTFObjectModelProperty::set_gltf_to_godot_expression(const Ref<Expression> &p_gltf_to_godot_expr) {
 	gltf_to_godot_expr = p_gltf_to_godot_expr;
 }
 
@@ -115,20 +134,20 @@ Ref<Expression> GLTFObjectModelProperty::get_godot_to_gltf_expression() const {
 	return godot_to_gltf_expr;
 }
 
-void GLTFObjectModelProperty::set_godot_to_gltf_expression(Ref<Expression> p_godot_to_gltf_expr) {
+void GLTFObjectModelProperty::set_godot_to_gltf_expression(const Ref<Expression> &p_godot_to_gltf_expr) {
 	godot_to_gltf_expr = p_godot_to_gltf_expr;
 }
 
 TypedArray<NodePath> GLTFObjectModelProperty::get_node_paths() const {
-	return node_paths;
+	return TypedArray<NodePath>(node_paths);
 }
 
 bool GLTFObjectModelProperty::has_node_paths() const {
 	return !node_paths.is_empty();
 }
 
-void GLTFObjectModelProperty::set_node_paths(TypedArray<NodePath> p_node_paths) {
-	node_paths = p_node_paths;
+void GLTFObjectModelProperty::set_node_paths(const TypedArray<NodePath> &p_node_paths) {
+	node_paths = TypedArray<NodePath>(p_node_paths);
 }
 
 GLTFObjectModelProperty::GLTFObjectModelType GLTFObjectModelProperty::get_object_model_type() const {

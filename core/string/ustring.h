@@ -34,9 +34,9 @@
 
 #include "core/string/char_utils.h" // IWYU pragma: export
 #include "core/templates/cowdata.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
-#include "core/variant/array.h"
 
 class String;
 template <typename T>
@@ -177,10 +177,13 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const T *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
@@ -208,12 +211,7 @@ public:
 	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
 	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const {
-		if (length() != p_other.length()) {
-			return false;
-		}
-		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
-	}
+	_FORCE_INLINE_ bool operator==(const CharStringT<T> &p_other) const { return span() == p_other.span(); }
 	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
 		if (length() == 0) {
@@ -231,6 +229,8 @@ public:
 
 		return *this;
 	}
+
+	uint32_t hash() const { return hash_djb2(get_data()); }
 
 protected:
 	void copy_from(const T *p_cstr) {
@@ -297,10 +297,13 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+	_FORCE_INLINE_ const char32_t *get_data() const { return size() ? ptr() : &_null; }
 
+	// Returns the number of characters in the buffer, including the terminating NUL character.
+	// In most cases, length() should be used instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	// Returns the number of characters in the string (excluding terminating NUL character).
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
@@ -316,6 +319,11 @@ public:
 	/// Resizes the string. The given size must include the null terminator.
 	/// New characters are not initialized, and should be set by the caller.
 	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
+
+	Error reserve(int64_t p_size) {
+		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
+		return _cowdata.reserve(p_size);
+	}
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -506,6 +514,8 @@ public:
 	String get_basename() const;
 	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
+	bool has_extension(const char *p_ext) const { return get_extension().to_lower() == p_ext; }
+	bool has_extension(const String &p_ext) const { return get_extension().to_lower() == p_ext; }
 
 	CharString ascii(bool p_allow_extended = false) const;
 	// Parse an ascii string.

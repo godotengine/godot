@@ -142,6 +142,8 @@ float sc_luminance_multiplier() {
 	return 1.0;
 }
 
+#define REFLECTION_MULTIPLIER 1.0
+
 #define SDFGI_MAX_CASCADES 8
 
 /* Set 0: Base Pass (never changes) */
@@ -164,8 +166,10 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
 
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
-#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO (1 << 0)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
+#define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -313,16 +317,20 @@ implementation_data_block;
 #define implementation_data implementation_data_block.data
 
 struct InstanceData {
-	mat4 transform;
-	mat4 prev_transform;
+	mat3x4 transform;
+	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
+	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
+	mat3x4 prev_transform;
 	vec4 lightmap_uv_scale;
-	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
-	vec4 uv_scale;
+#ifdef USE_DOUBLE_PRECISION
+	vec4 model_precision;
+	vec4 prev_model_precision;
+#endif
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {
@@ -431,8 +439,12 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
+layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
 #endif // USE_MULTIVIEW
 
 #endif

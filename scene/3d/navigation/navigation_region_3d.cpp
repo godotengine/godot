@@ -32,7 +32,7 @@
 
 #include "core/math/random_pcg.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 RID NavigationRegion3D::get_rid() const {
 	return region;
@@ -445,7 +445,7 @@ NavigationRegion3D::~NavigationRegion3D() {
 		navigation_mesh->disconnect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(region);
+	NavigationServer3D::get_singleton()->free_rid(region);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
@@ -453,16 +453,16 @@ NavigationRegion3D::~NavigationRegion3D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 	}
 	if (debug_edge_connections_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_edge_connections_instance);
+		RenderingServer::get_singleton()->free_rid(debug_edge_connections_instance);
 	}
 	if (debug_edge_connections_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_edge_connections_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_edge_connections_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }

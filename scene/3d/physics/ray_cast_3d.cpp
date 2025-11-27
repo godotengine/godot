@@ -31,6 +31,7 @@
 #include "ray_cast_3d.h"
 
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/resources/mesh.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
@@ -547,11 +548,11 @@ void RayCast3D::_update_debug_shape() {
 void RayCast3D::_clear_debug_shape() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
 }

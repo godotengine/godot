@@ -219,6 +219,7 @@ public:
 	static inline ScalableImageMemLoadFunc _svg_scalable_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _ktx_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _dds_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _exr_mem_loader_func = nullptr;
 
 	// External VRAM compression function pointers.
 
@@ -291,10 +292,12 @@ private:
 	static void average_4_half(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
 	static void average_4_rgbe9995(uint32_t &p_out, const uint32_t &p_a, const uint32_t &p_b, const uint32_t &p_c, const uint32_t &p_d);
 	static void average_4_uint16(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+	static void average_4_rgba4444(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+	static void average_4_rgb565(uint16_t &p_out, const uint16_t &p_a, const uint16_t &p_b, const uint16_t &p_c, const uint16_t &p_d);
+
 	static void renormalize_uint8(uint8_t *p_rgb);
 	static void renormalize_float(float *p_rgb);
 	static void renormalize_half(uint16_t *p_rgb);
-	static void renormalize_rgbe9995(uint32_t *p_rgb);
 	static void renormalize_uint16(uint16_t *p_rgb);
 
 public:
@@ -374,8 +377,6 @@ public:
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1); // Import either a png or jpg from a pointer.
 	Image(const char **p_xpm); // Import an XPM image.
 
-	~Image() {}
-
 	AlphaMode detect_alpha() const;
 	bool is_invisible() const;
 
@@ -429,6 +430,7 @@ public:
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_ktx_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
 
 	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
 	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);

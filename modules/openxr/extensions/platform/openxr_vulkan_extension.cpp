@@ -36,8 +36,8 @@
 #include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
 HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
@@ -203,6 +203,23 @@ void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_f
 	vulkan_queue_index = p_queue_index;
 }
 
+LocalVector<VkOffset2D> OpenXRVulkanExtension::get_fragment_density_offsets() {
+	LocalVector<VkOffset2D> ret;
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return ret;
+	}
+
+	LocalVector<Vector2i> offsets = fb_foveation->get_fragment_density_offsets();
+
+	ret.reserve(offsets.size());
+	for (const Vector2i &offset : offsets) {
+		ret.push_back(VkOffset2D{ offset.x, offset.y });
+	}
+
+	return ret;
+}
+
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
@@ -326,15 +343,15 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			break;
 		case VK_FORMAT_D32_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D24_UNORM_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		default:
 			// continue with our default value
@@ -459,13 +476,13 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	for (const RID &texture_rid : data->texture_rids) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 
 	for (int i = 0; i < data->density_map_rids.size(); i++) {
 		if (data->density_map_rids[i].is_valid()) {
-			rendering_device->free(data->density_map_rids[i]);
+			rendering_device->free_rid(data->density_map_rids[i]);
 		}
 	}
 	data->density_map_rids.clear();

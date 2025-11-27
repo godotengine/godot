@@ -151,6 +151,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
+	ClassDB::bind_method(D_METHOD("has_joy_light", "device"), &Input::has_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
@@ -656,10 +658,16 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		int mapping = fallback_mapping;
 		// Bypass the mapping system if the joypad's mapping is already handled by its driver
 		// (for example, the SDL joypad driver).
-		if (!p_joypad_info.get("mapping_handled", false)) {
+		if (p_joypad_info.get("mapping_handled", false)) {
+			js.is_known = true;
+		} else {
 			for (int i = 0; i < map_db.size(); i++) {
 				if (js.uid == map_db[i].uid) {
 					mapping = i;
+					if (mapping != fallback_mapping) {
+						js.is_known = true;
+					}
+					break;
 				}
 			}
 		}
@@ -984,6 +992,28 @@ void Input::set_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_
 	JoyAxis c = _combine_device(p_axis, p_device);
 	_joy_axis[c] = p_value;
+}
+
+void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad) {
+		return;
+	}
+	joypad->features = p_features;
+	_update_joypad_features(p_device);
+}
+
+bool Input::set_joy_light(int p_device, const Color &p_color) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->set_joy_light(p_color);
+}
+
+bool Input::has_joy_light(int p_device) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	return joypad && joypad->has_light;
 }
 
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
@@ -1478,6 +1508,16 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 	}
 }
 
+void Input::_update_joypad_features(int p_device) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (!joypad || joypad->features == nullptr) {
+		return;
+	}
+	if (joypad->features->has_joy_light()) {
+		joypad->has_light = true;
+	}
+}
+
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
 
@@ -1859,13 +1899,7 @@ void Input::set_fallback_mapping(const String &p_guid) {
 
 //platforms that use the remapping system can override and call to these ones
 bool Input::is_joy_known(int p_device) {
-	if (joy_names.has(p_device)) {
-		int mapping = joy_names[p_device].mapping;
-		if (mapping != -1 && mapping != fallback_mapping) {
-			return true;
-		}
-	}
-	return false;
+	return joy_names.has(p_device) && joy_names[p_device].is_known;
 }
 
 String Input::get_joy_guid(int p_device) const {

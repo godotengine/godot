@@ -214,8 +214,6 @@ public:
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
-
-	ScriptExtension() {}
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
@@ -370,7 +368,7 @@ public:
 		return Object::cast_to<Script>(ret);
 	}
 #ifndef DISABLE_DEPRECATED
-	EXBIND0RC(bool, has_named_classes)
+	GDVIRTUAL0RC(bool, _has_named_classes)
 #endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
@@ -427,6 +425,7 @@ public:
 						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
 					}
 				}
+				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}

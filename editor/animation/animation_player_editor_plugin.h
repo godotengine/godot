@@ -179,7 +179,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String &p_anim);
 	float _get_editor_step() const;
-	void _go_to_nearest_keyframe(bool p_backward);
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -206,7 +205,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _list_changed();
 	void _animation_finished(const String &p_name);
-	void _current_animation_changed(const String &p_name);
+	void _current_animation_changed(const StringName &p_name);
 	void _update_animation();
 	void _update_player();
 	void _set_controls_disabled(bool p_disabled);
@@ -249,6 +248,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
+	void _find_player();
 	static void _bind_methods();
 
 public:
@@ -270,6 +270,7 @@ public:
 	void clear();
 
 	void ensure_visibility();
+	void go_to_nearest_keyframe(bool p_backward);
 
 	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
 	void forward_force_draw_over_viewport(Control *p_overlay);

@@ -47,7 +47,7 @@ String ResourceUID::get_cache_file() {
 }
 
 static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', '0', '1', '2', '3', '4', '5', '6', '7', '8' };
-static constexpr uint32_t uuid_characters_element_count = std::size(uuid_characters);
+static constexpr uint32_t uuid_characters_element_count = std_size(uuid_characters);
 static constexpr uint8_t max_uuid_number_length = 13; // Max 0x7FFFFFFFFFFFFFFF (uid://d4n4ub6itg400) size is 13 characters.
 
 String ResourceUID::id_to_text(ID p_id) const {
@@ -328,19 +328,22 @@ Error ResourceUID::update_cache() {
 }
 
 String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string) {
-	const uint32_t entry_count = p_cache_file->get_32();
-	CharString cs;
-	for (uint32_t i = 0; i < entry_count; i++) {
-		int64_t id = p_cache_file->get_64();
-		int32_t len = p_cache_file->get_32();
-		cs.resize_uninitialized(len + 1);
-		ERR_FAIL_COND_V(cs.size() != len + 1, String());
-		cs[len] = 0;
-		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
-		ERR_FAIL_COND_V(rl != len, String());
+	const int64_t uid_from_string = singleton->text_to_id(p_uid_string);
+	if (uid_from_string != INVALID_ID) {
+		const uint32_t entry_count = p_cache_file->get_32();
+		CharString cs;
+		for (uint32_t i = 0; i < entry_count; i++) {
+			int64_t id = p_cache_file->get_64();
+			int32_t len = p_cache_file->get_32();
+			cs.resize_uninitialized(len + 1);
+			ERR_FAIL_COND_V(cs.size() != len + 1, String());
+			cs[len] = 0;
+			int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
+			ERR_FAIL_COND_V(rl != len, String());
 
-		if (singleton->id_to_text(id) == p_uid_string) {
-			return String::utf8(cs.get_data());
+			if (id == uid_from_string) {
+				return String::utf8(cs.get_data());
+			}
 		}
 	}
 	return String();
@@ -351,6 +354,7 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);

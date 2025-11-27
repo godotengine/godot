@@ -89,14 +89,11 @@ void MenuButton::show_popup() {
 	Size2i max_size;
 	if (scr_usable.has_area()) {
 		real_t max_h = scr_usable.get_end().y - rect.position.y;
-		real_t max_w = scr_usable.get_end().x - rect.position.x;
-		if (max_h >= 4 * rect.size.height && max_w >= rect.size.width) {
-			max_size = Size2i(max_w, max_h);
+		if (max_h >= 4 * rect.size.height) {
+			max_size = Size2(RS::get_singleton()->get_maximum_viewport_size().width, max_h);
 		}
 	}
 	popup->set_max_size(max_size);
-	rect.size.height = 0;
-	popup->set_size(rect.size);
 	if (is_layout_rtl()) {
 		rect.position.x += rect.size.width - popup->get_size().width;
 	}

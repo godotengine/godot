@@ -110,6 +110,12 @@
 				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="TextParagraph" />
+			<description>
+				Duplicates this [TextParagraph].
+			</description>
+		</method>
 		<method name="get_dropcap_lines" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -233,6 +239,13 @@
 			<return type="Vector2" />
 			<description>
 				Returns the size of the bounding box of the paragraph.
+			</description>
+		</method>
+		<method name="has_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this shaped text buffer.
 			</description>
 		</method>
 		<method name="hit_test" qualifiers="const">

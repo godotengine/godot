@@ -8,7 +8,7 @@ env_minimp3 = env_modules.Clone()
 
 thirdparty_dir = "#thirdparty/minimp3/"
 
-env_minimp3.Prepend(CPPEXTPATH=[thirdparty_dir])
+env_minimp3.Prepend(CPPPATH=[thirdparty_dir])
 
 if not env["minimp3_extra_formats"]:
     env_minimp3.Append(CPPDEFINES=["MINIMP3_ONLY_MP3"])

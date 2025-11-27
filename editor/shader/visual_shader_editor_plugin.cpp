@@ -71,7 +71,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 
@@ -92,7 +92,7 @@ static FloatConstantDef float_constant_defs[] = {
 	{ "Sqrt2", Math::SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
-constexpr int MAX_FLOAT_CONST_DEFS = std::size(float_constant_defs);
+constexpr int MAX_FLOAT_CONST_DEFS = std_size(float_constant_defs);
 
 ///////////////////
 
@@ -573,7 +573,7 @@ void VisualShaderGraphPlugin::update_theme() {
 	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
 	vs_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
-	if (!EditorThemeManager::is_dark_theme()) {
+	if (!EditorThemeManager::is_dark_icon_and_font()) {
 		// Override the color to white for light themes.
 		vs_msdf_fonts_theme->set_color(SceneStringName(font_color), "GraphNodeTitleLabel", Color(1, 1, 1));
 	}
@@ -1388,7 +1388,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		node->add_child(expression_box);
 		register_expression_edit(p_id, expression_box);
 
-		Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 		Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 		Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
@@ -1399,7 +1398,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
-		expression_box->add_theme_color_override("background_color", background_color);
 
 		for (const String &E : editor->keyword_list) {
 			if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -2159,12 +2157,12 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDScript classes.
 	{
-		List<StringName> class_list;
-		ScriptServer::get_global_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ScriptServer::get_global_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(E);
+		for (const StringName &class_name : class_list) {
+			if (ScriptServer::get_global_class_native_base(class_name) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_name);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -2189,19 +2187,19 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDExtension classes.
 	{
-		List<StringName> class_list;
-		ClassDB::get_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ClassDB::get_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(E);
+		for (const StringName &class_name : class_list) {
+			if (ClassDB::get_parent_class(class_name) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_name);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), get_current_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = E;
+				dict["type"] = class_name;
 				dict["script"] = Ref<Script>();
 
 				String key;
@@ -2627,6 +2625,10 @@ void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names
 
 void VisualShaderEditor::_update_graph() {
 	if (visual_shader.is_null()) {
+		return;
+	}
+
+	if (!is_inside_tree()) {
 		return;
 	}
 
@@ -5281,7 +5283,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			site_search->set_button_icon(get_editor_theme_icon(SNAME("ExternalLink")));
-			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), EditorStringName(Editor)));
+			highend_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
 			node_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
@@ -5290,7 +5292,6 @@ void VisualShaderEditor::_notification(int p_what) {
 			shader_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("SubViewport")));
 
 			{
-				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 				Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
 				Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 				Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
@@ -5301,7 +5302,6 @@ void VisualShaderEditor::_notification(int p_what) {
 				Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 				Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 
-				preview_text->add_theme_color_override("background_color", background_color);
 				varying_error_label->add_theme_color_override(SceneStringName(font_color), error_color);
 
 				for (const String &E : keyword_list) {
@@ -5343,12 +5343,18 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			if (is_visible_in_tree()) {
 				_update_graph();
+			} else {
+				theme_dirty = true;
 			}
 			update_toggle_files_button();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_files_button();
+			if (theme_dirty && is_visible_in_tree()) {
+				theme_dirty = false;
+				_update_graph();
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -6461,8 +6467,8 @@ void VisualShaderEditor::_show_shader_preview() {
 	}
 }
 
-void VisualShaderEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void VisualShaderEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void VisualShaderEditor::_toggle_files_pressed() {
@@ -6921,9 +6927,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	highend_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
-	highend_label->set_text("Vulkan");
+	highend_label->set_text(TTRC("Forward+/Mobile"));
 	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	highend_label->set_tooltip_text(TTR("High-end node"));
+	highend_label->set_tooltip_text(TTR("Only supported in the Forward+ and Mobile rendering methods, not Compatibility."));
 
 	node_desc = memnew(RichTextLabel);
 	members_vb->add_child(node_desc);

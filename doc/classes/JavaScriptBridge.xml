@@ -8,7 +8,7 @@
 		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScriptBridge singleton is enabled. Official export templates also have the JavaScriptBridge singleton enabled. See [url=$DOCS_URL/engine_details/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
 	</description>
 	<tutorials>
-		<link title="Exporting for the Web: Calling JavaScript from script">$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-script</link>
+		<link title="The JavaScriptBridge singleton">$DOCS_URL/tutorials/platform/web/javascript_bridge.html</link>
 	</tutorials>
 	<methods>
 		<method name="create_callback">

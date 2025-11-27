@@ -93,7 +93,7 @@ void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 
 void RenderSceneBuffersRD::free_named_texture(NamedTexture &p_named_texture) {
 	if (p_named_texture.texture.is_valid()) {
-		RD::get_singleton()->free(p_named_texture.texture);
+		RD::get_singleton()->free_rid(p_named_texture.texture);
 	}
 	p_named_texture.texture = RID();
 	p_named_texture.slices.clear(); // slices should be freed automatically as dependents...
@@ -135,7 +135,7 @@ void RenderSceneBuffersRD::cleanup() {
 	// Clear weight_buffer / blur textures.
 	for (WeightBuffers &weight_buffer : weight_buffers) {
 		if (weight_buffer.weight.is_valid()) {
-			RD::get_singleton()->free(weight_buffer.weight);
+			RD::get_singleton()->free_rid(weight_buffer.weight);
 			weight_buffer.weight = RID();
 		}
 	}
@@ -152,6 +152,8 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	render_target = p_config->get_render_target();
+	force_hdr = texture_storage->render_target_is_using_hdr(render_target);
+
 	target_size = p_config->get_target_size();
 	internal_size = p_config->get_internal_size();
 	view_count = p_config->get_view_count();
@@ -177,7 +179,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// Create our color buffer.
 	const bool resolve_target = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, get_color_usage_bits(resolve_target, false, can_be_storage));
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, get_base_data_format(), get_color_usage_bits(resolve_target, false, can_be_storage));
 
 	// TODO: Detect when it is safe to use RD::TEXTURE_USAGE_TRANSIENT_BIT for RB_TEX_DEPTH, RB_TEX_COLOR_MSAA and/or RB_TEX_DEPTH_MSAA.
 	// (it means we cannot sample from it, we cannot copy from/to it) to save VRAM (and maybe performance too).
@@ -190,7 +192,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 		texture_samples = RD::TEXTURE_SAMPLES_1;
 	} else {
 		texture_samples = msaa_to_samples(msaa_3d);
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, base_data_format, get_color_usage_bits(false, true, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, get_base_data_format(), get_color_usage_bits(false, true, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, get_depth_format(false, true, can_be_storage), get_depth_usage_bits(false, true, can_be_storage), texture_samples, Size2i(), 0, 1, true, true);
 	}
 
@@ -267,7 +269,7 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 	RendererRD::MFXSpatialEffect::CreateParams params = {
 		.input_size = internal_size,
 		.output_size = target_size,
-		.input_format = base_data_format,
+		.input_format = get_base_data_format(),
 		.output_format = output_format,
 	};
 
@@ -525,13 +527,8 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 		usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
 
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required);
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1);
-
-	// if !can_be_storage we need a half width version
-	if (!can_be_storage) {
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_HALF_BLUR, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y), 1, mipmaps_required);
-	}
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required);
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1);
 
 	// TODO redo this:
 	if (!can_be_storage) {
@@ -646,7 +643,7 @@ void RenderSceneBuffersRD::ensure_upscaled() {
 	if (!has_upscaled_texture()) {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | (can_be_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0) | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		usage_bits |= RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
-		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, base_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, target_size);
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, target_size);
 	}
 }
 
@@ -733,7 +730,8 @@ uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa,
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msaa, bool p_storage) {
-	if (p_resolve) {
+	if (p_resolve && (p_storage || !RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE))) {
+		// Use R32 for resolve on Forward+ (p_storage == true), or if we don't support depth resolve.
 		return RD::DATA_FORMAT_R32_SFLOAT;
 	} else {
 		const RenderingDeviceCommons::DataFormat preferred_formats[2] = {
@@ -752,7 +750,13 @@ uint32_t RenderSceneBuffersRD::get_depth_usage_bits(bool p_resolve, bool p_msaa,
 	if (p_msaa) {
 		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 	} else if (p_resolve) {
-		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | (p_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : 0);
+		usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		if (p_storage) {
+			usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+		} else if (RenderingDevice::get_singleton()->has_feature(RD::SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE)) {
+			// We're able to resolve depth in (sub)passes and we make use of this in our mobile renderer.
+			usage_bits |= RD::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
+		}
 	} else {
 		usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}
@@ -774,4 +778,10 @@ RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
 
 uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
 	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
+}
+
+float RenderSceneBuffersRD::get_luminance_multiplier() const {
+	// On mobile renderer when not using HDR2D we need to scale HDR values by two
+	// to fit 0-2 range color values into a UNORM buffer.
+	return (force_hdr || can_be_storage) ? 1.0 : 2.0;
 }

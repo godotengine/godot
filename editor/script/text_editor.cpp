@@ -89,7 +89,7 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr(), "TextFile");
+	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr());
 }
 
 Ref<Resource> TextEditor::get_edited_resource() const {

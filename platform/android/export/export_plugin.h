@@ -41,6 +41,8 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export_platform.h"
 
+class ImageTexture;
+
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
 const String ENV_ANDROID_KEYSTORE_DEBUG_PATH = "GODOT_ANDROID_KEYSTORE_DEBUG_PATH";
@@ -93,6 +95,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
@@ -148,13 +151,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
-	static Error save_apk_so(void *p_userdata, const SharedObject &p_so);
+	static Error save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
+	static Error copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
 
@@ -175,8 +178,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8);
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
-
-	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data);
 
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
@@ -221,6 +222,10 @@ public:
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
+
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+
+	virtual bool is_option_runnable(int p_index) const override { return p_index != 0; }
 
 	virtual String get_options_tooltip() const override;
 
@@ -279,7 +284,7 @@ public:
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
-	EditorExportPlatformAndroid();
+	virtual void initialize() override;
 
 	~EditorExportPlatformAndroid();
 };

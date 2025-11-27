@@ -32,7 +32,7 @@ else:
 
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "23.1.9-1"
+mesa_version = "23.1.9-2"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"

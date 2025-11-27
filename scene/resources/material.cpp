@@ -183,7 +183,7 @@ Material::Material() {
 Material::~Material() {
 	if (material.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(material);
+		RenderingServer::get_singleton()->free_rid(material);
 	}
 }
 
@@ -700,7 +700,7 @@ void BaseMaterial3D::_update_shader() {
 			if (v->users == 0) {
 				// Deallocate shader which is no longer in use.
 				shader_rid = RID();
-				RS::get_singleton()->free(v->shader);
+				RS::get_singleton()->free_rid(v->shader);
 				shader_map.erase(current_key);
 			}
 		}
@@ -1813,7 +1813,8 @@ void fragment() {)";
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
 
 	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
-	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * ndc;
 	refraction_view_pos.xyz /= refraction_view_pos.w;
 
 	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
@@ -1841,7 +1842,8 @@ void fragment() {)";
 		code += R"(
 	// Proximity Fade: Enabled
 	float proximity_depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
-	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
+	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
+	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * ndc;
 	proximity_view_pos.xyz /= proximity_view_pos.w;
 	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z + proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
 )";
@@ -2067,7 +2069,7 @@ void fragment() {)";
 	if (unlikely(v)) {
 		// We raced and managed to create the same key concurrently, so we'll free the shader we just created,
 		// given we know it isn't used, and use the winner.
-		RS::get_singleton()->free(new_shader);
+		RS::get_singleton()->free_rid(new_shader);
 	} else {
 		ShaderData shader_data;
 		shader_data.shader = new_shader;
@@ -4004,7 +4006,7 @@ BaseMaterial3D::~BaseMaterial3D() {
 			shader_map[current_key].users--;
 			if (shader_map[current_key].users == 0) {
 				// Deallocate shader which is no longer in use.
-				RS::get_singleton()->free(shader_map[current_key].shader);
+				RS::get_singleton()->free_rid(shader_map[current_key].shader);
 				shader_map.erase(current_key);
 			}
 		}

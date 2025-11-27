@@ -67,7 +67,7 @@ layout(location = 0) out vec4 out_color;
 
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
-	uint flags;
+	uint use_debanding;
 	float pad;
 }
 params;
@@ -140,11 +140,8 @@ void main() {
 		out_color.rgb = linear_to_srgb(out_color.rgb);
 		out_color.a = texture(color_tex, tex_coord).a;
 	}
-	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+	if (bool(params.use_debanding)) {
 		// Divide by 255 to align to 8-bit quantization.
 		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
-	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
-		// Divide by 1023 to align to 10-bit quantization.
-		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 }

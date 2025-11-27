@@ -39,6 +39,7 @@
 #include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
 
@@ -170,5 +171,5 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformMacOS();
+	virtual void initialize() override;
 };

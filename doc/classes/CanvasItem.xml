@@ -753,6 +753,7 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).

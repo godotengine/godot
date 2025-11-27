@@ -95,6 +95,8 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emulate_environment_blend_mode_alpha_blend", "enabled"), &OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend);
 	ClassDB::bind_method(D_METHOD("is_environment_blend_mode_alpha_supported"), &OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported);
 
+	ClassDB::bind_method(D_METHOD("update_main_swapchain_size"), &OpenXRAPIExtension::update_main_swapchain_size);
+
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING);
@@ -120,9 +122,9 @@ Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionConstPtr<const vo
 	return OpenXRAPI::get_singleton()->transform_from_pose(*(XrPosef *)p_pose.data);
 }
 
-bool OpenXRAPIExtension::xr_result(uint64_t result, String format, Array args) {
+bool OpenXRAPIExtension::xr_result(uint64_t p_result, const String &p_format, const Array &p_args) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
-	return OpenXRAPI::get_singleton()->xr_result((XrResult)result, format.utf8().get_data(), args);
+	return OpenXRAPI::get_singleton()->xr_result((XrResult)p_result, p_format.utf8().get_data(), p_args);
 }
 
 bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
@@ -130,7 +132,7 @@ bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
 	return OpenXRAPI::openxr_is_enabled(p_check_run_in_editor);
 }
 
-uint64_t OpenXRAPIExtension::get_instance_proc_addr(String p_name) {
+uint64_t OpenXRAPIExtension::get_instance_proc_addr(const String &p_name) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	CharString str = p_name.utf8();
 	PFN_xrVoidFunction addr = nullptr;
@@ -346,6 +348,11 @@ uint64_t OpenXRAPIExtension::get_projection_layer() {
 void OpenXRAPIExtension::set_render_region(const Rect2i &p_render_region) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->set_render_region(p_render_region);
+}
+
+void OpenXRAPIExtension::update_main_swapchain_size() {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->update_main_swapchain_size();
 }
 
 void OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {

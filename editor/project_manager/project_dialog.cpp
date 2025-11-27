@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
+#include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -43,6 +44,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
@@ -242,6 +244,35 @@ void ProjectDialog::_validate_path() {
 			if (!is_folder_empty) {
 				_set_message(TTRC("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING, target_path_input_type);
 			}
+		}
+	}
+
+	// Check if the target path is a subdirectory of original when duplicating
+	if (mode == MODE_DUPLICATE) {
+		String base_path = original_project_path;
+		String duplicate_target = target_path;
+
+		// Ensure the paths end with a slash
+		if (!base_path.ends_with("/")) {
+			base_path += "/";
+		}
+
+		if (!duplicate_target.ends_with("/")) {
+			duplicate_target += "/";
+		}
+
+		bool is_subdirectory_or_equal;
+
+		if (d->is_case_sensitive(base_path) || d->is_case_sensitive(duplicate_target)) {
+			is_subdirectory_or_equal = duplicate_target.begins_with(base_path);
+		} else {
+			base_path = base_path.to_lower();
+			String target_lower = duplicate_target.to_lower();
+			is_subdirectory_or_equal = target_lower.begins_with(base_path);
+		}
+
+		if (is_subdirectory_or_equal) {
+			_set_message(TTRC("Cannot duplicate a project into itself."), MESSAGE_ERROR, target_path_input_type);
 		}
 	}
 }
@@ -545,6 +576,11 @@ void ProjectDialog::ok_pressed() {
 		initial_settings["application/config/features"] = project_features;
 		initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 		initial_settings["application/config/icon"] = "res://icon.svg";
+		ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
+		for (const KeyValue<String, Variant> &extra_setting : extra_settings) {
+			// Merge with other initial settings defined above.
+			initial_settings[extra_setting.key] = extra_setting.value;
+		}
 
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
 		if (err != OK) {
@@ -795,7 +831,10 @@ void ProjectDialog::ask_for_path_and_show() {
 	_browse_project_path();
 }
 
-void ProjectDialog::show_dialog(bool p_reset_name) {
+void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+	if (mode == MODE_IMPORT && !p_is_confirmed) {
+		return;
+	}
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -943,7 +982,7 @@ void ProjectDialog::_notification(int p_what) {
 			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
-			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false), CONNECT_DEFERRED);
+			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false, false), CONNECT_DEFERRED);
 			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
 		} break;
 	}
@@ -1092,6 +1131,11 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
+	LinkButton *ri_link = memnew(LinkButton);
+	ri_link->set_text(TTRC("More information"));
+	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
+	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	rvb->add_child(ri_link);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
 		rs_button->set_pressed(true);

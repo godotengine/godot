@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FABRIK3D" inherits="IterateIK3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Position based forward and backward reaching inverse kinematics solver.
+	</brief_description>
+	<description>
+		[FABRIK3D] is position based IK, allowing precise and accurate tracking of targets. It's ideal for simple chains without limitations.
+		The resulting twist around the forward vector will always be kept from the previous pose.
+		[b]Note:[/b] When the target is close to the root, it tends to produce zig-zag patterns, resulting in unnatural visual movement.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

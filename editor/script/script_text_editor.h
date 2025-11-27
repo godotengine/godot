@@ -62,6 +62,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	RichTextLabel *errors_panel = nullptr;
 
 	Ref<Script> script;
+	Variant pending_state;
 	bool script_is_valid = false;
 	bool editor_enabled = false;
 
@@ -185,6 +186,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		ObjectID obj_id;
 		String variable_name;
 		Variant value;
+		String class_name;
 	};
 
 	LocalVector<DraggedExport> pending_dragged_exports;
