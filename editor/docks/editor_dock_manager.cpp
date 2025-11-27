@@ -721,7 +721,6 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 					dock->hide();
 				} else {
 					dock->is_open = true;
-					dock->show();
 				}
 			}
 
@@ -830,7 +829,6 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 		return;
 	}
 
-	p_dock->show();
 	_update_layout();
 }
 
