@@ -2353,13 +2353,13 @@ void AnimationMixer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_IDLE) {
+			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_IDLE && OS::get_singleton()->is_update_pending()) {
 				_process_animation(get_process_delta_time());
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS) {
+			if (active && callback_mode_process == ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS && OS::get_singleton()->is_update_pending()) {
 				_process_animation(get_physics_process_delta_time());
 			}
 		} break;

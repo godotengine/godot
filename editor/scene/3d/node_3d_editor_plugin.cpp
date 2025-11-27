@@ -3434,6 +3434,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				current_camera = camera;
 			}
 
+			// Currently conflicts with Update Vital Only editor setting by forcing constant redraws anyway.
 			if (show_info) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x * viewport->get_scaling_3d_scale(), viewport->get_size().y * viewport->get_scaling_3d_scale());
 				String text;
@@ -3468,6 +3469,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 				cpu_time_history_index = 0;
 				gpu_time_history_index = 0;
 			}
+
+			// Currently conflicts with Update Vital Only editor setting by forcing constant redraws anyway.
 			if (show_fps) {
 				cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(viewport->get_viewport_rid());
 				cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;

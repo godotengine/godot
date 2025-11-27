@@ -3538,7 +3538,7 @@ void RenderingServer::_bind_methods() {
 	/* Misc */
 
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "callable"), &RenderingServer::request_frame_drawn_callback);
-	ClassDB::bind_method(D_METHOD("has_changed"), &RenderingServer::has_changed);
+	ClassDB::bind_method(D_METHOD("has_changed", "queried_priority"), &RenderingServer::has_changed, DEFVAL(CHANGED_PRIORITY_ANY));
 	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &RenderingServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &RenderingServer::get_video_adapter_vendor);
@@ -3596,6 +3596,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_COVER);
 	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_IGNORE);
+
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_ANY);
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_LOW);
+	BIND_ENUM_CONSTANT(CHANGED_PRIORITY_HIGH);
 
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
