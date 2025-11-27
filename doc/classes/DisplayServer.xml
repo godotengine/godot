@@ -1868,7 +1868,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the application icon and icons of all windows with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
 				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
@@ -2321,6 +2321,15 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag].
+			</description>
+		</method>
+		<method name="window_set_icon">
+			<return type="void" />
+			<param index="0" name="icon" type="Image" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the window icon (usually displayed in the top-left corner) for the window specified by [param window_id].
+				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
