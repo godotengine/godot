@@ -174,10 +174,11 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
 	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
+	const String simplified_source_path = EditorExportPlatform::simplify_path(p_info.source_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(p_preset, simplified_path, p_data, enc_data, sd);
+	Error err = _store_temp_file(p_preset, simplified_path, simplified_source_path, p_data, enc_data, sd);
 	if (err != OK) {
 		return err;
 	}
@@ -398,7 +399,7 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	return manifest_application_text;
 }
 
-Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const String &p_simplified_source_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
 	Error err = OK;
 	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
 	if (err != OK) {
@@ -407,7 +408,7 @@ Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_
 	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
 	r_sd.ofs = 0;
 	r_sd.size = p_data.size();
-	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_preset, p_simplified_path, p_data, r_sd.encrypted);
+	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_preset, p_simplified_path, p_simplified_source_path, p_data, r_sd.encrypted);
 	if (err != OK) {
 		return err;
 	}

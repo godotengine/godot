@@ -237,18 +237,18 @@ void EditorExportPlatform::_unload_patches() {
 	PackedData::get_singleton()->clear();
 }
 
-Error EditorExportPlatform::_encrypt_and_store_data(Ref<FileAccess> p_fd, const Ref<EditorExportPreset> &p_preset, const String &p_path, const Vector<uint8_t> &p_data, bool &r_encrypt) {
+Error EditorExportPlatform::_encrypt_and_store_data(Ref<FileAccess> p_fd, const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_source_path, const Vector<uint8_t> &p_data, bool &r_encrypt) {
 	r_encrypt = false;
 	for (const String &filter : p_preset->get_enc_in_filter().split(",", false)) {
 		String filter_stripped = filter.strip_edges();
-		if (p_path.matchn(filter_stripped) || p_path.trim_prefix("res://").matchn(filter_stripped)) {
+		if (p_path.matchn(filter_stripped) || p_source_path.matchn(filter_stripped) || p_path.trim_prefix("res://").matchn(filter_stripped) || p_source_path.trim_prefix("res://").matchn(filter_stripped)) {
 			r_encrypt = true;
 		}
 	}
 
 	for (const String &filter : p_preset->get_enc_ex_filter().split(",", false)) {
 		String filter_stripped = filter.strip_edges();
-		if (p_path.matchn(filter_stripped) || p_path.trim_prefix("res://").matchn(filter_stripped)) {
+		if (p_path.matchn(filter_stripped) || p_source_path.matchn(filter_stripped) || p_path.trim_prefix("res://").matchn(filter_stripped) || p_source_path.trim_prefix("res://").matchn(filter_stripped)) {
 			r_encrypt = false;
 			break;
 		}
@@ -298,6 +298,7 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	PackData *pd = (PackData *)p_userdata;
 
 	const String simplified_path = simplify_path(p_info.path);
+	const String simplified_source_path = simplify_path(p_info.source_path);
 
 	Ref<FileAccess> ftmp;
 	if (pd->use_sparse_pck) {
@@ -311,7 +312,7 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	sd.ofs = (pd->use_sparse_pck) ? 0 : pd->f->get_position();
 	sd.size = p_data.size();
 	sd.delta = p_info.delta;
-	Error err = _encrypt_and_store_data(ftmp, p_preset, simplified_path, p_data, sd.encrypted);
+	Error err = _encrypt_and_store_data(ftmp, p_preset, simplified_path, simplified_source_path, p_data, sd.encrypted);
 	if (err != OK) {
 		return err;
 	}
@@ -367,7 +368,7 @@ Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> 
 
 	for (const String &filter : p_preset->get_patch_delta_include_filter().split(",", false)) {
 		String filter_stripped = filter.strip_edges();
-		if (p_info.path.matchn(filter_stripped) || p_info.path.trim_prefix("res://").matchn(filter_stripped)) {
+		if (p_info.path.matchn(filter_stripped) || p_info.source_path.matchn(filter_stripped) || p_info.path.trim_prefix("res://").matchn(filter_stripped) || p_info.source_path.trim_prefix("res://").matchn(filter_stripped)) {
 			delta = true;
 			break;
 		}
@@ -375,7 +376,7 @@ Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> 
 
 	for (const String &filter : p_preset->get_patch_delta_exclude_filter().split(",", false)) {
 		String filter_stripped = filter.strip_edges();
-		if (p_info.path.matchn(filter_stripped) || p_info.path.trim_prefix("res://").matchn(filter_stripped)) {
+		if (p_info.path.matchn(filter_stripped) || p_info.source_path.matchn(filter_stripped) || p_info.path.trim_prefix("res://").matchn(filter_stripped) || p_info.source_path.trim_prefix("res://").matchn(filter_stripped)) {
 			delta = false;
 			break;
 		}

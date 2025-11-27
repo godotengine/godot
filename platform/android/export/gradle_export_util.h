@@ -85,7 +85,7 @@ int _get_app_category_value(int category_index);
 
 String _get_app_category_label(int category_index);
 
-Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd);
+Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const String &p_simplified_source_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd);
 
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir);
