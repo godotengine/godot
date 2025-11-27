@@ -2991,7 +2991,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					bool keep = true;
 
 					if (idata.flags & InstanceData::FLAG_REDRAW_IF_VISIBLE) {
-						RenderingServerDefault::redraw_request();
+						RenderingServerDefault::redraw_request(false);
 					}
 
 					if (base_type == RSE::INSTANCE_MESH) {
@@ -3008,7 +3008,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 							RS::get_singleton()->call_on_render_thread(callable_mp_static(&RendererSceneCull::_scene_particles_set_view_axis).bind(idata.base_rid, -cull_data.cam_transform.basis.get_column(2).normalized(), cull_data.cam_transform.basis.get_column(1).normalized()));
 							//particles visible? request redraw
-							RenderingServerDefault::redraw_request();
+							RenderingServerDefault::redraw_request(false);
 						}
 					}
 
@@ -3786,7 +3786,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_NULL_V(scenario, true);
 
-	RenderingServerDefault::redraw_request(); //update, so it updates in editor
+	RenderingServerDefault::redraw_request(false); //Update, so it updates in editor.
 
 	if (p_step == 0) {
 		if (!RSG::light_storage->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
