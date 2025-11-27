@@ -22,6 +22,14 @@
 				Runs when converting the data from a Godot scene node. This method can be used to process the Godot scene node data into a format that can be used by [method _export_node].
 			</description>
 		</method>
+		<method name="_export_get_property_list" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<param index="0" name="root_node" type="Node" />
+			<description>
+				Runs prior to the export process. This method is run before [method _export_preflight] when exporting a scene from the editor, or it may not be run at all in other situations.
+				Unlike the rest of the export methods, this does not run when calling a [GLTFDocument]'s export methods in sequence with everything else, but rather runs before that entire process occurs, allowing configuration to occur beforehand, potentially minutes or hours in advance of [method _export_preflight]. This allows extensions to decide which properties to show in the editor export settings dialog based on the contents of the scene, hiding any settings that are not relevant for that scene. The [param root_node] parameter may be [code]null[/code], in which case all properties should be shown.
+			</description>
+		</method>
 		<method name="_export_node" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
