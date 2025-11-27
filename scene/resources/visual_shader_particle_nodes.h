@@ -157,7 +157,7 @@ public:
 
 	Vector<StringName> get_editable_properties() const override;
 	HashMap<StringName, String> get_editable_properties_names() const override;
-	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	Vector<ShaderGraph::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 
 	VisualShaderNodeParticleMeshEmitter();
 };
