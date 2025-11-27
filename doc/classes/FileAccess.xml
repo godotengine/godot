@@ -445,32 +445,6 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<param index="1" name="attribute_name" type="String" />
-			<param index="2" name="data" type="String" />
-			<description>
-				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
-				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
-				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
-				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
-				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
-			</description>
-		</method>
-		<method name="set_extended_attribute" qualifiers="static">
-			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
-			<param index="1" name="attribute_name" type="String" />
-			<param index="2" name="data" type="PackedByteArray" />
-			<description>
-				Writes file extended attribute with name [param attribute_name] as a byte array.
-				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
-				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
-				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
-				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
-			</description>
-		</method>
-		<method name="set_extended_attribute_string" qualifiers="static">
-			<return type="int" enum="Error" />
-			<param index="0" name="file" type="String" />
-			<param index="1" name="attribute_name" type="String" />
 			<param index="2" name="_data" type="String" />
 			<description>
 				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
