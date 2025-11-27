@@ -3878,6 +3878,8 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		if (scr.is_valid()) {
 			notify_script_changed(scr);
 		}
+
+		seb->validate();
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(n);
