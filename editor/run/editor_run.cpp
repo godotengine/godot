@@ -191,6 +191,9 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		if (pid != 0) {
 			pids.push_back(pid);
 		}
+		// Automatically set Editor to redraw less frequently while game is running.
+		// May require a setting toggle if it proves disruptive for some users.
+		OS::get_singleton()->set_update_vital_only(true);
 	}
 
 	status = STATUS_PLAY;
@@ -233,6 +236,9 @@ void EditorRun::stop() {
 		}
 		pids.clear();
 	}
+
+	const EditorSettings::UpdatePriority update_priority = EDITOR_GET("interface/editor/display/update_priority");
+	OS::get_singleton()->set_update_vital_only(update_priority == EditorSettings::UPDATE_VITAL_ONLY);
 
 	status = STATUS_STOP;
 	running_scene = "";

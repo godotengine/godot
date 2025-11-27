@@ -36,6 +36,7 @@
 #include "core/math/transform_interpolator.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/atlas_texture.h"
@@ -1290,9 +1291,10 @@ void CPUParticles2D::_set_do_redraw(bool p_do_redraw) {
 }
 
 void CPUParticles2D::_update_render_thread() {
-	MutexLock lock(update_mutex);
-
-	RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+	if (OS::get_singleton()->is_update_pending(true)) {
+		MutexLock lock(update_mutex);
+		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+	}
 }
 
 void CPUParticles2D::_notification(int p_what) {
