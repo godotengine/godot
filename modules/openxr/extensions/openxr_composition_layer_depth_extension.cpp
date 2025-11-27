@@ -44,7 +44,7 @@ OpenXRCompositionLayerDepthExtension::~OpenXRCompositionLayerDepthExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;

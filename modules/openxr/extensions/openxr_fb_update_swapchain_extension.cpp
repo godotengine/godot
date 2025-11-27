@@ -61,7 +61,7 @@ OpenXRFBUpdateSwapchainExtension::~OpenXRFBUpdateSwapchainExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME] = &fb_swapchain_update_state_ext;

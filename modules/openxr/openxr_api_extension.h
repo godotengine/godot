@@ -56,6 +56,7 @@ protected:
 #endif
 
 public:
+	uint64_t get_openxr_version();
 	uint64_t get_instance();
 	uint64_t get_system_id();
 	uint64_t get_session();

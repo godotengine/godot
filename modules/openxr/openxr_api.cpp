@@ -445,11 +445,14 @@ bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	return false;
 }
 
-bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
-	CharString extension = p_extension.ascii();
+bool OpenXRAPI::is_any_extension_enabled(const String &p_extensions) const {
+	// We allow a comma separated list of extensions here, only one needs to be supported.
+	// This allows us to check for extensions that were renamed or that were embedded in core
+	// at a specific OpenXR version.
+	for (const String &name : p_extensions.split(",", false)) {
+		CharString extension = name.utf8();
 
-	for (int i = 0; i < enabled_extensions.size(); i++) {
-		if (strcmp(enabled_extensions[i].ptr(), extension.ptr()) == 0) {
+		if (enabled_extensions.has(extension)) {
 			return true;
 		}
 	}
@@ -458,19 +461,19 @@ bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
 }
 
 bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
-	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_extension(p_toplevel_path);
+	String required_extensions = OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_extensions(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
-	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
+	ERR_FAIL_COND_V_MSG(required_extensions == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
 
-	if (required_extension == "") {
+	if (required_extensions == "") {
 		// no extension needed, core top level are always "supported", they just won't be used if not really supported
 		return true;
 	}
 
-	if (!is_extension_enabled(required_extension)) {
+	if (!is_any_extension_enabled(required_extensions)) {
 		// It is very likely we have top level paths for which the extension is not available so don't flood the logs with unnecessary spam.
-		print_verbose("OpenXR: Top level path " + p_toplevel_path + " requires extension " + required_extension);
+		print_verbose("OpenXR: Top level path " + p_toplevel_path + " requires extension " + required_extensions.replace(",", " or "));
 		return false;
 	}
 
@@ -478,19 +481,19 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 }
 
 bool OpenXRAPI::is_interaction_profile_supported(const String &p_ip_path) {
-	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_extension(p_ip_path);
+	String required_extensions = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_extensions(p_ip_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
-	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
+	ERR_FAIL_COND_V_MSG(required_extensions == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
 
-	if (required_extension == "") {
+	if (required_extensions == "") {
 		// no extension needed, core interaction profiles are always "supported", they just won't be used if not really supported
 		return true;
 	}
 
-	if (!is_extension_enabled(required_extension)) {
+	if (!is_any_extension_enabled(required_extensions)) {
 		// It is very likely we have interaction profiles for which the extension is not available so don't flood the logs with unnecessary spam.
-		print_verbose("OpenXR: Interaction profile " + p_ip_path + " requires extension " + required_extension);
+		print_verbose("OpenXR: Interaction profile " + p_ip_path + " requires extension " + required_extensions.replace(",", " or "));
 		return false;
 	}
 
@@ -507,14 +510,14 @@ bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, co
 	// If the io_path is not part of our metadata we've likely got a misspelled name or a bad action map, report
 	ERR_FAIL_NULL_V_MSG(io_path, false, "OpenXR: Unsupported io path " + String(p_ip_path) + String(p_io_path));
 
-	if (io_path->openxr_extension_name == "") {
+	if (io_path->openxr_extension_names == "") {
 		// no extension needed, core io paths are always "supported", they just won't be used if not really supported
 		return true;
 	}
 
-	if (!is_extension_enabled(io_path->openxr_extension_name)) {
+	if (!is_any_extension_enabled(io_path->openxr_extension_names)) {
 		// It is very likely we have io paths for which the extension is not available so don't flood the logs with unnecessary spam.
-		print_verbose("OpenXR: IO path " + String(p_ip_path) + String(p_io_path) + " requires extension " + io_path->openxr_extension_name);
+		print_verbose("OpenXR: IO path " + String(p_ip_path) + String(p_io_path) + " requires extension " + io_path->openxr_extension_names.replace(",", " or "));
 		return false;
 	}
 
@@ -534,13 +537,13 @@ void OpenXRAPI::copy_string_to_char_buffer(const String &p_string, char *p_buffe
 	}
 }
 
-PackedStringArray OpenXRAPI::get_all_requested_extensions() {
+PackedStringArray OpenXRAPI::get_all_requested_extensions(XrVersion p_xr_version) {
 	// This returns all extensions we will request regardless of whether they are available.
-	// This is mostly used by the editor to filter features not enabled through project settings.
+	// This is used by the editor to filter features not enabled through project settings.
 
 	PackedStringArray requested_extensions;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
+		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions(p_xr_version);
 
 		for (const KeyValue<String, bool *> &requested_extension : wrapper_request_extensions) {
 			if (!requested_extensions.has(requested_extension.key)) {
@@ -549,36 +552,30 @@ PackedStringArray OpenXRAPI::get_all_requested_extensions() {
 		}
 	}
 
+	// Also add in our OpenXR Version "extension", so we can switch logic on that.
+	requested_extensions.push_back(XR_OPENXR_1_1_NAME);
+
 	return requested_extensions;
 }
 
-bool OpenXRAPI::create_instance() {
-	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
+XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
+	enabled_extensions.clear();
 
-	// We can request an extension multiple times if there are dependencies
-	struct RequestExtension {
-		String name;
-		bool *enabled;
-	};
-
-	// Find all extensions we wish to enable.
-	Vector<RequestExtension> requested_extensions;
+	// Find all extensions we wish to enable for the requested OpenXR version.
+	LocalVector<RequestExtension> requested_extensions;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
+		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions(p_version);
 
 		for (const KeyValue<String, bool *> &requested_extension : wrapper_request_extensions) {
 			requested_extensions.push_back({ requested_extension.key, requested_extension.value });
 		}
 	}
 
-	// Check which extensions are supported.
-	enabled_extensions.clear();
-
-	for (RequestExtension &requested_extension : requested_extensions) {
+	for (const RequestExtension &requested_extension : requested_extensions) {
 		if (!is_extension_supported(requested_extension.name)) {
 			if (requested_extension.enabled == nullptr) {
 				// Null means this is a mandatory extension so we fail.
-				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.name + String(" extension!"));
+				ERR_FAIL_V_MSG(XR_ERROR_INITIALIZATION_FAILED, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.name + String(" extension!"));
 			} else {
 				// Set this extension as not supported.
 				*requested_extension.enabled = false;
@@ -590,41 +587,41 @@ bool OpenXRAPI::create_instance() {
 			}
 
 			// And record that we want to enable it (dependent extensions may be requested multiple times).
-			CharString ext_name = requested_extension.name.ascii();
+			CharString ext_name = requested_extension.name.utf8();
 			if (!enabled_extensions.has(ext_name)) {
 				enabled_extensions.push_back(ext_name);
 			}
 		}
 	}
 
-	Vector<const char *> extension_ptrs;
-	for (int i = 0; i < enabled_extensions.size(); i++) {
-		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i].get_data()));
-		extension_ptrs.push_back(enabled_extensions[i].get_data());
+	// Convert our enabled extensions so we can send it to OpenXR.
+	LocalVector<const char *> extension_ptrs;
+	extension_ptrs.reserve(enabled_extensions.size());
+
+	for (const CharString &enabled_extension : enabled_extensions) {
+		const char *extension = enabled_extension.get_data();
+		extension_ptrs.push_back(extension);
 	}
 
-	// We explicitly set the version to 1.0.48 in order to workaround a bug (see #108850) in Meta's runtime.
-	// Once that is fixed, restore this to using XR_API_VERSION_1_0, which is the version associated with the
-	// OpenXR headers that we're using.
-	XrVersion openxr_version = XR_MAKE_VERSION(1, 0, 48);
-
-	// Create our OpenXR instance
+	// Attempt to create our OpenXR instance for the requested version.
 	XrApplicationInfo application_info{
 		"Godot Engine", // applicationName, if we're running a game we'll update this down below.
 		1, // applicationVersion, we don't currently have this
 		"Godot Engine", // engineName
 		GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
-		openxr_version, // apiVersion
+		p_version // apiVersion
 	};
 
+	// Get additional entries from our extension wrappers.
 	void *next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		void *np = wrapper->set_instance_create_info_and_get_next_pointer(next_pointer);
+		void *np = wrapper->set_instance_create_info_and_get_next_pointer(p_version, next_pointer);
 		if (np != nullptr) {
 			next_pointer = np;
 		}
 	}
 
+	// Try and create this instance.
 	XrInstanceCreateInfo instance_create_info = {
 		XR_TYPE_INSTANCE_CREATE_INFO, // type
 		next_pointer, // next
@@ -636,16 +633,44 @@ bool OpenXRAPI::create_instance() {
 		extension_ptrs.ptr() // enabledExtensionNames
 	};
 
-	// Get our project name
+	// Get our project name.
 	String project_name = GLOBAL_GET("application/config/name");
 	if (!project_name.is_empty()) {
 		copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
 	}
 
 	XrResult result = xrCreateInstance(&instance_create_info, &instance);
-	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
+	if (XR_SUCCEEDED(result)) {
+		// Record version we've successfully enabled.
+		openxr_version = p_version;
+		print_line("OpenXR: Created instance for OpenXR", OpenXRUtil::make_xr_version_string(openxr_version));
 
-	// from this point on we can use get_error_string to get more info about our errors...
+		if (is_print_verbose_enabled()) {
+			// Print out enabled extensions.
+			for (const char *extension : extension_ptrs) {
+				print_line("OpenXR: Enabled extension ", extension);
+			}
+		}
+	}
+
+	return result;
+}
+
+bool OpenXRAPI::create_instance() {
+	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
+
+	// We explicitly set the version to 1.x.48 in order to workaround a bug (see #108850) in Meta's runtime.
+	// Once that is fixed, restore this to using XR_API_VERSION_1_x, which is the version associated with the
+	// OpenXR headers that we're using.
+
+	XrResult result = attempt_create_instance(XR_MAKE_VERSION(1, 1, 48)); // Replace with XR_API_VERSION_1_1
+	if (result == XR_ERROR_API_VERSION_UNSUPPORTED) {
+		// Couldn't initialize OpenXR 1.1, try 1.0
+		print_verbose("OpenXR: Falling back to OpenXR 1.0");
+
+		result = attempt_create_instance(XR_MAKE_VERSION(1, 0, 48)); // Replace with XR_API_VERSION_1_0
+	}
+	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
 	XrInstanceProperties instanceProps = {
 		XR_TYPE_INSTANCE_PROPERTIES, // type;
@@ -667,6 +692,12 @@ bool OpenXRAPI::create_instance() {
 		runtime_name = instanceProps.runtimeName;
 		runtime_version = OpenXRUtil::make_xr_version_string(instanceProps.runtimeVersion);
 		print_line("OpenXR: Running on OpenXR runtime: ", runtime_name, " ", runtime_version);
+	}
+
+	// We add an extension string to indicate we're on OpenXR 1.1,
+	// this makes it easier to check for this in various places where we're already checking on extensions.
+	if (XR_VERSION_MAJOR(openxr_version) == 1 && XR_VERSION_MINOR(openxr_version) == 1) {
+		enabled_extensions.push_back(XR_OPENXR_1_1_NAME);
 	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -979,6 +1010,8 @@ bool OpenXRAPI::setup_play_space() {
 	} else if (is_reference_space_supported(requested_reference_space)) {
 		new_reference_space = requested_reference_space;
 	} else if (requested_reference_space == XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT && is_reference_space_supported(XR_REFERENCE_SPACE_TYPE_STAGE)) {
+		// Note, in OpenXR 1.0 XR_EXT_LOCAL_FLOOR_EXTENSION_NAME needs to be enabled
+		// but from OpenXR 1.1 onwards this should always be available.
 		print_verbose("OpenXR: LOCAL_FLOOR space isn't supported, emulating using STAGE and LOCAL spaces.");
 
 		new_reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL;
@@ -3410,7 +3443,9 @@ RID OpenXRAPI::interaction_profile_create(const String &p_name) {
 
 	InteractionProfile new_interaction_profile;
 
-	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_interaction_profile.path);
+	new_interaction_profile.internal_name = get_interaction_profile_internal_name(p_name);
+
+	XrResult result = xrStringToPath(instance, new_interaction_profile.internal_name.get_data(), &new_interaction_profile.path);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to get path for ", p_name, "! [", get_error_string(result), "]");
 		return RID();
@@ -3443,6 +3478,93 @@ void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
 	ip->bindings.clear();
 }
 
+CharString OpenXRAPI::get_interaction_profile_internal_name(const String &p_interaction_profile_name) const {
+	CharString internal_name = p_interaction_profile_name.utf8();
+
+	if (openxr_version < XR_API_VERSION_1_1_0) {
+		// These interaction profiles were renamed in OpenXR 1.1,
+		// if we don't support OpenXR 1.1, rename them back.
+		if (internal_name == "/interaction_profiles/meta/touch_pro_controller") {
+			return "/interaction_profiles/facebook/touch_controller_pro";
+		} else if (internal_name == "/interaction_profiles/meta/touch_plus_controller") {
+			return "/interaction_profiles/meta/touch_controller_plus";
+		}
+	}
+
+	return internal_name;
+}
+
+const char *OpenXRAPI::check_profile_path(const CharString &p_interaction_profile_name, const char *p_path) const {
+	// We store the new names of these paths in our action map, so if we're on older versions of OpenXR,
+	// we need to use the old names.
+
+	struct RenameMap {
+		const XrVersion before_version; // If we're on an older version of OpenXR than this (if none zero).
+		const char *from; // Rename from this
+		const char *to; // to this
+		const char *profile; // limiting to this profile (unless nullptr)
+	};
+
+	// The order of entries is important as we early exit when we encounter a before_version value before our current value (excluding 0).
+	const RenameMap renames[] = {
+		// The touch_controller is an exception where it is still using the vendor names because they were introduced after OpenXR 1.1 was defined.
+		{ 0, "/user/hand/left/input/trigger/proximity", "/user/hand/left/input/trigger/proximity_fb", "/interaction_profiles/oculus/touch_controller" },
+		{ 0, "/user/hand/right/input/trigger/proximity", "/user/hand/right/input/trigger/proximity_fb", "/interaction_profiles/oculus/touch_controller" },
+		{ 0, "/user/hand/left/input/thumb_resting_surfaces/proximity", "/user/hand/left/input/thumb_fb/proximity_fb", "/interaction_profiles/oculus/touch_controller" },
+		{ 0, "/user/hand/right/input/thumb_resting_surfaces/proximity", "/user/hand/right/input/thumb_fb/proximity_fb", "/interaction_profiles/oculus/touch_controller" },
+
+		// Once applicable, add XR_API_VERSION_1_2 here.
+
+		// Before OpenXR 1.1 we're using palm_ext/pose (we're checking for enabled palm pose extension elsewhere).
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/grip_surface/pose", "/user/hand/left/input/palm_ext/pose", nullptr },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/grip_surface/pose", "/user/hand/right/input/palm_ext/pose", nullptr },
+
+		// Specific renames for touch_controller_pro, note that we would have already renamed it to the old name.
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/grip_surface/pose", "/user/hand/left/input/palm_ext/pose", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/grip_surface/pose", "/user/hand/right/input/palm_ext/pose", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/stylus/force", "/user/hand/left/input/stylus_fb/force", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/stylus/force", "/user/hand/right/input/stylus_fb/force", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger/proximity", "/user/hand/left/input/trigger/proximity_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger/proximity", "/user/hand/right/input/trigger/proximity_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/output/haptic_trigger", "/user/hand/left/output/haptic_trigger_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/output/haptic_trigger", "/user/hand/right/output/haptic_trigger_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/output/haptic_thumb", "/user/hand/left/output/haptic_thumb_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/output/haptic_thumb", "/user/hand/right/output/haptic_thumb_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/thumb_resting_surfaces/proximity", "/user/hand/left/input/thumb_fb/proximity_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/thumb_resting_surfaces/proximity", "/user/hand/right/input/thumb_fb/proximity_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger_curl/value", "/user/hand/left/input/trigger/curl_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger_curl/value", "/user/hand/right/input/trigger/curl_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger_slide/value", "/user/hand/left/input/trigger/slide_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger_slide/value", "/user/hand/right/input/trigger/slide_fb", "/interaction_profiles/facebook/touch_controller_pro" },
+
+		// Specific renames for touch_controller_plus, note that we would have already renamed it to the old name.
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger/proximity", "/user/hand/left/input/trigger/proximity_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger/proximity", "/user/hand/right/input/trigger/proximity_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/thumb_resting_surfaces/proximity", "/user/hand/left/input/thumb_meta/proximity_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/thumb_resting_surfaces/proximity", "/user/hand/right/input/thumb_meta/proximity_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger_curl/value", "/user/hand/left/input/trigger/curl_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger_curl/value", "/user/hand/right/input/trigger/curl_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/left/input/trigger_slide/value", "/user/hand/left/input/trigger/slide_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+		{ XR_API_VERSION_1_1_0, "/user/hand/right/input/trigger_slide/value", "/user/hand/right/input/trigger/slide_meta", "/interaction_profiles/facebook/touch_controller_plus" },
+	};
+	constexpr size_t length = sizeof(renames) / sizeof(renames[0]);
+
+	for (size_t i = 0; i < length; i++) {
+		const RenameMap &rename = renames[i];
+
+		if (rename.before_version != 0 && openxr_version >= rename.before_version) {
+			// We're done, we are on a new version than this, no need to check further.
+			return p_path;
+		}
+
+		if ((rename.profile == nullptr || p_interaction_profile_name == rename.profile) && strcmp(p_path, rename.from) == 0) {
+			return rename.to;
+		}
+	}
+
+	return p_path;
+}
+
 int OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String &p_path) {
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
 	ERR_FAIL_NULL_V(ip, -1);
@@ -3458,7 +3580,7 @@ int OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_
 
 	binding.action = action->handle;
 
-	XrResult result = xrStringToPath(instance, p_path.utf8().get_data(), &binding.binding);
+	XrResult result = xrStringToPath(instance, check_profile_path(ip->internal_name, p_path.utf8().get_data()), &binding.binding);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to get path for ", p_path, "! [", get_error_string(result), "]");
 		return -1;
