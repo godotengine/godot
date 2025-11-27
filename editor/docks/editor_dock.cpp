@@ -32,6 +32,7 @@
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
 
 void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
@@ -200,4 +201,63 @@ String EditorDock::get_display_title() const {
 
 String EditorDock::get_effective_layout_key() const {
 	return layout_key.is_empty() ? get_display_title() : layout_key;
+}
+
+DockTabContainer *EditorDock::get_parent_container() const {
+	return Object::cast_to<DockTabContainer>(get_parent());
+}
+
+void EditorDock::set_tab_index(int p_index, bool p_set_current) {
+	get_parent_container()->move_dock_index(this, p_index, p_set_current);
+	previous_tab_index = get_parent_container()->get_tab_idx_from_control(this);
+}
+
+void EditorDock::update_tab_style() {
+	if (!enabled || !is_open) {
+		return; // Disabled by feature profile or manually closed by user.
+	}
+	if (dock_window) {
+		return; // Floating.
+	}
+
+	DockTabContainer *tab_container = get_parent_container();
+	ERR_FAIL_NULL(tab_container);
+
+	int index = tab_container->get_tab_idx_from_control(this);
+	ERR_FAIL_COND(index == -1);
+
+	tab_container->get_tab_bar()->set_font_color_override_all(index, title_color);
+
+	const Ref<Texture2D> icon = get_effective_icon(callable_mp((Control *)this, &Control::get_editor_theme_icon));
+	bool assign_icon = force_show_icon;
+	switch (tab_container->get_tab_style()) {
+		case DockTabContainer::TabStyle::TEXT_ONLY: {
+			tab_container->set_tab_title(index, get_display_title());
+			tab_container->set_tab_tooltip(index, String());
+		} break;
+		case DockTabContainer::TabStyle::ICON_ONLY: {
+			tab_container->set_tab_title(index, icon.is_valid() ? String() : get_display_title());
+			tab_container->set_tab_tooltip(index, get_display_title());
+			assign_icon = true;
+		} break;
+		case DockTabContainer::TabStyle::TEXT_AND_ICON: {
+			tab_container->set_tab_title(index, get_display_title());
+			tab_container->set_tab_tooltip(index, String());
+			assign_icon = true;
+		} break;
+	}
+
+	if (assign_icon) {
+		tab_container->set_tab_icon(index, icon);
+	} else {
+		tab_container->set_tab_icon(index, Ref<Texture2D>());
+	}
+}
+
+Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
+	Ref<Texture2D> icon = dock_icon;
+	if (icon.is_null() && !icon_name.is_empty()) {
+		icon = p_icon_fetch.call(icon_name);
+	}
+	return icon;
 }
