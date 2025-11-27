@@ -333,7 +333,7 @@ void EditorDockManager::update_docks_menu() {
 	// Add docks.
 	docks_menu_docks.clear();
 	int id = 0;
-	const Callable icon_fetch = callable_mp((Window *)docks_menu, &Window::get_editor_theme_native_menu_icon).bind(global_menu, dark_mode);
+	const Callable icon_fetch = callable_mp(EditorNode::get_singleton(), &EditorNode::get_editor_theme_native_menu_icon).bind(global_menu, dark_mode);
 	for (EditorDock *dock : all_docks) {
 		if (!dock->enabled || !dock->global) {
 			continue;
