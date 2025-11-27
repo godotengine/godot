@@ -196,8 +196,8 @@ void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone)
 	input_map[p_action].deadzone = p_deadzone;
 }
 
-void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
+void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_event, rp_event, "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 	if (_find_event(input_map[p_action], p_event, true)) {
 		return; // Already added.
@@ -206,12 +206,14 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 	input_map[p_action].inputs.push_back(p_event);
 }
 
-bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+bool InputMap::action_has_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, suggest_actions(p_action));
 	return (_find_event(input_map[p_action], p_event, true) != nullptr);
 }
 
-void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+void InputMap::action_erase_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
@@ -251,7 +253,8 @@ const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_act
 	return &E->value.inputs;
 }
 
-bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
+bool InputMap::event_is_action(RequiredParam<InputEvent> rp_event, const StringName &p_action, bool p_exact_match) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 	return event_get_action_status(p_event, p_action, p_exact_match);
 }
 
