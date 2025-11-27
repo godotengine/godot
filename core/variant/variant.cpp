@@ -3433,14 +3433,24 @@ bool Variant::is_ref_counted() const {
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:
-		case ARRAY:
 		case DICTIONARY:
+		case ARRAY:
+		// NOTE: Packed array constructors **do** copies (unlike `Array()` and `Dictionary()`),
+		// whereas they pass by reference when inside a `Variant`.
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
+		case PACKED_VECTOR4_ARRAY:
 			return true;
-		default: {
-		}
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 bool Variant::is_shared() const {
