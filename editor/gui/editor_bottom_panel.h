@@ -50,7 +50,7 @@ class EditorBottomPanel : public TabContainer {
 
 	int previous_tab = -1;
 	bool lock_panel_switching = false;
-	LocalVector<Control *> bottom_docks;
+	LocalVector<EditorDock *> bottom_docks;
 	LocalVector<Ref<Shortcut>> dock_shortcuts;
 	HashMap<String, int> dock_offsets;
 

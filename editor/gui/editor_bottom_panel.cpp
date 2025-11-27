@@ -79,20 +79,16 @@ void EditorBottomPanel::_theme_changed() {
 }
 
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
-	Control *current_tab = get_current_tab_control();
+	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
-		String name = current_tab->get_name();
-		String key = name.to_snake_case();
-		dock_offsets[key] = p_offset;
+		dock_offsets[current_tab->get_effective_layout_key()] = p_offset;
 	}
 }
 
 int EditorBottomPanel::get_bottom_panel_offset() {
-	Control *current_tab = get_current_tab_control();
+	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
-		String name = current_tab->get_name();
-		String key = name.to_snake_case();
-		return dock_offsets[key];
+		return dock_offsets[current_tab->get_effective_layout_key()];
 	}
 	return 0;
 }
@@ -126,19 +122,21 @@ void EditorBottomPanel::_repaint() {
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
-	p_config_file->set_value(p_section, "selected_bottom_panel_item", get_current_tab() != -1 ? Variant(get_current_tab()) : Variant());
-
+	Dictionary offsets;
 	for (const KeyValue<String, int> &E : dock_offsets) {
-		p_config_file->set_value(p_section, "dock_" + E.key + "_offset", E.value);
+		offsets[E.key] = E.value;
 	}
+	p_config_file->set_value(p_section, "bottom_panel_offsets", offsets);
 }
 
 void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section) {
-	for (const Control *dock : bottom_docks) {
-		String name = dock->get_name();
-		String key = name.to_snake_case();
-		dock_offsets[key] = p_config_file->get_value(p_section, "dock_" + key + "_offset", 0);
+	const Dictionary offsets = p_config_file->get_value(p_section, "bottom_panel_offsets", Dictionary());
+	const LocalVector<Variant> offset_list = offsets.get_key_list();
+
+	for (const Variant &v : offset_list) {
+		dock_offsets[v] = offsets[v];
 	}
+	_update_center_split_offset();
 }
 
 void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {

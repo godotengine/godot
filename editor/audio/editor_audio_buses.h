@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
@@ -47,6 +47,7 @@
 
 class EditorAudioBuses;
 class EditorFileDialog;
+class HBoxContainer;
 class Timer;
 
 class EditorAudioBus : public PanelContainer {
@@ -148,8 +149,8 @@ protected:
 	void _notification(int p_what);
 };
 
-class EditorAudioBuses : public VBoxContainer {
-	GDCLASS(EditorAudioBuses, VBoxContainer);
+class EditorAudioBuses : public EditorDock {
+	GDCLASS(EditorAudioBuses, EditorDock);
 
 	HBoxContainer *top_hb = nullptr;
 
@@ -193,8 +194,6 @@ class EditorAudioBuses : public VBoxContainer {
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
-
-	bool use_default_editor_size = true;
 
 	void _file_dialog_callback(const String &p_string);
 
