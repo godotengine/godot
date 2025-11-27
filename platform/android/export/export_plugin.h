@@ -60,6 +60,8 @@ struct LauncherIcon {
 	int dimensions = 0;
 };
 
+class AndroidEditorGradleRunner;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -106,6 +108,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
+#else
+	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
 #endif
 
 	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;

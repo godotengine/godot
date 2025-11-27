@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
+    <queries>
+        <package android:name="org.godotengine.godot_gradle_build_environment" />
+    </queries>
+
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
