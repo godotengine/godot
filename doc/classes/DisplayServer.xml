@@ -79,7 +79,7 @@
 			<description>
 				Returns [code]1[/code] if a screen reader, Braille display or other assistive app is active, [code]0[/code] otherwise. Returns [code]-1[/code] if status is unknown.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
-				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps and will not affect this value. To test your app with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
+				[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps and will not affect this value. To test your project with these tools, set [member ProjectSettings.accessibility/general/accessibility_support] to [code]1[/code].
 			</description>
 		</method>
 		<method name="accessibility_set_window_focused">
@@ -1845,7 +1845,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Sets the [param callable] that should be called when hardware keyboard is connected/disconnected. [param callable] should accept a single [bool] parameter indicating whether the keyboard is connected (true) or disconnected (false).
+				Sets the callback that should be called when a hardware keyboard is connected or disconnected. [param callable] should accept a single [bool] argument indicating whether the keyboard has been connected ([code]true[/code]) or disconnected ([code]false[/code]).
 				[b]Note:[/b] This method is only implemented on Android.
 			</description>
 		</method>
@@ -1869,7 +1869,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
+				Sets the callback that should be called when the system's theme settings are changed. [param callable] should accept zero arguments.
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
@@ -2058,8 +2058,8 @@
 		<method name="virtual_keyboard_get_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
-				[b]Note:[/b] On Android 7 and 8, the keyboard height may return 0 the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
+				Returns the on-screen keyboard's height in pixels. Returns [code]0[/code] if there is no keyboard or if it is currently hidden.
+				[b]Note:[/b] On Android 7 and 8, the keyboard height may return [code]0[/code] the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -2236,14 +2236,14 @@
 		<method name="window_maximize_on_title_dbl_click" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if double-click on a window title should maximize it.
+				Returns [code]true[/code] if double-clicking on a window's title should maximize it.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
 		<method name="window_minimize_on_title_dbl_click" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if double-click on a window title should minimize it.
+				Returns [code]true[/code] if double-clicking on a window's title should minimize it.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -2774,7 +2774,7 @@
 			Element is hidden for accessibility tools.
 		</constant>
 		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags">
-			Element is support multiple item selection.
+			Element supports multiple item selection.
 		</constant>
 		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
 			Element require user input.
@@ -3146,7 +3146,7 @@
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="13" enum="WindowFlags">
-			Max value of the [enum WindowFlags].
+			Represents the size of the [enum WindowFlags] enum.
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 			Sent when the mouse pointer enters the window.
@@ -3176,7 +3176,7 @@
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8" enum="WindowEvent">
-			Sent when the window has been forcibly closed by the Display Server. The window shall immediately hide and clean any internal rendering references.
+			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
 			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">

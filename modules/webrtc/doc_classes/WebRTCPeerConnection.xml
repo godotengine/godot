@@ -12,6 +12,7 @@
 		After these steps, the connection should become connected. Keep on reading or look into the tutorial for more information.
 	</description>
 	<tutorials>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_ice_candidate">
