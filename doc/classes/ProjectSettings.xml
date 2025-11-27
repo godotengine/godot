@@ -3313,6 +3313,7 @@
 			Two options are supported:
 			- [code]vulkan[/code] (default), Vulkan from native drivers. If [member rendering/rendering_device/fallback_to_vulkan] is enabled, this is used as a fallback if Direct3D 12 is not supported.
 			- [code]d3d12[/code], Direct3D 12 from native drivers. If [member rendering/rendering_device/fallback_to_d3d12] is enabled, this is used as a fallback if Vulkan is not supported.
+			[b]Note:[/b] Starting with Godot 4.6, new projects are configured by default to use [code]d3d12[/code] on Windows. Projects created before Godot 4.6 keep [code]vulkan[/code] for compatibility reasons, but it is recommended to switch them manually to [code]d3d12[/code].
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the Forward+ renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
