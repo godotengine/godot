@@ -492,6 +492,9 @@ class DisplayServerWindows : public DisplayServer {
 	uint32_t window_bkg_brush_color = 0;
 
 	HCURSOR cursors[DisplayServerEnums::CURSOR_MAX] = { nullptr };
+	HashMap<DisplayServerEnums::CursorShape, String> sys_cursor_svg;
+	HCURSOR sys_cursor_cache[DisplayServerEnums::CURSOR_MAX] = { nullptr };
+	bool _load_and_set_svg_cursor(DisplayServerEnums::CursorShape p_shape);
 	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CursorShape::CURSOR_ARROW;
 	RBMap<DisplayServerEnums::CursorShape, Vector<Variant>> cursors_cache;
 
