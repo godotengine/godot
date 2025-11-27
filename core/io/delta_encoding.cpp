@@ -63,15 +63,20 @@ Error DeltaEncoding::encode_delta(Span<uint8_t> p_old_data, Span<uint8_t> p_new_
 
 	ZstdCompressionContext zstd_context;
 
-	ZSTD_parameters zstd_params = ZSTD_getParams(p_compression_level, p_new_data.size(), p_old_data.size());
-	zstd_params.fParams.contentSizeFlag = 1;
-	zstd_params.fParams.checksumFlag = 1;
+	zstd_result = ZSTD_CCtx_setParameter(zstd_context, ZSTD_c_compressionLevel, p_compression_level);
+	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting compression level failed.");
 
-	zstd_result = ZSTD_CCtx_setParams(zstd_context, zstd_params);
-	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting compression parameters failed.");
+	zstd_result = ZSTD_CCtx_setPledgedSrcSize(zstd_context, p_new_data.size());
+	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting pledged source size failed.");
 
 	zstd_result = ZSTD_CCtx_refPrefix(zstd_context, p_old_data.ptr(), p_old_data.size());
 	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting prefix dictionary failed.");
+
+	zstd_result = ZSTD_CCtx_setParameter(zstd_context, ZSTD_c_contentSizeFlag, 1);
+	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting content size flag failed.");
+
+	zstd_result = ZSTD_CCtx_setParameter(zstd_context, ZSTD_c_checksumFlag, 1);
+	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Setting checksum flag failed.");
 
 	zstd_result = ZSTD_compress2(zstd_context, r_delta.ptrw() + DELTA_HEADER_SIZE, r_delta.size() - DELTA_HEADER_SIZE, p_new_data.ptr(), p_new_data.size());
 	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to encode delta. Compression failed.");
@@ -91,7 +96,7 @@ Error DeltaEncoding::decode_delta(Span<uint8_t> p_old_data, Span<uint8_t> p_delt
 	ERR_FAIL_COND_V_MSG(memcmp(magic, DELTA_MAGIC, 4) != 0, ERR_FILE_CORRUPT, "Failed to decode delta. Header is invalid.");
 	ERR_FAIL_COND_V_MSG(version != DELTA_VERSION_NUMBER, ERR_FILE_UNRECOGNIZED, vformat("Failed to decode delta. Expected version %d but found %d.", DELTA_VERSION_NUMBER, version));
 
-	size_t zstd_result = ZSTD_findDecompressedSize(p_delta.ptr() + DELTA_HEADER_SIZE, p_delta.size() - DELTA_HEADER_SIZE);
+	size_t zstd_result = ZSTD_getFrameContentSize(p_delta.ptr() + DELTA_HEADER_SIZE, p_delta.size() - DELTA_HEADER_SIZE);
 	ERR_FAIL_ZSTD_V_MSG(zstd_result, FAILED, "Failed to decode delta. Unable to find decompressed size.");
 
 	r_new_data.reserve_exact(zstd_result);
