@@ -6081,6 +6081,10 @@ void EditorNode::_load_editor_layout() {
 
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
+		} else {
+			ep.step(TTR("Loading docks..."), 1, true);
+			// Initialize some default values.
+			bottom_panel->load_layout_from_config(default_layout, EDITOR_NODE_CONFIG_SECTION);
 		}
 	} else {
 		ep.step(TTR("Loading docks..."), 1, true);
@@ -8797,6 +8801,12 @@ EditorNode::EditorNode() {
 	}
 	for (int i = 0; i < editor_dock_manager->get_vsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
+	}
+
+	{
+		Dictionary offsets;
+		offsets["Audio"] = -450;
+		default_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "bottom_panel_offsets", offsets);
 	}
 
 	_update_layouts_menu();
