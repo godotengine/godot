@@ -8455,9 +8455,9 @@ EditorNode::EditorNode() {
 	command_palette->set_title(TTR("Command Palette"));
 	gui_base->add_child(command_palette);
 
-	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/new_scene", TTRC("New Scene"), KeyModifierMask::CMD_OR_CTRL + Key::N), SCENE_NEW_SCENE);
+	file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/new_scene", TTRC("New Scene"), KeyModifierMask::CMD_OR_CTRL + Key::N), SCENE_NEW_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/new_inherited_scene", TTRC("New Inherited Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::N), SCENE_NEW_INHERITED_SCENE);
-	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O), SCENE_OPEN_SCENE);
+	file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("PackedScene"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O), SCENE_OPEN_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T), SCENE_OPEN_PREV);
 
 	recent_scenes = memnew(PopupMenu);
@@ -8466,13 +8466,13 @@ EditorNode::EditorNode() {
 	recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 
 	file_menu->add_separator();
-	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTRC("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S), SCENE_SAVE_SCENE);
+	file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Save"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/save_scene", TTRC("Save Scene"), KeyModifierMask::CMD_OR_CTRL + Key::S), SCENE_SAVE_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/save_scene_as", TTRC("Save Scene As..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::S), SCENE_SAVE_AS_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/save_all_scenes", TTRC("Save All Scenes"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::S), SCENE_SAVE_ALL_SCENES);
 
 	file_menu->add_separator();
 
-	file_menu->add_shortcut(ED_SHORTCUT_ARRAY_AND_COMMAND("editor/quick_open", TTRC("Quick Open..."), { int32_t(KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::O), int32_t(KeyModifierMask::CMD_OR_CTRL + Key::P) }), SCENE_QUICK_OPEN);
+	file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Load"), global_menu, dark_mode), ED_SHORTCUT_ARRAY_AND_COMMAND("editor/quick_open", TTRC("Quick Open..."), { int32_t(KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::O), int32_t(KeyModifierMask::CMD_OR_CTRL + Key::P) }), SCENE_QUICK_OPEN);
 	ED_SHORTCUT_OVERRIDE_ARRAY("editor/quick_open", "macos", { int32_t(KeyModifierMask::META + KeyModifierMask::CTRL + Key::O), int32_t(KeyModifierMask::CMD_OR_CTRL + Key::P) });
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open_scene", TTRC("Quick Open Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::O), SCENE_QUICK_OPEN_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open_script", TTRC("Quick Open Script..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::ALT + Key::O), SCENE_QUICK_OPEN_SCRIPT);
@@ -8484,7 +8484,7 @@ EditorNode::EditorNode() {
 	export_as_menu->connect("index_pressed", callable_mp(this, &EditorNode::_export_as_menu_option));
 
 	file_menu->add_separator();
-	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_undo"), SCENE_UNDO, false, true);
+	file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("RotateLeft"), global_menu, dark_mode), ED_GET_SHORTCUT("ui_undo"), SCENE_UNDO, false, true);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), SCENE_REDO, false, true);
 
 	file_menu->add_separator();
@@ -8496,7 +8496,7 @@ EditorNode::EditorNode() {
 	if (!global_menu || !OS::get_singleton()->has_feature("macos")) {
 		// On macOS  "Quit" and "About" options are in the "app" menu.
 		file_menu->add_separator();
-		file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/file_quit", TTRC("Quit"), KeyModifierMask::CMD_OR_CTRL + Key::Q), SCENE_QUIT, true);
+		file_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Close"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/file_quit", TTRC("Quit"), KeyModifierMask::CMD_OR_CTRL + Key::Q), SCENE_QUIT, true);
 	}
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_settings", TTRC("Editor Settings..."));
@@ -8516,7 +8516,7 @@ EditorNode::EditorNode() {
 	project_menu = memnew(PopupMenu);
 	_add_to_main_menu(TTRC("Project"), project_menu);
 
-	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
+	project_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("ClassList"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
 	project_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 
 	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
@@ -8526,11 +8526,11 @@ EditorNode::EditorNode() {
 	project_menu->add_item(TTRC("Version Control"), PROJECT_VERSION_CONTROL);
 
 	project_menu->add_separator();
-	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export")), PROJECT_EXPORT);
+	project_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export")), PROJECT_EXPORT);
 	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
-	project_menu->add_item(TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
+	project_menu->add_icon_item(_get_editor_theme_native_menu_icon(SNAME("Folder"), global_menu, dark_mode), TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
 #endif
 
 	project_menu->add_separator();
@@ -8543,10 +8543,10 @@ EditorNode::EditorNode() {
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files...")), TOOLS_PROJECT_UPGRADE);
 
 	project_menu->add_separator();
-	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
+	project_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Reload"), global_menu, dark_mode), ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
 	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTRC("Quit to Project List"), KeyModifierMask::CTRL + KeyModifierMask::SHIFT + Key::Q);
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::META + KeyModifierMask::CTRL + KeyModifierMask::ALT + Key::Q);
-	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), PROJECT_QUIT_TO_PROJECT_MANAGER, true);
+	project_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Close"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/quit_to_project_list"), PROJECT_QUIT_TO_PROJECT_MANAGER, true);
 
 	// Spacer to center 2D / 3D / Script buttons.
 	left_spacer = memnew(HBoxContainer);
@@ -8581,12 +8581,12 @@ EditorNode::EditorNode() {
 
 #ifdef MACOS_ENABLED
 	if (!global_menu) {
-		settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
+		settings_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Tools"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 	}
 #else
-	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
+	settings_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Tools"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 #endif
-	settings_menu->add_shortcut(ED_SHORTCUT("editor/command_palette", TTRC("Command Palette..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::P), EDITOR_COMMAND_PALETTE);
+	settings_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("TextEditorPlay"), global_menu, dark_mode), ED_SHORTCUT("editor/command_palette", TTRC("Command Palette..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::P), EDITOR_COMMAND_PALETTE);
 	settings_menu->add_separator();
 
 	settings_menu->add_submenu_node_item(TTRC("Editor Docks"), editor_dock_manager->get_docks_menu());
@@ -8598,7 +8598,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/take_screenshot", TTRC("Take Screenshot"), KeyModifierMask::CTRL | Key::F12);
 	ED_SHORTCUT_OVERRIDE("editor/take_screenshot", "macos", KeyModifierMask::META | Key::F12);
-	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
+	settings_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Image"), global_menu, dark_mode), ED_GET_SHORTCUT("editor/take_screenshot"), EDITOR_TAKE_SCREENSHOT);
 
 	settings_menu->set_item_tooltip(-1, TTRC("Screenshots are stored in the user data folder (\"user://\")."));
 
@@ -8619,7 +8619,7 @@ EditorNode::EditorNode() {
 	settings_menu->add_separator();
 #endif
 
-	settings_menu->add_item(TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
+	settings_menu->add_icon_item(_get_editor_theme_native_menu_icon(SNAME("Override"), global_menu, dark_mode), TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
 	settings_menu->add_item(TTRC("Manage Export Templates..."), EDITOR_MANAGE_EXPORT_TEMPLATES);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	settings_menu->add_item(TTRC("Configure FBX Importer..."), EDITOR_CONFIGURE_FBX_IMPORTER);
