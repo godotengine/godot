@@ -99,8 +99,10 @@ extern "C" {
 #endif
 
 extern "C" {
+#ifdef ENABLE_PREFER_HIGH_PERFORMANCE_GPU
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+#endif // ENABLE_PREFER_HIGH_PERFORMANCE_GPU
 __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 }
 
