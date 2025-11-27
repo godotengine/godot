@@ -108,19 +108,18 @@ public:
 		Image::Format format;
 		bool convert_bgr;
 	};
-	static inline constexpr const CopyFormat la = { 2, Image::FORMAT_LA8, false };
-	static inline constexpr const CopyFormat rgb = { 3, Image::FORMAT_RGB8, false };
-	static inline constexpr const CopyFormat rgba = { 4, Image::FORMAT_RGBA8, false };
+	static inline constexpr const CopyFormat LA = { 2, Image::FORMAT_LA8, false };
+	static inline constexpr const CopyFormat RGB = { 3, Image::FORMAT_RGB8, false };
+	static inline constexpr const CopyFormat RGBA = { 4, Image::FORMAT_RGBA8, false };
 	// Windows RGB24 uses BGR byte order. See:
 	// https://learn.microsoft.com/en-us/windows/win32/directshow/uncompressed-rgb-video-subtypes
-	static inline constexpr const CopyFormat bgr = { 3, Image::FORMAT_RGB8, true };
+	static inline constexpr const CopyFormat BGR = { 3, Image::FORMAT_RGB8, true };
 
-	CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_format);
+	CopyBufferDecoder(CameraFeed *p_camera_feed, const CopyFormat &p_format);
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
 
 class JpegBufferDecoder : public BufferDecoder {
-private:
 	Vector<uint8_t> image_data;
 
 public:
@@ -129,7 +128,6 @@ public:
 };
 
 class Nv12BufferDecoder : public BufferDecoder {
-private:
 	Ref<Image> image_y;
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;

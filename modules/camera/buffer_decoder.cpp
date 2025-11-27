@@ -185,7 +185,7 @@ void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	camera_feed->set_rgb_image(image);
 }
 
-CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_format) :
+CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, const CopyFormat &p_format) :
 		BufferDecoder(p_camera_feed) {
 	format = p_format.format;
 	convert_bgr = p_format.convert_bgr;

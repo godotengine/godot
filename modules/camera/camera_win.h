@@ -33,6 +33,7 @@
 #include "buffer_decoder.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
+
 #include <initguid.h>
 #include <mfapi.h>
 #include <mferror.h>
@@ -41,7 +42,6 @@
 #include <windows.h>
 
 class CameraFeedWindows : public CameraFeed {
-private:
 	// Format tracking structures.
 	struct FormatKey {
 		int width;
@@ -50,11 +50,11 @@ private:
 		int frame_denominator;
 		bool is_rgb24; // Track if this was originally RGB24.
 
-		bool operator==(const FormatKey &other) const {
-			return width == other.width &&
-					height == other.height &&
-					frame_numerator == other.frame_numerator &&
-					frame_denominator == other.frame_denominator;
+		bool operator==(const FormatKey &p_other) const {
+			return width == p_other.width &&
+					height == p_other.height &&
+					frame_numerator == p_other.frame_numerator &&
+					frame_denominator == p_other.frame_denominator;
 		}
 	};
 
@@ -79,13 +79,12 @@ private:
 	BufferDecoder *buffer_decoder = nullptr;
 	bool use_mf_conversion = false;
 
-	static void capture(CameraFeedWindows *feed);
+	static void capture(CameraFeedWindows *p_feed);
 
 	void read();
-	void fill_formats(IMFMediaTypeHandler *imf_media_type_handler);
+	void fill_formats(IMFMediaTypeHandler *p_imf_media_type_handler);
 	BufferDecoder *_create_buffer_decoder();
 
-protected:
 public:
 	static Ref<CameraFeedWindows> create(IMFActivate *pDevice);
 	virtual ~CameraFeedWindows();
