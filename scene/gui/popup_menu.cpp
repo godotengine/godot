@@ -1924,7 +1924,7 @@ void PopupMenu::add_submenu_node_item(const String &p_label, PopupMenu *p_submen
 		RID submenu_rid = p_submenu->bind_global_menu();
 		nmenu->set_item_submenu(global_menu, index, submenu_rid);
 		items.write[index].submenu_bound = true;
-	} else {
+	} else if (!p_submenu->is_connected("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden))) {
 		p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	}
 
@@ -2221,7 +2221,7 @@ void PopupMenu::set_item_submenu_node(int p_idx, PopupMenu *p_submenu) {
 			NativeMenu::get_singleton()->set_item_submenu(global_menu, p_idx, submenu_rid);
 			items.write[p_idx].submenu_bound = true;
 		}
-	} else {
+	} else if (!p_submenu->is_connected("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden))) {
 		p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
 	}
 	control->queue_redraw();
