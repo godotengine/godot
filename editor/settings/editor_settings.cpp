@@ -568,7 +568,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/behavior/import_resources_when_unfocused", false, "")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
-	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/display/update_continuously", false, "")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display/update_priority", 1, "Update Continuously (Deprecated),Update When Changed,Update Vital Changes")
 
 	bool is_android_editor = false;
 #ifdef ANDROID_ENABLED
@@ -1303,6 +1303,15 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
 	erase("interface/editors/show_scene_tree_root_selection");
 	erase("asset_library/available_urls"); // Workaround bugged settings treating the previous default as a modified value (see GH-118755).
+
+	if (has_setting("interface/editor/display/update_continuously")) {
+		if (get_setting("interface/editor/display/update_continuously")) {
+			set_setting("interface/editor/display/update_priority", EditorSettings::UpdatePriority::UPDATE_CONTINUOUSLY);
+		} else {
+			set_setting("interface/editor/display/update_priority", EditorSettings::UpdatePriority::UPDATE_WHEN_CHANGED);
+		}
+		erase("interface/editor/display/update_continuously");
+	}
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
