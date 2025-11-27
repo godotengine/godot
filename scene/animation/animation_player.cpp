@@ -32,6 +32,7 @@
 #include "animation_player.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/os/os.h"
 
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -145,14 +146,16 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void AnimationPlayer::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-				set_active(active);
-				play(autoplay);
-				_check_immediately_after_start();
-			}
-		} break;
+	if (OS::get_singleton()->is_update_pending()) {
+		switch (p_what) {
+			case NOTIFICATION_READY: {
+				if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
+					set_active(active);
+					play(autoplay);
+					_check_immediately_after_start();
+				}
+			} break;
+		}
 	}
 }
 

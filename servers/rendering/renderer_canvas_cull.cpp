@@ -260,7 +260,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 		// Something to draw?
 
 		if (ci->update_when_visible) {
-			RenderingServerDefault::redraw_request();
+			RenderingServerDefault::redraw_request(false);
 		}
 
 		if (ci->commands != nullptr || ci->copy_back_buffer) {
