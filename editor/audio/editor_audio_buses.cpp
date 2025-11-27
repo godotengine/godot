@@ -34,16 +34,17 @@
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
@@ -1111,7 +1112,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_bottom_panel()->add_item(TTRC("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
+	EditorDockManager::get_singleton()->add_dock(audio_buses);
 	return audio_buses;
 }
 
@@ -1158,16 +1159,6 @@ void EditorAudioBuses::_notification(int p_what) {
 			}
 
 			_update_file_label_size();
-
-			// Setting `the split_offset` value once to the minimum value required to display the entire contents of the `EditorAudioBuses`.
-			// This is used instead of setting a custom_minimum_size or similar, as this may cause the panel to be outside the window (see GH-26835).
-			// If `EditorAudioBuses` is selected when starting the editor, this code will be executed first and then the saved layout will load.
-			if (use_default_editor_size) {
-				use_default_editor_size = false;
-				int offset = EditorNode::get_bottom_panel()->get_combined_minimum_size().y + get_combined_minimum_size().y;
-				offset += Object::cast_to<Control>(bus_hb->get_child(0))->get_combined_minimum_size().y; // Master audio bus always exists.
-				EditorNode::get_singleton()->set_center_split_offset(-offset);
-			}
 		} break;
 	}
 }
@@ -1336,8 +1327,17 @@ void EditorAudioBuses::_bind_methods() {
 }
 
 EditorAudioBuses::EditorAudioBuses() {
+	set_name(TTRC("Audio"));
+	set_icon_name("AudioStreamPlayer");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Dock"), KeyModifierMask::ALT | Key::A));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
+
 	top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	main_vb->add_child(top_hb);
 
 	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
 
@@ -1390,7 +1390,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
-	add_child(bus_scroll);
+	main_vb->add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
@@ -1398,7 +1398,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer = memnew(Timer);
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
-	add_child(save_timer);
+	main_vb->add_child(save_timer);
 	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1418,7 +1418,7 @@ EditorAudioBuses::EditorAudioBuses() {
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+	make_visible();
 
 	const String path = ResourceUID::ensure_path(p_path);
 
