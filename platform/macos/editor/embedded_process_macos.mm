@@ -79,7 +79,7 @@ void EmbeddedProcessMacOS::set_script_debugger(ScriptEditorDebugger *p_debugger)
 	_try_embed_process();
 }
 
-void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcessMacOS::embed_process(OS::ProcessID p_pid, const String &p_embedded_window) {
 	if (!window) {
 		return;
 	}
@@ -103,7 +103,7 @@ void EmbeddedProcessMacOS::reset() {
 		ds = static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton());
 	}
 	if (current_process_id != 0 && is_embedding_completed()) {
-		ds->remove_embedded_process(current_process_id);
+		ds->remove_embedded_process(current_process_id, "");
 	}
 	current_process_id = 0;
 	embedding_state = EmbeddingState::IDLE;

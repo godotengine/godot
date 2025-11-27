@@ -93,6 +93,7 @@ private:
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
 	bool embedded_in_editor = false;
+	HashMap<String, int64_t> embedded_subwindows;
 	bool recovery_mode_hint = false;
 
 	bool _print_header = true;
@@ -159,6 +160,8 @@ public:
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
 
+	void add_embedded_subwindow(const String &p_subwindow_title, int64_t p_parent_id);
+	int64_t get_embedded_subwindow(const String &p_subwindow_title);
 	void add_singleton(const Singleton &p_singleton);
 	void get_singletons(List<Singleton> *p_singletons);
 	bool has_singleton(const StringName &p_name) const;
