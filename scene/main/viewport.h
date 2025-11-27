@@ -488,7 +488,7 @@ private:
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
-	void _update_mouse_over(const Ref<InputEventMouse> &p_mm);
+	void _update_mouse_over();
 	virtual void _update_mouse_over(Vector2 p_pos);
 	virtual void _mouse_leave_viewport();
 
@@ -609,9 +609,9 @@ public:
 	Vector2 get_camera_rect_size() const;
 
 	void push_text_input(const String &p_text);
-	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
 	void notify_mouse_entered();
 	void notify_mouse_exited();

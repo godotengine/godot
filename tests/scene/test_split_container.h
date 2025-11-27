@@ -1783,7 +1783,7 @@ TEST_CASE("[SceneTree][SplitContainer] More children") {
 
 	SUBCASE("[SplitContainer] Duplicate") {
 		// Make sure dynamically added internal draggers duplicate properly.
-		SplitContainer *duplicate = (SplitContainer *)split_container->duplicate();
+		SplitContainer *duplicate = (SplitContainer *)(Node *)split_container->duplicate();
 		MessageQueue::get_singleton()->flush();
 		CHECK(duplicate->get_child_count(false) == split_container->get_child_count(false));
 		CHECK(duplicate->get_child_count(true) == split_container->get_child_count(true));
