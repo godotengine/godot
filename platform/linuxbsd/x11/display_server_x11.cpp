@@ -2467,9 +2467,11 @@ void DisplayServerX11::_update_motif_wm_hints(WindowID p_window) {
 	WindowData &wd = windows[p_window];
 
 	MotifWmHints hints = {};
-	hints.flags = MWM_HINTS_DECORATIONS | MWM_HINTS_FUNCTIONS;
+	hints.flags = MWM_HINTS_DECORATIONS;
 
 	if (!wd.borderless) {
+		hints.flags |= MWM_HINTS_FUNCTIONS;
+
 		hints.decorations = MWM_DECOR_BORDER | MWM_DECOR_MENU | MWM_DECOR_TITLE;
 		hints.functions = MWM_FUNC_MOVE | MWM_FUNC_CLOSE;
 
