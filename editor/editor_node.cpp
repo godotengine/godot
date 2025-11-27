@@ -9219,12 +9219,6 @@ EditorNode::EditorNode() {
 
 	follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
 	use_system_accent_color = EDITOR_GET("interface/theme/use_system_accent_color");
-	system_theme_timer = memnew(Timer);
-	system_theme_timer->set_wait_time(1.0);
-	system_theme_timer->connect("timeout", callable_mp(this, &EditorNode::_check_system_theme_changed));
-	add_child(system_theme_timer);
-	system_theme_timer->set_owner(get_owner());
-	system_theme_timer->set_autostart(true);
 
 	const String config_dir = EditorPaths::get_singleton()->get_config_dir();
 	const String global_res_dir = config_dir.path_join("global_resources");
