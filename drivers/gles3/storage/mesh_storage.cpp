@@ -1236,11 +1236,11 @@ void MeshStorage::_mesh_instance_remove_surface(MeshInstance *mi, int p_surface)
 		memfree(surface.versions);
 	}
 
-	if (surface.vertex_buffers[0] != 0) {
-		GLES3::Utilities::get_singleton()->buffer_free_data(surface.vertex_buffers[0]);
-		GLES3::Utilities::get_singleton()->buffer_free_data(surface.vertex_buffers[1]);
-		surface.vertex_buffers[0] = 0;
-		surface.vertex_buffers[1] = 0;
+	if (surface.blend_shape_vertex_buffers[0] != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(surface.blend_shape_vertex_buffers[0]);
+		GLES3::Utilities::get_singleton()->buffer_free_data(surface.blend_shape_vertex_buffers[1]);
+		surface.blend_shape_vertex_buffers[0] = 0;
+		surface.blend_shape_vertex_buffers[1] = 0;
 	}
 
 	for (int i = 0; i < 2; i++) {
