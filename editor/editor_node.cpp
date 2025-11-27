@@ -8782,8 +8782,8 @@ EditorNode::EditorNode() {
 	editor_dock_manager->add_dock(history_dock);
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
-	left_r_hsplit->set_split_offset(270 * EDSCALE);
-	main_hsplit->set_split_offset(-360 * EDSCALE);
+	left_r_hsplit->set_split_offset(280 * EDSCALE);
+	main_hsplit->set_split_offset(-280 * EDSCALE);
 
 	// Define corresponding default layout.
 
@@ -8794,7 +8794,7 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_4", "FileSystem,History");
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Signals,Groups");
 
-	int hsplits[] = { 0, 270, -270, 0 };
+	int hsplits[] = { 0, 280, -280, 0 };
 	DEV_ASSERT((int)std_size(hsplits) == editor_dock_manager->get_hsplit_count());
 	for (int i = 0; i < editor_dock_manager->get_hsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), hsplits[i]);
