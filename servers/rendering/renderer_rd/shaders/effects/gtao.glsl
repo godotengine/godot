@@ -38,23 +38,31 @@
 #define GTAO_BIAS_MIP_LEVEL (0)
 #define GTAO_FALLOFF_RANGE (0.717)
 
+#define GTAO_DEFAULT_RADIUS_MULTIPLIER         (1.457f)
+#define GTAO_DEFAULT_FALLOFF_RANGE             (0.615f)
+#define GTAO_DEFAULT_SAMPLE_DISTRIBUTION_POWER (2.0f)
+
+
+#define PI 3.141592653589793
+#define PI_HALF (PI / 2.0)
+
+
 const int num_slices[5] = { 2, 4, 5, 6, 8 };
 const int num_taps[5] = { 4, 8, 12, 16, 20 };
 
 
-// This push_constant is full - 128 bytes - if you need to add more data, consider adding to the uniform buffer instead
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	int quality;
 	bool is_orthogonal;
 
 	vec2 viewport_pixel_size;
-	vec2 pad;
+	int pass;
+	int pad;
 
+	ivec2 pass_coord_offset;
 	int size_multiplier;
 	float fov_scale;
-	float depth_linearize_mul;
-	float depth_linearize_add;
 
 	vec2 NDC_to_view_mul;
 	vec2 NDC_to_view_add;
@@ -73,13 +81,13 @@ params;
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(set = 0, binding = 0) uniform sampler2D source_depth;
+layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
 
 layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
 
-layout(r8, set = 0, binding = 2) uniform restrict writeonly image2D dest_working_term;
+layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_working_term;
 
-layout(r8, set = 0, binding = 3) uniform restrict writeonly image2D dest_edges;
+layout(r8, set = 1, binding = 1) uniform restrict writeonly image2D dest_edges;
 
 
 // packing/unpacking for edges; 2 bits per edge mean 4 gradient values (0, 0.33, 0.66, 1) for smoother transitions!
@@ -105,32 +113,6 @@ vec3 NDC_to_viewspace(vec2 p_pos, float p_viewspace_depth) {
 	} else {
 		return vec3((params.NDC_to_view_mul * p_pos.xy + params.NDC_to_view_add) * p_viewspace_depth, p_viewspace_depth);
 	}
-}
-
-float NDC_to_viewspace_depth(const float p_depth)
-{
-	if (params.is_orthogonal) {
-		float depth = p_depth * 2.0 - 1.0;
-		float z_near = params.depth_linearize_mul;
-		float z_far = params.depth_linearize_add;
-		return -(depth * (z_far - z_near) - (z_far + z_near)) / 2.0;
-	}
-
-	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
-	return params.depth_linearize_mul / (params.depth_linearize_add - p_depth);
-}
-
-vec4 NDC_to_viewspace_depth(const vec4 p_depth)
-{
-	if (params.is_orthogonal) {
-		vec4 depth = p_depth * 2.0 - 1.0;
-		float z_near = params.depth_linearize_mul;
-		float z_far = params.depth_linearize_add;
-		return -(depth * (z_far - z_near) - (z_far + z_near)) / 2.0;
-	}
-
-	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
-	return vec4(params.depth_linearize_mul) / (vec4(params.depth_linearize_add) - p_depth);
 }
 
 vec3 load_normal(ivec2 p_pos) {
@@ -177,9 +159,6 @@ float calculate_final_occlusion(float obscurance, float pix_center_z, vec4 edges
 
 	return occlusion;
 }
-
-#define PI 3.141592653589793
-#define PI_HALF (PI / 2.0)
 
 // [Jimenez 2014] Interleaved gradient function
 // Use integer coordinates rather than UV since UV varies too little
@@ -245,8 +224,7 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 		// Positive direction
 		// Clamp UV coords to avoid artifacts
 		sample_uv = base_uv + uv_offset;
-		scene_depth = textureLod(source_depth, sample_uv, mip_level).x;
-		scene_depth = NDC_to_viewspace_depth(scene_depth);
+		scene_depth = textureLod(source_depth_mipmaps, vec3(sample_uv, params.pass), mip_level).x;
 		sample_delta = NDC_to_viewspace(sample_uv, scene_depth).xyz - view_pos;
 		sample_delta_len_sq = dot(sample_delta, sample_delta);
 		// TODO: This could be replaced with fast sqrt
@@ -261,8 +239,7 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 
 		// Negative direction
 		sample_uv = base_uv - uv_offset;
-		scene_depth = textureLod(source_depth, sample_uv, mip_level).x;
-		scene_depth = NDC_to_viewspace_depth(scene_depth);
+		scene_depth = textureLod(source_depth_mipmaps, vec3(sample_uv, params.pass), mip_level).x;
 		sample_delta = NDC_to_viewspace(sample_uv, scene_depth).xyz - view_pos;
 		sample_delta_len_sq = dot(sample_delta, sample_delta);
 		sample_horizon_cos = dot(sample_delta, view_dir) * inversesqrt(sample_delta_len_sq);
@@ -294,23 +271,20 @@ float GTAO_slice(in int num_taps, vec2 base_uv, vec2 screen_dir, float search_ra
 	return local_visibility;
 }
 
-void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, out float r_weight, const uvec2 p_pix_coord, int p_quality_level) {
+void generate_GTAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, out float r_weight, const ivec2 p_pix_coord, int p_quality_level) {
 	vec2 normalized_screen_pos = (p_pix_coord + vec2(0.5)) * params.viewport_pixel_size;
 
 	// Load this pixel's viewspace normal
-	uvec2 full_res_coord = p_pix_coord * params.size_multiplier;
+	uvec2 full_res_coord = p_pix_coord * params.size_multiplier + params.pass_coord_offset.xy;
 	vec3 pixel_normal = load_normal(ivec2(full_res_coord));
 
 	const int number_of_taps = num_taps[p_quality_level];
 	const int number_of_slices = num_slices[p_quality_level];
 	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
 
-	vec2 gather_pos = vec2(p_pix_coord) * params.viewport_pixel_size;
-	vec4 valuesUL = textureGather(source_depth, gather_pos);
-	vec4 valuesBR = textureGatherOffset(source_depth, gather_pos, ivec2(1, 1));
-	// Convert depth to viewspace depth
-	valuesUL = NDC_to_viewspace_depth(valuesUL);
-	valuesBR = NDC_to_viewspace_depth(valuesBR);
+	vec3 gather_pos = vec3(vec2(p_pix_coord) * params.viewport_pixel_size, params.pass);
+	vec4 valuesUL = textureGather(source_depth_mipmaps, gather_pos);
+	vec4 valuesBR = textureGatherOffset(source_depth_mipmaps, gather_pos, ivec2(1, 1));
 
 	// get this pixel's viewspace depth
 	pix_z = valuesUL.y;
@@ -406,7 +380,7 @@ void main() {
 	float out_shadow_term;
 	float out_weight;
 	vec4 out_edges;
-	uvec2 pix_coord = uvec2(gl_GlobalInvocationID.xy);
+	ivec2 pix_coord = ivec2(gl_GlobalInvocationID.xy);
 
 	if (any(greaterThanEqual(pix_coord, params.screen_size))) { //too large, do nothing
 		return;

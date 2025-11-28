@@ -19,6 +19,7 @@
 layout(push_constant, std430) uniform Params {
 	vec2 viewport_pixel_size;
 	float blur_beta;
+	int pad;
 }
 params;
 

@@ -114,6 +114,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		render_buffers->clear_context(RB_SCOPE_SSDS);
 		render_buffers->clear_context(RB_SCOPE_SSIL);
 		render_buffers->clear_context(RB_SCOPE_SSAO);
+		render_buffers->clear_context(RB_SCOPE_GTAO);
 		render_buffers->clear_context(RB_SCOPE_SSR);
 	}
 
@@ -1412,11 +1413,10 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.sharpness = environment_get_ssao_sharpness(p_environment);
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
-	ss_effects->assao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
-	ss_effects->gtao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
+	ss_effects->ao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
 
 	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
-		ss_effects->generate_ao(p_render_buffers, rb_data->ss_effects_data.ssao, v, p_normal_buffers[v], p_projections[v], settings, *copy_effects);
+		ss_effects->generate_ao(p_render_buffers, rb_data->ss_effects_data.ssao, v, p_normal_buffers[v], p_projections[v], settings);
 	}
 }
 
