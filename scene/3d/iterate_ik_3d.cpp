@@ -522,10 +522,6 @@ void IterateIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, Iterat
 	double distance_to_target_sq = INFINITY;
 	int iteration_count = 0;
 
-	if (p_setting->is_penetrated(p_destination)) {
-		return;
-	}
-
 	// To prevent oscillation, if it has been processed at least once and target was reached, abort iterating.
 	if (p_setting->simulated) {
 		distance_to_target_sq = p_setting->chain[p_setting->chain.size() - 1].distance_squared_to(p_destination);

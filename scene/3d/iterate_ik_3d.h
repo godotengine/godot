@@ -149,31 +149,6 @@ public:
 
 		bool simulated = false;
 
-		bool is_penetrated(const Vector3 &p_destination) {
-			bool ret = false;
-			Vector3 chain_dir = (chain[chain.size() - 1] - chain[0]).normalized();
-			bool is_straight = true;
-			for (uint32_t i = 1; i < chain.size() - 1; i++) {
-				Vector3 dir = (chain[i] - chain[0]).normalized();
-				if (!dir.is_equal_approx(chain_dir)) {
-					is_straight = false;
-					break;
-				}
-			}
-			if (is_straight) {
-				Vector3 to_target = (p_destination - chain[0]);
-				double proj = to_target.dot(chain_dir);
-				double total_length = 0;
-				for (uint32_t i = 0; i < solver_info_list.size(); i++) {
-					if (solver_info_list[i]) {
-						total_length += solver_info_list[i]->length;
-					}
-				}
-				ret = proj >= 0 && proj <= total_length && (to_target.normalized().is_equal_approx(chain_dir));
-			}
-			return ret;
-		}
-
 		// Make rotation as bone pose from chain coordinates.
 		// p_extra is delta angle limitation.
 		void cache_current_joint_rotations(Skeleton3D *p_skeleton, double p_angular_delta_limit = Math::PI) {
