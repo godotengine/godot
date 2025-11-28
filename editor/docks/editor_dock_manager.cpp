@@ -613,7 +613,9 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		window_dump["window_screen_rect"] = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
 		String name = dock->get_effective_layout_key();
-		floating_docks_dump[name] = window_dump;
+		if (!dock->transient) {
+			floating_docks_dump[name] = window_dump;
+		}
 
 		// Append to regular dock section so we know where to restore it to.
 		int dock_slot_id = dock->dock_slot_index;
