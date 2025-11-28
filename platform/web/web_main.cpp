@@ -66,6 +66,7 @@ void exit_callback() {
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
 	memdelete(os);
 	os = nullptr;
+	godot_cleanup_profiler();
 	emscripten_force_exit(exit_code); // Exit runtime.
 }
 

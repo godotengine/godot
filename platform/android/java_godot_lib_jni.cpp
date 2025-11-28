@@ -129,6 +129,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	NetSocketAndroid::terminate();
 
 	cleanup_android_class_loader();
+	godot_cleanup_profiler();
 
 	if (godot_java) {
 		godot_java->on_godot_terminating(env);

@@ -136,5 +136,6 @@ int main(int argc, char **argv) {
 
 	memdelete(os);
 
+	godot_cleanup_profiler();
 	return exit_code;
 }
