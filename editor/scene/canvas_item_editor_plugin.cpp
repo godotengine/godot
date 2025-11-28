@@ -687,8 +687,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 		// function is filtering for duplicates anyways, so we're not spending
 		// any extra effort here.
 		Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
-		for (int i = 0; i < gizmos.size(); i++) {
-			Ref<EditorCanvasItemGizmo> gizmo = gizmos[i];
+		for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
 			if (gizmo.is_null()) {
 				continue;
 			}
@@ -815,8 +814,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 
 		// gizmos way
 		Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
-		for (int i = 0; i < gizmos.size(); i++) {
-			Ref<EditorCanvasItemGizmo> gizmo = gizmos[i];
+		for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
 			if (gizmo.is_null()) {
 				continue;
 			}
@@ -5637,7 +5635,7 @@ void CanvasItemEditor::_request_gizmo_for_id(ObjectID p_id) {
 }
 
 void _update_all_canvas_item_gizmos(Node *p_node) {
-	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+	for (int i = p_node->get_child_count() - 1; i >= 0; --i) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node->get_child(i));
 		if (canvas_item) {
 			canvas_item->update_gizmos();

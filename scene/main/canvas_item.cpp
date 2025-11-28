@@ -84,7 +84,7 @@ void CanvasItem::add_gizmo(Ref<CanvasItemGizmo> p_gizmo) {
 	}
 	data.gizmos.push_back(p_gizmo);
 
-	if (p_gizmo.is_valid() && is_inside_tree()) {
+	if (is_inside_tree()) {
 		p_gizmo->create();
 		if (is_visible_in_tree()) {
 			p_gizmo->redraw();
@@ -99,7 +99,6 @@ void CanvasItem::remove_gizmo(Ref<CanvasItemGizmo> p_gizmo) {
 #ifdef TOOLS_ENABLED
 	int idx = data.gizmos.find(p_gizmo);
 	if (idx != -1) {
-		p_gizmo->free();
 		data.gizmos.remove_at(idx);
 	}
 #endif
@@ -108,9 +107,6 @@ void CanvasItem::remove_gizmo(Ref<CanvasItemGizmo> p_gizmo) {
 void CanvasItem::clear_gizmos() {
 	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
-	for (int i = 0; i < data.gizmos.size(); i++) {
-		data.gizmos.write[i]->free();
-	}
 	data.gizmos.clear();
 	data.gizmos_requested = false;
 #endif
@@ -123,11 +119,11 @@ void CanvasItem::_update_gizmos() {
 		return;
 	}
 	data.gizmos_dirty = false;
-	for (int i = 0; i < data.gizmos.size(); i++) {
+	for (Ref<CanvasItemGizmo> &gizmo : data.gizmos) {
 		if (is_visible_in_tree()) {
-			data.gizmos.write[i]->redraw();
+			gizmo->redraw();
 		} else {
-			data.gizmos.write[i]->clear();
+			gizmo->clear();
 		}
 	}
 #endif
@@ -155,7 +151,6 @@ void CanvasItem::update_gizmos() {
 
 	data.gizmos_dirty = true;
 	callable_mp(this, &CanvasItem::_update_gizmos).call_deferred();
-
 #endif
 }
 
@@ -163,8 +158,8 @@ TypedArray<CanvasItemGizmo> CanvasItem::get_gizmos_bind() const {
 	ERR_THREAD_GUARD_V(TypedArray<CanvasItemGizmo>());
 	TypedArray<CanvasItemGizmo> ret;
 #ifdef TOOLS_ENABLED
-	for (int i = 0; i < data.gizmos.size(); i++) {
-		ret.push_back(Variant(data.gizmos[i].ptr()));
+	for (const Ref<CanvasItemGizmo> &gizmo : data.gizmos) {
+		ret.push_back(Variant(gizmo.ptr()));
 	}
 #endif
 	return ret;
@@ -502,7 +497,6 @@ void CanvasItem::_notification(int p_what) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
 #endif
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_MAIN_THREAD_GUARD;

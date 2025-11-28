@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_2d.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "modules/gdscript/gdscript_tokenizer.h"
 #include "scene/resources/mesh.h"
 
 #define HANDLE_HALF_SIZE 9.5
@@ -57,10 +56,10 @@ bool EditorCanvasItemGizmo::is_editable() const {
 void EditorCanvasItemGizmo::clear() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
-	for (int i = 0; i < instances.size(); i++) {
-		if (instances[i].instance.is_valid()) {
-			RS::get_singleton()->free_rid(instances[i].instance);
-			instances.write[i].instance = RID();
+	for (Instance &instance : instances) {
+		if (instance.instance.is_valid()) {
+			RS::get_singleton()->free_rid(instance.instance);
+			instance.instance = RID();
 		}
 	}
 
@@ -206,7 +205,7 @@ void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p
 
 	instance = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->canvas_item_set_parent(instance, p_base->get_canvas_item());
-	int layer = p_hidden ? 0 : 1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER;
+	int layer = p_hidden ? 0 : (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER);
 	RS::get_singleton()->canvas_item_set_visibility_layer(instance, layer);
 }
 
@@ -302,7 +301,8 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, const 
 	}
 
 	Instance ins;
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
 
 	Array a;
 	a.resize(RS::ARRAY_MAX);
@@ -362,17 +362,17 @@ bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const {
 
 	// for collision segments it is enough if at least one point
 	// of a segment is inside the rectangle
-	for (int i = 0; i < collision_segments.size(); i++) {
-		Vector2 global_position = transform.xform(collision_segments[i]);
+	for (const Vector2 &pos : collision_segments) {
+		Vector2 global_position = transform.xform(pos);
 		if (p_rect.has_point(global_position)) {
 			return true;
 		}
 	}
 
 	// same for collision polygons
-	for (int i = 0; i < collision_polygons.size(); i++) {
-		for (int j = 0; j < collision_polygons[i].size(); j++) {
-			Vector2 global_position = transform.xform(collision_polygons[i][j]);
+	for (const Vector<Vector2> &collision_polygon : collision_polygons) {
+		for (const Vector2 &collision_point : collision_polygon) {
+			Vector2 global_position = transform.xform(collision_point);
 			if (p_rect.has_point(global_position)) {
 				return true;
 			}
@@ -381,8 +381,8 @@ bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const {
 
 	// for rectangles we check if they overlap
 	Transform2D inverse_transform = transform.affine_inverse();
-	for (int i = 0; i < collision_rects.size(); i++) {
-		if (collision_rects[i].intersects_transformed(inverse_transform, p_rect)) {
+	for (const Rect2 &collision_rect : collision_rects) {
+		if (collision_rect.intersects_transformed(inverse_transform, p_rect)) {
 			return true;
 		}
 	}
@@ -459,14 +459,14 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
 		}
 	}
 
-	for (int i = 0; i < collision_rects.size(); i++) {
-		if (collision_rects[i].has_point(local_point)) {
+	for (const Rect2 &collision_rect : collision_rects) {
+		if (collision_rect.has_point(local_point)) {
 			return true;
 		}
 	}
 
-	for (int i = 0; i < collision_polygons.size(); i++) {
-		if (Geometry2D::is_point_in_polygon(local_point, collision_polygons[i])) {
+	for (const Vector<Vector2> &collision_polygon : collision_polygons) {
+		if (Geometry2D::is_point_in_polygon(local_point, collision_polygon)) {
 			return true;
 		}
 	}
@@ -498,8 +498,8 @@ void EditorCanvasItemGizmo::create() {
 	ERR_FAIL_COND(valid);
 	valid = true;
 
-	for (int i = 0; i < instances.size(); i++) {
-		instances.write[i].create_instance(canvas_item, hidden);
+	for (Instance &instance : instances) {
+		instance.create_instance(canvas_item, hidden);
 	}
 
 	transform();
@@ -508,8 +508,8 @@ void EditorCanvasItemGizmo::create() {
 void EditorCanvasItemGizmo::transform() {
 	ERR_FAIL_NULL(canvas_item);
 	ERR_FAIL_COND(!valid);
-	for (int i = 0; i < instances.size(); i++) {
-		RS::get_singleton()->canvas_item_set_transform(instances[i].instance, canvas_item->get_global_transform());
+	for (const Instance &instance : instances) {
+		RS::get_singleton()->canvas_item_set_transform(instance.instance, canvas_item->get_global_transform());
 	}
 }
 
@@ -526,9 +526,9 @@ void EditorCanvasItemGizmo::free() {
 
 void EditorCanvasItemGizmo::set_hidden(bool p_hidden) {
 	hidden = p_hidden;
-	int layer = p_hidden ? 0 : 1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER;
-	for (int i = 0; i < instances.size(); i++) {
-		RS::get_singleton()->canvas_item_set_visibility_layer(instances[i].instance, layer);
+	int layer = p_hidden ? 0 : (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER);
+	for (const Instance &instance : instances) {
+		RS::get_singleton()->canvas_item_set_visibility_layer(instance.instance, layer);
 	}
 }
 
@@ -591,7 +591,7 @@ String EditorCanvasItemGizmoPlugin::get_gizmo_name() const {
 	if (GDVIRTUAL_CALL(_get_gizmo_name, ret)) {
 		return ret;
 	}
-	WARN_PRINT_ONCE("A CanvasItem editor gizmo has no name defined (it will appear as \"Unnamed Gizmo\"  in the \"View > Gizmos\" menu). To resolve this, override the `_get_gizmo_name()` function to return a String in the script that extends EditorCanvasItemGizmoPlugin.");
+	WARN_PRINT_ONCE("A CanvasItem editor gizmo has no name defined (it will appear as \"Unnamed Gizmo\" in the \"View > Gizmos\" menu). To resolve this, override the `_get_gizmo_name()` function to return a String in the script that extends EditorCanvasItemGizmoPlugin.");
 	return "Unnamed Gizmo";
 }
 
