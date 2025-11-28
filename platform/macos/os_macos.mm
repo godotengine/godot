@@ -1147,6 +1147,8 @@ void OS_MacOS_NSApp::start_main() {
 }
 
 void OS_MacOS_NSApp::terminate() {
+	godot_cleanup_profiler();
+
 	if (pre_wait_observer) {
 		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
 		CFRelease(pre_wait_observer);
