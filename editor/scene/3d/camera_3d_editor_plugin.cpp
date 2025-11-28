@@ -31,9 +31,10 @@
 #include "camera_3d_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/foldable_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
 
 void Camera3DEditor::_node_removed(Node *p_node) {
@@ -79,19 +80,40 @@ Camera3DEditor::Camera3DEditor() {
 	preview->connect(SceneStringName(pressed), callable_mp(this, &Camera3DEditor::_pressed));
 }
 
+bool Camera3DPreview::camera_preview_folded = false;
+
 void Camera3DPreview::_update_sub_viewport_size() {
-	sub_viewport->set_size(Node3DEditor::get_camera_viewport_size(camera));
+	const Size2i camera_size = Node3DEditor::get_camera_viewport_size(camera);
+	centering_container->set_ratio(camera_size.aspect());
 }
 
-Camera3DPreview::Camera3DPreview(Camera3D *p_camera) :
-		TexturePreview(nullptr, false), camera(p_camera), sub_viewport(memnew(SubViewport)) {
-	RenderingServer::get_singleton()->viewport_attach_camera(sub_viewport->get_viewport_rid(), camera->get_camera());
-	add_child(sub_viewport);
+void Camera3DPreview::_toggle_folding(bool p_folded) {
+	camera_preview_folded = p_folded;
+}
 
-	TextureRect *display = get_texture_display();
-	display->set_texture(sub_viewport->get_texture());
-	sub_viewport->connect("size_changed", callable_mp((CanvasItem *)display, &CanvasItem::queue_redraw));
-	sub_viewport->get_texture()->connect_changed(callable_mp((TexturePreview *)this, &Camera3DPreview::_update_texture_display_ratio));
+Camera3DPreview::Camera3DPreview(Camera3D *p_camera) {
+	camera = p_camera;
+
+	FoldableContainer *folder = memnew(FoldableContainer);
+	folder->set_title(TTRC("Camera Preview"));
+	folder->set_title_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	folder->set_folded(camera_preview_folded);
+	folder->connect("folding_changed", callable_mp(this, &Camera3DPreview::_toggle_folding));
+	add_child(folder);
+
+	centering_container = memnew(AspectRatioContainer);
+	centering_container->set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
+	folder->add_child(centering_container);
+
+	SubViewportContainer *sub_viewport_container = memnew(SubViewportContainer);
+	sub_viewport_container->set_stretch(true);
+	sub_viewport_container->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	centering_container->add_child(sub_viewport_container);
+
+	sub_viewport = memnew(SubViewport);
+	sub_viewport_container->add_child(sub_viewport);
+
+	RenderingServer::get_singleton()->viewport_attach_camera(sub_viewport->get_viewport_rid(), camera->get_camera());
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Camera3DPreview::_project_settings_changed));
 	_project_settings_changed();
