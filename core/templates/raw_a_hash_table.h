@@ -228,5 +228,35 @@ protected:
 	}
 
 public:
+	_FORCE_INLINE_ uint32_t get_capacity() const { return _capacity_mask + 1; }
+	_FORCE_INLINE_ uint32_t size() const { return _size; }
+
+	_FORCE_INLINE_ bool is_empty() const {
+		return size() == 0;
+	}
+
+	bool has(const TKey &p_key) const {
+		uint32_t _idx = 0;
+		uint32_t meta_idx = 0;
+		return _lookup_idx(p_key, _idx, meta_idx);
+	}
+
+	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
+	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
+	void reserve(uint32_t p_new_capacity) {
+		if (!_is_elements_valid()) {
+			_capacity_mask = MAX(4u, p_new_capacity);
+			_capacity_mask = next_power_of_2(_capacity_mask) - 1;
+			return; // Unallocated yet.
+		}
+		if (p_new_capacity <= get_capacity()) {
+			if (p_new_capacity < size()) {
+				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+			}
+			return;
+		}
+		_resize_and_rehash(p_new_capacity);
+	}
+
 	virtual ~RawAHashTable() {}
 };

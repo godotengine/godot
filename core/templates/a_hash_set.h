@@ -48,6 +48,7 @@ class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base = RawAHashTable<TKey, Hasher, Comparator>;
 
 	using Base::_capacity_mask;
+	using Base::_clear_metadata;
 	using Base::_get_probe_length;
 	using Base::_get_resize_count;
 	using Base::_hash;
@@ -57,9 +58,13 @@ class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_metadata;
 	using Base::_resize_and_rehash;
 	using Base::_size;
-	using Base::_clear_metadata;
+
+public:
 	using Base::EMPTY_HASH;
+	using Base::has;
 	using Base::INITIAL_CAPACITY;
+	using Base::reserve;
+	using Base::size;
 
 protected:
 	virtual const TKey &_get_key(uint32_t p_idx) const override {
@@ -125,13 +130,6 @@ private:
 public:
 	/* Standard Godot Container API */
 
-	_FORCE_INLINE_ uint32_t get_capacity() const { return _capacity_mask + 1; }
-	_FORCE_INLINE_ uint32_t size() const { return _size; }
-
-	_FORCE_INLINE_ bool is_empty() const {
-		return _size == 0;
-	}
-
 	void clear() {
 		if (_elements == nullptr || _size == 0) {
 			return;
@@ -145,12 +143,6 @@ public:
 		}
 
 		_size = 0;
-	}
-
-	bool has(const TKey &p_key) const {
-		uint32_t _idx = 0;
-		uint32_t meta_idx = 0;
-		return _lookup_idx(p_key, _idx, meta_idx);
 	}
 
 	bool erase(const TKey &p_key) {
@@ -212,23 +204,6 @@ public:
 		_insert_metadata(hash, element_idx);
 
 		return true;
-	}
-
-	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
-	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
-	void reserve(uint32_t p_new_capacity) {
-		if (_elements == nullptr) {
-			_capacity_mask = MAX(4u, p_new_capacity);
-			_capacity_mask = next_power_of_2(_capacity_mask) - 1;
-			return; // Unallocated yet.
-		}
-		if (p_new_capacity <= get_capacity()) {
-			if (p_new_capacity < size()) {
-				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
-			}
-			return;
-		}
-		_resize_and_rehash(p_new_capacity);
 	}
 
 	/** Iterator API **/
