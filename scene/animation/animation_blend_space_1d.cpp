@@ -57,7 +57,7 @@ Ref<AnimationNode> AnimationNodeBlendSpace1D::get_child_by_name(const StringName
 	if (point_index != -1) {
 		return get_blend_point_node(point_index);
 	}
-	return get_blend_point_node(name_str.to_int());
+	return Ref<AnimationRootNode>();
 }
 
 void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &p_property) const {
@@ -90,7 +90,6 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_blend_point_node", "point"), &AnimationNodeBlendSpace1D::get_blend_point_node);
 	ClassDB::bind_method(D_METHOD("set_blend_point_name", "point", "name"), &AnimationNodeBlendSpace1D::set_blend_point_name);
 	ClassDB::bind_method(D_METHOD("get_blend_point_name", "point"), &AnimationNodeBlendSpace1D::get_blend_point_name);
-	ClassDB::bind_method(D_METHOD("get_blend_point_stored_name", "point"), &AnimationNodeBlendSpace1D::get_blend_point_stored_name);
 	ClassDB::bind_method(D_METHOD("find_blend_point_by_name", "name"), &AnimationNodeBlendSpace1D::find_blend_point_by_name);
 	ClassDB::bind_method(D_METHOD("remove_blend_point", "point"), &AnimationNodeBlendSpace1D::remove_blend_point);
 	ClassDB::bind_method(D_METHOD("get_blend_point_count"), &AnimationNodeBlendSpace1D::get_blend_point_count);
@@ -119,7 +118,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "blend_point_" + itos(i) + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_add_blend_point", "get_blend_point_node", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_position", "get_blend_point_position", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "blend_point_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_name", "get_blend_point_stored_name", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "blend_point_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_blend_point_name", "get_blend_point_name", i);
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_min_space", "get_min_space");
@@ -136,8 +135,11 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 
 void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	for (int i = 0; i < blend_points_used; i++) {
+		if (blend_points[i].name.is_empty()) {
+			blend_points[i].name = itos(i);
+		}
 		ChildNode cn;
-		cn.name = get_blend_point_name(i);
+		cn.name = blend_points[i].name;
 		cn.node = blend_points[i].node;
 		r_child_nodes->push_back(cn);
 	}
@@ -205,41 +207,36 @@ Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_poi
 
 void AnimationNodeBlendSpace1D::set_blend_point_name(int p_point, const String &p_name) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
+	ERR_FAIL_COND(p_name.contains_char('.') || p_name.contains_char('/'));
 
 	String final_name = p_name;
+	String base_name = p_name;
 
-	// Avoid names that are purely numeric.
-	if (!p_name.is_empty() && p_name.is_valid_int()) {
-		final_name = "#" + p_name;
+	if (final_name.is_empty()) {
+		Ref<AnimationNode> node = blend_points[p_point].node;
+		if (node.is_valid()) {
+			base_name = node->get_class().replace_first("AnimationNode", "");
+		} else {
+			base_name = "Point";
+		}
+		final_name = base_name;
 	}
 
-	// Generate unique name if there's a conflict.
-	if (!final_name.is_empty()) {
-		int base = 1;
-		while (find_blend_point_by_name(final_name) != -1 && find_blend_point_by_name(final_name) != p_point) {
-			base++;
-			final_name = (p_name.is_valid_int() ? "#" + p_name : p_name) + " " + itos(base);
-		}
+	// Append number if there's a conflict.
+	int base = 1;
+	while (find_blend_point_by_name(final_name) != -1 && find_blend_point_by_name(final_name) != p_point) {
+		base++;
+		final_name = base_name + " " + itos(base);
 	}
 
 	String old_name = blend_points[p_point].name;
 	blend_points[p_point].name = final_name;
-	if (!old_name.is_empty() && old_name != final_name) {
+	if (old_name != final_name) {
 		emit_signal(SNAME("animation_node_renamed"), get_instance_id(), old_name, final_name);
-	} else if (old_name.is_empty() && !final_name.is_empty()) {
-		emit_signal(SNAME("tree_changed"));
 	}
 }
 
 String AnimationNodeBlendSpace1D::get_blend_point_name(int p_point) const {
-	ERR_FAIL_INDEX_V(p_point, blend_points_used, String());
-	if (blend_points[p_point].name.is_empty()) {
-		return itos(p_point);
-	}
-	return blend_points[p_point].name;
-}
-
-String AnimationNodeBlendSpace1D::get_blend_point_stored_name(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, blend_points_used, String());
 	return blend_points[p_point].name;
 }

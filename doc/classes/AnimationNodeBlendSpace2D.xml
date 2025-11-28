@@ -49,7 +49,7 @@
 			<return type="String" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Returns the name of the blend point at index [param point]. If the point has no assigned name, returns the point index as a string.
+				Returns the name of the blend point at index [param point].
 			</description>
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
@@ -64,13 +64,6 @@
 			<param index="0" name="point" type="int" />
 			<description>
 				Returns the position of the point at index [param point].
-			</description>
-		</method>
-		<method name="get_blend_point_stored_name" qualifiers="const">
-			<return type="String" />
-			<param index="0" name="point" type="int" />
-			<description>
-				Returns the actual stored name of the blend point at index [param point]. Unlike [method get_blend_point_name], this returns an empty string if no name was assigned.
 			</description>
 		</method>
 		<method name="get_triangle_count" qualifiers="const">

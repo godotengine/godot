@@ -491,26 +491,6 @@ void AnimationNodeBlendSpace1DEditor::_file_opened(const String &p_file) {
 	}
 }
 
-String AnimationNodeBlendSpace1DEditor::_generate_unique_blend_point_name(Ref<AnimationNodeBlendSpace1D> p_blend_space, const String &p_base_name) {
-	String final_name = p_base_name;
-
-	// Reject names that are purely numeric to avoid conflicts with index-based naming.
-	if (!p_base_name.is_empty() && p_base_name.is_valid_int()) {
-		final_name = "#" + p_base_name;
-	}
-
-	// Generate unique name if there's a conflict.
-	if (!final_name.is_empty()) {
-		int base = 1;
-		while (p_blend_space->find_blend_point_by_name(final_name) != -1) {
-			base++;
-			final_name = (p_base_name.is_valid_int() ? "#" + p_base_name : p_base_name) + " " + itos(base);
-		}
-	}
-
-	return final_name;
-}
-
 void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	Ref<AnimationRootNode> node;
 	if (p_index == MENU_LOAD_FILE) {
@@ -543,14 +523,11 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 		return;
 	}
 
-	// Trim 'AnimationNode' from class name.
-	String unique_name = _generate_unique_blend_point_name(blend_space, node->get_class().replace_first("AnimationNode", ""));
-
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node, add_point_pos);
-	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_name", blend_space->get_blend_point_count(), unique_name);
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_name", blend_space->get_blend_point_count(), node->get_class().replace_first("AnimationNode", ""));
 	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
@@ -566,14 +543,11 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	// Use the animation's name for AnimationNodeAnimation.
-	String unique_name = _generate_unique_blend_point_name(blend_space, animations_to_add[p_index]);
-
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Animation Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", anim, add_point_pos);
-	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_name", blend_space->get_blend_point_count(), unique_name);
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_name", blend_space->get_blend_point_count(), animations_to_add[p_index]);
 	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
@@ -658,13 +632,13 @@ void AnimationNodeBlendSpace1DEditor::_erase_selected() {
 
 		Ref<AnimationRootNode> node = blend_space->get_blend_point_node(selected_point);
 		float position = blend_space->get_blend_point_position(selected_point);
-		String stored_name = blend_space->get_blend_point_stored_name(selected_point);
+		String point_name = blend_space->get_blend_point_name(selected_point);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove BlendSpace1D Point"));
 		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
 		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", node, position, selected_point);
-		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_name", selected_point, stored_name);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_name", selected_point, point_name);
 		undo_redo->add_do_method(this, "_update_space");
 		undo_redo->add_undo_method(this, "_update_space");
 		undo_redo->commit_action();
@@ -743,7 +717,7 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_name(const String &p_name) {
 	}
 
 	updating = true;
-	String old_name = blend_space->get_blend_point_stored_name(selected_point);
+	String old_name = blend_space->get_blend_point_name(selected_point);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change BlendSpace1D Point Name"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_name", selected_point, p_name);
@@ -867,7 +841,7 @@ void AnimationNodeBlendSpace1DEditor::_start_inline_edit(int p_point) {
 	inline_editor->add_theme_constant_override("minimum_character_width", 0);
 	inline_editor->set_flat(true);
 
-	inline_editor->set_text(blend_space->get_blend_point_stored_name(p_point));
+	inline_editor->set_text(blend_space->get_blend_point_name(p_point));
 	inline_editor->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	inline_editor->set_expand_to_text_length_enabled(true);
 

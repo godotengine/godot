@@ -117,7 +117,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
-	String _generate_unique_blend_point_name(Ref<AnimationNodeBlendSpace1D> p_blend_space, const String &p_base_name);
 
 	void _tool_switch(int p_tool);
 	void _update_edited_point_pos();
