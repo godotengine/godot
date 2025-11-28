@@ -42,6 +42,7 @@
 #include <windows.h>
 
 class CameraFeedWindows : public CameraFeed {
+	GDSOFTCLASS(CameraFeedWindows, CameraFeed);
 	// Format tracking structures.
 	struct FormatKey {
 		int width;
@@ -98,6 +99,8 @@ public:
 };
 
 class CameraWindows : public CameraServer {
+	GDSOFTCLASS(CameraWindows, CameraServer);
+
 private:
 	void update_feeds();
 	void remove_all_feeds();
