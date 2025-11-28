@@ -766,7 +766,7 @@ class Godot private constructor(val context: Context) {
 
 		if (currentConfig.orientation != newConfig.orientation) {
 			runOnRenderThread {
-				GodotLib.onScreenRotationChange()
+				GodotLib.onScreenRotationChange(newConfig.orientation)
 			}
 		}
 		currentConfig = newConfig

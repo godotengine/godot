@@ -111,6 +111,11 @@ public:
 	// Intended for use with custom CameraServer implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);
 
+	// Platform lifecycle callbacks (virtual, default empty implementation).
+	virtual void handle_application_pause() {}
+	virtual void handle_application_resume() {}
+	virtual void handle_display_rotation_change(int p_orientation) { (void)p_orientation; }
+
 	CameraServer();
 	~CameraServer();
 };
