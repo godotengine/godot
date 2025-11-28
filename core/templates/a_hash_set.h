@@ -57,6 +57,8 @@ class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_metadata;
 	using Base::_resize_and_rehash;
 	using Base::_size;
+	using Base::EMPTY_HASH;
+	using Base::INITIAL_CAPACITY;
 
 protected:
 	virtual const TKey &_get_key(uint32_t p_idx) const override {
@@ -134,7 +136,7 @@ public:
 			return;
 		}
 
-		memset(_metadata, RAHT_EMPTY_HASH, (_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
+		memset(_metadata, EMPTY_HASH, (_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
 		if constexpr (!std::is_trivially_destructible_v<TKey>) {
 			for (uint32_t i = 0; i < _size; i++) {
 				_elements[i].~TKey();
@@ -160,14 +162,14 @@ public:
 		}
 
 		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
-		while (_metadata[next_meta_idx].hash != RAHT_EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
+		while (_metadata[next_meta_idx].hash != EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
 			SWAP(_metadata[next_meta_idx], _metadata[meta_idx]);
 
 			meta_idx = next_meta_idx;
 			next_meta_idx = (next_meta_idx + 1) & _capacity_mask;
 		}
 
-		_metadata[meta_idx].hash = RAHT_EMPTY_HASH;
+		_metadata[meta_idx].hash = EMPTY_HASH;
 		_elements[element_idx].~TKey();
 		_size--;
 
@@ -196,14 +198,14 @@ public:
 		const_cast<TKey &>(element) = p_new_key;
 
 		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
-		while (_metadata[next_meta_idx].hash != RAHT_EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
+		while (_metadata[next_meta_idx].hash != EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
 			SWAP(_metadata[next_meta_idx], _metadata[meta_idx]);
 
 			meta_idx = next_meta_idx;
 			next_meta_idx = (next_meta_idx + 1) & _capacity_mask;
 		}
 
-		_metadata[meta_idx].hash = RAHT_EMPTY_HASH;
+		_metadata[meta_idx].hash = EMPTY_HASH;
 
 		uint32_t hash = _hash(p_new_key);
 		_insert_metadata(hash, element_idx);
@@ -416,7 +418,7 @@ public:
 		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
 	}
 	AHashSet() {
-		_capacity_mask = (RAHT_INITIAL_CAPACITY - 1);
+		_capacity_mask = (INITIAL_CAPACITY - 1);
 	}
 
 	AHashSet(std::initializer_list<TKey> p_init) {
@@ -437,7 +439,7 @@ public:
 			Memory::free_static(_metadata);
 			_elements = nullptr;
 		}
-		_capacity_mask = RAHT_INITIAL_CAPACITY - 1;
+		_capacity_mask = INITIAL_CAPACITY - 1;
 		_size = 0;
 	}
 
