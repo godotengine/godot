@@ -51,6 +51,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -178,20 +179,15 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_space_draw->queue_redraw(); //update anyway
 
 		//try to see if a point can be selected
-		selected_point = -1;
+		_set_selected_point(-1);
 		selected_triangle = -1;
-		_update_tool_erase();
 
 		// Check if clicking on text areas first.
 		for (int i = 0; i < text_rects.size(); i++) {
 			if (text_rects[i].has_point(mb->get_position())) {
-				selected_point = i;
-				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
-				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				_set_selected_point(i);
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
-				_update_tool_erase();
-				_update_edited_point_pos();
 				_update_edited_point_name();
 				return;
 			}
@@ -200,10 +196,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		// Then check point positions.
 		for (int i = 0; i < points.size(); i++) {
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
-				selected_point = i;
-				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
-				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				_set_selected_point(i);
 
+				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
 				if (mb->is_double_click() && AnimationTreeEditor::get_singleton()->can_edit(node)) {
 					_open_editor();
 					return;
@@ -211,8 +206,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
-				_update_tool_erase();
-				_update_edited_point_pos();
 				_update_edited_point_name();
 				return;
 			}
@@ -236,17 +229,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				}
 			}
 		}
-
-		// If no point or triangle was selected, select host BlendSpace2D node.
-		if (selected_point == -1 && selected_triangle == -1) {
-			EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
-		}
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_triangle->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		blend_space_draw->queue_redraw(); //update anyway
 		//try to see if a point can be selected
-		selected_point = -1;
+		_set_selected_point(-1);
 
 		for (int i = 0; i < points.size(); i++) {
 			if (making_triangle.has(i)) {
@@ -363,6 +351,29 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		tree->set(get_blend_position_path(), blend_pos);
 
 		blend_space_draw->queue_redraw();
+	}
+
+	// Handle mousewheel for reordering points.
+	Ref<InputEventMouseButton> mw = p_event;
+	if (mw.is_valid() && mw->is_pressed() && (mw->get_button_index() == MouseButton::WHEEL_UP || mw->get_button_index() == MouseButton::WHEEL_DOWN)) {
+		if (!read_only && tool_select->is_pressed()) {
+			// Check if hovering over a point.
+			int hovered_point = -1;
+			for (int i = 0; i < points.size(); i++) {
+				if (points[i].distance_to(mw->get_position()) < 10 * EDSCALE) {
+					hovered_point = i;
+					break;
+				}
+			}
+
+			if (hovered_point != -1) {
+				int direction = (mw->get_button_index() == MouseButton::WHEEL_DOWN) ? -1 : 1;
+				int new_index = hovered_point + direction;
+				_set_selected_point(hovered_point);
+				_edit_point_index(new_index);
+				accept_event();
+			}
+		}
 	}
 }
 
@@ -656,7 +667,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		}
 
 		if (point.x >= 0.0 && point.x <= s.width && point.y >= 0.0 && point.y <= s.height && editing_point != i) {
-			String name_text = blend_space->get_blend_point_name(i);
+			String name_text = show_indices ? itos(i) : blend_space->get_blend_point_name(i);
 			Vector2 text_size = font->get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 
 			Vector2 text_pos;
@@ -859,13 +870,9 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->add_undo_method(this, "_update_space");
 		undo_redo->commit_action();
 
-		selected_point = -1;
-
-		// Return selection to host BlendSpace2D node.
-		EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
+		_set_selected_point(-1);
 
 		updating = false;
-		_update_tool_erase();
 
 		blend_space_draw->queue_redraw();
 	} else if (selected_triangle != -1) {
@@ -947,18 +954,31 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_index(double p_index) {
 
 	updating = true;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Move BlendSpace2D Node Point"));
-
+	undo_redo->create_action(TTR("Reorder BlendSpace2D Point Index"));
 	undo_redo->add_do_method(blend_space.ptr(), "reorder_blend_point", selected_point, new_index);
 	undo_redo->add_undo_method(blend_space.ptr(), "reorder_blend_point", new_index, selected_point);
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method(this, "_set_selected_point", new_index);
+	undo_redo->add_undo_method(this, "_set_selected_point", selected_point);
+	undo_redo->add_do_method(this, "_show_indices_with_cooldown");
+	undo_redo->add_undo_method(this, "_show_indices_with_cooldown");
 	undo_redo->commit_action();
-
-	selected_point = new_index;
 	updating = false;
 
 	blend_space_draw->queue_redraw();
+}
+
+void AnimationNodeBlendSpace2DEditor::_set_selected_point(int p_index) {
+	selected_point = p_index;
+	_update_tool_erase();
+	if (p_index != -1) {
+		_update_edited_point_pos();
+		Ref<AnimationNode> node = blend_space->get_blend_point_node(p_index);
+		EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+	} else {
+		EditorNode::get_singleton()->push_item(blend_space.ptr(), "", true);
+	}
 }
 
 void AnimationNodeBlendSpace2DEditor::_edit_point_name(const String &p_name) {
@@ -1040,6 +1060,36 @@ void AnimationNodeBlendSpace2DEditor::_open_editor() {
 	}
 }
 
+void AnimationNodeBlendSpace2DEditor::_index_edit_focus_entered() {
+	if (index_focus_cooldown_timer->is_stopped() == false) {
+		index_focus_cooldown_timer->stop();
+	}
+	index_edit_has_focus = true;
+	show_indices = true;
+	blend_space_draw->queue_redraw();
+}
+
+void AnimationNodeBlendSpace2DEditor::_index_edit_focus_exited() {
+	index_edit_has_focus = false;
+	index_focus_cooldown_timer->start();
+}
+
+void AnimationNodeBlendSpace2DEditor::_index_focus_cooldown_timeout() {
+	if (!index_edit_has_focus) {
+		show_indices = false;
+		blend_space_draw->queue_redraw();
+	}
+}
+
+void AnimationNodeBlendSpace2DEditor::_show_indices_with_cooldown() {
+	if (index_focus_cooldown_timer->is_stopped() == false) {
+		index_focus_cooldown_timer->stop();
+	}
+	show_indices = true;
+	index_focus_cooldown_timer->start();
+	blend_space_draw->queue_redraw();
+}
+
 void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Toggle Auto Triangles"));
@@ -1056,6 +1106,8 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
 	ClassDB::bind_method("_update_edited_point_name", &AnimationNodeBlendSpace2DEditor::_update_edited_point_name);
+	ClassDB::bind_method("_set_selected_point", &AnimationNodeBlendSpace2DEditor::_set_selected_point);
+	ClassDB::bind_method("_show_indices_with_cooldown", &AnimationNodeBlendSpace2DEditor::_show_indices_with_cooldown);
 }
 
 void AnimationNodeBlendSpace2DEditor::_start_inline_edit(int p_point) {
@@ -1064,7 +1116,7 @@ void AnimationNodeBlendSpace2DEditor::_start_inline_edit(int p_point) {
 	}
 
 	editing_point = p_point;
-	selected_point = p_point;
+	_set_selected_point(p_point);
 
 	inline_editor = memnew(LineEdit);
 	blend_space_draw->add_child(inline_editor);
@@ -1280,6 +1332,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	index_edit->set_accessibility_name(TTRC("Blend Point Index"));
 	index_edit->set_tooltip_text(TTR("Index of the blend point.\nValues outside of the valid range will be clamped to the nearest index."));
 	index_edit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_index));
+	index_edit->get_line_edit()->connect(SceneStringName(focus_entered), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_edit_focus_entered));
+	index_edit->get_line_edit()->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_edit_focus_exited));
 
 	edit_hb->add_child(memnew(VSeparator));
 
@@ -1408,6 +1462,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_file_opened));
+
+	// Create timer for index focus cooldown (1.5 seconds).
+	index_focus_cooldown_timer = memnew(Timer);
+	add_child(index_focus_cooldown_timer);
+	index_focus_cooldown_timer->set_wait_time(1.5);
+	index_focus_cooldown_timer->set_one_shot(true);
+	index_focus_cooldown_timer->connect("timeout", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_focus_cooldown_timeout));
 
 	selected_point = -1;
 	selected_triangle = -1;
