@@ -124,6 +124,7 @@ class PhysicsPointQueryParameters3D;
 class PhysicsPointIntersectionResult3D;
 class PhysicsShapeQueryParameters3D;
 class PhysicsShapeIntersectionResult3D;
+class PhysicsShapeCastResult3D;
 
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
@@ -132,7 +133,7 @@ private:
 	bool _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result);
 	bool _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult3D> rp_result);
 	bool _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult3D> rp_result);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
+	bool _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCastResult3D> rp_result);
 	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
@@ -143,6 +144,7 @@ protected:
 	Dictionary _intersect_ray_bind_compat_113970(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query);
 	TypedArray<Dictionary> _intersect_point_bind_compat_113970(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -1026,6 +1028,22 @@ public:
 	ObjectID get_collider_id(int p_collider_index) const;
 	Object *get_collider(int p_collider_index) const;
 	int get_collider_shape(int p_collider_index) const;
+};
+
+class PhysicsShapeCastResult3D : public RefCounted {
+	GDCLASS(PhysicsShapeCastResult3D, RefCounted);
+
+	friend class PhysicsDirectSpaceState3D;
+
+	real_t safe_fraction = 1.0;
+	real_t unsafe_fraction = 1.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	real_t get_collision_safe_fraction() const;
+	real_t get_collision_unsafe_fraction() const;
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {

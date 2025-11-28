@@ -487,10 +487,28 @@ void PhysicsShapeIntersectionResult3D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
+real_t PhysicsShapeCastResult3D::get_collision_safe_fraction() const {
+	return safe_fraction;
+}
+
+real_t PhysicsShapeCastResult3D::get_collision_unsafe_fraction() const {
+	return unsafe_fraction;
+}
+
+void PhysicsShapeCastResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsShapeCastResult3D::get_collision_safe_fraction);
+	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsShapeCastResult3D::get_collision_unsafe_fraction);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_safe_fraction"), "", "get_collision_safe_fraction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_unsafe_fraction"), "", "get_collision_unsafe_fraction");
+}
+
+///////////////////////////////////////////////////////
+
 bool PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result) {
 	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, false);
 	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
-	
+
 	return intersect_ray(p_ray_query->get_parameters(), *p_result->get_result_ptr());
 }
 
@@ -512,19 +530,19 @@ bool PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQuery
 	return p_result->collision_count > 0;
 }
 
-Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
+bool PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCastResult3D> rp_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_result, rp_result, false);
 
-	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
-	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
-	if (!res) {
-		return Vector<real_t>();
-	}
-	Vector<real_t> ret;
-	ret.resize(2);
-	ret.write[0] = closest_safe;
-	ret.write[1] = closest_unsafe;
-	return ret;
+	p_result->safe_fraction = 1.0f;
+	p_result->unsafe_fraction = 1.0f;
+
+	// NOTE: Expected behavior: return true on collision, false otherwise.
+	//       Actual behavior: always returns true.
+	cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
+
+	// return cast_motion(p_shape_query->get_parameters(), p_result->safe_fraction, p_result->unsafe_fraction);
+	return (p_result->safe_fraction < 1.0f) || (p_result->unsafe_fraction < 1.0f);
 }
 
 TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
@@ -573,7 +591,7 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray);
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_point);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_shape);
-	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
+	ClassDB::bind_method(D_METHOD("cast_motion", "parameters", "result"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
