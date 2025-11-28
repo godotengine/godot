@@ -43,6 +43,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/gtao.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/gtao_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
@@ -144,13 +145,12 @@ public:
 		Size2i full_screen_size;
 	};
 
-	void assao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, const AOSettings &p_settings);
+	void ao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, const AOSettings &p_settings);
 	void generate_assao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
 
-	void gtao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_gtao_buffers, const AOSettings &p_settings);
-	void generate_gtao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_gtao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings, RendererRD::CopyEffects &p_copy_effects);
+	void generate_gtao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_gtao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
 
-	void generate_ao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings, RendererRD::CopyEffects &p_copy_effects);
+	void generate_ao(Ref<RenderSceneBuffersRD> p_render_buffers, AORenderBuffers &p_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const AOSettings &p_settings);
 
 	/* Screen Space Reflection */
 	void ssr_set_half_size(bool p_half_size);
@@ -437,12 +437,12 @@ private:
 		uint32_t is_orthogonal;
 
 		float viewport_pixel_size[2];
-		float pad[2];
+		int pass;
+		int pad;
 
-		int32_t size_multiplier;
+		int pass_coord_offset[2];
+		int size_multiplier;
 		float fov_scale;
-		float depth_linearize_mul;
-		float depth_linearize_add;
 
 		float NDC_to_view_mul[2];
 		float NDC_to_view_add[2];
@@ -461,13 +461,20 @@ private:
 	struct GTAOBlurPushConstant {
 		float viewport_pixel_size[2];
 		float blur_beta;
-		float pad;
+		int pad;
+	};
+
+	struct GTAOInterleavePushConstant {
+		float pixel_size[2];
+		uint32_t size_modifier;
+		int pad;
 	};
 
 	enum GTAOMode {
 		GTAO_BASE,
 		GTAO_BLUR,
 		GTAO_BLUR_FINAL,
+		GTAO_INTERLEAVE,
 		GTAO_MAX
 	};
 
@@ -479,6 +486,10 @@ private:
 		GTAOBlurPushConstant blur_push_constant;
 		GtaoBlurShaderRD blur_shader;
 		RID blur_shader_version;
+
+		GTAOInterleavePushConstant interleave_push_constant;
+		GtaoInterleaveShaderRD interleave_shader;
+		RID interleave_shader_version;
 
 		PipelineDeferredRD pipelines[GTAO_MAX];
 		RID point_clamp_sampler;
