@@ -44,7 +44,6 @@
 CanvasItemGizmo::CanvasItemGizmo() {
 }
 
-
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
@@ -118,7 +117,6 @@ void CanvasItem::clear_gizmos() {
 #endif
 }
 
-
 void CanvasItem::_update_gizmos() {
 #ifdef TOOLS_ENABLED
 	if (data.gizmos_disabled || !is_inside_tree() || !data.gizmos_dirty) {
@@ -135,7 +133,6 @@ void CanvasItem::_update_gizmos() {
 	}
 #endif
 }
-
 
 void CanvasItem::update_gizmos() {
 	ERR_THREAD_GUARD;
@@ -163,8 +160,6 @@ void CanvasItem::update_gizmos() {
 #endif
 }
 
-
-
 TypedArray<CanvasItemGizmo> CanvasItem::get_gizmos_bind() const {
 	ERR_THREAD_GUARD_V(TypedArray<CanvasItemGizmo>());
 	TypedArray<CanvasItemGizmo> ret;
@@ -175,7 +170,6 @@ TypedArray<CanvasItemGizmo> CanvasItem::get_gizmos_bind() const {
 #endif
 	return ret;
 }
-
 
 Vector<Ref<CanvasItemGizmo>> CanvasItem::get_gizmos() const {
 	ERR_THREAD_GUARD_V(Vector<Ref<CanvasItemGizmo>>());
@@ -1483,7 +1477,6 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_gizmo", "gizmo"), &CanvasItem::add_gizmo);
 	ClassDB::bind_method(D_METHOD("get_gizmos"), &CanvasItem::get_gizmos_bind);
 	ClassDB::bind_method(D_METHOD("clear_gizmos"), &CanvasItem::clear_gizmos);
-
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 

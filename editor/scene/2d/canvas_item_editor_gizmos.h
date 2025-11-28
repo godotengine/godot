@@ -61,7 +61,7 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 	Vector<Instance> instances;
 	CanvasItem *canvas_item = nullptr;
 
-	void _set_canvas_item(CanvasItem *p_canvas_item) {set_canvas_item(Object::cast_to<CanvasItem>(p_canvas_item));}
+	void _set_canvas_item(CanvasItem *p_canvas_item) { set_canvas_item(Object::cast_to<CanvasItem>(p_canvas_item)); }
 
 protected:
 	static void _bind_methods();
@@ -107,13 +107,13 @@ public:
 	virtual void set_subgizmo_transform(int p_id, const Transform2D &p_xform);
 	virtual void commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
 
-	void set_selected(bool p_selected) { selected = p_selected;}
-	bool is_selected() const { return selected; };
+	void set_selected(bool p_selected) { selected = p_selected; }
+	bool is_selected() const { return selected; }
 
 	void set_canvas_item(CanvasItem *p_canvas_item);
-	CanvasItem *get_canvas_item() const {return canvas_item;}
+	CanvasItem *get_canvas_item() const { return canvas_item; }
 
-	Ref<EditorCanvasItemGizmoPlugin> get_plugin() const {return gizmo_plugin;}
+	Ref<EditorCanvasItemGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 
 	bool intersect_rect(const Rect2 &p_rect) const;
 	void handles_intersect_point(const Point2 &p_point, bool p_shift_pressed, int &r_id, bool &r_secondary);
@@ -135,7 +135,6 @@ public:
 	EditorCanvasItemGizmo();
 	~EditorCanvasItemGizmo();
 };
-
 
 class EditorCanvasItemGizmoPlugin : public Resource {
 	GDCLASS(EditorCanvasItemGizmoPlugin, Resource);
