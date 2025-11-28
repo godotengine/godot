@@ -104,7 +104,12 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 
 			const Vector3i cell_size = voxel_gi->get_estimated_cell_size();
 
-			const Vector3 half_size = voxel_gi->get_size() / 2;
+			const Vector3 size = voxel_gi->get_size();
+
+			// The cell dimensions are uniform in all directions
+			AABB bounds = AABB(-size / 2, size);
+			int longest_axis = bounds.get_longest_axis_index();
+			float one_cell_size = bounds.size[longest_axis] / cell_size[longest_axis];
 
 			const int data_size = 4;
 			const double size_mb = cell_size.x * cell_size.y * cell_size.z * data_size / (1024.0 * 1024.0);
@@ -120,7 +125,7 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 
 			String text;
 			text += vformat(TTR("Subdivisions: %s"), vformat(U"%d × %d × %d", cell_size.x, cell_size.y, cell_size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(U"%.3f × %.3f × %.3f", half_size.x / cell_size.x, half_size.y / cell_size.y, half_size.z / cell_size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(U"%.3f × %.3f × %.3f", one_cell_size, one_cell_size, one_cell_size)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.
