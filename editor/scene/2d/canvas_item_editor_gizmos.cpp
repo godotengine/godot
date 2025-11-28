@@ -201,7 +201,6 @@ void EditorCanvasItemGizmo::set_canvas_item(CanvasItem *p_canvas_item) {
 	canvas_item = p_canvas_item;
 }
 
-
 void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p_hidden) {
 	ERR_FAIL_NULL(p_base);
 
@@ -219,7 +218,6 @@ void EditorCanvasItemGizmo::add_circle(const Vector2 &p_pos, float p_radius, con
 	RS::get_singleton()->canvas_item_add_circle(ins.instance, p_pos, p_radius, p_color);
 	instances.push_back(ins);
 }
-
 
 void EditorCanvasItemGizmo::add_polygon(const Vector<Vector2> &p_polygon, const Color &p_color) {
 	ERR_FAIL_NULL(canvas_item);
@@ -251,7 +249,6 @@ void EditorCanvasItemGizmo::add_polyline(const Vector<Vector2> &p_points, const 
 	instances.push_back(ins);
 }
 
-
 void EditorCanvasItemGizmo::add_rect(const Rect2 &p_rect, const Color &p_color) {
 	ERR_FAIL_NULL(canvas_item);
 
@@ -261,7 +258,6 @@ void EditorCanvasItemGizmo::add_rect(const Rect2 &p_rect, const Color &p_color) 
 	instances.push_back(ins);
 }
 
-
 void EditorCanvasItemGizmo::add_collision_segments(const Vector<Vector2> &p_lines) {
 	ERR_FAIL_COND_MSG(p_lines.size() % 2 != 0, "Collision segments must be a list of even length.");
 	int from = collision_segments.size();
@@ -270,7 +266,6 @@ void EditorCanvasItemGizmo::add_collision_segments(const Vector<Vector2> &p_line
 		collision_segments.write[from + i] = p_lines[i];
 	}
 }
-
 
 void EditorCanvasItemGizmo::add_collision_rect(const Rect2 &p_rect) {
 	collision_rects.push_back(p_rect);
@@ -334,7 +329,7 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, const 
 	a[RS::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, a);
 	if (valid) {
-		RS::get_singleton()->canvas_item_add_mesh(ins.instance, mesh->get_rid(), Transform2D(),  p_color);
+		RS::get_singleton()->canvas_item_add_mesh(ins.instance, mesh->get_rid(), Transform2D(), p_color);
 		ins.create_instance(canvas_item, hidden);
 	}
 
@@ -355,7 +350,7 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, const 
 	}
 }
 
-bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const{
+bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const {
 	ERR_FAIL_NULL_V(canvas_item, false);
 	ERR_FAIL_COND_V(!valid, false);
 
@@ -409,15 +404,14 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 	Transform2D screen_transform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_viewport()->get_screen_transform();
 	float min_d = 1e20;
 
-	for (int i = 0; i < secondary_handles.size(); i++ ) {
+	for (int i = 0; i < secondary_handles.size(); i++) {
 		Vector2 screen_pos = screen_transform.xform(secondary_handles[i]);
 		float distance = screen_pos.distance_to(p_point);
-		if ( distance < HANDLE_HALF_SIZE && distance < min_d ) {
+		if (distance < HANDLE_HALF_SIZE && distance < min_d) {
 			min_d = distance;
 			if (secondary_handle_ids.is_empty()) {
 				r_id = i;
-			}
-			else {
+			} else {
 				r_id = secondary_handle_ids[i];
 			}
 			r_secondary = true;
@@ -430,15 +424,14 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, bool 
 
 	min_d = 1e20;
 
-	for (int i = 0; i < handles.size(); i++ ) {
+	for (int i = 0; i < handles.size(); i++) {
 		Vector2 screen_pos = screen_transform.xform(handles[i]);
 		float distance = screen_pos.distance_to(p_point);
-		if ( distance < HANDLE_HALF_SIZE && distance < min_d ) {
+		if (distance < HANDLE_HALF_SIZE && distance < min_d) {
 			min_d = distance;
 			if (handle_ids.is_empty()) {
 				r_id = i;
-			}
-			else {
+			} else {
 				r_id = handle_ids[i];
 			}
 			r_secondary = false;
@@ -457,10 +450,9 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
 	Transform2D to_local = canvas_item->get_global_transform().affine_inverse();
 	Point2 local_point = to_local.xform(p_point);
 
-
 	for (int i = 0; i < collision_segments.size(); i += 2) {
 		Vector2 a = collision_segments[i];
-		Vector2 b = collision_segments[i+1];
+		Vector2 b = collision_segments[i + 1];
 		Vector2 closest = Geometry2D::get_closest_point_to_segment(local_point, a, b);
 		if (closest.distance_to(local_point) < 8) { // TODO: GIZMOS 3d uses a magic 8 here, not sure why
 			return true;
@@ -481,7 +473,6 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point) const {
 
 	return false;
 }
-
 
 bool EditorCanvasItemGizmo::is_subgizmo_selected(int p_id) const {
 	CanvasItemEditor *ed = CanvasItemEditor::get_singleton();
@@ -513,7 +504,6 @@ void EditorCanvasItemGizmo::create() {
 
 	transform();
 }
-
 
 void EditorCanvasItemGizmo::transform() {
 	ERR_FAIL_NULL(canvas_item);
@@ -587,7 +577,7 @@ EditorCanvasItemGizmo::EditorCanvasItemGizmo() {
 	gizmo_plugin = nullptr;
 }
 
- EditorCanvasItemGizmo::~EditorCanvasItemGizmo() {
+EditorCanvasItemGizmo::~EditorCanvasItemGizmo() {
 	if (gizmo_plugin != nullptr) {
 		gizmo_plugin->unregister_gizmo(this);
 	}
@@ -605,7 +595,6 @@ String EditorCanvasItemGizmoPlugin::get_gizmo_name() const {
 	return "Unnamed Gizmo";
 }
 
-
 int EditorCanvasItemGizmoPlugin::get_priority() const {
 	int ret = 0;
 	if (GDVIRTUAL_CALL(_get_priority, ret)) {
@@ -615,7 +604,7 @@ int EditorCanvasItemGizmoPlugin::get_priority() const {
 }
 
 Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_canvas_item) {
-	if (get_script_instance() && get_script_instance() -> has_method("_get_gizmo")) {
+	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo")) {
 		return get_script_instance()->call("_get_gizmo", p_canvas_item);
 	}
 
@@ -662,7 +651,6 @@ bool EditorCanvasItemGizmoPlugin::has_gizmo(CanvasItem *p_canvas_item) {
 	GDVIRTUAL_CALL(_has_gizmo, p_canvas_item, success);
 	return success;
 }
-
 
 Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::create_gizmo(CanvasItem *p_canvas_item) {
 	Ref<EditorCanvasItemGizmo> ret;
@@ -724,7 +712,7 @@ void EditorCanvasItemGizmoPlugin::set_handle(const EditorCanvasItemGizmo *p_gizm
 	GDVIRTUAL_CALL(_set_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_screen_pos);
 }
 
-void EditorCanvasItemGizmoPlugin::commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant& p_restore, bool p_cancel) {
+void EditorCanvasItemGizmoPlugin::commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	GDVIRTUAL_CALL(_commit_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_restore, p_cancel);
 }
 
@@ -789,22 +777,3 @@ EditorCanvasItemGizmoPlugin::~EditorCanvasItemGizmoPlugin() {
 		CanvasItemEditor::get_singleton()->update_all_gizmos();
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

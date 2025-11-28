@@ -798,6 +798,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		}
 		xform *= ci->get_transform();
 
+		// legacy way
 		if (ci->_edit_use_rect()) {
 			Rect2 rect = ci->_edit_get_rect();
 			if (p_rect.has_point(xform.xform(rect.position)) &&
@@ -808,6 +809,18 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 			}
 		} else {
 			if (p_rect.has_point(xform.xform(Point2()))) {
+				r_items->push_back(ci);
+			}
+		}
+
+		// gizmos way
+		Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
+		for (int i = 0; i < gizmos.size(); i++) {
+			Ref<EditorCanvasItemGizmo> gizmo = gizmos[i];
+			if (gizmo.is_null()) {
+				continue;
+			}
+			if (gizmo->intersect_rect(p_rect)) {
 				r_items->push_back(ci);
 			}
 		}
@@ -5590,7 +5603,6 @@ void CanvasItemEditor::remove_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_pl
 	_update_gizmos_menu();
 }
 
-
 void CanvasItemEditor::_request_gizmo(Object *p_obj) {
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_obj);
 	if (!ci) {
@@ -5599,12 +5611,12 @@ void CanvasItemEditor::_request_gizmo(Object *p_obj) {
 
 	bool is_selected = (ci == selected_canvas_item);
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-	if (edited_scene && (ci == edited_scene || ci->get_owner() && edited_scene->is_ancestor_of(ci))) {
+	if (edited_scene && (ci == edited_scene || (ci->get_owner() && edited_scene->is_ancestor_of(ci)))) {
 		for (int i = 0; i < gizmo_plugins_by_priority.size(); i++) {
-			Ref<EditorCanvasItemGizmo> gizmo = gizmo_plugins_by_priority.write[i] -> get_gizmo(ci);
+			Ref<EditorCanvasItemGizmo> gizmo = gizmo_plugins_by_priority.write[i]->get_gizmo(ci);
 
 			if (gizmo.is_valid()) {
-				ci -> add_gizmo(gizmo);
+				ci->add_gizmo(gizmo);
 
 				if (is_selected != gizmo->is_selected()) {
 					gizmo->set_selected(is_selected);
@@ -5647,7 +5659,13 @@ void CanvasItemEditor::update_all_gizmos(Node *p_node) {
 	_update_all_canvas_item_gizmos(p_node);
 }
 
-
+bool CanvasItemEditor::is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo) {
+	CanvasItemEditorSelectedItem *se = selected_canvas_item ? editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(selected_canvas_item) : nullptr;
+	if (se) {
+		return se->gizmo == p_gizmo;
+	}
+	return false;
+}
 
 CanvasItemEditor::CanvasItemEditor() {
 	snap_target[0] = SNAP_TARGET_NONE;
