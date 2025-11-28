@@ -703,26 +703,21 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				dock->load_layout_from_config(p_layout, section_name);
 				continue;
 			}
+
 			if (allow_floating_docks && floating_docks_dump.has(name)) {
 				_restore_dock_to_saved_window(dock, floating_docks_dump[name]);
-			} else if (i >= 0) {
-				if (dock->transient && !dock->is_open) {
-					dock->dock_slot_index = i;
+			} else if (i >= 0 && !(dock->transient && !dock->is_open)) {
+				// Safe to include transient open docks here because they won't be in the closed dock dump.
+				if (closed_docks.has(name)) {
+					dock->is_open = false;
+					dock->hide();
+					_move_dock(dock, closed_dock_parent);
 				} else {
+					dock->is_open = true;
 					_move_dock(dock, dock_slots[i].container, 0);
 				}
 			}
 			dock->load_layout_from_config(p_layout, section_name);
-
-			if (!dock->transient) {
-				if (closed_docks.has(name)) {
-					_move_dock(dock, closed_dock_parent);
-					dock->is_open = false;
-					dock->hide();
-				} else {
-					dock->is_open = true;
-				}
-			}
 
 			dock->dock_slot_index = i;
 			dock->previous_tab_index = i >= 0 ? j : 0;
