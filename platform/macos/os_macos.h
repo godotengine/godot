@@ -79,6 +79,23 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	static inline const char *headless_args[] = {
+		"--headless",
+		"-h",
+		"--help",
+		"/?",
+		"--version",
+		"--dump-gdextension-interface",
+		"--dump-extension-api",
+		"--dump-gdextension-interface-json",
+		"--dump-extension-api-with-docs",
+		"--validate-extension-api",
+		"--convert-3to4",
+		"--validate-conversion-3to4",
+		"--doctool",
+		"--test",
+	};
+
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
