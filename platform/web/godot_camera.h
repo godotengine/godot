@@ -37,26 +37,20 @@
 extern "C" {
 #endif
 
-using CameraLibrary_OnGetCamerasCallback = void (*)(void *context, void *callback, const char *result);
-
-using CameraLibrary_OnGetPixelDataCallback = void (*)(void *context, const uint8_t *, const int size, const int width, const int height, const char *error);
-
-using CameraLibrary_OnDeniedCallback = void (*)(void *context);
-
 extern void godot_js_camera_get_cameras(
-		void *context,
-		void *callback,
-		CameraLibrary_OnGetCamerasCallback p_callback_ptr);
+		void *p_context,
+		void *p_callback,
+		void (*p_callback_ptr)(void *p_context, void *p_callback, const char *p_result));
 
 extern void godot_js_camera_get_pixel_data(
-		void *context,
-		const char *p_device_id_ptr,
-		const int width,
-		const int height,
-		CameraLibrary_OnGetPixelDataCallback p_callback_ptr,
-		CameraLibrary_OnDeniedCallback p_denied_callback_ptr);
+		void *p_context,
+		const char *p_device_id,
+		const int p_width,
+		const int p_height,
+		void (*p_callback)(void *p_context, const uint8_t *p_data, const int p_size, const int p_width, const int p_height, const char *p_error),
+		void (*p_denied_callback)(void *p_context));
 
-extern void godot_js_camera_stop_stream(const char *p_device_id_ptr = nullptr);
+extern void godot_js_camera_stop_stream(const char *p_device_id = nullptr);
 
 #ifdef __cplusplus
 }
