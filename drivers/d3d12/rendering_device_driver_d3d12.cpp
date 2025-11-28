@@ -4753,7 +4753,6 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 	command_next_render_subpass(p_cmd_buffer, p_cmd_buffer_type);
 
 	AttachmentClear *clears = ALLOCA_ARRAY(AttachmentClear, pass_info->attachments.size());
-	Rect2i *clear_rects = ALLOCA_ARRAY(Rect2i, pass_info->attachments.size());
 	uint32_t num_clears = 0;
 
 	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
@@ -4779,13 +4778,12 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 		if (!clear.aspect.is_empty()) {
 			clear.value = p_attachment_clears[i];
 			clears[num_clears] = clear;
-			clear_rects[num_clears] = p_rect;
 			num_clears++;
 		}
 	}
 
 	if (num_clears) {
-		command_render_clear_attachments(p_cmd_buffer, VectorView(clears, num_clears), VectorView(clear_rects, num_clears));
+		command_render_clear_attachments(p_cmd_buffer, VectorView(clears, num_clears), VectorView(p_rect));
 	}
 }
 
