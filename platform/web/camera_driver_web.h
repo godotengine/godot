@@ -37,16 +37,6 @@
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 
-#define KEY_CAMERAS String("cameras")
-#define KEY_CAPABILITIES String("capabilities")
-#define KEY_ERROR String("error")
-#define KEY_HEIGHT String("height")
-#define KEY_ID String("id")
-#define KEY_INDEX String("index")
-#define KEY_LABEL String("label")
-#define KEY_MAX String("max")
-#define KEY_WIDTH String("width")
-
 struct CapabilityInfo {
 	int width;
 	int height;
@@ -59,7 +49,7 @@ struct CameraInfo {
 	CapabilityInfo capability;
 };
 
-using CameraDriverWeb_OnGetCamerasCallback = void (*)(void *context, const Vector<CameraInfo> &camera_info);
+using CameraDriverWebGetCamerasCallback = void (*)(void *p_context, const Vector<CameraInfo> &p_camera_info);
 
 class CameraDriverWeb {
 private:
@@ -70,8 +60,8 @@ private:
 
 public:
 	static CameraDriverWeb *get_singleton();
-	void get_cameras(void *context, CameraDriverWeb_OnGetCamerasCallback callback);
-	void get_pixel_data(void *context, const String &p_device_id, const int width, const int height, CameraLibrary_OnGetPixelDataCallback p_callback, CameraLibrary_OnDeniedCallback p_denied_callback);
+	void get_cameras(void *p_context, CameraDriverWebGetCamerasCallback p_callback);
+	void get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const char *), void (*p_denied_callback)(void *));
 	void stop_stream(const String &device_id = String());
 
 	CameraDriverWeb();

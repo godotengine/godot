@@ -34,6 +34,18 @@
 
 #include <cstdlib>
 
+namespace {
+const String KEY_CAMERAS("cameras");
+const String KEY_CAPABILITIES("capabilities");
+const String KEY_ERROR("error");
+const String KEY_HEIGHT("height");
+const String KEY_ID("id");
+const String KEY_INDEX("index");
+const String KEY_LABEL("label");
+const String KEY_MAX("max");
+const String KEY_WIDTH("width");
+} //namespace
+
 CameraDriverWeb *CameraDriverWeb::singleton = nullptr;
 Array CameraDriverWeb::_camera_info_key;
 
@@ -147,16 +159,16 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 		}
 	}
 
-	CameraDriverWeb_OnGetCamerasCallback on_get_cameras_callback = reinterpret_cast<CameraDriverWeb_OnGetCamerasCallback>(callback);
+	CameraDriverWebGetCamerasCallback on_get_cameras_callback = reinterpret_cast<CameraDriverWebGetCamerasCallback>(callback);
 	on_get_cameras_callback(context, camera_info);
 }
 
-void CameraDriverWeb::get_cameras(void *context, CameraDriverWeb_OnGetCamerasCallback callback) {
-	godot_js_camera_get_cameras(context, (void *)callback, &_on_get_cameras_callback);
+void CameraDriverWeb::get_cameras(void *p_context, CameraDriverWebGetCamerasCallback p_callback) {
+	godot_js_camera_get_cameras(p_context, (void *)p_callback, &_on_get_cameras_callback);
 }
 
-void CameraDriverWeb::get_pixel_data(void *context, const String &p_device_id, const int width, const int height, CameraLibrary_OnGetPixelDataCallback p_callback, CameraLibrary_OnDeniedCallback p_denied_callback) {
-	godot_js_camera_get_pixel_data(context, p_device_id.utf8().get_data(), width, height, p_callback, p_denied_callback);
+void CameraDriverWeb::get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const char *), void (*p_denied_callback)(void *)) {
+	godot_js_camera_get_pixel_data(p_context, p_device_id.utf8().get_data(), p_width, p_height, p_callback, p_denied_callback);
 }
 
 void CameraDriverWeb::stop_stream(const String &device_id) {
