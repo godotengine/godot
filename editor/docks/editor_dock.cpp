@@ -111,7 +111,7 @@ EditorDock::EditorDock() {
 
 void EditorDock::open() {
 	if (!is_open) {
-		EditorDockManager::get_singleton()->open_dock(this);
+		EditorDockManager::get_singleton()->open_dock(this, false);
 	}
 }
 
