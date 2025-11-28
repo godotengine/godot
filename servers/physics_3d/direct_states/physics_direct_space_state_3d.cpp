@@ -179,6 +179,16 @@ bool PhysicsDirectSpaceState3D::_intersect_shape_into(RequiredParam<PhysicsShape
 	return result->intersection_count > 0;
 }
 
+bool PhysicsDirectSpaceState3D::_cast_motion_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsCastMotionResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	result->safe_fraction = 1.0;
+	result->unsafe_fraction = 1.0;
+
+	return cast_motion(shape_query->get_parameters(), result->safe_fraction, result->unsafe_fraction) && result->safe_fraction < 1.0;
+}
+
 PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
@@ -193,4 +203,5 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_ray_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray_into);
 	ClassDB::bind_method(D_METHOD("intersect_point_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_point_into);
 	ClassDB::bind_method(D_METHOD("intersect_shape_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_shape_into);
+	ClassDB::bind_method(D_METHOD("cast_motion_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_cast_motion_into);
 }
