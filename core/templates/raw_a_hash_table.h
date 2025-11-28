@@ -223,6 +223,10 @@ protected:
 		Memory::free_static(old_map_data);
 	}
 
+	void _clear_metadata() {
+		memset(_metadata, EMPTY_HASH, (_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
+	}
+
 public:
 	virtual ~RawAHashTable() {}
 };

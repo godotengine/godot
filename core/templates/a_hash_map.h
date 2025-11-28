@@ -63,6 +63,7 @@ class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_metadata;
 	using Base::_resize_and_rehash;
 	using Base::_size;
+	using Base::_clear_metadata;
 	using Base::EMPTY_HASH;
 	using Base::INITIAL_CAPACITY;
 
@@ -143,7 +144,7 @@ public:
 			return;
 		}
 
-		memset(_metadata, EMPTY_HASH, (_capacity_mask + 1) * sizeof(RawAHashTableMetadata));
+		_clear_metadata();
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < _size; i++) {
 				_elements[i].key.~TKey();
