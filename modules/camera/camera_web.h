@@ -37,14 +37,12 @@
 class CameraFeedWeb : public CameraFeed {
 	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
 
-private:
 	String device_id;
 	Ref<Image> image;
 	Vector<uint8_t> data;
-	static void _on_get_pixeldata(void *context, const uint8_t *rawdata, const int length, const int p_width, const int p_height, const char *error);
-	static void _on_denied_callback(void *context);
+	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const char *p_error);
+	static void _on_denied_callback(void *p_context);
 
-protected:
 public:
 	bool activate_feed() override;
 	void deactivate_feed() override;
@@ -57,16 +55,14 @@ public:
 };
 
 class CameraWeb : public CameraServer {
-	GDCLASS(CameraWeb, CameraServer);
+	GDSOFTCLASS(CameraWeb, CameraServer);
 
-private:
-	CameraDriverWeb *camera_driver_web = nullptr;
+	CameraDriverWeb *driver = nullptr;
 	SafeFlag activating;
 	void _cleanup();
 	void _update_feeds();
-	static void _on_get_cameras_callback(void *context, const Vector<CameraInfo> &camera_info);
+	static void _on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info);
 
-protected:
 public:
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;
 

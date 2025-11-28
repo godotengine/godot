@@ -30,25 +30,30 @@
 
 #include "camera_web.h"
 
-void CameraFeedWeb::_on_get_pixeldata(void *context, const uint8_t *rawdata, const int length, const int p_width, const int p_height, const char *error) {
+namespace {
+const String KEY_HEIGHT("height");
+const String KEY_WIDTH("width");
+} //namespace
+
+void CameraFeedWeb::_on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const char *p_error) {
 	// Validate context first to avoid dereferencing null on error paths.
-	if (context == nullptr) {
+	if (p_context == nullptr) {
 		ERR_PRINT("Camera feed error: Null context received.");
 		return;
 	}
 
-	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(context);
+	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
 
-	if (error) {
+	if (p_error) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
 		}
-		String error_str = String::utf8(error);
+		String error_str = String::utf8(p_error);
 		ERR_PRINT(vformat("Camera feed error from JS: %s", error_str));
 		return;
 	}
 
-	if (rawdata == nullptr || length < 0 || p_width <= 0 || p_height <= 0) {
+	if (p_data == nullptr || p_length < 0 || p_width <= 0 || p_height <= 0) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
 		}
@@ -60,7 +65,7 @@ void CameraFeedWeb::_on_get_pixeldata(void *context, const uint8_t *rawdata, con
 	Ref<Image> image = feed->image;
 
 	const int64_t expected_size = Image::get_image_data_size(p_width, p_height, Image::FORMAT_RGBA8, false);
-	if (length < expected_size) {
+	if (p_length < expected_size) {
 		if (feed->is_active()) {
 			feed->deactivate_feed();
 		}
@@ -71,15 +76,15 @@ void CameraFeedWeb::_on_get_pixeldata(void *context, const uint8_t *rawdata, con
 	if (data.size() != expected_size) {
 		data.resize(expected_size);
 	}
-	// Copy exactly the expected size (ignore any trailing bytes in 'rawdata').
-	memcpy(data.ptrw(), rawdata, expected_size);
+	// Copy exactly the expected size (ignore any trailing bytes in 'p_data').
+	memcpy(data.ptrw(), p_data, expected_size);
 
 	image->initialize_data(p_width, p_height, false, Image::FORMAT_RGBA8, data);
 	feed->set_rgb_image(image);
 }
 
-void CameraFeedWeb::_on_denied_callback(void *context) {
-	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(context);
+void CameraFeedWeb::_on_denied_callback(void *p_context) {
+	CameraFeedWeb *feed = reinterpret_cast<CameraFeedWeb *>(p_context);
 	feed->deactivate_feed();
 }
 
@@ -99,7 +104,7 @@ bool CameraFeedWeb::activate_feed() {
 		width = width > 0 ? width : f.width;
 		height = height > 0 ? height : f.height;
 	}
-	CameraDriverWeb::get_singleton()->get_pixel_data(this, device_id, width, height, &_on_get_pixeldata, &_on_denied_callback);
+	CameraDriverWeb::get_singleton()->get_pixel_data(this, device_id, width, height, &_on_get_pixel_data, &_on_denied_callback);
 	return true;
 }
 
@@ -115,7 +120,7 @@ bool CameraFeedWeb::set_format(int p_index, const Dictionary &p_parameters) {
 	ERR_FAIL_INDEX_V_MSG(p_index, formats.size(), false, "Invalid format index.");
 
 	selected_format = p_index;
-	parameters = p_parameters;
+	parameters = p_parameters.duplicate();
 	return true;
 }
 
@@ -153,13 +158,13 @@ CameraFeedWeb::~CameraFeedWeb() {
 	}
 }
 
-void CameraWeb::_on_get_cameras_callback(void *context, const Vector<CameraInfo> &camera_info) {
-	CameraWeb *server = static_cast<CameraWeb *>(context);
+void CameraWeb::_on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info) {
+	CameraWeb *server = static_cast<CameraWeb *>(p_context);
 	for (int i = server->feeds.size() - 1; i >= 0; i--) {
 		server->remove_feed(server->feeds[i]);
 	}
-	for (int i = 0; i < camera_info.size(); i++) {
-		CameraInfo info = camera_info[i];
+	for (int i = 0; i < p_camera_info.size(); i++) {
+		CameraInfo info = p_camera_info[i];
 		Ref<CameraFeedWeb> feed = memnew(CameraFeedWeb(info));
 		server->add_feed(feed);
 	}
@@ -169,14 +174,14 @@ void CameraWeb::_on_get_cameras_callback(void *context, const Vector<CameraInfo>
 
 void CameraWeb::_update_feeds() {
 	activating.set();
-	camera_driver_web->get_cameras((void *)this, &_on_get_cameras_callback);
+	driver->get_cameras((void *)this, &_on_get_cameras_callback);
 }
 
 void CameraWeb::_cleanup() {
-	if (camera_driver_web != nullptr) {
-		camera_driver_web->stop_stream();
-		memdelete(camera_driver_web);
-		camera_driver_web = nullptr;
+	if (driver != nullptr) {
+		driver->stop_stream();
+		memdelete(driver);
+		driver = nullptr;
 	}
 }
 
@@ -187,8 +192,8 @@ void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
-		if (camera_driver_web == nullptr) {
-			camera_driver_web = new CameraDriverWeb();
+		if (driver == nullptr) {
+			driver = new CameraDriverWeb();
 		}
 		_update_feeds();
 	} else {
