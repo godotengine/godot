@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
 #include "scene/main/canvas_item.h"
 
 class EditorCanvasItemGizmoPlugin;
