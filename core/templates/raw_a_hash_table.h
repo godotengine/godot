@@ -99,6 +99,8 @@ protected:
 	_FORCE_INLINE_ virtual const TKey &_get_key(uint32_t p_idx) const = 0;
 	_FORCE_INLINE_ virtual void _resize_elements(uint32_t p_new_capacity) = 0;
 	_FORCE_INLINE_ virtual bool _is_elements_valid() const = 0;
+	_FORCE_INLINE_ virtual void _clear_elements() = 0;
+	_FORCE_INLINE_ virtual void _free_elements() = 0;
 
 	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
@@ -235,6 +237,17 @@ public:
 		return size() == 0;
 	}
 
+	void clear() {
+		if (!_is_elements_valid() || _size == 0) {
+			return;
+		}
+
+		_clear_metadata();
+		_clear_elements();
+
+		_size = 0;
+	}
+
 	bool has(const TKey &p_key) const {
 		uint32_t _idx = 0;
 		uint32_t meta_idx = 0;
@@ -256,6 +269,16 @@ public:
 			return;
 		}
 		_resize_and_rehash(p_new_capacity);
+	}
+
+	void reset() {
+		if (_is_elements_valid()) {
+			_clear_elements();
+			_free_elements();
+			Memory::free_static(_metadata);
+		}
+		_capacity_mask = INITIAL_CAPACITY - 1;
+		_size = 0;
 	}
 
 	virtual ~RawAHashTable() {}

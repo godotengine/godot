@@ -60,10 +60,14 @@ class AHashSet final : public RawAHashTable<TKey, Hasher, Comparator> {
 	using Base::_size;
 
 public:
+	using Base::clear;
 	using Base::EMPTY_HASH;
+	using Base::get_capacity;
 	using Base::has;
 	using Base::INITIAL_CAPACITY;
+	using Base::is_empty;
 	using Base::reserve;
+	using Base::reset;
 	using Base::size;
 
 protected:
@@ -77,6 +81,19 @@ protected:
 
 	virtual bool _is_elements_valid() const override {
 		return _elements != nullptr;
+	}
+
+	virtual void _clear_elements() override {
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
+			for (uint32_t i = 0; i < _size; i++) {
+				_elements[i].~TKey();
+			}
+		}
+	}
+
+	virtual void _free_elements() override {
+		Memory::free_static(_elements);
+		_elements = nullptr;
 	}
 
 private:
@@ -129,21 +146,6 @@ private:
 
 public:
 	/* Standard Godot Container API */
-
-	void clear() {
-		if (_elements == nullptr || _size == 0) {
-			return;
-		}
-
-		_clear_metadata();
-		if constexpr (!std::is_trivially_destructible_v<TKey>) {
-			for (uint32_t i = 0; i < _size; i++) {
-				_elements[i].~TKey();
-			}
-		}
-
-		_size = 0;
-	}
 
 	bool erase(const TKey &p_key) {
 		uint32_t meta_idx = 0;
@@ -402,21 +404,6 @@ public:
 		for (const TKey &E : p_init) {
 			insert(E);
 		}
-	}
-
-	void reset() {
-		if (_elements != nullptr) {
-			if constexpr (!std::is_trivially_destructible_v<TKey>) {
-				for (uint32_t i = 0; i < _size; i++) {
-					_elements[i].~TKey();
-				}
-			}
-			Memory::free_static(_elements);
-			Memory::free_static(_metadata);
-			_elements = nullptr;
-		}
-		_capacity_mask = INITIAL_CAPACITY - 1;
-		_size = 0;
 	}
 
 	virtual ~AHashSet() override {
