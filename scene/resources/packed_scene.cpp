@@ -1230,12 +1230,12 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			}
 
 			// Don't save connection if it is from an inherited scene.
-			Node *conn_owner = p_node->get_connection_owner(target, E.name, base_callable);
-			if (conn_owner == reinterpret_cast<Node *>(1)) {
+			if (p_node->is_connection_inherited(target, E.name, base_callable)) {
 				continue;
 			}
 
 			// Don't save connection if it is part of a scene instance.
+			Node *conn_owner = p_node->get_connection_owner(target, E.name, base_callable);
 			bool owned_by_node_in_tree = p_node == conn_owner || (conn_owner != nullptr && p_owner->find_child(conn_owner->get_name(), true)); // Need to check this so that connections of reparented nodes not in the scenetree will be saved.
 			bool owned_by_main_scene = (conn_owner == p_owner || conn_owner == nullptr); // nullptr means the connection was just added and wasn't connected during node instantiation.
 			if (!owned_by_main_scene && owned_by_node_in_tree) {

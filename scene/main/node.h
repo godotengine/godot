@@ -212,6 +212,7 @@ private:
 		StringName name;
 		SceneTree *tree = nullptr;
 		HashMap<uint32_t, Node *> connection_owners; // Maintain the level at which signals were connected so connections can be packed correctly.
+		HashSet<uint32_t> inherited_connections; // Connections that come from a scene this node inherits.
 
 		String editor_description;
 
@@ -641,7 +642,11 @@ public:
 
 	/* USED ONLY BY PACKED SCENE */
 
+	// A connection is owned by the root node of the scene it is first saved
+	// in. Maintaining this data when instantiating scenes allows for correct
+	// packing of connections later.
 	void add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited);
+	bool is_connection_inherited(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const;
 	Node *get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const;
 
 	/* PROCESSING */

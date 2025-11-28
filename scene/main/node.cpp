@@ -2589,12 +2589,16 @@ void Node::_propagate_reverse_notification(int p_notification) {
 void Node::add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited) {
 	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
 	if (is_inherited) {
-		// This connection exists from instantiation but is inherited, so return some pointer that
-		// isn't the actual owner and isn't nullptr.
-		data.connection_owners[hash] = reinterpret_cast<Node *>(1);
+		data.inherited_connections.insert(hash);
 	} else {
 		data.connection_owners[hash] = p_owner;
 	}
+}
+
+// Returns true if the connection data comes from a scene this node inherits.
+bool Node::is_connection_inherited(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
+	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+	return data.inherited_connections.has(hash);
 }
 
 Node *Node::get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
