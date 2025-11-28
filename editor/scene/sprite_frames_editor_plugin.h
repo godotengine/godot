@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -37,7 +38,6 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/image_texture.h"
@@ -69,8 +69,8 @@ public:
 	static Ref<ClipboardAnimation> from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim);
 };
 
-class SpriteFramesEditor : public HSplitContainer {
-	GDCLASS(SpriteFramesEditor, HSplitContainer);
+class SpriteFramesEditor : public EditorDock {
+	GDCLASS(SpriteFramesEditor, EditorDock);
 
 	Ref<SpriteFrames> frames;
 	Node *animated_sprite = nullptr;
@@ -316,7 +316,6 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "SpriteFrames"; }
