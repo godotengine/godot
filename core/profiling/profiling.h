@@ -119,6 +119,65 @@ struct PerfettoGroupedEventEnder {
 void godot_init_profiler();
 void godot_cleanup_profiler();
 
+#elif defined(GODOT_USE_INSTRUMENTS)
+
+#include <os/log.h>
+#include <os/signpost.h>
+
+namespace apple::instruments {
+
+extern os_log_t LOG;
+extern os_log_t LOG_TRACING;
+
+typedef void (*DeferFunc)();
+
+class Defer {
+public:
+	explicit Defer(DeferFunc p_fn) :
+			_fn(p_fn) {}
+	~Defer() {
+		_fn();
+	}
+
+private:
+	DeferFunc _fn;
+};
+
+} // namespace apple::instruments
+
+#define GodotProfileFrameMark \
+	os_signpost_event_emit(apple::instruments::LOG, OS_SIGNPOST_ID_EXCLUSIVE, "Frame");
+
+#define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)                                           \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name);   \
+	apple::instruments::DeferFunc _GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() {                \
+		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
+	};                                                                                                    \
+	apple::instruments::Defer _GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
+
+#define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) \
+	_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name).~Defer();
+
+#define GodotProfileZoneGrouped(m_group_name, m_zone_name)                                                \
+	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name);                                           \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name);   \
+	_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() {                                              \
+		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
+	};                                                                                                    \
+	new (&_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)) apple::instruments::Defer(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
+
+#define GodotProfileZone(m_zone_name) \
+	GodotProfileZoneGroupedFirst(__COUNTER__, m_zone_name)
+
+#define GodotProfileZoneGroupedFirstScript(m_varname, m_ptr, m_file, m_function, m_line)
+
+// Instruments has its own memory profiling, so these are no-ops.
+#define GodotProfileAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr)
+
+void godot_init_profiler();
+void godot_cleanup_profiler();
+
 #else
 // No profiling; all macros are stubs.
 
