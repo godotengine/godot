@@ -456,7 +456,7 @@ String EditorRunBar::get_playing_scene() const {
 	return run_filename;
 }
 
-Error EditorRunBar::start_native_device(int p_device_id) {
+Error EditorRunBar::start_native_device(int p_device_id) const {
 	return run_native->start_run_native(p_device_id);
 }
 

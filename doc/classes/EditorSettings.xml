@@ -1078,6 +1078,9 @@
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
 		</member>
+		<member name="interface/scene_tabs/auto_select_current_scene_file" type="bool" setter="" getter="">
+			If [code]true[/code], the FileSystem dock will automatically navigate to the currently selected scene tab.
+		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
 		</member>
@@ -1645,6 +1648,10 @@
 		</member>
 		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
 			The script editor's color for strings (single-line and multi-line).
+		</member>
+		<member name="text_editor/theme/highlighting/string_placeholder_color" type="Color" setter="" getter="">
+			The script editor's color for string placeholders, such as [code]%s[/code] and [code]{_}[/code]. Refer to the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings documentation[/url] for more details.
+			[b]Note:[/b] Only the default [code]{_}[/code] placeholder patterns are highlighted for the [method String.format] method. Custom patterns still appear as plain strings.
 		</member>
 		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
 			The script editor's color for operators ([code]( ) [ ] { } + - * /[/code], ...).

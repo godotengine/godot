@@ -3144,10 +3144,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				confirm_move_to_dir = to_dir;
 
 				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					move_confirm_text = vformat(TTR("Copy %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
 					confirm_to_copy = true;
 				} else {
-					move_confirm_text = vformat(TTR("Move %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
 					confirm_to_copy = false;
 				}
 
@@ -4261,14 +4261,14 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(nav_hbc);
 
 	button_hist_prev = memnew(Button);
-	button_hist_prev->set_flat(true);
+	button_hist_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
-	button_hist_next->set_flat(true);
+	button_hist_next->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));

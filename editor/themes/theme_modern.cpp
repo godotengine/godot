@@ -97,6 +97,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
 		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
 		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
+		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.base_color.lerp(p_config.mono_color_inv, 0.3) * Color(1, 1, 1, 0.8));
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
 #endif
@@ -1219,7 +1220,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", ge_panel_style);
 		p_theme->set_stylebox("panel_focus", "GraphEdit", p_config.focus_style);
-		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
+		p_theme->set_stylebox("menu_panel", "GraphEdit", EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.5), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
 		GraphEdit::GridPattern grid_pattern = (GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern"));
@@ -1256,7 +1257,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// GraphEditMinimap.
 		{
-			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0);
+			Ref<StyleBoxFlat> style_minimap_bg = EditorThemeManager::make_flat_stylebox(p_config.surface_low_color * Color(1, 1, 1, 0.3), 0, 0, 0, 0);
 			style_minimap_bg->set_border_color(p_config.dark_color_3);
 			style_minimap_bg->set_border_width_all(1);
 			p_theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", style_minimap_bg);
@@ -1268,7 +1269,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 				style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(1, 1, 1), 0, 0, 0, 0);
 			} else {
-				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.2), 0, 0, 0, 0);
+				style_minimap_camera = EditorThemeManager::make_flat_stylebox(Color(0.38, 0.38, 0.38, 0.1), 0, 0, 0, 0);
 				style_minimap_camera->set_border_color(Color(0.38, 0.38, 0.38, 0.45));
 				style_minimap_node = EditorThemeManager::make_flat_stylebox(Color(0, 0, 0), 0, 0, 0, 0);
 			}
@@ -1291,7 +1292,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -1.0, 0.9);
+			const Color gn_frame_bg = _get_base_color(p_config, p_config.dark_theme ? -1.8 : -0.5, 0.9);
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
@@ -2129,6 +2130,10 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		style_animation_track_header->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE);
 
 		p_theme->set_stylebox("header", "AnimationTrackEditGroup", style_animation_track_header);
+
+		Ref<StyleBoxFlat> style_animation_track_group_hover = p_config.base_style->duplicate();
+		style_animation_track_group_hover->set_bg_color(p_config.highlight_color);
+		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEditGroup", style_animation_track_group_hover);
 
 		p_theme->set_color("bg_color", "AnimationTrackEditGroup", p_config.surface_base_color);
 		p_theme->set_color("h_line_color", "AnimationTrackEditGroup", Color(1, 1, 1, 0));

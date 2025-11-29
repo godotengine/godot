@@ -142,8 +142,18 @@ void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_pla
 	should_reload_presets = true;
 }
 
-int EditorExport::get_export_platform_count() {
+int EditorExport::get_export_platform_count() const {
 	return export_platforms.size();
+}
+
+int EditorExport::get_export_platform_index_by_name(const String &p_name) {
+	for (int j = 0; j < get_export_platform_count(); j++) {
+		Ref<EditorExportPlatform> plat = get_export_platform(j);
+		if (!plat.is_null() && plat->get_name().nocasecmp_to(p_name) == 0) {
+			return j;
+		}
+	}
+	return -1;
 }
 
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {

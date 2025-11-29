@@ -47,6 +47,7 @@
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -4512,8 +4513,21 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
 
+	if (!select_current_scene_file_requested && EDITOR_GET("interface/scene_tabs/auto_select_current_scene_file")) {
+		select_current_scene_file_requested = true;
+		callable_mp(this, &EditorNode::_nav_to_selected_scene).call_deferred();
+	}
+
 	_update_undo_redo_allowed();
 	_update_unsaved_cache();
+}
+
+void EditorNode::_nav_to_selected_scene() {
+	select_current_scene_file_requested = false;
+	const String scene_path = editor_data.get_scene_path(scene_tabs->get_current_tab());
+	if (!scene_path.is_empty()) {
+		FileSystemDock::get_singleton()->navigate_to_path(scene_path);
+	}
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
@@ -6012,9 +6026,6 @@ void EditorNode::_load_editor_layout() {
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	int center_split_offset = center_split->get_split_offset();
-	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset", center_split_offset);
-
 	bottom_panel->save_layout_to_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
 
 	// Debugger tab.
@@ -6031,11 +6042,6 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 	// Bottom panel.
 
 	bottom_panel->load_layout_from_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
-
-	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
-		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
-		center_split->set_split_offset(center_split_offset);
-	}
 
 	// Debugger tab.
 
@@ -7722,6 +7728,10 @@ void EditorNode::_add_to_main_menu(const String &p_name, PopupMenu *p_menu) {
 	}
 }
 
+void EditorNode::_bottom_panel_resized() {
+	bottom_panel->set_bottom_panel_offset(center_split->get_split_offset());
+}
+
 #ifdef ANDROID_ENABLED
 void EditorNode::_touch_actions_panel_mode_changed() {
 	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
@@ -8171,6 +8181,7 @@ EditorNode::EditorNode() {
 	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->set_collapsed(true);
 	center_vb->add_child(center_split);
+	center_split->connect("drag_ended", callable_mp(this, &EditorNode::_bottom_panel_resized));
 
 	right_hsplit = memnew(DockSplitContainer);
 	right_hsplit->set_name("DockHSplitRight");
@@ -8300,6 +8311,7 @@ EditorNode::EditorNode() {
 
 	editor_settings_dialog = memnew(EditorSettingsDialog);
 	gui_base->add_child(editor_settings_dialog);
+	editor_settings_dialog->connect("restart_requested", callable_mp(this, &EditorNode::_restart_editor).bind(false));
 
 	project_settings_editor = memnew(ProjectSettingsEditor(&editor_data));
 	gui_base->add_child(project_settings_editor);
@@ -9155,93 +9167,4 @@ EditorNode::~EditorNode() {
 	editor_file_dialogs.clear();
 
 	singleton = nullptr;
-}
-
-/*
- * EDITOR PLUGIN LIST
- */
-
-void EditorPluginList::make_visible(bool p_visible) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->make_visible(p_visible);
-	}
-}
-
-void EditorPluginList::edit(Object *p_object) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->edit(p_object);
-	}
-}
-
-bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
-	bool discard = false;
-
-	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_canvas_gui_input(p_event)) {
-			discard = true;
-		}
-	}
-
-	return discard;
-}
-
-EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
-	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
-
-	for (int i = 0; i < plugins_list.size(); i++) {
-		if ((!serve_when_force_input_enabled) && plugins_list[i]->is_input_event_forwarding_always_enabled()) {
-			continue;
-		}
-
-		EditorPlugin::AfterGUIInput current_after = plugins_list[i]->forward_3d_gui_input(p_camera, p_event);
-		if (current_after == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-			after = EditorPlugin::AFTER_GUI_INPUT_STOP;
-		}
-		if (after != EditorPlugin::AFTER_GUI_INPUT_STOP && current_after == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-			after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-		}
-	}
-
-	return after;
-}
-
-void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_3d_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_3d_force_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
-	ERR_FAIL_COND(plugins_list.has(p_plugin));
-	plugins_list.push_back(p_plugin);
-}
-
-void EditorPluginList::remove_plugin(EditorPlugin *p_plugin) {
-	plugins_list.erase(p_plugin);
-}
-
-bool EditorPluginList::is_empty() {
-	return plugins_list.is_empty();
-}
-
-void EditorPluginList::clear() {
-	plugins_list.clear();
 }

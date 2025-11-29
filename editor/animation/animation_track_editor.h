@@ -566,6 +566,8 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTimelineEdit *timeline = nullptr;
 	AnimationTrackEditor *editor = nullptr;
 
+	bool hovered = false;
+
 	void _zoom_changed();
 
 protected:

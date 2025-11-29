@@ -44,6 +44,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -3170,10 +3171,10 @@ void CanvasItemEditor::_draw_smart_snapping() {
 }
 
 void CanvasItemEditor::_draw_rulers() {
-	Color bg_color = get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor));
+	Color bg_color = get_theme_color(SNAME("ruler_color"), EditorStringName(Editor));
 	Color graduation_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)).lerp(bg_color, 0.5);
 	Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
-	font_color.a = 0.8;
+	font_color.a = 0.9;
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
 	real_t ruler_tick_scale = ruler_width_scaled / 15.0;
 	const String lang = _get_locale();
@@ -4197,14 +4198,8 @@ void CanvasItemEditor::_draw_viewport() {
 	RID ci = viewport->get_canvas_item();
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
 
-	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
-	if (!over_plugin_list->is_empty()) {
-		over_plugin_list->forward_canvas_draw_over_viewport(viewport);
-	}
-	EditorPluginList *force_over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	if (!force_over_plugin_list->is_empty()) {
-		force_over_plugin_list->forward_canvas_force_draw_over_viewport(viewport);
-	}
+	EditorNode::get_singleton()->get_editor_plugins_over()->forward_canvas_draw_over_viewport(viewport);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_canvas_force_draw_over_viewport(viewport);
 
 	if (show_rulers) {
 		_draw_rulers();
