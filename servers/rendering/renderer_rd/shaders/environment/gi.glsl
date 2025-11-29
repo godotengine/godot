@@ -486,7 +486,7 @@ vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 	float dist = p_bias;
 	vec4 color = vec4(0.0);
 
-	while (dist < max_distance && color.a < 0.95) {
+	while (dist < max_distance && color.a < 1.0) {
 		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
 		vec3 uvw_pos = (pos + dist * direction) * cell_size;
 		float half_diameter = diameter * 0.5;
@@ -509,7 +509,7 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 	float radius = max(0.5, dist);
 	float lod_level = log2(radius * 2.0);
 
-	while (dist < max_distance && color.a < 0.95) {
+	while (dist < max_distance && color.a < 1.0) {
 		vec3 uvw_pos = (pos + dist * direction) * cell_size;
 
 		//check if outside, then break
