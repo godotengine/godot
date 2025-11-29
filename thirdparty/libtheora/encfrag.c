@@ -5,13 +5,12 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
@@ -30,7 +29,7 @@ void oc_enc_frag_sub_c(ogg_int16_t _diff[64],const unsigned char *_src,
   }
 }
 
-void oc_enc_frag_sub_128_c(ogg_int16_t *_diff,
+void oc_enc_frag_sub_128_c(ogg_int16_t _diff[64],
  const unsigned char *_src,int _ystride){
   int i;
   for(i=0;i<8;i++){
@@ -88,7 +87,7 @@ unsigned oc_enc_frag_sad2_thresh_c(const unsigned char *_src,
 
 unsigned oc_enc_frag_intra_sad_c(const unsigned char *_src, int _ystride){
   const unsigned char *src = _src;
-  unsigned dc;
+  int dc;
   unsigned sad;
   int      i;
   dc=0;

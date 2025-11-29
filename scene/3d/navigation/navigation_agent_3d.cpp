@@ -31,7 +31,7 @@
 #include "navigation_agent_3d.h"
 
 #include "scene/3d/navigation/navigation_link_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent3D::get_rid);
@@ -105,6 +105,20 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationAgent3D::set_simplify_epsilon);
 	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationAgent3D::get_simplify_epsilon);
 
+	ClassDB::bind_method(D_METHOD("set_path_return_max_length", "length"), &NavigationAgent3D::set_path_return_max_length);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_length"), &NavigationAgent3D::get_path_return_max_length);
+
+	ClassDB::bind_method(D_METHOD("set_path_return_max_radius", "radius"), &NavigationAgent3D::set_path_return_max_radius);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_radius"), &NavigationAgent3D::get_path_return_max_radius);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_polygons", "max_polygons"), &NavigationAgent3D::set_path_search_max_polygons);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_polygons"), &NavigationAgent3D::get_path_search_max_polygons);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_distance", "distance"), &NavigationAgent3D::set_path_search_max_distance);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_distance"), &NavigationAgent3D::get_path_search_max_distance);
+
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationAgent3D::get_path_length);
+
 	ClassDB::bind_method(D_METHOD("get_next_path_position"), &NavigationAgent3D::get_next_path_position);
 
 	ClassDB::bind_method(D_METHOD("set_velocity_forced", "velocity"), &NavigationAgent3D::set_velocity_forced);
@@ -148,9 +162,13 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater,suffix:m"), "set_simplify_epsilon", "get_simplify_epsilon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_length", PROPERTY_HINT_RANGE, "0.0,100.0,0.001,or_greater,suffix:m"), "set_path_return_max_length", "get_path_return_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_radius", PROPERTY_HINT_RANGE, "0.0,100.0,0.001,or_greater,suffix:m"), "set_path_return_max_radius", "get_path_return_max_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_search_max_polygons", PROPERTY_HINT_RANGE, "0,4096,1,or_greater"), "set_path_search_max_polygons", "get_path_search_max_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_search_max_distance"), "set_path_search_max_distance", "get_path_search_max_distance");
 
 	ADD_GROUP("Avoidance", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.01,100,0.01,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,100,0.01,or_greater,suffix:m"), "set_radius", "get_radius");
@@ -182,7 +200,7 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_debug_path_custom_point_size"), &NavigationAgent3D::get_debug_path_custom_point_size);
 
 	ADD_GROUP("Debug", "debug_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_debug_enabled", "get_debug_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "0,50,0.01,or_greater,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
@@ -365,7 +383,7 @@ NavigationAgent3D::NavigationAgent3D() {
 
 NavigationAgent3D::~NavigationAgent3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
-	NavigationServer3D::get_singleton()->free(agent);
+	NavigationServer3D::get_singleton()->free_rid(agent);
 	agent = RID(); // Pointless
 
 #ifdef DEBUG_ENABLED
@@ -373,10 +391,10 @@ NavigationAgent3D::~NavigationAgent3D() {
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_path_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_instance);
+		RenderingServer::get_singleton()->free_rid(debug_path_instance);
 	}
 	if (debug_path_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_path_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_path_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
 }
@@ -435,7 +453,9 @@ void NavigationAgent3D::set_navigation_layers(uint32_t p_navigation_layers) {
 
 	navigation_layers = p_navigation_layers;
 
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 uint32_t NavigationAgent3D::get_navigation_layers() const {
@@ -498,6 +518,46 @@ real_t NavigationAgent3D::get_simplify_epsilon() const {
 	return simplify_epsilon;
 }
 
+void NavigationAgent3D::set_path_return_max_length(float p_length) {
+	path_return_max_length = MAX(0.0, p_length);
+	navigation_query->set_path_return_max_length(path_return_max_length);
+}
+
+float NavigationAgent3D::get_path_return_max_length() const {
+	return path_return_max_length;
+}
+
+void NavigationAgent3D::set_path_return_max_radius(float p_radius) {
+	path_return_max_radius = MAX(0.0, p_radius);
+	navigation_query->set_path_return_max_radius(path_return_max_radius);
+}
+
+float NavigationAgent3D::get_path_return_max_radius() const {
+	return path_return_max_radius;
+}
+
+void NavigationAgent3D::set_path_search_max_polygons(int p_max_polygons) {
+	path_search_max_polygons = p_max_polygons;
+	navigation_query->set_path_search_max_polygons(path_search_max_polygons);
+}
+
+int NavigationAgent3D::get_path_search_max_polygons() const {
+	return path_search_max_polygons;
+}
+
+void NavigationAgent3D::set_path_search_max_distance(float p_distance) {
+	path_search_max_distance = MAX(0.0, p_distance);
+	navigation_query->set_path_search_max_distance(path_search_max_distance);
+}
+
+float NavigationAgent3D::get_path_search_max_distance() const {
+	return path_search_max_distance;
+}
+
+float NavigationAgent3D::get_path_length() const {
+	return navigation_result->get_path_length();
+}
+
 void NavigationAgent3D::set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_path_metadata_flags) {
 	if (path_metadata_flags == p_path_metadata_flags) {
 		return;
@@ -514,7 +574,9 @@ void NavigationAgent3D::set_navigation_map(RID p_navigation_map) {
 	map_override = p_navigation_map;
 
 	NavigationServer3D::get_singleton()->agent_set_map(agent, map_override);
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 RID NavigationAgent3D::get_navigation_map() const {

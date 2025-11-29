@@ -31,7 +31,7 @@
 #include "translation_loader_po.h"
 
 #include "core/io/file_access.h"
-#include "core/string/translation_po.h"
+#include "core/string/translation.h"
 
 Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_error) {
 	if (r_error) {
@@ -39,7 +39,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	}
 
 	const String path = f->get_path();
-	Ref<TranslationPO> translation = Ref<TranslationPO>(memnew(TranslationPO));
+	Ref<Translation> translation;
+	translation.instantiate();
 	String config;
 
 	uint32_t magic = f->get_32();
@@ -112,7 +113,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					int p_start = config.find("Plural-Forms");
 					if (p_start != -1) {
 						int p_end = config.find_char('\n', p_start);
-						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
+						translation->set_plural_rules_override(config.substr(p_start, p_end - p_start));
 					}
 				} else {
 					uint32_t str_start = 0;
@@ -228,8 +229,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					int p_start = config.find("Plural-Forms");
 					if (p_start != -1) {
 						int p_end = config.find_char('\n', p_start);
-						translation->set_plural_rule(config.substr(p_start, p_end - p_start));
-						plural_forms = translation->get_plural_forms();
+						translation->set_plural_rules_override(config.substr(p_start, p_end - p_start));
+						plural_forms = translation->get_nplurals();
 					}
 				}
 
@@ -363,11 +364,11 @@ void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) 
 }
 
 bool TranslationLoaderPO::handles_type(const String &p_type) const {
-	return (p_type == "Translation") || (p_type == "TranslationPO");
+	return p_type == "Translation";
 }
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "po" || p_path.get_extension().to_lower() == "mo") {
+	if (p_path.has_extension("po") || p_path.has_extension("mo")) {
 		return "Translation";
 	}
 	return "";

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialEntityExtension" inherits="OpenXRExtensionWrapper" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		OpenXR extension that handles spatial entities.
+	</brief_description>
+	<description>
+		OpenXR extension that handles spatial entities and, when enabled, allows querying those spatial entities. This extension will also automatically manage [XRTracker] objects for static entities.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_spatial_entity">
+			<return type="RID" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="entity_id" type="int" />
+			<param index="2" name="entity" type="int" />
+			<description>
+				Registers an entity that was created directly on the OpenXR runtime.
+			</description>
+		</method>
+		<method name="create_spatial_context">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="capability_configurations" type="OpenXRSpatialCapabilityConfigurationBaseHeader[]" />
+			<param index="1" name="next" type="OpenXRStructureBase" default="null" />
+			<param index="2" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Creates a new spatial context that handles entities for the provided capability configurations. [param capability_configurations] is an array of [OpenXRSpatialCapabilityConfigurationBaseHeader] with the needed capability configuration data.
+				[param next] is an optional parameter that can contain additional information for creating our spatial context.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result data for this function is the [RID] for our spatial context.
+			</description>
+		</method>
+		<method name="discover_spatial_entities">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_types" type="PackedInt64Array" />
+			<param index="2" name="next" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Starts a new discovery query, this will gather all objects tracked by the [param spatial_context] that have at least one of the component types specified in [param component_types].
+				[param next] is an optional parameter that can contain additional information for executing the discovery query.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the discovery process. On success [param user_callback] will be called if specified. The result data for this function is the [RID] for our snapshot.
+			</description>
+		</method>
+		<method name="find_spatial_entity">
+			<return type="RID" />
+			<param index="0" name="entity_id" type="int" />
+			<description>
+				Returns the [RID] for the specified spatial entity ID.
+			</description>
+		</method>
+		<method name="free_spatial_context">
+			<return type="void" />
+			<param index="0" name="spatial_context" type="RID" />
+			<description>
+				Frees a spatial context previously created when calling [method create_spatial_context]. If the spatial context creation is still ongoing, the asynchronous process is cancelled.
+			</description>
+		</method>
+		<method name="free_spatial_entity">
+			<return type="void" />
+			<param index="0" name="entity" type="RID" />
+			<description>
+				Frees an entity previously created when calling [method add_spatial_entity] or [method make_spatial_entity].
+			</description>
+		</method>
+		<method name="free_spatial_snapshot">
+			<return type="void" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<description>
+				Frees a spatial snapshot previously created when calling [method discover_spatial_entities]. If the spatial snapshot creation is still ongoing, the asynchronous process is cancelled.
+			</description>
+		</method>
+		<method name="get_float_buffer" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with floats from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_spatial_context_handle" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="spatial_context" type="RID" />
+			<description>
+				Returns the OpenXR spatial context handle for this snapshot.
+				[b]Note:[/b] This method is intended to be used from GDExtensions that implement spatial entity capability handlers.
+			</description>
+		</method>
+		<method name="get_spatial_context_ready" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="spatial_context" type="RID" />
+			<description>
+				Returns [code]true[/code] if the spatial context finished its creation and is ready to be used.
+			</description>
+		</method>
+		<method name="get_spatial_entity_context" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="entity" type="RID" />
+			<description>
+				Returns the spatial context for this entity.
+			</description>
+		</method>
+		<method name="get_spatial_entity_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="entity" type="RID" />
+			<description>
+				Returns the internal [code]XrSpatialEntityIdEXT[/code] associated with the entity.
+			</description>
+		</method>
+		<method name="get_spatial_snapshot_context" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<description>
+				Returns the spatial context related to this spatial snapshot.
+			</description>
+		</method>
+		<method name="get_spatial_snapshot_handle" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<description>
+				Returns the OpenXR spatial snapshot handle for this snapshot.
+				[b]Note:[/b] This method is intended to be used from GDExtensions that implement spatial entity capability handlers.
+			</description>
+		</method>
+		<method name="get_string" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a string from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_uint8_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with 8 bit ints from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_uint16_buffer" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with 16 bit ints from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_uint32_buffer" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with 32 bit ints from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_vector2_buffer" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with [Vector2] entries from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="get_vector3_buffer" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="buffer_id" type="int" />
+			<description>
+				Returns a buffer with [Vector3] entries from a buffer that was retrieved when taking a snapshot.
+			</description>
+		</method>
+		<method name="make_spatial_entity">
+			<return type="RID" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="entity_id" type="int" />
+			<description>
+				Creates a new entity for this [param entity_id]. The [param spatial_context] should match the context that discovered the entity.
+			</description>
+		</method>
+		<method name="query_snapshot">
+			<return type="bool" />
+			<param index="0" name="spatial_snapshot" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next" type="OpenXRStructureBase" default="null" />
+			<description>
+				Queries the snapshot data. This will find all entities in the snapshot that contain all requested components in [param component_data]. The objects held within [param component_data] will then be populated with the queried data. [param component_data] must always have an object of [OpenXRSpatialQueryResultData] as the first entry.
+				[param next] is an optional parameter that can contain additional information passed when setting our query conditions.
+			</description>
+		</method>
+		<method name="supports_capability">
+			<return type="bool" />
+			<param index="0" name="capability" type="int" enum="OpenXRSpatialEntityExtension.Capability" />
+			<description>
+				Returns [code]true[/code] if this spatial entity [param capability] is supported by the hardware used.
+			</description>
+		</method>
+		<method name="supports_component_type">
+			<return type="bool" />
+			<param index="0" name="capability" type="int" enum="OpenXRSpatialEntityExtension.Capability" />
+			<param index="1" name="component_type" type="int" enum="OpenXRSpatialEntityExtension.ComponentType" />
+			<description>
+				Returns [code]true[/code] if this [param capability] supports the [param component_type].
+			</description>
+		</method>
+		<method name="update_spatial_entities">
+			<return type="RID" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="entities" type="RID[]" />
+			<param index="2" name="component_types" type="PackedInt64Array" />
+			<param index="3" name="next" type="OpenXRStructureBase" default="null" />
+			<description>
+				Performs a snapshot for a limited number of entities. This is NOT an asynchronous method and will return the snapshot immediately.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="spatial_discovery_recommended">
+			<param index="0" name="spatial_context" type="RID" />
+			<description>
+				Emitted when OpenXR recommends running a discovery query because entities managed by this spatial context have (likely) changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="CAPABILITY_PLANE_TRACKING" value="1000741000" enum="Capability">
+			Plane tracking capability.
+		</constant>
+		<constant name="CAPABILITY_MARKER_TRACKING_QR_CODE" value="1000743000" enum="Capability">
+			QR code based marker tracking capability.
+		</constant>
+		<constant name="CAPABILITY_MARKER_TRACKING_MICRO_QR_CODE" value="1000743001" enum="Capability">
+			Micro QR code based marker tracking capability.
+		</constant>
+		<constant name="CAPABILITY_MARKER_TRACKING_ARUCO_MARKER" value="1000743002" enum="Capability">
+			Aruco marker based marker tracking capability.
+		</constant>
+		<constant name="CAPABILITY_MARKER_TRACKING_APRIL_TAG" value="1000743003" enum="Capability">
+			April tag based marker tracking capability.
+		</constant>
+		<constant name="CAPABILITY_ANCHOR" value="1000762000" enum="Capability">
+			Anchor capability.
+		</constant>
+		<constant name="COMPONENT_TYPE_BOUNDED_2D" value="1" enum="ComponentType">
+			Component that provides the 2D bounds for a spatial entity. The corresponding list structure is [code]XrSpatialComponentBounded2DListEXT[/code]; the corresponding data structure is [code]XrSpatialBounded2DDataEXT[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_BOUNDED_3D" value="2" enum="ComponentType">
+			Component that provides the 3D bounds for a spatial entity. The corresponding list structure is [code]XrSpatialComponentBounded3DListEXT[/code]; the corresponding data structure is [code]XrBoxf[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_PARENT" value="3" enum="ComponentType">
+			Component that provides the XrSpatialEntityIdEXT of the parent for a spatial entity. The corresponding list structure is [code]XrSpatialComponentParentListEXT[/code]; the corresponding data structure is [code]XrSpatialEntityIdEXT[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_MESH_3D" value="4" enum="ComponentType">
+			Component that provides a 3D mesh for a spatial entity. The corresponding list structure is [code]XrSpatialComponentMesh3DListEXT[/code]; the corresponding data structure is [code]XrSpatialMeshDataEXT[/code].
+		</constant>
+		<constant name="COMPONENT_TYPE_PLANE_ALIGNMENT" value="1000741000" enum="ComponentType">
+			Component that provides the plane alignment enum for a spatial entity. The corresponding list structure is [code]XrSpatialComponentPlaneAlignmentListEXT[/code]; the corresponding data structure is [code]XrSpatialPlaneAlignmentEXT[/code] (Added by the [code]XR_EXT_spatial_plane_tracking[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_MESH_2D" value="1000741001" enum="ComponentType">
+			Component that provides a 2D mesh for a spatial entity. The corresponding list structure is [code]XrSpatialComponentMesh2DListEXT[/code]; the corresponding data structure is [code]XrSpatialMeshDataEXT[/code] (Added by the [code]XR_EXT_spatial_plane_tracking[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_POLYGON_2D" value="1000741002" enum="ComponentType">
+			Component that provides a 2D boundary polygon for a spatial entity. The corresponding list structure is [code]XrSpatialComponentPolygon2DListEXT[/code]; the corresponding data structure is [code]XrSpatialPolygon2DDataEXT[/code] (Added by the [code]XR_EXT_spatial_plane_tracking[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_PLANE_SEMANTIC_LABEL" value="1000741003" enum="ComponentType">
+			Component that provides a semantic label for a plane. The corresponding list structure is [code]XrSpatialComponentPlaneSemanticLabelListEXT[/code]; the corresponding data structure is [code]XrSpatialPlaneSemanticLabelEXT[/code] (Added by the [code]XR_EXT_spatial_plane_tracking[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_MARKER" value="1000743000" enum="ComponentType">
+			A component describing the marker type, ID and location. The corresponding list structure is [code]XrSpatialComponentMarkerListEXT[/code]; the corresponding data structure is [code]XrSpatialMarkerDataEXT[/code] (Added by the [code]XR_EXT_spatial_marker_tracking[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_ANCHOR" value="1000762000" enum="ComponentType">
+			Component that provides the location for an anchor. The corresponding list structure is [code]XrSpatialComponentAnchorListEXT[/code]; the corresponding data structure is [code]XrPosef[/code] (Added by the [code]XR_EXT_spatial_anchor[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_PERSISTENCE" value="1000763000" enum="ComponentType">
+			Component that provides the persisted UUID for a spatial entity. The corresponding list structure is [code]XrSpatialComponentPersistenceListEXT; the corresponding data structure is [code]XrSpatialPersistenceDataEXT[/code] (Added by the [code]XR_EXT_spatial_persistence[/code] extension).
+		</constant>
+	</constants>
+</class>

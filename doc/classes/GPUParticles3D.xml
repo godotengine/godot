@@ -86,7 +86,7 @@
 			[b]Note:[/b] Particles always have a spherical collision shape.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles3D.DrawOrder" default="0">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 			[b]Note:[/b] [constant DRAW_ORDER_INDEX] is the only option that supports motion vectors for effects like TAA. It is suggested to use this draw order if the particles are opaque to fix ghosting artifacts.
 		</member>
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">

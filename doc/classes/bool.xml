@@ -10,13 +10,13 @@
 		[gdscript]
 		var can_shoot = true
 		if can_shoot:
-		    launch_bullet()
+			launch_bullet()
 		[/gdscript]
 		[csharp]
 		bool canShoot = true;
 		if (canShoot)
 		{
-		    LaunchBullet();
+			LaunchBullet();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -25,20 +25,20 @@
 		[codeblocks]
 		[gdscript]
 		if bullets &gt; 0 and not is_reloading():
-		    launch_bullet()
+			launch_bullet()
 
 		if bullets == 0 or is_reloading():
-		    play_clack_sound()
+			play_clack_sound()
 		[/gdscript]
 		[csharp]
 		if (bullets &gt; 0 &amp;&amp; !IsReloading())
 		{
-		    LaunchBullet();
+			LaunchBullet();
 		}
 
 		if (bullets == 0 || IsReloading())
 		{
-		    PlayClackSound();
+			PlayClackSound();
 		}
 		[/csharp]
 		[/codeblocks]

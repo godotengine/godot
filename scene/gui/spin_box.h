@@ -40,13 +40,8 @@ class SpinBoxLineEdit : public LineEdit {
 protected:
 	void _notification(int p_what);
 
-	static void _bind_methods() {}
-
 	void _accessibility_action_inc(const Variant &p_data);
 	void _accessibility_action_dec(const Variant &p_data);
-
-public:
-	SpinBoxLineEdit() {}
 };
 
 class SpinBox : public Range {
@@ -72,6 +67,7 @@ class SpinBox : public Range {
 	Timer *range_click_timer = nullptr;
 	void _range_click_timeout();
 	void _release_mouse_from_drag_mode();
+	void _arrow_clicked(bool p_up);
 
 	void _update_text(bool p_only_update_if_value_changed = false);
 	void _text_submitted(const String &p_string);
@@ -81,7 +77,7 @@ class SpinBox : public Range {
 	String suffix;
 	String last_text_value;
 	double custom_arrow_step = 0.0;
-	bool use_custom_arrow_step = false;
+	bool custom_arrow_round = false;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -108,7 +104,6 @@ class SpinBox : public Range {
 	inline int _get_widest_button_icon_width();
 
 	struct ThemeCache {
-		Ref<Texture2D> updown_icon;
 		Ref<Texture2D> up_icon;
 		Ref<Texture2D> up_hover_icon;
 		Ref<Texture2D> up_pressed_icon;
@@ -143,13 +138,14 @@ class SpinBox : public Range {
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
 #ifndef DISABLE_DEPRECATED
+		Ref<Texture2D> updown_icon;
+		bool is_updown_assigned = false;
 		bool set_min_buttons_width_from_icons = false;
 #endif
 	} theme_cache;
 
 	void _mouse_exited();
 	void _update_buttons_state_for_current_value();
-	void _set_step_no_signal(double p_step);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -185,6 +181,9 @@ public:
 	void apply();
 	void set_custom_arrow_step(const double p_custom_arrow_step);
 	double get_custom_arrow_step() const;
+
+	void set_custom_arrow_round(bool p_round);
+	bool is_custom_arrow_rounding() const;
 
 	SpinBox();
 };

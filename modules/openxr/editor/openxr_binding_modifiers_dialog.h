@@ -33,8 +33,8 @@
 #include "../action_map/openxr_action_map.h"
 #include "../action_map/openxr_interaction_profile.h"
 #include "../editor/openxr_binding_modifier_editor.h"
-#include "editor/create_dialog.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -51,7 +51,7 @@ private:
 	Button *add_binding_modifier_btn = nullptr;
 	CreateDialog *create_dialog = nullptr;
 
-	OpenXRBindingModifierEditor *_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier);
+	OpenXRBindingModifierEditor *_add_binding_modifier_editor(const Ref<OpenXRBindingModifier> &p_binding_modifier);
 	void _create_binding_modifiers();
 
 	void _on_add_binding_modifier();
@@ -74,5 +74,5 @@ protected:
 public:
 	OpenXRBindingModifiersDialog();
 
-	void setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile, Ref<OpenXRIPBinding> p_ip_binding = Ref<OpenXRIPBinding>());
+	void setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRInteractionProfile> &p_interaction_profile, const Ref<OpenXRIPBinding> &p_ip_binding = Ref<OpenXRIPBinding>());
 };

@@ -34,7 +34,10 @@
 #include "nav_base_3d.h"
 #include "nav_utils_3d.h"
 
-struct NavLinkIteration3D : NavBaseIteration3D {
+class NavLinkIteration3D : public NavBaseIteration3D {
+	GDCLASS(NavLinkIteration3D, NavBaseIteration3D);
+
+public:
 	bool bidirectional = true;
 	Vector3 start_position;
 	Vector3 end_position;
@@ -42,6 +45,11 @@ struct NavLinkIteration3D : NavBaseIteration3D {
 	Vector3 get_start_position() const { return start_position; }
 	Vector3 get_end_position() const { return end_position; }
 	bool is_bidirectional() const { return bidirectional; }
+
+	virtual ~NavLinkIteration3D() override {
+		navmesh_polygons.clear();
+		internal_connections.clear();
+	}
 };
 
 #include "core/templates/self_list.h"
@@ -53,13 +61,25 @@ class NavLink3D : public NavBase3D {
 	Vector3 end_position;
 	bool enabled = true;
 
-	bool link_dirty = true;
-
 	SelfList<NavLink3D> sync_dirty_request_list_element;
+
+	uint32_t iteration_id = 0;
+
+	mutable RWLock iteration_rwlock;
+	Ref<NavLinkIteration3D> iteration;
+
+	bool iteration_dirty = true;
+	bool iteration_building = false;
+	bool iteration_ready = false;
+
+	void _build_iteration();
+	void _sync_iteration();
 
 public:
 	NavLink3D();
 	~NavLink3D();
+
+	uint32_t get_iteration_id() const { return iteration_id; }
 
 	void set_map(NavMap3D *p_map);
 	NavMap3D *get_map() const {
@@ -90,10 +110,9 @@ public:
 	virtual void set_travel_cost(real_t p_travel_cost) override;
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
-	bool is_dirty() const;
-	void sync();
+	bool sync();
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavLinkIteration3D &r_iteration);
+	Ref<NavLinkIteration3D> get_iteration();
 };

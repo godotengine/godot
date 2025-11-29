@@ -39,6 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED
@@ -46,6 +47,7 @@
 #endif
 
 #ifdef GLES3_ENABLED
+#include "core/io/file_access.h"
 #include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
@@ -54,6 +56,14 @@
 
 #ifdef ACCESSKIT_ENABLED
 #include "drivers/accesskit/accessibility_driver_accesskit.h"
+#endif
+
+#ifdef DBUS_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
@@ -177,6 +187,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_ICON:
 		case FEATURE_HIDPI:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -184,6 +195,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_SUBWINDOWS:
+		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_SELF_FITTING_WINDOWS: {
 			return true;
 		} break;
@@ -253,7 +265,7 @@ TypedArray<Dictionary> DisplayServerWayland::tts_get_voices() const {
 	return tts->get_voices();
 }
 
-void DisplayServerWayland::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWayland::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
@@ -311,14 +323,19 @@ bool DisplayServerWayland::is_dark_mode() const {
 }
 
 Color DisplayServerWayland::get_accent_color() const {
+	if (!portal_desktop) {
+		return Color();
+	}
 	return portal_desktop->get_appearance_accent_color();
 }
 
 void DisplayServerWayland::set_system_theme_change_callback(const Callable &p_callable) {
+	ERR_FAIL_COND(!portal_desktop);
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
 Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
@@ -333,6 +350,7 @@ Error DisplayServerWayland::file_dialog_show(const String &p_title, const String
 }
 
 Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowID window_id = p_window_id;
@@ -453,15 +471,13 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 
 	WindowID pointed_id = wayland_thread.pointer_get_pointed_window_id();
 
-	if (pointed_id != INVALID_WINDOW_ID) {
+	if (pointed_id != INVALID_WINDOW_ID && windows.has(pointed_id)) {
 		return Input::get_singleton()->get_mouse_position() + windows[pointed_id].rect.position;
 	}
 
 	// We can't properly implement this method by design.
 	// This is the best we can do unfortunately.
 	return Input::get_singleton()->get_mouse_position();
-
-	return Point2i();
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
@@ -530,6 +546,8 @@ Ref<Image> DisplayServerWayland::clipboard_get_image() const {
 		err = image->load_tga_from_buffer(wayland_thread.selection_get_mime("image/x-targa"));
 	} else if (wayland_thread.selection_has_mime("image/ktx")) {
 		err = image->load_ktx_from_buffer(wayland_thread.selection_get_mime("image/ktx"));
+	} else if (wayland_thread.selection_has_mime("image/x-exr")) {
+		err = image->load_exr_from_buffer(wayland_thread.selection_get_mime("image/x-exr"));
 	}
 
 	ERR_FAIL_COND_V(err != OK, Ref<Image>());
@@ -578,9 +596,9 @@ int DisplayServerWayland::get_primary_screen() const {
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
 
 	return wayland_thread.screen_get_data(p_screen).position;
 }
@@ -588,24 +606,27 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
 
 	return wayland_thread.screen_get_data(p_screen).size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
-	// Unsupported on wayland.
-	return Rect2i(Point2i(), screen_get_size(p_screen));
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
 	const WaylandThread::ScreenData &data = wayland_thread.screen_get_data(p_screen);
 
@@ -638,15 +659,19 @@ float DisplayServerWayland::screen_get_scale(int p_screen) const {
 		return wayland_thread.window_state_get_scale_factor(ws);
 	}
 
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return wayland_thread.screen_get_data(p_screen).scale;
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	return wayland_thread.screen_get_data(p_screen).refresh_rate;
 }
@@ -660,8 +685,21 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
+	wayland_thread.window_set_idle_inhibition(MAIN_WINDOW_ID, p_enable);
+
 #ifdef DBUS_ENABLED
-	if (screensaver) {
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			// Attach the inhibit request to the main window, not the last focused window,
+			// on the basis that inhibiting the screensaver is global state for the application.
+			WindowID window_id = MAIN_WINDOW_ID;
+			WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+			screensaver_inhibited = portal_desktop->inhibit(ws ? ws->exported_handle : String());
+		} else {
+			portal_desktop->uninhibit();
+			screensaver_inhibited = false;
+		}
+	} else if (screensaver) {
 		if (p_enable) {
 			screensaver->inhibit();
 		} else {
@@ -750,15 +788,11 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 			wd.rect.position = Point2i();
 
 			DEBUG_LOG_WAYLAND(vformat("Creating regular window of size %s", wd.rect.size));
-			wayland_thread.window_create(p_window_id, wd.rect.size.width, wd.rect.size.height);
+			wayland_thread.window_create(p_window_id, wd.rect.size, wd.parent_id);
 			wayland_thread.window_set_min_size(p_window_id, wd.min_size);
 			wayland_thread.window_set_max_size(p_window_id, wd.max_size);
 			wayland_thread.window_set_app_id(p_window_id, _get_app_id_from_context(context));
 			wayland_thread.window_set_borderless(p_window_id, window_get_flag(WINDOW_FLAG_BORDERLESS, p_window_id));
-
-			if (wd.parent_id != INVALID_WINDOW_ID) {
-				wayland_thread.window_set_parent(wd.id, wd.parent_id);
-			}
 
 			// Since it can't have a position. Let's tell the window node the news by
 			// the actual rect to it.
@@ -822,8 +856,9 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 		}
 #endif
 
-		// NOTE: The public window-handling methods might depend on this flag being
-		// set. Ensure to not make any of these calls before this assignment.
+		// NOTE: Some public window-handling methods might depend on this flag being
+		// set. Make sure the method you're calling does not depend on it before this
+		// assignment.
 		wd.visible = true;
 
 		// Actually try to apply the window's mode now that it's visible.
@@ -1043,6 +1078,7 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), INVALID_SCREEN);
 	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
@@ -1237,12 +1273,12 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't be popup.");
-			ERR_FAIL_COND_MSG(wd.visible, "Popup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
 		} break;
 
 		case WINDOW_FLAG_POPUP_WM_HINT: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't have popup hint.");
-			ERR_FAIL_COND_MSG(wd.visible, "Popup hint can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
 		} break;
 
 		default: {
@@ -1276,6 +1312,8 @@ void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_w
 }
 
 bool DisplayServerWayland::window_is_focused(WindowID p_window_id) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
 	return wayland_thread.pointer_get_pointed_window_id() == p_window_id;
 }
 
@@ -1314,6 +1352,9 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 
 int DisplayServerWayland::accessibility_should_increase_contrast() const {
 #ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return -1;
+	}
 	return portal_desktop->get_high_contrast();
 #endif
 	return -1;
@@ -1321,7 +1362,7 @@ int DisplayServerWayland::accessibility_should_increase_contrast() const {
 
 int DisplayServerWayland::accessibility_screen_reader_active() const {
 #ifdef DBUS_ENABLED
-	if (atspi_monitor->is_supported()) {
+	if (atspi_monitor && atspi_monitor->is_supported()) {
 		return atspi_monitor->is_active();
 	}
 #endif
@@ -1349,7 +1390,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window_id, p_vsync_mode);
 
-		wd.emulate_vsync = (rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
+		wd.emulate_vsync = (!wayland_thread.is_fifo_available() && rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (wd.emulate_vsync) {
 			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
@@ -1362,6 +1403,8 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (egl_manager) {
 		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 
+		// NOTE: Mesa's EGL implementation does not seem to make use of fifo_v1 so
+		// we'll have to always emulate V-Sync.
 		wd.emulate_vsync = egl_manager->is_using_vsync();
 
 		if (wd.emulate_vsync) {
@@ -1478,6 +1521,95 @@ bool DisplayServerWayland::get_swap_cancel_ok() {
 	return swap_cancel_ok;
 }
 
+Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
+	ERR_FAIL_NULL_V_MSG(ec, ERR_BUG, "Missing embedded compositor interface");
+
+	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
+	ERR_FAIL_NULL_V(ecs, ERR_BUG);
+
+	if (!ecs->mapped_clients.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
+	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
+	ERR_FAIL_NULL_V(client_data, ERR_BUG);
+
+	if (p_grab_focus) {
+		godot_embedded_client_focus_window(embedded_client);
+	}
+
+	if (p_visible) {
+		WaylandThread::WindowState *ws = wayland_thread.window_get_state(p_window);
+		ERR_FAIL_NULL_V(ws, ERR_BUG);
+
+		struct xdg_toplevel *toplevel = ws->xdg_toplevel;
+#ifdef LIBDECOR_ENABLED
+		if (toplevel == nullptr && ws->libdecor_frame) {
+			toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
+		}
+#endif
+
+		ERR_FAIL_NULL_V(toplevel, ERR_CANT_CREATE);
+
+		godot_embedded_client_set_embedded_window_parent(embedded_client, toplevel);
+
+		double window_scale = WaylandThread::window_state_get_scale_factor(ws);
+
+		Rect2i scaled_rect = p_rect;
+		scaled_rect.position = WaylandThread::scale_vector2i(scaled_rect.position, 1 / window_scale);
+		scaled_rect.size = WaylandThread::scale_vector2i(scaled_rect.size, 1 / window_scale);
+
+		print_verbose(vformat("Scaling embedded rect down by %f from %s to %s.", window_scale, p_rect, scaled_rect));
+
+		godot_embedded_client_set_embedded_window_rect(embedded_client, scaled_rect.position.x, scaled_rect.position.y, scaled_rect.size.width, scaled_rect.size.height);
+	} else {
+		godot_embedded_client_set_embedded_window_parent(embedded_client, nullptr);
+	}
+
+	return OK;
+}
+
+Error DisplayServerWayland::request_close_embedded_process(OS::ProcessID p_pid) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	struct godot_embedding_compositor *ec = wayland_thread.get_embedding_compositor();
+	ERR_FAIL_NULL_V_MSG(ec, ERR_BUG, "Missing embedded compositor interface");
+
+	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
+	ERR_FAIL_NULL_V(ecs, ERR_BUG);
+
+	if (!ecs->mapped_clients.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
+	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
+	ERR_FAIL_NULL_V(client_data, ERR_BUG);
+
+	godot_embedded_client_embedded_window_request_close(embedded_client);
+	return OK;
+}
+
+Error DisplayServerWayland::remove_embedded_process(OS::ProcessID p_pid) {
+	return request_close_embedded_process(p_pid);
+}
+
+OS::ProcessID DisplayServerWayland::get_focused_process_id() {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	OS::ProcessID embedded_pid = wayland_thread.embedded_compositor_get_focused_pid();
+
+	if (embedded_pid < 0) {
+		return OS::get_singleton()->get_process_id();
+	}
+
+	return embedded_pid;
+}
+
 int DisplayServerWayland::keyboard_get_layout_count() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1534,46 +1666,29 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
+	if (!portal_desktop) {
+		return false;
+	}
+	MutexLock mutex_lock(wayland_thread.mutex);
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
-
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
 	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
+#else
+	return false;
+#endif
 }
 
 void DisplayServerWayland::try_suspend() {
-	bool must_emulate = false;
-
-	for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
-		if (pair.value.emulate_vsync) {
-			must_emulate = true;
-			break;
-		}
-	}
-
 	// Due to various reasons, we manually handle display synchronization by
 	// waiting for a frame event (request to draw) or, if available, the actual
 	// window's suspend status. When a window is suspended, we can avoid drawing
 	// altogether, either because the compositor told us that we don't need to or
 	// because the pace of the frame events became unreliable.
-	if (must_emulate) {
-		bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
-		if (!frame) {
-			suspend_state = SuspendState::TIMEOUT;
-		}
-	}
-
-	// If we suspended by capability, we'll know with this check. We must do this
-	// after `wait_frame_suspend_ms` as it progressively dispatches the event queue
-	// during the "timeout".
-	if (wayland_thread.is_suspended()) {
-		suspend_state = SuspendState::CAPABILITY;
-	}
-
-	if (suspend_state == SuspendState::TIMEOUT) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
-	} else if (suspend_state == SuspendState::CAPABILITY) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+	bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
+	if (!frame) {
+		suspend_state = SuspendState::TIMEOUT;
 	}
 }
 
@@ -1724,39 +1839,54 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
-	if (suspend_state == SuspendState::NONE) {
-		// Due to the way legacy suspension works, we have to treat low processor
-		// usage mode very differently than the regular one.
-		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			// NOTE: We must avoid committing a surface if we expect a new frame, as we
-			// might otherwise commit some inconsistent data (e.g. buffer scale). Note
-			// that if a new frame is expected it's going to be committed by the renderer
-			// soon anyways.
-			if (!RenderingServer::get_singleton()->has_changed()) {
-				// We _can't_ commit in a different thread (such as in the frame callback
-				// itself) because we would risk to step on the renderer's feet, which would
-				// cause subtle but severe issues, such as crashes on setups with explicit
-				// sync. This isn't normally a problem, as the renderer commits at every
-				// frame (which is what we need for atomic surface updates anyways), but in
-				// low processor usage mode that expectation is broken. When it's on, our
-				// frame rate stops being constant. This also reflects in the frame
-				// information we use for legacy suspension. In order to avoid issues, let's
-				// manually commit all surfaces, so that we can get fresh frame data.
-				wayland_thread.commit_surfaces();
-				try_suspend();
+	switch (suspend_state) {
+		case SuspendState::NONE: {
+			bool emulate_vsync = false;
+			for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
+				if (pair.value.emulate_vsync) {
+					emulate_vsync = true;
+					break;
+				}
 			}
-		} else {
-			try_suspend();
-		}
-	} else {
-		if (suspend_state == SuspendState::CAPABILITY) {
-			// If we suspended by capability we can assume that it will be reset when
-			// the compositor wants us to repaint.
-			if (!wayland_thread.is_suspended()) {
-				suspend_state = SuspendState::NONE;
-				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+
+			if (emulate_vsync) {
+				// Due to the way legacy suspension works, we have to treat low processor
+				// usage mode very differently than the regular one.
+				if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+					// NOTE: We must avoid committing a surface if we expect a new frame, as we
+					// might otherwise commit some inconsistent data (e.g. buffer scale). Note
+					// that if a new frame is expected it's going to be committed by the renderer
+					// soon anyways.
+					if (!RenderingServer::get_singleton()->has_changed()) {
+						// We _can't_ commit in a different thread (such as in the frame callback
+						// itself) because we would risk to step on the renderer's feet, which would
+						// cause subtle but severe issues, such as crashes on setups with explicit
+						// sync. This isn't normally a problem, as the renderer commits at every
+						// frame (which is what we need for atomic surface updates anyways), but in
+						// low processor usage mode that expectation is broken. When it's on, our
+						// frame rate stops being constant. This also reflects in the frame
+						// information we use for legacy suspension. In order to avoid issues, let's
+						// manually commit all surfaces, so that we can get fresh frame data.
+						wayland_thread.commit_surfaces();
+						try_suspend();
+					}
+				} else {
+					try_suspend();
+				}
 			}
-		} else if (suspend_state == SuspendState::TIMEOUT) {
+
+			if (wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::CAPABILITY;
+			}
+
+			if (suspend_state == SuspendState::TIMEOUT) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
+			} else if (suspend_state == SuspendState::CAPABILITY) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+			}
+		} break;
+
+		case SuspendState::TIMEOUT: {
 			// Certain compositors might not report the "suspended" wm_capability flag.
 			// Because of this we'll wake up at the next frame event, indicating the
 			// desire for the compositor to let us repaint.
@@ -1764,11 +1894,20 @@ void DisplayServerWayland::process_events() {
 				suspend_state = SuspendState::NONE;
 				DEBUG_LOG_WAYLAND("Unsuspending from timeout.");
 			}
-		}
 
-		// Since we're not rendering, nothing is committing the windows'
-		// surfaces. We have to do it ourselves.
-		wayland_thread.commit_surfaces();
+			// Since we're not rendering, nothing is committing the windows'
+			// surfaces. We have to do it ourselves.
+			wayland_thread.commit_surfaces();
+		} break;
+
+		case SuspendState::CAPABILITY: {
+			// If we suspended by capability we can assume that it will be reset when
+			// the compositor wants us to repaint.
+			if (!wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::NONE;
+				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+			}
+		} break;
 	}
 
 #ifdef DBUS_ENABLED
@@ -1796,6 +1935,11 @@ void DisplayServerWayland::swap_buffers() {
 		egl_manager->swap_buffers();
 	}
 #endif
+}
+
+void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	wayland_thread.set_icon(p_icon);
 }
 
 void DisplayServerWayland::set_context(Context p_context) {
@@ -1846,7 +1990,7 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Context p_context, int64_t p_parent_window, Error &r_error) {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -1854,7 +1998,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	int dylibloader_verbose = 0;
 #endif // DEBUG_ENABLED
 #endif // SOWRAP_ENABLED
-#endif // GLES3_ENABLED
+#endif // defined(GLES3_ENABLED) || defined(DBUS_ENABLED)
 
 	r_error = ERR_UNAVAILABLE;
 	context = p_context;
@@ -2070,6 +2214,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+		}
+		memdelete(accessibility_driver);
+		accessibility_driver = nullptr;
+	}
+#endif
+
 	show_window(MAIN_WINDOW_ID);
 
 #ifdef RD_ENABLED
@@ -2090,9 +2244,31 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif // RD_ENABLED
 
 #ifdef DBUS_ENABLED
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
-	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
-	screensaver = memnew(FreeDesktopScreenSaver);
+	bool dbus_ok = true;
+#ifdef SOWRAP_ENABLED
+	if (initialize_dbus(dylibloader_verbose) != 0) {
+		print_verbose("Failed to load DBus library!");
+		dbus_ok = false;
+	}
+#endif
+	if (dbus_ok) {
+		bool ver_ok = false;
+		int version_major = 0;
+		int version_minor = 0;
+		int version_rev = 0;
+		dbus_get_version(&version_major, &version_minor, &version_rev);
+		ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+		print_verbose(vformat("DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+		if (!ver_ok) {
+			print_verbose("Unsupported DBus library version!");
+			dbus_ok = false;
+		}
+	}
+	if (dbus_ok) {
+		screensaver = memnew(FreeDesktopScreenSaver);
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+	}
 #endif // DBUS_ENABLED
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -2156,8 +2332,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
 		memdelete(portal_desktop);
-		memdelete(atspi_monitor);
+	}
+	if (screensaver) {
 		memdelete(screensaver);
+	}
+	if (atspi_monitor) {
+		memdelete(atspi_monitor);
 	}
 #endif
 }

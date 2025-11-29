@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 /*************************************************************************/
 
@@ -52,6 +52,12 @@ private:
 	Vector<float> tab_stops;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _draw_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
+	void _draw_outline_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	static void _bind_compatibility_methods();
+#endif
+
 	static void _bind_methods();
 
 	void _shape() const;
@@ -60,6 +66,7 @@ public:
 	RID get_rid() const;
 
 	void clear();
+	Ref<TextLine> duplicate() const;
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
@@ -79,6 +86,7 @@ public:
 	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1, float p_baseline = 0.0);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0);
+	bool has_object(Variant p_key) const;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
@@ -108,8 +116,8 @@ public:
 	float get_line_underline_position() const;
 	float get_line_underline_thickness() const;
 
-	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
 	int hit_test(float p_coords) const;
 

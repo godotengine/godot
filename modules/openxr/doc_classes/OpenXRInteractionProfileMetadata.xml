@@ -13,10 +13,10 @@
 			<return type="void" />
 			<param index="0" name="display_name" type="String" />
 			<param index="1" name="openxr_path" type="String" />
-			<param index="2" name="openxr_extension_name" type="String" />
+			<param index="2" name="openxr_extension_names" type="String" />
 			<description>
 				Registers an interaction profile using its OpenXR designation (e.g. [code]/interaction_profiles/khr/simple_controller[/code] is the profile for OpenXR's simple controller profile).
-				[param display_name] is the description shown to the user. [param openxr_path] is the interaction profile path being registered. [param openxr_extension_name] optionally restricts this profile to the given extension being enabled/available. If the extension is not available, the profile and all related entries used in an action map are filtered out.
+				[param display_name] is the description shown to the user. [param openxr_path] is the interaction profile path being registered. [param openxr_extension_names] optionally restricts this profile to the given extension being enabled/available. If the extension is not available, the profile and all related entries used in an action map are filtered out.
 			</description>
 		</method>
 		<method name="register_io_path">
@@ -25,10 +25,18 @@
 			<param index="1" name="display_name" type="String" />
 			<param index="2" name="toplevel_path" type="String" />
 			<param index="3" name="openxr_path" type="String" />
-			<param index="4" name="openxr_extension_name" type="String" />
+			<param index="4" name="openxr_extension_names" type="String" />
 			<param index="5" name="action_type" type="int" enum="OpenXRAction.ActionType" />
 			<description>
-				Registers an input/output path for the given [param interaction_profile]. The profile should previously have been registered using [method register_interaction_profile]. [param display_name] is the description shown to the user. [param toplevel_path] specifies the bind path this input/output can be bound to (e.g. [code]/user/hand/left[/code] or [code]/user/hand/right[/code]). [param openxr_path] is the action input/output being registered (e.g. [code]/user/hand/left/input/aim/pose[/code]). [param openxr_extension_name] restricts this input/output to an enabled/available extension, this doesn't need to repeat the extension on the profile but relates to overlapping extension (e.g. [code]XR_EXT_palm_pose[/code] that introduces [code]…/input/palm_ext/pose[/code] input paths). [param action_type] defines the type of input or output provided by OpenXR.
+				Registers an input/output path for the given [param interaction_profile]. The profile should previously have been registered using [method register_interaction_profile]. [param display_name] is the description shown to the user. [param toplevel_path] specifies the bind path this input/output can be bound to (e.g. [code]/user/hand/left[/code] or [code]/user/hand/right[/code]). [param openxr_path] is the action input/output being registered (e.g. [code]/user/hand/left/input/aim/pose[/code]). [param openxr_extension_names] restricts this input/output to an enabled/available extension, this doesn't need to repeat the extension on the profile but relates to overlapping extension (e.g. [code]XR_EXT_palm_pose[/code] that introduces [code]…/input/palm_ext/pose[/code] input paths). [param action_type] defines the type of input or output provided by OpenXR.
+			</description>
+		</method>
+		<method name="register_path_rename">
+			<return type="void" />
+			<param index="0" name="old_name" type="String" />
+			<param index="1" name="new_name" type="String" />
+			<description>
+				Allows for renaming old input/output paths to new paths in order to load and process older action maps.
 			</description>
 		</method>
 		<method name="register_profile_rename">
@@ -36,18 +44,18 @@
 			<param index="0" name="old_name" type="String" />
 			<param index="1" name="new_name" type="String" />
 			<description>
-				Allows for renaming old interaction profile paths to new paths to maintain backwards compatibility with older action maps.
+				Allows for renaming old interaction profile paths to new paths in order to load and process older action maps.
 			</description>
 		</method>
 		<method name="register_top_level_path">
 			<return type="void" />
 			<param index="0" name="display_name" type="String" />
 			<param index="1" name="openxr_path" type="String" />
-			<param index="2" name="openxr_extension_name" type="String" />
+			<param index="2" name="openxr_extension_names" type="String" />
 			<description>
 				Registers a top level path to which profiles can be bound. For instance [code]/user/hand/left[/code] refers to the bind point for the player's left hand. Extensions can register additional top level paths, for instance a haptic vest extension might register [code]/user/body/vest[/code].
-				[param display_name] is the name shown to the user. [param openxr_path] is the top level path being registered. [param openxr_extension_name] is optional and ensures the top level path is only used if the specified extension is available/enabled.
-				When a top level path ends up being bound by OpenXR, a [XRPositionalTracker] is instantiated to manage the state of the device.
+				[param display_name] is the name shown to the user. [param openxr_path] is the top level path being registered. [param openxr_extension_names] is optional and ensures the top level path is only used if the specified extension is available/enabled.
+				When a top level path ends up being bound by OpenXR, an [XRPositionalTracker] is instantiated to manage the state of the device.
 			</description>
 		</method>
 	</methods>

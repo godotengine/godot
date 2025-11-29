@@ -32,7 +32,7 @@
 
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #include "xr_vrs.h"
 
 // forward declaration
@@ -83,6 +83,12 @@ public:
 		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
 		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
+	};
+
+	enum VRSTextureFormat {
+		XR_VRS_TEXTURE_FORMAT_UNIFIED,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
+		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
 	};
 
 protected:
@@ -159,6 +165,7 @@ public:
 
 	/** VRS **/
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
+	virtual VRSTextureFormat get_vrs_texture_format() { return XR_VRS_TEXTURE_FORMAT_UNIFIED; }
 
 	XRInterface();
 	~XRInterface();
@@ -168,3 +175,4 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
+VARIANT_ENUM_CAST(XRInterface::VRSTextureFormat);

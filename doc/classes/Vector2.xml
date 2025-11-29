@@ -59,15 +59,15 @@
 			<description>
 				Returns this vector's angle with respect to the positive X axis, or [code](1, 0)[/code] vector, in radians.
 				For example, [code]Vector2.RIGHT.angle()[/code] will return zero, [code]Vector2.DOWN.angle()[/code] will return [code]PI / 2[/code] (a quarter turn, or 90 degrees), and [code]Vector2(1, -1).angle()[/code] will return [code]-PI / 4[/code] (a negative eighth turn, or -45 degrees).
+				This is equivalent to calling [method @GlobalScope.atan2] with [member y] and [member x].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle.png]Illustration of the returned angle.[/url]
-				Equivalent to the result of [method @GlobalScope.atan2] when called with the vector's [member y] and [member x] as parameters: [code]atan2(y, x)[/code].
 			</description>
 		</method>
 		<method name="angle_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the signed angle to the given vector, in radians.
+				Returns the signed angle to the given vector, in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -75,15 +75,15 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle between the line connecting the two points and the X axis, in radians.
-				[code]a.angle_to_point(b)[/code] is equivalent of doing [code](b - a).angle()[/code].
+				Returns the signed angle between the X axis and the line from this vector to point [param to], in radians. The result ranges from [code]-PI[/code] to [code]PI[/code] (inclusive).
+				[code]a.angle_to_point(b)[/code] is equivalent to [code](b - a).angle()[/code]. See also [method angle].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to_point.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
 		<method name="aspect" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
+				Returns this vector's aspect ratio, which is [member x] divided by [member y].
 			</description>
 		</method>
 		<method name="bezier_derivative" qualifiers="const">
@@ -173,7 +173,8 @@
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to].
+				[code]a.direction_to(b)[/code] is equivalent to [code](b - a).normalized()[/code]. See also [method normalized].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
@@ -211,12 +212,13 @@
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />
 			<description>
-				Creates a unit [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
+				Creates a [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
 				[codeblock]
 				print(Vector2.from_angle(0)) # Prints (1.0, 0.0)
 				print(Vector2(1, 0).angle()) # Prints 0.0, which is the angle used above.
 				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0)
 				[/codeblock]
+				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -266,7 +268,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>

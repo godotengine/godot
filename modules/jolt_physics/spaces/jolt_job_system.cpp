@@ -176,7 +176,7 @@ void JoltJobSystem::post_step() {
 #ifdef DEBUG_ENABLED
 
 void JoltJobSystem::flush_timings() {
-	static const StringName profiler_name("servers");
+	const StringName profiler_name = SNAME("servers");
 
 	EngineDebugger *engine_debugger = EngineDebugger::get_singleton();
 

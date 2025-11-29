@@ -21,7 +21,7 @@ if env["builtin_rvo2_2d"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_navigation_2d.Prepend(CPPEXTPATH=[thirdparty_dir])
+    env_navigation_2d.Prepend(CPPPATH=[thirdparty_dir])
 
     env_thirdparty = env_navigation_2d.Clone()
     env_thirdparty.disable_warnings()
@@ -36,6 +36,8 @@ module_obj = []
 
 env_navigation_2d.add_source_files(module_obj, "*.cpp")
 env_navigation_2d.add_source_files(module_obj, "2d/*.cpp")
+if env.editor_build:
+    env_navigation_2d.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

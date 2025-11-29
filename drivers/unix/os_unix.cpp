@@ -40,7 +40,7 @@
 #include "drivers/unix/file_access_unix_pipe.h"
 #include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -69,19 +69,18 @@
 #endif
 
 #include <dlfcn.h>
-#include <errno.h>
 #include <poll.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #ifndef RTLD_DEEPBIND
 #define RTLD_DEEPBIND 0
@@ -132,6 +131,8 @@ static void _setup_clock() {
 }
 #endif
 
+struct sigaction old_action;
+
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -139,6 +140,11 @@ static void handle_interrupt(int sig) {
 
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
+
+	// Ensure we call the old action if it was configured.
+	if (old_action.sa_handler && old_action.sa_handler != SIG_IGN && old_action.sa_handler != SIG_DFL) {
+		old_action.sa_handler(sig);
+	}
 }
 
 void OS_Unix::initialize_debugging() {
@@ -146,7 +152,7 @@ void OS_Unix::initialize_debugging() {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
-		sigaction(SIGINT, &action, nullptr);
+		sigaction(SIGINT, &action, &old_action);
 	}
 }
 
@@ -580,7 +586,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 void OS_Unix::_load_iconv() {
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
@@ -632,7 +638,7 @@ String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteAr
 	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
 
 	LocalVector<char> chars;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data());
 #else
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data());
@@ -669,7 +675,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	CharString charstr = p_string.utf8();
 
 	PackedByteArray ret;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data(), "UTF-8");
 #else
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data(), "UTF-8");
@@ -750,6 +756,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -789,7 +800,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 	Ref<FileAccessUnixPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], -1, p_blocking);
 
 	ProcessInfo pi;
 	process_map_mutex.lock();
@@ -805,10 +816,14 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
-int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options) {
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
 	while (true) {
-		if (waitpid(p_pid, r_status, p_options) != -1) {
-			// Thread exited normally.
+		pid_t pid = waitpid(p_pid, r_status, p_options);
+		if (pid != -1) {
+			// When `p_options` has `WNOHANG`, 0 can be returned if the process is still running.
+			if (r_pid) {
+				*r_pid = pid;
+			}
 			return 0;
 		}
 		const int error = errno;
@@ -832,16 +847,17 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 		return false;
 	}
 
+	pid_t pid = -1;
 	int status = 0;
-	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG);
-	if (result == 0) {
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
+	if (result == 0 && pid == 0) {
 		// Thread is still running.
 		return true;
 	}
 
-	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
-	// Thread exited normally.
+	ERR_FAIL_COND_V_MSG(result != 0, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
 
+	// Thread exited normally.
 	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	if (pi) {
@@ -1080,6 +1096,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }
@@ -1114,8 +1140,8 @@ String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {
@@ -1178,7 +1204,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -1205,31 +1231,42 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
-			logf_error("%s     at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = yellow_bold;
+			normal_color = yellow;
 			break;
 		case ERR_SCRIPT:
-			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = magenta_bold;
+			normal_color = magenta;
 			break;
 		case ERR_SHADER:
-			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = cyan_bold;
+			normal_color = cyan;
 			break;
 		case ERR_ERROR:
 		default:
-			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
-			logf_error("%s   at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = red_bold;
+			normal_color = red;
 			break;
+	}
+
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (!backtrace->is_empty()) {
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
+		}
 	}
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 	_load_iconv();
 #endif
 

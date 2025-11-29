@@ -34,11 +34,12 @@
 #include "core/io/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
+	GDSOFTCLASS(FileAccessCompressed, FileAccess);
 	Compression::Mode cmode = Compression::MODE_ZSTD;
 	bool writing = false;
 	uint64_t write_pos = 0;
 	uint8_t *write_ptr = nullptr;
-	uint32_t write_buffer_size = 0;
+	uint64_t write_buffer_size = 0;
 	uint64_t write_max = 0;
 	uint32_t block_size = 0;
 	mutable bool read_eof = false;
@@ -105,6 +106,5 @@ public:
 
 	virtual void close() override;
 
-	FileAccessCompressed() {}
 	virtual ~FileAccessCompressed();
 };

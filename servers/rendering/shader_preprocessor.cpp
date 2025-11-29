@@ -358,7 +358,7 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 	const int count = stop - p_start;
 
 	String result;
-	result.resize(count + 1);
+	result.resize_uninitialized(count + 1);
 	for (int i = 0; i < count; i++) {
 		result[i] = p_v[p_start + i];
 	}
@@ -552,7 +552,8 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 	if (skip) {
 		Vector<String> ends;
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -847,7 +848,8 @@ void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_s
 		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 

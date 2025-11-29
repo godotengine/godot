@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -1280,7 +1280,7 @@ void compress_block(
 		1.0f
 	};
 
-	static const float errorval_overshoot = 1.0f / ctx.config.tune_mse_overshoot;
+	const float errorval_overshoot = 1.0f / ctx.config.tune_mse_overshoot;
 
 	// Only enable MODE0 fast path if enabled
 	// Never enable for 3D blocks as no "always" block modes are available

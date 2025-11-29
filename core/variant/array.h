@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "core/templates/span.h"
 #include "core/typedefs.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 #include <climits>
 #include <initializer_list>
@@ -44,12 +46,13 @@ struct ContainerType;
 
 class Array {
 	mutable ArrayPrivate *_p;
+	void _ref(const Array &p_from) const;
 	void _unref() const;
 
 public:
 	struct ConstIterator {
-		_FORCE_INLINE_ const Variant &operator*() const;
-		_FORCE_INLINE_ const Variant *operator->() const;
+		_FORCE_INLINE_ const Variant &operator*() const { return *element_ptr; }
+		_FORCE_INLINE_ const Variant *operator->() const { return element_ptr; }
 
 		_FORCE_INLINE_ ConstIterator &operator++();
 		_FORCE_INLINE_ ConstIterator &operator--();
@@ -57,20 +60,15 @@ public:
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
+		ConstIterator() = default;
+
 		_FORCE_INLINE_ ConstIterator(const Variant *p_element_ptr) :
 				element_ptr(p_element_ptr) {}
-		_FORCE_INLINE_ ConstIterator() {}
-		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_other) :
-				element_ptr(p_other.element_ptr) {}
-
-		_FORCE_INLINE_ ConstIterator &operator=(const ConstIterator &p_other) {
-			element_ptr = p_other.element_ptr;
-			return *this;
-		}
 
 	private:
 		const Variant *element_ptr = nullptr;
 	};
+	static_assert(std::is_trivially_copyable_v<ConstIterator>, "ConstIterator must be trivially copyable");
 
 	struct Iterator {
 		_FORCE_INLINE_ Variant &operator*() const;
@@ -82,34 +80,24 @@ public:
 		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
+		_FORCE_INLINE_ operator ConstIterator() const { return ConstIterator(element_ptr); }
+
+		Iterator() = default;
+
 		_FORCE_INLINE_ Iterator(Variant *p_element_ptr, Variant *p_read_only = nullptr) :
 				element_ptr(p_element_ptr), read_only(p_read_only) {}
-		_FORCE_INLINE_ Iterator() {}
-		_FORCE_INLINE_ Iterator(const Iterator &p_other) :
-				element_ptr(p_other.element_ptr), read_only(p_other.read_only) {}
-
-		_FORCE_INLINE_ Iterator &operator=(const Iterator &p_other) {
-			element_ptr = p_other.element_ptr;
-			read_only = p_other.read_only;
-			return *this;
-		}
-
-		operator ConstIterator() const {
-			return ConstIterator(element_ptr);
-		}
 
 	private:
 		Variant *element_ptr = nullptr;
 		Variant *read_only = nullptr;
 	};
+	static_assert(std::is_trivially_copyable_v<Iterator>, "Iterator must be trivially copyable");
 
 	Iterator begin();
 	Iterator end();
 
 	ConstIterator begin() const;
 	ConstIterator end() const;
-
-	void _ref(const Array &p_from) const;
 
 	Variant &operator[](int p_idx);
 	const Variant &operator[](int p_idx) const;
@@ -134,6 +122,7 @@ public:
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
 	void append_array(const Array &p_array);
 	Error resize(int p_new_size);
+	Error reserve(int p_new_size);
 
 	Error insert(int p_pos, const Variant &p_value);
 	void remove_at(int p_pos);
@@ -165,7 +154,8 @@ public:
 	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
-	Array recursive_duplicate(bool p_deep, int recursion_count) const;
+	Array duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Array recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	Array slice(int p_begin, int p_end = INT_MAX, int p_step = 1, bool p_deep = false) const;
 	Array filter(const Callable &p_callable) const;
@@ -199,6 +189,11 @@ public:
 	void make_read_only();
 	bool is_read_only() const;
 	static Array create_read_only();
+
+	Span<Variant> span() const;
+	operator Span<Variant>() const {
+		return this->span();
+	}
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);

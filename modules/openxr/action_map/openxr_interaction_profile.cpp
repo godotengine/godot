@@ -58,7 +58,7 @@ void OpenXRIPBinding::_bind_methods() {
 #endif // DISABLE_DEPRECATED
 }
 
-Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> p_action, const String &p_binding_path) {
+Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> &p_action, const String &p_binding_path) {
 	// This is a helper function to help build our default action sets
 
 	Ref<OpenXRIPBinding> binding;
@@ -78,8 +78,15 @@ Ref<OpenXRAction> OpenXRIPBinding::get_action() const {
 	return action;
 }
 
-void OpenXRIPBinding::set_binding_path(const String &path) {
-	binding_path = path;
+void OpenXRIPBinding::set_binding_path(const String &p_path) {
+	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
+	if (pmd) {
+		binding_path = pmd->check_path_name(p_path);
+	} else {
+		// OpenXR not enabled, ignore checks.
+		binding_path = p_path;
+	}
+
 	emit_changed();
 }
 
@@ -158,7 +165,7 @@ void OpenXRIPBinding::remove_binding_modifier(const Ref<OpenXRActionBindingModif
 
 #ifndef DISABLE_DEPRECATED
 
-void OpenXRIPBinding::set_paths(const PackedStringArray p_paths) { // Deprecated, but needed for loading old action maps.
+void OpenXRIPBinding::set_paths(const PackedStringArray &p_paths) { // Deprecated, but needed for loading old action maps.
 	// Fallback logic, this should ONLY be called when loading older action maps.
 	// We'll parse this momentarily and extract individual bindings.
 	binding_path = "";
@@ -184,12 +191,12 @@ int OpenXRIPBinding::get_path_count() const { // Deprecated.
 	return binding_path.is_empty() ? 0 : 1;
 }
 
-bool OpenXRIPBinding::has_path(const String p_path) const { // Deprecated.
+bool OpenXRIPBinding::has_path(const String &p_path) const { // Deprecated.
 	// Fallback logic, return true if this is our path.
 	return binding_path == p_path;
 }
 
-void OpenXRIPBinding::add_path(const String p_path) { // Deprecated.
+void OpenXRIPBinding::add_path(const String &p_path) { // Deprecated.
 	// Fallback logic, only assign first time this is called.
 	if (binding_path != p_path) {
 		ERR_FAIL_COND_MSG(!binding_path.is_empty(), "Method add_path has been deprecated. A binding path was already set, create separate binding resources for each path and use set_binding_path instead.");
@@ -199,7 +206,7 @@ void OpenXRIPBinding::add_path(const String p_path) { // Deprecated.
 	}
 }
 
-void OpenXRIPBinding::remove_path(const String p_path) { // Deprecated.
+void OpenXRIPBinding::remove_path(const String &p_path) { // Deprecated.
 	ERR_FAIL_COND_MSG(binding_path != p_path, "Method remove_path has been deprecated. Attempt at removing a different binding path, remove the correct binding record from the interaction profile instead.");
 
 	// Fallback logic, clear if this is our path.
@@ -239,12 +246,12 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 	return profile;
 }
 
-void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
+void OpenXRInteractionProfile::set_interaction_profile_path(const String &p_input_profile_path) {
 	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
 	if (pmd) {
 		interaction_profile_path = pmd->check_profile_name(p_input_profile_path);
 	} else {
-		// OpenXR module not enabled, ignore checks.
+		// OpenXR not enabled, ignore checks.
 		interaction_profile_path = p_input_profile_path;
 	}
 	emit_changed();

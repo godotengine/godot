@@ -38,15 +38,15 @@
 
 namespace {
 
-constexpr double DEFAULT_LINEAR_LIMIT_SOFTNESS = 0.7;
-constexpr double DEFAULT_LINEAR_RESTITUTION = 0.5;
-constexpr double DEFAULT_LINEAR_DAMPING = 1.0;
+constexpr double G6DOF_DEFAULT_LINEAR_LIMIT_SOFTNESS = 0.7;
+constexpr double G6DOF_DEFAULT_LINEAR_RESTITUTION = 0.5;
+constexpr double G6DOF_DEFAULT_LINEAR_DAMPING = 1.0;
 
-constexpr double DEFAULT_ANGULAR_LIMIT_SOFTNESS = 0.5;
-constexpr double DEFAULT_ANGULAR_DAMPING = 1.0;
-constexpr double DEFAULT_ANGULAR_RESTITUTION = 0.0;
-constexpr double DEFAULT_ANGULAR_FORCE_LIMIT = 0.0;
-constexpr double DEFAULT_ANGULAR_ERP = 0.5;
+constexpr double G6DOF_DEFAULT_ANGULAR_LIMIT_SOFTNESS = 0.5;
+constexpr double G6DOF_DEFAULT_ANGULAR_DAMPING = 1.0;
+constexpr double G6DOF_DEFAULT_ANGULAR_RESTITUTION = 0.0;
+constexpr double G6DOF_DEFAULT_ANGULAR_FORCE_LIMIT = 0.0;
+constexpr double G6DOF_DEFAULT_ANGULAR_ERP = 0.5;
 
 } // namespace
 
@@ -271,13 +271,13 @@ double JoltGeneric6DOFJoint3D::get_param(Axis p_axis, Param p_param) const {
 			return limit_upper[axis_lin];
 		}
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS: {
-			return DEFAULT_LINEAR_LIMIT_SOFTNESS;
+			return G6DOF_DEFAULT_LINEAR_LIMIT_SOFTNESS;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_RESTITUTION: {
-			return DEFAULT_LINEAR_RESTITUTION;
+			return G6DOF_DEFAULT_LINEAR_RESTITUTION;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DAMPING: {
-			return DEFAULT_LINEAR_DAMPING;
+			return G6DOF_DEFAULT_LINEAR_DAMPING;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: {
 			return motor_speed[axis_lin];
@@ -301,19 +301,19 @@ double JoltGeneric6DOFJoint3D::get_param(Axis p_axis, Param p_param) const {
 			return limit_upper[axis_ang];
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
-			return DEFAULT_ANGULAR_LIMIT_SOFTNESS;
+			return G6DOF_DEFAULT_ANGULAR_LIMIT_SOFTNESS;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DAMPING: {
-			return DEFAULT_ANGULAR_DAMPING;
+			return G6DOF_DEFAULT_ANGULAR_DAMPING;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_RESTITUTION: {
-			return DEFAULT_ANGULAR_RESTITUTION;
+			return G6DOF_DEFAULT_ANGULAR_RESTITUTION;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_FORCE_LIMIT: {
-			return DEFAULT_ANGULAR_FORCE_LIMIT;
+			return G6DOF_DEFAULT_ANGULAR_FORCE_LIMIT;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_ERP: {
-			return DEFAULT_ANGULAR_ERP;
+			return G6DOF_DEFAULT_ANGULAR_ERP;
 		}
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: {
 			return motor_speed[axis_ang];
@@ -350,17 +350,17 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 			_limits_changed();
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_LIMIT_SOFTNESS)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_LINEAR_LIMIT_SOFTNESS)) {
 				WARN_PRINT(vformat("6DOF joint linear limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_RESTITUTION: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_RESTITUTION)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_LINEAR_RESTITUTION)) {
 				WARN_PRINT(vformat("6DOF joint linear restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DAMPING: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_DAMPING)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_LINEAR_DAMPING)) {
 				WARN_PRINT(vformat("6DOF joint linear damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
@@ -393,27 +393,27 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 			_limits_changed();
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_LIMIT_SOFTNESS)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_ANGULAR_LIMIT_SOFTNESS)) {
 				WARN_PRINT(vformat("6DOF joint angular limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DAMPING: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_DAMPING)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_ANGULAR_DAMPING)) {
 				WARN_PRINT(vformat("6DOF joint angular damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_RESTITUTION: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_RESTITUTION)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_ANGULAR_RESTITUTION)) {
 				WARN_PRINT(vformat("6DOF joint angular restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_FORCE_LIMIT: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_FORCE_LIMIT)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_ANGULAR_FORCE_LIMIT)) {
 				WARN_PRINT(vformat("6DOF joint angular force limit is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_ERP: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_ERP)) {
+			if (!Math::is_equal_approx(p_value, G6DOF_DEFAULT_ANGULAR_ERP)) {
 				WARN_PRINT(vformat("6DOF joint angular ERP is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
@@ -656,16 +656,8 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 		return;
 	}
 
-	const JPH::BodyID body_ids[2] = {
-		body_a != nullptr ? body_a->get_jolt_id() : JPH::BodyID(),
-		body_b != nullptr ? body_b->get_jolt_id() : JPH::BodyID()
-	};
-
-	const JoltWritableBodies3D jolt_bodies = space->write_bodies(body_ids, 2);
-
-	JPH::Body *jolt_body_a = static_cast<JPH::Body *>(jolt_bodies[0]);
-	JPH::Body *jolt_body_b = static_cast<JPH::Body *>(jolt_bodies[1]);
-
+	JPH::Body *jolt_body_a = body_a != nullptr ? body_a->get_jolt_body() : nullptr;
+	JPH::Body *jolt_body_b = body_b != nullptr ? body_b->get_jolt_body() : nullptr;
 	ERR_FAIL_COND(jolt_body_a == nullptr && jolt_body_b == nullptr);
 
 	Transform3D shifted_ref_a;

@@ -39,6 +39,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class Timer;
+
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 
@@ -67,6 +69,12 @@ private:
 	LineEdit *incoming_bandwidth_text = nullptr;
 	LineEdit *outgoing_bandwidth_text = nullptr;
 	Tree *replication_display = nullptr;
+
+	Label *up_label = nullptr;
+	Label *down_label = nullptr;
+
+	int incoming_bandwidth = 0;
+	int outgoing_bandwidth = 0;
 
 	HashMap<ObjectID, RPCNodeInfo> rpc_data;
 	HashMap<ObjectID, SyncInfo> sync_data;

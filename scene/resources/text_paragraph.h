@@ -32,7 +32,7 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 /*************************************************************************/
 
@@ -64,6 +64,16 @@ private:
 	Vector<float> tab_stops;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _draw_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void _draw_outline_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void _draw_line_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
+	void _draw_line_outline_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void _draw_dropcap_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
+	void _draw_dropcap_outline_bind_compat_104872(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+
+	static void _bind_compatibility_methods();
+#endif
 	static void _bind_methods();
 
 	void _shape_lines() const;
@@ -74,6 +84,8 @@ public:
 	RID get_dropcap_rid() const;
 
 	void clear();
+
+	Ref<TextParagraph> duplicate() const;
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
@@ -99,6 +111,7 @@ public:
 	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1, float p_baseline = 0.0);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0);
+	bool has_object(Variant p_key) const;
 
 	void set_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_alignment() const;
@@ -147,14 +160,14 @@ public:
 	Size2 get_dropcap_size() const;
 	int get_dropcap_lines() const;
 
-	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
-	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
-	void draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
-	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
-	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
 	int hit_test(const Point2 &p_coords) const;
 

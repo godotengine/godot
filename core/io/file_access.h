@@ -58,6 +58,7 @@ public:
 		WRITE = 2,
 		READ_WRITE = 3,
 		WRITE_READ = 7,
+		SKIP_PACK = 16,
 	};
 
 	enum UnixPermissionFlags : int32_t {
@@ -101,6 +102,11 @@ public:
 	virtual bool _get_read_only_attribute(const String &p_file) = 0;
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) = 0;
 
+	virtual PackedByteArray _get_extended_attribute(const String &p_file, const String &p_attribute_name) { return PackedByteArray(); }
+	virtual Error _set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) { return ERR_UNAVAILABLE; }
+	virtual Error _remove_extended_attribute(const String &p_file, const String &p_attribute_name) { return ERR_UNAVAILABLE; }
+	virtual PackedStringArray _get_extended_attributes_list(const String &p_file) { return PackedStringArray(); }
+
 protected:
 	static void _bind_methods();
 
@@ -112,7 +118,7 @@ protected:
 	virtual int64_t _get_size(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);
 
-	static FileCloseFailNotify close_fail_notify;
+	static inline FileCloseFailNotify close_fail_notify = nullptr;
 
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
@@ -131,16 +137,17 @@ protected:
 	void store_line_bind_compat_78289(const String &p_line);
 	void store_csv_line_bind_compat_78289(const Vector<String> &p_values, const String &p_delim = ",");
 	void store_pascal_string_bind_compat_78289(const String &p_string);
+	String get_as_text_bind_compat_110867(bool p_skip_cr) const;
 
 	static void _bind_compatibility_methods();
 #endif
 
 private:
-	static bool backup_save;
-	thread_local static Error last_file_open_error;
+	static inline bool backup_save = false;
+	static inline thread_local Error last_file_open_error = OK;
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
-	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
+	static inline CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <typename T>
 	static Ref<FileAccess> _create_builtin() {
 		return memnew(T);
@@ -187,8 +194,8 @@ public:
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
-	String get_as_text(bool p_skip_cr = false) const;
-	virtual String get_as_utf8_string(bool p_skip_cr = false) const;
+	String get_as_text() const;
+	virtual String get_as_utf8_string() const;
 
 	/**
 
@@ -254,6 +261,13 @@ public:
 	static bool get_read_only_attribute(const String &p_file);
 	static Error set_read_only_attribute(const String &p_file, bool p_ro);
 
+	static PackedByteArray get_extended_attribute(const String &p_file, const String &p_attribute_name);
+	static String get_extended_attribute_string(const String &p_file, const String &p_attribute_name);
+	static Error set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data);
+	static Error set_extended_attribute_string(const String &p_file, const String &p_attribute_name, const String &p_data);
+	static Error remove_extended_attribute(const String &p_file, const String &p_attribute_name);
+	static PackedStringArray get_extended_attributes_list(const String &p_file);
+
 	static void set_backup_save(bool p_enable) { backup_save = p_enable; }
 	static bool is_backup_save_enabled() { return backup_save; }
 
@@ -273,7 +287,6 @@ public:
 	}
 
 public:
-	FileAccess() {}
 	virtual ~FileAccess();
 };
 

@@ -49,13 +49,13 @@ protected:
 
 public:
 	String get_original_name();
-	void set_original_name(String p_name);
+	void set_original_name(const String &p_name);
 	Ref<ImporterMesh> get_mesh();
-	void set_mesh(Ref<ImporterMesh> p_mesh);
+	void set_mesh(const Ref<ImporterMesh> &p_mesh);
 	Vector<float> get_blend_weights();
-	void set_blend_weights(Vector<float> p_blend_weights);
+	void set_blend_weights(const Vector<float> &p_blend_weights);
 	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(TypedArray<Material> p_instance_materials);
+	void set_instance_materials(const TypedArray<Material> &p_instance_materials);
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };

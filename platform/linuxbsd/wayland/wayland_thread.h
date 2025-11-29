@@ -45,16 +45,18 @@
 #ifdef GLES3_ENABLED
 #include <wayland-egl-core.h>
 #endif
+#include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
 // These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
-// These three protocol headers name wl_pointer method arguments as `pointer`,
+// These four protocol headers name wl_pointer method arguments as `pointer`,
 // which is the same name as X11's pointer typedef. This trips some very
 // annoying shadowing warnings. A `#define` works around this issue.
 #define pointer wl_pointer
+#include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
@@ -69,6 +71,9 @@
 #include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 #include "wayland/protocol/xdg_system_bell.gen.h"
+#include "wayland/protocol/xdg_toplevel_icon.gen.h"
+
+#include "wayland/protocol/godot_embedding_compositor.gen.h"
 
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
@@ -82,7 +87,9 @@
 #endif // LIBDECOR_ENABLED
 
 #include "core/os/thread.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
+
+#include "wayland_embedder.h"
 
 class WaylandThread {
 public:
@@ -187,11 +194,17 @@ public:
 		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
 		uint32_t wp_fractional_scale_manager_name = 0;
 
+		struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager = nullptr;
+		uint32_t wp_cursor_shape_manager_name = 0;
+
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
 
 		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
 		uint32_t xdg_system_bell_name = 0;
+
+		struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager = nullptr;
+		uint32_t xdg_toplevel_icon_manager_name = 0;
 
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
@@ -216,6 +229,13 @@ public:
 
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
+
+		// We're really not meant to use this one directly but we still need to know
+		// whether it's available.
+		uint32_t wp_fifo_manager_name = 0;
+
+		struct godot_embedding_compositor *godot_embedding_compositor = nullptr;
+		uint32_t godot_embedding_compositor_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -341,7 +361,7 @@ public:
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -371,7 +391,7 @@ public:
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
-		BitField<MouseButtonMask> pressed_button_mask;
+		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		Point2 last_pressed_position;
@@ -412,6 +432,8 @@ public:
 
 		uint32_t pointer_enter_serial = 0;
 
+		struct wp_cursor_shape_device_v1 *wp_cursor_shape_device = nullptr;
+
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
@@ -448,6 +470,8 @@ public:
 		struct xkb_context *xkb_context = nullptr;
 		struct xkb_keymap *xkb_keymap = nullptr;
 		struct xkb_state *xkb_state = nullptr;
+		struct xkb_compose_state *xkb_compose_state = nullptr;
+		struct xkb_compose_table *xkb_compose_table = nullptr;
 
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
@@ -462,6 +486,10 @@ public:
 		xkb_keycode_t repeating_keycode = XKB_KEYCODE_INVALID;
 		uint64_t last_repeat_start_msec = 0;
 		uint64_t last_repeat_msec = 0;
+
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
 
 		bool shift_pressed = false;
 		bool ctrl_pressed = false;
@@ -515,6 +543,22 @@ public:
 		Point2i hotspot;
 	};
 
+	struct EmbeddingCompositorState {
+		LocalVector<struct godot_embedded_client *> clients;
+
+		// Only a client per PID can create a window.
+		HashMap<int, struct godot_embedded_client *> mapped_clients;
+
+		OS::ProcessID focused_pid = -1;
+	};
+
+	struct EmbeddedClientState {
+		struct godot_embedding_compositor *embedding_compositor = nullptr;
+
+		uint32_t pid = 0;
+		bool window_mapped = false;
+	};
+
 private:
 	struct ThreadData {
 		SafeFlag thread_done;
@@ -533,6 +577,9 @@ private:
 
 	List<Ref<Message>> messages;
 
+	xdg_toplevel_icon_v1 *xdg_icon = nullptr;
+	wl_buffer *icon_buffer = nullptr;
+
 	String cursor_theme_name;
 	int unscaled_cursor_size = 24;
 
@@ -543,9 +590,32 @@ private:
 	// especially as usually screen scales don't change continuously.
 	int cursor_scale = 1;
 
+	// Use cursor-shape-v1 protocol if the compositor supports it.
+	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServer::CURSOR_MAX] = {
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //CURSOR_ARROW
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //CURSOR_IBEAM
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //CURSOR_POINTING_HAND
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //CURSOR_CROSS
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //CURSOR_WAIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //CURSOR_BUSY
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //CURSOR_DRAG
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //CURSOR_CAN_DROP
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //CURSOR_FORBIDDEN
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //CURSOR_VSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //CURSOR_HSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //CURSOR_BDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //CURSOR_FDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //CURSOR_MOVE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //CURSOR_VSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //CURSOR_HSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //CURSOR_HELP
+	};
+
+	// Fallback to reading $XCURSOR and system themes if the compositor does not.
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
 	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
 
+	// User-defined cursor overrides. Take precedence over standard and wl cursors.
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
 	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
@@ -563,6 +633,10 @@ private:
 	RegistryState registry;
 
 	bool initialized = false;
+
+#ifdef TOOLS_ENABLED
+	WaylandEmbedder embedder;
+#endif
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
@@ -701,6 +775,13 @@ private:
 	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
+
+	static void _godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid);
+
+	static void _godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client);
+	static void _godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client);
 
 	// Core Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
@@ -889,6 +970,18 @@ private:
 		.done = _xdg_activation_token_on_done,
 	};
 
+	// Godot interfaces.
+	static constexpr struct godot_embedding_compositor_listener godot_embedding_compositor_listener = {
+		.client = _godot_embedding_compositor_on_client,
+	};
+
+	static constexpr struct godot_embedded_client_listener godot_embedded_client_listener = {
+		.disconnected = _godot_embedded_client_on_disconnected,
+		.window_embedded = _godot_embedded_client_on_window_embedded,
+		.window_focus_in = _godot_embedded_client_on_window_focus_in,
+		.window_focus_out = _godot_embedded_client_on_window_focus_out,
+	};
+
 #ifdef LIBDECOR_ENABLED
 	// libdecor event handlers.
 	static void libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message);
@@ -969,6 +1062,8 @@ public:
 
 	static OfferState *wp_primary_selection_offer_get_offer_state(struct zwp_primary_selection_offer_v1 *p_offer);
 
+	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
+
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
@@ -990,7 +1085,9 @@ public:
 
 	void beep() const;
 
-	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+	void set_icon(const Ref<Image> &p_icon);
+
+	void window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id = DisplayServer::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServer::WindowID p_window_id, DisplayServer::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServer::WindowID p_window_Id);
 
@@ -1068,10 +1165,15 @@ public:
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
+	bool is_fifo_available() const;
 
 	uint64_t window_get_last_frame_time(DisplayServer::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServer::WindowID p_window_id) const;
 	bool is_suspended() const;
+
+	struct godot_embedding_compositor *get_embedding_compositor();
+
+	OS::ProcessID embedded_compositor_get_focused_pid();
 
 	Error init();
 	void destroy();

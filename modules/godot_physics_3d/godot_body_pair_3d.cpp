@@ -34,7 +34,7 @@
 #include "godot_space_3d.h"
 
 #define MIN_VELOCITY 0.0001
-#define MAX_BIAS_ROTATION (Math_PI / 8)
+#define MAX_BIAS_ROTATION (Math::PI / 8)
 
 void GodotBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	GodotBodyPair3D *pair = static_cast<GodotBodyPair3D *>(p_userdata);

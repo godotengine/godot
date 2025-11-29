@@ -53,6 +53,7 @@ private:
 	Vector3::Axis primary_rotation_axis = Vector3::AXIS_Y;
 	Vector3::Axis secondary_rotation_axis = Vector3::AXIS_X;
 	bool use_secondary_rotation = true;
+	bool relative = true;
 
 	OriginFrom origin_from = ORIGIN_FROM_SELF;
 	String origin_bone_name;
@@ -71,18 +72,18 @@ private:
 	bool use_angle_limitation = false;
 	bool symmetry_limitation = true;
 
-	float primary_limit_angle = Math_TAU;
+	float primary_limit_angle = Math::TAU;
 	float primary_damp_threshold = 1.0f;
-	float primary_positive_limit_angle = Math_PI;
+	float primary_positive_limit_angle = Math::PI;
 	float primary_positive_damp_threshold = 1.0f;
-	float primary_negative_limit_angle = Math_PI;
+	float primary_negative_limit_angle = Math::PI;
 	float primary_negative_damp_threshold = 1.0f;
 
-	float secondary_limit_angle = Math_TAU;
+	float secondary_limit_angle = Math::TAU;
 	float secondary_damp_threshold = 1.0f;
-	float secondary_positive_limit_angle = Math_PI;
+	float secondary_positive_limit_angle = Math::PI;
 	float secondary_positive_damp_threshold = 1.0f;
-	float secondary_negative_limit_angle = Math_PI;
+	float secondary_negative_limit_angle = Math::PI;
 	float secondary_negative_damp_threshold = 1.0f;
 
 	bool is_within_limitations = false;
@@ -105,6 +106,8 @@ protected:
 	virtual PackedStringArray get_configuration_warnings() const override;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	virtual void _validate_bone_names() override;
+
 	static void _bind_methods();
 
 	virtual void _process_modification(double p_delta) override;
@@ -121,6 +124,8 @@ public:
 	Vector3::Axis get_primary_rotation_axis() const;
 	void set_use_secondary_rotation(bool p_enabled);
 	bool is_using_secondary_rotation() const;
+	void set_relative(bool p_enabled);
+	bool is_relative() const;
 
 	void set_origin_from(OriginFrom p_origin_from);
 	OriginFrom get_origin_from() const;

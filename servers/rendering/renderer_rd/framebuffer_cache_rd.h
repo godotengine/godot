@@ -58,6 +58,7 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ uint32_t _hash_pass(const RD::FramebufferPass &p, uint32_t h) {
 		h = hash_murmur3_one_32(p.depth_attachment, h);
+		h = hash_murmur3_one_32(p.depth_resolve_attachment, h);
 
 		h = hash_murmur3_one_32(p.color_attachments.size(), h);
 		for (int i = 0; i < p.color_attachments.size(); i++) {
@@ -79,6 +80,10 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ bool _compare_pass(const RD::FramebufferPass &a, const RD::FramebufferPass &b) {
 		if (a.depth_attachment != b.depth_attachment) {
+			return false;
+		}
+
+		if (a.depth_resolve_attachment != b.depth_resolve_attachment) {
 			return false;
 		}
 
@@ -135,16 +140,6 @@ class FramebufferCacheRD : public Object {
 			return false;
 		}
 		return _compare_args(idx + 1, textures, args...);
-	}
-
-	_FORCE_INLINE_ void _create_args(Vector<RID> &textures, const RID &arg) {
-		textures.push_back(arg);
-	}
-
-	template <typename... Args>
-	_FORCE_INLINE_ void _create_args(Vector<RID> &textures, const RID &arg, Args... args) {
-		textures.push_back(arg);
-		_create_args(textures, args...);
 	}
 
 	static FramebufferCacheRD *singleton;
@@ -216,10 +211,7 @@ public:
 
 		// Not in cache, create:
 
-		Vector<RID> textures;
-		_create_args(textures, args...);
-
-		return _allocate_from_data(1, h, table_idx, textures, Vector<RD::FramebufferPass>());
+		return _allocate_from_data(1, h, table_idx, Vector<RID>{ args... }, Vector<RD::FramebufferPass>());
 	}
 
 	template <typename... Args>
@@ -244,10 +236,7 @@ public:
 
 		// Not in cache, create:
 
-		Vector<RID> textures;
-		_create_args(textures, args...);
-
-		return _allocate_from_data(p_views, h, table_idx, textures, Vector<RD::FramebufferPass>());
+		return _allocate_from_data(p_views, h, table_idx, Vector<RID>{ args... }, Vector<RD::FramebufferPass>());
 	}
 
 	RID get_cache_multipass(const Vector<RID> &p_textures, const Vector<RD::FramebufferPass> &p_passes, uint32_t p_views = 1) {

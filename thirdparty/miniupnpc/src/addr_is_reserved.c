@@ -1,13 +1,14 @@
-/* $Id: addr_is_reserved.c,v 1.4 2021/03/02 23:40:32 nanard Exp $ */
+/* $Id: addr_is_reserved.c,v 1.7 2025/01/12 15:47:17 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2024 Thomas Bernard
+ * copyright (c) 2005-2025 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #ifdef _WIN32
 /* Win32 Specific includes and defines */
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #if !defined(_MSC_VER)
@@ -15,6 +16,9 @@
 #else /* !defined(_MSC_VER) */
 typedef unsigned long uint32_t;
 #endif /* !defined(_MSC_VER) */
+#if !defined(_WIN32_WINNT_VISTA)
+#define _WIN32_WINNT_VISTA 0x0600
+#endif
 #else /* _WIN32 */
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -59,7 +63,7 @@ int addr_is_reserved(const char * addr_str)
 	uint32_t addr_n, address;
 	size_t i;
 
-#if defined(_WIN32) && _WIN32_WINNT < 0x0600 // _WIN32_WINNT_VISTA
+#if defined(_WIN32) && (_WIN32_WINNT < _WIN32_WINNT_VISTA)
 	addr_n = inet_addr(addr_str);
 	if (addr_n == INADDR_NONE)
 		return 1;

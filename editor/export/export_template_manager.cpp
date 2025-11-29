@@ -34,17 +34,19 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_preset.h"
-#include "editor/progress_dialog.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
@@ -57,8 +59,6 @@ enum DownloadsAvailability {
 };
 
 static DownloadsAvailability _get_downloads_availability() {
-	const int network_mode = EDITOR_GET("network/connection/network_mode");
-
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
 	// Therefore, don't display download-related features when using a development version
@@ -72,13 +72,16 @@ static DownloadsAvailability _get_downloads_availability() {
 
 #ifdef REAL_T_IS_DOUBLE
 	return DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS;
-#endif
+#else
+
+	const int network_mode = EDITOR_GET("network/connection/network_mode");
 
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
 		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
 	}
 
 	return DOWNLOADS_AVAILABLE;
+#endif
 }
 
 void ExportTemplateManager::_update_template_status() {
@@ -921,7 +924,6 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -990,6 +992,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_hb->add_child(current_label);
 
 	current_value = memnew(Label);
+	current_value->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	current_hb->add_child(current_value);
 
 	// Current version statuses.

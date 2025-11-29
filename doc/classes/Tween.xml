@@ -58,32 +58,32 @@
 		[gdscript]
 		var tween = create_tween()
 		for sprite in get_children():
-		    tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
+			tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
 		[/gdscript]
 		[csharp]
 		Tween tween = CreateTween();
 		foreach (Node sprite in GetChildren())
-		    tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
+			tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
 		[/csharp]
 		[/codeblocks]
-		In the example above, all children of a node are moved one after another to position (0, 0).
+		In the example above, all children of a node are moved one after another to position [code](0, 0)[/code].
 		You should avoid using more than one [Tween] per object's property. If two or more tweens animate one property at the same time, the last one created will take priority and assign the final value. If you want to interrupt and restart an animation, consider assigning the [Tween] to a variable:
 		[codeblocks]
 		[gdscript]
 		var tween
 		func animate():
-		    if tween:
-		        tween.kill() # Abort the previous animation.
-		    tween = create_tween()
+			if tween:
+				tween.kill() # Abort the previous animation.
+			tween = create_tween()
 		[/gdscript]
 		[csharp]
 		private Tween _tween;
 
 		public void Animate()
 		{
-		    if (_tween != null)
-		        _tween.Kill(); // Abort the previous animation
-		    _tween = CreateTween();
+			if (_tween != null)
+				_tween.Kill(); // Abort the previous animation
+			_tween = CreateTween();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -261,7 +261,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
-				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
+				Determines the behavior of the [Tween] when the [SceneTree] is paused.
 				Default value is [constant TWEEN_PAUSE_BOUND].
 			</description>
 		</method>
@@ -413,24 +413,24 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var tween = create_tween()
-				    tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
+					var tween = create_tween()
+					tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
 
 				func set_label_text(value: int):
-				    $Label.text = "Counting " + str(value)
+					$Label.text = "Counting " + str(value)
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    base._Ready();
+					base._Ready();
 
-				    Tween tween = CreateTween();
-				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+					Tween tween = CreateTween();
+					tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
 				{
-				    GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
+					GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
 				}
 				[/csharp]
 				[/codeblocks]

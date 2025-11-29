@@ -51,12 +51,12 @@ OpenXREyeGazeInteractionExtension::~OpenXREyeGazeInteractionExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Only enable this extension when requested.
 	// We still register our meta data or the action map editor will fail.
-	if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
+	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
 		request_extensions[XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME] = &available;
 	}
 

@@ -31,7 +31,6 @@
 #pragma once
 
 #include "crash_handler_windows.h"
-#include "joypad_windows.h"
 #include "key_mapping_windows.h"
 #include "tts_windows.h"
 
@@ -41,11 +40,11 @@
 #include "core/os/os.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio_server.h"
-#include "servers/display_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -63,7 +62,7 @@
 #include "native_menu_windows.h"
 
 #include <io.h>
-#include <stdio.h>
+#include <cstdio>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -172,165 +171,6 @@ typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMod
 typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
 typedef void(WINAPI *FlushMenuThemesPtr)();
 
-// Windows Ink API
-#ifndef POINTER_STRUCTURES
-
-#define POINTER_STRUCTURES
-
-typedef DWORD POINTER_INPUT_TYPE;
-typedef UINT32 POINTER_FLAGS;
-typedef UINT32 PEN_FLAGS;
-typedef UINT32 PEN_MASK;
-
-#ifndef PEN_FLAG_INVERTED
-#define PEN_FLAG_INVERTED 0x00000002
-#endif
-
-#ifndef PEN_FLAG_ERASER
-#define PEN_FLAG_ERASER 0x00000004
-#endif
-
-#ifndef PEN_MASK_PRESSURE
-#define PEN_MASK_PRESSURE 0x00000001
-#endif
-
-#ifndef PEN_MASK_TILT_X
-#define PEN_MASK_TILT_X 0x00000004
-#endif
-
-#ifndef PEN_MASK_TILT_Y
-#define PEN_MASK_TILT_Y 0x00000008
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
-#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_SECONDBUTTON
-#define POINTER_MESSAGE_FLAG_SECONDBUTTON 0x00000020
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_THIRDBUTTON
-#define POINTER_MESSAGE_FLAG_THIRDBUTTON 0x00000040
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FOURTHBUTTON
-#define POINTER_MESSAGE_FLAG_FOURTHBUTTON 0x00000080
-#endif
-
-#ifndef POINTER_MESSAGE_FLAG_FIFTHBUTTON
-#define POINTER_MESSAGE_FLAG_FIFTHBUTTON 0x00000100
-#endif
-
-#ifndef IS_POINTER_FLAG_SET_WPARAM
-#define IS_POINTER_FLAG_SET_WPARAM(wParam, flag) (((DWORD)HIWORD(wParam) & (flag)) == (flag))
-#endif
-
-#ifndef IS_POINTER_FIRSTBUTTON_WPARAM
-#define IS_POINTER_FIRSTBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON)
-#endif
-
-#ifndef IS_POINTER_SECONDBUTTON_WPARAM
-#define IS_POINTER_SECONDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_SECONDBUTTON)
-#endif
-
-#ifndef IS_POINTER_THIRDBUTTON_WPARAM
-#define IS_POINTER_THIRDBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_THIRDBUTTON)
-#endif
-
-#ifndef IS_POINTER_FOURTHBUTTON_WPARAM
-#define IS_POINTER_FOURTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FOURTHBUTTON)
-#endif
-
-#ifndef IS_POINTER_FIFTHBUTTON_WPARAM
-#define IS_POINTER_FIFTHBUTTON_WPARAM(wParam) IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIFTHBUTTON)
-#endif
-
-#ifndef GET_POINTERID_WPARAM
-#define GET_POINTERID_WPARAM(wParam) (LOWORD(wParam))
-#endif
-
-#if WINVER < 0x0602
-enum tagPOINTER_INPUT_TYPE {
-	PT_POINTER = 0x00000001,
-	PT_TOUCH = 0x00000002,
-	PT_PEN = 0x00000003,
-	PT_MOUSE = 0x00000004,
-	PT_TOUCHPAD = 0x00000005
-};
-
-typedef enum tagPOINTER_BUTTON_CHANGE_TYPE {
-	POINTER_CHANGE_NONE,
-	POINTER_CHANGE_FIRSTBUTTON_DOWN,
-	POINTER_CHANGE_FIRSTBUTTON_UP,
-	POINTER_CHANGE_SECONDBUTTON_DOWN,
-	POINTER_CHANGE_SECONDBUTTON_UP,
-	POINTER_CHANGE_THIRDBUTTON_DOWN,
-	POINTER_CHANGE_THIRDBUTTON_UP,
-	POINTER_CHANGE_FOURTHBUTTON_DOWN,
-	POINTER_CHANGE_FOURTHBUTTON_UP,
-	POINTER_CHANGE_FIFTHBUTTON_DOWN,
-	POINTER_CHANGE_FIFTHBUTTON_UP,
-} POINTER_BUTTON_CHANGE_TYPE;
-
-typedef struct tagPOINTER_INFO {
-	POINTER_INPUT_TYPE pointerType;
-	UINT32 pointerId;
-	UINT32 frameId;
-	POINTER_FLAGS pointerFlags;
-	HANDLE sourceDevice;
-	HWND hwndTarget;
-	POINT ptPixelLocation;
-	POINT ptHimetricLocation;
-	POINT ptPixelLocationRaw;
-	POINT ptHimetricLocationRaw;
-	DWORD dwTime;
-	UINT32 historyCount;
-	INT32 InputData;
-	DWORD dwKeyStates;
-	UINT64 PerformanceCount;
-	POINTER_BUTTON_CHANGE_TYPE ButtonChangeType;
-} POINTER_INFO;
-
-typedef struct tagPOINTER_PEN_INFO {
-	POINTER_INFO pointerInfo;
-	PEN_FLAGS penFlags;
-	PEN_MASK penMask;
-	UINT32 pressure;
-	UINT32 rotation;
-	INT32 tiltX;
-	INT32 tiltY;
-} POINTER_PEN_INFO;
-#endif
-
-#endif //POINTER_STRUCTURES
-
-#ifndef WM_POINTERUPDATE
-#define WM_POINTERUPDATE 0x0245
-#endif
-
-#ifndef WM_POINTERENTER
-#define WM_POINTERENTER 0x0249
-#endif
-
-#ifndef WM_POINTERLEAVE
-#define WM_POINTERLEAVE 0x024A
-#endif
-
-#ifndef WM_POINTERDOWN
-#define WM_POINTERDOWN 0x0246
-#endif
-
-#ifndef WM_POINTERUP
-#define WM_POINTERUP 0x0247
-#endif
-
-typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
-typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
-typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
-typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hwnd, LPPOINT lpPoint);
-typedef HRESULT(WINAPI *SHLoadIndirectStringPtr)(PCWSTR pszSource, PWSTR pszOutBuf, UINT cchOutBuf, void **ppvReserved);
-
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
 	BYTE bHeight; // Height, in pixels, of the image
@@ -349,21 +189,13 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
-typedef enum _SHC_PROCESS_DPI_AWARENESS {
-	SHC_PROCESS_DPI_UNAWARE = 0,
-	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
-	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
-} SHC_PROCESS_DPI_AWARENESS;
-
-#ifndef WS_EX_NOREDIRECTIONBITMAP
-#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
-#endif
-
 class DropTargetWindows;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011
 #endif
+
+class JoypadSDL;
 
 class DisplayServerWindows : public DisplayServer {
 	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
@@ -388,18 +220,6 @@ class DisplayServerWindows : public DisplayServer {
 	static WTInfoPtr wintab_WTInfo;
 	static WTPacketPtr wintab_WTPacket;
 	static WTEnablePtr wintab_WTEnable;
-
-	// Windows Ink API
-	static bool winink_available;
-	static GetPointerTypePtr win8p_GetPointerType;
-	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
-
-	// DPI conversion API
-	static LogicalToPhysicalPointForPerMonitorDPIPtr win81p_LogicalToPhysicalPointForPerMonitorDPI;
-	static PhysicalToLogicalPointForPerMonitorDPIPtr win81p_PhysicalToLogicalPointForPerMonitorDPI;
-
-	// Shell API
-	static SHLoadIndirectStringPtr load_indirect_string;
 
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
@@ -459,7 +279,7 @@ class DisplayServerWindows : public DisplayServer {
 	String rendering_driver;
 	bool app_focused = false;
 	bool keep_screen_on = false;
-	bool get_object_recieved = false;
+	bool get_object_received = false;
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
@@ -492,7 +312,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
-		bool context_created = false;
+		bool rendering_context_window_created = false;
+		bool gl_native_window_created = false;
+		bool gl_angle_window_created = false;
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -521,6 +343,7 @@ class DisplayServerWindows : public DisplayServer {
 		Size2 min_size;
 		Size2 max_size;
 		int width = 0, height = 0;
+		int width_with_decorations = 0, height_with_decorations = 0;
 
 		Size2 window_rect;
 		Point2 last_pos;
@@ -554,15 +377,30 @@ class DisplayServerWindows : public DisplayServer {
 		bool initialized = false;
 
 		HWND parent_hwnd = 0;
+
+		bool no_redirection_bitmap = false;
 	};
 
-	JoypadWindows *joypad = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	HHOOK mouse_monitor = nullptr;
 	List<WindowID> popup_list;
 	uint64_t time_since_popup = 0;
 	Ref<Image> icon;
 
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd);
+	Error _create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
+	void _destroy_window(WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
+
+#ifdef RD_ENABLED
+	Error _create_rendering_context_window(WindowID p_window_id);
+	void _destroy_rendering_context_window(WindowID p_window_id);
+#endif
+
+#ifdef GLES3_ENABLED
+	Error _create_gl_window(WindowID p_window_id);
+#endif
+
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	RBMap<WindowID, WindowData> windows;
 
@@ -621,7 +459,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_no_redirection_bitmap, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
@@ -708,7 +546,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

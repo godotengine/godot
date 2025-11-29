@@ -43,7 +43,8 @@ void ItemList::_shape_text(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, item.language);
+	const String &lang = item.language.is_empty() ? _get_locale() : item.language;
+	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, lang);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 	} else {
@@ -208,11 +209,20 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	}
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	if (items[p_idx].icon == p_icon) {
+	Item &item = items.write[p_idx];
+	if (item.icon == p_icon) {
 		return;
 	}
 
-	items.write[p_idx].icon = p_icon;
+	const Callable redraw = callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw);
+	if (item.icon.is_valid()) {
+		item.icon->disconnect_changed(redraw);
+	}
+	item.icon = p_icon;
+	if (p_icon.is_valid()) {
+		p_icon->connect_changed(redraw);
+	}
+
 	queue_redraw();
 	shape_changed = true;
 }
@@ -329,11 +339,14 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	Rect2 ret = items[p_idx].rect_cache;
-	ret.position += theme_cache.panel_style->get_offset();
-
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
-		ret.size.width = get_size().width - ret.position.x;
+		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
+		if (scroll_bar_v->is_visible()) {
+			width -= scroll_bar_v->get_combined_minimum_size().width;
+		}
+		ret.size.width = width - ret.position.x;
 	}
+	ret.position += theme_cache.panel_style->get_offset();
 	return ret;
 }
 
@@ -735,6 +748,11 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
+	Ref<InputEventKey> ev_key = p_event;
+
+	if (ev_key.is_valid() && ev_key->get_keycode() == Key::SHIFT && !ev_key->is_pressed()) {
+		shift_anchor = -1;
+	}
 
 	if (defer_select_single >= 0 && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		select(defer_select_single, true);
@@ -904,12 +922,19 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 		}
-		if (p_event->is_action("ui_up", true)) {
+		// Shift Up Selection.
+		if (select_mode == SELECT_MULTI && p_event->is_action("ui_up", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MAX(current - max_columns, 0);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_up", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -942,12 +967,21 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_down", true)) {
+		}
+
+		// Shift Down Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_down", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MIN(current + max_columns, items.size() - 1);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_down", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
-				if (diff < uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec")) * 2) {
+				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
 						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
@@ -1010,7 +1044,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_left", true)) {
+		}
+
+		// Shift Left Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_left", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MAX(current - 1, 0);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
@@ -1030,7 +1073,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_right", true)) {
+		}
+
+		// Shift Right Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_right", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MIN(current + 1, items.size() - 1);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
@@ -1074,7 +1126,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (allow_search && k.is_valid() && k->get_unicode()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
-				uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
+				uint64_t max_interval = uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec"));
 				search_time_msec = now;
 
 				if (diff > max_interval) {
@@ -1162,19 +1214,35 @@ void ItemList::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_right(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_into_view(const Variant &p_data, int p_index) {
@@ -1325,7 +1393,7 @@ void ItemList::_notification(int p_what) {
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				sbsel = theme_cache.selected_focus_style;
 				cursor = theme_cache.cursor_focus_style;
 			} else {
@@ -1372,20 +1440,7 @@ void ItemList::_notification(int p_what) {
 			const Rect2 clip(-base_ofs, size);
 
 			// Do a binary search to find the first separator that is below clip_position.y.
-			int first_visible_separator = 0;
-			{
-				int lo = 0;
-				int hi = separators.size();
-				while (lo < hi) {
-					const int mid = (lo + hi) / 2;
-					if (separators[mid] < clip.position.y) {
-						lo = mid + 1;
-					} else {
-						hi = mid;
-					}
-				}
-				first_visible_separator = lo;
-			}
+			int64_t first_visible_separator = separators.span().bisect(clip.position.y, true);
 
 			// If not in thumbnails mode, draw visible separators.
 			if (icon_mode != ICON_MODE_TOP) {
@@ -1462,7 +1517,7 @@ void ItemList::_notification(int p_what) {
 						draw_style_box(sbsel, r);
 					}
 					if (should_draw_hovered_selected_bg) {
-						if (has_focus()) {
+						if (has_focus(true)) {
 							draw_style_box(theme_cache.hovered_selected_focus_style, r);
 						} else {
 							draw_style_box(theme_cache.hovered_selected_style, r);
@@ -1485,9 +1540,7 @@ void ItemList::_notification(int p_what) {
 						icon_size = items[i].get_icon_size() * icon_scale;
 					}
 
-					Vector2 icon_ofs;
-
-					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
+					Point2 pos = items[i].rect_cache.position + base_ofs;
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.y += MAX(theme_cache.v_separation, 0) / 2;
@@ -1540,19 +1593,17 @@ void ItemList::_notification(int p_what) {
 						tag_icon_size = items[i].tag_icon->get_size();
 					}
 
-					Point2 draw_pos = items[i].rect_cache.position;
+					Point2 draw_pos = items[i].rect_cache.position + base_ofs;
 					draw_pos.x += MAX(theme_cache.h_separation, 0) / 2;
 					draw_pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - tag_icon_size.x;
 					}
 
-					draw_texture_rect(items[i].tag_icon, Rect2(draw_pos + base_ofs, tag_icon_size));
+					draw_texture_rect(items[i].tag_icon, Rect2(draw_pos, tag_icon_size));
 				}
 
 				if (!items[i].text.is_empty()) {
-					Vector2 size2 = items[i].text_buf->get_size();
-
 					Color txt_modulate;
 					if (items[i].selected && hovered == i) {
 						txt_modulate = theme_cache.font_hovered_selected_color;
@@ -1571,18 +1622,19 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-						text_ofs += base_ofs;
-						text_ofs += items[i].rect_cache.position;
-
 						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
-						float text_w = items[i].rect_cache.size.width;
-						if (wraparound_items && items[i].rect_cache.size.width > width) {
-							text_w -= items[i].rect_cache.size.width - width;
+						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
+						if (wraparound_items && text_w + text_ofs.x > width) {
+							text_w = width - text_ofs.x;
 						}
 						items.write[i].text_buf->set_width(text_w);
+
+						text_ofs += base_ofs;
+						text_ofs += items[i].rect_cache.position;
 
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - text_w;
@@ -1594,23 +1646,15 @@ void ItemList::_notification(int p_what) {
 
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
-						if (fixed_column_width > 0) {
-							size2.x = MIN(size2.x, fixed_column_width);
-						}
+						text_ofs.y += (items[i].rect_cache.size.height - items[i].text_buf->get_size().y) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
-						if (icon_mode == ICON_MODE_TOP) {
-							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-							text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
-						} else {
-							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-						}
+						real_t text_width_ofs = text_ofs.x;
 
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0);
+						float text_w = items[i].rect_cache.size.width - text_width_ofs;
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
 						}
@@ -1661,7 +1705,7 @@ void ItemList::_notification(int p_what) {
 				draw_style_box(cursor, cursor_rcache);
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
@@ -1863,6 +1907,31 @@ void ItemList::_mouse_exited() {
 		queue_accessibility_update();
 		queue_redraw();
 	}
+}
+
+void ItemList::_shift_range_select(int p_from, int p_to) {
+	ERR_FAIL_INDEX(p_from, items.size());
+	ERR_FAIL_INDEX(p_to, items.size());
+
+	if (shift_anchor == -1) {
+		shift_anchor = p_from;
+	}
+
+	for (int i = 0; i < items.size(); i++) {
+		if (i >= MIN(shift_anchor, p_to) && i <= MAX(shift_anchor, p_to)) {
+			if (!is_selected(i)) {
+				select(i, false);
+				emit_signal(SNAME("multi_selected"), i, true);
+			}
+		} else if (is_selected(i)) {
+			deselect(i);
+			emit_signal(SNAME("multi_selected"), i, false);
+		}
+	}
+
+	current = p_to;
+	queue_redraw();
+	ensure_current_is_visible();
 }
 
 String ItemList::_atr(int p_idx, const String &p_text) const {

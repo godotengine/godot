@@ -47,14 +47,13 @@ void OpenXRActionEditor::_theme_changed() {
 
 void OpenXRActionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
 		} break;
 	}
 }
 
-void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_name_changed(const String &p_new_text) {
 	if (action->get_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action"));
 		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
@@ -76,13 +75,13 @@ void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
 	}
 }
 
-void OpenXRActionEditor::_do_set_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_name(const String &p_new_text) {
 	action->set_name(p_new_text);
 	action->set_edited(true);
 	action_name->set_text(p_new_text);
 }
 
-void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_localized_name_changed(const String &p_new_text) {
 	if (action->get_localized_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Actions Localized name"));
 		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
@@ -94,7 +93,7 @@ void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_te
 	}
 }
 
-void OpenXRActionEditor::_do_set_localized_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_localized_name(const String &p_new_text) {
 	action->set_localized_name(p_new_text);
 	action->set_edited(true);
 	action_localized_name->set_text(p_new_text);
@@ -126,7 +125,7 @@ void OpenXRActionEditor::_on_remove_action() {
 	emit_signal("remove", this);
 }
 
-OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
+OpenXRActionEditor::OpenXRActionEditor(const Ref<OpenXRAction> &p_action) {
 	undo_redo = EditorUndoRedoManager::get_singleton();
 	action = p_action;
 
@@ -166,7 +165,6 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 
 	rem_action = memnew(Button);
 	rem_action->set_tooltip_text(TTR("Remove action"));
-	rem_action->set_accessibility_name(TTRC("Remove action"));
 	rem_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionEditor::_on_remove_action));
 	rem_action->set_flat(true);
 	add_child(rem_action);

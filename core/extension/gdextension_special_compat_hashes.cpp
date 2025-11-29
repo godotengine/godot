@@ -35,8 +35,6 @@
 #include "core/object/class_db.h"
 #include "core/variant/variant.h"
 
-HashMap<StringName, LocalVector<GDExtensionSpecialCompatHashes::Mapping>> GDExtensionSpecialCompatHashes::mappings;
-
 bool GDExtensionSpecialCompatHashes::lookup_current_hash(const StringName &p_class, const StringName &p_method, uint32_t p_legacy_hash, uint32_t *r_current_hash) {
 	LocalVector<Mapping> *methods = mappings.getptr(p_class);
 	if (!methods) {
@@ -65,7 +63,7 @@ bool GDExtensionSpecialCompatHashes::get_legacy_hashes(const StringName &p_class
 			if (p_check_valid) {
 				MethodBind *mb = ClassDB::get_method_with_compatibility(p_class, p_method, mapping.current_hash);
 				if (!mb) {
-					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d. Please update gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
+					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d in gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
 					continue;
 				}
 			}

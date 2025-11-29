@@ -251,9 +251,6 @@ protected:
 	virtual void _tree_changed();
 	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
-
-public:
-	AnimationRootNode() {}
 };
 
 class AnimationNodeStartState : public AnimationRootNode {
@@ -305,8 +302,8 @@ private:
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
 	};
-	mutable HashMap<StringName, LocalVector<Activity>> input_activity_map;
-	mutable HashMap<StringName, LocalVector<Activity> *> input_activity_map_get;
+	mutable AHashMap<StringName, LocalVector<Activity>> input_activity_map;
+	mutable AHashMap<StringName, int> input_activity_map_get;
 
 	NodePath animation_player;
 
@@ -315,6 +312,7 @@ private:
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	virtual uint32_t _get_libraries_property_usage() const override;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	virtual void _validate_property(PropertyInfo &p_property) const override;
 	void _notification(int p_what);
@@ -353,6 +351,10 @@ public:
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 
 	uint64_t get_last_process_pass() const;
+
+#ifdef TOOLS_ENABLED
+	String get_editor_error_message() const;
+#endif
 
 	AnimationTree();
 	~AnimationTree();

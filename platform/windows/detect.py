@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import methods
-from methods import print_error, print_info, print_warning
+from methods import print_error, print_warning
 from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
@@ -182,15 +182,7 @@ def get_opts():
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
-        # Targeted Windows version: 7 (and later), minimum supported version
-        # XP support dropped after EOL due to missing API for IPv6 and other issues
-        # Vista support dropped after EOL due to GH-10243
-        (
-            "target_win_version",
-            "Targeted Windows version, >= 0x0601 (Windows 7)",
-            "0x0601",
-        ),
-        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
+        EnumVariable("windows_subsystem", "Windows subsystem", "gui", ["gui", "console"], ignorecase=2),
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
@@ -241,46 +233,9 @@ def get_flags():
 
     return {
         "arch": arch,
-        "supported": ["d3d12", "mono", "xaudio2"],
+        "d3d12": True,
+        "supported": ["d3d12", "dcomp", "library", "mono", "xaudio2"],
     }
-
-
-def build_def_file(target, source, env: "SConsEnvironment"):
-    arch_aliases = {
-        "x86_32": "i386",
-        "x86_64": "i386:x86-64",
-        "arm32": "arm",
-        "arm64": "arm64",
-    }
-
-    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
-    if env["arch"] != "x86_32":
-        cmdbase += " --no-leading-underscore"
-
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
-
-    for x in range(len(source)):
-        ok = True
-        # Try prefixed executable (MinGW on Linux).
-        cmd = mingw_bin_prefix + cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-        try:
-            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-            if len(out[1]):
-                ok = False
-        except Exception:
-            ok = False
-
-        # Try generic executable (MSYS2).
-        if not ok:
-            cmd = cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-            try:
-                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                if len(out[1]):
-                    return -1
-            except Exception:
-                return -1
-
-    return 0
 
 
 def configure_msvc(env: "SConsEnvironment"):
@@ -289,7 +244,7 @@ def configure_msvc(env: "SConsEnvironment"):
     ## Build type
 
     # TODO: Re-evaluate the need for this / streamline with common config.
-    if env["target"] == "template_release":
+    if env["target"] == "template_release" and env["library_type"] == "executable":
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
 
     if env["windows_subsystem"] == "gui":
@@ -362,7 +317,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a", encoding=sys.stdout.encoding) as log:
+                        with open(capture_path, "a", encoding=sys.stdout.encoding, errors="replace") as log:
                             log.write(line + "\n")
                     except OSError:
                         print_warning(f'Failed to log captured line: "{line}".')
@@ -396,17 +351,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
-    # Once it was thought that only debug builds would be too large,
-    # but this has recently stopped being true. See the mingw function
-    # for notes on why this shouldn't be enabled for gcc
-    env.AppendUnique(CCFLAGS=["/bigobj"])
-
-    validate_win_version(env)
-
-    if env["accesskit"]:
-        if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
-            env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
+    env.AppendUnique(CCFLAGS=["/bigobj"])  # Support big objects.
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -415,8 +360,8 @@ def configure_msvc(env: "SConsEnvironment"):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "WINVER=%s" % env["target_win_version"],
-            "_WIN32_WINNT=%s" % env["target_win_version"],
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
@@ -445,6 +390,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "gdi32",
         "IPHLPAPI",
         "Shlwapi",
+        "Shcore",
         "wsock32",
         "Ws2_32",
         "shell32",
@@ -459,6 +405,7 @@ def configure_msvc(env: "SConsEnvironment"):
         "dwrite",
         "wbemuuid",
         "ntdll",
+        "hid",
     ]
 
     if env.debug_features:
@@ -492,16 +439,15 @@ def configure_msvc(env: "SConsEnvironment"):
         if not env["use_volk"]:
             LIBS += ["vulkan"]
 
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        check_d3d12_installed(env, env["arch"] + "-msvc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
-
-        # Needed for avoiding C1128.
-        if env["target"] == "release_debug":
-            env.Append(CXXFLAGS=["/bigobj"])
 
         # PIX
         if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
@@ -513,7 +459,10 @@ def configure_msvc(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             LIBS += ["WinPixEventRuntime"]
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-msvc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         LIBS += ["libNIR.windows." + env["arch"] + prebuilt_lib_extra_suffix]
 
     if env["opengl3"]:
@@ -527,7 +476,7 @@ def configure_msvc(env: "SConsEnvironment"):
                 "libGLES.windows." + env["arch"] + prebuilt_lib_extra_suffix,
             ]
             LIBS += ["dxgi", "d3d9", "d3d11"]
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
@@ -683,12 +632,6 @@ def configure_mingw(env: "SConsEnvironment"):
         print("Detected GCC to be a wrapper for Clang.")
         env["use_llvm"] = True
 
-    if env.dev_build:
-        # Allow big objects. It's supposed not to have drawbacks but seems to break
-        # GCC LTO, so enabling for debug builds only (which are not built with LTO
-        # and are the only ones with too big objects).
-        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
-
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
     else:
@@ -706,6 +649,10 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
+    # NOTE: Big objects have historically broken LTO on mingw-gcc specifically. While that no
+    # longer appears to be the case, this notice is retained for posterity.
+    env.AppendUnique(CCFLAGS=["-Wa,-mbig-obj"])  # Support big objects.
+
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True
 
@@ -716,6 +663,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = get_detected(env, "clang++")
         env["AR"] = get_detected(env, "ar")
         env["RANLIB"] = get_detected(env, "ranlib")
+        env["AS"] = get_detected(env, "clang")
         env.Append(ASFLAGS=["-c"])
         env.extra_suffix = ".llvm" + env.extra_suffix
     else:
@@ -723,6 +671,8 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = get_detected(env, "g++")
         env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
         env["RANLIB"] = get_detected(env, "gcc-ranlib")
+        env["AS"] = get_detected(env, "gcc")
+        env.Append(ASFLAGS=["-c"])
 
     env["RC"] = get_detected(env, "windres")
     ARCH_TARGETS = {
@@ -733,7 +683,6 @@ def configure_mingw(env: "SConsEnvironment"):
     }
     env.AppendUnique(RCFLAGS=f"--target={ARCH_TARGETS[env['arch']]}")
 
-    env["AS"] = get_detected(env, "as")
     env["OBJCOPY"] = get_detected(env, "objcopy")
     env["STRIP"] = get_detected(env, "strip")
 
@@ -767,13 +716,6 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    validate_win_version(env)
-
-    if env["accesskit"]:
-        if int(env["target_win_version"], 16) < 0x0602:
-            print_info("AcceeKit enabled, targeted Windows version changed to Windows 8 (0x602).")
-            env["target_win_version"] = "0x0602"  # Accessibility API require Windows 8+
-
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
 
@@ -804,8 +746,8 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
         CPPDEFINES=[
-            ("WINVER", env["target_win_version"]),
-            ("_WIN32_WINNT", env["target_win_version"]),
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.Append(
@@ -817,7 +759,9 @@ def configure_mingw(env: "SConsEnvironment"):
             "winmm",
             "gdi32",
             "iphlpapi",
+            "shell32",
             "shlwapi",
+            "shcore",
             "wsock32",
             "ws2_32",
             "kernel32",
@@ -835,6 +779,7 @@ def configure_mingw(env: "SConsEnvironment"):
             "dwrite",
             "wbemuuid",
             "ntdll",
+            "hid",
         ]
     )
 
@@ -853,6 +798,7 @@ def configure_mingw(env: "SConsEnvironment"):
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
                 elif env["arch"] == "x86_32":
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
+            env.Append(LIBPATH=["#bin/obj/platform/windows"])
             env.Append(
                 LIBS=[
                     "accesskit",
@@ -878,8 +824,14 @@ def configure_mingw(env: "SConsEnvironment"):
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+
     if env["d3d12"]:
-        check_d3d12_installed(env)
+        if env["use_llvm"]:
+            check_d3d12_installed(env, env["arch"] + "-llvm")
+        else:
+            check_d3d12_installed(env, env["arch"] + "-gcc")
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -894,7 +846,12 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
             env.Append(LIBS=["WinPixEventRuntime"])
 
-        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        if env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-llvm"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-llvm/bin"])
+        elif not env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-gcc"):
+            env.Append(LIBPATH=[env["mesa_libs"] + "-" + env["arch"] + "-gcc/bin"])
+        else:
+            env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
         env.Append(LIBS=["libNIR.windows." + env["arch"]])
         env.Append(LIBS=["version"])  # Mesa dependency.
 
@@ -911,12 +868,40 @@ def configure_mingw(env: "SConsEnvironment"):
                 ]
             )
             env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
-        env.Prepend(CPPEXTPATH=["#thirdparty/angle/include"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
     # dlltool
-    env.Append(BUILDERS={"DEF": env.Builder(action=build_def_file, suffix=".a", src_suffix=".def")})
+    env["DEF"] = get_detected(env, "dlltool")
+    env["DEFCOM"] = "$DEF $DEFFLAGS -d $SOURCE -l $TARGET"
+    env["DEFCOMSTR"] = "$CXXCOMSTR"
+    env["DEFPREFIX"] = "$LIBPREFIX"
+    env["DEFSUFFIX"] = ".${__env__['arch']}$LIBSUFFIX"
+    env["DEFSRCSUFFIX"] = ".${__env__['arch']}.def"
+    DEF_ALIASES = {
+        "x86_32": "i386",
+        "x86_64": "i386:x86-64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    env.Append(DEFFLAGS=["-m", DEF_ALIASES[env["arch"]]])
+    if env["arch"] == "x86_32":
+        env.Append(DEFFLAGS=["-k"])
+    else:
+        env.Append(DEFFLAGS=["--no-leading-underscore"])
+
+    env.Append(
+        BUILDERS={
+            "DEFLIB": env.Builder(
+                action=env.Run("$DEFCOM", "$DEFCOMSTR"),
+                prefix="$DEFPREFIX",
+                suffix="$DEFSUFFIX",
+                src_suffix="$DEFSRCSUFFIX",
+                emitter=methods.redirect_emitter,
+            )
+        }
+    )
 
 
 def configure(env: "SConsEnvironment"):
@@ -934,18 +919,13 @@ def configure(env: "SConsEnvironment"):
         configure_mingw(env)
 
 
-def check_d3d12_installed(env):
-    if not os.path.exists(env["mesa_libs"]):
+def check_d3d12_installed(env, suffix):
+    if not os.path.exists(env["mesa_libs"]) and not os.path.exists(env["mesa_libs"] + "-" + suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-            "See the documentation for more information:\n\t"
-            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            "See the documentation for more information:\n"
+            "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
+            "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."
         )
-        sys.exit(255)
-
-
-def validate_win_version(env):
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
         sys.exit(255)

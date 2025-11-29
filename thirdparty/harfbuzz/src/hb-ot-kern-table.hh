@@ -27,6 +27,7 @@
 #ifndef HB_OT_KERN_TABLE_HH
 #define HB_OT_KERN_TABLE_HH
 
+#include "hb-aat-layout-common.hh"
 #include "hb-aat-layout-kerx-table.hh"
 
 
@@ -91,9 +92,10 @@ struct KernSubTableFormat3
   {
     set_t set;
     if (likely (glyphCount))
-      set.add_range (0, glyphCount - 1);
-    left_set.union_ (set);
-    right_set.union_ (set);
+    {
+      left_set.add_range (0, num_glyphs - 1);
+      right_set.add_range (0, num_glyphs - 1);
+    }
   }
 
   protected:
@@ -400,6 +402,7 @@ struct kern
 
     hb_blob_ptr_t<kern> table;
     AAT::kern_accelerator_data_t accel_data;
+    AAT::hb_aat_scratch_t scratch;
   };
 
   protected:

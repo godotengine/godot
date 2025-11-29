@@ -44,7 +44,9 @@ class LinkButton;
 class MenuButton;
 class OptionButton;
 class PopupMenu;
+class ProjectExportDialog;
 class RichTextLabel;
+class SpinBox;
 class TabContainer;
 class Tree;
 class TreeItem;
@@ -52,6 +54,7 @@ class TreeItem;
 class ProjectExportTextureFormatError : public HBoxContainer {
 	GDCLASS(ProjectExportTextureFormatError, HBoxContainer);
 
+	ProjectExportDialog *export_dialog = nullptr;
 	Label *texture_format_error_label = nullptr;
 	LinkButton *fix_texture_format_button = nullptr;
 	String setting_identifier;
@@ -63,7 +66,7 @@ protected:
 
 public:
 	void show_for_texture_format(const String &p_friendly_name, const String &p_setting_identifier);
-	ProjectExportTextureFormatError();
+	ProjectExportTextureFormatError(ProjectExportDialog *p_export_dialog);
 };
 
 class ProjectExportDialog : public ConfirmationDialog {
@@ -105,6 +108,11 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	RBSet<String> feature_set;
 
+	CheckButton *patch_delta_encoding = nullptr;
+	SpinBox *patch_delta_zstd_level = nullptr;
+	SpinBox *patch_delta_min_reduction = nullptr;
+	LineEdit *patch_delta_include_filter = nullptr;
+	LineEdit *patch_delta_exclude_filter = nullptr;
 	Tree *patches = nullptr;
 	int patch_index = -1;
 	EditorFileDialog *patch_dialog = nullptr;
@@ -115,6 +123,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	RichTextLabel *custom_feature_display = nullptr;
 
 	LineEdit *script_key = nullptr;
+	Button *show_script_key = nullptr;
 	Label *script_key_error = nullptr;
 
 	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
@@ -130,6 +139,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
+	void _name_editing_finished();
 	void _export_path_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
@@ -154,6 +164,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _tree_popup_edited(bool p_arrow_clicked);
 	void _set_file_export_mode(int p_id);
 
+	bool updating_patch_delta_filters = false;
+	void _patch_delta_encoding_changed(bool p_pressed);
+	void _patch_delta_include_filter_changed(const String &p_filter);
+	void _patch_delta_exclude_filter_changed(const String &p_filter);
+	void _patch_delta_zstd_level_changed(double p_value);
+	void _patch_delta_min_reduction_changed(double p_value);
 	void _patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _patch_tree_item_edited();
 	void _patch_file_selected(const String &p_path);
@@ -198,6 +214,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _enc_filters_changed(const String &p_text);
 	void _seed_input_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);
+	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
 
 	void _script_export_mode_changed(int p_mode);

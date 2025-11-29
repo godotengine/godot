@@ -53,16 +53,25 @@ enum accesskit_action
    * Requires [`ActionRequest::data`] to be set to [`ActionData::Value`].
    */
   ACCESSKIT_ACTION_REPLACE_SELECTED_TEXT,
-  ACCESSKIT_ACTION_SCROLL_BACKWARD,
+  /**
+   * Scroll down by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_DOWN,
-  ACCESSKIT_ACTION_SCROLL_FORWARD,
+  /**
+   * Scroll left by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_LEFT,
+  /**
+   * Scroll right by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_RIGHT,
+  /**
+   * Scroll up by the specified unit.
+   */
   ACCESSKIT_ACTION_SCROLL_UP,
   /**
-   * Scroll any scrollable containers to make the target object visible
-   * on the screen.  Optionally set [`ActionRequest::data`] to
-   * [`ActionData::ScrollTargetRect`].
+   * Scroll any scrollable containers to make the target node visible.
+   * Optionally set [`ActionRequest::data`] to [`ActionData::ScrollHint`].
    */
   ACCESSKIT_ACTION_SCROLL_INTO_VIEW,
   /**
@@ -134,7 +143,6 @@ enum accesskit_has_popup
     : uint8_t
 #endif  // __cplusplus
 {
-  ACCESSKIT_HAS_POPUP_TRUE,
   ACCESSKIT_HAS_POPUP_MENU,
   ACCESSKIT_HAS_POPUP_LISTBOX,
   ACCESSKIT_HAS_POPUP_TREE,
@@ -438,6 +446,50 @@ enum accesskit_role
 };
 #ifndef __cplusplus
 typedef uint8_t accesskit_role;
+#endif  // __cplusplus
+
+/**
+ * A suggestion about where the node being scrolled into view should be
+ * positioned relative to the edges of the scrollable container.
+ */
+enum accesskit_scroll_hint
+#ifdef __cplusplus
+    : uint8_t
+#endif  // __cplusplus
+{
+  ACCESSKIT_SCROLL_HINT_TOP_LEFT,
+  ACCESSKIT_SCROLL_HINT_BOTTOM_RIGHT,
+  ACCESSKIT_SCROLL_HINT_TOP_EDGE,
+  ACCESSKIT_SCROLL_HINT_BOTTOM_EDGE,
+  ACCESSKIT_SCROLL_HINT_LEFT_EDGE,
+  ACCESSKIT_SCROLL_HINT_RIGHT_EDGE,
+};
+#ifndef __cplusplus
+typedef uint8_t accesskit_scroll_hint;
+#endif  // __cplusplus
+
+/**
+ * The amount by which to scroll in the direction specified by one of the
+ * `Scroll` actions.
+ */
+enum accesskit_scroll_unit
+#ifdef __cplusplus
+    : uint8_t
+#endif  // __cplusplus
+{
+  /**
+   * A single item of a list, line of text (for vertical scrolling),
+   * character (for horizontal scrolling), or an approximation of
+   * one of these.
+   */
+  ACCESSKIT_SCROLL_UNIT_ITEM,
+  /**
+   * The amount of content that fits in the viewport.
+   */
+  ACCESSKIT_SCROLL_UNIT_PAGE,
+};
+#ifndef __cplusplus
+typedef uint8_t accesskit_scroll_unit;
 #endif  // __cplusplus
 
 enum accesskit_sort_direction
@@ -850,7 +902,13 @@ typedef enum accesskit_action_data_Tag {
   ACCESSKIT_ACTION_DATA_CUSTOM_ACTION,
   ACCESSKIT_ACTION_DATA_VALUE,
   ACCESSKIT_ACTION_DATA_NUMERIC_VALUE,
-  ACCESSKIT_ACTION_DATA_SCROLL_TARGET_RECT,
+  ACCESSKIT_ACTION_DATA_SCROLL_UNIT,
+  /**
+   * Optional suggestion for `ACCESSKIT_ACTION_SCROLL_INTO_VIEW`, specifying
+   * the preferred position of the target node relative to the scrollable
+   * container's viewport.
+   */
+  ACCESSKIT_ACTION_DATA_SCROLL_HINT,
   ACCESSKIT_ACTION_DATA_SCROLL_TO_POINT,
   ACCESSKIT_ACTION_DATA_SET_SCROLL_OFFSET,
   ACCESSKIT_ACTION_DATA_SET_TEXT_SELECTION,
@@ -869,7 +927,10 @@ typedef struct accesskit_action_data {
       double numeric_value;
     };
     struct {
-      struct accesskit_rect scroll_target_rect;
+      accesskit_scroll_unit scroll_unit;
+    };
+    struct {
+      accesskit_scroll_hint scroll_hint;
     };
     struct {
       struct accesskit_point scroll_to_point;
@@ -983,17 +1044,38 @@ void accesskit_node_remove_action(struct accesskit_node *node,
 
 void accesskit_node_clear_actions(struct accesskit_node *node);
 
+/**
+ * Return whether the specified action is in the set supported on this node's
+ * direct children in the filtered tree.
+ */
+bool accesskit_node_child_supports_action(const struct accesskit_node *node,
+                                          accesskit_action action);
+
+/**
+ * Add the specified action to the set supported on this node's direct
+ * children in the filtered tree.
+ */
+void accesskit_node_add_child_action(struct accesskit_node *node,
+                                     accesskit_action action);
+
+/**
+ * Remove the specified action from the set supported on this node's direct
+ * children in the filtered tree.
+ */
+void accesskit_node_remove_child_action(struct accesskit_node *node,
+                                        accesskit_action action);
+
+/**
+ * Clear the set of actions supported on this node's direct children in the
+ * filtered tree.
+ */
+void accesskit_node_clear_child_actions(struct accesskit_node *node);
+
 bool accesskit_node_is_hidden(const struct accesskit_node *node);
 
 void accesskit_node_set_hidden(struct accesskit_node *node);
 
 void accesskit_node_clear_hidden(struct accesskit_node *node);
-
-bool accesskit_node_is_linked(const struct accesskit_node *node);
-
-void accesskit_node_set_linked(struct accesskit_node *node);
-
-void accesskit_node_clear_linked(struct accesskit_node *node);
 
 bool accesskit_node_is_multiselectable(const struct accesskit_node *node);
 
@@ -2234,6 +2316,15 @@ void accesskit_unix_adapter_free(struct accesskit_unix_adapter *adapter);
 
 #if (defined(__linux__) || defined(__DragonFly__) || defined(__FreeBSD__) || \
      defined(__NetBSD__) || defined(__OpenBSD__))
+/**
+ * Set the bounds of the top-level window. The outer bounds contain any
+ * window decoration and borders.
+ *
+ * # Caveats
+ *
+ * Since an application can not get the position of its window under
+ * Wayland, calling this method only makes sense under X11.
+ */
 void accesskit_unix_adapter_set_root_window_bounds(
     struct accesskit_unix_adapter *adapter, struct accesskit_rect outer,
     struct accesskit_rect inner);

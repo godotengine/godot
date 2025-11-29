@@ -30,7 +30,7 @@
 
 #include "class_db_api_json.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -40,13 +40,11 @@
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;
 
-	List<StringName> class_list;
-	ClassDB::get_class_list(&class_list);
-	// Must be alphabetically sorted for hash to compute.
-	class_list.sort_custom<StringName::AlphCompare>();
+	LocalVector<StringName> class_list;
+	ClassDB::get_class_list(class_list);
 
-	for (const StringName &E : class_list) {
-		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
+	for (const StringName &class_name : class_list) {
+		ClassDB::ClassInfo *t = ClassDB::classes.getptr(class_name);
 		ERR_FAIL_NULL(t);
 		if (t->api != p_api || !t->exposed) {
 			continue;
@@ -232,4 +230,4 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }
 
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED

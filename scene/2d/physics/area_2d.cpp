@@ -30,7 +30,7 @@
 
 #include "area_2d.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
@@ -541,6 +541,9 @@ StringName Area2D::get_audio_bus_name() const {
 }
 
 void Area2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "audio_bus_name") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -675,6 +678,8 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
+	_define_ancestry(AncestralClass::AREA_2D);
+
 	set_gravity(980);
 	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);

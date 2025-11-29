@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_cast_motion" qualifiers="virtual">
+		<method name="_cast_motion" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="shape_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
@@ -24,7 +24,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_collide_shape" qualifiers="virtual">
+		<method name="_collide_shape" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="shape_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
@@ -39,7 +39,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_intersect_point" qualifiers="virtual">
+		<method name="_intersect_point" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="canvas_instance_id" type="int" />
@@ -51,7 +51,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_intersect_ray" qualifiers="virtual">
+		<method name="_intersect_ray" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
@@ -63,7 +63,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_intersect_shape" qualifiers="virtual">
+		<method name="_intersect_shape" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="shape_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
@@ -77,7 +77,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_rest_info" qualifiers="virtual">
+		<method name="_rest_info" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="shape_rid" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />

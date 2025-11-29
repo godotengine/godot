@@ -64,8 +64,22 @@ hb_face_create_or_fail (hb_blob_t    *blob,
 			unsigned int  index);
 
 HB_EXTERN hb_face_t *
+hb_face_create_or_fail_using (hb_blob_t    *blob,
+			      unsigned int  index,
+			      const char   *loader_name);
+
+HB_EXTERN hb_face_t *
 hb_face_create_from_file_or_fail (const char   *file_name,
 				  unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail_using (const char   *file_name,
+					unsigned int  index,
+					const char   *loader_name);
+
+HB_EXTERN const char **
+hb_face_list_loaders (void);
+
 
 /**
  * hb_reference_table_func_t:
@@ -117,7 +131,7 @@ HB_EXTERN void
 hb_face_make_immutable (hb_face_t *face);
 
 HB_EXTERN hb_bool_t
-hb_face_is_immutable (const hb_face_t *face);
+hb_face_is_immutable (hb_face_t *face);
 
 
 HB_EXTERN hb_blob_t *

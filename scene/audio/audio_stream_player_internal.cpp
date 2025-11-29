@@ -193,6 +193,9 @@ bool AudioStreamPlayerInternal::get_stream_paused() const {
 }
 
 void AudioStreamPlayerInternal::validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {

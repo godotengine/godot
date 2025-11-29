@@ -34,7 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 #include <openxr/openxr.h>
 
@@ -55,7 +55,7 @@ OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	unobstructed_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_unobstructed_data_source");
@@ -245,7 +245,7 @@ void OpenXRHandTrackingExtension::on_process() {
 
 			// For some reason an inactive controller isn't coming back as inactive but has coordinates either as NAN or very large
 			const XrPosef &palm = hand_trackers[i].joint_locations[XR_HAND_JOINT_PALM_EXT].pose;
-			if (!hand_trackers[i].locations.isActive || isnan(palm.position.x) || palm.position.x < -1000000.00 || palm.position.x > 1000000.00) {
+			if (!hand_trackers[i].locations.isActive || std::isnan(palm.position.x) || palm.position.x < -1000000.00 || palm.position.x > 1000000.00) {
 				hand_trackers[i].locations.isActive = false; // workaround, make sure its inactive
 			}
 
@@ -253,7 +253,7 @@ void OpenXRHandTrackingExtension::on_process() {
 				// SKELETON_RIG_HUMANOID bone adjustment. This rotation performs:
 				// OpenXR Z+ -> Godot Humanoid Y-  (Back along the bone)
 				// OpenXR Y+ -> Godot Humanoid Z- (Out the back of the hand)
-				const Quaternion bone_adjustment(0.0, -Math_SQRT12, Math_SQRT12, 0.0);
+				const Quaternion bone_adjustment(0.0, -Math::SQRT12, Math::SQRT12, 0.0);
 
 				for (int joint = 0; joint < XR_HAND_JOINT_COUNT_EXT; joint++) {
 					const XrHandJointLocationEXT &location = hand_trackers[i].joint_locations[joint];
@@ -263,7 +263,7 @@ void OpenXRHandTrackingExtension::on_process() {
 					Transform3D transform;
 					Vector3 linear_velocity;
 					Vector3 angular_velocity;
-					BitField<XRHandTracker::HandJointFlags> flags;
+					BitField<XRHandTracker::HandJointFlags> flags = {};
 
 					if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
 						if (pose.orientation.x != 0 || pose.orientation.y != 0 || pose.orientation.z != 0 || pose.orientation.w != 0) {

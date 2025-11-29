@@ -32,7 +32,7 @@
 
 #include "core/math/random_pcg.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 
 RID NavigationRegion2D::get_rid() const {
 	return region;
@@ -301,7 +301,7 @@ PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (navigation_polygon.is_null()) {
-			warnings.push_back(RTR("A NavigationMesh resource must be set or created for this node to work. Please set a property or draw a polygon."));
+			warnings.push_back(RTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon."));
 		}
 	}
 
@@ -394,16 +394,16 @@ NavigationRegion2D::NavigationRegion2D() {
 
 NavigationRegion2D::~NavigationRegion2D() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
-	NavigationServer2D::get_singleton()->free(region);
+	NavigationServer2D::get_singleton()->free_rid(region);
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion2D::_navigation_map_changed));
 	NavigationServer2D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion2D::_navigation_debug_changed));
 	if (debug_instance_rid.is_valid()) {
-		RS::get_singleton()->free(debug_instance_rid);
+		RS::get_singleton()->free_rid(debug_instance_rid);
 	}
 	if (debug_mesh_rid.is_valid()) {
-		RS::get_singleton()->free(debug_mesh_rid);
+		RS::get_singleton()->free_rid(debug_mesh_rid);
 	}
 #endif // DEBUG_ENABLED
 }
@@ -623,8 +623,8 @@ void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 
 			// Draw a circle to illustrate the margins.
 			real_t angle = a.angle_to_point(b);
-			draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, debug_edge_connection_color);
-			draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, debug_edge_connection_color);
+			draw_arc(a, radius, angle + Math::PI / 2.0, angle - Math::PI / 2.0 + Math::TAU, 10, debug_edge_connection_color);
+			draw_arc(b, radius, angle - Math::PI / 2.0, angle + Math::PI / 2.0, 10, debug_edge_connection_color);
 		}
 	}
 }

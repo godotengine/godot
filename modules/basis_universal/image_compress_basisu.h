@@ -41,6 +41,7 @@ enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_HDR_RGB,
 	BASIS_DECOMPRESS_MAX
 };
+constexpr uint32_t BASIS_DECOMPRESS_FLAG_KTX2 = 1 << 31;
 
 void basis_universal_init();
 
@@ -52,7 +53,7 @@ struct BasisRGBAF {
 	uint32_t a;
 };
 
-Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels);
+Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels, const Image::BasisUniversalPackerParams &p_basisu_params);
 #endif
 
 Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size);

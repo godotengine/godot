@@ -2,8 +2,8 @@
   <PropertyGroup>
     <ProjectGuid>{B06C2951-C8E3-4F28-80B2-717CF327EB19}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>

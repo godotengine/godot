@@ -34,7 +34,7 @@
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -123,6 +123,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
+
 	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();

@@ -1,6 +1,6 @@
 /* pngrutil.c - utilities to read a PNG file
  *
- * Copyright (c) 2018-2024 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -2412,10 +2412,6 @@ png_handle_tEXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    }
 #endif
 
-   /* TODO: this doesn't work and shouldn't be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
    buffer = png_read_buffer(png_ptr, length+1);
 
    if (buffer == NULL)
@@ -2485,10 +2481,6 @@ png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 #endif
-
-   /* TODO: should not be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
 
    /* Note, "length" is sufficient here; we won't be adding
     * a null terminator later.  The limit check in png_handle_chunk should be
@@ -2605,10 +2597,6 @@ png_handle_iTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 #endif
-
-   /* TODO: should not be necessary. */
-   if ((png_ptr->mode & PNG_HAVE_IDAT) != 0)
-      png_ptr->mode |= PNG_AFTER_IDAT;
 
    buffer = png_read_buffer(png_ptr, length+1);
 

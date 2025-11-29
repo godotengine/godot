@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
@@ -119,7 +120,6 @@ class JoltContactListener3D final
 
 	void _flush_contacts();
 	void _flush_area_enters();
-	void _flush_area_shifts();
 	void _flush_area_exits();
 
 public:

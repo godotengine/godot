@@ -573,8 +573,6 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
     if (!node->node.image.href || !strlen(node->node.image.href)) return nullptr;
     auto picture = Picture::gen();
 
-    TaskScheduler::async(false);    //force to load a picture on the same thread
-
     const char* href = node->node.image.href;
     if (!strncmp(href, "data:", sizeof("data:") - 1)) {
         href += sizeof("data:") - 1;
@@ -586,14 +584,12 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
             auto size = b64Decode(href, strlen(href), &decoded);
             if (picture->load(decoded, size, mimetype, false) != Result::Success) {
                 free(decoded);
-                TaskScheduler::async(true);
                 return nullptr;
             }
         } else {
             auto size = svgUtilURLDecode(href, &decoded);
             if (picture->load(decoded, size, mimetype, false) != Result::Success) {
                 free(decoded);
-                TaskScheduler::async(true);
                 return nullptr;
             }
         }
@@ -605,7 +601,6 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
         const char *dot = strrchr(href, '.');
         if (dot && !strcmp(dot, ".svg")) {
             TVGLOG("SVG", "Embedded svg file is disabled.");
-            TaskScheduler::async(true);
             return nullptr;
         }
         string imagePath = href;
@@ -614,12 +609,9 @@ static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode*
             imagePath = svgPath.substr(0, (last == string::npos ? 0 : last + 1)) + imagePath;
         }
         if (picture->load(imagePath) != Result::Success) {
-            TaskScheduler::async(true);
             return nullptr;
         }
     }
-
-    TaskScheduler::async(true);
 
     float w, h;
     Matrix m = {1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -760,12 +752,22 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
             }
             viewBoxClip->transform(mClipTransform);
 
-            scene->clip(std::move(viewBoxClip));
+            auto clippingLayer = Scene::gen();
+            clippingLayer->clip(std::move(viewBoxClip));
+            clippingLayer->push(std::move(scene));
+            return clippingLayer;
         }
-    } else {
-        scene->transform(mUseTransform);
+        return scene;
     }
 
+    if (auto clipper = scene->Paint::pImpl->clipper) {
+        auto clipTransform = clipper->transform();
+        Matrix inv;
+        if (node->transform && inverse(node->transform, &inv)) clipTransform = inv * clipTransform;
+        clipper->transform(mUseTransform * clipTransform);
+    }
+
+    scene->transform(mUseTransform);
     return scene;
 }
 
@@ -900,6 +902,41 @@ static void _updateInvalidViewSize(const Scene* scene, Box& vBox, float& w, floa
     if (!validHeight) h *= vBox.h;
 }
 
+
+static void _loadFonts(Array<FontFace>& fonts)
+{
+    if (fonts.empty()) return;
+
+    static constexpr struct {
+        const char* prefix;
+        size_t len;
+    } prefixes[] = {
+        {"data:font/ttf;base64,", sizeof("data:font/ttf;base64,") - 1},
+        {"data:application/font-ttf;base64,", sizeof("data:application/font-ttf;base64,") - 1}
+    };
+
+    for (uint32_t i = 0; i < fonts.count; ++i) {
+        auto p = &fonts[i];
+        if (!p->name) continue;
+
+        size_t shift = 0;
+        for (const auto& prefix : prefixes) {
+            if (p->srcLen > prefix.len && !memcmp(p->src, prefix.prefix, prefix.len)) {
+                shift = prefix.len;
+                break;
+            }
+        }
+        if (shift == 0) {
+            TVGLOG("SVG", "The embedded font \"%s\" data not loaded properly.", p->name);
+            continue;
+        }
+
+        auto size = b64Decode(p->src + shift, p->srcLen - shift, &p->decoded);
+
+        if (Text::load(p->name, p->decoded, size) != Result::Success) TVGERR("SVG", "Error while loading the ttf font named \"%s\".", p->name);
+    }
+}
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
@@ -909,6 +946,8 @@ Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, Aspe
     //TODO: aspect ratio is valid only if viewBox was set
 
     if (!loaderData.doc || (loaderData.doc->type != SvgNodeType::Doc)) return nullptr;
+
+    _loadFonts(loaderData.fonts);
 
     auto docNode = _sceneBuildHelper(loaderData, loaderData.doc, vBox, svgPath, false, 0);
 

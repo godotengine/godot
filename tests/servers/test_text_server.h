@@ -33,7 +33,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/themes/builtin_fonts.gen.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #include "tests/test_macros.h"
 
 namespace TestTextServer {
@@ -50,7 +50,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font = ts->create_font();
-				ts->font_set_data_ptr(font, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font, _font_Inter_Regular, _font_Inter_Regular_size);
 				CHECK_FALSE_MESSAGE(font == RID(), "Loading font failed.");
 				ts->free_rid(font);
 			}
@@ -66,7 +66,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
@@ -118,7 +118,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
@@ -167,7 +167,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 				ts->font_set_allow_system_fallback(font1, false);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
@@ -497,7 +497,7 @@ TEST_SUITE("[TextServer]") {
 						{ U"test\r test", { 0, 5, 5, 10 } },
 						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 } },
 					};
-					for (size_t j = 0; j < std::size(cases); j++) {
+					for (size_t j = 0; j < std_size(cases); j++) {
 						RID ctx = ts->create_shaped_text();
 						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
@@ -517,7 +517,7 @@ TEST_SUITE("[TextServer]") {
 					struct TestCase {
 						String text;
 						PackedInt32Array breaks;
-						BitField<TextServer::LineBreakFlag> flags;
+						BitField<TextServer::LineBreakFlag> flags = TextServer::BREAK_NONE;
 					};
 					TestCase cases[] = {
 						{ U"test \rtest", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
@@ -565,7 +565,7 @@ TEST_SUITE("[TextServer]") {
 				//                   5^  10^
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 
@@ -620,7 +620,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 				RID font2 = ts->create_font();
 				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
@@ -931,7 +931,7 @@ TEST_SUITE("[TextServer]") {
 				}
 
 				RID font1 = ts->create_font();
-				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				ts->font_set_data_ptr(font1, _font_Inter_Regular, _font_Inter_Regular_size);
 
 				Array font = { font1 };
 				RID ctx = ts->create_shaped_text();

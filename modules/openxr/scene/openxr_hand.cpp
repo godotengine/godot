@@ -34,7 +34,7 @@
 #include "../openxr_api.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand", "hand"), &OpenXRHand::set_hand);
@@ -311,7 +311,7 @@ void OpenXRHand::_update_skeleton() {
 		// SKELETON_RIG_HUMANOID bone adjustment. This rotation performs:
 		// OpenXR Z+ -> Godot Humanoid Y-  (Back along the bone)
 		// OpenXR Y+ -> Godot Humanoid Z- (Out the back of the hand)
-		Quaternion(0.0, -Math_SQRT12, Math_SQRT12, 0.0),
+		Quaternion(0.0, -Math::SQRT12, Math::SQRT12, 0.0),
 	};
 
 	// we cache our transforms so we can quickly calculate local transforms

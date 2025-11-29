@@ -16,4 +16,23 @@
   <Target Name="Clean">
     <Exec Command="$(NMakeCleanCommandLine)"/>
   </Target>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>$(AdditionalOptions)</AdditionalOptions>
+      <ForcedIncludeFiles>$(NMakeForcedIncludes)</ForcedIncludeFiles>
+      <ForcedUsingFiles>$(NMakeForcedUsingAssemblies)</ForcedUsingFiles>
+      <PreprocessorDefinitions>$(NMakePreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <!-- check get_platforms in each msvs.py for possible value of those conditions -->
+    <!-- MSVC Platform.Common.props for possible TargetMachine values -->
+    <Link Condition="'$(Platform)' == 'arm64'">
+      <TargetMachine>MachineARM64</TargetMachine>
+    </Link>
+    <Link Condition="'$(Platform)' == 'x64'">
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+    <Link Condition="'$(Platform)' == 'Win32'">
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
 </Project>

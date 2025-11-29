@@ -8,6 +8,7 @@ namespace GodotTools
         MonoDevelop,
         VsCode,
         Rider,
-        CustomEditor
+        CustomEditor,
+        Fleet,
     }
 }

@@ -13,17 +13,17 @@
 
 JPH_NAMESPACE_BEGIN
 
-static inline const BodyLockInterface &sGetBodyLockInterface(const PhysicsSystem *inSystem, bool inLockBodies)
+static inline const BodyLockInterface &sCharacterGetBodyLockInterface(const PhysicsSystem *inSystem, bool inLockBodies)
 {
 	return inLockBodies? static_cast<const BodyLockInterface &>(inSystem->GetBodyLockInterface()) : static_cast<const BodyLockInterface &>(inSystem->GetBodyLockInterfaceNoLock());
 }
 
-static inline BodyInterface &sGetBodyInterface(PhysicsSystem *inSystem, bool inLockBodies)
+static inline BodyInterface &sCharacterGetBodyInterface(PhysicsSystem *inSystem, bool inLockBodies)
 {
 	return inLockBodies? inSystem->GetBodyInterface() : inSystem->GetBodyInterfaceNoLock();
 }
 
-static inline const NarrowPhaseQuery &sGetNarrowPhaseQuery(const PhysicsSystem *inSystem, bool inLockBodies)
+static inline const NarrowPhaseQuery &sCharacterGetNarrowPhaseQuery(const PhysicsSystem *inSystem, bool inLockBodies)
 {
 	return inLockBodies? inSystem->GetNarrowPhaseQuery() : inSystem->GetNarrowPhaseQueryNoLock();
 }
@@ -54,17 +54,17 @@ Character::~Character()
 
 void Character::AddToPhysicsSystem(EActivation inActivationMode, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).AddBody(mBodyID, inActivationMode);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).AddBody(mBodyID, inActivationMode);
 }
 
 void Character::RemoveFromPhysicsSystem(bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).RemoveBody(mBodyID);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).RemoveBody(mBodyID);
 }
 
 void Character::Activate(bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).ActivateBody(mBodyID);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).ActivateBody(mBodyID);
 }
 
 void Character::CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const
@@ -95,7 +95,7 @@ void Character::CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMove
 	settings.mActiveEdgeMovementDirection = inMovementDirection;
 	settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
 
-	sGetNarrowPhaseQuery(mSystem, inLockBodies).CollideShape(inShape, Vec3::sOne(), inCenterOfMassTransform, settings, inBaseOffset, ioCollector, broadphase_layer_filter, object_layer_filter, body_filter);
+	sCharacterGetNarrowPhaseQuery(mSystem, inLockBodies).CollideShape(inShape, Vec3::sOne(), inCenterOfMassTransform, settings, inBaseOffset, ioCollector, broadphase_layer_filter, object_layer_filter, body_filter);
 }
 
 void Character::CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const
@@ -112,7 +112,7 @@ void Character::CheckCollision(const Shape *inShape, float inMaxSeparationDistan
 	RMat44 query_transform;
 	Vec3 velocity;
 	{
-		BodyLockRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
+		BodyLockRead lock(sCharacterGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
 		if (!lock.Succeeded())
 			return;
 
@@ -133,7 +133,7 @@ void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 	Quat char_rot;
 	Vec3 char_vel;
 	{
-		BodyLockRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
+		BodyLockRead lock(sCharacterGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
 		if (!lock.Succeeded())
 			return;
 		const Body &body = lock.GetBody();
@@ -186,7 +186,7 @@ void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 	mGroundNormal = collector.mGroundNormal;
 
 	// Get additional data from body
-	BodyLockRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mGroundBodyID);
+	BodyLockRead lock(sCharacterGetBodyLockInterface(mSystem, inLockBodies), mGroundBodyID);
 	if (lock.Succeeded())
 	{
 		const Body &body = lock.GetBody();
@@ -216,74 +216,74 @@ void Character::PostSimulation(float inMaxSeparationDistance, bool inLockBodies)
 
 void Character::SetLinearAndAngularVelocity(Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).SetLinearAndAngularVelocity(mBodyID, inLinearVelocity, inAngularVelocity);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetLinearAndAngularVelocity(mBodyID, inLinearVelocity, inAngularVelocity);
 }
 
 Vec3 Character::GetLinearVelocity(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetLinearVelocity(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetLinearVelocity(mBodyID);
 }
 
 void Character::SetLinearVelocity(Vec3Arg inLinearVelocity, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).SetLinearVelocity(mBodyID, inLinearVelocity);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetLinearVelocity(mBodyID, inLinearVelocity);
 }
 
 void Character::AddLinearVelocity(Vec3Arg inLinearVelocity, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).AddLinearVelocity(mBodyID, inLinearVelocity);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).AddLinearVelocity(mBodyID, inLinearVelocity);
 }
 
 void Character::AddImpulse(Vec3Arg inImpulse, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).AddImpulse(mBodyID, inImpulse);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).AddImpulse(mBodyID, inImpulse);
 }
 
 void Character::GetPositionAndRotation(RVec3 &outPosition, Quat &outRotation, bool inLockBodies) const
 {
-	sGetBodyInterface(mSystem, inLockBodies).GetPositionAndRotation(mBodyID, outPosition, outRotation);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).GetPositionAndRotation(mBodyID, outPosition, outRotation);
 }
 
 void Character::SetPositionAndRotation(RVec3Arg inPosition, QuatArg inRotation, EActivation inActivationMode, bool inLockBodies) const
 {
-	sGetBodyInterface(mSystem, inLockBodies).SetPositionAndRotation(mBodyID, inPosition, inRotation, inActivationMode);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetPositionAndRotation(mBodyID, inPosition, inRotation, inActivationMode);
 }
 
 RVec3 Character::GetPosition(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetPosition(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetPosition(mBodyID);
 }
 
 void Character::SetPosition(RVec3Arg inPosition, EActivation inActivationMode, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).SetPosition(mBodyID, inPosition, inActivationMode);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetPosition(mBodyID, inPosition, inActivationMode);
 }
 
 Quat Character::GetRotation(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetRotation(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetRotation(mBodyID);
 }
 
 void Character::SetRotation(QuatArg inRotation, EActivation inActivationMode, bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).SetRotation(mBodyID, inRotation, inActivationMode);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetRotation(mBodyID, inRotation, inActivationMode);
 }
 
 RVec3 Character::GetCenterOfMassPosition(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetCenterOfMassPosition(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetCenterOfMassPosition(mBodyID);
 }
 
 RMat44 Character::GetWorldTransform(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetWorldTransform(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetWorldTransform(mBodyID);
 }
 
 void Character::SetLayer(ObjectLayer inLayer, bool inLockBodies)
 {
 	mLayer = inLayer;
 
-	sGetBodyInterface(mSystem, inLockBodies).SetObjectLayer(mBodyID, inLayer);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetObjectLayer(mBodyID, inLayer);
 }
 
 bool Character::SetShape(const Shape *inShape, float inMaxPenetrationDepth, bool inLockBodies)
@@ -321,13 +321,34 @@ bool Character::SetShape(const Shape *inShape, float inMaxPenetrationDepth, bool
 
 	// Switch the shape
 	mShape = inShape;
-	sGetBodyInterface(mSystem, inLockBodies).SetShape(mBodyID, mShape, false, EActivation::Activate);
+	sCharacterGetBodyInterface(mSystem, inLockBodies).SetShape(mBodyID, mShape, false, EActivation::Activate);
 	return true;
 }
 
 TransformedShape Character::GetTransformedShape(bool inLockBodies) const
 {
-	return sGetBodyInterface(mSystem, inLockBodies).GetTransformedShape(mBodyID);
+	return sCharacterGetBodyInterface(mSystem, inLockBodies).GetTransformedShape(mBodyID);
+}
+
+CharacterSettings Character::GetCharacterSettings(bool inLockBodies) const
+{
+	BodyLockRead lock(sCharacterGetBodyLockInterface(mSystem, inLockBodies), mBodyID);
+	JPH_ASSERT(lock.Succeeded());
+	const Body &body = lock.GetBody();
+
+	CharacterSettings settings;
+	settings.mUp = mUp;
+	settings.mSupportingVolume = mSupportingVolume;
+	settings.mMaxSlopeAngle = ACos(mCosMaxSlopeAngle);
+	settings.mEnhancedInternalEdgeRemoval = body.GetEnhancedInternalEdgeRemoval();
+	settings.mShape = mShape;
+	settings.mLayer = mLayer;
+	const MotionProperties *mp = body.GetMotionProperties();
+	settings.mMass = 1.0f / mp->GetInverseMass();
+	settings.mFriction = body.GetFriction();
+	settings.mGravityFactor = mp->GetGravityFactor();
+	settings.mAllowedDOFs = mp->GetAllowedDOFs();
+	return settings;
 }
 
 JPH_NAMESPACE_END

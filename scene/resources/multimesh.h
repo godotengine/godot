@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/resources/mesh.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class MultiMesh : public Resource {
 	GDCLASS(MultiMesh, Resource);
@@ -115,6 +115,7 @@ public:
 	Color get_instance_custom_data(int p_instance) const;
 
 	void reset_instance_physics_interpolation(int p_instance);
+	void reset_instances_physics_interpolation();
 
 	void set_physics_interpolated(bool p_interpolated);
 

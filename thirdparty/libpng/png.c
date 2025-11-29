@@ -13,7 +13,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_47 Your_png_h_is_not_version_1_6_47;
+typedef png_libpng_version_1_6_51 Your_png_h_is_not_version_1_6_51;
 
 /* Sanity check the chunks definitions - PNG_KNOWN_CHUNKS from pngpriv.h and the
  * corresponding macro definitions.  This causes a compile time failure if
@@ -108,10 +108,16 @@ png_zalloc,(voidpf png_ptr, uInt items, uInt size),PNG_ALLOCATED)
    if (png_ptr == NULL)
       return NULL;
 
-   if (items >= (~(png_alloc_size_t)0)/size)
+   /* This check against overflow is vestigial, dating back from
+    * the old times when png_zalloc used to be an exported function.
+    * We're still keeping it here for now, as an extra-cautious
+    * prevention against programming errors inside zlib, although it
+    * should rather be a debug-time assertion instead.
+    */
+   if (size != 0 && items >= (~(png_alloc_size_t)0) / size)
    {
-      png_warning (png_voidcast(png_structrp, png_ptr),
-          "Potential overflow in png_zalloc()");
+      png_warning(png_voidcast(png_structrp, png_ptr),
+                  "Potential overflow in png_zalloc()");
       return NULL;
    }
 
@@ -236,10 +242,6 @@ png_user_version_check(png_structrp png_ptr, png_const_charp user_png_ver)
       PNG_UNUSED(pos)
 
       png_warning(png_ptr, m);
-#endif
-
-#ifdef PNG_ERROR_NUMBERS_SUPPORTED
-      png_ptr->flags = 0;
 #endif
 
       return 0;
@@ -700,7 +702,7 @@ png_get_io_ptr(png_const_structrp png_ptr)
  * function of your own because "FILE *" isn't necessarily available.
  */
 void PNGAPI
-png_init_io(png_structrp png_ptr, png_FILE_p fp)
+png_init_io(png_structrp png_ptr, FILE *fp)
 {
    png_debug(1, "in png_init_io");
 
@@ -815,7 +817,7 @@ png_get_copyright(png_const_structrp png_ptr)
    return PNG_STRING_COPYRIGHT
 #else
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.47" PNG_STRING_NEWLINE \
+      "libpng version 1.6.51" PNG_STRING_NEWLINE \
       "Copyright (c) 2018-2025 Cosmin Truta" PNG_STRING_NEWLINE \
       "Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
@@ -1491,7 +1493,7 @@ png_XYZ_from_xy(png_XYZ *XYZ, const png_xy *xy)
 }
 #endif /* COLORSPACE */
 
-#ifdef PNG_iCCP_SUPPORTED
+#ifdef PNG_READ_iCCP_SUPPORTED
 /* Error message generation */
 static char
 png_icc_tag_char(png_uint_32 byte)
@@ -1567,9 +1569,7 @@ png_icc_profile_error(png_const_structrp png_ptr, png_const_charp name,
 
    return 0;
 }
-#endif /* iCCP */
 
-#ifdef PNG_READ_iCCP_SUPPORTED
 /* Encoded value of D50 as an ICC XYZNumber.  From the ICC 2010 spec the value
  * is XYZ(0.9642,1.0,0.8249), which scales to:
  *
@@ -3969,7 +3969,7 @@ png_image_free_function(png_voidp argument)
 #  ifdef PNG_STDIO_SUPPORTED
       if (cp->owned_file != 0)
       {
-         FILE *fp = png_voidcast(FILE*, cp->png_ptr->io_ptr);
+         FILE *fp = png_voidcast(FILE *, cp->png_ptr->io_ptr);
          cp->owned_file = 0;
 
          /* Ignore errors here. */

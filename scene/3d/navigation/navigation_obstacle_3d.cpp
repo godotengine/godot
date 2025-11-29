@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable NavigationObstacle3D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle3D::_navmesh_source_geometry_parser;
@@ -81,7 +81,7 @@ void NavigationObstacle3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "affect_navigation_mesh"), "set_affect_navigation_mesh", "get_affect_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "carve_navigation_mesh"), "set_carve_navigation_mesh", "get_carve_navigation_mesh");
 	ADD_GROUP("Avoidance", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "avoidance_layers", PROPERTY_HINT_LAYERS_AVOIDANCE), "set_avoidance_layers", "get_avoidance_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_3d_avoidance"), "set_use_3d_avoidance", "get_use_3d_avoidance");
@@ -232,7 +232,7 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
 	ERR_FAIL_NULL(ns3d);
 
-	ns3d->free(obstacle);
+	ns3d->free_rid(obstacle);
 	obstacle = RID();
 
 #ifdef DEBUG_ENABLED
@@ -242,19 +242,19 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	ERR_FAIL_NULL(rs);
 	if (fake_agent_radius_debug_instance_rid.is_valid()) {
-		rs->free(fake_agent_radius_debug_instance_rid);
+		rs->free_rid(fake_agent_radius_debug_instance_rid);
 		fake_agent_radius_debug_instance_rid = RID();
 	}
 	if (fake_agent_radius_debug_mesh_rid.is_valid()) {
-		rs->free(fake_agent_radius_debug_mesh_rid);
+		rs->free_rid(fake_agent_radius_debug_mesh_rid);
 		fake_agent_radius_debug_mesh_rid = RID();
 	}
 	if (static_obstacle_debug_instance_rid.is_valid()) {
-		rs->free(static_obstacle_debug_instance_rid);
+		rs->free_rid(static_obstacle_debug_instance_rid);
 		static_obstacle_debug_instance_rid = RID();
 	}
 	if (static_obstacle_debug_mesh_rid.is_valid()) {
-		rs->free(static_obstacle_debug_mesh_rid);
+		rs->free_rid(static_obstacle_debug_mesh_rid);
 		static_obstacle_debug_mesh_rid = RID();
 	}
 #endif // DEBUG_ENABLED
@@ -464,7 +464,7 @@ void NavigationObstacle3D::navmesh_parse_source_geometry(const Ref<NavigationMes
 
 		obstruction_circle_vertices.resize(circle_points);
 		Vector3 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
-		const real_t circle_point_step = Math_TAU / circle_points;
+		const real_t circle_point_step = Math::TAU / circle_points;
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;
@@ -581,15 +581,15 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 		float w;
 
 		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = (radius)*cos(Math_PI * v);
+		w = std::sin(Math::PI * v);
+		y = (radius)*std::cos(Math::PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			x = std::sin(u * Math::TAU);
+			z = std::cos(u * Math::TAU);
 
 			Vector3 p = Vector3(x * radius * w, y, z * radius * w);
 			face_vertex_array.push_back(p);

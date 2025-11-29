@@ -32,7 +32,7 @@
 
 #ifdef COREAUDIO_ENABLED
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #import <AudioUnit/AudioUnit.h>
 #ifdef MACOS_ENABLED
@@ -59,7 +59,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 	unsigned int capture_buffer_frames = 0;
 
 	Vector<int32_t> samples_in;
-	Vector<int16_t> input_buf;
+	unsigned int buffer_size = 0;
 
 #ifdef MACOS_ENABLED
 	PackedStringArray _get_device_list(bool capture = false);

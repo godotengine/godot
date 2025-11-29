@@ -1,6 +1,6 @@
-/* pngstruct.h - header file for PNG reference library
+/* pngstruct.h - internal structures for libpng
  *
- * Copyright (c) 2018-2022 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -10,11 +10,9 @@
  * and license in png.h
  */
 
-/* The structure that holds the information to read and write PNG files.
- * The only people who need to care about what is inside of this are the
- * people who will be modifying the library for their own special needs.
- * It should NOT be accessed directly by an application.
- */
+#ifndef PNGPRIV_H
+#  error This file must not be included by applications; please include <png.h>
+#endif
 
 #ifndef PNGSTRUCT_H
 #define PNGSTRUCT_H
@@ -377,7 +375,8 @@ struct png_struct_def
 
 /* New member added in libpng-1.6.36 */
 #if defined(PNG_READ_EXPAND_SUPPORTED) && \
-    defined(PNG_ARM_NEON_IMPLEMENTATION)
+    (defined(PNG_ARM_NEON_IMPLEMENTATION) || \
+     defined(PNG_RISCV_RVV_IMPLEMENTATION))
    png_bytep riffled_palette; /* buffer for accelerated palette expansion */
 #endif
 
@@ -406,7 +405,6 @@ struct png_struct_def
 
 #ifdef PNG_READ_QUANTIZE_SUPPORTED
 /* The following three members were added at version 1.0.14 and 1.2.4 */
-   png_bytep quantize_sort;          /* working sort array */
    png_bytep index_to_palette;       /* where the original index currently is
                                         in the palette */
    png_bytep palette_to_index;       /* which original index points to this

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include "godot_js.h"
 
@@ -58,7 +58,7 @@ private:
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
 #endif
 
-	HashMap<int, CharString> utterance_ids;
+	HashMap<int64_t, CharString> utterance_ids;
 
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
@@ -104,6 +104,8 @@ private:
 	bool swap_cancel_ok = false;
 	NativeMenu *native_menu = nullptr;
 
+	int gamepad_count = 0;
+
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;
@@ -118,10 +120,10 @@ private:
 	static void _fullscreen_change_callback(int p_fullscreen);
 	WASM_EXPORT static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static int _mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
-	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	WASM_EXPORT static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
-	static int _mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	WASM_EXPORT static int mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
+	static int _mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
 	WASM_EXPORT static void touch_callback(int p_type, int p_count);
 	static void _touch_callback(int p_type, int p_count);
 	WASM_EXPORT static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
@@ -130,8 +132,8 @@ private:
 	static void _vk_input_text_callback(const String &p_text, int p_cursor);
 	WASM_EXPORT static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	static void _gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid);
-	WASM_EXPORT static void js_utterance_callback(int p_event, int p_id, int p_pos);
-	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
+	WASM_EXPORT static void js_utterance_callback(int p_event, int64_t p_id, int p_pos);
+	static void _js_utterance_callback(int p_event, int64_t p_id, int p_pos);
 	WASM_EXPORT static void ime_callback(int p_type, const char *p_text);
 	static void _ime_callback(int p_type, const String &p_text);
 	WASM_EXPORT static void request_quit_callback();
@@ -174,7 +176,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

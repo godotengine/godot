@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);
@@ -60,8 +61,6 @@ public:
 	real_t get_hit_length();
 	void set_margin(real_t p_margin);
 	real_t get_margin();
-
-	SpringArm3D() {}
 
 private:
 	void process_spring();

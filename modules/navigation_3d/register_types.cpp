@@ -37,23 +37,26 @@
 #endif // DISABLE_DEPRECATED
 
 #ifdef TOOLS_ENABLED
-#include "editor/navigation_mesh_editor_plugin.h"
+#include "editor/navigation_link_3d_editor_plugin.h"
+#include "editor/navigation_obstacle_3d_editor_plugin.h"
+#include "editor/navigation_region_3d_editor_plugin.h"
 #endif
 
 #include "core/config/engine.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 #ifndef DISABLE_DEPRECATED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif // DISABLE_DEPRECATED
 
-NavigationServer3D *new_navigation_server_3d() {
+static NavigationServer3D *_createGodotNavigation3DCallback() {
 	return memnew(GodotNavigationServer3D);
 }
 
 void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(_createGodotNavigation3DCallback));
+		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
 
 #ifndef DISABLE_DEPRECATED
 		_nav_mesh_generator = memnew(NavigationMeshGenerator);
@@ -64,7 +67,9 @@ void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+		EditorPlugins::add_by_type<NavigationLink3DEditorPlugin>();
+		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
+		EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
 	}
 #endif
 }

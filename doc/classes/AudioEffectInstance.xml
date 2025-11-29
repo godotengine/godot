@@ -10,7 +10,7 @@
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
-		<method name="_process" qualifiers="virtual">
+		<method name="_process" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="src_buffer" type="const void*" />
 			<param index="1" name="dst_buffer" type="AudioFrame*" />

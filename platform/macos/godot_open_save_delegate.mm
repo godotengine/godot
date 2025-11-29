@@ -119,7 +119,7 @@
 				Vector<String> tokens = p_filters[i].split(";");
 				if (tokens.size() >= 1) {
 					String flt = tokens[0].strip_edges();
-					String mime = (tokens.size() >= 2) ? tokens[2].strip_edges() : String();
+					String mime = (tokens.size() >= 3) ? tokens[2].strip_edges() : String();
 					int filter_slice_count = flt.get_slice_count(",");
 
 					NSMutableArray *type_filters = [[NSMutableArray alloc] init];
@@ -173,7 +173,7 @@
 			Vector<String> tokens = p_filters[0].split(";");
 			if (tokens.size() >= 1) {
 				String flt = tokens[0].strip_edges();
-				String mime = (tokens.size() >= 2) ? tokens[2] : String();
+				String mime = (tokens.size() >= 3) ? tokens[2] : String();
 				int filter_slice_count = flt.get_slice_count(",");
 
 				NSMutableArray *type_filters = [[NSMutableArray alloc] init];

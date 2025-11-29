@@ -84,6 +84,12 @@ class ScrollBar : public Range {
 	double target_scroll = 0.0;
 	bool smooth_scroll_enabled = false;
 
+	void _drag_node_exit();
+	void _drag_node_input(const Ref<InputEvent> &p_input);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+protected:
 	struct ThemeCache {
 		Ref<StyleBox> scroll_style;
 		Ref<StyleBox> scroll_focus_style;
@@ -98,18 +104,19 @@ class ScrollBar : public Range {
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
 		Ref<Texture2D> decrement_pressed_icon;
+
+		int padding_left = 0;
+		int padding_top = 0;
+		int padding_right = 0;
+		int padding_bottom = 0;
 	} theme_cache;
 
-	void _drag_node_exit();
-	void _drag_node_input(const Ref<InputEvent> &p_input);
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
-protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	static inline const int PAGE_DIVISOR = 8;
+
 	void scroll(double p_amount);
 	void scroll_to(double p_position);
 
@@ -131,6 +138,9 @@ public:
 class HScrollBar : public ScrollBar {
 	GDCLASS(HScrollBar, ScrollBar);
 
+protected:
+	static void _bind_methods();
+
 public:
 	HScrollBar() :
 			ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
@@ -138,6 +148,9 @@ public:
 
 class VScrollBar : public ScrollBar {
 	GDCLASS(VScrollBar, ScrollBar);
+
+protected:
+	static void _bind_methods();
 
 public:
 	VScrollBar() :

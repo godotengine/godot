@@ -42,7 +42,7 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
@@ -176,7 +176,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node_or_null(skeleton_path)); // skeleton_path may be outdated when reparenting.
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
@@ -342,6 +342,13 @@ void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecom
 void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifndef DISABLE_DEPRECATED
+			if (upgrading_skeleton_compat) {
+				if (skeleton_path.is_empty() && Object::cast_to<Skeleton3D>(get_parent())) {
+					skeleton_path = NodePath("..");
+				}
+			}
+#endif
 			_resolve_skeleton_path();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -380,17 +387,17 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
+	Ref<Mesh> m = get_mesh();
+	if (m.is_null() || m->get_surface_count() == 0) {
+		return Ref<Material>();
+	}
+
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
 
-	Ref<Mesh> m = get_mesh();
-	if (m.is_valid()) {
-		return m->surface_get_material(p_surface);
-	}
-
-	return Ref<Material>();
+	return m->surface_get_material(p_surface);
 }
 
 void MeshInstance3D::_mesh_changed() {
@@ -591,7 +598,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		for (int blendshape_index = 0; blendshape_index < blend_shape_count; blendshape_index++) {
 			float blend_weight = get_blend_shape_value(blendshape_index);
-			if (abs(blend_weight) <= 0.0001) {
+			if (std::abs(blend_weight) <= 0.0001) {
 				continue;
 			}
 
@@ -925,6 +932,12 @@ void MeshInstance3D::_bind_methods() {
 }
 
 MeshInstance3D::MeshInstance3D() {
+	_define_ancestry(AncestralClass::MESH_INSTANCE_3D);
+#ifndef DISABLE_DEPRECATED
+	if (use_parent_skeleton_compat) {
+		skeleton_path = NodePath("..");
+	}
+#endif
 }
 
 MeshInstance3D::~MeshInstance3D() {

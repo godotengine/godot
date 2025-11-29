@@ -43,7 +43,7 @@ namespace basisu
 	// Must match BASISU_ETC1_CLUSTER_FIT_ORDER_TABLE_SIZE
 	const uint32_t OPENCL_ENCODE_ETC1S_MAX_PERMS = 165;
 
-	bool opencl_set_pixel_blocks(opencl_context_ptr pContext, uint32_t total_blocks, const cl_pixel_block* pPixel_blocks);
+	bool opencl_set_pixel_blocks(opencl_context_ptr pContext, size_t total_blocks, const cl_pixel_block* pPixel_blocks);
 
 	bool opencl_encode_etc1s_blocks(opencl_context_ptr pContext, etc_block* pOutput_blocks, bool perceptual, uint32_t total_perms);
 

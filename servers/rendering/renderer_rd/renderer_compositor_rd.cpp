@@ -96,6 +96,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
 		blit.push_constant.convert_to_srgb = texture_storage->render_target_is_using_hdr(p_render_targets[i].render_target);
+		blit.push_constant.use_debanding = texture_storage->render_target_is_using_debanding(p_render_targets[i].render_target);
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -109,7 +110,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	delta = frame_step;
 	time += frame_step;
 
-	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	double time_roll_over = GLOBAL_GET_CACHED(double, "rendering/limits/time/time_rollover_secs");
 	time = Math::fmod(time, time_roll_over);
 
 	canvas->set_time(time);
@@ -175,11 +176,11 @@ void RendererCompositorRD::finalize() {
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
-	RD::get_singleton()->free(blit.index_buffer);
-	RD::get_singleton()->free(blit.sampler);
+	RD::get_singleton()->free_rid(blit.index_buffer);
+	RD::get_singleton()->free_rid(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -214,18 +215,12 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		screenrect = OS::get_singleton()->calculate_boot_screen_rect(window_size, imgrect.size);
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-	}
-
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
+	// p_color never needs to be converted to linear encoding because HDR 2D is always disabled for the boot image.
+	// If HDR 2D can ever be enabled during the boot image, p_color must be converted to linear encoding for this case.
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit.pipelines[BLIT_MODE_NORMAL_ALPHA]);
@@ -252,6 +247,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	blit.push_constant.upscale = 1.0;
 	blit.push_constant.aspect_ratio = 1.0;
 	blit.push_constant.convert_to_srgb = false;
+	blit.push_constant.use_debanding = false;
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
@@ -261,7 +257,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
-	RD::get_singleton()->free(sampler);
+	RD::get_singleton()->free_rid(sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
@@ -270,40 +266,44 @@ RendererCompositorRD::RendererCompositorRD() {
 	uniform_set_cache = memnew(UniformSetCacheRD);
 	framebuffer_cache = memnew(FramebufferCacheRD);
 
-	{
-		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
-		if (shader_cache_dir.is_empty()) {
-			shader_cache_dir = "user://";
+	bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
+	bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
+	bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
+	bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
+	ShaderRD::set_shader_cache_save_compressed(compress);
+	ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
+	ShaderRD::set_shader_cache_save_debug(!strip_debug);
+
+	// Shader cache is forcefully enabled when running the editor.
+	if (shader_cache_enabled || Engine::get_singleton()->is_editor_hint()) {
+		// Attempt to create a folder for the shader cache that the user can write to. Shaders will only be attempted to be saved if this path exists.
+		String shader_cache_user_dir = Engine::get_singleton()->get_shader_cache_path();
+		if (shader_cache_user_dir.is_empty()) {
+			shader_cache_user_dir = "user://";
 		}
-		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
-		if (da.is_null()) {
-			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+
+		Ref<DirAccess> user_da = DirAccess::open(shader_cache_user_dir);
+		if (user_da.is_null()) {
+			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_user_dir);
 		} else {
-			Error err = da->change_dir("shader_cache");
+			Error err = user_da->change_dir("shader_cache");
 			if (err != OK) {
-				err = da->make_dir("shader_cache");
+				err = user_da->make_dir("shader_cache");
 			}
+
 			if (err != OK) {
-				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_user_dir);
 			} else {
-				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
-
-				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
-				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
-					shader_cache_dir = String(); //disable only if not editor
-				}
-
-				if (!shader_cache_dir.is_empty()) {
-					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
-					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
-					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");
-
-					ShaderRD::set_shader_cache_dir(shader_cache_dir);
-					ShaderRD::set_shader_cache_save_compressed(compress);
-					ShaderRD::set_shader_cache_save_compressed_zstd(use_zstd);
-					ShaderRD::set_shader_cache_save_debug(!strip_debug);
-				}
+				shader_cache_user_dir = shader_cache_user_dir.path_join("shader_cache");
+				ShaderRD::set_shader_cache_user_dir(shader_cache_user_dir);
 			}
+		}
+
+		// Check if a directory exists for the shader cache to pull shaders from as read-only. This is used on exported projects with baked shaders.
+		String shader_cache_res_dir = "res://.godot/shader_cache";
+		Ref<DirAccess> res_da = DirAccess::open(shader_cache_res_dir);
+		if (res_da.is_valid()) {
+			ShaderRD::set_shader_cache_res_dir(shader_cache_res_dir);
 		}
 	}
 
@@ -342,5 +342,6 @@ RendererCompositorRD::~RendererCompositorRD() {
 	singleton = nullptr;
 	memdelete(uniform_set_cache);
 	memdelete(framebuffer_cache);
-	ShaderRD::set_shader_cache_dir(String());
+	ShaderRD::set_shader_cache_user_dir(String());
+	ShaderRD::set_shader_cache_res_dir(String());
 }

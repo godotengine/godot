@@ -260,7 +260,7 @@ struct arabic_shape_plan_t
    * mask_array[NONE] == 0. */
   hb_mask_t mask_array[ARABIC_NUM_FEATURES + 1];
 
-  hb_atomic_ptr_t<arabic_fallback_plan_t> fallback_plan;
+  mutable hb_atomic_t<arabic_fallback_plan_t *> fallback_plan;
 
   unsigned int do_fallback : 1;
   unsigned int has_stch : 1;
@@ -654,7 +654,7 @@ postprocess_glyphs_arabic (const hb_ot_shape_plan_t *plan,
 
 /* https://www.unicode.org/reports/tr53/ */
 
-static hb_codepoint_t
+static const hb_codepoint_t
 modifier_combining_marks[] =
 {
   0x0654u, /* ARABIC HAMZA ABOVE */

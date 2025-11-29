@@ -34,37 +34,37 @@
 #include "core/math/math_defs.h"
 #include "core/typedefs.h"
 
-#include <float.h>
-#include <math.h>
+#include <cfloat>
+#include <cmath>
 
 namespace Math {
 
 _ALWAYS_INLINE_ double sin(double p_x) {
-	return ::sin(p_x);
+	return std::sin(p_x);
 }
 _ALWAYS_INLINE_ float sin(float p_x) {
-	return ::sinf(p_x);
+	return std::sin(p_x);
 }
 
 _ALWAYS_INLINE_ double cos(double p_x) {
-	return ::cos(p_x);
+	return std::cos(p_x);
 }
 _ALWAYS_INLINE_ float cos(float p_x) {
-	return ::cosf(p_x);
+	return std::cos(p_x);
 }
 
 _ALWAYS_INLINE_ double tan(double p_x) {
-	return ::tan(p_x);
+	return std::tan(p_x);
 }
 _ALWAYS_INLINE_ float tan(float p_x) {
-	return ::tanf(p_x);
+	return std::tan(p_x);
 }
 
 _ALWAYS_INLINE_ double sinh(double p_x) {
-	return ::sinh(p_x);
+	return std::sinh(p_x);
 }
 _ALWAYS_INLINE_ float sinh(float p_x) {
-	return ::sinhf(p_x);
+	return std::sinh(p_x);
 }
 
 _ALWAYS_INLINE_ double sinc(double p_x) {
@@ -75,219 +75,163 @@ _ALWAYS_INLINE_ float sinc(float p_x) {
 }
 
 _ALWAYS_INLINE_ double sincn(double p_x) {
-	return sinc(Math_PI * p_x);
+	return sinc(PI * p_x);
 }
 _ALWAYS_INLINE_ float sincn(float p_x) {
-	return sinc((float)Math_PI * p_x);
+	return sinc((float)PI * p_x);
 }
 
 _ALWAYS_INLINE_ double cosh(double p_x) {
-	return ::cosh(p_x);
+	return std::cosh(p_x);
 }
 _ALWAYS_INLINE_ float cosh(float p_x) {
-	return ::coshf(p_x);
+	return std::cosh(p_x);
 }
 
 _ALWAYS_INLINE_ double tanh(double p_x) {
-	return ::tanh(p_x);
+	return std::tanh(p_x);
 }
 _ALWAYS_INLINE_ float tanh(float p_x) {
-	return ::tanhf(p_x);
+	return std::tanh(p_x);
 }
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double asin(double p_x) {
-	return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asin(p_x));
+	return p_x < -1 ? (-PI / 2) : (p_x > 1 ? (PI / 2) : std::asin(p_x));
 }
 _ALWAYS_INLINE_ float asin(float p_x) {
-	return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asinf(p_x));
+	return p_x < -1 ? (-(float)PI / 2) : (p_x > 1 ? ((float)PI / 2) : std::asin(p_x));
 }
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double acos(double p_x) {
-	return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acos(p_x));
+	return p_x < -1 ? PI : (p_x > 1 ? 0 : std::acos(p_x));
 }
 _ALWAYS_INLINE_ float acos(float p_x) {
-	return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acosf(p_x));
+	return p_x < -1 ? (float)PI : (p_x > 1 ? 0 : std::acos(p_x));
 }
 
 _ALWAYS_INLINE_ double atan(double p_x) {
-	return ::atan(p_x);
+	return std::atan(p_x);
 }
 _ALWAYS_INLINE_ float atan(float p_x) {
-	return ::atanf(p_x);
+	return std::atan(p_x);
 }
 
 _ALWAYS_INLINE_ double atan2(double p_y, double p_x) {
-	return ::atan2(p_y, p_x);
+	return std::atan2(p_y, p_x);
 }
 _ALWAYS_INLINE_ float atan2(float p_y, float p_x) {
-	return ::atan2f(p_y, p_x);
+	return std::atan2(p_y, p_x);
 }
 
 _ALWAYS_INLINE_ double asinh(double p_x) {
-	return ::asinh(p_x);
+	return std::asinh(p_x);
 }
 _ALWAYS_INLINE_ float asinh(float p_x) {
-	return ::asinhf(p_x);
+	return std::asinh(p_x);
 }
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double acosh(double p_x) {
-	return p_x < 1 ? 0 : ::acosh(p_x);
+	return p_x < 1 ? 0 : std::acosh(p_x);
 }
 _ALWAYS_INLINE_ float acosh(float p_x) {
-	return p_x < 1 ? 0 : ::acoshf(p_x);
+	return p_x < 1 ? 0 : std::acosh(p_x);
 }
 
 // Always does clamping so always safe to use.
 _ALWAYS_INLINE_ double atanh(double p_x) {
-	return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x));
+	return p_x <= -1 ? -INF : (p_x >= 1 ? INF : std::atanh(p_x));
 }
 _ALWAYS_INLINE_ float atanh(float p_x) {
-	return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x));
+	return p_x <= -1 ? (float)-INF : (p_x >= 1 ? (float)INF : std::atanh(p_x));
 }
 
 _ALWAYS_INLINE_ double sqrt(double p_x) {
-	return ::sqrt(p_x);
+	return std::sqrt(p_x);
 }
 _ALWAYS_INLINE_ float sqrt(float p_x) {
-	return ::sqrtf(p_x);
+	return std::sqrt(p_x);
 }
 
 _ALWAYS_INLINE_ double fmod(double p_x, double p_y) {
-	return ::fmod(p_x, p_y);
+	return std::fmod(p_x, p_y);
 }
 _ALWAYS_INLINE_ float fmod(float p_x, float p_y) {
-	return ::fmodf(p_x, p_y);
+	return std::fmod(p_x, p_y);
 }
 
 _ALWAYS_INLINE_ double modf(double p_x, double *r_y) {
-	return ::modf(p_x, r_y);
+	return std::modf(p_x, r_y);
 }
 _ALWAYS_INLINE_ float modf(float p_x, float *r_y) {
-	return ::modff(p_x, r_y);
+	return std::modf(p_x, r_y);
 }
 
 _ALWAYS_INLINE_ double floor(double p_x) {
-	return ::floor(p_x);
+	return std::floor(p_x);
 }
 _ALWAYS_INLINE_ float floor(float p_x) {
-	return ::floorf(p_x);
+	return std::floor(p_x);
 }
 
 _ALWAYS_INLINE_ double ceil(double p_x) {
-	return ::ceil(p_x);
+	return std::ceil(p_x);
 }
 _ALWAYS_INLINE_ float ceil(float p_x) {
-	return ::ceilf(p_x);
+	return std::ceil(p_x);
 }
 
 _ALWAYS_INLINE_ double pow(double p_x, double p_y) {
-	return ::pow(p_x, p_y);
+	return std::pow(p_x, p_y);
 }
 _ALWAYS_INLINE_ float pow(float p_x, float p_y) {
-	return ::powf(p_x, p_y);
+	return std::pow(p_x, p_y);
 }
 
 _ALWAYS_INLINE_ double log(double p_x) {
-	return ::log(p_x);
+	return std::log(p_x);
 }
 _ALWAYS_INLINE_ float log(float p_x) {
-	return ::logf(p_x);
+	return std::log(p_x);
 }
 
 _ALWAYS_INLINE_ double log1p(double p_x) {
-	return ::log1p(p_x);
+	return std::log1p(p_x);
 }
 _ALWAYS_INLINE_ float log1p(float p_x) {
-	return ::log1pf(p_x);
+	return std::log1p(p_x);
 }
 
 _ALWAYS_INLINE_ double log2(double p_x) {
-	return ::log2(p_x);
+	return std::log2(p_x);
 }
 _ALWAYS_INLINE_ float log2(float p_x) {
-	return ::log2f(p_x);
+	return std::log2(p_x);
 }
 
 _ALWAYS_INLINE_ double exp(double p_x) {
-	return ::exp(p_x);
+	return std::exp(p_x);
 }
 _ALWAYS_INLINE_ float exp(float p_x) {
-	return ::expf(p_x);
+	return std::exp(p_x);
 }
 
 _ALWAYS_INLINE_ bool is_nan(double p_val) {
-#ifdef _MSC_VER
-	return _isnan(p_val);
-#elif defined(__GNUC__) && __GNUC__ < 6
-	union {
-		uint64_t u;
-		double f;
-	} ieee754;
-	ieee754.f = p_val;
-	// (unsigned)(0x7ff0000000000001 >> 32) : 0x7ff00000
-	return ((((unsigned)(ieee754.u >> 32) & 0x7fffffff) + ((unsigned)ieee754.u != 0)) > 0x7ff00000);
-#else
-	return isnan(p_val);
-#endif
+	return std::isnan(p_val);
 }
 
 _ALWAYS_INLINE_ bool is_nan(float p_val) {
-#ifdef _MSC_VER
-	return _isnan(p_val);
-#elif defined(__GNUC__) && __GNUC__ < 6
-	union {
-		uint32_t u;
-		float f;
-	} ieee754;
-	ieee754.f = p_val;
-	// -----------------------------------
-	// (single-precision floating-point)
-	// NaN : s111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
-	//     : (> 0x7f800000)
-	// where,
-	//   s : sign
-	//   x : non-zero number
-	// -----------------------------------
-	return ((ieee754.u & 0x7fffffff) > 0x7f800000);
-#else
-	return isnan(p_val);
-#endif
+	return std::isnan(p_val);
 }
 
 _ALWAYS_INLINE_ bool is_inf(double p_val) {
-#ifdef _MSC_VER
-	return !_finite(p_val);
-// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
-#elif defined(__GNUC__) && __GNUC__ < 6
-	union {
-		uint64_t u;
-		double f;
-	} ieee754;
-	ieee754.f = p_val;
-	return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
-			((unsigned)ieee754.u == 0);
-#else
-	return isinf(p_val);
-#endif
+	return std::isinf(p_val);
 }
 
 _ALWAYS_INLINE_ bool is_inf(float p_val) {
-#ifdef _MSC_VER
-	return !_finite(p_val);
-// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
-#elif defined(__GNUC__) && __GNUC__ < 6
-	union {
-		uint32_t u;
-		float f;
-	} ieee754;
-	ieee754.f = p_val;
-	return (ieee754.u & 0x7fffffff) == 0x7f800000;
-#else
-	return isinf(p_val);
-#endif
+	return std::isinf(p_val);
 }
 
 // These methods assume (p_num + p_den) doesn't overflow.
@@ -307,24 +251,17 @@ _ALWAYS_INLINE_ uint64_t division_round_up(uint64_t p_num, uint64_t p_den) {
 }
 
 _ALWAYS_INLINE_ bool is_finite(double p_val) {
-	return isfinite(p_val);
+	return std::isfinite(p_val);
 }
 _ALWAYS_INLINE_ bool is_finite(float p_val) {
-	return isfinite(p_val);
-}
-
-_ALWAYS_INLINE_ double absd(double p_value) {
-	return ::fabs(p_value);
-}
-_ALWAYS_INLINE_ float absf(float p_value) {
-	return ::fabsf(p_value);
+	return std::isfinite(p_val);
 }
 
 _ALWAYS_INLINE_ double abs(double p_value) {
-	return absd(p_value);
+	return std::abs(p_value);
 }
 _ALWAYS_INLINE_ float abs(float p_value) {
-	return absf(p_value);
+	return std::abs(p_value);
 }
 _ALWAYS_INLINE_ int8_t abs(int8_t p_value) {
 	return p_value > 0 ? p_value : -p_value;
@@ -333,10 +270,10 @@ _ALWAYS_INLINE_ int16_t abs(int16_t p_value) {
 	return p_value > 0 ? p_value : -p_value;
 }
 _ALWAYS_INLINE_ int32_t abs(int32_t p_value) {
-	return ::abs(p_value);
+	return std::abs(p_value);
 }
 _ALWAYS_INLINE_ int64_t abs(int64_t p_value) {
-	return ::llabs(p_value);
+	return std::abs(p_value);
 }
 
 _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
@@ -383,17 +320,17 @@ _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 }
 
 _ALWAYS_INLINE_ double deg_to_rad(double p_y) {
-	return p_y * (Math_PI / 180.0);
+	return p_y * (PI / 180.0);
 }
 _ALWAYS_INLINE_ float deg_to_rad(float p_y) {
-	return p_y * (float)(Math_PI / 180.0);
+	return p_y * ((float)PI / 180.0f);
 }
 
 _ALWAYS_INLINE_ double rad_to_deg(double p_y) {
-	return p_y * (180.0 / Math_PI);
+	return p_y * (180.0 / PI);
 }
 _ALWAYS_INLINE_ float rad_to_deg(float p_y) {
-	return p_y * (float)(180.0 / Math_PI);
+	return p_y * (180.0f / (float)PI);
 }
 
 _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) {
@@ -419,31 +356,31 @@ _ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, f
 }
 
 _ALWAYS_INLINE_ double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
-	double from_rot = fmod(p_from, Math_TAU);
+	double from_rot = fmod(p_from, TAU);
 
-	double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-	double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
 
-	double to_diff = fmod(p_to - from_rot, Math_TAU);
-	double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
 
-	double post_diff = fmod(p_post - to_rot, Math_TAU);
-	double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
 
 	return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 }
 
 _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
-	float from_rot = fmod(p_from, (float)Math_TAU);
+	float from_rot = fmod(p_from, (float)TAU);
 
-	float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
 
-	float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-	float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
 
-	float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-	float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
 
 	return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 }
@@ -473,31 +410,31 @@ _ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float 
 
 _ALWAYS_INLINE_ double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
 		double p_to_t, double p_pre_t, double p_post_t) {
-	double from_rot = fmod(p_from, Math_TAU);
+	double from_rot = fmod(p_from, TAU);
 
-	double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-	double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
 
-	double to_diff = fmod(p_to - from_rot, Math_TAU);
-	double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
 
-	double post_diff = fmod(p_post - to_rot, Math_TAU);
-	double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
 		float p_to_t, float p_pre_t, float p_post_t) {
-	float from_rot = fmod(p_from, (float)Math_TAU);
+	float from_rot = fmod(p_from, (float)TAU);
 
-	float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
 
-	float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-	float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
 
-	float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-	float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
@@ -543,12 +480,12 @@ _ALWAYS_INLINE_ float bezier_derivative(float p_start, float p_control_1, float 
 }
 
 _ALWAYS_INLINE_ double angle_difference(double p_from, double p_to) {
-	double difference = fmod(p_to - p_from, Math_TAU);
-	return fmod(2.0 * difference, Math_TAU) - difference;
+	double difference = fmod(p_to - p_from, TAU);
+	return fmod(2.0 * difference, TAU) - difference;
 }
 _ALWAYS_INLINE_ float angle_difference(float p_from, float p_to) {
-	float difference = fmod(p_to - p_from, (float)Math_TAU);
-	return fmod(2.0f * difference, (float)Math_TAU) - difference;
+	float difference = fmod(p_to - p_from, (float)TAU);
+	return fmod(2.0f * difference, (float)TAU) - difference;
 }
 
 _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
@@ -662,13 +599,13 @@ _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta)
 	double difference = angle_difference(p_from, p_to);
 	double abs_difference = abs(difference);
 	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
+	return p_from + CLAMP(p_delta, abs_difference - PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
 }
 _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 	float difference = angle_difference(p_from, p_to);
 	float abs_difference = abs(difference);
 	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
+	return p_from + CLAMP(p_delta, abs_difference - (float)PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
 }
 
 _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
@@ -686,10 +623,10 @@ _ALWAYS_INLINE_ float db_to_linear(float p_db) {
 }
 
 _ALWAYS_INLINE_ double round(double p_val) {
-	return ::round(p_val);
+	return std::round(p_val);
 }
 _ALWAYS_INLINE_ float round(float p_val) {
-	return ::roundf(p_val);
+	return std::round(p_val);
 }
 
 _ALWAYS_INLINE_ double wrapf(double p_value, double p_min, double p_max) {
@@ -760,8 +697,7 @@ int random(int p_from, int p_to);
 
 // This function should be as fast as possible and rounding mode should not matter.
 _ALWAYS_INLINE_ int fast_ftoi(float p_value) {
-	// Assuming every supported compiler has `lrint()`.
-	return lrintf(p_value);
+	return std::rint(p_value);
 }
 
 _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t p_half) {

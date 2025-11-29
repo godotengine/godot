@@ -31,7 +31,7 @@
 #pragma once
 
 #include "render_scene_buffers.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererLightStorage {
 public:

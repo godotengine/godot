@@ -49,7 +49,8 @@ struct GameController {
 	bool double_nintendo_joycon_layout = false;
 	bool single_nintendo_joycon_layout = false;
 
-	bool axis_changed[(int)JoyAxis::MAX];
+	uint32_t axis_changed_mask = 0;
+	static_assert(static_cast<uint32_t>(JoyAxis::MAX) < 32, "JoyAxis::MAX must be less than 32");
 	double axis_value[(int)JoyAxis::MAX];
 
 	GameController(int p_joy_id, GCController *p_controller);

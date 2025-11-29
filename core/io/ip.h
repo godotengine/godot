@@ -67,7 +67,7 @@ private:
 	_IP_ResolverPrivate *resolver = nullptr;
 
 protected:
-	static IP *singleton;
+	static inline IP *singleton = nullptr;
 	static void _bind_methods();
 
 	PackedStringArray _get_local_addresses() const;

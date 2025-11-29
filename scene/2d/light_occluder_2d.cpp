@@ -150,7 +150,7 @@ OccluderPolygon2D::OccluderPolygon2D() {
 
 OccluderPolygon2D::~OccluderPolygon2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(occ_polygon);
+	RS::get_singleton()->free_rid(occ_polygon);
 }
 
 void LightOccluder2D::_poly_changed() {
@@ -206,7 +206,7 @@ void LightOccluder2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
 				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent
@@ -310,5 +310,5 @@ LightOccluder2D::LightOccluder2D() {
 LightOccluder2D::~LightOccluder2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
-	RS::get_singleton()->free(occluder);
+	RS::get_singleton()->free_rid(occluder);
 }

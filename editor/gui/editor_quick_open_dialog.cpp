@@ -32,17 +32,20 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/fuzzy_search.h"
-#include "editor/editor_file_system.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/multi_node_edit.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
@@ -122,7 +125,8 @@ EditorQuickOpenDialog::EditorQuickOpenDialog() {
 
 	{
 		container = memnew(QuickOpenResultContainer);
-		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::ok_pressed));
+		container->connect("selection_changed", callable_mp(this, &EditorQuickOpenDialog::selection_changed));
+		container->connect("result_clicked", callable_mp(this, &EditorQuickOpenDialog::item_pressed));
 		vbc->add_child(container);
 	}
 
@@ -148,26 +152,128 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
+	property_object = nullptr;
+	property_path = "";
 	item_selected_callback = p_item_selected_callback;
 
 	container->init(p_base_types);
-	get_ok_button()->set_disabled(container->has_nothing_selected());
+	container->set_instant_preview_toggle_visible(false);
+	_finish_dialog_setup(p_base_types);
+}
 
+void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback) {
+	ERR_FAIL_NULL(p_obj);
+	ERR_FAIL_COND(p_base_types.is_empty());
+	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
+
+	property_object = p_obj;
+	property_path = p_path;
+	item_selected_callback = p_item_selected_callback;
+	initial_property_value = property_object->get(property_path);
+
+	// Reset this, so that the property isn't updated immediately upon opening
+	// the window.
+	initial_selection_performed = false;
+
+	container->init(p_base_types);
+	container->set_instant_preview_toggle_visible(true);
+	_finish_dialog_setup(p_base_types);
+}
+
+void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_base_types) {
+	get_ok_button()->set_disabled(container->has_nothing_selected());
 	set_title(get_dialog_title(p_base_types));
 	popup_centered_clamped(Size2(780, 650) * EDSCALE, 0.8f);
 	search_box->grab_focus();
 }
 
 void EditorQuickOpenDialog::ok_pressed() {
-	item_selected_callback.call(container->get_selected());
-
-	container->save_selected_item();
+	update_property();
 	container->cleanup();
 	search_box->clear();
 	hide();
 }
 
+bool EditorQuickOpenDialog::_is_instant_preview_active() const {
+	return property_object != nullptr && container->is_instant_preview_enabled();
+}
+
+void EditorQuickOpenDialog::selection_changed() {
+	if (!_is_instant_preview_active()) {
+		return;
+	}
+
+	// This prevents the property from being changed the first time the Quick Open
+	// window is opened.
+	if (!initial_selection_performed) {
+		initial_selection_performed = true;
+	} else {
+		preview_property();
+	}
+}
+
+void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
+	// A double-click should always be taken as a "confirm" action.
+	if (p_double_click) {
+		container->save_selected_item();
+		ok_pressed();
+		return;
+	}
+
+	// Single-clicks should be taken as a "confirm" action only if Instant Preview
+	// isn't currently enabled, or the property object is null for some reason.
+	if (!_is_instant_preview_active()) {
+		container->save_selected_item();
+		ok_pressed();
+	}
+}
+
+void EditorQuickOpenDialog::preview_property() {
+	Ref<Resource> loaded_resource = ResourceLoader::load(container->get_selected());
+	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + container->get_selected() + "'.");
+
+	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
+	// As such, we have to specifically call a version of its setter that doesn't
+	// create undo/redo actions.
+	property_object->set_block_signals(true);
+	if (Object::cast_to<MultiNodeEdit>(property_object)) {
+		Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, loaded_resource, "", false);
+	} else {
+		property_object->set(property_path, loaded_resource);
+	}
+	property_object->set_block_signals(false);
+}
+
+void EditorQuickOpenDialog::update_property() {
+	// Set the property back to the initial value first, so that the undo action
+	// has the correct object.
+	if (property_object) {
+		if (Object::cast_to<MultiNodeEdit>(property_object)) {
+			Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, initial_property_value, "", false);
+		} else {
+			property_object->set(property_path, initial_property_value);
+		}
+	}
+
+	if (!item_selected_callback.is_valid()) {
+		String err_msg = "The callback provided to the Quick Open dialog was invalid.";
+		if (_is_instant_preview_active()) {
+			err_msg += " Try disabling \"Instant Preview\" as a workaround.";
+		}
+		ERR_FAIL_MSG(err_msg);
+	}
+
+	item_selected_callback.call(container->get_selected());
+}
+
 void EditorQuickOpenDialog::cancel_pressed() {
+	if (property_object) {
+		if (Object::cast_to<MultiNodeEdit>(property_object)) {
+			Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, initial_property_value, "", false);
+		} else {
+			property_object->set(property_path, initial_property_value);
+		}
+	}
 	container->cleanup();
 	search_box->clear();
 }
@@ -181,8 +287,7 @@ void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
 
 void style_button(Button *p_button) {
 	p_button->set_flat(true);
-	p_button->set_focus_mode(Control::FOCUS_NONE);
-	p_button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
+	p_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 }
 
 QuickOpenResultContainer::QuickOpenResultContainer() {
@@ -205,6 +310,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			panel_container->add_child(no_results_container);
 
 			no_results_label = memnew(Label);
+			no_results_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 			no_results_label->add_theme_font_size_override(SceneStringName(font_size), 24 * EDSCALE);
 			no_results_container->add_child(no_results_label);
 			no_results_container->hide();
@@ -245,6 +351,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	{
 		// Selected filepath
 		file_details_path = memnew(Label);
+		file_details_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		file_details_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		file_details_path->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 		file_details_path->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -259,10 +366,17 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_theme_constant_override("separation", 3);
 		add_child(bottom_bar);
 
+		instant_preview_toggle = memnew(CheckButton);
+		style_button(instant_preview_toggle);
+		instant_preview_toggle->set_text(TTRC("Instant Preview"));
+		instant_preview_toggle->set_tooltip_text(TTRC("Selected resource will be previewed in the editor before accepting."));
+		instant_preview_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_instant_preview));
+		bottom_bar->add_child(instant_preview_toggle);
+
 		fuzzy_search_toggle = memnew(CheckButton);
 		style_button(fuzzy_search_toggle);
 		fuzzy_search_toggle->set_text(TTR("Fuzzy Search"));
-		fuzzy_search_toggle->set_tooltip_text(TTR("Enable fuzzy matching"));
+		fuzzy_search_toggle->set_tooltip_text(TTRC("Include approximate matches."));
 		fuzzy_search_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_fuzzy_search));
 		bottom_bar->add_child(fuzzy_search_toggle);
 
@@ -330,8 +444,10 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		_set_display_mode((QuickOpenDisplayMode)last);
 	}
 
+	const bool do_instant_preview = EDITOR_GET("filesystem/quick_open_dialog/instant_preview");
 	const bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
 	const bool include_addons = EDITOR_GET("filesystem/quick_open_dialog/include_addons");
+	instant_preview_toggle->set_pressed_no_signal(do_instant_preview);
 	fuzzy_search_toggle->set_pressed_no_signal(fuzzy_matching);
 	include_addons_toggle->set_pressed_no_signal(include_addons);
 	never_opened = false;
@@ -346,8 +462,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
 		bool history_modified = false;
-		List<String> history_keys;
-		history_file->get_section_keys("selected_history", &history_keys);
+		Vector<String> history_keys = history_file->get_section_keys("selected_history");
 		for (const String &type : history_keys) {
 			const StringName type_name = type;
 			const PackedStringArray paths = history_file->get_value("selected_history", type);
@@ -473,7 +588,7 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 
 Vector<QuickOpenResultCandidate> *QuickOpenResultContainer::_get_history() {
 	if (base_types.size() == 1) {
-		return selected_history.lookup_ptr(base_types[0]);
+		return selected_history.getptr(base_types[0]);
 	}
 	return nullptr;
 }
@@ -483,7 +598,7 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	p_candidate.result = nullptr;
 	StringName actual_type;
 	{
-		StringName *actual_type_ptr = filetypes.lookup_ptr(p_filepath);
+		StringName *actual_type_ptr = filetypes.getptr(p_filepath);
 		if (actual_type_ptr) {
 			actual_type = *actual_type_ptr;
 		} else {
@@ -494,12 +609,12 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
+		p_candidate.thumbnail = *file_type_icons.getptr(actual_type);
 	} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
 		p_candidate.thumbnail = get_editor_theme_icon(actual_type);
 		file_type_icons.insert(actual_type, p_candidate.thumbnail);
 	} else {
-		p_candidate.thumbnail = *file_type_icons.lookup_ptr(SNAME("__default_icon"));
+		p_candidate.thumbnail = *file_type_icons.getptr(SNAME("__default_icon"));
 	}
 }
 
@@ -519,19 +634,28 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
+	HashSet<String> existing_paths;
 	Vector<QuickOpenResultCandidate> *history = _get_history();
 	if (history) {
 		candidates.append_array(*history);
+		for (const QuickOpenResultCandidate &candi : *history) {
+			existing_paths.insert(candi.file_path);
+		}
 	}
-	int count = candidates.size();
+	int i = candidates.size();
+
 	candidates.resize(MIN(max_total_results, filepaths.size()));
+	QuickOpenResultCandidate *candidates_w = candidates.ptrw();
+	int count = candidates.size();
+
 	for (const String &filepath : filepaths) {
-		if (count >= max_total_results) {
+		if (i >= count) {
 			break;
 		}
-		if (!history || !history_set.has(filepath)) {
-			_setup_candidate(candidates.write[count++], filepath);
+		if (existing_paths.has(filepath)) {
+			continue;
 		}
+		_setup_candidate(candidates_w[i++], filepath);
 	}
 }
 
@@ -606,7 +730,7 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 			case Key::RIGHT: {
 				if (content_display_mode == QuickOpenDisplayMode::GRID) {
 					// Maybe strip off the shift modifier to allow non-selecting navigation by character?
-					if (key_event->get_modifiers_mask() == 0) {
+					if (key_event->get_modifiers_mask().is_empty()) {
 						move_selection = true;
 					}
 				}
@@ -678,6 +802,8 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 	bool in_history = history_set.has(candidates[selection_index].file_path);
 	file_details_path->set_text(get_selected() + (in_history ? TTR(" (recently opened)") : ""));
 
+	emit_signal(SNAME("selection_changed"));
+
 	const QuickOpenResultItem *item = result_items[selection_index];
 
 	// Copied from Tree.
@@ -699,7 +825,7 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 	if (mb.is_valid() && mb->is_pressed()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			_select_item(p_index);
-			emit_signal(SNAME("result_clicked"));
+			emit_signal(SNAME("result_clicked"), mb->is_double_click());
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			_select_item(p_index);
 			file_context_menu->set_position(result_items[p_index]->get_screen_position() + mb->get_position());
@@ -707,6 +833,10 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 			file_context_menu->popup();
 		}
 	}
+}
+
+void QuickOpenResultContainer::_toggle_instant_preview(bool p_pressed) {
+	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/instant_preview", p_pressed);
 }
 
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
@@ -787,10 +917,10 @@ String QuickOpenResultContainer::get_selected() const {
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
 	static const Vector<StringName> grid_preferred_types = {
-		"Font",
-		"Texture2D",
-		"Material",
-		"Mesh"
+		StringName("Font", true),
+		StringName("Texture2D", true),
+		StringName("Material", true),
+		StringName("Mesh", true),
 	};
 
 	for (const StringName &type : grid_preferred_types) {
@@ -809,6 +939,14 @@ String _get_uid_string(const String &p_filepath) {
 	return id == ResourceUID::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
 }
 
+bool QuickOpenResultContainer::is_instant_preview_enabled() const {
+	return instant_preview_toggle && instant_preview_toggle->is_visible() && instant_preview_toggle->is_pressed();
+}
+
+void QuickOpenResultContainer::set_instant_preview_toggle_visible(bool p_visible) {
+	instant_preview_toggle->set_visible(p_visible);
+}
+
 void QuickOpenResultContainer::save_selected_item() {
 	if (base_types.size() > 1) {
 		// Getting the type of the file and checking which base type it belongs to should be possible.
@@ -818,11 +956,11 @@ void QuickOpenResultContainer::save_selected_item() {
 
 	const StringName &base_type = base_types[0];
 	QuickOpenResultCandidate &selected = candidates.write[selection_index];
-	Vector<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_type);
+	Vector<QuickOpenResultCandidate> *type_history = selected_history.getptr(base_type);
 
 	if (!type_history) {
 		selected_history.insert(base_type, Vector<QuickOpenResultCandidate>());
-		type_history = selected_history.lookup_ptr(base_type);
+		type_history = selected_history.getptr(base_type);
 	} else {
 		for (int i = 0; i < type_history->size(); i++) {
 			if (selected.file_path == type_history->get(i).file_path) {
@@ -884,15 +1022,15 @@ void QuickOpenResultContainer::_notification(int p_what) {
 }
 
 void QuickOpenResultContainer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("result_clicked"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
+	ADD_SIGNAL(MethodInfo("result_clicked", PropertyInfo(Variant::BOOL, "double_click")));
 }
 
 //------------------------- Result Item
 
 QuickOpenResultItem::QuickOpenResultItem() {
-	set_focus_mode(FocusMode::FOCUS_ALL);
+	set_focus_mode(FocusMode::FOCUS_NONE);
 	_set_enabled(false);
-	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	list_item = memnew(QuickOpenResultListItem);
 	list_item->hide();

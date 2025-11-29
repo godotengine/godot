@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+if __name__ != "__main__":
+    raise SystemExit(f'Utility script "{__file__}" should not be used as a module!')
+
+import argparse
 import os
 import shutil
 import subprocess
@@ -9,6 +13,14 @@ import urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
 from misc.utility.color import Ansi, color_print
+
+parser = argparse.ArgumentParser(description="Install D3D12 dependencies for Windows platforms.")
+parser.add_argument(
+    "--mingw_prefix",
+    default=os.getenv("MINGW_PREFIX", ""),
+    help="Explicitly specify a path containing the MinGW bin folder.",
+)
+args = parser.parse_args()
 
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
@@ -20,10 +32,7 @@ else:
 
 # Mesa NIR
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "23.1.9"
-mesa_filename = "godot-nir-23.1.9.zip"
-mesa_archive = os.path.join(deps_folder, mesa_filename)
-mesa_folder = os.path.join(deps_folder, "mesa")
+mesa_version = "23.1.9-2"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"
@@ -43,30 +52,45 @@ if not os.path.exists(deps_folder):
 
 # Mesa NIR
 color_print(f"{Ansi.BOLD}[1/3] Mesa NIR")
-if os.path.isfile(mesa_archive):
+for arch in [
+    "arm64-llvm",
+    "arm64-msvc",
+    "x86_32-gcc",
+    "x86_32-llvm",
+    "x86_32-msvc",
+    "x86_64-gcc",
+    "x86_64-llvm",
+    "x86_64-msvc",
+]:
+    mesa_filename = "godot-nir-static-" + arch + "-release.zip"
+    mesa_archive = os.path.join(deps_folder, mesa_filename)
+    mesa_folder = os.path.join(deps_folder, "mesa-" + arch)
+
+    if os.path.isfile(mesa_archive):
+        os.remove(mesa_archive)
+    print(f"Downloading Mesa NIR {mesa_filename} ...")
+    urllib.request.urlretrieve(
+        f"https://github.com/godotengine/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
+        mesa_archive,
+    )
+    if os.path.exists(mesa_folder):
+        print(f"Removing existing local Mesa NIR installation in {mesa_folder} ...")
+        shutil.rmtree(mesa_folder)
+    print(f"Extracting Mesa NIR {mesa_filename} to {mesa_folder} ...")
+    shutil.unpack_archive(mesa_archive, mesa_folder)
     os.remove(mesa_archive)
-print(f"Downloading Mesa NIR {mesa_filename} ...")
-urllib.request.urlretrieve(
-    f"https://github.com/godotengine/godot-nir-static/releases/download/{mesa_version}/{mesa_filename}",
-    mesa_archive,
-)
-if os.path.exists(mesa_folder):
-    print(f"Removing existing local Mesa NIR installation in {mesa_folder} ...")
-    shutil.rmtree(mesa_folder)
-print(f"Extracting Mesa NIR {mesa_filename} to {mesa_folder} ...")
-shutil.unpack_archive(mesa_archive, mesa_folder)
-os.remove(mesa_archive)
-print(f"Mesa NIR {mesa_filename} installed successfully.\n")
+print("Mesa NIR installed successfully.\n")
 
 # WinPixEventRuntime
 
 # MinGW needs DLLs converted with dlltool.
 # We rely on finding gendef/dlltool to detect if we have MinGW.
 # Check existence of needed tools for generating mingw library.
-gendef = shutil.which("gendef") or ""
-dlltool = shutil.which("dlltool") or ""
-if dlltool == "":
-    dlltool = shutil.which("x86_64-w64-mingw32-dlltool") or ""
+pathstr = os.environ.get("PATH", "")
+if args.mingw_prefix:
+    pathstr = os.path.join(args.mingw_prefix, "bin") + os.pathsep + pathstr
+gendef = shutil.which("x86_64-w64-mingw32-gendef", path=pathstr) or shutil.which("gendef", path=pathstr) or ""
+dlltool = shutil.which("x86_64-w64-mingw32-dlltool", path=pathstr) or shutil.which("dlltool", path=pathstr) or ""
 has_mingw = gendef != "" and dlltool != ""
 
 color_print(f"{Ansi.BOLD}[2/3] WinPixEventRuntime")
@@ -96,7 +120,9 @@ if has_mingw:
     )
     os.chdir(cwd)
 else:
-    print("MinGW wasn't found, so only MSVC support is provided for WinPixEventRuntime.")
+    print(
+        'MinGW support requires "dlltool" and "gendef" dependencies, so only MSVC support is provided for WinPixEventRuntime. Did you forget to provide a `--mingw_prefix`?'
+    )
 print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
 
 # DirectX 12 Agility SDK

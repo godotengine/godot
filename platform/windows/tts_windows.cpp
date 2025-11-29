@@ -104,7 +104,7 @@ void TTS_Windows::process_events() {
 		ut.id = message.id;
 
 		synth->SetVolume(message.volume);
-		synth->SetRate(10.f * log10(message.rate) / log10(3.f));
+		synth->SetRate(10.f * std::log10(message.rate) / std::log10(3.f));
 		synth->Speak((LPCWSTR)ut.string.get_data(), flags, &stream_number);
 
 		ids[(uint32_t)stream_number] = ut;
@@ -186,7 +186,7 @@ Array TTS_Windows::get_voices() const {
 	return list;
 }
 
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();

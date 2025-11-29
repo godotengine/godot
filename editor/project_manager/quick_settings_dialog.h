@@ -33,6 +33,7 @@
 #include "scene/gui/dialogs.h"
 
 class Button;
+class EditorSettingsDialog;
 class Label;
 class MarginContainer;
 class OptionButton;
@@ -48,7 +49,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	Vector<String> editor_themes;
 	Vector<String> editor_scales;
 	Vector<String> editor_network_modes;
-	Vector<String> editor_engine_version_update_modes;
+	Vector<String> editor_check_for_updates;
 	Vector<String> editor_directory_naming_conventions;
 
 	void _fetch_setting_values();
@@ -67,10 +68,11 @@ class QuickSettingsDialog : public AcceptDialog {
 	OptionButton *theme_option_button = nullptr;
 	OptionButton *scale_option_button = nullptr;
 	OptionButton *network_mode_option_button = nullptr;
-	OptionButton *engine_version_update_mode_button = nullptr;
+	OptionButton *check_for_update_button = nullptr;
 	OptionButton *directory_naming_convention_button = nullptr;
 
 	Label *custom_theme_label = nullptr;
+	EditorSettingsDialog *editor_settings_dialog = nullptr;
 
 #ifndef ANDROID_ENABLED
 	void _language_selected(int p_id);
@@ -78,9 +80,10 @@ class QuickSettingsDialog : public AcceptDialog {
 	void _theme_selected(int p_id);
 	void _scale_selected(int p_id);
 	void _network_mode_selected(int p_id);
-	void _engine_version_update_mode_selected(int p_id);
+	void _check_for_update_selected(int p_id);
 	void _directory_naming_convention_selected(int p_id);
 	void _set_setting_value(const String &p_setting, const Variant &p_value, bool p_restart_required = false);
+	void _show_full_settings();
 
 	Label *restart_required_label = nullptr;
 	Button *restart_required_button = nullptr;

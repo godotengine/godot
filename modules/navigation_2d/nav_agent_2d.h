@@ -34,6 +34,7 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/self_list.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
 
 #include <Agent2d.h>
 
@@ -44,12 +45,12 @@ class NavAgent2D : public NavRid2D {
 	Vector2 target_position;
 	Vector2 velocity;
 	Vector2 velocity_forced;
-	real_t radius = 1.0;
-	real_t max_speed = 1.0;
-	real_t time_horizon_agents = 1.0;
-	real_t time_horizon_obstacles = 0.0;
-	int max_neighbors = 5;
-	real_t neighbor_distance = 5.0;
+	real_t radius = NavigationDefaults2D::AVOIDANCE_AGENT_RADIUS;
+	real_t max_speed = NavigationDefaults2D::AVOIDANCE_AGENT_MAX_SPEED;
+	real_t time_horizon_agents = NavigationDefaults2D::AVOIDANCE_AGENT_TIME_HORIZON_AGENTS;
+	real_t time_horizon_obstacles = NavigationDefaults2D::AVOIDANCE_AGENT_TIME_HORIZON_OBSTACLES;
+	int max_neighbors = NavigationDefaults2D::AVOIDANCE_AGENT_MAX_NEIGHBORS;
+	real_t neighbor_distance = NavigationDefaults2D::AVOIDANCE_AGENT_NEIGHBOR_DISTANCE;
 	Vector2 safe_velocity;
 	bool clamp_speed = true; // Experimental, clamps velocity to max_speed.
 

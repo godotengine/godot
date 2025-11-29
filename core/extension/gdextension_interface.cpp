@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdextension_interface.h"
+#include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
@@ -42,8 +42,6 @@
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
-
-#include <string.h>
 
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
@@ -263,6 +261,7 @@ static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_ver
 }
 
 // Memory Functions
+#ifndef DISABLE_DEPRECATED
 static void *gdextension_mem_alloc(size_t p_size) {
 	return memalloc(p_size);
 }
@@ -273,6 +272,19 @@ static void *gdextension_mem_realloc(void *p_mem, size_t p_size) {
 
 static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
+}
+#endif
+
+static void *gdextension_mem_alloc2(size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::alloc_static(p_size, p_prepad_align);
+}
+
+static void *gdextension_mem_realloc2(void *p_mem, size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::realloc_static(p_mem, p_size, p_prepad_align);
+}
+
+static void gdextension_mem_free2(void *p_mem, GDExtensionBool p_prepad_align) {
+	Memory::free_static(p_mem, p_prepad_align);
 }
 
 // Helper print functions.
@@ -805,13 +817,11 @@ static GDExtensionPtrOperatorEvaluator gdextension_variant_get_ptr_operator_eval
 }
 static GDExtensionPtrBuiltInMethod gdextension_variant_get_ptr_builtin_method(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, GDExtensionInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
-	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
-	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
-		return nullptr;
+	GDExtensionPtrBuiltInMethod ptr = (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method_with_compatibility(Variant::Type(p_type), method, p_hash);
+	if (!ptr) {
+		ERR_PRINT("Error getting method " + method + ", missing or hash mismatch.");
 	}
-
-	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(Variant::Type(p_type), method);
+	return ptr;
 }
 static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
 	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);
@@ -904,8 +914,9 @@ static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStrin
 }
 
 static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	const size_t string_length = p_contents ? (p_size < 0 ? strlen(p_contents) : strnlen(p_contents, p_size)) : 0;
 	String *dest = memnew_placement(r_dest, String);
-	dest->append_latin1(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_size) : 0));
+	dest->append_latin1(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
@@ -929,8 +940,9 @@ static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensi
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen(p_contents, p_char_count)) : 0;
 	String *string = memnew_placement(r_dest, String);
-	string->append_utf32(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_char_count) : 0));
+	string->append_utf32(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
@@ -940,8 +952,9 @@ static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitiali
 		dest->append_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit (UTF-32).
+		const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen((const char32_t *)p_contents, p_char_count)) : 0;
 		String *string = memnew_placement(r_dest, String);
-		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? _strlen_clipped((const char32_t *)p_contents, p_char_count) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, string_length));
 	}
 }
 
@@ -1044,7 +1057,7 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 
 static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
 	String *self = (String *)p_self;
-	return (*self).resize(p_length);
+	return (*self).resize_uninitialized(p_length);
 }
 
 static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
@@ -1276,11 +1289,13 @@ static GDExtensionVariantPtr gdextension_array_operator_index_const(GDExtensionC
 	return (GDExtensionVariantPtr)&self->operator[](p_index);
 }
 
+#ifndef DISABLE_DEPRECATED
 void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_from) {
 	Array *self = (Array *)p_self;
 	const Array *from = (const Array *)p_from;
-	self->_ref(*from);
+	self->Array::operator=(*from);
 }
+#endif // DISABLE_DEPRECATED
 
 void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
@@ -1684,9 +1699,14 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);
 #endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version2);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(mem_alloc2);
+	REGISTER_INTERFACE_FUNC(mem_realloc2);
+	REGISTER_INTERFACE_FUNC(mem_free2);
 	REGISTER_INTERFACE_FUNC(print_error);
 	REGISTER_INTERFACE_FUNC(print_error_with_message);
 	REGISTER_INTERFACE_FUNC(print_warning);
@@ -1797,7 +1817,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_ref);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_set_typed);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index_const);

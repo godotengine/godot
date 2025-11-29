@@ -34,11 +34,13 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
-#include "scene/resources/mesh.h"
+#include "scene/main/scene_tree_fti.h"
 
 #undef Window
 
+class ArrayMesh;
 class PackedScene;
+class InputEvent;
 class Node;
 #ifndef _3D_DISABLED
 class Node3D;
@@ -76,8 +78,6 @@ public:
 	bool is_ignoring_time_scale();
 
 	void release_connections();
-
-	SceneTreeTimer();
 };
 
 class SceneTree : public MainLoop {
@@ -147,7 +147,15 @@ private:
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 
-	bool _physics_interpolation_enabled = false;
+	// Static so we can get directly instead of via SceneTree pointer.
+	static bool _physics_interpolation_enabled;
+
+	// Note that physics interpolation is hard coded to OFF in the editor,
+	// therefore we have a second bool to enable e.g. configuration warnings
+	// to only take effect when the project is using physics interpolation.
+	static bool _physics_interpolation_enabled_in_project;
+
+	SceneTreeFTI scene_tree_fti;
 
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
@@ -227,7 +235,6 @@ private:
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
-	void make_group_changed(const StringName &p_group);
 
 	void _process_group(ProcessGroup *p_group, bool p_physics);
 	void _process_groups_thread(uint32_t p_index, bool p_physics);
@@ -330,7 +337,7 @@ public:
 	void _accessibility_force_update();
 	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
 	void _flush_accessibility_changes();
-	void _process_accessibility_changes(DisplayServer::WindowID p_window_id);
+	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServer::WindowID
 
 	virtual void initialize() override;
 
@@ -402,7 +409,7 @@ public:
 
 	void queue_delete(Object *p_object);
 
-	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
+	Vector<Node *> get_nodes_in_group(const StringName &p_group);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
 	int get_node_count_in_group(const StringName &p_group) const;
@@ -417,11 +424,12 @@ public:
 	Node *get_current_scene() const;
 	Error change_scene_to_file(const String &p_path);
 	Error change_scene_to_packed(const Ref<PackedScene> &p_scene);
+	Error change_scene_to_node(Node *p_node);
 	Error reload_current_scene();
 	void unload_current_scene();
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
-	Ref<Tween> create_tween();
+	RequiredResult<Tween> create_tween();
 	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();
 
@@ -447,12 +455,18 @@ public:
 	//default texture settings
 
 	void set_physics_interpolation_enabled(bool p_enabled);
-	bool is_physics_interpolation_enabled() const;
+	bool is_physics_interpolation_enabled() const { return _physics_interpolation_enabled; }
+
+	// Different name to disambiguate fast static versions from the user bound versions.
+	static bool is_fti_enabled() { return _physics_interpolation_enabled; }
+	static bool is_fti_enabled_in_project() { return _physics_interpolation_enabled_in_project; }
 
 #ifndef _3D_DISABLED
 	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);
 	void client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem);
 #endif
+
+	SceneTreeFTI &get_scene_tree_fti() { return scene_tree_fti; }
 
 	SceneTree();
 	~SceneTree();

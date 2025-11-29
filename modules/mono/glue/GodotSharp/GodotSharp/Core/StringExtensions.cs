@@ -430,8 +430,8 @@ namespace Godot
         {
             int pos = instance.RFind(".");
 
-            if (pos < 0)
-                return instance;
+            if (pos < 0 || pos < Math.Max(instance.RFind("/"), instance.RFind("\\")))
+                return string.Empty;
 
             return instance.Substring(pos + 1);
         }
@@ -1315,7 +1315,9 @@ namespace Godot
         /// <returns>The concatenated path with the given file name.</returns>
         public static string PathJoin(this string instance, string file)
         {
-            if (instance.Length > 0 && instance[instance.Length - 1] == '/')
+            if (instance.Length == 0)
+                return file;
+            if (instance[^1] == '/' || (file.Length > 0 && file[0] == '/'))
                 return instance + file;
             return instance + "/" + file;
         }
@@ -1537,7 +1539,7 @@ namespace Godot
                 if (end < 0)
                     end = len;
                 if (allowEmpty || end > from)
-                    ret.Add(float.Parse(instance.AsSpan(from), CultureInfo.InvariantCulture));
+                    ret.Add(float.Parse(instance.AsSpan(from, end - from), CultureInfo.InvariantCulture));
                 if (end == len)
                     break;
 

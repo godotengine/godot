@@ -9,7 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="GDExtension overview">$DOCS_URL/tutorials/scripting/gdextension/what_is_gdextension.html</link>
-		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/gdextension/gdextension_cpp_example.html</link>
+		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/cpp/gdextension_cpp_example.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_extension">
@@ -37,6 +37,14 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Loads an extension by absolute file path. The [param path] needs to point to a valid [GDExtension]. Returns [constant LOAD_STATUS_OK] if successful.
+			</description>
+		</method>
+		<method name="load_extension_from_function">
+			<return type="int" enum="GDExtensionManager.LoadStatus" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="init_func" type="const GDExtensionInitializationFunction*" />
+			<description>
+				Loads the extension already in address space via the given path and initialization function. The [param path] needs to be unique and start with [code]"libgodot://"[/code]. Returns [constant LOAD_STATUS_OK] if successful.
 			</description>
 		</method>
 		<method name="reload_extension">

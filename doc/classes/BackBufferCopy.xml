@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" enum="BackBufferCopy.CopyMode" default="1">
-			Buffer mode. See [enum CopyMode] constants.
+			Buffer mode.
 		</member>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-100, -100, 200, 200)">
 			The area covered by the [BackBufferCopy]. Only used if [member copy_mode] is [constant COPY_MODE_RECT].

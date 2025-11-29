@@ -34,10 +34,19 @@
 
 #include "core/config/project_settings.h"
 
-#include <errno.h>
+#include <sys/mount.h>
+#include <cerrno>
 
 #import <AppKit/NSWorkspace.h>
 #import <Foundation/Foundation.h>
+
+String DirAccessMacOS::get_filesystem_type() const {
+	struct statfs fs;
+	if (statfs(current_dir.utf8().get_data(), &fs) != 0) {
+		return "";
+	}
+	return String::utf8(fs.f_fstypename).to_upper();
+}
 
 String DirAccessMacOS::fix_unicode_name(const char *p_name) const {
 	String fname;

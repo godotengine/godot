@@ -32,10 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef NAVIGATION_2D_DISABLED
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
 RID World2D::get_canvas() const {
@@ -48,6 +48,7 @@ RID World2D::get_navigation_map() const {
 		navigation_map = NavigationServer2D::get_singleton()->map_create();
 		NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 		NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/2d/default_cell_size"));
+		NavigationServer2D::get_singleton()->map_set_merge_rasterizer_cell_scale(navigation_map, GLOBAL_GET("navigation/2d/merge_rasterizer_cell_scale"));
 		NavigationServer2D::get_singleton()->map_set_use_edge_connections(navigation_map, GLOBAL_GET("navigation/2d/use_edge_connections"));
 		NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/2d/default_edge_connection_margin"));
 		NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/2d/default_link_connection_radius"));
@@ -105,19 +106,19 @@ World2D::World2D() {
 
 World2D::~World2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas);
+	RenderingServer::get_singleton()->free_rid(canvas);
 
 #ifndef NAVIGATION_2D_DISABLED
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (navigation_map.is_valid()) {
-		NavigationServer2D::get_singleton()->free(navigation_map);
+		NavigationServer2D::get_singleton()->free_rid(navigation_map);
 	}
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	if (space.is_valid()) {
-		PhysicsServer2D::get_singleton()->free(space);
+		PhysicsServer2D::get_singleton()->free_rid(space);
 	}
 #endif // PHYSICS_2D_DISABLED
 }

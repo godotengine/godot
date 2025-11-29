@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 StringName MobileVRInterface::get_name() const {
@@ -205,7 +205,7 @@ void MobileVRInterface::set_position_from_sensors() {
 			Vector3 axis = grav_adj.cross(down);
 			axis.normalize();
 
-			Basis drift_compensation(axis, acos(dot) * delta_time * 10);
+			Basis drift_compensation(axis, std::acos(dot) * delta_time * 10);
 			orientation = drift_compensation * orientation;
 		};
 	};

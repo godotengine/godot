@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/templates/oa_hash_map.h"
+#include "core/templates/a_hash_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 
@@ -97,6 +97,9 @@ public:
 	bool has_nothing_selected() const;
 	String get_selected() const;
 
+	bool is_instant_preview_enabled() const;
+	void set_instant_preview_toggle_visible(bool p_visible);
+
 	void save_selected_item();
 	void cleanup();
 
@@ -111,10 +114,10 @@ private:
 	Vector<FuzzySearchResult> search_results;
 	Vector<StringName> base_types;
 	Vector<String> filepaths;
-	OAHashMap<String, StringName> filetypes;
+	AHashMap<String, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
 
-	OAHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
+	AHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
 	HashSet<String> history_set;
 
 	String query;
@@ -139,10 +142,11 @@ private:
 
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
+	CheckButton *instant_preview_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
 
-	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
+	AHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
@@ -168,6 +172,7 @@ private:
 	void _layout_result_item(QuickOpenResultItem *p_item);
 	void _set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void _toggle_display_mode();
+	void _toggle_instant_preview(bool p_pressed);
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
 	void _menu_option(int p_option);
@@ -252,11 +257,14 @@ class EditorQuickOpenDialog : public AcceptDialog {
 
 public:
 	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback);
+	void popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback);
 	EditorQuickOpenDialog();
 
 protected:
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
+	void item_pressed(bool p_double_click);
+	void selection_changed();
 
 private:
 	static String get_dialog_title(const Vector<StringName> &p_base_types);
@@ -266,5 +274,14 @@ private:
 
 	Callable item_selected_callback;
 
+	Object *property_object = nullptr;
+	StringName property_path;
+	Variant initial_property_value;
+	bool initial_selection_performed = false;
+	bool _is_instant_preview_active() const;
 	void _search_box_text_changed(const String &p_query);
+	void _finish_dialog_setup(const Vector<StringName> &p_base_types);
+
+	void preview_property();
+	void update_property();
 };

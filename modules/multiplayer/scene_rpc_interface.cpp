@@ -105,7 +105,7 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 		return rpc_cache[oid];
 	}
 	RPCConfigCache cache;
-	_parse_rpc_config(p_node->get_rpc_config(), true, cache);
+	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
 		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}
@@ -224,6 +224,18 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	_process_rpc(node, name_id, p_from, p_packet, packet_len, packet_min_size);
 }
 
+static String _get_rpc_mode_string(MultiplayerAPI::RPCMode p_mode) {
+	switch (p_mode) {
+		case MultiplayerAPI::RPC_MODE_DISABLED:
+			return "disabled";
+		case MultiplayerAPI::RPC_MODE_ANY_PEER:
+			return "any_peer";
+		case MultiplayerAPI::RPC_MODE_AUTHORITY:
+			return "authority";
+	}
+	ERR_FAIL_V_MSG(String(), "Invalid RPC mode.");
+}
+
 void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 	ERR_FAIL_COND_MSG(p_offset > p_packet_len, "Invalid packet received. Size too small.");
 
@@ -245,7 +257,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 		} break;
 	}
 
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + String(p_node->get_path()) + " from: " + itos(p_from) + ". Mode is \"" + _get_rpc_mode_string(config.rpc_mode) + "\", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
 

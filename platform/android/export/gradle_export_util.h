@@ -30,11 +30,14 @@
 
 #pragma once
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "editor/export/editor_export.h"
+#include "editor/export/editor_export_platform.h"
+#include "servers/display/display_server.h"
 
 const String GODOT_PROJECT_NAME_XML_STRING = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->
@@ -57,11 +60,12 @@ static const int APP_CATEGORY_VIDEO = 8;
 static const int APP_CATEGORY_UNDEFINED = 9;
 
 // Supported XR modes.
-// This should match the entries in 'platform/android/java/lib/src/org/godotengine/godot/xr/XRMode.java'
+// This should match the entries in 'platform/android/java/lib/src/main/java/org/godotengine/godot/xr/XRMode.java'
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OPENXR = 1;
 
 struct CustomExportData {
+	EditorExportPlatform::PackData pd;
 	String assets_directory;
 	String libs_directory;
 	bool debug;
@@ -81,6 +85,8 @@ int _get_app_category_value(int category_index);
 
 String _get_app_category_label(int category_index);
 
+Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd);
+
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir);
 
@@ -97,7 +103,7 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames);

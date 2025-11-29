@@ -59,10 +59,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 #undef CursorShape
 
@@ -144,7 +144,7 @@ class DisplayServerWayland : public DisplayServer {
 	// are the "take all input thx" windows while the `popup_stack` variable keeps
 	// track of all the generic floating window concept.
 	List<WindowID> popup_menu_list;
-	BitField<MouseButtonMask> last_mouse_monitor_mask;
+	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -197,7 +197,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -328,6 +328,11 @@ public:
 
 	virtual bool get_swap_cancel_ok() override;
 
+	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual OS::ProcessID get_focused_process_id() override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;
@@ -341,6 +346,8 @@ public:
 
 	virtual void release_rendering_thread() override;
 	virtual void swap_buffers() override;
+
+	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	virtual void set_context(Context p_context) override;
 

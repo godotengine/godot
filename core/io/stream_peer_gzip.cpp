@@ -40,9 +40,6 @@ void StreamPeerGZIP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &StreamPeerGZIP::clear);
 }
 
-StreamPeerGZIP::StreamPeerGZIP() {
-}
-
 StreamPeerGZIP::~StreamPeerGZIP() {
 	_close();
 }
@@ -79,7 +76,7 @@ Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size
 	ERR_FAIL_COND_V_MSG(buffer_size <= 0, ERR_INVALID_PARAMETER, "Invalid buffer size. It should be a positive integer.");
 	clear();
 	compressing = p_compress;
-	rb.resize(nearest_shift(buffer_size - 1));
+	rb.resize(nearest_shift(uint32_t(buffer_size - 1)));
 	buffer.resize(1024);
 
 	// Create ctx.

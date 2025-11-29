@@ -66,6 +66,8 @@ namespace GodotTools.Ides
                     return "VisualStudioCode";
                 case ExternalEditorId.Rider:
                     return "Rider";
+                case ExternalEditorId.Fleet:
+                    return "Fleet";
                 case ExternalEditorId.VisualStudioForMac:
                     return "VisualStudioForMac";
                 case ExternalEditorId.MonoDevelop:
@@ -107,6 +109,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.Fleet:
                 case ExternalEditorId.CustomEditor:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:

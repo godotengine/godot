@@ -1020,7 +1020,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
 				for (int vert = 0; vert < normals.size(); vert++) {
 					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
+					if (std::abs(tan.dot(normals[vert])) > 0.0001) {
 						// Tangent is not perpendicular to the normal, so we can't use compression.
 						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 					}
@@ -1565,7 +1565,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		}
 
 		NodeMap &nm = node_map[E];
-		String path = scene->get_path_to(nm.node);
+		String path = String(scene->get_path_to(nm.node));
 
 		if (nm.bone >= 0) {
 			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
@@ -1756,7 +1756,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			}
 
 			NodeMap &nm = node_map[at.target];
-			String path = scene->get_path_to(nm.node);
+			String path = String(scene->get_path_to(nm.node));
 
 			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;

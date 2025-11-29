@@ -148,10 +148,12 @@ private:
 		int users = 0;
 	};
 
+	static Mutex shader_map_mutex;
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 	static RBSet<String> min_max_properties;
 
 	MaterialKey current_key;
+	RID shader_rid;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
@@ -185,7 +187,7 @@ private:
 		return mk;
 	}
 
-	static Mutex material_mutex;
+	static Mutex dirty_materials_mutex;
 	static SelfList<ParticleProcessMaterial>::List dirty_materials;
 
 	struct ShaderNames {
@@ -501,6 +503,7 @@ public:
 	void set_emission_shape_scale(const Vector3 &p_emission_shape_scale);
 	Vector3 get_emission_shape_scale() const;
 
+	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;

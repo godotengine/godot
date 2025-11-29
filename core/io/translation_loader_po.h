@@ -32,9 +32,10 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/string/translation.h"
 
 class TranslationLoaderPO : public ResourceFormatLoader {
+	GDSOFTCLASS(TranslationLoaderPO, ResourceFormatLoader);
+
 public:
 	static Ref<Resource> load_translation(Ref<FileAccess> f, Error *r_error = nullptr);
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
@@ -45,6 +46,4 @@ public:
 	// Treat translations as text/binary files, do not generate a `*.{po,mo}.uid` file.
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
 	virtual bool has_custom_uid_support() const override { return true; }
-
-	TranslationLoaderPO() {}
 };
