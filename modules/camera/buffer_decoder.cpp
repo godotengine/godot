@@ -203,10 +203,16 @@ JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
 }
 
 void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
-	image_data.resize(p_buffer.length);
-	uint8_t *dst = (uint8_t *)image_data.ptrw();
-	memcpy(dst, p_buffer.start, p_buffer.length);
-	if (image->load_jpg_from_buffer(image_data) == OK) {
+	size_t data_size = p_buffer.bytes_used > 0 ? p_buffer.bytes_used : p_buffer.length;
+	uint8_t *src = (uint8_t *)p_buffer.start;
+
+	// Verify JPEG SOI marker (FFD8).
+	if (data_size < 2 || src[0] != 0xFF || src[1] != 0xD8) {
+		return;
+	}
+
+	// Use lenient mode to allow partial/corrupt JPEG frames from camera streams.
+	if (image->_load_jpg_from_buffer_lenient(src, data_size) == OK) {
 		camera_feed->set_rgb_image(image);
 	}
 }

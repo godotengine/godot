@@ -38,6 +38,7 @@ class CameraFeed;
 struct StreamingBuffer {
 	void *start = nullptr;
 	size_t length = 0;
+	size_t bytes_used = 0; // Actual data size (for variable-length formats like MJPEG)
 };
 
 class BufferDecoder {
@@ -104,9 +105,6 @@ public:
 };
 
 class JpegBufferDecoder : public BufferDecoder {
-private:
-	Vector<uint8_t> image_data;
-
 public:
 	JpegBufferDecoder(CameraFeed *p_camera_feed);
 	virtual void decode(StreamingBuffer p_buffer) override;
