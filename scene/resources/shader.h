@@ -114,13 +114,21 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
+
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual bool has_custom_uid_support() const override;
 };
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
 	GDSOFTCLASS(ResourceFormatSaverShader, ResourceFormatSaver);
 
+private:
+	bool add_uid_to_source(String &p_r_source, const String &p_path, ResourceUID::ID p_uid = ResourceUID::INVALID_ID) const;
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 };
