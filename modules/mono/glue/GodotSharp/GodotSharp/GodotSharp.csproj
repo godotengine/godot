@@ -91,6 +91,8 @@
     <Compile Include="Core\Dictionary.cs" />
     <Compile Include="Core\Dispatcher.cs" />
     <Compile Include="Core\Extensions\GodotObjectExtensions.cs" />
+    <Compile Include="Core\Extensions\INodeExtensions.cs" />
+    <Compile Include="Core\Extensions\IPackedSceneExtensions.cs" />
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
     <Compile Include="Core\Extensions\PackedSceneExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
