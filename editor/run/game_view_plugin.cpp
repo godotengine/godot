@@ -1244,9 +1244,12 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	selection_hb->add_child(hide_selection);
 	hide_selection->set_toggle_mode(true);
 	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
-	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 	hide_selection->set_tooltip_text(TTRC("Toggle Selection Visibility"));
 	hide_selection->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "hide_selection", false));
+	if (hide_selection->is_pressed()) {
+		debugger->set_selection_visible(false);
+	}
+	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
 
 	selection_hb->add_child(memnew(VSeparator));
 
