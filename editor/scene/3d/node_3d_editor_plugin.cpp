@@ -439,6 +439,10 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 		}
 	} else {
 		if (focused_axis > -1 && gizmo_activated) {
+			if (axis_menu_options[focused_axis] + 1 == viewport->view_type) {
+				// Switch to the opposite view
+				focused_axis += (focused_axis < 3) ? 3 : -3;
+			}
 			viewport->_menu_option(axis_menu_options[focused_axis]);
 			_update_focus();
 		}
