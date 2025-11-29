@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Copyright (C) 2016-2021, Intel Corporation
 //
 // SPDX-License-Identifier: MIT
@@ -7,7 +7,6 @@
 // See `gtao.glsl` for details
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 #[compute]
 
@@ -42,8 +41,7 @@ vec4 unpack_edges(float p_packed_val) {
 	return clamp(edgesLRTB, 0.0, 1.0);
 }
 
-void add_sample(float p_ao_term, float p_weight, inout float r_sum, inout float r_sum_weight)
-{
+void add_sample(float p_ao_term, float p_weight, inout float r_sum, inout float r_sum_weight) {
 	r_sum += p_weight * p_ao_term;
 	r_sum_weight += p_weight;
 }
@@ -78,8 +76,7 @@ void main() {
 	const vec4 visQ2 = textureGatherOffset(source_working_term, gather_center, ivec2(0, 2), 0);
 	const vec4 visQ3 = textureGatherOffset(source_working_term, gather_center, ivec2(2, 2), 0);
 
-	for(int side = 0; side < 2; side++)
-	{
+	for (int side = 0; side < 2; side++) {
 		const ivec2 pix_coord = ivec2(pix_coord_base.x + side, pix_coord_base.y);
 
 		vec4 edgesL_LRTB = unpack_edges((side == 0) ? (edgesQ0.x) : (edgesQ0.y));
@@ -93,7 +90,7 @@ void main() {
 		// they will match in majority of cases). This line further enforces the symmetricity, creating a slightly sharper blur. Works real nice with TAA.
 		edgesC_LRTB[side] *= vec4(edgesL_LRTB.y, edgesR_LRTB.x, edgesT_LRTB.w, edgesB_LRTB.z);
 
-		// this allows some small amount of AO leaking from neighbours if there are 3 or 4 edges; this reduces both spatial and temporal aliasing
+		// this allows some small amount of AO leaking from neighbors if there are 3 or 4 edges; this reduces both spatial and temporal aliasing
 		const float leak_threshold = 2.5;
 		const float leak_strength = 0.5;
 		float edginess = (clamp(4.0 - leak_threshold - dot(edgesC_LRTB[side], vec4(1.0)), 0.0, 1.0) / (4 - leak_threshold)) * leak_strength;
@@ -106,15 +103,15 @@ void main() {
 		weightBR[side] = diag_weight * (edgesC_LRTB[side].y * edgesR_LRTB.w + edgesC_LRTB[side].w * edgesB_LRTB.y);
 
 		// first pass
-		float ssaoValue     = (side == 0) ? (visQ0[1]) : (visQ1[0]);
-		float ssaoValueL    = (side == 0) ? (visQ0[0]) : (visQ0[1]);
-		float ssaoValueT    = (side == 0) ? (visQ0[2]) : (visQ1[3]);
-		float ssaoValueR    = (side == 0) ? (visQ1[0]) : (visQ1[1]);
-		float ssaoValueB    = (side == 0) ? (visQ2[2]) : (visQ3[3]);
-		float ssaoValueTL   = (side == 0) ? (visQ0[3]) : (visQ0[2]);
-		float ssaoValueBR   = (side == 0) ? (visQ3[3]) : (visQ3[2]);
-		float ssaoValueTR   = (side == 0) ? (visQ1[3]) : (visQ1[2]);
-		float ssaoValueBL   = (side == 0) ? (visQ2[3]) : (visQ2[2]);
+		float ssaoValue = (side == 0) ? (visQ0[1]) : (visQ1[0]);
+		float ssaoValueL = (side == 0) ? (visQ0[0]) : (visQ0[1]);
+		float ssaoValueT = (side == 0) ? (visQ0[2]) : (visQ1[3]);
+		float ssaoValueR = (side == 0) ? (visQ1[0]) : (visQ1[1]);
+		float ssaoValueB = (side == 0) ? (visQ2[2]) : (visQ3[3]);
+		float ssaoValueTL = (side == 0) ? (visQ0[3]) : (visQ0[2]);
+		float ssaoValueBR = (side == 0) ? (visQ3[3]) : (visQ3[2]);
+		float ssaoValueTR = (side == 0) ? (visQ1[3]) : (visQ1[2]);
+		float ssaoValueBL = (side == 0) ? (visQ2[3]) : (visQ2[2]);
 
 		float sum_weight = blur_amount;
 		float sum = ssaoValue * sum_weight;

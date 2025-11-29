@@ -31,6 +31,9 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/gtao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
@@ -41,9 +44,6 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/gtao.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/gtao_blur.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/gtao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
