@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  HybridAppUtils.kt                                                     */
+/*  split_container.compat.inc                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/**
- * Contains utility methods and constants for hybrid apps.
- */
-@file:JvmName("HybridAppUtils")
+#ifndef DISABLE_DEPRECATED
 
-package org.godotengine.godot.xr
-
-import android.util.Log
-import org.godotengine.godot.GodotLib
-
-private const val TAG = "HybridAppUtils"
-
-enum class HybridMode(private val nativeValue: Int) {
-	NONE( -1),
-	IMMERSIVE(0),
-	PANEL(1);
-
-	companion object {
-		fun fromNative(nativeValue: Int): HybridMode {
-			for (mode in HybridMode.entries) {
-				if (mode.nativeValue == nativeValue) {
-					return mode
-				}
-			}
-			return NONE
-		}
-	}
+void SplitContainer::_clamp_split_offset_compat_90411() {
+	clamp_split_offset(0);
 }
 
-const val HYBRID_APP_FEATURE = "godot_openxr_hybrid_app"
-const val HYBRID_APP_PANEL_FEATURE = "godot_openxr_panel_app"
-const val HYBRID_APP_PANEL_CATEGORY = "org.godotengine.xr.hybrid.PANEL"
-const val HYBRID_APP_IMMERSIVE_CATEGORY = "org.godotengine.xr.hybrid.IMMERSIVE"
-
-fun isHybridAppEnabled() = GodotLib.getGlobal("xr/hybrid_app/enabled").toBoolean()
-
-fun getHybridAppLaunchMode(): HybridMode {
-	if (!isHybridAppEnabled()) {
-		return HybridMode.NONE
-	}
-
-	try {
-		val launchModeValue = GodotLib.getGlobal("xr/hybrid_app/launch_mode").toInt()
-		return HybridMode.fromNative(launchModeValue)
-	} catch (e: Exception) {
-		Log.w(TAG, "Unable to retrieve 'xr/hybrid_app/launch_mode' project setting", e)
-		return HybridMode.NONE
-	}
+void SplitContainer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("clamp_split_offset"), &SplitContainer::_clamp_split_offset_compat_90411);
 }
+
+#endif

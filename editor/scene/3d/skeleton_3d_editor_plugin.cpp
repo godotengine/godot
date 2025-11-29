@@ -366,9 +366,7 @@ void Skeleton3DEditor::_bind_methods() {
 }
 
 void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
-	if (!skeleton) {
-		return;
-	}
+	ERR_FAIL_COND(!skeleton);
 
 	switch (p_skeleton_option) {
 		case SKELETON_OPTION_RESET_ALL_POSES: {
@@ -399,9 +397,8 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 }
 
 void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
-	if (!skeleton) {
-		return;
-	}
+	ERR_FAIL_COND(!skeleton);
+
 	const int bone_count = skeleton->get_bone_count();
 	if (!bone_count) {
 		return;
@@ -434,16 +431,34 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 	ur->commit_action();
 }
 
-void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
+void Skeleton3DEditor::insert_keys(const bool p_all_bones, const bool p_enable_modifier) {
+	ERR_FAIL_COND(!skeleton);
+
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	bool is_read_only = te->is_read_only();
 	if (is_read_only) {
 		te->popup_read_only_dialog();
 		return;
 	}
-	if (!skeleton) {
-		return;
+	if (p_enable_modifier) {
+		if (!skeleton->is_connected(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones))) {
+			skeleton->connect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones), CONNECT_ONE_SHOT);
+		} else {
+			WARN_PRINT_ED("A skeleton_updated signal is already connected with _insert_keys().");
+		}
+		skeleton->force_update_deferred();
+		skeleton->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
+		// Force disconnecting signal if remain the connecting just in case.
+		if (skeleton->is_connected(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones))) {
+			skeleton->disconnect(SceneStringName(skeleton_updated), callable_mp(this, &Skeleton3DEditor::_insert_keys).bind(p_all_bones));
+		}
+	} else {
+		_insert_keys(p_all_bones);
 	}
+}
+
+void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
+	ERR_FAIL_COND(!skeleton);
 
 	bool pos_enabled = key_loc_button->is_pressed();
 	bool rot_enabled = key_rot_button->is_pressed();
@@ -453,6 +468,7 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 	String path = String(root->get_path_to(skeleton));
 
+	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	te->make_insert_queue();
 	for (int i = 0; i < bone_len; i++) {
 		const String name = skeleton->get_bone_name(i);
@@ -475,9 +491,8 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
-	if (!skeleton) {
-		return;
-	}
+	ERR_FAIL_COND(!skeleton);
+
 	const int bone_count = skeleton->get_bone_count();
 	if (!bone_count) {
 		return;
@@ -1053,42 +1068,67 @@ void Skeleton3DEditor::create_editors() {
 	key_loc_button = memnew(Button);
 	key_loc_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_loc_button->set_toggle_mode(true);
-	key_loc_button->set_pressed(false);
+	key_loc_button->set_pressed(editor_plugin->loc_pressed);
 	key_loc_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
+	if (!key_loc_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled))) {
+		key_loc_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_loc_toggled));
+	}
 
 	key_rot_button = memnew(Button);
 	key_rot_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_rot_button->set_toggle_mode(true);
-	key_rot_button->set_pressed(true);
+	key_rot_button->set_pressed(editor_plugin->rot_pressed);
 	key_rot_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
+	if (!key_rot_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled))) {
+		key_rot_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_rot_toggled));
+	}
 
 	key_scale_button = memnew(Button);
 	key_scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_scale_button->set_toggle_mode(true);
-	key_scale_button->set_pressed(false);
+	key_scale_button->set_pressed(editor_plugin->scl_pressed);
 	key_scale_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
+	if (!key_scale_button->is_connected(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled))) {
+		key_scale_button->connect(SceneStringName(toggled), callable_mp(this, &Skeleton3DEditor::_scl_toggled));
+	}
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_insert_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
+	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false, false));
 	key_insert_button->set_tooltip_text(TTRC("Insert key (based on mask) for bones with an existing track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTRC("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
 
-	key_insert_all_button = memnew(Button);
-	key_insert_all_button->set_theme_type_variation(SceneStringName(FlatButton));
-	key_insert_all_button->set_focus_mode(FOCUS_ACCESSIBILITY);
-	key_insert_all_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
-	key_insert_all_button->set_tooltip_text(TTRC("Insert key (based on mask) for all bones."));
-	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
-	animation_hb->add_child(key_insert_all_button);
+	key_insert_new_button = memnew(Button);
+	key_insert_new_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_insert_new_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_insert_new_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true, false));
+	key_insert_new_button->set_tooltip_text(TTRC("Insert key (based on mask) for all bones."));
+	key_insert_new_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
+	animation_hb->add_child(key_insert_new_button);
+
+	key_mod_insert_button = memnew(Button);
+	key_mod_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_mod_insert_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_mod_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false, true));
+	key_mod_insert_button->set_tooltip_text(TTRC("Insert key (based on mask) for modified bones with an existing track."));
+	key_mod_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTRC("Insert Key (Existing Tracks)"), Key::INSERT));
+	animation_hb->add_child(key_mod_insert_button);
+
+	key_mod_insert_new_button = memnew(Button);
+	key_mod_insert_new_button->set_theme_type_variation(SceneStringName(FlatButton));
+	key_mod_insert_new_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	key_mod_insert_new_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true, true));
+	key_mod_insert_new_button->set_tooltip_text(TTRC("Insert new key (based on mask) for all modified bones."));
+	key_mod_insert_new_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTRC("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
+	animation_hb->add_child(key_mod_insert_new_button);
 
 	// Bone tree.
 	bones_section = memnew(EditorInspectorSection);
@@ -1122,6 +1162,25 @@ void Skeleton3DEditor::create_editors() {
 	set_keyable(te->has_keying());
 }
 
+void Skeleton3DEditor::_loc_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->loc_pressed = p_toggled_on;
+}
+void Skeleton3DEditor::_rot_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->rot_pressed = p_toggled_on;
+}
+void Skeleton3DEditor::_scl_toggled(bool p_toggled_on) {
+	if (!editor_plugin) {
+		return;
+	}
+	editor_plugin->scl_pressed = p_toggled_on;
+}
+
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1148,8 +1207,10 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
 			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
 			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
-			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
-			key_insert_all_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
+			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("InsertKey")));
+			key_insert_new_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
+			key_mod_insert_button->set_button_icon(get_editor_theme_icon(SNAME("InsertModKey")));
+			key_mod_insert_new_button->set_button_icon(get_editor_theme_icon(SNAME("NewModKey")));
 			bones_section->set_bg_color(get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			update_joint_tree();

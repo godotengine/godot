@@ -2170,6 +2170,7 @@ ColorPicker::ColorPicker() {
 	intensity_slider->set_step(0.001);
 	intensity_value->set_allow_greater(true);
 	intensity_value->set_custom_arrow_step(1);
+	intensity_value->set_custom_arrow_round(true);
 
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
@@ -2348,6 +2349,14 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 	_update_picker();
 
+	// Checking if the popup was open before, so we can keep it closed instead of reopening it.
+	// Popups get closed when it's clicked outside of them.
+	if (popup_was_open) {
+		// Reset popup_was_open value.
+		popup_was_open = popup->is_visible();
+		return;
+	}
+
 	Size2 minsize = popup->get_contents_minimum_size();
 	float viewport_height = get_viewport_rect().size.y;
 
@@ -2371,6 +2380,19 @@ void ColorPickerButton::pressed() {
 	} else if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
 		picker->set_focus_on_line_edit();
 	}
+}
+
+void ColorPickerButton::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseButton> mouse_button = p_event;
+	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
+	bool mouse_left_pressed = mouse_button.is_valid() && mouse_button->get_button_index() == MouseButton::LEFT && mouse_button->is_pressed();
+	if (mouse_left_pressed || ui_accept) {
+		popup_was_open = popup && popup->is_visible();
+	}
+
+	BaseButton::gui_input(p_event);
 }
 
 void ColorPickerButton::_notification(int p_what) {

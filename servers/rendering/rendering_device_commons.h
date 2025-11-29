@@ -421,7 +421,8 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
+		TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT = (1 << 12),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
 	};
 
 	struct TextureFormat {
@@ -629,6 +630,7 @@ public:
 
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 
+	// Keep the enum values in sync with the `SHADER_UNIFORM_NAMES` values (file rendering_device.cpp).
 	enum UniformType {
 		UNIFORM_TYPE_SAMPLER, // For sampling only (sampler GLSL type).
 		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // For sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture.
@@ -970,6 +972,7 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE,
 	};
 
 	enum SubgroupOperations {

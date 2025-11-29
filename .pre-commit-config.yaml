@@ -57,6 +57,13 @@ repos:
       - id: codespell
         additional_dependencies: [tomli]
 
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.34.1
+    hooks:
+      - id: check-jsonschema
+        files: ^core/extension/gdextension_interface\.json$
+        args: ["--schemafile", "core/extension/gdextension_interface.schema.json"]
+
   ### Requires Docker; look into alternative implementation.
   # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
   #   rev: 1.0.0

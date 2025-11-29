@@ -840,6 +840,18 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 		}
 	}
 
+	Ref<Texture2D> extension_language_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class());
+	Ref<Texture2D> extension_language_alt_icon;
+	if (script->is_built_in()) {
+		extension_language_alt_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class() + "Internal");
+	}
+
+	if (extension_language_alt_icon.is_valid()) {
+		return extension_language_alt_icon;
+	} else if (extension_language_icon.is_valid()) {
+		return extension_language_icon;
+	}
+
 	return Ref<Texture2D>();
 }
 
@@ -1410,7 +1422,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		memdelete(tmp);
 		return;
 	}
 
@@ -1520,7 +1533,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		memdelete(tmp);
 	}
 }
 

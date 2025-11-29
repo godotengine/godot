@@ -31,7 +31,6 @@
 package org.godotengine.godot;
 
 import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.utils.DeviceUtils;
 
 import android.view.SurfaceView;
 
@@ -67,8 +66,5 @@ public interface GodotRenderView {
 	/**
 	 * @return true if pointer capture is supported.
 	 */
-	default boolean canCapturePointer() {
-		// Pointer capture is not supported on native XR devices.
-		return !DeviceUtils.isNativeXRDevice(getView().getContext()) && getInputHandler().canCapturePointer();
-	}
+	boolean canCapturePointer();
 }

@@ -151,6 +151,7 @@ private:
 		RDD::BufferID driver_id;
 		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
+		uint8_t *data_ptr = nullptr;
 	};
 
 	struct StagingBuffers {
@@ -348,6 +349,7 @@ public:
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 		bool has_initial_data = false;
+		bool pending_clear = false;
 
 		BitField<RDD::TextureAspectBits> read_aspect_flags = {};
 		BitField<RDD::TextureAspectBits> barrier_aspect_flags = {};
@@ -400,6 +402,8 @@ public:
 	void _texture_free_shared_fallback(Texture *p_texture);
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
+	void _texture_check_pending_clear(RID p_texture_rid, Texture *p_texture);
+	void _texture_clear(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
 
 	struct TextureGetDataRequest {
@@ -518,6 +522,7 @@ public:
 		Vector<int32_t> resolve_attachments;
 		Vector<int32_t> preserve_attachments;
 		int32_t depth_attachment = ATTACHMENT_UNUSED;
+		int32_t depth_resolve_attachment = ATTACHMENT_UNUSED;
 	};
 
 	typedef int64_t FramebufferFormatID;
@@ -1137,6 +1142,7 @@ private:
 		Vector<RDG::ResourceUsage> draw_trackers_usage;
 		HashMap<RID, RDG::ResourceUsage> untracked_usage;
 		LocalVector<SharedTexture> shared_textures_to_update;
+		LocalVector<RID> pending_clear_textures;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
 	};
@@ -1144,6 +1150,7 @@ private:
 	RID_Owner<UniformSet, true> uniform_set_owner;
 
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
+	void _uniform_set_update_clears(UniformSet *p_uniform_set);
 
 public:
 	/** Bake a set of uniforms that can be bound at runtime with the given shader.
@@ -1359,7 +1366,13 @@ public:
 		DRAW_IGNORE_ALL = DRAW_IGNORE_COLOR_ALL | DRAW_IGNORE_DEPTH | DRAW_IGNORE_STENCIL
 	};
 
+	/**
+	 * @param p_clear_color Must use linear encoding when HDR 2D is active.
+	 */
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	/**
+	 * @param p_clear_color_values Color values must use linear encoding when HDR 2D is active.
+	 */
 	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 

@@ -4,7 +4,7 @@
 		Manages toast notifications within the editor.
 	</brief_description>
 	<description>
-		This object manages the functionality and display of toast notifications within the editor, ensuring timely and informative alerts are presented to users.
+		This object manages the functionality and display of toast notifications within the editor, ensuring immediate and informative alerts are presented to the user.
 		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_toaster].
 	</description>
 	<tutorials>

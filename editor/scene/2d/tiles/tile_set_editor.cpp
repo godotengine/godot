@@ -38,6 +38,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
@@ -807,6 +808,13 @@ void TileSetEditor::register_split(SplitContainer *p_split) {
 
 TileSetEditor::TileSetEditor() {
 	singleton = this;
+	set_name(TTRC("TileSet"));
+	set_icon_name("TileSet");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTRC("Open TileSet Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
 
 	set_process_internal(true);
 

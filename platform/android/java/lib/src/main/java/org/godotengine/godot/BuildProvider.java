@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  DeviceUtils.kt                                                        */
+/*  BuildProvider.java                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/**
- * Contains utility methods for detecting specific devices.
- */
-@file:JvmName("DeviceUtils")
+package org.godotengine.godot;
 
-package org.godotengine.godot.utils
+import org.godotengine.godot.variant.Callable;
 
-import android.content.Context
-import android.os.Build
+import androidx.annotation.NonNull;
 
 /**
- * Returns true if running on Meta Horizon OS.
+ * Provides an environment for executing build commands.
  */
-fun isHorizonOSDevice(context: Context): Boolean {
-	return context.packageManager.hasSystemFeature("oculus.hardware.standalone_vr")
-}
+public interface BuildProvider {
+	/**
+	 * Connects to the build environment.
+	 *
+	 * @param callback The callback to call when connected
+	 * @return Whether or not connecting is possible
+	 */
+	boolean buildEnvConnect(@NonNull Callable callback);
 
-/**
- * Returns true if running on PICO OS.
- */
-fun isPicoOSDevice(): Boolean {
-	return ("Pico".equals(Build.BRAND, true))
-}
+	/**
+	 * Disconnects from the build environment.
+	 */
+	void buildEnvDisconnect();
 
-/**
- * Returns true if running on a native Android XR device.
- */
-fun isNativeXRDevice(context: Context): Boolean {
-	return isHorizonOSDevice(context) || isPicoOSDevice()
+	/**
+	 * Executes a command via the build environment.
+	 *
+	 * @param buildTool      The build tool to execute (for example, "gradle")
+	 * @param arguments      The argument for the command
+	 * @param projectPath    The working directory to use when executing the command
+	 * @param buildDir       The build directory within the project
+	 * @param outputCallback The callback to call for each line of output from the command
+	 * @param resultCallback The callback to call when the command is finished running
+	 * @return A positive job id, if successful; otherwise, a negative number
+	 */
+	int buildEnvExecute(String buildTool, @NonNull String[] arguments, @NonNull String projectPath, @NonNull String buildDir, @NonNull Callable outputCallback, @NonNull Callable resultCallback);
+
+	/**
+	 * Cancels a command executed via the build environment.
+	 *
+	 * @param jobId The job id returned from buildEnvExecute()
+	 */
+	void buildEnvCancel(int jobId);
+
+	/**
+	 * Requests that a project be cleaned up via the build environment.
+	 *
+	 * @param projectPath The working directory to use when executing the command
+	 * @param buildDir    The build directory within the project
+	 */
+	void buildEnvCleanProject(@NonNull String projectPath, @NonNull String buildDir, @NonNull Callable callback);
 }

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "atlas_merging_dialog.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/resources/2d/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
@@ -45,8 +46,8 @@ class EditorFileDialog;
 class EditorInspectorPlugin;
 class TileSetSourceItemList;
 
-class TileSetEditor : public MarginContainer {
-	GDCLASS(TileSetEditor, MarginContainer);
+class TileSetEditor : public EditorDock {
+	GDCLASS(TileSetEditor, EditorDock);
 
 	static TileSetEditor *singleton;
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  node_dock.h                                                           */
+/*  editor_shader_language_plugin.cpp                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "editor_shader_language_plugin.h"
 
-#include "editor/docks/editor_dock.h"
-#include "groups_editor.h"
+Vector<Ref<EditorShaderLanguagePlugin>> EditorShaderLanguagePlugin::shader_languages;
+Vector<Vector2i> EditorShaderLanguagePlugin::language_variation_map;
 
-class ConfigFile;
-class ConnectionsDock;
+void EditorShaderLanguagePlugin::register_shader_language(const Ref<EditorShaderLanguagePlugin> &p_shader_language) {
+	// Allows one ShaderLanguageEditorPlugin to provide multiple dropdown options in
+	// the language selection menu. For example, ShaderInclude is handled this way.
+	// X is the plugin index, and Y is the language variation index.
+	for (int i = 0; i < p_shader_language->get_language_variations().size(); i++) {
+		language_variation_map.push_back(Vector2i(shader_languages.size(), i));
+	}
+	shader_languages.push_back(p_shader_language);
+}
 
-class NodeDock : public EditorDock {
-	GDCLASS(NodeDock, EditorDock);
+void EditorShaderLanguagePlugin::clear_registered_shader_languages() {
+	shader_languages.clear();
+	language_variation_map.clear();
+}
 
-	Button *connections_button = nullptr;
-	Button *groups_button = nullptr;
+const Vector<Ref<EditorShaderLanguagePlugin>> EditorShaderLanguagePlugin::get_shader_languages_read_only() {
+	return shader_languages;
+}
 
-	ConnectionsDock *connections = nullptr;
-	GroupsEditor *groups = nullptr;
+int EditorShaderLanguagePlugin::get_shader_language_variation_count() {
+	return language_variation_map.size();
+}
 
-	HBoxContainer *mode_hb = nullptr;
+Ref<EditorShaderLanguagePlugin> EditorShaderLanguagePlugin::get_shader_language_for_index(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, language_variation_map.size(), nullptr);
+	Vector2i lang_var_indices = language_variation_map[p_index];
+	return shader_languages[lang_var_indices.x];
+}
 
-	Label *select_a_node = nullptr;
-
-private:
-	inline static NodeDock *singleton = nullptr;
-
-public:
-	static NodeDock *get_singleton() { return singleton; }
-
-protected:
-	void _notification(int p_what);
-
-	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
-	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
-
-public:
-	void set_object(Object *p_object);
-
-	void show_groups();
-	void show_connections();
-
-	void update_lists();
-
-	NodeDock();
-	~NodeDock();
-};
+String EditorShaderLanguagePlugin::get_file_extension_for_index(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, language_variation_map.size(), "tres");
+	Vector2i lang_var_indices = language_variation_map[p_index];
+	EditorShaderLanguagePlugin *lang = shader_languages[lang_var_indices.x].ptr();
+	return lang->get_file_extension(lang_var_indices.y);
+}

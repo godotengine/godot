@@ -2108,14 +2108,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// "primary" is used for integer timeline values, "secondary" for decimals.
 
 		Ref<StyleBoxFlat> style_time_available = p_config.base_style->duplicate();
-		style_time_available->set_bg_color(p_config.surface_highest_color);
+		style_time_available->set_bg_color(p_config.dark_theme ? p_config.surface_highest_color : p_config.surface_high_color);
 		if (p_config.draw_extra_borders) {
 			style_time_available->set_border_width_all(Math::round(EDSCALE));
-			style_time_available->set_border_color(p_config.extra_border_color_1);
+			style_time_available->set_border_color(p_config.extra_border_color_2);
 		}
 
 		Ref<StyleBoxFlat> style_time_unavailable = p_config.base_style->duplicate();
-		style_time_unavailable->set_bg_color(p_config.surface_high_color);
+		style_time_unavailable->set_bg_color(p_config.dark_theme ? p_config.surface_high_color : p_config.surface_highest_color);
 
 		p_theme->set_stylebox("time_available", "AnimationTimelineEdit", style_time_available);
 		p_theme->set_stylebox("time_unavailable", "AnimationTimelineEdit", style_time_unavailable);

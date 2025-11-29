@@ -1096,6 +1096,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
+}
+
 bool OS_Unix::has_environment(const String &p_var) const {
 	return getenv(p_var.utf8().get_data()) != nullptr;
 }

@@ -465,7 +465,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 
 		// First Column - Action Name
 		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
-		action_item->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
+		action_item->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		action_item->set_text(0, action_info.name);
 		action_item->set_editable(0, action_info.editable);
 		action_item->set_icon(0, action_info.icon);

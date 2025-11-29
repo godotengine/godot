@@ -31,11 +31,15 @@
 #include "openxr_ml2_controller_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 
-HashMap<String, bool *> OpenXRML2ControllerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRML2ControllerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-	request_extensions[XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
+	if (p_version < XR_API_VERSION_1_1_0) {
+		// Extension was promoted in OpenXR 1.1, only include it in OpenXR 1.0.
+		request_extensions[XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
+	}
 
 	return request_extensions;
 }
@@ -50,7 +54,7 @@ void OpenXRML2ControllerExtension::on_register_metadata() {
 
 	// Magic Leap 2 Controller
 	const String profile_path = "/interaction_profiles/ml/ml2_controller";
-	openxr_metadata->register_interaction_profile("Magic Leap 2 controller", profile_path, XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME);
+	openxr_metadata->register_interaction_profile("Magic Leap 2 controller", profile_path, XR_ML_ML2_CONTROLLER_INTERACTION_EXTENSION_NAME "," XR_OPENXR_1_1_NAME);
 	for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 		openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 		openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);

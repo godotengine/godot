@@ -86,7 +86,6 @@ Same enum is defined in SkeletonModifier3D which is a base class of SpringBoneSi
 
 GH-112290
 ---------
-
 Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/duplicate': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/duplicate': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/duplicate': is_const changed value in new API, from false to true.
@@ -106,6 +105,38 @@ GH-112379
 Validate extension JSON: Error: Field 'classes/DisplayServer/methods/tts_speak/arguments/5': meta changed value in new API, from "int32" to "int64".
 
 `utterance_id` argument changed from `int32` to `int64`. No compatibility method needed.
+
+
+GH-90411
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/SplitContainer/methods/clamp_split_offset': arguments
+
+Optional argument added for index. Compatibility method registered.
+
+
+GH-112539
+---------
+Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat64Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt32Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt64Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedStringArray/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector2Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/methods/bsearch': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/bsearch': is_const changed value in new API, from false to true.
+
+bsearch method made const. Compatibility methods registered.
+
+
+GH-109302
+---------
+
+Validate extension JSON: Error: Field 'classes/OpenXRExtensionWrapper/methods/_set_instance_create_info_and_get_next_pointer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/OpenXRExtensionWrapper/methods/_set_instance_create_info_and_get_next_pointer/arguments/0': type changed value in new API, from "void*" to "int".
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/OpenXRExtensionWrapper/methods/_get_requested_extensions': arguments
+
 
 GH-94602
 --------

@@ -187,6 +187,7 @@ class AnimationTimelineEdit : public Range {
 
 	friend class AnimationBezierTrackEdit;
 	friend class AnimationTrackEditor;
+	friend class AnimationMarkerEdit;
 
 	static constexpr float SCROLL_ZOOM_FACTOR_IN = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
 	static constexpr float SCROLL_ZOOM_FACTOR_OUT = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
@@ -195,6 +196,7 @@ class AnimationTimelineEdit : public Range {
 	bool read_only = false;
 
 	AnimationTrackEdit *track_edit = nullptr;
+	AnimationTrackEditor *editor = nullptr;
 	int name_limit = 0;
 	Range *zoom = nullptr;
 	Range *h_scroll = nullptr;
@@ -225,6 +227,11 @@ class AnimationTimelineEdit : public Range {
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
+	Rect2 timeline_resize_rect;
+	float timeline_resize_from = 0.0f;
+	float timeline_resize_at = 0.0f;
+	bool resizing_timeline = false;
+
 	bool dragging_timeline = false;
 	bool dragging_hsize = false;
 	float dragging_hsize_from = 0.0f;
@@ -236,6 +243,8 @@ class AnimationTimelineEdit : public Range {
 	bool zoom_callback_occurred = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _commit_timeline_resize();
+	void _stop_dragging();
 	void _track_added(int p_track);
 
 	float _get_zoom_scale(double p_zoom_value) const;
@@ -254,6 +263,7 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
+	void set_editor(AnimationTrackEditor *p_editor);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
 	void auto_fit();
@@ -668,6 +678,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
+	void _store_snap_states();
 
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;

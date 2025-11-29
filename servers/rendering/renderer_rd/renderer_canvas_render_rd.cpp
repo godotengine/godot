@@ -2276,6 +2276,9 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target.render_target)) {
 			clear = true;
 			clear_color = texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target);
+			if (texture_storage->render_target_is_using_hdr(p_to_render_target.render_target)) {
+				clear_color = clear_color.srgb_to_linear();
+			}
 			texture_storage->render_target_disable_clear_request(p_to_render_target.render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
@@ -2557,16 +2560,15 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				Rect2 src_rect;
 				Rect2 dst_rect(np->rect.position.x, np->rect.position.y, np->rect.size.x, np->rect.size.y);
 
-				if (np->texture.is_null()) {
-					src_rect = Rect2(0, 0, 1, 1);
+				if (np->texture.is_valid() && np->source != Rect2()) {
+					src_rect = Rect2(np->source.position.x * tex_info->texpixel_size.width, np->source.position.y * tex_info->texpixel_size.height, np->source.size.x * tex_info->texpixel_size.width, np->source.size.y * tex_info->texpixel_size.height);
+					instance_data->ninepatch_pixel_size[0] = 1.0 / np->source.size.width;
+					instance_data->ninepatch_pixel_size[1] = 1.0 / np->source.size.height;
 				} else {
-					if (np->source != Rect2()) {
-						src_rect = Rect2(np->source.position.x * tex_info->texpixel_size.width, np->source.position.y * tex_info->texpixel_size.height, np->source.size.x * tex_info->texpixel_size.width, np->source.size.y * tex_info->texpixel_size.height);
-						instance_data->ninepatch_pixel_size[0] = 1.0 / np->source.size.width;
-						instance_data->ninepatch_pixel_size[1] = 1.0 / np->source.size.height;
-					} else {
-						src_rect = Rect2(0, 0, 1, 1);
-					}
+					src_rect = Rect2(0, 0, 1, 1);
+					// Set the default ninepatch pixel size to the full texture size.
+					instance_data->ninepatch_pixel_size[0] = tex_info->texpixel_size.width;
+					instance_data->ninepatch_pixel_size[1] = tex_info->texpixel_size.height;
 				}
 
 				Color modulated = np->color * base_color;
@@ -3243,7 +3245,6 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 			if (!must_remap) {
 				state.instance_data = state.prev_instance_data;
 				state.instance_data_index = state.prev_instance_data_index;
-				new_batch.start = state.instance_data_index;
 			}
 			state.prev_instance_data = nullptr;
 			state.prev_instance_data_index = 0;
@@ -3253,6 +3254,9 @@ RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_
 		if (state.instance_data == nullptr) {
 			// If there is no existing instance buffer, we must allocate a new one.
 			_allocate_instance_buffer();
+		} else {
+			// Otherwise, just use the existing one from where it last left off.
+			new_batch.start = state.instance_data_index;
 		}
 		new_batch.instance_buffer = state.instance_buffers._get(0);
 		state.canvas_instance_batches.push_back(new_batch);

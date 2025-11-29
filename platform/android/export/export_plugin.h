@@ -60,6 +60,8 @@ struct LauncherIcon {
 	int dimensions = 0;
 };
 
+class AndroidEditorGradleRunner;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -106,6 +108,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
+#else
+	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
 #endif
 
 	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
@@ -151,13 +155,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
-	static Error save_apk_so(void *p_userdata, const SharedObject &p_so);
+	static Error save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
+	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
+	static Error copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
 

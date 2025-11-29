@@ -137,6 +137,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
+	bool framebuffer_depth_resolve = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	bool device_memory_report_support = false;
 #endif
@@ -259,8 +260,6 @@ public:
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
-	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
@@ -575,7 +574,7 @@ private:
 
 	struct RenderPassInfo {
 		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
-		bool uses_fragment_density_map_offsets = false;
+		bool uses_fragment_density_map = false;
 	};
 
 public:

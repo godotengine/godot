@@ -292,7 +292,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Selecting a tab.
-				if (selecting) {
+				if (selecting && !tabs[found].disabled) {
 					if (deselect_enabled && get_current_tab() == found) {
 						set_current_tab(-1);
 					} else {
@@ -1829,26 +1829,33 @@ void TabBar::_ensure_no_over_offset() {
 		return;
 	}
 
-	int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-
-	int prev_offset = offset;
+	int limit_with_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+	int limit_with_no_button = get_size().width;
+	int offset_with_buttons = offset;
+	int offset_with_no_button = offset;
 
 	int total_w = tabs[max_drawn_tab].ofs_cache + tabs[max_drawn_tab].size_cache - tabs[offset].ofs_cache;
-	for (int i = offset; i > 0; i--) {
-		if (tabs[i - 1].hidden) {
+	for (int i = offset - 1; i >= 0; i--) {
+		if (tabs[i].hidden) {
 			continue;
 		}
 
-		total_w += tabs[i - 1].size_cache;
+		total_w += tabs[i].size_cache;
 
-		if (total_w < limit_minus_buttons) {
-			offset--;
+		if (total_w < limit_with_buttons) {
+			offset_with_buttons--;
+			offset_with_no_button--;
+		} else if (total_w < limit_with_no_button) {
+			offset_with_no_button--;
 		} else {
 			break;
 		}
 	}
 
-	if (prev_offset != offset) {
+	int new_offset = (offset_with_no_button == 0) ? 0 : offset_with_buttons;
+
+	if (new_offset != offset) {
+		offset = new_offset;
 		_update_cache();
 		queue_redraw();
 	}

@@ -34,6 +34,7 @@
 
 class Button;
 class ConfigFile;
+class EditorDock;
 class EditorToaster;
 class HBoxContainer;
 
@@ -41,28 +42,30 @@ class EditorBottomPanel : public TabContainer {
 	GDCLASS(EditorBottomPanel, TabContainer);
 
 	HBoxContainer *bottom_hbox = nullptr;
+	Control *icon_spacer = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
+	Popup *layout_popup = nullptr;
 
+	int previous_tab = -1;
 	bool lock_panel_switching = false;
 	LocalVector<Control *> bottom_docks;
 	LocalVector<Ref<Shortcut>> dock_shortcuts;
 	HashMap<String, int> dock_offsets;
 
 	LocalVector<Button *> legacy_buttons;
-	void _on_button_visibility_changed(Button *p_button, Control *p_control);
+	void _on_button_visibility_changed(Button *p_button, EditorDock *p_dock);
 
 	void _repaint();
 	void _on_tab_changed(int p_idx);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
 	void _update_center_split_offset();
+	EditorDock *_get_dock_from_control(Control *p_control) const;
 
 protected:
 	void _notification(int p_what);
-
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;

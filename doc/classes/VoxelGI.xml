@@ -40,8 +40,8 @@
 			The [VoxelGIData] resource that holds the data for this [VoxelGI].
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(20, 20, 20)">
-			The size of the area covered by the [VoxelGI]. If you make the size larger without increasing the subdivisions with [member subdiv], the size of each cell will increase and result in lower detailed lighting.
-			[b]Note:[/b] Size is clamped to 1.0 unit or more on each axis.
+			The size of the area covered by the [VoxelGI]. This must be [code]1.0[/code] or greater on each axis.
+			[b]Note:[/b] If you make the size larger without increasing the number of subdivisions with [member subdiv], the size of each cell will increase and result in less detailed lighting.
 		</member>
 		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="VoxelGI.Subdiv" default="1">
 			Number of times to subdivide the grid that the [VoxelGI] operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance.
