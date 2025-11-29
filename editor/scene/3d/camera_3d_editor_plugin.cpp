@@ -80,7 +80,7 @@ Camera3DEditor::Camera3DEditor() {
 }
 
 void Camera3DPreview::_update_sub_viewport_size() {
-	if(sub_viewport != nullptr) {
+	if (sub_viewport != nullptr) {
 		sub_viewport->set_size(Node3DEditor::get_camera_viewport_size(camera));
 	}
 }
