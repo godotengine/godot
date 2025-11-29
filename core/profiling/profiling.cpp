@@ -210,6 +210,32 @@ void godot_cleanup_profiler() {
 	// Stub
 }
 
+#elif defined(GODOT_USE_INSTRUMENTS)
+
+namespace apple::instruments {
+
+os_log_t LOG;
+os_log_t LOG_TRACING;
+
+} // namespace apple::instruments
+
+void godot_init_profiler() {
+	static bool initialized = false;
+	if (initialized) {
+		return;
+	}
+	initialized = true;
+	apple::instruments::LOG = os_log_create("org.godotengine.godot", OS_LOG_CATEGORY_POINTS_OF_INTEREST);
+#ifdef INSTRUMENTS_SAMPLE_CALLSTACKS
+	apple::instruments::LOG_TRACING = os_log_create("org.godotengine.godot", OS_LOG_CATEGORY_DYNAMIC_STACK_TRACING);
+#else
+	apple::instruments::LOG_TRACING = os_log_create("org.godotengine.godot", "tracing");
+#endif
+}
+
+void godot_cleanup_profiler() {
+}
+
 #else
 void godot_init_profiler() {
 	// Stub
