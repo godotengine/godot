@@ -298,7 +298,7 @@ void EditorDockManager::_dock_container_popup(int p_tab_idx, TabContainer *p_doc
 
 	// Right click context menu.
 	dock_context_popup->set_dock(hovered_dock);
-	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_local_mouse_position());
+	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();
 }
 
