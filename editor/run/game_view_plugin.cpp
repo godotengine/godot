@@ -358,7 +358,9 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 
 		_show_update_window_wrapper();
 
-		embedded_process->grab_focus();
+		if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+			embedded_process->grab_focus();
+		}
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
@@ -445,7 +447,10 @@ void GameView::_play_pressed() {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
 			// Reset the normal size of the bottom panel when fully expanded.
 			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
-			embedded_process->grab_focus();
+
+			if (embedded_process->get_focus_mode_with_override() != FOCUS_NONE) {
+				embedded_process->grab_focus();
+			}
 		}
 		embedded_process->embed_process(current_process_id);
 		_update_ui();
