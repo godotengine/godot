@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "bit_map.h"
+#include "bit_map.compat.inc"
 
+#include "core/math/geometry_2d.h"
 #include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2i &p_size) {
@@ -364,19 +366,37 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 	return ret;
 }
 
+/**
+ * Check if a point(b) is between two line segment (a and c) perpendicular range. Does not include endpoints.
+ * Uses dot product to get the directions for both endpoints and if their signs are different then the point is out of range
+ */
+static bool is_in_line_range(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
+	Vector2 ba = a - b;
+	Vector2 bc = c - b;
+	Vector2 ac = c - a;
+
+	float dot1 = ba.dot(ac);
+	float dot2 = bc.dot(ac);
+	return (dot1 * dot2 < 0);
+}
+
 static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
 	float res;
 	float slope;
 	float intercept;
 
-	if (start.x == end.x) {
-		res = Math::abs(i.x - end.x);
-	} else if (start.y == end.y) {
-		res = Math::abs(i.y - end.y);
+	if (is_in_line_range(i, start, end)) {
+		if (start.x == end.x) {
+			res = Math::abs(i.x - end.x);
+		} else if (start.y == end.y) {
+			res = Math::abs(i.y - end.y);
+		} else {
+			slope = (end.y - start.y) / (end.x - start.x);
+			intercept = start.y - (slope * start.x);
+			res = Math::abs(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		}
 	} else {
-		slope = (end.y - start.y) / (end.x - start.x);
-		intercept = start.y - (slope * start.x);
-		res = Math::abs(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = MIN(i.distance_to(start), i.distance_to(end));
 	}
 	return res;
 }
@@ -390,7 +410,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	float dist = 0.0;
 	// Not looping first and last point.
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
-		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
+		float cdist = perpendicular_distance(v[i], v[0], v[size - 1]);
 		if (cdist > dist) {
 			dist = cdist;
 			index = static_cast<int>(i);
@@ -398,8 +418,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 	if (dist > optimization) {
 		Vector<Vector2> left, right;
-		left.resize(index);
-		for (int i = 0; i < index; i++) {
+		left.resize(index + 1);
+		for (int i = 0; i < index + 1; i++) {
 			left.write[i] = v[i];
 		}
 		right.resize(v.size() - index);
@@ -409,8 +429,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		Vector<Vector2> r1 = rdp(left, optimization);
 		Vector<Vector2> r2 = rdp(right, optimization);
 
-		int middle = r1.size();
-		r1.resize(r1.size() + r2.size());
+		int middle = r1.size() - 1;
+		r1.resize(r1.size() + r2.size() - 1);
 		for (int i = 0; i < r2.size(); i++) {
 			r1.write[middle + i] = r2[i];
 		}
@@ -423,7 +443,723 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 }
 
-static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
+// X-Axis dependent. Stores the pointer (address) of the point
+static List<List<Vector2>::Element *> generate_mono_chains(List<Vector2> &pl) {
+	List<List<Vector2>::Element *> mono_chain_lst;
+
+	List<Vector2>::Element *iter_node = pl.front();
+	mono_chain_lst.push_back(iter_node);
+
+	float dx = iter_node->next()->get()[0] - iter_node->get()[0];
+	iter_node = iter_node->next();
+	while (iter_node->next()) {
+		iter_node = iter_node->next();
+		float ndx = iter_node->get()[0] - iter_node->prev()->get()[0];
+		if (dx * ndx < 0) { // If they are not the same direction
+			mono_chain_lst.push_back(iter_node->prev());
+			dx = ndx;
+		}
+	}
+	mono_chain_lst.push_back(pl.back()); // Get the end
+
+	return mono_chain_lst;
+}
+
+static bool seperated_axis_theorum(const PackedVector2Array &rect1, const PackedVector2Array &rect2) {
+	PackedVector2Array rect;
+	Vector2 edge1, edge2;
+	float p0, p1, p2, p3;
+	float min1, max1, min2, max2;
+	for (int i = 0; i < 2; ++i) {
+		if (i == 0) {
+			rect = rect1;
+		} else {
+			rect = rect2;
+		}
+		// Get two edge vectors (assumes rectangle points are ordered)
+		edge1 = rect[1] - rect[0];
+		edge2 = rect[3] - rect[0];
+		PackedVector2Array axes = {
+			Vector2(-edge1[1], edge1[0]), // perpendicular to edge1
+			Vector2(-edge2[1], edge2[0]) // perpendicular to edge2
+		};
+
+		for (Vector2 axis : axes) {
+			float length = sqrt(axis.x * axis.x + axis.y * axis.y);
+			if (length == 0) {
+				continue;
+			}
+			axis /= length;
+
+			// Project rect1
+			p0 = rect1[0].dot(axis);
+			p1 = rect1[1].dot(axis);
+			p2 = rect1[2].dot(axis);
+			p3 = rect1[3].dot(axis);
+			min1 = MIN(MIN(p0, p1), MIN(p2, p3));
+			max1 = MAX(MAX(p0, p1), MAX(p2, p3));
+
+			// Project rect2
+			p0 = rect2[0].dot(axis);
+			p1 = rect2[1].dot(axis);
+			p2 = rect2[2].dot(axis);
+			p3 = rect2[3].dot(axis);
+			min2 = MIN(MIN(p0, p1), MIN(p2, p3));
+			max2 = MAX(MAX(p0, p1), MAX(p2, p3));
+
+			if (max1 < min2 || max2 < min1) {
+				return false; // Separating axis found( a gap ) -> no intersection
+			}
+		}
+	}
+	return true; // No separating axis( no gap ) -> they intersect
+}
+
+// Move each of the calipers as far as possible
+int advance(const PackedVector2Array &pl, const int &pl_len, int k, const Vector2 &vec) {
+	int k_next;
+	Vector2 p, pn;
+	while (true) {
+		k_next = (k + 1) % pl_len;
+		p = pl[k];
+		pn = pl[k_next];
+		if ((pn - p).dot(vec) >= 0) {
+			k = k_next;
+		} else {
+			break;
+		}
+	}
+	return k;
+}
+
+void find_extrema(const PackedVector2Array &points,
+		int &top, int &bottom, int &left, int &right) {
+	int n = points.size();
+	top = bottom = left = right = 0;
+
+	for (int i = 1; i < n; i++) {
+		const Vector2 &p = points[i];
+
+		if (p.y > points[top].y) {
+			top = i;
+		}
+		if (p.y < points[bottom].y) {
+			bottom = i;
+		}
+		if (p.x < points[left].x) {
+			left = i;
+		}
+		if (p.x > points[right].x) {
+			right = i;
+		}
+	}
+}
+
+// Rotating Calipers Algorithm to determine the Minimum Area Enclosed Rectangle
+static PackedVector2Array generate_bbox_from_polyline(const Vector<Vector2> &pl) {
+	if (pl.size() <= 2) {
+		return pl;
+	}
+
+	PackedVector2Array polygon = Geometry2D::convex_hull(pl);
+	polygon.remove_at(polygon.size() - 1);
+
+	int n = polygon.size();
+	float min_area = INFINITY;
+
+	PackedVector2Array best_rect;
+	best_rect.resize(4);
+
+	// Precalc edge vectors
+	PackedVector2Array edge_vectors;
+	Vector2 p1, p2;
+	for (int i = 0; i < n; ++i) {
+		p1 = polygon[i];
+		p2 = polygon[(i + 1) % n];
+		Vector2 d = p2 - p1;
+		float inv_len = 1.0 / sqrt(d.x * d.x + d.y * d.y);
+		Vector2 u = d * inv_len;
+		edge_vectors.push_back(u);
+	}
+
+	int top, bottom, left, right;
+	find_extrema(polygon, top, bottom, left, right);
+
+	for (int i = 0; i < n; ++i) {
+		Vector2 u = edge_vectors[i];
+		Vector2 v = Vector2(-u.y, u.x); // Perpendicular Vector
+
+		top = advance(polygon, n, top, v); // max projection in +v
+		bottom = advance(polygon, n, bottom, -v); // min projection in -v
+		right = advance(polygon, n, right, u); // max projection in +u
+		left = advance(polygon, n, left, -u); // min projection in -u
+
+		// Min/max projections along edge and perpendicular
+		float min_u = polygon[left].dot(u);
+		float max_u = polygon[right].dot(u);
+		float min_v = polygon[bottom].dot(v);
+		float max_v = polygon[top].dot(v);
+
+		float width = max_u - min_u;
+		float height = max_v - min_v;
+		float area = width * height;
+
+		if (area < min_area) {
+			min_area = area;
+
+			// Origin (bottom-left corner)
+			float ox = u.x * min_u + v.x * min_v;
+			float oy = u.y * min_u + v.y * min_v;
+
+			// Construct the new MER(minimum-area enclosed Rectangle)
+			best_rect = PackedVector2Array(
+					{ { ox, oy },
+							{ ox + u.x * width, oy + u.y * width },
+							{ 0, 0 },
+							{ ox + v.x * height, oy + v.y * height } });
+			best_rect.write[2] = { best_rect[1].x + v.x * height, best_rect[1].y + v.y * height };
+		}
+	}
+
+	return best_rect;
+}
+
+/**
+ * This does not include endpoints because if 2 lines intersect at their end point, it is impossible
+ * for any point that is added to remove such an intersection, causing the algorithm to try and put
+ * non-existent points between the segments, causing a crash.
+ */
+static bool non_endpoint_segment_intersection(const Vector<Vector2> &line1, const Vector<Vector2> &line2) {
+	// Returns true if they intersect, false otherwise.
+	bool intersect = Geometry2D::segment_intersects_segment(line1[0], line1[1], line2[0], line2[1], nullptr); // No Result. Only care if they collide
+
+	// Exclude the endpoints
+	if (intersect &&
+			(line1[0].is_equal_approx(line2[0]) ||
+					line1[0].is_equal_approx(line2[1]) ||
+					line1[1].is_equal_approx(line2[0]) ||
+					line1[1].is_equal_approx(line2[1]))) {
+		intersect = false;
+	}
+
+	return intersect;
+}
+
+static bool does_bbox_collide_with_line(const Vector<Vector2> &bbox, const Vector<Vector2> &line) {
+	Vector2 edges[] = {
+		bbox[0],
+		bbox[1],
+		bbox[1],
+		bbox[2],
+		bbox[2],
+		bbox[3],
+		bbox[3],
+		bbox[0],
+	};
+
+	for (int i = 0; i < 8; i += 2) {
+		if (non_endpoint_segment_intersection(line, { edges[i], edges[i + 1] })) {
+			return true;
+		}
+	}
+
+	// Edge case where 1 point matches a bbox point, while the other point is inside of the bbox
+	if (Geometry2D::is_point_in_polygon(line[0], bbox) || Geometry2D::is_point_in_polygon(line[1], bbox)) {
+		return true;
+	}
+
+	return false;
+}
+
+struct OBBCacheKey {
+	Vector2 a;
+	Vector2 b;
+
+	_FORCE_INLINE_ bool operator==(const OBBCacheKey &o) const {
+		return a == o.a && b == o.b;
+	}
+
+	_FORCE_INLINE_ bool is_null() const {
+		return a == Vector2() && b == Vector2();
+	}
+};
+
+struct OBBCacheKeyComparator {
+	static _FORCE_INLINE_ bool compare(const OBBCacheKey &x, const OBBCacheKey &y) {
+		return x == y;
+	}
+};
+
+struct OBBCacheKeyHasher {
+	static _FORCE_INLINE_ uint32_t hash(const OBBCacheKey &k) {
+		uint32_t h = k.a.hash();
+		h = hash_murmur3_one_32(k.b.hash(), h);
+		return h;
+	}
+};
+
+static bool does_polyline_bboxes_collide(
+		const PackedVector2Array &p1,
+		const PackedVector2Array &p2,
+		HashMap<OBBCacheKey, PackedVector2Array, OBBCacheKeyHasher, OBBCacheKeyComparator> &obb_cache,
+		OBBCacheKey p1_key = {},
+		OBBCacheKey p2_key = {}) {
+	int p1_len = p1.size();
+	int p2_len = p2.size();
+
+	// If the polyline is not 4 points(OBB) and is not a line its needs it's bbox calculated
+	bool p1_is_poly = (p1_len != 4 && p1_len > 2);
+	bool p2_is_poly = (p2_len != 4 && p2_len > 2);
+
+	PackedVector2Array p1_bbox, p2_bbox;
+	if (p1_is_poly) {
+		if (obb_cache.has(p1_key)) {
+			p1_bbox = obb_cache[p1_key];
+		} else {
+			p1_bbox = generate_bbox_from_polyline(p1);
+			if (!p1_key.is_null()) {
+				obb_cache[p1_key] = p1_bbox;
+			}
+		}
+	} else {
+		p1_bbox = p1;
+	}
+
+	if (p2_is_poly) {
+		if (obb_cache.has(p2_key)) {
+			p2_bbox = obb_cache[p2_key];
+		} else {
+			p2_bbox = generate_bbox_from_polyline(p2);
+			if (!p2_key.is_null()) {
+				obb_cache[p2_key] = p2_bbox;
+			}
+		}
+	} else {
+		p2_bbox = p2;
+	}
+
+	// OBB vs Line
+	if (p1_len == 2 && !p1_is_poly) { // p1 is a line segment
+		return does_bbox_collide_with_line(p2_bbox, p1);
+	}
+	if (p2_len == 2 && !p2_is_poly) { // p2 is a line segment
+		return does_bbox_collide_with_line(p1_bbox, p2);
+	}
+
+	// OBB vs OBB
+	return seperated_axis_theorum(p1_bbox, p2_bbox) and seperated_axis_theorum(p2_bbox, p1_bbox);
+}
+
+// Squared distance
+static float high_speed_perp_dist(const Vector2 &p, const Vector2 &e1, const Vector2 &e2) {
+	float res = -1.0;
+	if (e2.x - e1.x == 0) {
+		res = Math::abs(p.x - e2.x);
+
+	} else if (e2.y - e1.y == 0) {
+		res = Math::abs(p.y - e2.y);
+
+	} else {
+		float slope = (e2.y - e1.y) / (e2.x - e1.x);
+		float intercept = e1.y - (slope * e1.x);
+		float numerator = slope * p.x - p.y + intercept;
+		res = (numerator * numerator) / (slope * slope + 1);
+	}
+	return res;
+}
+
+// Returns the index of the point with the furthest perpendicular distance from the edge in the given range
+static int find_furthest_perp_point_from_edge(const PackedVector2Array &pl, const int start, const int end) {
+	int max_dist = -1;
+	int idx = -1;
+
+	Vector2 st_pnt = pl[start];
+	Vector2 end_pnt = pl[end];
+	for (int pnt_i = start + 1; pnt_i < end; ++pnt_i) {
+		float dist = Math::abs(high_speed_perp_dist(pl[pnt_i], st_pnt, end_pnt));
+		if (dist > max_dist) {
+			max_dist = dist;
+			idx = pnt_i;
+		}
+	}
+	return idx;
+}
+
+static Vector<Vector2> retrieve_list_from_id_range(List<Vector2>::Element *start_ptr, const List<Vector2>::Element *end_ptr) {
+	Vector<Vector2> list;
+
+	int count = 0;
+	List<Vector2>::Element *it = start_ptr;
+	while (it) {
+		count++;
+		if (it == end_ptr) {
+			break;
+		}
+		it = it->next();
+	}
+
+	list.resize(count);
+
+	it = start_ptr;
+	for (int i = 0; i < count; i++) {
+		list.write[i] = it->get();
+		it = it->next();
+	}
+
+	return list;
+}
+
+struct ChainBoxData {
+	Vector4 aabb;
+	List<List<Vector2>::Element *>::Element *chain_start_node;
+	List<List<Vector2>::Element *>::Element *chain_end_node;
+	PackedVector2Array obb;
+};
+
+static Vector<ChainBoxData> generate_obbs_aabbs(List<List<Vector2>::Element *> &mono_chain_lst) {
+	Vector<ChainBoxData> obb_aabb_data;
+
+	PackedVector2Array obb;
+	List<List<Vector2>::Element *>::Element *iter_node = mono_chain_lst.front();
+	List<List<Vector2>::Element *>::Element *ch_end_node;
+	while (iter_node->next()) {
+		ch_end_node = iter_node->next();
+
+		obb = generate_bbox_from_polyline(retrieve_list_from_id_range(iter_node->get(), ch_end_node->get()));
+
+		int min_x, min_y, max_x, max_y;
+		find_extrema(obb, max_y, min_y, min_x, max_x);
+
+		obb_aabb_data.push_back({ Vector4({ obb[min_x].x, obb[min_y].y, obb[max_x].x, obb[max_y].y }),
+				iter_node,
+				ch_end_node,
+				obb });
+		iter_node = iter_node->next();
+	}
+
+	return obb_aabb_data;
+}
+
+// Returns an array of intersecting aabbs: (aabb1, aabb9)
+static Vector<Vector<const ChainBoxData *>> find_intersections_sweep(const Vector<ChainBoxData> &obb_aabb_data) {
+	class SweepEvent {
+	public:
+		float x;
+		int type; // type: 0 - start | 1 - end
+		float y1, y2;
+		const ChainBoxData *index;
+
+		SweepEvent() {}
+
+		SweepEvent(float p_x, int p_type, float p_y1, float p_y2, const ChainBoxData *p_index) :
+				x(p_x), type(p_type), y1(p_y1), y2(p_y2), index(p_index) {}
+
+		bool operator<(const SweepEvent &p_ev) const { // for sort()
+			return (x < p_ev.x || (x == p_ev.x && type < p_ev.type));
+		}
+	};
+
+	// Each event: (x, type, y_min, y_max, index).
+	Vector<SweepEvent> events;
+
+	for (int i = 0; i < obb_aabb_data.size(); ++i) {
+		const Vector4 rect = obb_aabb_data[i].aabb;
+		events.push_back({ (float)rect[0], 0, (float)rect[1], (float)rect[3], &obb_aabb_data[i] });
+		events.push_back({ (float)rect[2], 1, (float)rect[1], (float)rect[3], &obb_aabb_data[i] });
+	}
+	// Sort by x; 'start' comes before 'end' if equal
+	events.sort();
+
+	struct ActiveEntry {
+		float ay1, ay2;
+		const ChainBoxData *aidx;
+	};
+
+	Vector<ActiveEntry> active;
+	Vector<Vector<const ChainBoxData *>> result;
+
+	for (SweepEvent event : events) {
+		if (event.type == 0) {
+			for (ActiveEntry &a : active) {
+				if (!(event.y2 <= a.ay1 || a.ay2 <= event.y1)) {
+					result.push_back({ a.aidx, event.index });
+				}
+			}
+			active.push_back({ event.y1, event.y2, event.index });
+		} else {
+			// Remove all entries from active where aidx == event.index
+			for (int i = active.size() - 1; i >= 0; --i) {
+				if (active[i].aidx == event.index) {
+					active.remove_at(i);
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+// Find the index of an item based on it's value in a linked list
+static int list_index(List<Vector2> &list, const List<Vector2>::Element *item) {
+	int idx = 0;
+
+	List<Vector2>::Element *iter_node = list.front();
+	while (iter_node) {
+		if (item == iter_node) {
+			return idx;
+		}
+		iter_node = iter_node->next();
+		++idx;
+	}
+
+	return -1;
+}
+
+// Predeclaration to handle the call in recursive_obb_collision_check
+void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_end_node,
+		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_end_node,
+		Vector<const ChainBoxData *> &obb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &obb_collisions_mapping,
+		HashMap<OBBCacheKey, PackedVector2Array, OBBCacheKeyHasher, OBBCacheKeyComparator> &obb_cache,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl);
+
+void recursive_obb_collision_check(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_start, List<Vector2>::Element *ch1_end,
+		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_start, List<Vector2>::Element *ch2_end,
+		Vector<const ChainBoxData *> &obb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &obb_collisions_mapping,
+		HashMap<OBBCacheKey, PackedVector2Array, OBBCacheKeyHasher, OBBCacheKeyComparator> &obb_cache,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl) {
+	// Step 5: Recursively finds the smallest segment pair causing a collision.
+	struct StackEntry {
+		List<Vector2>::Element *ch1_start, *ch1_end, *ch2_start, *ch2_end;
+	};
+	Vector<StackEntry> stack;
+	stack.push_back({ ch1_start, ch1_end, ch2_start, ch2_end });
+
+	StackEntry current;
+	while (!stack.is_empty()) {
+		current = stack[stack.size() - 1]; // Get the end( pop() )
+		stack.remove_at(stack.size() - 1);
+
+		Vector<Vector2> ch1 = retrieve_list_from_id_range(current.ch1_start, current.ch1_end);
+		Vector<Vector2> ch2 = retrieve_list_from_id_range(current.ch2_start, current.ch2_end);
+
+		int len1 = ch1.size();
+		int len2 = ch2.size();
+
+		// Base case: both are single segments
+		if (len1 == 2 && len2 == 2) {
+			if (non_endpoint_segment_intersection(ch1, ch2)) {
+				iterative_refinement(ch1_list, current.ch1_end, ch2_list, current.ch2_end,
+						obb_collision, obb_collisions_mapping, obb_cache,
+						result, mapped_result, mono_chain_lst, pl);
+			}
+			continue;
+		}
+
+		// No collision for subchains
+		if (!does_polyline_bboxes_collide(ch1, ch2, obb_cache,
+					{ current.ch1_start->get(), current.ch1_end->get() }, { current.ch2_start->get(), current.ch2_end->get() })) {
+			continue;
+		}
+
+		if (len1 >= len2 && len1 > 2) {
+			// Split Chain 1
+			int mid_idx = int((len1 + 1) / 2);
+			List<Vector2>::Element *mid_node = current.ch1_start;
+			for (int i = 0; i < mid_idx - 1; ++i) {
+				mid_node = mid_node->next();
+			}
+
+			// Push halves onto stack. Push second then first to preserve original recursion order.
+			stack.push_back({ mid_node, current.ch1_end, current.ch2_start, current.ch2_end });
+			stack.push_back({ current.ch1_start, mid_node, current.ch2_start, current.ch2_end });
+
+		} else if (len2 > 2) {
+			// Split Chain 2
+			int mid_idx = int((len2 + 1) / 2);
+			List<Vector2>::Element *mid_node = current.ch2_start;
+			for (int i = 0; i < mid_idx - 1; ++i) {
+				mid_node = mid_node->next();
+			}
+
+			stack.push_back({ current.ch1_start, current.ch1_end, mid_node, current.ch2_end });
+			stack.push_back({ current.ch1_start, current.ch1_end, current.ch2_start, mid_node });
+		}
+	}
+}
+
+// Step 8: Iterative refinement loop
+void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, List<Vector2>::Element *ch1_end_node,
+		List<List<Vector2>::Element *>::Element *ch2_list, List<Vector2>::Element *ch2_end_node,
+		Vector<const ChainBoxData *> &obb_collision, HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> &obb_collisions_mapping,
+		HashMap<OBBCacheKey, PackedVector2Array, OBBCacheKeyHasher, OBBCacheKeyComparator> &obb_cache,
+		List<Vector2> &result, PackedInt64Array &mapped_result, List<List<Vector2>::Element *> &mono_chain_lst, const PackedVector2Array &pl) {
+	// Get the index of the ends of both chains in the original list
+	int ch1_idx = list_index(result, ch1_end_node);
+	int ch2_idx = list_index(result, ch2_end_node);
+	PackedInt64Array edges = {
+		mapped_result[ch1_idx - 1], // First chain edges
+		mapped_result[ch1_idx],
+
+		mapped_result[ch2_idx - 1], // Second chain edges
+		mapped_result[ch2_idx]
+	};
+
+	Vector2i pnt_additions;
+	pnt_additions[0] = find_furthest_perp_point_from_edge(pl, edges[0], edges[1]); // Point addition for the first chain
+	pnt_additions[1] = find_furthest_perp_point_from_edge(pl, edges[2], edges[3]); // Point addition for the first chain
+
+	// Add the points
+	Vector<List<Vector2>::Element *> new_chain_end_nodes; // List that stores if the chain intersects. [first_new_chain, second_new_chain].
+	for (int pnt_i = 0; pnt_i < 2; ++pnt_i) { // 0 = first chain, 1 = second chain
+		int pnt = pnt_additions[pnt_i];
+
+		List<Vector2>::Element *chain_node_to_split;
+		List<List<Vector2>::Element *>::Element *ch_list;
+
+		if (pnt_i == 0) {
+			chain_node_to_split = ch1_end_node;
+			ch_list = ch1_list;
+		} else {
+			chain_node_to_split = ch2_end_node;
+			ch_list = ch2_list;
+		}
+
+		if (pnt != -1) {
+			// Bin-search to find the idx to insert the point
+			int low = 0;
+			int high = mapped_result.size();
+			while (low < high) {
+				int mid = floor((low + high) / 2);
+				if (mapped_result[mid] < pnt) {
+					low = mid + 1;
+				} else {
+					high = mid;
+				}
+			}
+			// Insert the point
+			mapped_result.insert(low, pnt);
+
+			List<Vector2, DefaultAllocator>::Element *insert_node = result.front();
+			for (int i = 0; i < low; ++i) {
+				insert_node = insert_node->next();
+			}
+			result.insert_before(insert_node, pl[pnt]);
+
+			// Add the point as an new split in the monochain
+			mono_chain_lst.insert_before(ch_list->next(), insert_node->prev());
+
+			// Add the two new chains to the list
+			new_chain_end_nodes.push_back(chain_node_to_split->prev()); // low - 1 -> low
+			new_chain_end_nodes.push_back(chain_node_to_split); // low -> low + 1
+		} else {
+			new_chain_end_nodes.push_back(chain_node_to_split);
+			new_chain_end_nodes.push_back(NULL);
+		}
+	}
+	// Check the new chains against chains whose AABBs intersected the unsplit chain's AABB
+	for (int i = 0; i < new_chain_end_nodes.size(); ++i) {
+		List<Vector2>::Element *new_chain = new_chain_end_nodes[i];
+
+		if (new_chain != NULL) {
+			for (const ChainBoxData *colliding_obb : obb_collisions_mapping[obb_collision[i / 2]]) {
+				List<List<Vector2>::Element *>::Element *col_chain_start = colliding_obb->chain_start_node;
+				List<List<Vector2>::Element *>::Element *col_chain_end = colliding_obb->chain_end_node;
+
+				recursive_obb_collision_check(
+						ch1_list, new_chain->prev(), new_chain,
+						col_chain_start, col_chain_start->get(), col_chain_end->get(),
+						obb_collision, obb_collisions_mapping, obb_cache,
+						result, mapped_result, mono_chain_lst, pl);
+			}
+		}
+	}
+}
+
+void find_intersections(List<List<Vector2>::Element *> &mono_chain_lst, List<Vector2> &result, PackedInt64Array &mapped_result, Vector<Vector2> &pl) {
+	Vector<ChainBoxData> obbs_data = generate_obbs_aabbs(mono_chain_lst);
+	Vector<Vector<const ChainBoxData *>> aabb_collisions = find_intersections_sweep(obbs_data); // Use AABBs to avoid costly OBB generation + recursion
+
+	HashMap<const ChainBoxData *, Vector<const ChainBoxData *>> obb_collisions_mapping;
+	HashMap<OBBCacheKey, PackedVector2Array, OBBCacheKeyHasher, OBBCacheKeyComparator> obb_cache;
+
+	for (Vector<const ChainBoxData *> &collision : aabb_collisions) {
+		List<List<Vector2>::Element *>::Element *ch1_end_node = collision[0]->chain_end_node;
+		List<List<Vector2>::Element *>::Element *ch2_end_node = collision[1]->chain_end_node;
+
+		List<List<Vector2>::Element *>::Element *ch1_start_node = collision[0]->chain_start_node;
+		List<List<Vector2>::Element *>::Element *ch2_start_node = collision[1]->chain_start_node;
+
+		PackedVector2Array obb1 = collision[0]->obb;
+		PackedVector2Array obb2 = collision[1]->obb;
+
+		Vector<const ChainBoxData *> obb_collision = { collision[0], collision[1] };
+		// In case the 2 obbs are just 2 lines
+		if (obb1.size() == 2 and obb2.size() == 2) {
+			if (non_endpoint_segment_intersection(obb1, obb2)) {
+				if (!obb_collisions_mapping.has(collision[0])) {
+					obb_collisions_mapping[collision[0]] = {};
+				}
+				if (!obb_collisions_mapping.has(collision[1])) {
+					obb_collisions_mapping[collision[1]] = {};
+				}
+				obb_collisions_mapping[collision[0]].push_back(collision[1]);
+				obb_collisions_mapping[collision[1]].push_back(collision[0]);
+
+				iterative_refinement(ch1_start_node, ch1_end_node->get(),
+						ch2_start_node, ch2_end_node->get(),
+						obb_collision, obb_collisions_mapping, obb_cache,
+						result, mapped_result, mono_chain_lst, pl); // Collision found
+			}
+			continue;
+		}
+
+		if (does_polyline_bboxes_collide(obb1, obb2, obb_cache, { ch1_start_node->get()->get(), ch1_end_node->get()->get() }, { ch2_start_node->get()->get(), ch2_end_node->get()->get() })) {
+			if (!obb_collisions_mapping.has(collision[0])) {
+				obb_collisions_mapping[collision[0]] = {};
+			}
+			if (!obb_collisions_mapping.has(collision[1])) {
+				obb_collisions_mapping[collision[1]] = {};
+			}
+			obb_collisions_mapping[collision[0]].push_back(collision[1]);
+			obb_collisions_mapping[collision[1]].push_back(collision[0]);
+
+			recursive_obb_collision_check(ch1_start_node, ch1_start_node->get(), ch1_end_node->get(),
+					ch2_start_node, ch2_start_node->get(), ch2_end_node->get(),
+					obb_collision, obb_collisions_mapping, obb_cache,
+					result, mapped_result, mono_chain_lst, pl);
+		}
+	}
+}
+
+static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float optimization) {
+	Vector<Vector2> orig_res = rdp(pl, optimization);
+
+	List<Vector2> result;
+	for (int i = 0; i < orig_res.size(); ++i) {
+		result.push_back(orig_res[i]);
+	}
+	List<List<Vector2>::Element *> mono_chain_lst = generate_mono_chains(result);
+
+	// Result mapped to the original points
+	PackedInt64Array mapped_result;
+	mapped_result.resize(result.size());
+	int res_idx = 0;
+	List<Vector2>::Element *res_idx_node = result.front();
+	for (int i = 0; i < pl.size(); ++i) {
+		if (pl[i] == res_idx_node->get()) {
+			mapped_result.write[res_idx] = i;
+			++res_idx;
+			res_idx_node = res_idx_node->next();
+		}
+	}
+
+	find_intersections(mono_chain_lst, result, mapped_result, pl);
+
+	// Turn it back into a Vector and return the fixed polygon
+	return retrieve_list_from_id_range(result.front(), result.back());
+}
+
+static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon, bool p_advanced_rdp) {
 	int size = points.size();
 	// If there are less than 3 points, then we have nothing.
 	ERR_FAIL_COND_V(size < 3, Vector<Vector2>());
@@ -434,14 +1170,14 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 
 	float maxEp = MIN(rect.size.width, rect.size.height);
 	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
-	Vector<Vector2> result = rdp(points, ep);
 
-	Vector2 last = result[result.size() - 1];
-
-	if (last.y > result[0].y && last.distance_to(result[0]) < ep * 0.5f) {
-		result.write[0].y = last.y;
-		result.resize(result.size() - 1);
+	Vector<Vector2> result;
+	if (p_advanced_rdp) {
+		result = monotonic_chain_rdp(points, ep);
+	} else {
+		result = rdp(points, ep);
 	}
+
 	return result;
 }
 
@@ -520,7 +1256,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	} while (reenter || popped);
 }
 
-Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
+Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Ref<BitMap> fill;
@@ -534,7 +1270,7 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, fl
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				for (Vector<Vector2> polygon : _march_square(r, Point2i(j, i))) {
-					polygon = reduce(polygon, r, p_epsilon);
+					polygon = reduce(polygon, r, p_epsilon, p_star_rdp);
 
 					if (polygon.size() < 3) {
 						print_verbose("Invalid polygon, skipped");
@@ -613,8 +1349,8 @@ void BitMap::shrink_mask(int p_pixels, const Rect2i &p_rect) {
 	grow_mask(-p_pixels, p_rect);
 }
 
-TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const {
-	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool p_advanced_rdp) const {
+	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon, p_advanced_rdp);
 
 	// Convert result to bindable types.
 
@@ -723,7 +1459,7 @@ void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
 	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
-	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
+	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon", "advanced_rdp"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
