@@ -289,7 +289,7 @@ SSEffects::SSEffects() {
 		sampler.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 		sampler.max_lod = 4;
 
-		gtao.base_shader.initialize({""});
+		gtao.base_shader.initialize({ "" });
 		gtao.base_shader_version = gtao.base_shader.version_create();
 		gtao.pipelines[GTAO_BASE].create_compute_pipeline(gtao.base_shader.version_get_shader(gtao.base_shader_version, 0));
 
@@ -304,7 +304,7 @@ SSEffects::SSEffects() {
 			gtao.pipelines[GTAO_BLUR_FINAL].create_compute_pipeline(gtao.blur_shader.version_get_shader(gtao.blur_shader_version, 1));
 		}
 
-		gtao.interleave_shader.initialize({""});
+		gtao.interleave_shader.initialize({ "" });
 		gtao.interleave_shader_version = gtao.interleave_shader.version_create();
 		gtao.pipelines[GTAO_INTERLEAVE].create_compute_pipeline(gtao.interleave_shader.version_get_shader(gtao.interleave_shader_version, 0));
 
@@ -1622,7 +1622,7 @@ void SSEffects::generate_gtao(Ref<RenderSceneBuffersRD> p_render_buffers, AORend
 			RID blur_shader = gtao.blur_shader.version_get_shader(gtao.blur_shader_version, blur_pipeline - GTAO_BLUR);
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gtao.pipelines[blur_pipeline].get_rid());
 
-			RID* in_working_term_slices, *out_working_term_slices;
+			RID *in_working_term_slices, *out_working_term_slices;
 			if (pass % 2 == 0) {
 				in_working_term_slices = working_term_slices;
 				out_working_term_slices = working_term_pong_slices;

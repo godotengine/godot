@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Copyright (C) 2016-2021, Intel Corporation
 //
 // SPDX-License-Identifier: MIT
@@ -25,7 +25,6 @@
 // N/A  (2025-11-20): Port and convert to GLSL and Godot 4.6 by HydrogenC.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #[compute]
 
 #version 450
@@ -37,19 +36,14 @@
 #define GTAO_MAX_SCREEN_RADIUS (128.0)
 #define GTAO_BIAS_MIP_LEVEL (0)
 #define GTAO_FALLOFF_RANGE (0.717)
-
-#define GTAO_DEFAULT_RADIUS_MULTIPLIER         (1.457f)
-#define GTAO_DEFAULT_FALLOFF_RANGE             (0.615f)
-#define GTAO_DEFAULT_SAMPLE_DISTRIBUTION_POWER (2.0f)
-
+// The default intensity of ASSAO is 2.0, but XeGTAO uses 1.0 as base, so we scale it down to match the appearance.
+#define GTAO_INTENSITY_SCALE (0.5)
 
 #define PI 3.141592653589793
 #define PI_HALF (PI / 2.0)
 
-
 const int num_slices[5] = { 2, 4, 5, 6, 8 };
-const int num_taps[5] = { 4, 8, 12, 16, 20 };
-
+const int num_taps[5] = { 4, 6, 8, 12, 16 };
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -89,15 +83,13 @@ layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_working
 
 layout(r8, set = 1, binding = 1) uniform restrict writeonly image2D dest_edges;
 
-
 // packing/unpacking for edges; 2 bits per edge mean 4 gradient values (0, 0.33, 0.66, 1) for smoother transitions!
 float pack_edges(vec4 p_edgesLRTB) {
 	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 2.9);
 	return dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
 }
 
-vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z)
-{
+vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {
 	vec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;
 
 	float slopeLR = (edgesLRTB.y - edgesLRTB.x) * 0.5;
@@ -141,7 +133,7 @@ float calculate_final_occlusion(float obscurance, float pix_center_z, vec4 edges
 	}
 
 	// strength
-	obscurance = params.intensity * obscurance;
+	obscurance = GTAO_INTENSITY_SCALE * params.intensity * obscurance;
 
 	// clamp
 	obscurance = min(obscurance, params.shadow_clamp);
