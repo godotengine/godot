@@ -152,6 +152,7 @@ public:
 		SCENE_QUICK_OPEN,
 		SCENE_QUICK_OPEN_SCENE,
 		SCENE_QUICK_OPEN_SCRIPT,
+		SCENE_EXPORT_AS,
 		SCENE_UNDO,
 		SCENE_REDO,
 		SCENE_RELOAD_SAVED_SCENE,
@@ -214,8 +215,10 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
+		SCENE_TAB_SET_AS_MAIN_SCENE,
 		SAVE_AND_RUN,
 		SAVE_AND_RUN_MAIN_SCENE,
+		SAVE_AND_SET_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -294,9 +297,6 @@ private:
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
-	int renderer_current = 0;
-	String renderer_request;
-
 	// Split containers.
 	DockSplitContainer *left_l_hsplit = nullptr;
 	DockSplitContainer *left_l_vsplit = nullptr;
@@ -362,7 +362,6 @@ private:
 
 	Ref<Theme> theme;
 
-	Timer *system_theme_timer = nullptr;
 	bool follow_system_theme = false;
 	bool use_system_accent_color = false;
 	bool last_dark_mode_state = false;
@@ -632,10 +631,10 @@ private:
 	void _queue_translation_notification();
 	void _propagate_translation_notification();
 
-	void _renderer_selected(int);
+	void _renderer_selected(int p_index);
 	void _update_renderer_color();
-	void _add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden);
-	void _set_renderer_name_save_and_restart();
+	String _to_rendering_method_display_name(const String &p_rendering_method) const;
+	void _set_renderer_name_save_and_restart(const String &p_rendering_method);
 
 	void _exit_editor(int p_exit_code);
 
@@ -752,6 +751,8 @@ public:
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
+	static Button *get_distraction_free_button() { return singleton->distraction_free; }
+
 	static String adjust_scene_name_casing(const String &p_root_name);
 	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
 
@@ -802,6 +803,7 @@ public:
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
+	void update_distraction_free_button_theme();
 
 	void set_center_split_offset(int p_offset);
 

@@ -1941,7 +1941,17 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup_centered(const Size2i &p_minsize) {
@@ -1970,7 +1980,17 @@ void Window::popup_centered(const Size2i &p_minsize) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup_centered_ratio(float p_ratio) {
@@ -1997,14 +2017,36 @@ void Window::popup_centered_ratio(float p_ratio) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
 
-	popup(popup_rect);
+	emit_signal(SNAME("about_to_popup"));
+
+	if (popup_rect != Rect2()) {
+		set_size(popup_rect.size);
+	}
+	_pre_popup();
+	if (popup_rect != Rect2i()) {
+		popup_rect.size = get_size();
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
+	_popup_base(popup_rect);
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
 
+	Rect2i screen_rect = p_screen_rect;
+	if (screen_rect != Rect2i()) {
+		set_size(screen_rect.size);
+	}
 	_pre_popup();
+	if (screen_rect != Rect2i()) {
+		screen_rect.size = get_size();
+	}
+	_popup_base(screen_rect);
+}
+
+void Window::_popup_base(const Rect2i &p_screen_rect) {
+	ERR_MAIN_THREAD_GUARD;
 
 	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.

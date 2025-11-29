@@ -4643,7 +4643,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 	}
 }
 
-Control *EditorHelpBitTooltip::show_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix) {
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.

@@ -58,6 +58,7 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ uint32_t _hash_pass(const RD::FramebufferPass &p, uint32_t h) {
 		h = hash_murmur3_one_32(p.depth_attachment, h);
+		h = hash_murmur3_one_32(p.depth_resolve_attachment, h);
 
 		h = hash_murmur3_one_32(p.color_attachments.size(), h);
 		for (int i = 0; i < p.color_attachments.size(); i++) {
@@ -79,6 +80,10 @@ class FramebufferCacheRD : public Object {
 
 	static _FORCE_INLINE_ bool _compare_pass(const RD::FramebufferPass &a, const RD::FramebufferPass &b) {
 		if (a.depth_attachment != b.depth_attachment) {
+			return false;
+		}
+
+		if (a.depth_resolve_attachment != b.depth_resolve_attachment) {
 			return false;
 		}
 

@@ -38,8 +38,9 @@
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"
+#include "editor/docks/groups_dock.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/docks/node_dock.h"
+#include "editor/docks/signals_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -820,34 +821,24 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
 			bool MOVING_UP = !MOVING_DOWN;
 
-			Node *common_parent = scene_tree->get_selected()->get_parent();
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			List<Node *> selection = editor_selection->get_full_selected_node_list();
 			selection.sort_custom<Node::Comparator>(); // sort by index
 			if (MOVING_DOWN) {
 				selection.reverse();
 			}
 
-			int lowest_id = common_parent->get_child_count(false) - 1;
-			int highest_id = 0;
+			bool is_nowhere_to_move = false;
 			for (Node *E : selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
 				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
-				int index = E->get_index(false);
 
-				if (index > highest_id) {
-					highest_id = index;
-				}
-				if (index < lowest_id) {
-					lowest_id = index;
-				}
-
-				if (E->get_parent() != common_parent) {
-					common_parent = nullptr;
+				if ((MOVING_DOWN && (E->get_index() == E->get_parent()->get_child_count(false) - 1)) || (MOVING_UP && (E->get_index() == 0))) {
+					is_nowhere_to_move = true;
+					break;
 				}
 			}
-
-			if (!common_parent || (MOVING_DOWN && highest_id >= common_parent->get_child_count(false) - MOVING_DOWN) || (MOVING_UP && lowest_id == 0)) {
-				break; // one or more nodes can not be moved
+			if (is_nowhere_to_move) {
+				break;
 			}
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1361,7 +1352,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					_node_strip_signal_inheritance(node);
-					NodeDock::get_singleton()->set_object(node); // Refresh.
+					SignalsDock::get_singleton()->set_object(node); // Refresh.
+					GroupsDock::get_singleton()->set_selection(Vector<Node *>{ node }); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
 					undo_redo->commit_action();
@@ -2865,7 +2857,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 	InspectorDock::get_singleton()->update(nullptr);
-	NodeDock::get_singleton()->set_object(nullptr);
+	SignalsDock::get_singleton()->set_object(nullptr);
+	GroupsDock::get_singleton()->set_selection(Vector<Node *>());
 }
 
 void SceneTreeDock::_update_script_button() {
@@ -4265,7 +4258,7 @@ void SceneTreeDock::attach_shader_to_selected(int p_preferred_mode) {
 	shader_create_dialog->connect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
 	shader_create_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->connect("canceled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
-	shader_create_dialog->config(path, true, true, -1, p_preferred_mode);
+	shader_create_dialog->config(path, true, true, "", p_preferred_mode);
 	shader_create_dialog->popup_centered();
 }
 
@@ -4726,7 +4719,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_name(TTRC("Scene"));
 	set_icon_name("PackedScene");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")));
-	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_UR);
+	set_default_slot(DockConstants::DOCK_SLOT_LEFT_UR);
 
 	singleton = this;
 	editor_data = &p_editor_data;
@@ -4788,7 +4781,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_placeholder(TTRC("Filter: name, t:type, g:group"));
+	filter->set_placeholder(TTRC("Filter Nodes"));
 	filter->set_accessibility_name(TTRC("Filter Nodes"));
 	filter->set_tooltip_text(TTRC("Filter nodes by entering a part of their name, type (if prefixed with \"type:\" or \"t:\")\nor group (if prefixed with \"group:\" or \"g:\"). Filtering is case-insensitive."));
 	filter_hbc->add_child(filter);

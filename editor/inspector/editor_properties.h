@@ -34,6 +34,7 @@
 
 class CheckBox;
 class ColorPickerButton;
+class ConfirmationDialog;
 class CreateDialog;
 class EditorFileDialog;
 class EditorLocaleDialog;
@@ -41,7 +42,6 @@ class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MenuButton;
-class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
@@ -306,6 +306,8 @@ private:
 	int expansion_rows = 0;
 	const uint32_t HOVERED_INDEX_NONE = UINT32_MAX;
 	uint32_t hovered_index = HOVERED_INDEX_NONE;
+	bool dragging = false;
+	bool dragging_value_to_set = false;
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;

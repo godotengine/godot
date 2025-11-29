@@ -68,6 +68,14 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.success_color = Color(0.45, 0.95, 0.5);
 		p_config.warning_color = Color(1, 0.87, 0.4);
 		p_config.error_color = Color(1, 0.47, 0.42);
+
+		// Keep dark theme colors accessible for use in the frame time gradient in the 3D editor.
+		// This frame time gradient is used to colorize text for a dark background, so it should keep using bright colors
+		// even when using a light theme.
+		p_theme->set_color("success_color_dark_background", EditorStringName(Editor), p_config.success_color);
+		p_theme->set_color("warning_color_dark_background", EditorStringName(Editor), p_config.warning_color);
+		p_theme->set_color("error_color_dark_background", EditorStringName(Editor), p_config.error_color);
+
 		if (!p_config.dark_icon_and_font) {
 			// Darken some colors to be readable on a light background.
 			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
@@ -110,6 +118,22 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.font_placeholder_color = Color(p_config.mono_color_font.r, p_config.mono_color_font.g, p_config.mono_color_font.b, 0.5);
 		p_config.font_outline_color = Color(0, 0, 0, 0);
 
+		// Colors designed for dark backgrounds, even when using a light theme.
+		// This is used for 3D editor overlay texts.
+		if (p_config.dark_theme) {
+			p_config.font_dark_background_color = p_config.font_color;
+			p_config.font_dark_background_focus_color = p_config.font_focus_color;
+			p_config.font_dark_background_hover_color = p_config.font_hover_color;
+			p_config.font_dark_background_pressed_color = p_config.font_pressed_color;
+			p_config.font_dark_background_hover_pressed_color = p_config.font_hover_pressed_color;
+		} else {
+			p_config.font_dark_background_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.75);
+			p_config.font_dark_background_focus_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.25);
+			p_config.font_dark_background_hover_color = p_config.mono_color.inverted().lerp(p_config.base_color, 0.25);
+			p_config.font_dark_background_pressed_color = p_config.font_dark_background_color.lerp(p_config.accent_color, 0.74);
+			p_config.font_dark_background_hover_pressed_color = p_config.font_dark_background_color.lerp(p_config.accent_color, 0.5);
+		}
+
 		p_theme->set_color(SceneStringName(font_color), EditorStringName(Editor), p_config.font_color);
 		p_theme->set_color("font_focus_color", EditorStringName(Editor), p_config.font_focus_color);
 		p_theme->set_color("font_hover_color", EditorStringName(Editor), p_config.font_hover_color);
@@ -119,6 +143,13 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("font_readonly_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("font_placeholder_color", EditorStringName(Editor), p_config.font_placeholder_color);
 		p_theme->set_color("font_outline_color", EditorStringName(Editor), p_config.font_outline_color);
+
+		p_theme->set_color("font_dark_background_color", EditorStringName(Editor), p_config.font_dark_background_color);
+		p_theme->set_color("font_dark_background_focus_color", EditorStringName(Editor), p_config.font_dark_background_focus_color);
+		p_theme->set_color("font_dark_background_hover_color", EditorStringName(Editor), p_config.font_dark_background_hover_color);
+		p_theme->set_color("font_dark_background_pressed_color", EditorStringName(Editor), p_config.font_dark_background_pressed_color);
+		p_theme->set_color("font_dark_background_hover_pressed_color", EditorStringName(Editor), p_config.font_dark_background_hover_pressed_color);
+
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("readonly_font_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("disabled_font_color", EditorStringName(Editor), p_config.font_disabled_color);
@@ -180,12 +211,6 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("forward_plus_color", EditorStringName(Editor), Color::hex(0x5d8c3fff));
 		p_theme->set_color("mobile_color", EditorStringName(Editor), Color::hex(0xa5557dff));
 		p_theme->set_color("gl_compatibility_color", EditorStringName(Editor), Color::hex(0x5586a4ff));
-
-		if (p_config.dark_theme) {
-			p_theme->set_color("highend_color", EditorStringName(Editor), Color(1.0, 0.0, 0.0));
-		} else {
-			p_theme->set_color("highend_color", EditorStringName(Editor), Color::hex(0xad1128ff));
-		}
 	}
 
 	// Constants.
@@ -909,7 +934,6 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_color("font_outline_color", "TextEdit", p_config.font_outline_color);
 		p_theme->set_color("caret_color", "TextEdit", p_config.font_color);
 		p_theme->set_color("selection_color", "TextEdit", p_config.selection_color);
-		p_theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 
 		p_theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 		p_theme->set_constant("outline_size", "TextEdit", 0);
@@ -1559,7 +1583,14 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// 3D/Spatial editor.
 		Ref<StyleBoxFlat> style_info_3d_viewport = p_config.base_style->duplicate();
-		style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
+		Color bg_color = style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5);
+		if (!p_config.dark_theme) {
+			// Always use a dark background for the 3D viewport, even in light themes.
+			// This is displayed as an overlay of the 3D scene, whose appearance doesn't change with the editor theme.
+			// On top of that, dark overlays are more readable than light overlays.
+			bg_color.invert();
+		}
+		style_info_3d_viewport->set_bg_color(bg_color);
 		style_info_3d_viewport->set_border_width_all(0);
 		p_theme->set_stylebox("Information3dViewport", EditorStringName(EditorStyles), style_info_3d_viewport);
 
@@ -2110,8 +2141,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		// AnimationTimelineEdit.
 		// "primary" is used for integer timeline values, "secondary" for decimals.
 
-		Ref<StyleBoxFlat> style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.dark_color_2, 0, 0, 0, 0, 0);
+		Ref<StyleBoxFlat> style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.dark_color_3, 0, 0, 0, 0, 0);
 		Ref<StyleBoxFlat> style_time_available = EditorThemeManager::make_flat_stylebox(p_config.font_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+		if (!p_config.dark_theme) {
+			style_time_unavailable = EditorThemeManager::make_flat_stylebox(p_config.font_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+			style_time_available = EditorThemeManager::make_flat_stylebox(p_config.dark_color_3 * Color(1, 1, 1, 0.5), 0, 0, 0, 0, 0);
+		}
 
 		p_theme->set_stylebox("time_unavailable", "AnimationTimelineEdit", style_time_unavailable);
 		p_theme->set_stylebox("time_available", "AnimationTimelineEdit", style_time_available);

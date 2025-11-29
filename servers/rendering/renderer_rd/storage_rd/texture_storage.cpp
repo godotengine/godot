@@ -4029,7 +4029,7 @@ bool TextureStorage::render_target_is_clear_requested(RID p_render_target) {
 Color TextureStorage::render_target_get_clear_request_color(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, Color());
-	return rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color;
+	return rt->clear_color;
 }
 
 void TextureStorage::render_target_disable_clear_request(RID p_render_target) {

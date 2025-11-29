@@ -52,6 +52,10 @@ private:
 
 	EditorDebuggerInspector *inspector = nullptr;
 
+	LocalVector<String> expression_history;
+	int expression_index = -1;
+
+	void _line_edit_gui_input(const Ref<InputEvent> &p_event);
 	void _evaluate();
 	void _clear();
 

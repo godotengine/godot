@@ -840,6 +840,18 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 		}
 	}
 
+	Ref<Texture2D> extension_language_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class());
+	Ref<Texture2D> extension_language_alt_icon;
+	if (script->is_built_in()) {
+		extension_language_alt_icon = EditorNode::get_editor_data().extension_class_get_icon(script->get_class() + "Internal");
+	}
+
+	if (extension_language_alt_icon.is_valid()) {
+		return extension_language_alt_icon;
+	} else if (extension_language_icon.is_valid()) {
+		return extension_language_icon;
+	}
+
 	return Ref<Texture2D>();
 }
 
@@ -1410,7 +1422,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		memdelete(tmp);
 		return;
 	}
 
@@ -1520,7 +1533,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	}
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+		memdelete(tmp);
 	}
 }
 
@@ -2263,9 +2277,6 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 	}
 
 	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
-	for (ObjectID obj_id : p_script_instance_obj_ids) {
-		pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, p_resource });
-	}
 
 	StringName class_name = p_resource->get_class();
 	Ref<Script> resource_script = p_resource->get_script();
@@ -2275,6 +2286,10 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 		if (!global_resource_script_name.is_empty()) {
 			class_name = global_resource_script_name;
 		}
+	}
+
+	for (ObjectID obj_id : p_script_instance_obj_ids) {
+		pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, p_resource, class_name });
 	}
 
 	return vformat("@export var %s: %s", variable_name, class_name);
@@ -2468,7 +2483,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
 				for (ObjectID obj_id : obj_ids) {
-					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node });
+					pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, node, class_name });
 				}
 			}
 		} else {
@@ -2576,30 +2591,54 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 	ERR_FAIL_COND(pending_dragged_exports.is_empty());
 
 	bool export_variable_set = false;
-	for (const DraggedExport &dragged_export : pending_dragged_exports) {
+
+	for (int i = pending_dragged_exports.size() - 1; i >= 0; i--) {
+		const DraggedExport &dragged_export = pending_dragged_exports[i];
 		Object *obj = ObjectDB::get_instance(dragged_export.obj_id);
 		if (!obj) {
 			WARN_PRINT("Object not found, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
 		ScriptInstance *si = obj->get_script_instance();
 		if (!si) {
 			WARN_PRINT("Script on " + obj->to_string() + " does not exist anymore, can't assign export variable.");
+			pending_dragged_exports.remove_at(i);
 			continue;
 		}
 
-		bool success = si->set(dragged_export.variable_name, dragged_export.value);
-		if (success) {
-			export_variable_set = true;
+		bool script_has_errors = false;
+		String scr_path = si->get_script()->get_path();
+
+		for (const ScriptLanguage::ScriptError &error : errors) {
+			if (error.path == scr_path) {
+				script_has_errors = true;
+				break;
+			}
+		}
+
+		if (!script_has_errors) {
+			bool success = false;
+			List<PropertyInfo> properties;
+			si->get_property_list(&properties);
+			for (const PropertyInfo &pi : properties) {
+				if (pi.name == dragged_export.variable_name && pi.hint_string == dragged_export.class_name) {
+					success = si->set(dragged_export.variable_name, dragged_export.value);
+					break;
+				}
+			}
+
+			if (success) {
+				export_variable_set = true;
+			}
+			pending_dragged_exports.remove_at(i);
 		}
 	}
 
 	if (export_variable_set) {
 		EditorInterface::get_singleton()->mark_scene_as_unsaved();
 	}
-
-	pending_dragged_exports.clear();
 }
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {

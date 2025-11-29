@@ -40,7 +40,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -1398,7 +1397,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	}
 
 	if (!symbol.is_empty() || !prologue.is_empty()) {
-		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
+		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
 	}
 
 	return nullptr;
@@ -1407,10 +1406,10 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
+			EditorInspector::set_property_clipboard(object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
-			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
+			emit_changed(property, EditorInspector::get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
@@ -1781,7 +1780,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 		return nullptr;
 	}
 
-	return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorCategory *>(this), p_text);
+	return EditorHelpBitTooltip::make_tooltip(const_cast<EditorInspectorCategory *>(this), p_text);
 }
 
 void EditorInspectorCategory::set_as_favorite() {
@@ -2291,7 +2290,7 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	}
 
 	if (!symbol.is_empty() || !prologue.is_empty()) {
-		return EditorHelpBitTooltip::show_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
+		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
 	}
 
 	return nullptr;
@@ -4479,10 +4478,7 @@ void EditorInspector::update_tree() {
 			// `|` separators used in `EditorHelpBit`.
 			if (theme_item_name.is_empty()) {
 				if (p.name.contains("shader_parameter/")) {
-					ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
-					if (shader_material) {
-						doc_tooltip_text = "property|" + shader_material->get_shader()->get_path() + "|" + propname;
-					}
+					doc_tooltip_text = "property|" + p.class_name + "|" + property_prefix + propname;
 				} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
 					doc_tooltip_text = "internal_property|" + classname + "|" + propname;
 				} else {
@@ -5822,7 +5818,7 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 	property_clipboard = p_value;
 }
 
-Variant EditorInspector::get_property_clipboard() const {
+Variant EditorInspector::get_property_clipboard() {
 	return property_clipboard;
 }
 
@@ -5934,7 +5930,6 @@ EditorInspector::EditorInspector() {
 	set_process(false);
 	set_focus_mode(FocusMode::FOCUS_ALL);
 	property_focusable = -1;
-	property_clipboard = Variant();
 
 	get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;

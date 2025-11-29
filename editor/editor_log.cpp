@@ -33,16 +33,18 @@
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tab_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
 
@@ -286,12 +288,8 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 }
 
 void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
-	// This is the sole reason to include "tab_container.h" here.
-	TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
-	if (parent) {
-		int idx = parent->get_tab_idx_from_control(this);
-		parent->set_tab_icon(idx, p_icon);
-	}
+	set_dock_icon(p_icon);
+	set_force_show_icon(p_icon.is_valid());
 }
 
 void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -489,6 +487,14 @@ void EditorLog::_reset_message_counts() {
 }
 
 EditorLog::EditorLog() {
+	set_name(TTRC("Output"));
+	set_icon_name("Output");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Dock"), KeyModifierMask::ALT | Key::O));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);
 	save_state_timer->set_one_shot(true);
@@ -498,7 +504,8 @@ EditorLog::EditorLog() {
 	line_limit = int(EDITOR_GET("run/output/max_lines"));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));
 
-	HBoxContainer *hb = this;
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);
 	vb_left->set_custom_minimum_size(Size2(0, 180) * EDSCALE);

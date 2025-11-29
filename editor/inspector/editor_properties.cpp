@@ -1067,6 +1067,9 @@ void EditorPropertyLayersGrid::_on_hover_exit() {
 		hovered_index = HOVERED_INDEX_NONE;
 		queue_redraw();
 	}
+	if (dragging) {
+		dragging = false;
+	}
 }
 
 void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
@@ -1103,13 +1106,26 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid()) {
 		_update_hovered(mm->get_position());
+		if (dragging && hovered_index != HOVERED_INDEX_NONE && dragging_value_to_set != bool(value & (1u << hovered_index))) {
+			value ^= 1u << hovered_index;
+			emit_signal(SNAME("flag_changed"), value);
+			queue_redraw();
+		}
 		return;
 	}
 
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		_update_hovered(mb->get_position());
-		_update_flag(mb->is_command_or_control_pressed());
+		bool replace_mode = mb->is_command_or_control_pressed();
+		_update_flag(replace_mode);
+		if (!replace_mode && hovered_index != HOVERED_INDEX_NONE) {
+			dragging = true;
+			dragging_value_to_set = bool(value & (1u << hovered_index));
+		}
+	}
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		dragging = false;
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		if (hovered_index != HOVERED_INDEX_NONE) {
@@ -3561,6 +3577,8 @@ void EditorPropertyResource::update_property() {
 	}
 
 	resource_picker->set_edited_resource_no_check(res);
+	const Ref<Resource> &real_res = get_edited_property_value();
+	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
 }
 
 void EditorPropertyResource::collapse_all_folding() {

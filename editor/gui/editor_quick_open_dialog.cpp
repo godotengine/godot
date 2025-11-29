@@ -235,11 +235,13 @@ void EditorQuickOpenDialog::preview_property() {
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't
 	// create undo/redo actions.
+	property_object->set_block_signals(true);
 	if (Object::cast_to<MultiNodeEdit>(property_object)) {
 		Object::cast_to<MultiNodeEdit>(property_object)->_set_impl(property_path, loaded_resource, "", false);
 	} else {
 		property_object->set(property_path, loaded_resource);
 	}
+	property_object->set_block_signals(false);
 }
 
 void EditorQuickOpenDialog::update_property() {
@@ -252,6 +254,15 @@ void EditorQuickOpenDialog::update_property() {
 			property_object->set(property_path, initial_property_value);
 		}
 	}
+
+	if (!item_selected_callback.is_valid()) {
+		String err_msg = "The callback provided to the Quick Open dialog was invalid.";
+		if (_is_instant_preview_active()) {
+			err_msg += " Try disabling \"Instant Preview\" as a workaround.";
+		}
+		ERR_FAIL_MSG(err_msg);
+	}
+
 	item_selected_callback.call(container->get_selected());
 }
 

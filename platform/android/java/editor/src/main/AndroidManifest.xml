@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
+    <queries>
+        <package android:name="org.godotengine.godot_gradle_build_environment" />
+    </queries>
+
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -115,6 +119,7 @@
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:process=":GodotXRGame"
             android:launchMode="singleTask"
+            android:taskAffinity=":xr"
             android:icon="@mipmap/ic_play_window"
             android:label="@string/godot_game_activity_name"
             android:exported="false"

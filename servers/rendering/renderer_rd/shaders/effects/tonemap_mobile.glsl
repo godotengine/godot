@@ -225,9 +225,6 @@ vec3 tonemap_agx(vec3 color) {
 }
 
 vec3 linear_to_srgb(vec3 color) {
-	// Clamping is not strictly necessary for floating point nonlinear sRGB encoding,
-	// but many cases that call this function need the result clamped.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -248,7 +245,7 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 		return tonemap_filmic(max(vec3(0.0f), color), white);
 	} else if (tonemapper_aces) {
 		return tonemap_aces(max(vec3(0.0f), color), white);
-	} else { // FLAG_TONEMAPPER_AGX
+	} else { // tonemapper_agx
 		return tonemap_agx(color);
 	}
 }
@@ -256,12 +253,12 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 #ifdef USE_MULTIVIEW
 vec3 gather_glow() {
 	vec2 uv = gl_FragCoord.xy * params.dest_pixel_size;
-	return textureLod(source_glow, vec3(uv, ViewIndex), 0.0).rgb;
+	return textureLod(source_glow, vec3(uv, ViewIndex), 0.0).rgb * params.luminance_multiplier;
 }
 #else
 vec3 gather_glow() {
 	vec2 uv = gl_FragCoord.xy * params.dest_pixel_size;
-	return textureLod(source_glow, uv, 0.0).rgb;
+	return textureLod(source_glow, uv, 0.0).rgb * params.luminance_multiplier;
 }
 #endif // !USE_MULTIVIEW
 
@@ -728,15 +725,15 @@ void main() {
 
 	color.rgb *= params.exposure;
 
-	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
+	// Single-pass FXAA and pre-tonemap glow.
 	if (use_fxaa) {
 		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
 		color.rgb = do_fxaa(color.rgb, params.exposure, uv_interp);
 	}
 
 	if (use_glow && !glow_mode_softlight) {
-		vec3 glow = gather_glow() * params.luminance_multiplier * params.glow_intensity;
+		vec3 glow = gather_glow() * params.glow_intensity;
 		if (use_glow_map) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 		}
@@ -749,25 +746,27 @@ void main() {
 	}
 #endif
 
+	// Tonemap to lower dynamic range.
+
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
 #ifndef SUBPASS
-	// Glow
+	// Post-tonemap glow.
+
 	if (use_glow && glow_mode_softlight) {
 		// Apply soft light after tonemapping to mitigate the issue of discontinuity
 		// at 1.0 and higher. This makes the issue only appear with HDR output that
 		// can exceed a 1.0 output value.
-		vec3 glow = gather_glow() * params.glow_intensity * params.luminance_multiplier;
+		vec3 glow = gather_glow() * params.glow_intensity;
 		if (use_glow_map) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
 		}
-
 		glow = apply_tonemapping(glow, params.white);
 		color.rgb = apply_glow(color.rgb, glow, params.white);
 	}
 #endif
 
-	// Additional effects
+	// Additional effects.
 
 	if (use_bcs) {
 		// Apply brightness:

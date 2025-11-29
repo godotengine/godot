@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.benchmarkFile
 import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
 import org.godotengine.godot.utils.useBenchmark
+import org.godotengine.godot.variant.Callable as GodotCallable
 import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
@@ -392,7 +393,12 @@ class Godot private constructor(val context: Context) {
 			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
 				v.post {
 					if (useImmersive.get()) {
-						v.setPadding(0, 0, 0, 0)
+						if (isEditorBuild()) {
+							val windowInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+							v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+						} else {
+							v.setPadding(0, 0, 0, 0)
+						}
 					} else {
 						val windowInsets = insets.getInsets(getInsetType())
 						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
@@ -1173,12 +1179,25 @@ class Godot private constructor(val context: Context) {
 	fun isProjectManagerHint() = isEditorBuild() && GodotLib.isProjectManagerHint()
 
 	/**
-	 * Return true if the given feature is supported.
+	 * Returns true if the feature for the given feature tag is supported in the currently running instance, depending
+	 * on the platform, build, etc.
+	 *
+	 * For reference, see https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-method-has-feature
+	 */
+	fun hasFeature(feature: String): Boolean {
+		return GodotLib.hasFeature(feature)
+	}
+
+	/**
+	 * Internal method used to query whether the host or the registered plugins supports a given feature.
+	 *
+	 * This is invoked by the native code, and should not be confused with [hasFeature] which is the Android version of
+	 * https://docs.godotengine.org/en/stable/classes/class_os.html#class-os-method-has-feature
 	 */
 	@Keep
-	private fun hasFeature(feature: String): Boolean {
+	private fun checkInternalFeatureSupport(feature: String): Boolean {
 		if (primaryHost?.supportsFeature(feature) == true) {
-			return true;
+			return true
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
@@ -1286,4 +1305,64 @@ class Godot private constructor(val context: Context) {
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
+
+	@Keep
+	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			return buildProvider?.buildEnvConnect(callback) ?: false
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to connect to build environment", e)
+			return false
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvDisconnect() {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvDisconnect()
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to disconnect from build environment", e)
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvExecute(buildTool: String, arguments: Array<String>, projectPath: String, buildDir: String, outputCallback: GodotCallable, resultCallback: GodotCallable): Int {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			return buildProvider?.buildEnvExecute(
+				buildTool,
+				arguments,
+				projectPath,
+				buildDir,
+				outputCallback,
+				resultCallback
+			) ?: -1
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to execute Gradle command in build environment", e);
+			return -1
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvCancel(jobId: Int) {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvCancel(jobId)
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to cancel command in build environment", e)
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvCleanProject(projectPath: String, buildDir: String, callback: GodotCallable) {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
+		} catch(e: Exception) {
+			Log.e(TAG, "Unable to clean project in build environment", e)
+		}
+	}
+
 }

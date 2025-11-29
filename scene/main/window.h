@@ -256,11 +256,10 @@ private:
 
 	void _update_displayed_title();
 
-	Ref<Shortcut> debugger_stop_shortcut;
-
 	static int root_layout_direction;
 
 protected:
+	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
 	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
@@ -409,7 +408,7 @@ public:
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
 
-	virtual void popup(const Rect2i &p_screen_rect = Rect2i());
+	void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_ratio(float p_ratio = 0.8);

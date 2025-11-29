@@ -362,7 +362,7 @@
 		<method name="move_to_center">
 			<return type="void" />
 			<description>
-				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
+				Centers the window in the current screen. If the window is embedded, it is centered in the embedder [Viewport] instead.
 			</description>
 		</method>
 		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">

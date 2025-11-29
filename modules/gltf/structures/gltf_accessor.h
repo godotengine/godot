@@ -90,8 +90,16 @@ private:
 	static GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
 	String _get_accessor_type_name() const;
 	int64_t _get_vector_size() const;
+	static int64_t _get_numbers_per_variant_for_gltf(Variant::Type p_variant_type);
 	static int64_t _get_bytes_per_component(const GLTFComponentType p_component_type);
 	int64_t _get_bytes_per_vector() const;
+
+	// Private decode functions.
+	PackedInt64Array _decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views) const;
+	template <typename T>
+	Vector<T> _decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views, bool p_sparse_values) const;
+	template <typename T>
+	Vector<T> _decode_as_numbers(const Ref<GLTFState> &p_gltf_state) const;
 
 	// Private encode functions.
 	PackedFloat64Array _encode_variants_as_floats(const Array &p_input_data, Variant::Type p_variant_type) const;
@@ -146,10 +154,10 @@ public:
 	void set_type(int p_accessor_type);
 
 	Vector<double> get_min() const;
-	void set_min(Vector<double> p_min);
+	void set_min(const Vector<double> &p_min);
 
 	Vector<double> get_max() const;
-	void set_max(Vector<double> p_max);
+	void set_max(const Vector<double> &p_max);
 
 	int64_t get_sparse_count() const;
 	void set_sparse_count(int64_t p_sparse_count);
@@ -170,6 +178,18 @@ public:
 	void set_sparse_values_byte_offset(int64_t p_sparse_values_byte_offset);
 
 	bool is_equal_exact(const Ref<GLTFAccessor> &p_other) const;
+
+	// High-level decode functions.
+	PackedColorArray decode_as_colors(const Ref<GLTFState> &p_gltf_state) const;
+	PackedFloat32Array decode_as_float32s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedFloat64Array decode_as_float64s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedInt32Array decode_as_int32s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedInt64Array decode_as_int64s(const Ref<GLTFState> &p_gltf_state) const;
+	Vector<Quaternion> decode_as_quaternions(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector2Array decode_as_vector2s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector3Array decode_as_vector3s(const Ref<GLTFState> &p_gltf_state) const;
+	PackedVector4Array decode_as_vector4s(const Ref<GLTFState> &p_gltf_state) const;
+	Array decode_as_variants(const Ref<GLTFState> &p_gltf_state, Variant::Type p_variant_type) const;
 
 	// Low-level encode functions.
 	static GLTFComponentType get_minimal_integer_component_type_from_ints(const PackedInt64Array &p_numbers);

@@ -33,6 +33,16 @@
 #include "core/typedefs.h"
 #include "profiling.gen.h"
 
+// This header provides profiling primitives (implemented as macros) for various backends.
+// See the "No profiling" branch at the bottom for a short description of the functions.
+
+// To configure / use the profiler, use the --profiler_path and other --profiler_* arguments
+// when compiling Godot. You can also find details in the SCSub file (in this folder).
+
+// Note: It is highly recommended to avoid including this header in other header files.
+//       Prefer including it in .cpp files only. The reason is that we want to keep
+//       the recompile cost of changing the profiler as low as possible.
+
 #if defined(GODOT_USE_TRACY)
 // Use the tracy profiler.
 
@@ -41,7 +51,7 @@
 
 // Define tracing macros.
 #define GodotProfileFrameMark FrameMark
-#define GodotProfileZone(m_zone_name) ZoneScopedN(m_zone_name)
+#define GodotProfileZone(m_zone_name) ZoneNamedN(GD_UNIQUE_NAME(__godot_tracy_szone_), m_zone_name, true)
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) ZoneNamedN(__godot_tracy_zone_##m_group_name, m_zone_name, true)
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) __godot_tracy_zone_##m_group_name.~ScopedZone();
 #ifndef TRACY_CALLSTACK
@@ -55,6 +65,10 @@
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 #endif
+
+// Memory allocation
+#define GodotProfileAlloc(m_ptr, m_size) TracyAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr) TracyFree(m_ptr)
 
 void godot_init_profiler();
 
@@ -88,6 +102,8 @@ struct PerfettoGroupedEventEnder {
 	__godot_perfetto_zone_##m_group_name._end_now();       \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
 
+#define GodotProfileAlloc(m_ptr, m_size)
+#define GodotProfileFree(m_ptr)
 void godot_init_profiler();
 
 #else
@@ -95,10 +111,21 @@ void godot_init_profiler();
 
 void godot_init_profiler();
 
+// Tell the profiling backend that a new frame has started.
 #define GodotProfileFrameMark
+// Defines a profile zone from here to the end of the scope.
 #define GodotProfileZone(m_zone_name)
+// Defines a profile zone group. The first profile zone starts immediately,
+// and ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name)
+// End the profile zone group's current profile zone now.
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name)
+// Replace the profile zone group's current profile zone.
+// The new zone ends either when the next zone starts, or when the scope ends.
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name)
-
+// Tell the profiling backend that an allocation happened, with its location and size.
+#define GodotProfileAlloc(m_ptr, m_size)
+// Tell the profiling backend that an allocation was freed.
+// There must be a one to one correspondence of GodotProfileAlloc and GodotProfileFree calls.
+#define GodotProfileFree(m_ptr)
 #endif

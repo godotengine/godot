@@ -52,6 +52,7 @@
 #include "scene/openxr_render_model_manager.h"
 #include "scene/openxr_visibility_mask.h"
 
+#include "extensions/openxr_android_thread_settings_extension.h"
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_composition_layer_extension.h"
 #include "extensions/openxr_debug_utils_extension.h"
@@ -108,17 +109,15 @@ static Ref<OpenXRInterface> openxr_interface;
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
-		// Only add our OpenXR action map editor if OpenXR is enabled for our project
-
 		if (openxr_interaction_profile_metadata == nullptr) {
 			// If we didn't initialize our actionmap metadata at startup, we initialize it now.
 			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
 			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 		}
-
-		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
-		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
+
+	OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+	EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 }
 #endif
 
@@ -133,6 +132,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRFutureExtension);
 		GDREGISTER_CLASS(OpenXRAPIExtension);
 		GDREGISTER_CLASS(OpenXRRenderModelExtension);
+		GDREGISTER_CLASS(OpenXRAndroidThreadSettingsExtension);
 
 		// Note, we're not registering all wrapper classes here, there is no point in exposing them
 		// if there isn't specific logic to expose.
@@ -196,6 +196,11 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRFrameSynthesisExtension *frame_synthesis_extension = memnew(OpenXRFrameSynthesisExtension);
 			OpenXRAPI::register_extension_wrapper(frame_synthesis_extension);
 			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFrameSynthesisExtension", frame_synthesis_extension));
+
+			// Register android thread settings extension as a singleton.
+			OpenXRAndroidThreadSettingsExtension *android_thread_settings = memnew(OpenXRAndroidThreadSettingsExtension);
+			OpenXRAPI::register_extension_wrapper(android_thread_settings);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRAndroidThreadSettingsExtension", android_thread_settings));
 
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {

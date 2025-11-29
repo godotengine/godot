@@ -70,6 +70,33 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<description>
+				Adds a [param shortcut] whose path is specified by [param path].
+				The [param path] determines how the shortcut is organized and displayed in the editor's shortcut settings. The path format affects the display as follows:
+				- [code]"name"[/code] (no slash): Creates a category named [code]name[/code] with the shortcut displayed as [code]name[/code].
+				- [code]"category/name"[/code] (single slash): Displays as [code]name[/code] in the [code]category[/code] section.
+				- [code]"category/name/extra"[/code] (multiple slashes): Extra path components are ignored, so this behaves the same as [code]"category/name"[/code].
+				[b]Note:[/b] Shortcuts are only saved to the editor settings if they differ from their original/default state. This means empty shortcuts that were originally empty will not persist between editor sessions and must be re-added. If a shortcut with the same [param path] already exists, this method will update it with the new [param shortcut] instead of creating a duplicate.
+				[codeblock]
+				# Add a custom shortcut for a plugin action.
+				var my_shortcut = Shortcut.new()
+				var input_event = InputEventKey.new()
+				input_event.keycode = KEY_F5
+				input_event.ctrl_pressed = true
+				my_shortcut.events.append(input_event)
+
+				# This will appear under the "My Plugin" category as "Reload Data".
+				EditorInterface.get_editor_settings().add_shortcut("my_plugin/reload_data", my_shortcut)
+
+				# This will appear under the "Test Action" category as "Test Action".
+				EditorInterface.get_editor_settings().add_shortcut("test_action", my_shortcut)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="check_changed_settings_in_group" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
@@ -118,6 +145,19 @@
 				Returns the value of the setting specified by [param name]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="Shortcut" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the shortcut specified by [param path]. Tries to find a built-in action if no shortcut with the provided path is found in the shortcut list. If found, adds it to the list and returns it, otherwise returns [code]null[/code].
+			</description>
+		</method>
+		<method name="get_shortcut_list">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of stored shortcut paths.
+			</description>
+		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -125,11 +165,33 @@
 				Returns [code]true[/code] if the setting specified by [param name] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="has_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] exists, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_shortcut" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Returns [code]true[/code] if the shortcut specified by [param path] matches the event specified by [param event], [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="mark_setting_changed">
 			<return type="void" />
 			<param index="0" name="setting" type="String" />
 			<description>
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
+			</description>
+		</method>
+		<method name="remove_shortcut">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Removes the shortcut specified by [param path].
 			</description>
 		</method>
 		<method name="set_builtin_action_override">
@@ -791,6 +853,10 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/on_save/warn_on_saving_large_text_resources" type="bool" setter="" getter="">
+			If [code]true[/code], displays a warning toast message when saving a text-based scene or resource that is larger than 500 KiB on disk. This is typically caused by binary subresources being embedded as text, which results in slow and inefficient conversion to text. This in turn impacts scene saving and loading times.
+			This should usually be resolved by moving the embedded binary subresource to its own binary resource file ([code].res[/code] extension instead of [code].tres[/code]). This is the preferred approach. Alternatively, the entire scene can be saved with the binary [code].scn[/code] format as opposed to [code].tscn[/code], but this will make it less friendly to version control systems.
+		</member>
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
@@ -844,6 +910,9 @@
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
 		</member>
+		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the bottom.
+		</member>
 		<member name="interface/editor/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 		</member>
@@ -877,7 +946,7 @@
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
 		</member>
 		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
-			Tab style of editor docks.
+			Tab style of editor docks, except bottom docks.
 		</member>
 		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
 			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
@@ -1189,7 +1258,7 @@
 			All update modes will ignore builds with different major versions (e.g. Godot 4 -&gt; Godot 5).
 		</member>
 		<member name="network/connection/network_mode" type="int" setter="" getter="">
-			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
+			Determines whether online features, such as the Asset Library or update checks, are enabled in the editor. If this is a privacy concern, disabling these online features prevents the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
 			Editor plugins and tool scripts are recommended to follow this setting. However, Godot can't prevent them from violating this rule.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
@@ -1387,7 +1456,7 @@
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
 		</member>
 		<member name="text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method" type="bool" setter="" getter="">
-			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Node dock.
+			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Signals dock.
 		</member>
 		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling past the end of the file.
@@ -1419,7 +1488,7 @@
 			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
 			- Accepting a suggestion from code autocompletion;
 			- Creating a new script from a template;
-			- Connecting signals from the Node dock;
+			- Connecting signals from the Signals dock;
 			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">

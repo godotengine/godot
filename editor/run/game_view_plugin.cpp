@@ -668,7 +668,7 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
 	String display_driver = GLOBAL_GET("display/display_server/driver");
-	if (display_driver == "headless" || display_driver == "wayland") {
+	if (display_driver == "headless") {
 		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
 	}
 
@@ -714,11 +714,7 @@ void GameView::_update_ui() {
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			if (DisplayServer::get_singleton()->get_name() == "Wayland") {
-				state_label->set_text(TTRC("Game embedding not available on Wayland.\nWayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD > Prefer Wayland)."));
-			} else {
-				state_label->set_text(TTRC("Game embedding not available on your OS."));
-			}
+			state_label->set_text(TTRC("Game embedding not available on your OS."));
 			break;
 		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
 			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));
@@ -991,6 +987,21 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	// macOS requires the embedded display driver.
 	remove_args.insert("--display-driver");
 #endif
+
+#ifdef WAYLAND_ENABLED
+	// Wayland requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	// X11 requires its display driver.
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		remove_args.insert("--display-driver");
+	}
+#endif
+
 	while (E) {
 		List<String>::Element *N = E->next();
 
@@ -1018,6 +1029,20 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 #if MACOS_ENABLED
 	N = r_arguments.insert_after(N, "--embedded");
+#endif
+
+#ifdef WAYLAND_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "wayland");
+	}
+#endif
+
+#ifdef X11_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "X11") {
+		N = r_arguments.insert_after(N, "--display-driver");
+		N = r_arguments.insert_after(N, "x11");
+	}
 #endif
 
 	// Be sure to have the correct window size in the embedded_process control.

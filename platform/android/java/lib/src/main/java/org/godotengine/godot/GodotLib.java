@@ -105,7 +105,7 @@ public class GodotLib {
 	/**
 	 * TTS callback.
 	 */
-	public static native void ttsCallback(int event, int id, int pos);
+	public static native void ttsCallback(int event, long id, int pos);
 
 	/**
 	 * Forward touch events.
@@ -314,4 +314,6 @@ public class GodotLib {
 	static native boolean isEditorHint();
 
 	static native boolean isProjectManagerHint();
+
+	static native boolean hasFeature(String feature);
 }
