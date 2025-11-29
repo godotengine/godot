@@ -417,8 +417,8 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					break;
 				}
 				StringBuffer<> token_text;
-				if (cchar == '-') {
-					token_text += '-';
+				if (cchar == '-' || cchar == '+') {
+					token_text += cchar;
 					cchar = p_stream->get_char();
 				}
 				if (cchar >= '0' && cchar <= '9') {
