@@ -35,6 +35,8 @@
 class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
 
+	friend class ContainerEditorPlugin;
+
 public:
 	enum AlignmentMode {
 		ALIGNMENT_BEGIN,
@@ -45,6 +47,8 @@ public:
 private:
 	bool vertical = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
+
+	LocalVector<int> cell_positions;
 
 	struct ThemeCache {
 		int separation = 0;
