@@ -58,6 +58,11 @@ private:
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
 	LastWrapAlignmentMode last_wrap_alignment = LAST_WRAP_ALIGNMENT_INHERIT;
 
+#ifdef TOOLS_ENABLED
+	friend class ContainerEditorPlugin;
+	LocalVector<LocalVector<int32_t>> cell_sizes;
+#endif
+
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;

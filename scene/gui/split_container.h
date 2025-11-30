@@ -73,6 +73,9 @@ public:
 class SplitContainer : public Container {
 	GDCLASS(SplitContainer, Container);
 	friend class SplitContainerDragger;
+#ifdef TOOLS_ENABLED
+	friend class ContainerEditorPlugin;
+#endif
 
 public:
 	enum DraggerVisibility {
