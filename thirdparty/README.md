@@ -1172,7 +1172,7 @@ Patches:
 ## wayland
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland
-- Version: 1.22.0 (b2649cb3ee6bd70828a17e50beb16591e6066288, 2023)
+- Version: 1.24.0 (736d12ac67c20c60dc406dc49bb06be878501f86, 2025)
 - License: MIT
 
 Files extracted from upstream source:
