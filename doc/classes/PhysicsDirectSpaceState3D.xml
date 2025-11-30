@@ -23,12 +23,13 @@
 			</description>
 		</method>
 		<method name="collide_shape">
-			<return type="Vector3[]" />
+			<return type="bool" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
-			<param index="1" name="max_results" type="int" default="32" />
+			<param index="1" name="result" type="PhysicsShapeCollisionResult3D" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
-				Returned points are a list of pairs of contact points. For each pair the first one is in the shape passed in [PhysicsShapeQueryParameters3D] object, second one is in the collided shape from the physics space.
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
+				If intersections are found, this method returns [code]true[/code] and writes the collision points into the [PhysicsShapeCollisionResult3D] object passed in [code skip-lint]result[/code]. If no intersections are found, it returns [code]false[/code].
+				Like with [method intersect_shape], the number of returned results can be limited using [member PhysicsShapeCollisionResult3D.max_collisions], to reduce the processing time.
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
