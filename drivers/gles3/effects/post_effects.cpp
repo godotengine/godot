@@ -90,7 +90,8 @@ void PostEffects::_draw_screen_triangle() {
 void PostEffects::post_copy(
 		GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color,
 		GLuint p_source_depth, bool p_ssao_enabled, int p_ssao_quality_level, float p_ssao_strength, float p_ssao_radius,
-		Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity,
+		Size2i p_source_size, float p_luminance_multiplier, RS::ViewportScreenSpaceAA p_screen_space_aa,
+		const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity,
 		float p_srgb_white, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -103,6 +104,9 @@ void PostEffects::post_copy(
 	uint64_t flags = p_spec_constants;
 	if (p_use_multiview) {
 		flags |= PostShaderGLES3::USE_MULTIVIEW;
+	}
+	if (p_screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+		flags |= PostShaderGLES3::USE_FXAA;
 	}
 	if (p_glow_buffers != nullptr) {
 		flags |= PostShaderGLES3::USE_GLOW;
@@ -149,11 +153,14 @@ void PostEffects::post_copy(
 				post.shader_version, mode, flags);
 	}
 
+	if (p_screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA || p_glow_buffers != nullptr) {
+		post.shader.version_set_uniform(PostShaderGLES3::PIXEL_SIZE, 1.0 / p_source_size.x, 1.0 / p_source_size.y, post.shader_version, mode, flags);
+	}
+
 	if (p_glow_buffers != nullptr) {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, p_glow_buffers[0].color);
 
-		post.shader.version_set_uniform(PostShaderGLES3::PIXEL_SIZE, 1.0 / p_source_size.x, 1.0 / p_source_size.y, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::GLOW_INTENSITY, p_glow_intensity, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SRGB_WHITE, p_srgb_white, post.shader_version, mode, flags);
 	}

@@ -1395,16 +1395,22 @@ bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+	bool fallback_to_fxaa = false;
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_mode == RS::VIEWPORT_SCREEN_SPACE_AA_SMAA) {
 #ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
-		WARN_PRINT_ONCE_ED("Screen-space AA is only available when using the Forward+ or Mobile renderer.");
-	}
+		WARN_PRINT_ONCE_ED("SMAA screen-space antialiasing is only available when using the Forward+ or Mobile renderer. Falling back to FXAA.");
 #endif
+		fallback_to_fxaa = true;
+	}
 
 	if (viewport->screen_space_aa == p_mode) {
 		return;
 	}
-	viewport->screen_space_aa = p_mode;
+	if (fallback_to_fxaa) {
+		viewport->screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_FXAA;
+	} else {
+		viewport->screen_space_aa = p_mode;
+	}
 	_configure_3d_render_buffers(viewport);
 }
 

@@ -134,7 +134,7 @@ void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p
 	//anisotropic_filtering_level = p_config->get_anisotropic_filtering_level();
 	render_target = p_config->get_render_target();
 	msaa3d.mode = p_config->get_msaa_3d();
-	//screen_space_aa = p_config->get_screen_space_aa();
+	screen_space_aa = p_config->get_screen_space_aa();
 	//use_debanding = p_config->get_use_debanding();
 	view_count = config->multiview_supported ? p_config->get_view_count() : 1;
 
