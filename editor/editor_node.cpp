@@ -1769,7 +1769,9 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 					r_list.push_back(res);
 				}
 			}
-			gather_resources(v, r_list, p_subresources, p_allow_external);
+			if (Object::cast_to<Node>(v) == nullptr) {
+				gather_resources(v, r_list, p_subresources, p_allow_external);
+			}
 		}
 		return;
 	}
@@ -1793,8 +1795,12 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 					r_list.push_back(res_value);
 				}
 			}
-			gather_resources(kv.key, r_list, p_subresources, p_allow_external);
-			gather_resources(kv.value, r_list, p_subresources, p_allow_external);
+			if (Object::cast_to<Node>(kv.key) == nullptr) {
+				gather_resources(kv.key, r_list, p_subresources, p_allow_external);
+			}
+			if (Object::cast_to<Node>(kv.value) == nullptr) {
+				gather_resources(kv.value, r_list, p_subresources, p_allow_external);
+			}
 		}
 		return;
 	}
@@ -1809,12 +1815,10 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 
 		Variant property_value = p_variant.get(E.name);
 		Variant::Type property_type = property_value.get_type();
-
 		if (property_type == Variant::ARRAY || property_type == Variant::DICTIONARY) {
 			gather_resources(property_value, r_list, p_subresources, p_allow_external);
 			continue;
 		}
-
 		Ref<Resource> res = property_value;
 		if (res.is_null()) {
 			continue;
