@@ -1695,6 +1695,8 @@ void DisplayServerWayland::try_suspend() {
 void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
 
+	wayland_thread.keyboard_echo_keys();
+
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
@@ -1836,8 +1838,6 @@ void DisplayServerWayland::process_events() {
 			continue;
 		}
 	}
-
-	wayland_thread.keyboard_echo_keys();
 
 	switch (suspend_state) {
 		case SuspendState::NONE: {

@@ -1037,6 +1037,8 @@ private:
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
+	static void _seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_t p_xkb_keycode, bool p_pressed, bool p_echo = false);
+
 	static void _wayland_state_update_cursor();
 
 	void _set_current_seat(struct wl_seat *p_seat);
