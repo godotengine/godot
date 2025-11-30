@@ -30,6 +30,7 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
@@ -1823,7 +1824,60 @@ void ScriptEditorDebugger::_vmem_item_activated() {
 	if (path.is_empty() || !FileAccess::exists(path)) {
 		return;
 	}
-	FileSystemDock::get_singleton()->navigate_to_path(path);
+	FileSystemDock::get_singleton()->open_file(path);
+}
+
+void ScriptEditorDebugger::_vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+
+	vmem_item_menu->clear();
+	vmem_item_menu->reset_size();
+
+	vmem_item_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")),
+			TTR("Show in FileSystem"), VMEM_MENU_SHOW_IN_FILESYSTEM);
+	vmem_item_menu->add_icon_item(get_editor_theme_icon(SNAME("Filesystem")),
+			TTR("Show in File Manager"), VMEM_MENU_SHOW_IN_EXPLORER);
+
+	vmem_item_menu->add_item(TTR("View Owners..."), VMEM_MENU_OWNERS);
+
+	vmem_item_menu->set_position(vmem_tree->get_screen_position() + p_pos);
+	vmem_item_menu->popup();
+}
+
+void ScriptEditorDebugger::_vmem_item_menu_id_pressed(int p_option) {
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+
+	switch (p_option) {
+		case VMEM_MENU_SHOW_IN_FILESYSTEM: {
+			FileSystemDock::get_singleton()->navigate_to_path(path);
+		} break;
+		case VMEM_MENU_SHOW_IN_EXPLORER: {
+			OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+		} break;
+		case VMEM_MENU_OWNERS: {
+			FileSystemDock::get_owners_editor_singleton()->show(path);
+		} break;
+	}
 }
 
 void ScriptEditorDebugger::_clear_errors_list() {
@@ -2373,9 +2427,14 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_title(3, TTRC("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
+		vmem_tree->set_allow_rmb_select(true);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
-
+		vmem_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_vmem_tree_rmb_selected));
 		tabs->add_child(vmem_vb);
+
+		vmem_item_menu = memnew(PopupMenu);
+		vmem_item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_vmem_item_menu_id_pressed));
+		add_child(vmem_item_menu);
 	}
 
 	{ // misc
