@@ -179,35 +179,6 @@ public:
 		return true;
 	}
 
-	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
-	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
-	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
-		if (p_old_key == p_new_key) {
-			return true;
-		}
-		uint32_t meta_idx = 0;
-		uint32_t element_idx = 0;
-		ERR_FAIL_COND_V(_lookup_idx(p_new_key, element_idx, meta_idx), false);
-		ERR_FAIL_COND_V(!_lookup_idx(p_old_key, element_idx, meta_idx), false);
-		TKey &element = _elements[element_idx];
-		const_cast<TKey &>(element) = p_new_key;
-
-		uint32_t next_meta_idx = (meta_idx + 1) & _capacity_mask;
-		while (_metadata[next_meta_idx].hash != EMPTY_HASH && _get_probe_length(next_meta_idx, _metadata[next_meta_idx].hash, _capacity_mask) != 0) {
-			SWAP(_metadata[next_meta_idx], _metadata[meta_idx]);
-
-			meta_idx = next_meta_idx;
-			next_meta_idx = (next_meta_idx + 1) & _capacity_mask;
-		}
-
-		_metadata[meta_idx].hash = EMPTY_HASH;
-
-		uint32_t hash = _hash(p_new_key);
-		_insert_metadata(hash, element_idx);
-
-		return true;
-	}
-
 	/** Iterator API **/
 
 	struct Iterator {
@@ -303,48 +274,6 @@ public:
 			_elements[element_idx] = p_key;
 		}
 		return Iterator(_elements + element_idx, _elements, _elements + _size);
-	}
-
-	// Inserts an element without checking if it already exists.
-	//
-	// SAFETY: In dev builds, the insertions are checked and causes a crash on bad use.
-	// In release builds, the insertions are not checked, but bad use will cause duplicate
-	// keys, which also affect iterators. Bad use does not cause undefined behavior.
-	Iterator insert_new(const TKey &p_key) {
-		DEV_ASSERT(!has(p_key));
-		uint32_t hash = _hash(p_key);
-		uint32_t element_idx = _insert_element(p_key, hash);
-		return Iterator(_elements + element_idx, _elements, _elements + _size);
-	}
-
-	/* Array methods. */
-
-	// Unsafe. Changing keys and going outside the bounds of an array can lead to undefined behavior.
-	TKey *get_elements_ptr() {
-		return _elements;
-	}
-
-	// Returns the element index. If not found, returns -1.
-	int get_index(const TKey &p_key) {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
-		if (!exists) {
-			return -1;
-		}
-		return element_idx;
-	}
-
-	TKey &get_by_index(uint32_t p_index) {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, _size);
-		return _elements[p_index];
-	}
-
-	bool erase_by_index(uint32_t p_index) {
-		if (p_index >= size()) {
-			return false;
-		}
-		return erase(_elements[p_index]);
 	}
 
 	/* Constructors */
