@@ -438,6 +438,10 @@ void ScrollContainer::_reposition_children() {
 		focus_panel->set_size(get_size());
 	}
 
+#ifdef TOOLS_ENABLED
+	content_rect = Rect2(ofs, size);
+#endif
+
 	update_maximum_size();
 	queue_redraw();
 }

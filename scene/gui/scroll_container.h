@@ -39,6 +39,10 @@ class TextureRect;
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
+#ifdef TOOLS_ENABLED
+	friend class ContainerEditorPlugin;
+#endif
+
 public:
 	enum ScrollMode {
 		SCROLL_MODE_DISABLED = 0,
@@ -105,6 +109,10 @@ private:
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
 	} theme_cache;
+
+#ifdef TOOLS_ENABLED
+	Rect2 content_rect;
+#endif
 
 	void _cancel_drag();
 
