@@ -30,6 +30,7 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
@@ -1112,6 +1113,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_notice_icon->set_texture(get_editor_theme_icon(SNAME("NodeInfo")));
 			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
+			vmem_item_menu->set_item_icon(VMEM_MENU_SHOW_IN_FILESYSTEM, get_editor_theme_icon(SNAME("ShowInFileSystem")));
+			vmem_item_menu->set_item_icon(VMEM_MENU_SHOW_IN_EXPLORER, get_editor_theme_icon(SNAME("Filesystem")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			reason->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -1834,6 +1837,49 @@ void ScriptEditorDebugger::_vmem_item_activated() {
 	FileSystemDock::get_singleton()->navigate_to_path(path);
 }
 
+void ScriptEditorDebugger::_vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+
+	vmem_item_menu->set_position(vmem_tree->get_screen_position() + p_pos);
+	vmem_item_menu->popup();
+}
+
+void ScriptEditorDebugger::_vmem_item_menu_id_pressed(int p_option) {
+	TreeItem *item = vmem_tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	String path = item->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+
+	switch (p_option) {
+		case VMEM_MENU_SHOW_IN_FILESYSTEM: {
+			FileSystemDock::get_singleton()->navigate_to_path(path);
+		} break;
+		case VMEM_MENU_SHOW_IN_EXPLORER: {
+			OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(path), true);
+		} break;
+		case VMEM_MENU_OWNERS: {
+			FileSystemDock::get_owners_dialog()->show(path);
+		} break;
+	}
+}
+
 void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
@@ -2375,9 +2421,17 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_hide_root(true);
 		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 		mc->add_child(vmem_tree);
+		vmem_tree->set_allow_rmb_select(true);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
-
+		vmem_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_vmem_tree_rmb_selected));
 		tabs->add_child(vmem_vb);
+
+		vmem_item_menu = memnew(PopupMenu);
+		vmem_item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditorDebugger::_vmem_item_menu_id_pressed));
+		add_child(vmem_item_menu);
+		vmem_item_menu->add_item(TTRC("Show in FileSystem"), VMEM_MENU_SHOW_IN_FILESYSTEM);
+		vmem_item_menu->add_item(TTRC("Show in File Manager"), VMEM_MENU_SHOW_IN_EXPLORER);
+		vmem_item_menu->add_item(TTRC("View Owners..."), VMEM_MENU_OWNERS);
 	}
 
 	{ // misc
