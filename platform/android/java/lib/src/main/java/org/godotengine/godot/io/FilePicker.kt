@@ -85,28 +85,12 @@ internal class FilePicker {
 						for (i in 0 until clipData.itemCount) {
 							val uri = clipData.getItemAt(i).uri
 							uri?.let {
-								try {
-									context.contentResolver.takePersistableUriPermission(
-										it,
-										Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-									)
-								} catch (e: SecurityException) {
-									Log.d(TAG, "Unable to persist URI: $it", e)
-								}
 								selectedFiles.add(it.toString())
 							}
 						}
 					} else {
 						val uri: Uri? = data?.data
 						uri?.let {
-							try {
-								context.contentResolver.takePersistableUriPermission(
-									it,
-									Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-								)
-							} catch (e: SecurityException) {
-								Log.w(TAG, "Unable to persist URI: $it", e)
-							}
 							selectedFiles.add(it.toString())
 						}
 					}
