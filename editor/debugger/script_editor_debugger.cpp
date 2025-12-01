@@ -1480,9 +1480,10 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 	}
 
 	Node *node = Object::cast_to<Node>(p_base);
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
-	if (node) {
-		NodePath path = EditorNode::get_singleton()->get_edited_scene()->get_path_to(node);
+	if (node && node->get_owner() == scene) {
+		NodePath path = scene->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
 		if (p_value.is_ref_counted()) {

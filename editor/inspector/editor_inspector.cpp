@@ -136,9 +136,11 @@ bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resour
 			continue;
 		}
 
-		if (p.name.begins_with("metadata/") && bool(object->call(SNAME("_hide_metadata_from_inspector")))) {
-			// Hide metadata from inspector if required.
-			continue;
+		if (Object *object = get_edited_object()) {
+			if (p.name.begins_with("metadata/") && bool(object->call(SNAME("_hide_metadata_from_inspector")))) {
+				// Hide metadata from inspector if required.
+				continue;
+			}
 		}
 
 		String path = p.name;
@@ -713,15 +715,37 @@ String EditorProperty::get_label() const {
 	return label;
 }
 
-Object *EditorProperty::get_edited_object() {
-	return object;
+void EditorProperty::set_edited_object(Object *p_object) {
+	if (p_object) {
+		edited_object = p_object->get_instance_id();
+	} else {
+		edited_object = ObjectID();
+	}
+}
+
+Object *EditorProperty::get_edited_object() const {
+	if (edited_object.is_valid()) {
+		Object *obj = ObjectDB::get_instance(edited_object);
+		if (obj == nullptr) {
+			edited_object = ObjectID();
+		}
+		return obj;
+	}
+	return nullptr;
 }
 
 StringName EditorProperty::get_edited_property() const {
 	return property;
 }
 
+Variant EditorProperty::get_edited_property_value() const {
+	Object *object = get_edited_object();
+	ERR_FAIL_NULL_V(object, Variant());
+	return object->get(property);
+}
+
 Variant EditorProperty::get_edited_property_display_value() const {
+	Object *object = get_edited_object();
 	ERR_FAIL_NULL_V(object, Variant());
 	Control *control = Object::cast_to<Control>(object);
 	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
@@ -838,6 +862,11 @@ void EditorProperty::update_editor_property_status() {
 		return; //no property, so nothing to do
 	}
 
+	Object *object = get_edited_object();
+	if (!object) {
+		return;
+	}
+
 	bool new_pinned = false;
 	if (can_pin) {
 		Node *node = Object::cast_to<Node>(object);
@@ -876,11 +905,13 @@ void EditorProperty::update_editor_property_status() {
 
 bool EditorProperty::use_keying_next() const {
 	List<PropertyInfo> plist;
-	object->get_property_list(&plist, true);
+	if (Object *object = get_edited_object()) {
+		object->get_property_list(&plist, true);
 
-	for (const PropertyInfo &p : plist) {
-		if (p.name == property) {
-			return (p.usage & PROPERTY_USAGE_KEYING_INCREMENTS);
+		for (const PropertyInfo &p : plist) {
+			if (p.name == property) {
+				return (p.usage & PROPERTY_USAGE_KEYING_INCREMENTS);
+			}
 		}
 	}
 
@@ -1077,95 +1108,99 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		Vector2 mpos = mb->get_position();
-		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
-		}
+		if (Object *object = get_edited_object()) {
+			Vector2 mpos = mb->get_position();
+			if (is_layout_rtl()) {
+				mpos.x = get_size().x - mpos.x;
+			}
 
-		select();
+			select();
 
-		if (keying_rect.has_point(mpos)) {
-			accept_event();
-			emit_signal(SNAME("property_keyed"), property, use_keying_next());
+			if (keying_rect.has_point(mpos)) {
+				accept_event();
+				emit_signal(SNAME("property_keyed"), property, use_keying_next());
 
-			if (use_keying_next()) {
-				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
-					Vector2i new_coords = object->get(property);
-					new_coords.x++;
-					if (new_coords.x >= int64_t(object->get("hframes"))) {
-						new_coords.x = 0;
-						new_coords.y++;
+				if (use_keying_next()) {
+					if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
+						Vector2i new_coords = object->get(property);
+						new_coords.x++;
+						if (new_coords.x >= int64_t(object->get("hframes"))) {
+							new_coords.x = 0;
+							new_coords.y++;
+						}
+						if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
+							callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, new_coords, "", false);
+						}
+					} else {
+						if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
+							callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, object->get(property).operator int64_t() + 1, "", false);
+						}
 					}
-					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
-						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, new_coords, "", false);
-					}
-				} else {
-					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
-						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, object->get(property).operator int64_t() + 1, "", false);
+					callable_mp(this, &EditorProperty::update_property).call_deferred();
+				}
+			}
+			if (delete_rect.has_point(mpos)) {
+				accept_event();
+				emit_signal(SNAME("property_deleted"), property);
+			}
+
+			if (revert_rect.has_point(mpos)) {
+				accept_event();
+				get_viewport()->gui_release_focus();
+				bool is_valid_revert = false;
+				Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
+				ERR_FAIL_COND(!is_valid_revert);
+				emit_changed(_get_revert_property(), revert_value);
+				update_property();
+			}
+
+			if (check_rect.has_point(mpos)) {
+				accept_event();
+				if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
+					List<PropertyInfo> pinfo;
+					object->get_property_list(&pinfo);
+					for (const PropertyInfo &E : pinfo) {
+						if (E.type == Variant::OBJECT && E.name == property_path) {
+							EditorToaster::get_singleton()->popup_str(TTR("Toggling the checkbox is disabled for Resource properties. Modify the property using the resource picker instead."), EditorToaster::SEVERITY_WARNING);
+							return; // Disallow clicking to toggle the checkbox of type Resource to checked.
+						}
 					}
 				}
-				callable_mp(this, &EditorProperty::update_property).call_deferred();
+				checked = !checked;
+				queue_redraw();
+				emit_signal(SNAME("property_checked"), property, checked);
 			}
-		}
-		if (delete_rect.has_point(mpos)) {
+		} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			accept_event();
-			emit_signal(SNAME("property_deleted"), property);
+			_update_popup();
+			menu->set_position(get_screen_position() + get_local_mouse_position());
+			menu->reset_size();
+			menu->popup();
+			select();
+			return;
 		}
+	}
+}
 
-		if (revert_rect.has_point(mpos)) {
-			accept_event();
-			get_viewport()->gui_release_focus();
-			bool is_valid_revert = false;
-			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
-			ERR_FAIL_COND(!is_valid_revert);
-			emit_changed(_get_revert_property(), revert_value);
-			update_property();
-		}
-
-		if (check_rect.has_point(mpos)) {
-			accept_event();
+void EditorProperty::_accessibility_action_click(const Variant &p_data) {
+	select();
+	if (Object *object = get_edited_object()) {
+		if (checkable) {
 			if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
 				List<PropertyInfo> pinfo;
 				object->get_property_list(&pinfo);
 				for (const PropertyInfo &E : pinfo) {
 					if (E.type == Variant::OBJECT && E.name == property_path) {
 						EditorToaster::get_singleton()->popup_str(TTR("Toggling the checkbox is disabled for Resource properties. Modify the property using the resource picker instead."), EditorToaster::SEVERITY_WARNING);
-						return; // Disallow clicking to toggle the checkbox of type Resource to checked.
+						return;
 					}
 				}
 			}
+
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
-	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-		accept_event();
-		_update_popup();
-		menu->set_position(get_screen_position() + get_local_mouse_position());
-		menu->reset_size();
-		menu->popup();
-		select();
-		return;
-	}
-}
-
-void EditorProperty::_accessibility_action_click(const Variant &p_data) {
-	select();
-	if (checkable) {
-		if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
-			List<PropertyInfo> pinfo;
-			object->get_property_list(&pinfo);
-			for (const PropertyInfo &E : pinfo) {
-				if (E.type == Variant::OBJECT && E.name == property_path) {
-					EditorToaster::get_singleton()->popup_str(TTR("Toggling the checkbox is disabled for Resource properties. Modify the property using the resource picker instead."), EditorToaster::SEVERITY_WARNING);
-					return;
-				}
-			}
-		}
-
-		checked = !checked;
-		queue_redraw();
-		emit_signal(SNAME("property_checked"), property, checked);
 	}
 }
 
@@ -1226,11 +1261,14 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 }
 
 Variant EditorProperty::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
-	return object->get(p_prop, &r_valid);
+	if (Object *object = get_edited_object()) {
+		return object->get(p_prop, &r_valid);
+	}
+	return Variant();
 }
 
 bool EditorProperty::is_cache_valid() const {
-	if (object) {
+	if (get_edited_object()) {
 		for (const KeyValue<StringName, Variant> &E : cache) {
 			bool valid;
 			Variant value = _get_cache_value(E.key, valid);
@@ -1243,7 +1281,7 @@ bool EditorProperty::is_cache_valid() const {
 }
 void EditorProperty::update_cache() {
 	cache.clear();
-	if (object && property != StringName()) {
+	if (get_edited_object() && property != StringName()) {
 		bool valid;
 		Variant value = _get_cache_value(property, valid);
 		if (valid) {
@@ -1252,22 +1290,25 @@ void EditorProperty::update_cache() {
 	}
 }
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
-	if (property == StringName()) {
-		return Variant();
+	if (Object *object = get_edited_object()) {
+		if (property == StringName()) {
+			return Variant();
+		}
+
+		Dictionary dp;
+		dp["type"] = "obj_property";
+		dp["object"] = object;
+		dp["property"] = property;
+		dp["value"] = object->get(property);
+
+		Label *drag_label = memnew(Label);
+		drag_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+		drag_label->set_text(property);
+		drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
+		set_drag_preview(drag_label);
+		return dp;
 	}
-
-	Dictionary dp;
-	dp["type"] = "obj_property";
-	dp["object"] = object;
-	dp["property"] = property;
-	dp["value"] = object->get(property);
-
-	Label *drag_label = memnew(Label);
-	drag_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	drag_label->set_text(property);
-	drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
-	set_drag_preview(drag_label);
-	return dp;
+	return Variant();
 }
 
 void EditorProperty::set_use_folding(bool p_use_folding) {
@@ -1312,7 +1353,7 @@ bool EditorProperty::is_favoritable() const {
 }
 
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
-	object = p_object;
+	set_edited_object(p_object);
 	property = p_property;
 
 	_update_flags();
@@ -1342,7 +1383,7 @@ void EditorProperty::_update_flags() {
 		return;
 	}
 
-	if (Node *node = Object::cast_to<Node>(object)) {
+	if (Node *node = Object::cast_to<Node>(get_edited_object())) {
 		// Avoid errors down the road by ignoring nodes which are not part of a scene
 		if (!node->get_owner()) {
 			bool is_scene_root = false;
@@ -1374,10 +1415,12 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	String symbol;
 	String prologue;
 
-	if (object->has_method("_get_property_warning")) {
-		const String custom_warning = object->call("_get_property_warning", property);
-		if (!custom_warning.is_empty()) {
-			prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+	if (Object *object = get_edited_object()) {
+		if (object->has_method("_get_property_warning")) {
+			const String custom_warning = object->call("_get_property_warning", property);
+			if (!custom_warning.is_empty()) {
+				prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+			}
 		}
 	}
 
@@ -1406,7 +1449,9 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			EditorInspector::set_property_clipboard(object->get(property));
+			if (Object *object = get_edited_object()) {
+				EditorInspector::set_property_clipboard(object->get(property));
+			}
 		} break;
 		case MENU_PASTE_VALUE: {
 			emit_changed(property, EditorInspector::get_property_clipboard());
@@ -1430,13 +1475,15 @@ void EditorProperty::menu_option(int p_option) {
 			emit_signal(SNAME("property_deleted"), property);
 		} break;
 		case MENU_REVERT_VALUE: {
-			accept_event();
-			get_viewport()->gui_release_focus();
-			bool is_valid_revert = false;
-			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
-			ERR_FAIL_COND(!is_valid_revert);
-			emit_changed(_get_revert_property(), revert_value);
-			update_property();
+			if (Object *object = get_edited_object()) {
+				accept_event();
+				get_viewport()->gui_release_focus();
+				bool is_valid_revert = false;
+				Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
+				ERR_FAIL_COND(!is_valid_revert);
+				emit_changed(_get_revert_property(), revert_value);
+				update_property();
+			}
 		} break;
 		case MENU_OPEN_DOCUMENTATION: {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
@@ -1534,7 +1581,6 @@ void EditorProperty::_bind_methods() {
 EditorProperty::EditorProperty() {
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 
-	object = nullptr;
 	split_ratio = 0.5;
 	text_size = 0;
 	property_usage = 0;
@@ -1925,13 +1971,15 @@ void EditorInspectorSection::_test_unfold() {
 Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 	Ref<Texture2D> arrow;
 	if (foldable) {
-		if (object->editor_is_section_unfolded(section)) {
-			arrow = theme_cache.arrow;
-		} else {
-			if (is_layout_rtl()) {
-				arrow = theme_cache.arrow_collapsed_mirrored;
+		if (Object *object = get_edited_object()) {
+			if (object->editor_is_section_unfolded(section)) {
+				arrow = theme_cache.arrow;
 			} else {
-				arrow = theme_cache.arrow_collapsed;
+				if (is_layout_rtl()) {
+					arrow = theme_cache.arrow_collapsed_mirrored;
+				} else {
+					arrow = theme_cache.arrow_collapsed;
+				}
 			}
 		}
 	}
@@ -2167,8 +2215,10 @@ void EditorInspectorSection::_notification(int p_what) {
 				if (rtl) {
 					text_offset.x = margin_end;
 				}
-				if (object->has_method("_get_property_warning") && !String(object->call("_get_property_warning", related_enable_property)).is_empty()) {
-					font_color = theme_cache.warning_color;
+				if (Object *object = get_edited_object()) {
+					if (object->has_method("_get_property_warning") && !String(object->call("_get_property_warning", related_enable_property)).is_empty()) {
+						font_color = theme_cache.warning_color;
+					}
 				}
 				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
 				draw_string(font, text_offset, label, text_align, available, font_size, theme_cache.font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
@@ -2269,10 +2319,12 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	String symbol;
 	String prologue;
 
-	if (object->has_method("_get_property_warning")) {
-		const String custom_warning = object->call("_get_property_warning", related_enable_property);
-		if (!custom_warning.is_empty()) {
-			prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+	if (Object *object = get_edited_object()) {
+		if (object->has_method("_get_property_warning")) {
+			const String custom_warning = object->call("_get_property_warning", related_enable_property);
+			if (!custom_warning.is_empty()) {
+				prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+			}
 		}
 	}
 
@@ -2299,7 +2351,7 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 void EditorInspectorSection::setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {
 	section = p_section;
 	label = p_label;
-	object = p_object;
+	set_edited_object(p_object);
 	bg_color = p_bg_color;
 	foldable = p_foldable;
 	indent_depth = p_indent_depth;
@@ -2308,7 +2360,7 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	_test_unfold();
 
 	if (foldable) {
-		if (object->editor_is_section_unfolded(section)) {
+		if (p_object->editor_is_section_unfolded(section)) {
 			vbox->show();
 		} else {
 			vbox->hide();
@@ -2348,7 +2400,8 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		if (foldable && can_click_unfold && k->is_action("ui_accept", true)) {
 			accept_event();
 
-			bool should_unfold = !object->editor_is_section_unfolded(section);
+			Object *object = get_edited_object();
+			bool should_unfold = object && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2360,8 +2413,9 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector2 pos = mb->get_position();
+		Object *object = get_edited_object();
 
-		if (object->editor_is_section_unfolded(section)) {
+		if (object && object->editor_is_section_unfolded(section)) {
 			int header_height = _get_header_height();
 
 			if (pos.y >= header_height) {
@@ -2382,7 +2436,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (keying && keying_rect.has_point(pos)) {
 			emit_signal(SNAME("property_keyed"), related_enable_property, false);
 		} else if (foldable) {
-			bool should_unfold = can_click_unfold && !object->editor_is_section_unfolded(section);
+			bool should_unfold = can_click_unfold && object && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2417,8 +2471,10 @@ void EditorInspectorSection::unfold() {
 
 	_test_unfold();
 
-	if (foldable) {
-		object->editor_set_section_unfold(section, true);
+	if (Object *object = get_edited_object()) {
+		if (foldable) {
+			object->editor_set_section_unfold(section, true);
+		}
 	}
 
 	vbox->show();
@@ -2430,7 +2486,9 @@ void EditorInspectorSection::fold() {
 		return;
 	}
 
-	object->editor_set_section_unfold(section, false);
+	if (Object *object = get_edited_object()) {
+		object->editor_set_section_unfold(section, false);
+	}
 	vbox->hide();
 	queue_redraw();
 }
@@ -2524,12 +2582,33 @@ void EditorInspectorSection::update_property() {
 		return;
 	}
 
-	bool valid = false;
-	Variant value_checked = object->get(related_enable_property, &valid);
+	if (Object *object = get_edited_object()) {
+		bool valid = false;
+		Variant value_checked = object->get(related_enable_property, &valid);
 
-	if (valid) {
-		set_checked(value_checked.operator bool());
+		if (valid) {
+			set_checked(value_checked.operator bool());
+		}
 	}
+}
+
+void EditorInspectorSection::set_edited_object(Object *p_object) {
+	if (p_object) {
+		edited_object = p_object->get_instance_id();
+	} else {
+		edited_object = ObjectID();
+	}
+}
+
+Object *EditorInspectorSection::get_edited_object() const {
+	if (edited_object.is_valid()) {
+		Object *obj = ObjectDB::get_instance(edited_object);
+		if (obj == nullptr) {
+			edited_object = ObjectID();
+		}
+		return obj;
+	}
+	return nullptr;
 }
 
 void EditorInspectorSection::_bind_methods() {
@@ -2568,15 +2647,17 @@ EditorInspectorSection::~EditorInspectorSection() {
 ////////////////////////////////////////////////
 
 int EditorInspectorArray::_get_array_count() {
-	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
-		List<PropertyInfo> object_property_list;
-		object->get_property_list(&object_property_list);
-		return _extract_properties_as_array(object_property_list).size();
-	} else if (mode == MODE_USE_COUNT_PROPERTY) {
-		bool valid;
-		int count_val = object->get(count_property, &valid);
-		ERR_FAIL_COND_V_MSG(!valid, 0, vformat("%s is not a valid property to be used as array count.", count_property));
-		return count_val;
+	if (Object *object = get_edited_object()) {
+		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
+			List<PropertyInfo> object_property_list;
+			object->get_property_list(&object_property_list);
+			return _extract_properties_as_array(object_property_list).size();
+		} else if (mode == MODE_USE_COUNT_PROPERTY) {
+			bool valid;
+			int count_val = object->get(count_property, &valid);
+			ERR_FAIL_COND_V_MSG(!valid, 0, vformat("%s is not a valid property to be used as array count.", count_property));
+			return count_val;
+		}
 	}
 	return 0;
 }
@@ -2723,124 +2804,126 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	} else {
 		action_name = vformat(TTR("Move element %d to position %d in property array with prefix %s."), p_element_index, p_to_pos, array_element_prefix);
 	}
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(action_name);
-	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
-		// Call the function.
-		Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
-		if (move_function.is_valid()) {
-			move_function.call(undo_redo, object, array_element_prefix, p_element_index, p_to_pos);
-		} else {
-			WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
-		}
-	} else if (mode == MODE_USE_COUNT_PROPERTY) {
-		ERR_FAIL_COND(p_to_pos < -1 || p_to_pos > count);
+	if (Object *object = get_edited_object()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(action_name);
+		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
+			// Call the function.
+			Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
+			if (move_function.is_valid()) {
+				move_function.call(undo_redo, object, array_element_prefix, p_element_index, p_to_pos);
+			} else {
+				WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
+			}
+		} else if (mode == MODE_USE_COUNT_PROPERTY) {
+			ERR_FAIL_COND(p_to_pos < -1 || p_to_pos > count);
 
-		if (!swap_method.is_empty()) {
-			ERR_FAIL_COND(!object->has_method(swap_method));
+			if (!swap_method.is_empty()) {
+				ERR_FAIL_COND(!object->has_method(swap_method));
 
-			// Swap method was provided, use it.
-			if (p_element_index < 0) {
-				// Add an element at position
-				undo_redo->add_do_property(object, count_property, count + 1);
-				if (p_to_pos >= 0) {
-					for (int i = count; i > p_to_pos; i--) {
-						undo_redo->add_do_method(object, swap_method, i, i - 1);
-					}
-					for (int i = p_to_pos; i < count; i++) {
-						undo_redo->add_undo_method(object, swap_method, i, i + 1);
-					}
-				}
-				undo_redo->add_undo_property(object, count_property, count);
-
-			} else if (p_to_pos < 0) {
-				if (count > 0) {
-					// Remove element at position
-					undo_redo->add_undo_property(object, count_property, count);
-
-					List<PropertyInfo> object_property_list;
-					object->get_property_list(&object_property_list);
-
-					for (int i = p_element_index; i < count - 1; i++) {
-						undo_redo->add_do_method(object, swap_method, i, i + 1);
-					}
-
-					for (int i = count; i > p_element_index; i--) {
-						undo_redo->add_undo_method(object, swap_method, i, i - 1);
-					}
-
-					String erase_prefix = String(array_element_prefix) + itos(p_element_index);
-
-					for (const PropertyInfo &E : object_property_list) {
-						if (E.name.begins_with(erase_prefix)) {
-							undo_redo->add_undo_property(object, E.name, object->get(E.name));
+				// Swap method was provided, use it.
+				if (p_element_index < 0) {
+					// Add an element at position
+					undo_redo->add_do_property(object, count_property, count + 1);
+					if (p_to_pos >= 0) {
+						for (int i = count; i > p_to_pos; i--) {
+							undo_redo->add_do_method(object, swap_method, i, i - 1);
+						}
+						for (int i = p_to_pos; i < count; i++) {
+							undo_redo->add_undo_method(object, swap_method, i, i + 1);
 						}
 					}
+					undo_redo->add_undo_property(object, count_property, count);
 
-					undo_redo->add_do_property(object, count_property, count - 1);
+				} else if (p_to_pos < 0) {
+					if (count > 0) {
+						// Remove element at position
+						undo_redo->add_undo_property(object, count_property, count);
+
+						List<PropertyInfo> object_property_list;
+						object->get_property_list(&object_property_list);
+
+						for (int i = p_element_index; i < count - 1; i++) {
+							undo_redo->add_do_method(object, swap_method, i, i + 1);
+						}
+
+						for (int i = count; i > p_element_index; i--) {
+							undo_redo->add_undo_method(object, swap_method, i, i - 1);
+						}
+
+						String erase_prefix = String(array_element_prefix) + itos(p_element_index);
+
+						for (const PropertyInfo &E : object_property_list) {
+							if (E.name.begins_with(erase_prefix)) {
+								undo_redo->add_undo_property(object, E.name, object->get(E.name));
+							}
+						}
+
+						undo_redo->add_do_property(object, count_property, count - 1);
+					}
+				} else {
+					if (p_to_pos > p_element_index) {
+						p_to_pos--;
+					}
+
+					if (p_to_pos < p_element_index) {
+						for (int i = p_element_index; i > p_to_pos; i--) {
+							undo_redo->add_do_method(object, swap_method, i, i - 1);
+						}
+						for (int i = p_to_pos; i < p_element_index; i++) {
+							undo_redo->add_undo_method(object, swap_method, i, i + 1);
+						}
+					} else if (p_to_pos > p_element_index) {
+						for (int i = p_element_index; i < p_to_pos; i++) {
+							undo_redo->add_do_method(object, swap_method, i, i + 1);
+						}
+
+						for (int i = p_to_pos; i > p_element_index; i--) {
+							undo_redo->add_undo_method(object, swap_method, i, i - 1);
+						}
+					}
 				}
 			} else {
-				if (p_to_pos > p_element_index) {
-					p_to_pos--;
-				}
+				// Use standard properties.
+				List<PropertyInfo> object_property_list;
+				object->get_property_list(&object_property_list);
 
-				if (p_to_pos < p_element_index) {
-					for (int i = p_element_index; i > p_to_pos; i--) {
-						undo_redo->add_do_method(object, swap_method, i, i - 1);
-					}
-					for (int i = p_to_pos; i < p_element_index; i++) {
-						undo_redo->add_undo_method(object, swap_method, i, i + 1);
-					}
-				} else if (p_to_pos > p_element_index) {
-					for (int i = p_element_index; i < p_to_pos; i++) {
-						undo_redo->add_do_method(object, swap_method, i, i + 1);
-					}
+				Array properties_as_array = _extract_properties_as_array(object_property_list);
+				properties_as_array.resize(count);
 
-					for (int i = p_to_pos; i > p_element_index; i--) {
-						undo_redo->add_undo_method(object, swap_method, i, i - 1);
+				// For undoing things
+				undo_redo->add_undo_property(object, count_property, properties_as_array.size());
+				for (int i = 0; i < (int)properties_as_array.size(); i++) {
+					Dictionary d = Dictionary(properties_as_array[i]);
+					for (const KeyValue<Variant, Variant> &kv : d) {
+						undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
 					}
 				}
-			}
-		} else {
-			// Use standard properties.
-			List<PropertyInfo> object_property_list;
-			object->get_property_list(&object_property_list);
 
-			Array properties_as_array = _extract_properties_as_array(object_property_list);
-			properties_as_array.resize(count);
-
-			// For undoing things
-			undo_redo->add_undo_property(object, count_property, properties_as_array.size());
-			for (int i = 0; i < (int)properties_as_array.size(); i++) {
-				Dictionary d = Dictionary(properties_as_array[i]);
-				for (const KeyValue<Variant, Variant> &kv : d) {
-					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
+				if (p_element_index < 0) {
+					// Add an element.
+					properties_as_array.insert(p_to_pos < 0 ? properties_as_array.size() : p_to_pos, Dictionary());
+				} else if (p_to_pos < 0) {
+					// Delete the element.
+					properties_as_array.remove_at(p_element_index);
+				} else {
+					// Move the element.
+					properties_as_array.insert(p_to_pos, properties_as_array[p_element_index].duplicate());
+					properties_as_array.remove_at(p_to_pos < p_element_index ? p_element_index + 1 : p_element_index);
 				}
-			}
 
-			if (p_element_index < 0) {
-				// Add an element.
-				properties_as_array.insert(p_to_pos < 0 ? properties_as_array.size() : p_to_pos, Dictionary());
-			} else if (p_to_pos < 0) {
-				// Delete the element.
-				properties_as_array.remove_at(p_element_index);
-			} else {
-				// Move the element.
-				properties_as_array.insert(p_to_pos, properties_as_array[p_element_index].duplicate());
-				properties_as_array.remove_at(p_to_pos < p_element_index ? p_element_index + 1 : p_element_index);
-			}
-
-			// Change the array size then set the properties.
-			undo_redo->add_do_property(object, count_property, properties_as_array.size());
-			for (int i = 0; i < (int)properties_as_array.size(); i++) {
-				Dictionary d = properties_as_array[i];
-				for (const KeyValue<Variant, Variant> &kv : d) {
-					undo_redo->add_do_property(object, vformat(kv.key, i), kv.value);
+				// Change the array size then set the properties.
+				undo_redo->add_do_property(object, count_property, properties_as_array.size());
+				for (int i = 0; i < (int)properties_as_array.size(); i++) {
+					Dictionary d = properties_as_array[i];
+					for (const KeyValue<Variant, Variant> &kv : d) {
+						undo_redo->add_do_property(object, vformat(kv.key, i), kv.value);
+					}
 				}
 			}
 		}
+		undo_redo->commit_action();
 	}
-	undo_redo->commit_action();
 
 	// Handle page change and update counts.
 	if (p_element_index < 0) {
@@ -2863,73 +2946,11 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 }
 
 void EditorInspectorArray::_clear_array() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Clear Property Array with Prefix %s"), array_element_prefix));
-	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
-		for (int i = count - 1; i >= 0; i--) {
-			// Call the function.
-			Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
-			if (move_function.is_valid()) {
-				move_function.call(undo_redo, object, array_element_prefix, i, -1);
-			} else {
-				WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
-			}
-		}
-	} else if (mode == MODE_USE_COUNT_PROPERTY) {
-		List<PropertyInfo> object_property_list;
-		object->get_property_list(&object_property_list);
-
-		Array properties_as_array = _extract_properties_as_array(object_property_list);
-		properties_as_array.resize(count);
-
-		// For undoing things
-		undo_redo->add_undo_property(object, count_property, count);
-		for (int i = 0; i < (int)properties_as_array.size(); i++) {
-			Dictionary d = Dictionary(properties_as_array[i]);
-			for (const KeyValue<Variant, Variant> &kv : d) {
-				undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
-			}
-		}
-
-		// Change the array size then set the properties.
-		undo_redo->add_do_property(object, count_property, 0);
-	}
-	undo_redo->commit_action();
-
-	// Handle page change and update counts.
-	emit_signal(SNAME("page_change_request"), 0);
-	count = 0;
-	begin_array_index = 0;
-	end_array_index = 0;
-	max_page = 0;
-}
-
-void EditorInspectorArray::_resize_array(int p_size) {
-	ERR_FAIL_COND(p_size < 0);
-	if (p_size == count) {
-		return;
-	}
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Resize Property Array with Prefix %s"), array_element_prefix));
-	if (p_size > count) {
+	if (Object *object = get_edited_object()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Clear Property Array with Prefix %s"), array_element_prefix));
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
-			for (int i = count; i < p_size; i++) {
-				// Call the function.
-				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
-				if (move_function.is_valid()) {
-					move_function.call(undo_redo, object, array_element_prefix, -1, -1);
-				} else {
-					WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
-				}
-			}
-		} else if (mode == MODE_USE_COUNT_PROPERTY) {
-			undo_redo->add_undo_property(object, count_property, count);
-			undo_redo->add_do_property(object, count_property, p_size);
-		}
-	} else {
-		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
-			for (int i = count - 1; i > p_size - 1; i--) {
+			for (int i = count - 1; i >= 0; i--) {
 				// Call the function.
 				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
@@ -2947,7 +2968,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 
 			// For undoing things
 			undo_redo->add_undo_property(object, count_property, count);
-			for (int i = count - 1; i > p_size - 1; i--) {
+			for (int i = 0; i < (int)properties_as_array.size(); i++) {
 				Dictionary d = Dictionary(properties_as_array[i]);
 				for (const KeyValue<Variant, Variant> &kv : d) {
 					undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
@@ -2955,10 +2976,76 @@ void EditorInspectorArray::_resize_array(int p_size) {
 			}
 
 			// Change the array size then set the properties.
-			undo_redo->add_do_property(object, count_property, p_size);
+			undo_redo->add_do_property(object, count_property, 0);
 		}
+		undo_redo->commit_action();
 	}
-	undo_redo->commit_action();
+
+	// Handle page change and update counts.
+	emit_signal(SNAME("page_change_request"), 0);
+	count = 0;
+	begin_array_index = 0;
+	end_array_index = 0;
+	max_page = 0;
+}
+
+void EditorInspectorArray::_resize_array(int p_size) {
+	ERR_FAIL_COND(p_size < 0);
+	if (p_size == count) {
+		return;
+	}
+
+	if (Object *object = get_edited_object()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Resize Property Array with Prefix %s"), array_element_prefix));
+		if (p_size > count) {
+			if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
+				for (int i = count; i < p_size; i++) {
+					// Call the function.
+					Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
+					if (move_function.is_valid()) {
+						move_function.call(undo_redo, object, array_element_prefix, -1, -1);
+					} else {
+						WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
+					}
+				}
+			} else if (mode == MODE_USE_COUNT_PROPERTY) {
+				undo_redo->add_undo_property(object, count_property, count);
+				undo_redo->add_do_property(object, count_property, p_size);
+			}
+		} else {
+			if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
+				for (int i = count - 1; i > p_size - 1; i--) {
+					// Call the function.
+					Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
+					if (move_function.is_valid()) {
+						move_function.call(undo_redo, object, array_element_prefix, i, -1);
+					} else {
+						WARN_PRINT(vformat("Could not find a function to move arrays elements for class %s. Register a move element function using EditorData::add_move_array_element_function", object->get_class_name()));
+					}
+				}
+			} else if (mode == MODE_USE_COUNT_PROPERTY) {
+				List<PropertyInfo> object_property_list;
+				object->get_property_list(&object_property_list);
+
+				Array properties_as_array = _extract_properties_as_array(object_property_list);
+				properties_as_array.resize(count);
+
+				// For undoing things
+				undo_redo->add_undo_property(object, count_property, count);
+				for (int i = count - 1; i > p_size - 1; i--) {
+					Dictionary d = Dictionary(properties_as_array[i]);
+					for (const KeyValue<Variant, Variant> &kv : d) {
+						undo_redo->add_undo_property(object, vformat(kv.key, i), kv.value);
+					}
+				}
+
+				// Change the array size then set the properties.
+				undo_redo->add_do_property(object, count_property, p_size);
+			}
+		}
+		undo_redo->commit_action();
+	}
 
 	// Handle page change and update counts.
 	emit_signal(SNAME("page_change_request"), 0);
@@ -2995,10 +3082,12 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 					error = output.resize(array_index + 1);
 				}
 				if (error == OK) {
-					String format_string = String(array_element_prefix) + "%d" + str.substr(to_char_index);
-					Dictionary dict = output[array_index];
-					dict[format_string] = object->get(pi.name);
-					output[array_index] = dict;
+					if (Object *object = get_edited_object()) {
+						String format_string = String(array_element_prefix) + "%d" + str.substr(to_char_index);
+						Dictionary dict = output[array_index];
+						dict[format_string] = object->get(pi.name);
+						output[array_index] = dict;
+					}
 				} else {
 					WARN_PRINT(vformat("Array element %s has an index too high. Array allocation failed.", pi.name));
 				}
@@ -3721,7 +3810,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 		}
 
 		if (ep) {
-			ep->object = object;
+			ep->set_edited(get_edited_object());
 			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
@@ -3790,17 +3879,19 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 		return false;
 	}
 
-	StringName class_name = object->get_class();
+	if (Object *object = get_edited_object()) {
+		StringName class_name = object->get_class();
 
-	while (class_name != StringName()) {
-		if (profile->is_class_property_disabled(class_name, p_property)) {
-			return true;
+		while (class_name != StringName()) {
+			if (profile->is_class_property_disabled(class_name, p_property)) {
+				return true;
+			}
+			if (profile->is_class_disabled(class_name)) {
+				//won't see properties of a disabled class
+				return true;
+			}
+			class_name = ClassDB::get_parent_class(class_name);
 		}
-		if (profile->is_class_disabled(class_name)) {
-			//won't see properties of a disabled class
-			return true;
-		}
-		class_name = ClassDB::get_parent_class(class_name);
 	}
 
 	return false;
@@ -3821,7 +3912,34 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 	container->add_child(p_section);
 }
 
+void EditorInspector::set_pinned_object(Object *p_object) {
+	if (p_object) {
+		pinned_object = p_object->get_instance_id();
+	} else {
+		pinned_object = ObjectID();
+	}
+}
+
+Object *EditorInspector::get_pinned_object() {
+	if (pinned_object.is_valid()) {
+		Object *obj = ObjectDB::get_instance(pinned_object);
+		// Clear invalid pin
+		if (obj == nullptr) {
+			pinned = false;
+			pinned_object = ObjectID();
+			edited_object = ObjectID();
+		}
+		return obj;
+	}
+	return nullptr;
+}
+
+bool EditorInspector::has_valid_pin() {
+	return is_pinned() && get_pinned_object() != nullptr;
+}
+
 void EditorInspector::update_tree() {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -4420,7 +4538,7 @@ void EditorInspector::update_tree() {
 
 			// Small hack for theme_overrides. They are listed under Control, but come from another class.
 			if (classname == "Control" && p.name.begins_with("theme_override_")) {
-				classname = get_edited_object()->get_class();
+				classname = object->get_class();
 			}
 
 			// Search for the doc path in the cache.
@@ -4556,7 +4674,7 @@ void EditorInspector::update_tree() {
 
 			if (ep) {
 				// Set all this before the control gets the ENTER_TREE notification.
-				ep->object = object;
+				ep->set_edited_object(object);
 
 				if (properties.size()) {
 					if (properties.size() == 1) {
@@ -4887,7 +5005,14 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 }
 
 Object *EditorInspector::get_edited_object() {
-	return object;
+	if (edited_object.is_valid()) {
+		Object *obj = ObjectDB::get_instance(edited_object);
+		if (obj == nullptr) {
+			edited_object = ObjectID();
+		}
+		return obj;
+	}
+	return nullptr;
 }
 
 Object *EditorInspector::get_next_edited_object() {
@@ -4895,27 +5020,38 @@ Object *EditorInspector::get_next_edited_object() {
 }
 
 void EditorInspector::edit(Object *p_object) {
-	if (object == p_object) {
+	Object *object = get_edited_object();
+	if (!is_pinned() && object == p_object) {
 		return;
 	}
 
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
-		if (likely(Variant(object).get_validated_object())) {
+		if (likely(Variant(object).get_validated_object()) && object->is_connected(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback))) {
 			object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 		}
-		_clear();
 	}
+	_clear();
 	per_array_page.clear();
 
 	object = p_object;
+	set_edited_object(object);
+
+	if (has_valid_pin()) {
+		object = get_pinned_object();
+		set_edited_object(object);
+	} else if (is_pinned() && object) {
+		set_pinned_object(object);
+	}
 
 	if (object) {
 		update_scroll_request = 0; //reset
-		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
-			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
+		if (scroll_cache.has(edited_object)) { //if exists, set something else
+			update_scroll_request = scroll_cache[edited_object]; //done this way because wait until full size is accommodated
 		}
-		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
+		if (!object->is_connected(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback))) {
+			object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
+		}
 
 		can_favorite = Object::cast_to<Node>(object) || Object::cast_to<Resource>(object);
 		_update_current_favorites();
@@ -4927,6 +5063,14 @@ void EditorInspector::edit(Object *p_object) {
 	next_object = nullptr;
 
 	emit_signal(SNAME("edited_object_changed"));
+}
+
+void EditorInspector::set_edited_object(Object *p_object) {
+	if (p_object) {
+		edited_object = p_object->get_instance_id();
+	} else {
+		edited_object = ObjectID();
+	}
 }
 
 void EditorInspector::set_keying(bool p_active) {
@@ -5128,7 +5272,7 @@ void EditorInspector::_page_change_request(int p_new_page, const StringName &p_a
 }
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
-	if (object != p_object) { //may be undoing/redoing for a non edited object, so ignore
+	if (get_edited_object() != p_object) { //may be undoing/redoing for a non edited object, so ignore
 		return;
 	}
 
@@ -5152,100 +5296,40 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
-		object->set(p_name, p_value);
-		if (p_refresh_all) {
-			_edit_request_change(object, "");
-		} else {
-			_edit_request_change(object, p_name);
-		}
-
-		emit_signal(_prop_edited, p_name);
-	} else if (Object::cast_to<MultiNodeEdit>(object)) {
-		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
-		_edit_request_change(object, p_name);
-		emit_signal(_prop_edited, p_name);
-	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
-		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
-		_edit_request_change(object, p_name);
-		emit_signal(_prop_edited, p_name);
-	} else {
-		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
-		undo_redo->add_do_property(object, p_name, p_value);
-		bool valid = false;
-		Variant value = object->get(p_name, &valid);
-		Variant::Type type = p_value.get_type();
-		if (valid) {
-			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
-				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
+	if (Object *object = get_edited_object()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
+			object->set(p_name, p_value);
+			if (p_refresh_all) {
+				_edit_request_change(object, "");
 			} else {
-				undo_redo->add_undo_property(object, p_name, value);
+				_edit_request_change(object, p_name);
 			}
-			// We'll use Editor Selection to get the currently edited Node.
-			Node *N = Object::cast_to<Node>(object);
-			if (N && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
-				// Perhaps an inefficient way of updating the resource count.
-				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
-			}
-		}
 
-		List<StringName> linked_properties;
-		ClassDB::get_linked_properties_info(object->get_class_name(), p_name, &linked_properties);
-
-		for (const StringName &linked_prop : linked_properties) {
-			valid = false;
-			Variant undo_value = object->get(linked_prop, &valid);
-			if (valid) {
-				undo_redo->add_undo_property(object, linked_prop, undo_value);
-			}
-		}
-
-		PackedStringArray linked_properties_dynamic = object->call("_get_linked_undo_properties", p_name, p_value);
-		for (int i = 0; i < linked_properties_dynamic.size(); i++) {
-			valid = false;
-			Variant undo_value = object->get(linked_properties_dynamic[i], &valid);
-			if (valid) {
-				undo_redo->add_undo_property(object, linked_properties_dynamic[i], undo_value);
-			}
-		}
-
-		Variant v_undo_redo = undo_redo;
-		Variant v_object = object;
-		Variant v_name = p_name;
-		const Vector<Callable> &callbacks = EditorNode::get_editor_data().get_undo_redo_inspector_hook_callback();
-		for (int i = 0; i < callbacks.size(); i++) {
-			const Callable &callback = callbacks[i];
-
-			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
-			Variant return_value;
-			Callable::CallError call_error;
-
-			callback.callp(p_arguments, 4, return_value, call_error);
-			if (call_error.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT("Invalid UndoRedo callback.");
-			}
-		}
-
-		if (p_refresh_all) {
-			undo_redo->add_do_method(this, "_edit_request_change", object, "");
-			undo_redo->add_undo_method(this, "_edit_request_change", object, "");
+			emit_signal(_prop_edited, p_name);
+		} else if (Object::cast_to<MultiNodeEdit>(object)) {
+			Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+			_edit_request_change(object, p_name);
+			emit_signal(_prop_edited, p_name);
+		} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
+			Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
+			_edit_request_change(object, p_name);
+			emit_signal(_prop_edited, p_name);
 		} else {
-			undo_redo->add_do_method(this, "_edit_request_change", object, p_name);
-			undo_redo->add_undo_method(this, "_edit_request_change", object, p_name);
-		}
-
-		Resource *r = Object::cast_to<Resource>(object);
-
-		if (r) {
-			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
-			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
-			for (Node *N : shared_nodes) {
-				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+			undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
+			undo_redo->add_do_property(object, p_name, p_value);
+			bool valid = false;
+			Variant value = object->get(p_name, &valid);
+			Variant::Type type = p_value.get_type();
+			if (valid) {
+				if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
+					undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
+				} else {
+					undo_redo->add_undo_property(object, p_name, value);
+				}
+				// We'll use Editor Selection to get the currently edited Node.
+				Node *N = Object::cast_to<Node>(object);
+				if (N && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
 					// Perhaps an inefficient way of updating the resource count.
@@ -5254,20 +5338,82 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 				}
 			}
-			if (String(p_name) == "resource_local_to_scene") {
-				bool prev = object->get(p_name);
-				bool next = p_value;
-				if (next) {
-					undo_redo->add_do_method(r, "setup_local_to_scene");
-				}
-				if (prev) {
-					undo_redo->add_undo_method(r, "setup_local_to_scene");
+
+			List<StringName> linked_properties;
+			ClassDB::get_linked_properties_info(object->get_class_name(), p_name, &linked_properties);
+
+			for (const StringName &linked_prop : linked_properties) {
+				valid = false;
+				Variant undo_value = object->get(linked_prop, &valid);
+				if (valid) {
+					undo_redo->add_undo_property(object, linked_prop, undo_value);
 				}
 			}
+
+			PackedStringArray linked_properties_dynamic = object->call("_get_linked_undo_properties", p_name, p_value);
+			for (int i = 0; i < linked_properties_dynamic.size(); i++) {
+				valid = false;
+				Variant undo_value = object->get(linked_properties_dynamic[i], &valid);
+				if (valid) {
+					undo_redo->add_undo_property(object, linked_properties_dynamic[i], undo_value);
+				}
+			}
+
+			Variant v_undo_redo = undo_redo;
+			Variant v_object = object;
+			Variant v_name = p_name;
+			const Vector<Callable> &callbacks = EditorNode::get_editor_data().get_undo_redo_inspector_hook_callback();
+			for (int i = 0; i < callbacks.size(); i++) {
+				const Callable &callback = callbacks[i];
+
+				const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
+				Variant return_value;
+				Callable::CallError call_error;
+
+				callback.callp(p_arguments, 4, return_value, call_error);
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT("Invalid UndoRedo callback.");
+				}
+			}
+
+			if (p_refresh_all) {
+				undo_redo->add_do_method(this, "_edit_request_change", object, "");
+				undo_redo->add_undo_method(this, "_edit_request_change", object, "");
+			} else {
+				undo_redo->add_do_method(this, "_edit_request_change", object, p_name);
+				undo_redo->add_undo_method(this, "_edit_request_change", object, p_name);
+			}
+
+			Resource *r = Object::cast_to<Resource>(object);
+
+			if (r) {
+				//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
+				List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
+				for (Node *N : shared_nodes) {
+					if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+						undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
+						undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+						// Perhaps an inefficient way of updating the resource count.
+						// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
+						undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+						undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
+					}
+				}
+				if (String(p_name) == "resource_local_to_scene") {
+					bool prev = object->get(p_name);
+					bool next = p_value;
+					if (next) {
+						undo_redo->add_do_method(r, "setup_local_to_scene");
+					}
+					if (prev) {
+						undo_redo->add_undo_method(r, "setup_local_to_scene");
+					}
+				}
+			}
+			undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
+			undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
+			undo_redo->commit_action();
 		}
-		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
-		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
-		undo_redo->commit_action();
 	}
 
 	if (editor_property_map.has(p_name)) {
@@ -5324,6 +5470,7 @@ void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths
 }
 
 void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -5335,6 +5482,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -5355,7 +5503,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
-	if (!object) {
+	if (!get_edited_object()) {
 		return;
 	}
 
@@ -5366,6 +5514,7 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -5407,6 +5556,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 }
 
 void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -5454,7 +5604,7 @@ void EditorInspector::_resource_selected(const String &p_path, Ref<Resource> p_r
 }
 
 void EditorInspector::_node_removed(Node *p_node) {
-	if (p_node == object) {
+	if (p_node == get_edited_object()) {
 		edit(nullptr);
 	}
 }
@@ -5468,60 +5618,63 @@ void EditorInspector::_update_current_favorites() {
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
 
 	// Fetch script properties.
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
-		List<PropertyInfo> plist;
-		// FIXME: Only properties from a saved script will be available, unsaved ones will be ignored.
-		// Can cause a little wonkiness, while nothing serious, would be nice to find a way to get
-		// unsaved ones without needing to get the entire property list of an object.
-		scr->get_script_property_list(&plist);
+	if (Object *object = get_edited_object()) {
+		Ref<Script> scr = object->get_script();
+		if (scr.is_valid()) {
+			List<PropertyInfo> plist;
+			// FIXME: Only properties from a saved script will be available, unsaved ones will be ignored.
+			// Can cause a little wonkiness, while nothing serious, would be nice to find a way to get
+			// unsaved ones without needing to get the entire property list of an object.
+			scr->get_script_property_list(&plist);
 
-		String path;
-		HashMap<String, LocalVector<String>> props;
+			String path;
+			HashMap<String, LocalVector<String>> props;
 
-		for (PropertyInfo &p : plist) {
-			if (p.usage & PROPERTY_USAGE_CATEGORY) {
-				path = favorites.has(p.hint_string) ? p.hint_string : String();
-			} else if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && !path.is_empty()) {
-				props[path].push_back(p.name);
-			}
-		}
-
-		// Add favorited properties while removing invalid ones.
-		bool invalid_props = false;
-		for (const KeyValue<String, LocalVector<String>> &KV : props) {
-			path = KV.key;
-			for (int i = 0; i < favorites[path].size(); i++) {
-				String prop = favorites[path][i];
-				if (KV.value.has(prop)) {
-					current_favorites.append(prop);
-				} else {
-					invalid_props = true;
-					favorites[path].erase(prop);
-					i--;
+			for (PropertyInfo &p : plist) {
+				if (p.usage & PROPERTY_USAGE_CATEGORY) {
+					path = favorites.has(p.hint_string) ? p.hint_string : String();
+				} else if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && !path.is_empty()) {
+					props[path].push_back(p.name);
 				}
 			}
 
-			if (favorites[path].is_empty()) {
-				favorites.erase(path);
+			// Add favorited properties while removing invalid ones.
+			bool invalid_props = false;
+			for (const KeyValue<String, LocalVector<String>> &KV : props) {
+				path = KV.key;
+				for (int i = 0; i < favorites[path].size(); i++) {
+					String prop = favorites[path][i];
+					if (KV.value.has(prop)) {
+						current_favorites.append(prop);
+					} else {
+						invalid_props = true;
+						favorites[path].erase(prop);
+						i--;
+					}
+				}
+
+				if (favorites[path].is_empty()) {
+					favorites.erase(path);
+				}
+			}
+
+			if (invalid_props) {
+				EditorSettings::get_singleton()->set_favorite_properties(favorites);
 			}
 		}
 
-		if (invalid_props) {
-			EditorSettings::get_singleton()->set_favorite_properties(favorites);
-		}
-	}
-
-	// Fetch built-in properties.
-	StringName class_name = object->get_class_name();
-	for (const KeyValue<String, PackedStringArray> &KV : favorites) {
-		if (ClassDB::is_parent_class(class_name, KV.key)) {
-			current_favorites.append_array(KV.value);
+		// Fetch built-in properties.
+		StringName class_name = object->get_class_name();
+		for (const KeyValue<String, PackedStringArray> &KV : favorites) {
+			if (ClassDB::is_parent_class(class_name, KV.key)) {
+				current_favorites.append_array(KV.value);
+			}
 		}
 	}
 }
 
 void EditorInspector::_set_property_favorited(const String &p_path, bool p_favorited) {
+	Object *object = get_edited_object();
 	if (!object) {
 		return;
 	}
@@ -5610,29 +5763,31 @@ void EditorInspector::_clear_current_favorites() {
 
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
 
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
-		List<PropertyInfo> plist;
-		scr->get_script_property_list(&plist);
+	if (Object *object = get_edited_object()) {
+		Ref<Script> scr = object->get_script();
+		if (scr.is_valid()) {
+			List<PropertyInfo> plist;
+			scr->get_script_property_list(&plist);
 
-		for (PropertyInfo &p : plist) {
-			if (p.usage & PROPERTY_USAGE_CATEGORY && favorites.has(p.hint_string)) {
-				favorites.erase(p.hint_string);
+			for (PropertyInfo &p : plist) {
+				if (p.usage & PROPERTY_USAGE_CATEGORY && favorites.has(p.hint_string)) {
+					favorites.erase(p.hint_string);
+				}
 			}
 		}
-	}
 
-	StringName class_name = object->get_class_name();
-	while (class_name) {
-		if (favorites.has(class_name)) {
-			favorites.erase(class_name);
+		StringName class_name = object->get_class_name();
+		while (class_name) {
+			if (favorites.has(class_name)) {
+				favorites.erase(class_name);
+			}
+
+			class_name = ClassDB::get_parent_class(class_name);
 		}
 
-		class_name = ClassDB::get_parent_class(class_name);
+		EditorSettings::get_singleton()->set_favorite_properties(favorites);
+		update_tree();
 	}
-
-	EditorSettings::get_singleton()->set_favorite_properties(favorites);
-	update_tree();
 }
 
 void EditorInspector::_notification(int p_what) {
@@ -5756,7 +5911,7 @@ void EditorInspector::_notification(int p_what) {
 
 void EditorInspector::_changed_callback() {
 	//this is called when property change is notified via notify_property_list_changed()
-	if (object != nullptr) {
+	if (Object *object = get_edited_object()) {
 		_update_current_favorites();
 		_edit_request_change(object, String());
 	}
@@ -5767,8 +5922,8 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 		return;
 	}
 
-	if (object) {
-		scroll_cache[object->get_instance_id()] = p_offset;
+	if (get_edited_object()) {
+		scroll_cache[edited_object] = p_offset;
 	}
 }
 
@@ -5830,25 +5985,29 @@ void EditorInspector::_show_add_meta_dialog() {
 	}
 
 	StringName dialog_title;
-	Node *node = Object::cast_to<Node>(object);
-	// If object is derived from Node use node name, if derived from Resource use classname.
-	dialog_title = node ? node->get_name() : StringName(object->get_class());
+	if (Object *object = get_edited_object()) {
+		Node *node = Object::cast_to<Node>(object);
+		// If object is derived from Node use node name, if derived from Resource use classname.
+		dialog_title = node ? node->get_name() : StringName(object->get_class());
 
-	List<StringName> existing_meta_keys;
-	object->get_meta_list(&existing_meta_keys);
-	add_meta_dialog->open(dialog_title, existing_meta_keys);
+		List<StringName> existing_meta_keys;
+		object->get_meta_list(&existing_meta_keys);
+		add_meta_dialog->open(dialog_title, existing_meta_keys);
+	}
 }
 
 void EditorInspector::_add_meta_confirm() {
 	// Ensure metadata is unfolded when adding a new metadata.
-	object->editor_set_section_unfold("metadata", true);
+	if (Object *object = get_edited_object()) {
+		object->editor_set_section_unfold("metadata", true);
 
-	String name = add_meta_dialog->get_meta_name();
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
-	undo_redo->add_do_method(object, "set_meta", name, add_meta_dialog->get_meta_defval());
-	undo_redo->add_undo_method(object, "remove_meta", name);
-	undo_redo->commit_action();
+		String name = add_meta_dialog->get_meta_name();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
+		undo_redo->add_do_method(object, "set_meta", name, add_meta_dialog->get_meta_defval());
+		undo_redo->add_undo_method(object, "remove_meta", name);
+		undo_redo->commit_action();
+	}
 }
 
 EditorInspector *EditorInspector::_get_control_parent_inspector(Control *p_control) {
@@ -5890,8 +6049,6 @@ void EditorInspector::_bind_methods() {
 }
 
 EditorInspector::EditorInspector() {
-	object = nullptr;
-
 	base_vbox = memnew(VBoxContainer);
 	base_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(base_vbox);
