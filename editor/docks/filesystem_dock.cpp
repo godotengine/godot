@@ -833,7 +833,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename) {
 	if (p_preview.is_valid()) {
-		if (p_index < files->get_item_count() && files->get_item_text(p_index) == p_filename && files->get_item_metadata(p_index) == p_path) {
+		if (p_index < files->get_item_count() && files->get_item_text(p_index) == p_filename && files->get_item_metadata(p_index) == (Variant)p_path) {
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
 				if (p_small_preview.is_valid()) {
 					files->set_item_icon(p_index, p_small_preview);
@@ -1309,7 +1309,7 @@ void FileSystemDock::_tree_activate_file() {
 	if (selected) {
 		String file_path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
-		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
+		bool is_favorite = parent != nullptr && parent->get_metadata(0) == Variant("Favorites");
 		bool is_folder = file_path.ends_with("/");
 
 		if ((!is_favorite && is_folder) || file_path == "Favorites") {
@@ -1328,7 +1328,7 @@ void FileSystemDock::_file_list_activate_file(int p_idx) {
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == current_path && searched_tokens.is_empty() && file_list_vb->is_visible_in_tree()) {
 		for (int i = 0; i < files->get_item_count(); i++) {
-			if (files->get_item_metadata(i) == p_path) {
+			if (files->get_item_metadata(i) == (Variant)p_path) {
 				// Re-request preview.
 				EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(this, &FileSystemDock::_file_list_thumbnail_done).bind(i, files->get_item_text(i)));
 				break;

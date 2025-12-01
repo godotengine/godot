@@ -906,7 +906,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 					List<BaseButton *> buttons;
 					renderer_button_group->get_buttons(&buttons);
 					for (BaseButton *button : buttons) {
-						if (button->get_meta(SNAME("rendering_method")) == "gl_compatibility") {
+						if (button->get_meta(SNAME("rendering_method")) == Variant("gl_compatibility")) {
 							button->set_pressed(true);
 							break;
 						}

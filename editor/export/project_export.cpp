@@ -875,7 +875,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 		}
 	} else if (p_from == patches) {
 		Dictionary d = p_data;
-		if (d.get("type", "") != "export_patch") {
+		if (d.get("type", "") != Variant("export_patch")) {
 			return false;
 		}
 

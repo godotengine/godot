@@ -2212,7 +2212,7 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
-	if (p_current_node->get_script() == script) {
+	if (p_current_node->get_script() == (Variant)script) {
 		return p_current_node;
 	}
 
@@ -2559,7 +2559,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 		MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(edited_object);
 
 		if (node_edit != nullptr) {
-			if (node_edit->get_script() == script) {
+			if (node_edit->get_script() == (Variant)script) {
 				objects.push_back(node_edit->get_instance_id());
 			}
 		} else if (multi_node_edit != nullptr) {
@@ -2567,7 +2567,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 			for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
 				NodePath np = multi_node_edit->get_node(i);
 				Node *node = es->get_node(np);
-				if (node->get_script() == script) {
+				if (node->get_script() == (Variant)script) {
 					objects.push_back(node->get_instance_id());
 				}
 			}

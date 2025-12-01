@@ -58,12 +58,12 @@ TEST_CASE("[Animation] Create value track") {
 	CHECK(int(animation->track_get_key_value(0, 0)) == 0);
 	CHECK(int(animation->track_get_key_value(0, 1)) == 100);
 
-	CHECK(animation->value_track_interpolate(0, -0.2) == doctest::Approx(0.0));
-	CHECK(animation->value_track_interpolate(0, 0.0) == doctest::Approx(0.0));
-	CHECK(animation->value_track_interpolate(0, 0.2) == doctest::Approx(40.0));
-	CHECK(animation->value_track_interpolate(0, 0.4) == doctest::Approx(80.0));
-	CHECK(animation->value_track_interpolate(0, 0.5) == doctest::Approx(100.0));
-	CHECK(animation->value_track_interpolate(0, 0.6) == doctest::Approx(100.0));
+	CHECK((double)animation->value_track_interpolate(0, -0.2) == doctest::Approx(0.0));
+	CHECK((double)animation->value_track_interpolate(0, 0.0) == doctest::Approx(0.0));
+	CHECK((double)animation->value_track_interpolate(0, 0.2) == doctest::Approx(40.0));
+	CHECK((double)animation->value_track_interpolate(0, 0.4) == doctest::Approx(80.0));
+	CHECK((double)animation->value_track_interpolate(0, 0.5) == doctest::Approx(100.0));
+	CHECK((double)animation->value_track_interpolate(0, 0.6) == doctest::Approx(100.0));
 
 	CHECK(animation->track_get_key_transition(0, 0) == doctest::Approx(real_t(1.0)));
 	CHECK(animation->track_get_key_transition(0, 1) == doctest::Approx(real_t(1.0)));

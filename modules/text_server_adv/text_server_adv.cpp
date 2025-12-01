@@ -5366,7 +5366,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							if (index == 0) { // Try other fonts in the span.
 								const ShapedTextDataAdvanced::Span &span = p_sd->spans[gl.span_index + p_new_sd->first_span];
 								for (int k = 0; k < span.fonts.size(); k++) {
-									if (span.fonts[k] != gl.font_rid) {
+									if (span.fonts[k] != (Variant)gl.font_rid) {
 										index = font_get_glyph_index(span.fonts[k], gl.font_size, 0x00ad, 0);
 										if (index != 0) {
 											gl.font_rid = span.fonts[k];
