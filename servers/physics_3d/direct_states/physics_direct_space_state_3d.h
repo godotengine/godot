@@ -34,6 +34,7 @@
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/physics_3d/queries/physics_cast_motion_result_3d.h"
 #include "servers/physics_3d/queries/physics_collide_shape_result_3d.h"
+#include "servers/physics_3d/queries/physics_get_rest_info_result_3d.h"
 #include "servers/physics_3d/queries/physics_intersect_point_result_3d.h"
 #include "servers/physics_3d/queries/physics_intersect_ray_result_3d.h"
 #include "servers/physics_3d/queries/physics_intersect_shape_result_3d.h"
@@ -57,6 +58,7 @@ private:
 	bool _intersect_shape_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsIntersectShapeResult3D> p_result);
 	bool _cast_motion_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsCastMotionResult3D> p_result);
 	bool _collide_shape_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsCollideShapeResult3D> p_result);
+	bool _get_rest_info_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsGetRestInfoResult3D> p_result);
 
 protected:
 	static void _bind_methods();
