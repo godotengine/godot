@@ -174,8 +174,8 @@ private:
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
 
 	struct ThreadLoadTask {
-		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
-		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
+		Thread::ID thread_id = 0;
+		WorkerThreadPool::TaskID task_id = 0; // Non-zero if run on a worker thread from the pool.
 		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
 		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
 		uint32_t awaiters_count = 0;
