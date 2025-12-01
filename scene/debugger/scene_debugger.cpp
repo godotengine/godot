@@ -817,11 +817,13 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 
 	HashSet<String> exported_members;
 
-	List<PropertyInfo> pinfo;
-	p_instance->get_property_list(&pinfo);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			exported_members.insert(E.name);
+	if (p_instance) {
+		List<PropertyInfo> pinfo;
+		p_instance->get_property_list(&pinfo);
+		for (const PropertyInfo &E : pinfo) {
+			if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
+				exported_members.insert(E.name);
+			}
 		}
 	}
 
