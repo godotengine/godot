@@ -38,6 +38,8 @@
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
+	static constexpr int INVALID_CURRENT_TAB = -2;
+
 public:
 	enum TabPosition {
 		POSITION_TOP,
@@ -56,8 +58,7 @@ private:
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
 	bool drag_to_rearrange_enabled = false;
-	// Set the default setup current tab to be an invalid index.
-	int setup_current_tab = -2;
+	int setup_current_tab = INVALID_CURRENT_TAB;
 	bool updating_visibility = false;
 
 	struct ThemeCache {
