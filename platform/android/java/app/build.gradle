@@ -249,9 +249,9 @@ android {
 
     sourceSets {
         main.res.srcDirs += ['res']
-        debug.jniLibs.srcDirs += ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs += ['libs/dev']
-        release.jniLibs.srcDirs += ['libs/release']
+        debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
+        dev.jniLibs.srcDirs = ['libs/dev']
+        release.jniLibs.srcDirs = ['libs/release']
     }
 
     applicationVariants.all { variant ->
