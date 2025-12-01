@@ -257,24 +257,6 @@ public:
 };
 
 template <typename R, typename A, typename B>
-class OperatorEvaluatorMod {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = VariantInternalAccessor<A>::get(&p_left);
-		const B &b = VariantInternalAccessor<B>::get(&p_right);
-		*r_ret = a % b;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(left) % VariantInternalAccessor<B>::get(right);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
-};
-
-template <typename R, typename A, typename B>
 class OperatorEvaluatorModNZ {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
@@ -736,64 +718,6 @@ public:
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) >= PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-template <typename A, typename B>
-class OperatorEvaluatorAnd {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = VariantInternalAccessor<A>::get(&p_left);
-		const B &b = VariantInternalAccessor<B>::get(&p_right);
-		*r_ret = a && b;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		VariantInternalAccessor<bool>::get(r_ret) = VariantInternalAccessor<A>::get(left) && VariantInternalAccessor<B>::get(right);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) && PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-template <typename A, typename B>
-class OperatorEvaluatorOr {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = VariantInternalAccessor<A>::get(&p_left);
-		const B &b = VariantInternalAccessor<B>::get(&p_right);
-		*r_ret = a || b;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		VariantInternalAccessor<bool>::get(r_ret) = VariantInternalAccessor<A>::get(left) || VariantInternalAccessor<B>::get(right);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) || PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-#define XOR_OP(m_a, m_b) (((m_a) || (m_b)) && !((m_a) && (m_b)))
-template <typename A, typename B>
-class OperatorEvaluatorXor {
-public:
-	_FORCE_INLINE_ static bool xor_op(const A &a, const B &b) {
-		return ((a) || (b)) && !((a) && (b));
-	}
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = VariantInternalAccessor<A>::get(&p_left);
-		const B &b = VariantInternalAccessor<B>::get(&p_right);
-		*r_ret = xor_op(a, b);
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		VariantInternalAccessor<bool>::get(r_ret) = xor_op(VariantInternalAccessor<A>::get(left), VariantInternalAccessor<B>::get(right));
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(xor_op(PtrToArg<A>::convert(left), PtrToArg<B>::convert(right)), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
