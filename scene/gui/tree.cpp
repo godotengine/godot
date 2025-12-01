@@ -4184,8 +4184,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					drag_speed = 0;
 					drag_accum = 0;
 					drag_from = v_scroll->get_value();
-
-					drag_touching = DisplayServer::get_singleton()->is_touchscreen_available();
+					drag_touching = drag_scrolling_enabled && DisplayServer::get_singleton()->is_touchscreen_available();
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_process_internal(true);
@@ -4235,15 +4234,17 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		double prev_v = v_scroll->get_value();
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
-
-		double prev_h = h_scroll->get_value();
+		//TODO: Calculate the appropriate value depending on the screen resolution, etc. (on Android `scroll_scale` = 8.0f is too inaccurate / too fast).
+		float scroll_scale = 32.0f;
+		Vector2 pan_gesture_scale = pan_gesture->get_delta() / scroll_scale;
 		if (is_layout_rtl()) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
-		} else {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			pan_gesture_scale.x = -pan_gesture_scale.x;
 		}
+
+		double prev_v = v_scroll->get_value();
+		double prev_h = h_scroll->get_value();
+		v_scroll->set_value(prev_v + v_scroll->get_page() * pan_gesture_scale.y);
+		h_scroll->set_value(prev_h + h_scroll->get_page() * pan_gesture_scale.x);
 
 		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
 			accept_event();
@@ -5995,6 +5996,18 @@ bool Tree::is_v_scroll_enabled() const {
 	return v_scroll_enabled;
 }
 
+void Tree::set_drag_scrolling_enabled(bool p_enable) {
+	if (drag_scrolling_enabled == p_enable) {
+		return;
+	}
+
+	drag_scrolling_enabled = p_enable;
+}
+
+bool Tree::is_drag_scrolling_enabled() const {
+	return drag_scrolling_enabled;
+}
+
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 	TreeItem *from = p_at;
 	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
@@ -6365,8 +6378,8 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 }
 
 bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (drag_touching) {
-		// Disable data drag & drop when touch dragging.
+	if (drag_scrolling_enabled) {
+		// Disable data drag & drop while performing drag scrolling.
 		return false;
 	}
 
@@ -6374,8 +6387,8 @@ bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 }
 
 Variant Tree::get_drag_data(const Point2 &p_point) {
-	if (drag_touching) {
-		// Disable data drag & drop when touch dragging.
+	if (drag_scrolling_enabled) {
+		// Disable data drag & drop while performing drag scrolling.
 		return Variant();
 	}
 
@@ -6656,6 +6669,9 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_scroll_enabled", "h_scroll"), &Tree::set_v_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"), &Tree::is_v_scroll_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_drag_scrolling_enabled", "enable"), &Tree::set_drag_scrolling_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_scrolling_enabled"), &Tree::is_drag_scrolling_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_hide_folding", "hide"), &Tree::set_hide_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_hidden"), &Tree::is_folding_hidden);
 
@@ -6693,6 +6709,7 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_h_scroll_enabled", "is_h_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_v_scroll_enabled", "is_v_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_scrolling_enabled"), "set_drag_scrolling_enabled", "is_drag_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_tooltip"), "set_auto_tooltip", "is_auto_tooltip_enabled");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));

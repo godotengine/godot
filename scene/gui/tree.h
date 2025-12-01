@@ -737,6 +737,7 @@ private:
 	bool click_handled = false;
 	bool allow_rmb_select = false;
 	bool scrolling = false;
+	bool drag_scrolling_enabled = false;
 
 	bool allow_reselect = false;
 	bool allow_search = true;
@@ -892,6 +893,8 @@ public:
 	bool is_h_scroll_enabled() const;
 	void set_v_scroll_enabled(bool p_enable);
 	bool is_v_scroll_enabled() const;
+	void set_drag_scrolling_enabled(bool p_enable);
+	bool is_drag_scrolling_enabled() const;
 
 	void set_cursor_can_exit_tree(bool p_enable);
 
