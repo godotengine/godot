@@ -493,10 +493,14 @@
 			<return type="Vector2" />
 			<description>
 				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [code]get_screen_transform().origin[/code] (see [method CanvasItem.get_screen_transform]).
 				[b]Example:[/b] Show a popup at the mouse position:
 				[codeblock]
-				popup_menu.position = get_screen_position() + get_local_mouse_position()
+				popup_menu.position = get_screen_position() + get_screen_transform().basis_xform(get_local_mouse_position())
+
+				# The above code is equivalent to:
+				popup_menu.position = get_screen_transform() * get_local_mouse_position()
+
 				popup_menu.reset_size()
 				popup_menu.popup()
 				[/codeblock]
