@@ -70,7 +70,6 @@ Validate extension JSON: Error: Field 'classes/Performance/methods/add_custom_mo
 Optional argument added. Compatibility method registered.
 
 
-
 GH-110120
 ---------
 Validate extension JSON: API was removed: classes/SpringBoneSimulator3D/enums/BoneDirection
@@ -179,7 +178,6 @@ GLTFState getters made const. Compatibility methods registered.
 
 GH-109142
 ---------
-
 Validate extension JSON: Error: Field 'classes/CPUParticles3D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
 Validate extension JSON: Error: Field 'classes/CPUParticles2D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
 Validate extension JSON: Error: Field 'classes/GPUParticles2D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.

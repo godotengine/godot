@@ -471,7 +471,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual = 0) {
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual) {
 	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
 	// Setting emitting independently from set_emitting is important here
 	// we assume to be in a controlled process situation.

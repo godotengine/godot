@@ -583,7 +583,7 @@ uint32_t CPUParticles3D::get_seed() const {
 	return seed;
 }
 
-void CPUParticles3D::request_particles_process(real_t p_request_process_time, real_t p_request_process_time_residual = 0.) {
+void CPUParticles3D::request_particles_process(real_t p_request_process_time, real_t p_request_process_time_residual) {
 	_request_process_time = p_request_process_time;
 	_request_process_time_residual = p_request_process_time_residual;
 	_update_internal();

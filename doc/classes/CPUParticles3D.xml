@@ -58,7 +58,7 @@
 			<param index="1" name="process_time_residual" type="float" default="0.0" />
 			<description>
 				Requests the particles to process for extra process time during a single frame, while the particles are not emitting.
-				NOTE: Supplying a value bigger than zero turns emission off.
+				[b]Note:[/b] Supplying a value greater than zero turns emission off.
 			</description>
 		</method>
 		<method name="restart">
