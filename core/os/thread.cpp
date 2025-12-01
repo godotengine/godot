@@ -34,6 +34,8 @@
 
 #include "thread.h"
 
+#include "core/profiling/profiling.h"
+
 #ifdef THREADS_ENABLED
 #include "core/object/script_language.h"
 
@@ -89,6 +91,7 @@ void Thread::wait_to_finish() {
 }
 
 Error Thread::set_name(const String &p_name) {
+	GodotProfileSetThreadName(p_name);
 	if (platform_functions.set_name) {
 		return platform_functions.set_name(p_name);
 	}
