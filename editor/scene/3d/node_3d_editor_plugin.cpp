@@ -3178,6 +3178,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
 	viewport->set_fsr_sharpness(fsr_sharpness);
 
+	const bool fsr_auto_generate_reactive = GLOBAL_GET("rendering/scaling_3d/fsr_auto_generate_reactive");
+	viewport->set_fsr_auto_generate_reactive(fsr_auto_generate_reactive);
+
 	const float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
 	viewport->set_texture_mipmap_bias(texture_mipmap_bias);
 

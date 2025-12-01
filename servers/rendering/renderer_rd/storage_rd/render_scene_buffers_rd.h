@@ -33,6 +33,7 @@
 #ifdef METAL_ENABLED
 #include "../effects/metal_fx.h"
 #endif
+#include "../effects/ffx/fsr1.h"
 #include "../effects/vrs.h"
 #include "core/templates/hash_map.h"
 #include "material_storage.h"
@@ -52,6 +53,7 @@
 #define RB_TEX_DEPTH_MSAA SNAME("depth_msaa")
 #define RB_TEX_VELOCITY SNAME("velocity")
 #define RB_TEX_VELOCITY_MSAA SNAME("velocity_msaa")
+#define RB_TEX_COLOR_OPAQUE_ONLY SNAME("color_opaque_only")
 
 #define RB_TEX_BLUR_0 SNAME("blur_0")
 #define RB_TEX_BLUR_1 SNAME("blur_1")
@@ -80,9 +82,11 @@ private:
 	Size2i internal_size = Size2i(0, 0);
 	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	float fsr_sharpness = 0.2f;
+	bool fsr_auto_generate_reactive = false;
 	float texture_mipmap_bias = 0.0f;
 	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
 
+	RendererRD::FSR1Context *fsr1_context = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialContext *mfx_spatial_context = nullptr;
 #endif
@@ -197,9 +201,13 @@ public:
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
+	virtual void set_fsr_auto_generate_reactive(bool p_fsr_auto_generate_reactive) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+	void ensure_fsr1(RendererRD::FSR1Effect *p_effect);
+	_FORCE_INLINE_ RendererRD::FSR1Context *get_fsr1_context() const { return fsr1_context; }
 
 #ifdef METAL_ENABLED
 	void ensure_mfx(RendererRD::MFXSpatialEffect *p_effect);
@@ -236,6 +244,7 @@ public:
 	_FORCE_INLINE_ Size2i get_target_size() const { return target_size; }
 	_FORCE_INLINE_ RS::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	_FORCE_INLINE_ float get_fsr_sharpness() const { return fsr_sharpness; }
+	_FORCE_INLINE_ bool get_fsr_auto_generate_reactive() const { return fsr_auto_generate_reactive; }
 	_FORCE_INLINE_ RS::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
 	_FORCE_INLINE_ RD::TextureSamples get_texture_samples() const { return texture_samples; }
 	_FORCE_INLINE_ RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
@@ -307,7 +316,7 @@ public:
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED, p_layer, 0);
 	}
 
-	// Velocity, currently only used by TAA (Clustered) but we'll be using this in other places soon too.
+	// Velocity, used by TAA and FSR.
 
 	void ensure_velocity();
 	bool has_velocity_buffer(bool p_has_msaa);
@@ -315,6 +324,19 @@ public:
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
 
 	RID get_velocity_depth_buffer();
+
+	// Opaque-only color buffer, used for FSR2/3
+
+	void ensure_opaque_only_color_texture();
+	_FORCE_INLINE_ bool has_opaque_only_color_texture() const {
+		return has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY);
+	}
+	_FORCE_INLINE_ RID get_opaque_only_color_texture() const {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY);
+	}
+	_FORCE_INLINE_ RID get_opaque_only_color_texture(const uint32_t p_layer) {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR_OPAQUE_ONLY, p_layer, 0);
+	}
 
 	// Samplers adjusted with the mipmap bias that is best fit for the configuration of these render buffers.
 

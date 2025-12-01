@@ -3371,6 +3371,9 @@
 			A larger number is more efficient up to a limit, after that it will only waste RAM (maximum efficiency is achieved when there is no more than 1 pool per frame). A small number could end up with one pool per descriptor, which negatively impacts performance.
 			[b]Note:[/b] Changing this property requires a restart to take effect.
 		</member>
+		<member name="rendering/scaling_3d/fsr_auto_generate_reactive" type="bool" setter="" getter="" default="false">
+			Determines whether to automatically generate a reactive mask for FSR 2/3. Setting this to [code]true[/code] will reduce flickering when upscaling transparent objects, at a cost of one more rendering pass.
+		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
