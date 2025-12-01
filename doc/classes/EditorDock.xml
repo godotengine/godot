@@ -56,7 +56,7 @@
 			<description>
 				Implement this method to handle the layout switching for this dock. [param layout] is one of the [enum DockLayout] constants.
 				[codeblock]
-				_update_layout(layout):
+				func _update_layout(layout):
 					box_container.vertical = (layout == DOCK_LAYOUT_VERTICAL)
 				[/codeblock]
 			</description>
