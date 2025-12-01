@@ -34,10 +34,9 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
-#include "editor/settings/editor_command_palette.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
@@ -116,8 +115,8 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 
 MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("Replication"), repl_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTRC("Toggle Replication Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(repl_editor);
+	repl_editor->close();
 	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
@@ -142,20 +141,14 @@ void MultiplayerEditorPlugin::_notification(int p_what) {
 void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
+		repl_editor->close();
 		repl_editor->get_pin()->set_pressed(false);
 	}
 }
 
 void MultiplayerEditorPlugin::_pinned() {
 	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
+		repl_editor->close();
 	}
 }
 
@@ -169,12 +162,8 @@ bool MultiplayerEditorPlugin::handles(Object *p_object) const {
 
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(repl_editor);
+		repl_editor->make_visible();
 	} else if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
+		repl_editor->close();
 	}
 }
