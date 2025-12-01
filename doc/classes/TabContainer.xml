@@ -215,6 +215,7 @@
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 			A value of [code]-1[/code] means that no tab is selected.
+			[b]Note:[/b] Setting this property before the [TabContainer] is in the scene tree will not switch the current tab, even if the index is within bounds (but the property will still be assigned). The actual switch will happen when the container enters the tree.
 		</member>
 		<member name="deselect_enabled" type="bool" setter="set_deselect_enabled" getter="get_deselect_enabled" default="false">
 			If [code]true[/code], all tabs can be deselected so that no tab is selected. Click on the [member current_tab] to deselect it.
