@@ -68,9 +68,7 @@ void OpenXRSelectActionDialog::open() {
 	ERR_FAIL_COND(action_map.is_null());
 
 	// Out with the old.
-	while (main_vb->get_child_count() > 0) {
-		memdelete(main_vb->get_child(0));
-	}
+	main_vb->delete_all_children();
 
 	selected_action = "";
 	action_buttons.clear();

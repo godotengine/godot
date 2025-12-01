@@ -391,11 +391,7 @@ WindowWrapper::~WindowWrapper() {
 
 void ScreenSelect::_build_advanced_menu() {
 	// Clear old screen list.
-	while (screen_list->get_child_count(false) > 0) {
-		Node *child = screen_list->get_child(0);
-		screen_list->remove_child(child);
-		child->queue_free();
-	}
+	screen_list->delete_all_children(false, DELETE_MODE_QUEUE_FREE);
 
 	// Populate screen list.
 	const real_t height = real_t(get_theme_font_size(SceneStringName(font_size))) * 1.5;
