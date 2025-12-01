@@ -54,11 +54,21 @@ public:
 	virtual void global_shader_parameters_instance_free(RID p_instance) = 0;
 	virtual void global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count = 0) = 0;
 
+	/* SHADER TEMPLATE API */
+
+	virtual RID shader_template_allocate() = 0;
+	virtual void shader_template_initialize(RID p_rid) = 0;
+	virtual void shader_template_free(RID p_rid) = 0;
+
+	virtual void shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) = 0;
+
 	/* SHADER API */
+
 	virtual RID shader_allocate() = 0;
 	virtual void shader_initialize(RID p_rid, bool p_embedded = true) = 0;
 	virtual void shader_free(RID p_rid) = 0;
 
+	virtual void shader_set_shader_template(RID p_shader, RID p_shader_template = RID(), bool p_clear_code = false) = 0;
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;

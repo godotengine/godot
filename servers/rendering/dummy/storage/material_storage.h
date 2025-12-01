@@ -83,6 +83,14 @@ public:
 	virtual void global_shader_parameters_instance_free(RID p_instance) override {}
 	virtual void global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count = 0) override {}
 
+	/* SHADER TEMPLATE API */
+
+	virtual RID shader_template_allocate() override { return RID(); }
+	virtual void shader_template_initialize(RID p_rid) override {}
+	virtual void shader_template_free(RID p_rid) override {}
+
+	virtual void shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) override {}
+
 	/* SHADER API */
 
 	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
@@ -91,6 +99,7 @@ public:
 	virtual void shader_initialize(RID p_rid, bool p_embedded) override;
 	virtual void shader_free(RID p_rid) override;
 
+	virtual void shader_set_shader_template(RID p_shader, RID p_shader_template = RID(), bool p_clear_code = false) override {}
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_code) override {}
 

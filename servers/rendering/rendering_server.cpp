@@ -2369,9 +2369,15 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_FRONT);
 	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_BACK);
 
+	/* SHADER TEMPLATE */
+
+	ClassDB::bind_method(D_METHOD("shader_template_create"), &RenderingServer::shader_template_create);
+	ClassDB::bind_method(D_METHOD("shader_template_set_raster_code", "shader_template", "vertex_code", "fragment_code", "name"), &RenderingServer::shader_template_set_raster_code);
+
 	/* SHADER */
 
 	ClassDB::bind_method(D_METHOD("shader_create"), &RenderingServer::shader_create);
+	ClassDB::bind_method(D_METHOD("shader_set_shader_template", "shader", "shader_template", "clear_code"), &RenderingServer::shader_set_shader_template, DEFVAL(RID()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &RenderingServer::shader_set_code);
 	ClassDB::bind_method(D_METHOD("shader_set_path_hint", "shader", "path"), &RenderingServer::shader_set_path_hint);
 	ClassDB::bind_method(D_METHOD("shader_get_code", "shader"), &RenderingServer::shader_get_code);

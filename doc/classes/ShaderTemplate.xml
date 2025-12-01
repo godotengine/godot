@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderTemplate" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A shader template implementing the core vertex and fragment shaders.
+	</brief_description>
+	<description>
+		A shader template can be used to override Godots built-in shader code with a custom implementation.
+		[b]Note:[/b] This feature is currently only available for spatial shaders on the mobile and forward+ renderer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="Shader.Mode" />
+			<description>
+				Returns the shader mode for the shader template.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
+			The shader template GLSL code for both vertex and fragment shaders.
+		</member>
+	</members>
+</class>

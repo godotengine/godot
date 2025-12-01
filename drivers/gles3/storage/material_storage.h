@@ -60,7 +60,7 @@ struct ShaderData {
 	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
 	virtual bool is_parameter_texture(const StringName &p_param) const;
 
-	virtual void set_code(const String &p_Code) = 0;
+	virtual void set_code(const String &p_Code, RID p_shader_template = RID()) = 0;
 	virtual bool is_animated() const = 0;
 	virtual bool casts_shadows() const = 0;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
@@ -70,10 +70,19 @@ struct ShaderData {
 
 typedef ShaderData *(*ShaderDataRequestFunction)();
 
+struct Shader;
 struct Material;
+
+struct ShaderTemplate {
+	ShaderGLES3 *shader;
+	HashSet<Shader *> owners;
+
+	void cleanup();
+};
 
 struct Shader {
 	ShaderData *data = nullptr;
+	RID shader_template;
 	String code;
 	String path_hint;
 	RS::ShaderMode mode;
@@ -169,7 +178,7 @@ struct CanvasShaderData : public ShaderData {
 
 	uint64_t vertex_input_mask;
 
-	virtual void set_code(const String &p_Code);
+	virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
@@ -214,7 +223,7 @@ struct SkyShaderData : public ShaderData {
 	bool uses_quarter_res;
 	bool uses_light;
 
-	virtual void set_code(const String &p_Code);
+	virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
@@ -347,7 +356,7 @@ struct SceneShaderData : public ShaderData {
 
 	uint64_t vertex_input_mask;
 
-	virtual void set_code(const String &p_Code);
+	virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
@@ -399,7 +408,7 @@ struct ParticlesShaderData : public ShaderData {
 	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
 	uint32_t userdata_count;
 
-	virtual void set_code(const String &p_Code);
+	virtual void set_code(const String &p_Code, RID p_shader_template = RID());
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
@@ -494,6 +503,10 @@ private:
 	int32_t _global_shader_uniform_allocate(uint32_t p_elements);
 	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderParameterType p_type, const Variant &p_value);
 	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
+
+	/* SHADER TEMPLATE API */
+
+	mutable RID_Owner<ShaderTemplate, true> shader_template_owner;
 
 	/* SHADER API */
 
@@ -590,6 +603,17 @@ public:
 
 	GLuint global_shader_parameters_get_uniform_buffer() const;
 
+	/* SHADER TEMPLATE API */
+
+	ShaderTemplate *get_shader_template(RID p_rid) { return shader_template_owner.get_or_null(p_rid); }
+	bool owns_template_shader(RID p_rid) { return shader_template_owner.owns(p_rid); }
+
+	virtual RID shader_template_allocate() override;
+	virtual void shader_template_initialize(RID p_rid) override;
+	virtual void shader_template_free(RID p_rid) override;
+
+	virtual void shader_template_set_raster_code(RID p_template_shader, const String &p_vertex_code, const String &p_fragment_code, const String &p_name) override;
+
 	/* SHADER API */
 
 	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); }
@@ -601,6 +625,7 @@ public:
 	virtual void shader_initialize(RID p_rid, bool p_embedded = true) override;
 	virtual void shader_free(RID p_rid) override;
 
+	virtual void shader_set_shader_template(RID p_shader, RID p_shader_template = RID(), bool p_clear_code = false) override;
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;
