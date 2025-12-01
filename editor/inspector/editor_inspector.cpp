@@ -5182,9 +5182,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
 			}
-			// We'll use Editor Selection to get the currently edited Node.
 			Node *N = Object::cast_to<Node>(object);
-			if (N && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+			bool double_counting = Object::cast_to<Node>(p_value) == N || Object::cast_to<Node>(value) == N;
+			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
 				// Perhaps an inefficient way of updating the resource count.
