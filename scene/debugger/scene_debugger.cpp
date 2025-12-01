@@ -2674,13 +2674,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	shape.instantiate();
 	shape->set_points(points);
 
+	// Keep track of the currently listed nodes, so repeats can be ignored.
+	HashSet<Node *> node_list;
+
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult result;
+	PhysicsDirectSpaceState3D::ShapeResult results[32];
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	if (ss->intersect_shape(shape_params, &result, 32)) {
+	const int num_hits = ss->intersect_shape(shape_params, results, 32);
+	for (int i = 0; i < num_hits; i++) {
+		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -2693,12 +2698,18 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			for (uint32_t &I : owners) {
 				SelectResult res_shape;
 				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
-				res_shape.order = res.order;
-				r_items.push_back(res_shape);
+				if (!node_list.has(res_shape.item)) {
+					node_list.insert(res_shape.item);
+					res_shape.order = res.order;
+					r_items.push_back(res_shape);
+				}
 			}
 		}
 
-		r_items.push_back(res);
+		if (!node_list.has(res.item)) {
+			node_list.insert(res.item);
+			r_items.push_back(res);
+		}
 	}
 #endif // PHYSICS_3D_DISABLED
 
@@ -2728,8 +2739,11 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 				if (mesh_collision->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 					SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
-					res.order = -dist_pos.distance_to(gt.origin);
-					r_items.push_back(res);
+					if (!node_list.has(res.item)) {
+						node_list.insert(res.item);
+						res.order = -dist_pos.distance_to(gt.origin);
+						r_items.push_back(res);
+					}
 
 					continue;
 				}
