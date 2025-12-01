@@ -179,8 +179,13 @@ void Range::_set_value_no_signal(double p_val) {
 
 double Range::_calc_value(double p_val, double p_step) const {
 	if (p_step > 0) {
-		// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
-		p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
+		if (Math::abs(shared->min) > p_step * 1e-14) {
+			// Min is too big to use for snapping offset, so snap without it.
+			p_val = _snapped_r128(p_val, p_step);
+		} else {
+			// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
+			p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
+		}
 	}
 
 	if (_rounded_values) {
