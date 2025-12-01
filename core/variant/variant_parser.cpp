@@ -1201,6 +1201,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			static HashMap<StringName, Variant::Type> builtin_types;
 			if (builtin_types.is_empty()) {
+				builtin_types.reserve(Variant::VARIANT_MAX - 1);
 				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
 					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 				}
@@ -1341,6 +1342,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			static HashMap<String, Variant::Type> builtin_types;
 			if (builtin_types.is_empty()) {
+				builtin_types.reserve(Variant::VARIANT_MAX - 1);
 				for (int i = 1; i < Variant::VARIANT_MAX; i++) {
 					builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 				}

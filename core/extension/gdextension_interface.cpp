@@ -1559,7 +1559,7 @@ static void gdextension_placeholder_script_instance_update(GDExtensionScriptInst
 	const Dictionary &values = *reinterpret_cast<const Dictionary *>(p_values);
 
 	List<PropertyInfo> properties_list;
-	HashMap<StringName, Variant> values_map;
+	HashMap<StringName, Variant> values_map(values.size());
 
 	for (int i = 0; i < properties.size(); i++) {
 		Dictionary d = properties[i];

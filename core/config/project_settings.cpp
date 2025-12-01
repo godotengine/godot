@@ -1559,7 +1559,7 @@ void ProjectSettings::load_scene_groups_cache() {
 		Vector<String> scene_paths = cf->get_sections();
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
-			HashSet<StringName> cache;
+			HashSet<StringName> cache(scene_groups.size());
 			for (const Variant &scene_group : scene_groups) {
 				cache.insert(scene_group);
 			}
