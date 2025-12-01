@@ -370,24 +370,26 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		// Set the current tab before there are any tabs.
 		// This queues the current tab to update on entering the tree.
 		tab_container->set_current_tab(1);
-		CHECK(tab_container->get_current_tab() == -1);
+		CHECK(tab_container->get_tab_bar()->get_current_tab() == -1);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		tab_container->add_child(tab0);
 		CHECK(tab_container->get_tab_count() == 1);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_tab_bar()->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 
 		tab_container->add_child(tab1);
 		CHECK(tab_container->get_tab_count() == 2);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 
 		tab_container->add_child(tab2);
 		CHECK(tab_container->get_tab_count() == 3);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
@@ -397,7 +399,7 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_container->get_tab_count() == 3);
 		CHECK(tab_container->get_current_tab() == 1);
-		CHECK(tab_container->get_previous_tab() == 0);
+		CHECK(tab_container->get_previous_tab() == 0); // Previous tab of TabBar.
 		SIGNAL_CHECK("tab_selected", { { 1 } });
 		SIGNAL_CHECK("tab_changed", { { 1 } });
 		CHECK_FALSE(tab0->is_visible());
@@ -405,29 +407,28 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		CHECK_FALSE(tab2->is_visible());
 	}
 
-	SUBCASE("[TabContainer] cannot set current tab to an invalid value before tabs are set") {
+	SUBCASE("[TabContainer] set current tab to an invalid value before tabs are set") {
 		tab_container->set_current_tab(100);
-		CHECK(tab_container->get_current_tab() == -1);
+		CHECK(tab_container->get_current_tab() == 100);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		tab_container->add_child(tab0);
 		CHECK(tab_container->get_tab_count() == 1);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 100);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		tab_container->add_child(tab1);
 		CHECK(tab_container->get_tab_count() == 2);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 100);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		// This will print an error message as if `set_current_tab` was called after.
-		ERR_PRINT_OFF;
 		SceneTree::get_singleton()->get_root()->add_child(tab_container);
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_container->get_tab_count() == 2);
@@ -435,7 +436,28 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
+	}
+
+	SUBCASE("[TabContainer] set current tab to an invalid value after tabs are set") {
+		SceneTree::get_singleton()->get_root()->add_child(tab_container);
+		MessageQueue::get_singleton()->flush();
+
+		ERR_PRINT_OFF;
+		tab_container->set_current_tab(100);
+		CHECK(tab_container->get_current_tab() == -1);
+		CHECK(tab_container->get_previous_tab() == -1);
+		SIGNAL_CHECK_FALSE("tab_selected");
+		SIGNAL_CHECK_FALSE("tab_changed");
 		ERR_PRINT_ON;
+
+		Array tab0_check = { { 0 } };
+
+		tab_container->add_child(tab0);
+		CHECK(tab_container->get_tab_count() == 1);
+		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_previous_tab() == -1);
+		SIGNAL_CHECK("tab_selected", tab0_check);
+		SIGNAL_CHECK("tab_changed", tab0_check);
 	}
 
 	SUBCASE("[TabContainer] children visibility before entering tree") {
@@ -465,7 +487,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		tab1->show();
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_container->get_tab_count() == 2);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_tab_bar()->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
@@ -494,7 +517,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 		tab2->show();
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_container->get_tab_count() == 3);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_tab_bar()->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 2);
 		CHECK(tab_container->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
@@ -504,7 +528,8 @@ TEST_CASE("[SceneTree][TabContainer] initialization") {
 
 		// Whichever happens last will have priority.
 		tab_container->set_current_tab(1);
-		CHECK(tab_container->get_current_tab() == 0);
+		CHECK(tab_container->get_tab_bar()->get_current_tab() == 0);
+		CHECK(tab_container->get_current_tab() == 1);
 		CHECK(tab_container->get_previous_tab() == -1);
 
 		// Current tab is set when entering the tree.
