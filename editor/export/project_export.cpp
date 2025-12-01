@@ -1617,8 +1617,16 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbox->add_child(settings_vb);
 
+	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_theme_type_variation(SNAME("PanelForeground"));
+	settings_vb->add_child(panel);
+
+	VBoxContainer *top_settings = memnew(VBoxContainer);
+	top_settings->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	panel->add_child(top_settings);
+
 	name = memnew(LineEdit);
-	settings_vb->add_margin_child(TTR("Name:"), name);
+	top_settings->add_margin_child(TTR("Name:"), name);
 	name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectExportDialog::_name_changed));
 	name->connect(SceneStringName(focus_exited), callable_mp(this, &ProjectExportDialog::_name_editing_finished));
 
@@ -1637,10 +1645,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_configs_container->add_spacer(true);
 	preset_configs_container->add_child(advanced_options);
 	preset_configs_container->add_child(runnable);
-	settings_vb->add_child(preset_configs_container);
+	top_settings->add_child(preset_configs_container);
 
 	export_path = memnew(EditorPropertyPath);
-	settings_vb->add_child(export_path);
+	top_settings->add_child(export_path);
 	export_path->set_label(TTR("Export Path"));
 	export_path->set_object_and_property(this, "export_path");
 	export_path->set_save_mode();

@@ -186,6 +186,8 @@ public:
 		Ref<StyleBoxFlat> panel_container_style;
 		Ref<StyleBoxFlat> content_panel_style;
 		Ref<StyleBoxFlat> tree_panel_style;
+		Ref<StyleBoxFlat> tab_container_style;
+		Ref<StyleBoxFlat> foreground_panel;
 
 		Vector2 widget_margin;
 
