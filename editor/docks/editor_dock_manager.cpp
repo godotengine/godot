@@ -600,6 +600,13 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		}
 	}
 
+	// Clear the special dock slot for docks without default slots (index -1 = dock_0).
+	// This prevents closed docks from being infinitely appended to the config on each save.
+	const String no_slot_config_key = "dock_0";
+	if (p_layout->has_section_key(p_section, no_slot_config_key)) {
+		p_layout->erase_section_key(p_section, no_slot_config_key);
+	}
+
 	// Save docks in windows.
 	Dictionary floating_docks_dump;
 	for (WindowWrapper *wrapper : dock_windows) {
