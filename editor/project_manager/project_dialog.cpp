@@ -1008,6 +1008,7 @@ ProjectDialog::ProjectDialog() {
 	project_name = memnew(LineEdit);
 	project_name->set_virtual_keyboard_show_on_focus(false);
 	project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_name->set_accessibility_name(TTRC("Project Name:"));
 	name_container->add_child(project_name);
 
 	project_path_container = memnew(VBoxContainer);
@@ -1074,6 +1075,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	msg->set_accessibility_live(DisplayServer::LIVE_POLITE);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1101,6 +1103,7 @@ ProjectDialog::ProjectDialog() {
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1113,6 +1116,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Mobile"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1125,6 +1129,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Compatibility"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #if !defined(GLES3_ENABLED)
 	rs_button->set_disabled(true);
 #endif
