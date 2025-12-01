@@ -20,6 +20,7 @@ body:
         - Please specify the Godot version you found the issue in, including the **Git commit hash** if using a development or non-official build. The exact Godot version (including the commit hash) can be copied by clicking the version shown in the editor (bottom bar) or in the project manager (top bar).
         - If you can, **please test earlier Godot versions** (previous stable branch, and development snapshots of the current feature release) and, if applicable, newer versions (development snapshots for the next feature release). Mention whether the bug is reproducible or not in the versions you tested. You can find all Godot releases in our [download archive](https://godotengine.org/download/archive/).
         - The aim is for us to identify whether a bug is a **regression**, i.e. an issue that didn't exist in a previous version, but was introduced later on, breaking existing functionality. For example, if a bug is reproducible in 4.2.stable but not in 4.1.stable, we would like you to test intermediate 4.2 dev and beta snapshots to find which snapshot is the first one where the issue can be reproduced.
+        - **If you have tested multiple versions, please list *all* the versions you have tested and if the bug occurs or not on each version (you can see an example of how this could be done in the placeholder below).**
       placeholder: |
 
         - Reproducible in: 4.3.dev [d76c1d0e5], 4.2.stable, 4.2.dev5 and later 4.2 snapshots.
