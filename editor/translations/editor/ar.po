@@ -104,13 +104,14 @@
 # عمّار عبدالله <ammar-dmour19@proton.me>, 2025.
 # Elias Dammach <eliasdammach208@gmail.com>, 2025.
 # Ihab Shoully <shoully@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-19 05:48+0000\n"
-"Last-Translator: Emad Alhaddad <emad142240@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:07+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -1647,17 +1648,6 @@ msgstr ""
 msgid "Add Track"
 msgstr "إضافة مسار"
 
-msgid ""
-"Audio tracks can only point to nodes of type:\n"
-"-AudioStreamPlayer\n"
-"-AudioStreamPlayer2D\n"
-"-AudioStreamPlayer3D"
-msgstr ""
-"يمكن للمسارات الصوتية فقط أن تشير إلى وحدات بنوع:\n"
-"-لاعب الصوت الجاري\n"
-"-لاعب الصوت الجاري للحيز ثنائي الأبعاد\n"
-"-لاعب الصوت الجاري للحيز ثلاثي الأبعاد"
-
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "مقاطع التحريك يمكنها فقط أن تشير إلى عُقد تحريك-اللاعب."
 
@@ -1672,12 +1662,6 @@ msgstr "إضافة مسار لمنحنى بيزر"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة مفتاح."
-
-msgid "Track is not of type Node3D, can't insert key"
-msgstr "المقطع ليس عقدة ثلاثية الأبعاد، لا يمكن إضافة مفتاح"
-
-msgid "Track is not of type MeshInstance3D, can't insert key"
-msgstr "المقطع ليس من نوع تنسيخ-مجسم-ثلاثي، لا يمكن إدخال مفتاح"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة دالة المفتاح (Method key)."
@@ -8171,14 +8155,8 @@ msgstr "تعديل المضلع (مسح النقطة)"
 msgid "Remove Polygon And Point"
 msgstr "مسح المضلع والنقطة"
 
-msgid "Camera2D"
-msgstr "كاميرا2D"
-
 msgid "Create Occluder Polygon"
 msgstr "أنشئ شكل مُطبق"
-
-msgid "Convert to Parallax2D"
-msgstr "تحويل إلى التخاطل-الثنائي"
 
 msgid "ParallaxBackground"
 msgstr "تخاطل-الخلفية"
@@ -8213,20 +8191,8 @@ msgstr "توليد مستطيل الرؤية (في انتظار محاكاة ا�
 msgid "Generating..."
 msgstr "توليد..."
 
-msgid "GPUParticles2D"
-msgstr "جسيمات-بطاقة-ثنائية"
-
-msgid "Convert to CPUParticles2D"
-msgstr "تحويل إلى جسيمات-معالج-ثنائية"
-
 msgid "Generation Time (sec):"
 msgstr "وقت التوليد (ثانية):"
-
-msgid "CPUParticles2D"
-msgstr "جسيمات-معالج-ثنائية"
-
-msgid "Convert to GPUParticles2D"
-msgstr "تحويل إلى جسيمات-بطاقة-ثنائية"
 
 msgid "Remove Point from Curve"
 msgstr "إزالة النقطة من المنحنى"
@@ -8308,12 +8274,6 @@ msgstr "تعيين الموضع المستهدف"
 
 msgid "Set Handle"
 msgstr "حدد المعامل"
-
-msgid ""
-"The skeleton property of the Polygon2D does not point to a Skeleton2D node"
-msgstr ""
-"إن خاصية الهيكل الخاص بالمضلع ثنائي الأبعاد لا تشير إلى عُقدة هيكلية ثنائية "
-"الأبعاد Skeleton2D"
 
 msgid "Sync Bones"
 msgstr "مُزامنة العظام"
@@ -8444,9 +8404,6 @@ msgstr "خطوة الشبكة على المحور Y:"
 msgid "Sync Bones to Polygon"
 msgstr "مزامنة العظام مع المُضلع"
 
-msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "لا يملك هذا الهكيل أيّة عظام، أنشئ عُقد عظم-ثنائي فرعية."
-
 msgid "Set Rest Pose to Bones"
 msgstr "تحديد وضعية الراحة على العظام"
 
@@ -8454,7 +8411,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "إنشاء وضعية الراحة من العظام"
 
 msgid "Skeleton2D"
-msgstr "هيكل ثنائي البُعد"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "إعادة تعيين العظام للوضعية الافتراضية (Rest Pose)"
@@ -8467,18 +8424,6 @@ msgstr "إنشاء MeshInstance2D"
 
 msgid "MeshInstance2D Preview"
 msgstr "معاينة MeshInstance2D"
-
-msgid "Create Polygon2D"
-msgstr "إنشاء مُضلع ثنائي الأبعاد"
-
-msgid "Polygon2D Preview"
-msgstr "مُعاينة المُضلع ثنائي الأبعاد"
-
-msgid "Create CollisionPolygon2D"
-msgstr "إنشاء مُضلع تصادم ثنائي الأبعاد"
-
-msgid "CollisionPolygon2D Preview"
-msgstr "معاينة مُضلع التصادم ثنائي الأبعاد"
 
 msgid "Create LightOccluder2D"
 msgstr "إنشاء LightOccluder2D"
@@ -8501,23 +8446,11 @@ msgstr "تحويل إلى MeshInstance2D"
 msgid "Invalid geometry, can't create polygon."
 msgstr "هندسياصً غير صالح، لا يمكن إنشاء مُضلّع."
 
-msgid "Convert to Polygon2D"
-msgstr "تحويل إلى مُضلع ثنائي الأبعاد"
-
 msgid "Invalid geometry, can't create collision polygon."
 msgstr "هندسياً غير صالح، لا يمكن إنشاء مُضلع تصادم."
 
-msgid "Create CollisionPolygon2D Sibling"
-msgstr "إنشاء شقيق لمُضلع التصادم ثنائي الأبعاد"
-
 msgid "Invalid geometry, can't create light occluder."
 msgstr "هندسياً غير صالح، لا يمكن إنشاء حِظار (occluder) الضوء."
-
-msgid "Create LightOccluder2D Sibling"
-msgstr "أنشاء ضوء محجوب ثنائي الأبعاد"
-
-msgid "Sprite2D"
-msgstr "أرسومة-ثنائية"
 
 msgid "Simplification:"
 msgstr "التبسيط:"
@@ -8821,13 +8754,6 @@ msgstr "استخراج طبقات خريطة-البلاط على أنها عُق
 msgid "The selected TileMap has no layer to edit."
 msgstr "خريطة-البلاط المحددة لا تملك طبقة لتحريرها."
 
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"عقدة خريطة-البلاط أو عقدة طبقة-خريطة-البلاط ليس لديها موارد طقم-البلاط.\n"
-"أنشئْ أو حملْ موارد طقم-البلاط من خصائص إعداد البلاط في رصيف الفاحص."
-
 msgid "Select Next Tile Map Layer"
 msgstr "حدد طبقة خريطة البلاط التالية"
 
@@ -8848,9 +8774,6 @@ msgstr "تحديد كل الطبقات"
 
 msgid "Select all TileMapLayers in scene"
 msgstr "حدد كل طبقات خريطة البلاط التي في المشهد"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "إبراز طبقة خريطة-البلاط المحددة"
 
 msgid "Toggle grid visibility."
 msgstr "رؤية الشبكة."
@@ -9366,9 +9289,6 @@ msgstr "المجسّم ليس لديه UV في الطبقة %d."
 
 msgid "Create Navigation Mesh"
 msgstr "إنشاء مجسم التنقل"
-
-msgid "MeshInstance3D lacks a Mesh."
-msgstr "مثيل-المُجسّم-الثلاثي يفقتر إلى مُجسم."
 
 msgid "Mesh has no surface to create outlines from."
 msgstr "المجسم ليس له سطح ليتمكن من إنشاء \"الحدود\" منه."
@@ -10240,16 +10160,6 @@ msgstr "مسافة الظل القصوى"
 msgid "Add Sun to Scene"
 msgstr "أضف الشمس إلى المشهد"
 
-msgid ""
-"Adds a DirectionalLight3D node matching the preview sun settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview environment to the current "
-"scene."
-msgstr ""
-"يُضيف عقدة \"ضوء-توجيهي-ثلاثي\" تطابق هذه العقدةُ إعداداتِ معاينة الشمس مع "
-"المشهد الحالي.\n"
-"علّقْ على زر المناوبة Shift + هذا؛ لإضافة معاينة البيئة إلى المشهد الحالي."
-
 msgid "Preview Environment"
 msgstr "معاينة البيئة"
 
@@ -10320,9 +10230,6 @@ msgstr "توليد الرؤية AABB (في انتظار محاكاة الجسي�
 msgid "Generate Visibility AABB"
 msgstr "ولد رؤية AABB"
 
-msgid "\"%s\" doesn't inherit from Node3D."
-msgstr "\"%s\" لا يرث من العقدة-الثلاثية."
-
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" لا تحتوي على هندسة."
 
@@ -10358,18 +10265,6 @@ msgstr "نقاط السطح + طبيعي (مُوجّه)"
 
 msgid "A processor material of type 'ParticleProcessMaterial' is required."
 msgstr "مطلوب مادة معالج من النوع \"مادة-عملية-الجُسيمات\"."
-
-msgid "GPUParticles3D"
-msgstr "جسيمات-بطاقة-ثلاثية"
-
-msgid "Convert to CPUParticles3D"
-msgstr "التحويل إلى جسيمات-معالج-ثلاثية"
-
-msgid "CPUParticles3D"
-msgstr "جسيمات-معالج-ثلاثية"
-
-msgid "Convert to GPUParticles3D"
-msgstr "التحويل إلى جسيمات-بطاقة-ثلاثية"
 
 msgid "Curve Point #"
 msgstr "نُقطة المنحنى #"
@@ -10425,9 +10320,6 @@ msgstr "فصل القطعة (من المُنحنى)"
 msgid "Move Joint"
 msgstr "تحريك النُقطة"
 
-msgid "Create Polygon3D"
-msgstr "إنشاء متعدد سطوح ثلاثي الأبعاد"
-
 msgid "Edit Poly"
 msgstr "تعديل مُتعدد السطوح"
 
@@ -10463,9 +10355,6 @@ msgstr "تصدير ملف تعريف الهيكل العظمي ك..."
 
 msgid "Set Bone Parentage"
 msgstr "تعيين نسب العظام"
-
-msgid "Skeleton3D"
-msgstr "هيكل ثلاثي الأبعاد"
 
 msgid "Reset All Bone Poses"
 msgstr "إعادة ضبط العظام للوضعية الافتراضية"
@@ -10594,9 +10483,6 @@ msgstr "تحريك مرساة عنصر-اللوحة \"%s\""
 msgid "Scale Node2D \"%s\" to (%s, %s)"
 msgstr "تعديل حجم العقدة \"Node2D \"%s إلى (%s,%s)"
 
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "تغيير حجم عنصر التحكم \"%s\" إلى (%d،% d)"
-
 msgid "Scale %d CanvasItems"
 msgstr "تغيير حجم عناصر-اللوحة %d"
 
@@ -10650,9 +10536,6 @@ msgstr "لصق الوضع"
 
 msgid "Clear Guides"
 msgstr "مسح الموجهات"
-
-msgid "Create Custom Bone2D(s) from Node(s)"
-msgstr "إنشاء عظم-ثنائي مخصص من العقد"
 
 msgid "Zoom to 3.125%"
 msgstr "التكبير حتى 3.125%"
@@ -12290,9 +12173,6 @@ msgstr "إطارات-الأُرسومة"
 
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "لوحة إطارات-الرسمة السفلى"
-
-msgid "Move GradientTexture2D Fill Point"
-msgstr "نقل نقطة التعبئة Gradient Texture2D"
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "مبادلة نقاط التعبئة التدرج GradientTexture2D"
@@ -15246,22 +15126,6 @@ msgstr "حدّدْ موضع_النهاية"
 msgid "Create Navigation Polygon"
 msgstr "إنشاء مُضلع التنقل"
 
-msgid "Bake NavigationPolygon"
-msgstr "دمج مضلع الملاحة"
-
-msgid ""
-"Bakes the NavigationPolygon by first parsing the scene for source geometry "
-"and then creating the navigation polygon vertices and polygons."
-msgstr ""
-"يقوم بإنشاء مضلع التنقل عن طريق تحليل المشهد أولاً لهندسة المصدر ثم إنشاء قمم "
-"ومضلعات مضلع التنقل."
-
-msgid "Clear NavigationPolygon"
-msgstr "مسح مضلع-التنقل"
-
-msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
-msgstr "مسح حدود مضلع-التنقل الداخلية ورؤوسه ومضلعاته."
-
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work."
 msgstr "يجب تعيين أو إنشاء مورد NavigationPolygon لكي تعمل هذه العقدة."
@@ -15271,9 +15135,6 @@ msgstr "تغيير موضع البداية"
 
 msgid "Change End Position"
 msgstr "تغيير موضع النهاية"
-
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "يجب تعيين مورد مجسم-التنقل أو إنشاؤه حتى تعمل هذه العقدة."
 
 msgid ""
 "Cannot generate navigation mesh because it does not belong to the edited "
@@ -15292,21 +15153,12 @@ msgid ""
 "another type."
 msgstr "لا يمكن إنشاء مجسم تنقل لأنه تم استيراد المورد من نوع آخر."
 
-msgid "Bake NavigationMesh"
-msgstr "عجن مجسم-التنقل"
-
 msgid ""
 "Bakes the NavigationMesh by first parsing the scene for source geometry and "
 "then creating the navigation mesh vertices and polygons."
 msgstr ""
 "عقد VoxelGI غير مدعوم عند الخبرة الخلفية لتوافق GL حتى الآن. سيتم إضافة الدعم "
 "في الإصدار المستقبلي."
-
-msgid "Clear NavigationMesh"
-msgstr "مسح مجسم-التنقل"
-
-msgid "Clears the internal NavigationMesh vertices and polygons."
-msgstr "مسح رؤوس ومضلعات مجسم التنقل الداخلية."
 
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "يتبدل عند احتساب \"معاينة الضجيج\" في الفضاء الثلاثي."
@@ -15786,11 +15638,6 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "عملية التوثيق تأخذ أقل من ساعة غالبا."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr "يمكنك متابعت حالة التقدم يدويا عن طريق الترمنال بستخدام الأمر التالي:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -16128,19 +15975,6 @@ msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "المُضلع المُغلق لهذا الغَلق فارغ. الرجاء رسم مُضلع."
 
 msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"يمكن استخدام وكيل التنقل ثنائي الأبعاد فقط ضمن العقدة الأصلية الوارثة لـ عقدة "
-"ثنائية الأبعاد."
-
-msgid ""
-"NavigationLink2D start position should be different than the end position to "
-"be useful."
-msgstr ""
-"يجب أن يكون موضع بداية رابط التنقل ثنائي الأبعاد مختلفًا عن موضع النهاية ليكون "
-"مفيدًا."
-
-msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 "تعمل عقدة طبقة-المنظهر (ParallaxLayer) فقط عند تعيينها كعقدة تابعة لعقدة "
@@ -16161,17 +15995,6 @@ msgstr ""
 "حاولْ أن تضيف لها عُقدة فرعية حتى تتشكل بشكلها، مثل عقدة: شكل-تصادم-ثنائي "
 "(CollisionShape2D) أو عقدة: مضلع-تصادم-ثنائي (CollisionPolygon2D)."
 
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"يعمل مُضلع التصادم ثنائي الأبعاد CollisionPolygon2D فقط كشكل تصادمي لكل العُقد "
-"المشتقة من الكائن التصادمي ثنائي الأبعاد CollisionObject2D. من فضلك استخدمه "
-"فقط لكل أبناء الحيز ثنائي الأبعاد Area2D، الجسم السكوني ثنائي الأبعاد "
-"StaticBody2D و الجسم الجامد ثنائي الأبعاد RigidBody2D، والجسم المتحرك ثنائي "
-"الأبعاد KinematicBody2D إلخ.. لكي تمنح كل منهم شكلاً."
-
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr ""
 "مُضلع تصادم ثنائي الأبعاد (CollisionPolygon2D) الفارغ ليس له أي تأثير على "
@@ -16186,13 +16009,6 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "مضلع غير صالح. يتطلب الأمر على الأقل نقطتين في نمط البناء \"المتجزئ "
 "Segments\"."
-
-msgid ""
-"The One Way Collision property will be ignored when the collision object is "
-"an Area2D."
-msgstr ""
-"سيتم تجاهل خاصية التصادم أحادي الاتجاه عندما يكون كائن التصادم عبارة عن منطقة "
-"ثنائي الأبعاد."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
@@ -16220,13 +16036,6 @@ msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "على العقدة A وكذلك العقدة B أن يكونا PhysicsBody2Ds مختلفين"
 
 msgid ""
-"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
-"parent node!"
-msgstr ""
-"يعمل عظم-ثنائي-البُعد فيزيائي فقط مع هيكلية-ثنائية-البُعد أو عظم-ثنائي-البُعد "
-"فيزيائي آخر كعقدة رئيسية!"
-
-msgid ""
 "A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! "
 "Please set a Bone2D node in the inspector."
 msgstr ""
@@ -16249,12 +16058,6 @@ msgstr ""
 "عند التشغيل.\n"
 "قم بتغيير الحجم في أشكال تصادم الأطفال بدلاً من ذلك."
 
-msgid ""
-"This node cannot interact with other objects unless a Shape2D is assigned."
-msgstr ""
-"لا يمكن لهذه العقدة أن تتفاعل مع كائنات أخرى ما لم يتم تعيين شكل ثنائي "
-"الأبعاد."
-
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "يجب أن تشير خاصية المسار إلى عُقدة-ثنائية-البُعد (Node2D) صالحة لكي تعمل."
 
@@ -16267,12 +16070,6 @@ msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
 "يعمل عظم-ثنائي-البُعد (Bone2D) فقط مع هيكلية-ثنائية-البُعد (Skeleton2D) أو "
 "Bone2D آخر كعقدة رئيسية."
-
-msgid ""
-"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr ""
-"هذا العظم يفتقر إلى وضع الراحة المناسب. انتقل إلى عقدة هيكلية ثنائية "
-"البُعد(Skeleton2D) وقم بتعيين واحدة."
 
 msgid ""
 "The TileMap node is deprecated as it is superseded by the use of multiple "
@@ -16311,13 +16108,6 @@ msgid ""
 msgstr ""
 "من المحتمل ألا تبدو مجموعة Isometric TileSet كما هو مقصود دون تمكين الترتيب ص "
 "لـ TileMap وجميع طبقاتها."
-
-msgid ""
-"External Skeleton3D node not set! Please set a path to an external Skeleton3D "
-"node."
-msgstr ""
-"لم يتم تعيين عقدة الهيكل العظمي الخارجي ثلاثي الابعاد! يرجى تعيين مسار إلى "
-"عقدة هيكل عظمي ثلاثي الابعاد خارجية."
 
 msgid ""
 "Parent node is not a Skeleton3D node! Please use an external Skeleton3D if "

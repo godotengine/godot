@@ -13,13 +13,14 @@
 # Lemoney <railkill@gmail.com>, 2021, 2022.
 # dens-07 <densleyn01@gmail.com>, 2023.
 # ghakindye vv <ghaffur2013@gmail.com>, 2024.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-27 00:24+0000\n"
-"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -752,6 +753,24 @@ msgstr ""
 "dan simpan animasi menggunakan Actions...->Set Animation Save Paths,\n"
 "atau import seluruh adegan sebagai satu AnimationLibrary di dok Import."
 
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Fail yang anda pilih bukan AnimationLibrary yang sah.\n"
+"\n"
+"Jika animasi yang anda inginkan ada di dalam fail ini, simpan ia ke fail "
+"berasingan terlebih dahulu."
+
+msgid "Some of the selected libraries were already added to the mixer."
+msgstr ""
+"Beberapa perpustakaan yang dipilih telah pun ditambah ke dalam pengadun."
+
+msgid "Some of the selected animations were already added to the library."
+msgstr "Beberapa animasi yang dipilih telah pun ditambah ke dalam perpustakaan."
+
 msgid "Animation Name:"
 msgstr "Nama Animasi:"
 
@@ -770,8 +789,17 @@ msgstr "Buat Unik"
 msgid "Open in Inspector"
 msgstr "Buka dalam Inspektor"
 
+msgid "[built-in]"
+msgstr "[terbina-dalam]"
+
+msgid "[foreign]"
+msgstr "[asing]"
+
 msgid "Resource"
 msgstr "Sumber"
+
+msgid "Error:"
+msgstr "Ralat:"
 
 msgid "Toggle Autoplay"
 msgstr "Togol Automain"
@@ -803,6 +831,9 @@ msgstr "Adun Berubah Seterusnya"
 msgid "Change Blend Time"
 msgstr "Tukar Masa Blend"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "Onion skinning memerlukan animasi RESET."
+
 msgid "Animation position (in seconds)."
 msgstr "Kedudukan animasi (dalam saat)."
 
@@ -814,6 +845,9 @@ msgstr "Alat Animasi"
 
 msgid "Animation"
 msgstr "Animasi"
+
+msgid "New..."
+msgstr "Baru..."
 
 msgid "Duplicate..."
 msgstr "Penduakan..."
@@ -893,6 +927,9 @@ msgstr "Pindahkan Nod"
 msgid "Transition exists!"
 msgstr "Peralihan wujud!"
 
+msgid "Play/Travel to %s"
+msgstr "Main/Pergi ke %s"
+
 msgid "Add Transition"
 msgstr "Tambah Peralihan"
 
@@ -917,6 +954,17 @@ msgstr "Nod Dikeluarkan"
 msgid "Transition Removed"
 msgstr "Peralihan Dikeluarkan"
 
+msgid ""
+"Select and move nodes.\n"
+"RMB: Add node at position clicked.\n"
+"Shift+LMB+Drag: Connects the selected node with another node or creates a new "
+"node if you select an area without nodes."
+msgstr ""
+"Pilih dan alihkan nod.\n"
+"Klik Kanan: Tambah nod pada posisi yang diklik.\n"
+"Shift+Klik Kiri+Seret: Sambungkan nod yang dipilih dengan nod lain atau cipta "
+"nod baharu jika anda memilih kawasan tanpa nod."
+
 msgid "Create new nodes."
 msgstr "Cipta nod baru."
 
@@ -925,6 +973,9 @@ msgstr "Hubungkan nod-nod."
 
 msgid "Remove selected node or transition."
 msgstr "Alih keluar nod atau peralihan yang dipilih."
+
+msgid "New Transitions Should Auto Advance"
+msgstr "Peralihan Baharu Patut Maju Secara Automatik"
 
 msgid "Play Mode:"
 msgstr "Mod Main:"
@@ -967,6 +1018,20 @@ msgstr "Ubah Panjang Animasi"
 
 msgid "Change Animation Loop"
 msgstr "Ubah Gelung Animasi"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Tidak boleh ubah mod gelung pada animasi yang diinstans daripada adegan yang "
+"diimport.\n"
+"\n"
+"Untuk menukar mod gelung animasi ini, pergi ke tetapan Import Lanjutan adegan "
+"dan pilih animasi tersebut.\n"
+"Anda kemudian boleh menukar mod gelung daripada menu pemeriksa."
 
 msgid "Animation length (frames)"
 msgstr "Panjang animasi (bingkai)"
@@ -2787,20 +2852,6 @@ msgstr "Cari Penggantian Untuk:"
 msgid "Dependencies For:"
 msgstr "Kebergantungan Untuk:"
 
-msgid ""
-"Scene '%s' is currently being edited.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Adegan '% s' kini sedang diedit.\n"
-"Perubahan hanya akan berlaku apabila dimuat semula."
-
-msgid ""
-"Resource '%s' is in use.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Sumber '% s' sedang digunakan.\n"
-"Perubahan hanya akan berlaku apabila dimuat semula."
-
 msgid "Dependencies"
 msgstr "Kebergantungan"
 
@@ -3327,8 +3378,17 @@ msgstr "Piksel Sempadan Diarahkan"
 msgid "Emission Mask"
 msgstr "Topeng Emission"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
+
 msgid "Set Handle"
 msgstr "Tetapkan Pemegang"
+
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
 
 msgid "Advanced"
 msgstr "Lanjutan"
@@ -3411,14 +3471,20 @@ msgstr "Konfigurasikan Snap..."
 msgid "Create Emission Points From Node"
 msgstr "Cipta Titik Emission Daripada Nod"
 
-msgid "Create Polygon3D"
-msgstr "Cipta Poligon3D"
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
 
 msgid "Edit Poly"
 msgstr "Edit Poli"
 
 msgid "Edit Poly (Remove Point)"
 msgstr "Edit Poli (Alih Keluar Titik)"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Topeng terjemahan untuk memasukkan kekunci."
@@ -3727,15 +3793,6 @@ msgstr "Tidak dapat menyambungkan isyarat"
 msgid "Connect"
 msgstr "Sambung"
 
-msgid "Connect '%s' to '%s'"
-msgstr "Sambungkan '% s' ke '% s'"
-
-msgid "Disconnect '%s' from '%s'"
-msgstr "Putuskan sambungan '% s' dari '% s'"
-
-msgid "Disconnect all from signal: '%s'"
-msgstr "Putuskan semua sambungan dari isyarat: '% s'"
-
 msgid "Connect..."
 msgstr "Sambung ..."
 
@@ -3744,10 +3801,6 @@ msgstr "Putuskan sambungan"
 
 msgid "Connect a Signal to a Method"
 msgstr "Sambungkan Isyarat ke Kaedah"
-
-msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
-"Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% s\"?"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
@@ -3948,9 +4001,6 @@ msgstr "Gantikan dalam Fail-fail"
 
 msgid "Searching..."
 msgstr "Mencari..."
-
-msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Tidak dapat membuka '% s'. Fail mungkin telah dipindahkan atau dipadam."
 
 msgid "Online Docs"
 msgstr "Dokumen Dalam Talian"

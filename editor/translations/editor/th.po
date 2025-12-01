@@ -24,13 +24,14 @@
 # J Iamsamang <nodtem66@gmail.com>, 2025.
 # Tan <nazapizzaemail.com@gmail.com>, 2025.
 # Hidden Kendo <anawyn.bun@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-29 16:57+0000\n"
-"Last-Translator: Hidden Kendo <anawyn.bun@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -829,9 +830,6 @@ msgstr "ในตอนท้าย"
 
 msgid "Travel"
 msgstr "การเคลื่อนที่"
-
-msgid "No playback resource set at path: %s."
-msgstr "ไม่ได้ตั้งทรัพยากรการเล่นไว้ที่ที่อยู่: % s"
 
 msgid "Node Removed"
 msgstr "ลบโหนดแล้ว"
@@ -3557,11 +3555,17 @@ msgstr "พิกเซลที่ติดกัน"
 msgid "Emission Mask"
 msgstr "มาส์กการปะทุ"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "แปลงเป็น CPUParticles2D"
 
 msgid "Generation Time (sec):"
 msgstr "เวลาในการสร้าง (วินาที):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "ลบจุดในเส้นโค้ง"
@@ -4373,6 +4377,12 @@ msgstr "จุดพื้นผิว"
 msgid "Surface Points+Normal (Directed)"
 msgstr "จุดพื้นผิว+เส้นบอกทิศ"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "จุดเส้นโค้ง #"
 
@@ -4408,6 +4418,9 @@ msgstr "แก้ไขรูปหลายเหลี่ยม (ลบจุ�
 
 msgid "Create physical bones"
 msgstr "สร้างโครงกายภาพ"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "การแปลง mask สำหรับการใส่คีย์"
@@ -5306,10 +5319,6 @@ msgstr "ต้นฉบับ"
 
 msgid "Target"
 msgstr "เป้าหมาย"
-
-msgid ""
-"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "ไม่มีวิธีการเชื่อมต่อ '% s' สำหรับสัญญาณ '% s' จากโหนด '% s' ไปยังโหนด '% s'"
 
 msgid "[Ignore]"
 msgstr "[ละเว้น]"

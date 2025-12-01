@@ -34,13 +34,14 @@
 # Iris Nose <iris.les.maduixes@gmail.com>, 2025.
 # Adrià Rodríguez Pujol <adria_r_p_@hotmail.com>, 2025.
 # Santiago Peralta <speralta.dev@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-10 18:19+0000\n"
-"Last-Translator: Roger Blanco Ribera <roger.blancoribera@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:07+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -48,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Sense Establir"
@@ -2919,12 +2920,6 @@ msgstr "Les escenes instanciades no es poden convertir en arrel"
 msgid "Delete %d nodes?"
 msgstr "Suprimir %d nodes?"
 
-msgid "Delete the root node \"%s\"?"
-msgstr "Voleu suprimir el node arrel \"% s\"?"
-
-msgid "Delete node \"%s\"?"
-msgstr "Suprimir el node \"% s\"?"
-
 msgid "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
 "Guardar la branca com una escena requereix tenir una escena oberta en "
@@ -3201,15 +3196,6 @@ msgstr "No s'ha pogut trobar el camp d'script per al complement a: '%s'."
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Error carregant l'Script complement des del camí: '%s'."
-
-msgid ""
-"Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script.\n"
-"Disabling the addon at '%s' to prevent further errors."
-msgstr ""
-"No es pot carregar l'script de complement (addon) del camí: '%s'. Això pot "
-"ser degut a un error de codi en aquest script.\n"
-"Es desactivarà el complement (addon) a '% s' per a evitar més errors."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -4445,6 +4431,9 @@ msgstr "Píxels de la Vora Dirigits"
 msgid "Emission Mask"
 msgstr "Màscara d'Emissió"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Generation Time (sec):"
 msgstr "Temps de generació (s):"
 
@@ -4623,12 +4612,6 @@ msgstr "Aquest esquelet no té ossos, crea alguns nodes Bone2D fills."
 msgid "Set Rest Pose to Bones"
 msgstr "Estableix la Postura de Repòs als Ossos"
 
-msgid "Skeleton2D"
-msgstr "Esquelet2D"
-
-msgid "Create Polygon2D"
-msgstr "Crear Polígon2D"
-
 msgid "Polygon2D Preview"
 msgstr "Previsualització del Polygon2D"
 
@@ -4637,9 +4620,6 @@ msgstr "La geometria no és vàlida, no es pot substituir per una malla."
 
 msgid "Invalid geometry, can't create polygon."
 msgstr "La geometria no és valida, no es pot crear el polígon."
-
-msgid "Convert to Polygon2D"
-msgstr "Convertir a Polígon2D"
 
 msgid "Invalid geometry, can't create collision polygon."
 msgstr "La geometria no és valida, no es pot crear el polígon de col·lisió."
@@ -5160,6 +5140,12 @@ msgstr "Punts de la Superfície"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Punts + Normal (Dirigida)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Punt num. # de la Corba"
 
@@ -5184,9 +5170,6 @@ msgstr "Parteix el Segment (de la Corba)"
 msgid "Move Joint"
 msgstr "Moure Unió"
 
-msgid "Create Polygon3D"
-msgstr "Crear Polígon3D"
-
 msgid "Edit Poly"
 msgstr "Edita Polígon"
 
@@ -5195,6 +5178,9 @@ msgstr "Edita el Polígon (Elimina un Punt)"
 
 msgid "Create physical bones"
 msgstr "Crear ossos físics"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Mascara de translació per a inserir claus."

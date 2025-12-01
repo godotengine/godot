@@ -196,13 +196,18 @@
 # Omgeta <anooptiger@hotmail.com>, 2025.
 # Dario Le Hy <dario.lehy@gmail.com>, 2025.
 # Cacathoes <etnatrabuc@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Mvsqu3 <paulkevinb.22@gmail.com>, 2025.
+# czepyga <maxime.czepyga@gmail.com>, 2025.
+# itsaboon <jackdgrabina@gmail.com>, 2025.
+# Bamowen <mathieu.monsauret@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-21 23:03+0000\n"
-"Last-Translator: Cacathoes <etnatrabuc@gmail.com>\n"
+"PO-Revision-Date: 2025-11-05 12:51+0000\n"
+"Last-Translator: Bamowen <mathieu.monsauret@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -210,7 +215,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -859,6 +864,9 @@ msgstr "Pas en Y de la grille"
 msgid "Blend X Value"
 msgstr "Valeur en X de mélange"
 
+msgid "Blend Y Value"
+msgstr "Valeur en Y de mélange"
+
 msgid "Max Y"
 msgstr "Max Y"
 
@@ -873,6 +881,9 @@ msgstr "Min X"
 
 msgid "X Value"
 msgstr "Valeur en X"
+
+msgid "Max X"
+msgstr "Max X"
 
 msgid "Parameter Changed: %s"
 msgstr "Paramètre modifié : %s"
@@ -8654,7 +8665,7 @@ msgid "Project Installation Path:"
 msgstr "Chemin d'installation du projet :"
 
 msgid "Renderer:"
-msgstr "Moteur de rendu :"
+msgstr "Moteur de rendu :"
 
 msgid ""
 "RenderingDevice-based methods not available on this GPU:\n"
@@ -9988,7 +9999,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Créer la position de repos d'après les os"
 
 msgid "Skeleton2D"
-msgstr "Squelette 2D"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Remettre à la position de repos"
@@ -12168,6 +12179,9 @@ msgstr "Définir la couleur du soleil de prévisualisation"
 msgid "Set Preview Sun Energy"
 msgstr "Définir l'énergie du soleil de prévisualisation"
 
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "Définir la distance maximale des ombres du soleil de pré-visualisation"
+
 msgid "Set Preview Environment Sky Color"
 msgstr "Définir la couleur du ciel de l'environnement de prévisualisation"
 
@@ -12536,7 +12550,7 @@ msgid "Generate Visibility AABB"
 msgstr "Générer AABB de Visibilité"
 
 msgid "\"%s\" doesn't inherit from Node3D."
-msgstr "\"%s\" n'hérite pas de Node2D."
+msgstr "\"%s\" n'hérite pas de Node3D."
 
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" ne contient pas de géométrie."
@@ -12719,7 +12733,7 @@ msgid "Revert"
 msgstr "Réinitialiser"
 
 msgid "Skeleton3D"
-msgstr "Squelette 3D"
+msgstr "Skeleton3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Réinitialiser toutes les poses de l'os"
@@ -17814,7 +17828,7 @@ msgid "Generate POT"
 msgstr "Générer POT"
 
 msgid "Add Built-in Strings to POT"
-msgstr "Ajouter des chaînes intégrées au POT"
+msgstr "Ajouter des chaînes intégrées au TOP"
 
 msgid "Add strings from built-in components such as certain Control nodes."
 msgstr ""
@@ -18768,7 +18782,7 @@ msgstr ""
 "correspondants."
 
 msgid "Clear NavigationMesh"
-msgstr "Suppression du maillage de navigation"
+msgstr "Vider le NavigationMesh"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Réinitialise le NavigationMesh interne."
@@ -18831,7 +18845,7 @@ msgid "Error saving file %s: %s"
 msgstr "Erreur lors de l'enregistrement du fichier %s : %s"
 
 msgid "OpenXR Action map:"
-msgstr "Tableau des actions OpenXR :"
+msgstr "Tableau des actions OpenXR :"
 
 msgid "Remove interaction profile"
 msgstr "Suppression du profil d'interaction"
@@ -19045,6 +19059,13 @@ msgstr ""
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr ""
 "\"Utiliser la compilation Gradle\" doit être activé pour utiliser les plugins."
+
+msgid ""
+"\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
+"enabled."
+msgstr ""
+"\"Compresser les bibliothèques natives\" est valide uniquement lorsque "
+"« Utiliser la compilation Gradle » est activé."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
 msgstr ""
@@ -19635,7 +19656,7 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Le processus de certification prend généralement moins d'une heure."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
+"You can check the progress manually by opening a Terminal and running the "
 "following command:"
 msgstr ""
 "Vous pouvez contrôler la progression manuellement en ouvrant un Terminal et "
@@ -20243,9 +20264,9 @@ msgid ""
 "SceneTree.\n"
 "Check the node's inherited physics_interpolation_mode."
 msgstr ""
-"PhysiqueBody2D ne fonctionnera pas correctement sur une branche non "
-"interpolée du SceneTree.\n"
-"Vérifiez le mode physics_interpolation_mode hérité du nœud."
+"PhysicsBody2D ne fonctionnera pas correctement sur une branche non interpolée "
+"du SceneTree.\n"
+"Vérifiez le mode de physics_interpolation_mode hérité du nœud."
 
 msgid ""
 "Size changes to RigidBody2D will be overridden by the physics engine when "
@@ -20554,8 +20575,8 @@ msgstr ""
 msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
-"Le NavigationAgent3D peut être utilisé uniquement sous un nœud 3D hérité d'un "
-"nœud parent."
+"Le NavigationAgent3D peut être utilisé uniquement sous un nœud parent "
+"héritant de Node3D."
 
 msgid ""
 "NavigationLink3D start position should be different than the end position to "
@@ -20817,8 +20838,8 @@ msgid ""
 "The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
 "node to work."
 msgstr ""
-"La propriété \"Remote Path\" doit pointer vers un nœud 3D valide ou un nœud "
-"3D dérivé d'un nœud pour fonctionner."
+"La propriété \"Remote Path\" doit pointer vers un Node3D valide ou un nœud "
+"dérivé de Node3D pour fonctionner."
 
 msgid "There is no child Skeleton3D!"
 msgstr "Il n'y a pas d'enfant Skeleton3D !"
@@ -21683,6 +21704,18 @@ msgstr "Type de shader non valide. Les types valides sont : %s"
 msgid "Unexpected token: '%s'."
 msgstr "Jeton inattendu : «  %s  »."
 
+msgid "Duplicated stencil mode reference value: '%s'."
+msgstr "Valeur de référence du mode de pochoir dupliqué : '%s'."
+
+msgid "Stencil mode reference value cannot be negative: '%s'."
+msgstr ""
+"La valeur de référence du mode Pochoir ne peut pas être négative : '%s'."
+
+msgid "Stencil mode reference value cannot be greater than 255: '%s'."
+msgstr ""
+"La valeur de référence du mode Pochoir ne peut pas être supérieure à 255 : "
+"'%s'."
+
 msgid "Expected a struct identifier."
 msgstr "Un identifiant struct est attendu."
 
@@ -21935,8 +21968,14 @@ msgstr ""
 msgid "uniform buffer"
 msgstr "tampon uniforme"
 
+msgid "Expected an identifier for stencil mode."
+msgstr "Un identifiant pour le mode pochoir était attendu."
+
 msgid "Expected an identifier for render mode."
 msgstr "Un identifiant est attendu pour le mode de rendu."
+
+msgid "Duplicated stencil mode: '%s'."
+msgstr "Mode de pochoir dupliqué : '%s'."
 
 msgid "Duplicated render mode: '%s'."
 msgstr "Mode de rendu dupliqué : '%s'."
@@ -21946,6 +21985,9 @@ msgid ""
 msgstr ""
 "Redéfinition du mode de rendu : « %s ». Le mode « %s » a déjà été défini sur "
 "« %s »."
+
+msgid "Invalid stencil mode: '%s'."
+msgstr "Mode pochoir invalide : '%s'."
 
 msgid "Invalid render mode: '%s'."
 msgstr "Mode de rendu non valide : « %s »."

@@ -4,11 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 # Rónán Quill <ronan085@gmail.com>, 2019, 2020.
 # Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-09-14 10:01+0000\n"
+"PO-Revision-Date: 2025-10-14 07:27+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -9434,7 +9435,7 @@ msgid "Snap Camera2D Limits to the Viewport"
 msgstr "Teorainneacha Snap Camera2D chuig an Radharcphoirt"
 
 msgid "Camera2D"
-msgstr "Ceamara2D"
+msgstr "Camera2D"
 
 msgid "Snap the Limits to the Viewport"
 msgstr "Snap na Teorainneacha leis an Radharcphoirt"
@@ -9742,7 +9743,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Cruthaigh Rest Pose ó Chnámha"
 
 msgid "Skeleton2D"
-msgstr "Cnámharlach2D"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Athshocraigh go Pose Scíthe"
@@ -9751,19 +9752,19 @@ msgid "Overwrite Rest Pose"
 msgstr "Forscríobh Rest Pose"
 
 msgid "Create MeshInstance2D"
-msgstr "Cruthaigh MogalraInstance2D"
+msgstr "Cruthaigh MeshInstance2D"
 
 msgid "MeshInstance2D Preview"
 msgstr "Réamhamharc MeshInstance2D"
 
 msgid "Create Polygon2D"
-msgstr "Cruthaigh Polagán2D"
+msgstr "Cruthaigh Polygon2D"
 
 msgid "Polygon2D Preview"
-msgstr "Réamhamharc Polagán2D"
+msgstr "Réamhamharc Polygon2D"
 
 msgid "Create CollisionPolygon2D"
-msgstr "Cruthaigh ImbhualadhPolygon2D"
+msgstr "Cruthaigh CollisionPolygon2D"
 
 msgid "CollisionPolygon2D Preview"
 msgstr "Réamhamharc ImbhuailtíPolygon2D"
@@ -9790,7 +9791,7 @@ msgid "Invalid geometry, can't create polygon."
 msgstr "Geoiméadracht neamhbhailí, ní féidir polagán a chruthú."
 
 msgid "Convert to Polygon2D"
-msgstr "Tiontaigh go Polagán2D"
+msgstr "Tiontaigh go Polygon2D"
 
 msgid "Invalid geometry, can't create collision polygon."
 msgstr "Geoiméadracht neamhbhailí, ní féidir polagán imbhuailte a chruthú."
@@ -11154,7 +11155,7 @@ msgid "UV Channel Debug"
 msgstr "Dífhabhtú Cainéal UV"
 
 msgid "Create NavigationMesh"
-msgstr "Cruthaigh Mogalra Loingseoireachta"
+msgstr "Cruthaigh NavigationMesh"
 
 msgid ""
 "Before converting a rendering mesh to a navigation mesh, please verify:\n"
@@ -12389,7 +12390,7 @@ msgid "Move Joint"
 msgstr "Bog Comhpháirteach"
 
 msgid "Create Polygon3D"
-msgstr "Cruthaigh Polagán3D"
+msgstr "Cruthaigh Polygon3D"
 
 msgid "Edit Poly"
 msgstr "Cuir Polai in Eagar"
@@ -12456,7 +12457,7 @@ msgid "Revert"
 msgstr "Fill ar ais"
 
 msgid "Skeleton3D"
-msgstr "Cnámharlach3D"
+msgstr "Skeleton3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Athshocraigh Gach Cnámh"
@@ -12609,7 +12610,7 @@ msgid "Move CanvasItem \"%s\" Anchor"
 msgstr "Bog CanbhásItem \"%s\" Ancaire"
 
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Scálaigh nód2D \"%s\" go (%s, %s)"
+msgstr "Scálaigh Node2D \"%s\" go (%s, %s)"
 
 msgid "Resize Control \"%s\" to (%d, %d)"
 msgstr "Athraigh méid an Rialtáin \"%s\" go (%d,%d)"
@@ -12682,7 +12683,7 @@ msgid "Clear Guides"
 msgstr "Treoracha Soiléire"
 
 msgid "Create Custom Bone2D(s) from Node(s)"
-msgstr "Cruthaigh Cnámh2D (í) Saincheaptha ó Nód (í)"
+msgstr "Cruthaigh Bone2D(anna) Saincheaptha ó Nód(anna)"
 
 msgid "Zoom to 3.125%"
 msgstr "Súmáil go 3.125%"
@@ -14523,7 +14524,7 @@ msgid "Toggle color channel preview selection."
 msgstr "Roghnú réamhamhairc cainéal datha a scoránaigh."
 
 msgid "Move GradientTexture2D Fill Point"
-msgstr "Bog GrádánTexture2D Pointe Líonta"
+msgstr "Bog GradientTexture2D Pointe Líonta"
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Babhtáil GrádánTexture2D Pointí Líonta"
@@ -18392,7 +18393,7 @@ msgid "Create Navigation Polygon"
 msgstr "Cruthaigh Polagán Nascleanúna"
 
 msgid "Bake NavigationPolygon"
-msgstr "Bácáil NascleanúintPolygon"
+msgstr "Bácáil NavigationPolygon"
 
 msgid ""
 "Bakes the NavigationPolygon by first parsing the scene for source geometry "
@@ -18403,11 +18404,12 @@ msgstr ""
 "a chruthú."
 
 msgid "Clear NavigationPolygon"
-msgstr "Nascleanúint ShoiléirPolygon"
+msgstr "Glan NavigationPolygon"
 
 msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
 msgstr ""
-"Clears an nascleanúint inmheánachPolygon imlíne, vertices agus polagáin."
+"Glanann sé imlínte, buaicpholaigíní agus polagáin inmheánacha an "
+"LoingseoireachtaPholagáin."
 
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work."
@@ -18496,7 +18498,7 @@ msgid "Bake"
 msgstr "Bácáil"
 
 msgid "Bake NavigationMesh"
-msgstr "Bácáil NascleanúintMesh"
+msgstr "Bácáil NavigationMesh"
 
 msgid ""
 "Bakes the NavigationMesh by first parsing the scene for source geometry and "
@@ -18507,13 +18509,14 @@ msgstr ""
 "a chruthú."
 
 msgid "Clear NavigationMesh"
-msgstr "Glan NascleanúintMesh"
+msgstr "Glan NavigationMesh"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
-msgstr "Clears an vertices nascleanúint inmheánachMesh agus polagáin."
+msgstr ""
+"Glanann sé na buaicphointí agus na polagáin inmheánacha den NavigationMesh."
 
 msgid "Baking NavigationMesh ..."
-msgstr "Nascleanúint BácálaMogalra ..."
+msgstr "Ag bácáil NavigationMesh ..."
 
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "Scoránaigh cibé an ríomhtar an réamhamharc torainn i spás 3D."
@@ -19349,13 +19352,6 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "De ghnáth tógann an próiseas notarization níos lú ná uair an chloig."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Is féidir leat dul chun cinn a sheiceáil de láimh trí Theirminéal a oscailt "
-"agus an t-ordú seo a leanas a rith:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19917,7 +19913,7 @@ msgid "Node B must be a PhysicsBody2D"
 msgstr "Caithfidh Nód B a bheith ina FhisicBody2D"
 
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "Níl Joint ceangailte le dhá FhisicBody2Ds"
+msgstr "Níl Joint ceangailte le dhá PhysicsBody2Ds"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Caithfidh Nód A agus Nód B a bheith difriúil PhysicsBody2Ds"
@@ -20462,13 +20458,13 @@ msgid "Node A must be a PhysicsBody3D"
 msgstr "Ní mór nód A a bheith ina PhysicsBody3D"
 
 msgid "Node B must be a PhysicsBody3D"
-msgstr "Caithfidh Nód B a bheith ina FhisicBody3D"
+msgstr "Ní mór nód B a bheith ina PhysicsBody3D"
 
 msgid "Joint is not connected to any PhysicsBody3Ds"
 msgstr "Níl Joint ceangailte le haon PhysicsBody3Ds"
 
 msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "Ní mór nód A agus Nód B a bheith fisice éagsúlaBody3Ds"
+msgstr "Caithfidh nód A agus nód B a bheith difriúil ó chéile i PhysicsBody3Ds"
 
 msgid ""
 "PhysicsBody3D will not work correctly on a non-interpolated branch of the "
@@ -20521,8 +20517,8 @@ msgstr "Níl aon Skeleton3D leanbh ann!"
 
 msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
 msgstr ""
-"Nód creatlach3D gan a bheith socraithe! Ní mór do Chnámharlach Modifier3D a "
-"bheith ina leanbh de Chnámharlach3D."
+"Níl nód Skeleton3D socraithe! Ní mór gur leanbh de Skeleton3D é "
+"SkeletonModifier3D."
 
 msgid "Parent node should be a SpringBoneSimulator3D node."
 msgstr "Ba chóir go mbeadh an nód tuismitheora ina nód SpringBoneSimulator3D."

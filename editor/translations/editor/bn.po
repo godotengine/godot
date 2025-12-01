@@ -18,13 +18,14 @@
 # Rakib Ryan <rakib.remon12@gmail.com>, 2024.
 # shahriarlabib000 <shahriarlabib000@gmail.com>, 2024, 2025.
 # "deboneil." <bhattacharjeedeboneil@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-04-13 13:30+0000\n"
-"Last-Translator: \"deboneil.\" <bhattacharjeedeboneil@gmail.com>\n"
+"PO-Revision-Date: 2025-10-14 07:27+0000\n"
+"Last-Translator: shahriarlabib000 <shahriarlabib000@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -32,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "সেট বাতিল"
@@ -1076,18 +1077,6 @@ msgstr "ট্র্যাকগুলি পুনর্বিন্যস্�
 
 msgid "Add Track"
 msgstr "ট্র্যাক যোগ করুন"
-
-msgid ""
-"Audio tracks can only point to nodes of type:\n"
-"-AudioStreamPlayer\n"
-"-AudioStreamPlayer2D\n"
-"-AudioStreamPlayer3D"
-msgstr ""
-"রূপান্তর ট্র্যাকগুলি কেবল স্থানিক ভিত্তিক নোডগুলিতে প্রযোজ্য। অডিও ট্র্যাকগুলি কেবল "
-"প্রকারের নোডগুলিতে নির্দেশ করতে পারে:\n"
-"-অডিও স্ট্রিমপ্লেয়ার\n"
-"-অডিও স্ট্রিমপ্লেয়ার 2 ডি\n"
-"-অডিওস্ট্রিপপ্লেয়ার 3 ডি"
 
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr "অ্যানিমেশন ট্র্যাকগুলি কেবল অ্যানিমেশনপ্লেয়ার নোডগুলিতে নির্দেশ করতে পারে।"
@@ -3464,11 +3453,17 @@ msgstr "সলিড পিক্সেল"
 msgid "Directed Border Pixels"
 msgstr "নির্দেশিত বর্ডার পিক্সেল"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "CPUParticles2D এ রূপান্তর করুন"
 
 msgid "Generation Time (sec):"
 msgstr "তৈরিতে সময় (সেকেন্ড):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Convert to GPUParticles2D"
 msgstr "GPUParticles2D তে রূপান্তর করুন"
@@ -3549,7 +3544,7 @@ msgid "Configure Grid:"
 msgstr "গ্রিড কনফিগার:"
 
 msgid "Skeleton2D"
-msgstr "স্কেলেটন2D"
+msgstr "Skeleton2D"
 
 msgid "Create MeshInstance2D"
 msgstr "MeshInstance2D তৈরি করুন"
@@ -3666,13 +3661,22 @@ msgid "Preview"
 msgstr "প্রিভিউ"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "অডিওস্ট্রিম প্লেয়ার 3 ডি ইমিশন এঙ্গেল পরিবর্তন করুন"
+msgstr "AudioStreamPlayer3D ইমিশন অ্যাংগেল পরিবর্তন করুন"
 
 msgid "Change Camera FOV"
-msgstr "Camera এর ভিউ (FOV) পরিবর্তন করুন"
+msgstr "Camera FOV পরিবর্তন করুন"
 
 msgid "Change Camera Size"
 msgstr "Camera এর আকার পরিবর্তন করুন"
+
+msgid "Change Decal Size"
+msgstr "Decal আকার পরিবর্তন করুন"
+
+msgid "Change FogVolume Size"
+msgstr "FogVolume আকার পরিবর্তন করুন"
+
+msgid "Change Radius"
+msgstr "ব্যাসার্ধ পরিবর্তন করুন"
 
 msgid "Change Light Radius"
 msgstr "Light এর ব্যাসার্ধ পরিবর্তন করুন"
@@ -3680,11 +3684,20 @@ msgstr "Light এর ব্যাসার্ধ পরিবর্তন কর
 msgid "Change Sphere Shape Radius"
 msgstr "Sphere Shape এর ব্যাসার্ধ পরিবর্তন করুন"
 
+msgid "Change Box Shape Size"
+msgstr "Box Shape এর আকার পরিবর্তন করুন"
+
 msgid "Change Capsule Shape Radius"
 msgstr "Capsule Shape এর ব্যাসার্ধ পরিবর্তন করুন"
 
 msgid "Change Capsule Shape Height"
 msgstr "Capsule Shape এর উচ্চতা পরিবর্তন করুন"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "Seperation Ray Shape এর দৈর্ঘ্য পরিবর্তন করুন"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "SoftBody3D এর পিনকৃত বিন্দু %d মুছে ফেলুন"
 
 msgid "No editor scene root found."
 msgstr "কোনো সম্পাদক দৃশ্য রুট পাওয়া যায়নি।"
@@ -4152,6 +4165,9 @@ msgstr "সারফেস পয়েন্ট"
 msgid "Surface Points+Normal (Directed)"
 msgstr "সারফেস পয়েন্ট + নরমাল (নির্দেশিত)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
 msgid "Convert to CPUParticles3D"
 msgstr "CPUParticles3D এ রূপান্তর করুন"
 
@@ -4184,9 +4200,6 @@ msgstr "AnimationMixer পাথ অবৈধ"
 
 msgid "Export Skeleton Profile As..."
 msgstr "এই হিসাবে কঙ্কাল প্রোফাইল রপ্তানি করুন..।"
-
-msgid "Skeleton3D"
-msgstr "স্কেলেটন3D"
 
 msgid "Insert key (based on mask) for bones with an existing track."
 msgstr "বিদ্যমান ট্র্যাকের সাথে হাড়ের জন্য কী (মাস্কের উপর ভিত্তি করে) সন্নিবেশ করান।"
@@ -5836,17 +5849,6 @@ msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "সংঘর্ষে ফাঁকা/শুন্য CollisionPolygon2D-এর কোনো প্রভাব নেই।"
 
 msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node.\n"
-"Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, "
-"CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
-"করে।\n"
-" Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
-"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
-
-msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
@@ -5864,35 +5866,6 @@ msgstr "প্রোব তৈরি করা হচ্ছে"
 
 msgid "Preparing Lightmapper"
 msgstr "লাইটম্যাপার প্রস্তুত হচ্ছে"
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
-"করে। \n"
-"Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
-"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D শুধুমাত্র CollisionObject2D হতে সৃষ্ট নোডের সংঘর্ষের আকৃতি প্রদান "
-"করে।\n"
-" Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, ইত্যাদিকে আকার দিতে অনুগ্রহ "
-"করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"সফলভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য একটি "
-"আকৃতি তৈরি করুন।"
 
 msgid "No pose is set."
 msgstr "কোনো পোজ সেট করা নেই।"

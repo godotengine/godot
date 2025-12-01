@@ -39,13 +39,16 @@
 # Santiago Vazquez <santivaz232@yahoo.com.ar>, 2025.
 # Nahuel <nahueljavierleiva@gmail.com>, 2025.
 # a <ramsesvillacol@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Rosas Francisco <rosasfran.97@gmail.com>, 2025.
+# agus <panmmnda@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-26 18:02+0000\n"
-"Last-Translator: a <ramsesvillacol@gmail.com>\n"
+"PO-Revision-Date: 2025-11-29 09:20+0000\n"
+"Last-Translator: agus <panmmnda@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -53,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Sin establecer"
@@ -232,6 +235,9 @@ msgstr "Entrada de MIDI en el canal=%s Mensaje=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Evento de entrada con atajo=%s"
 
+msgid " or "
+msgstr " .o. "
+
 msgid "Action has no bound inputs"
 msgstr "La acción no tiene entradas asignadas"
 
@@ -402,6 +408,9 @@ msgstr "Duplicar Nodos"
 
 msgid "Delete Nodes"
 msgstr "Eliminar Nodos"
+
+msgid "Follow Output Port Connection"
+msgstr "Seguir salida de la conexión del puerto"
 
 msgid "Go Up One Level"
 msgstr "Subir un nivel"
@@ -699,6 +708,9 @@ msgstr "Clips de Audio"
 msgid "Functions"
 msgstr "Funciones"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Inspeccionar Pistas Filtradas:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Editar Pistas Filtradas:"
 
@@ -711,11 +723,27 @@ msgstr "Agregar Nodo..."
 msgid "Enable Filtering"
 msgstr "Habilitar Filtrado"
 
+msgid "Invert"
+msgstr "Invertir"
+
 msgid "Clear"
 msgstr "Limpiar"
 
+msgid "Animation name can't be empty."
+msgstr "El nombre de animación no puede estar vacío."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"El nombre de animación contiene caracteres inválidos: '/', ':', ',' o '['."
+
+msgid "Enter a library name."
+msgstr "Ingrese un nombre de biblioteca."
+
 msgid "Load Animation"
 msgstr "Cargar Animación"
+
+msgid "Make Animation Unique: %s"
+msgstr "Hacer animación única: '%s'"
 
 msgid "Animation Name:"
 msgstr "Nombre de Animación:"
@@ -5345,11 +5373,17 @@ msgstr "Píxeles del Borde Directos"
 msgid "Emission Mask"
 msgstr "Máscara de Emisión"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Convertir a CPUParticles2D"
 
 msgid "Generation Time (sec):"
 msgstr "Tiempo de Generación (seg):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "Remover Punto de Curva"
@@ -6295,6 +6329,12 @@ msgstr "Puntos de Superficie"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Puntos de Superficia+Normal (Dirigida)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Punto # de Curva"
 
@@ -6330,6 +6370,9 @@ msgstr "Editar Polígono (Remover Punto)"
 
 msgid "Create physical bones"
 msgstr "Crear huesos físicos"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Máscara de traslación para insertar claves."
@@ -9122,13 +9165,6 @@ msgid "Invalid bundle identifier:"
 msgstr "Identificador de paquete no válido:"
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Podés verificar el progreso manualmente abriendo una Terminal y ejecutando el "
-"siguiente comando:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -9336,12 +9372,6 @@ msgstr ""
 "polígono."
 
 msgid ""
-"The NavigationAgent2D can be used only under a Node2D inheriting parent node."
-msgstr ""
-"El nodo NavigationAgent2D solo puede ser usado bajo un nodo padre que herede "
-"de la clase Nodo2D."
-
-msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 "El nodo ParallaxLayer sólo funciona cuando está seteado como hijo de un nodo "
@@ -9405,12 +9435,6 @@ msgstr "Esta cadena Bone2D debería terminar en un nodo Skeleton2D."
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
 "Un Bone2D solo funciona con un Skeleton2D u otro Bone2D como nodo padre."
-
-msgid ""
-"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr ""
-"Este hueso no tiene una pose de DESCANSO adecuada. Andá al nodo Skeleton2D y "
-"asígnale una."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nada visible ya que no se asignó ningún mesh."

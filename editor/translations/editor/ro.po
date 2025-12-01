@@ -36,13 +36,14 @@
 # GREEN MONSTER <racovitavvalentin@gmail.com>, 2025.
 # Alin Gheorghe <yovngra@gmail.com>, 2025.
 # SimonMaracine <simonmaracine@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-06 12:28+0000\n"
-"Last-Translator: SimonMaracine <simonmaracine@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Nesetat"
@@ -2812,8 +2813,14 @@ msgstr "Pixeli borduri direcționați"
 msgid "Emission Mask"
 msgstr "Mască de Emisie"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Generation Time (sec):"
 msgstr "Timp de Generare (sec):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "Ștergere Punt din Curbă"
@@ -2886,6 +2893,9 @@ msgstr "Arată Grila"
 
 msgid "Configure Grid:"
 msgstr "Configurare grilă:"
+
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
 
 msgid "Settings:"
 msgstr "Setări:"
@@ -3154,6 +3164,12 @@ msgstr "Puncte de suprafață"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Puncte de suprafață+Normală (Dirijat)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Punct de curbă #"
 
@@ -3175,14 +3191,14 @@ msgstr "Ștergere punct cale"
 msgid "Split Segment (in curve)"
 msgstr "Divizare segment (pe curbă)"
 
-msgid "Create Polygon3D"
-msgstr "Crează Poligon3D"
-
 msgid "Edit Poly"
 msgstr "Editează Poligon"
 
 msgid "Edit Poly (Remove Point)"
 msgstr "Editează Poligon (Elimină Punct)"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Insert Key (Existing Tracks)"
 msgstr "Inserează Cheie (Track-uri existente)"

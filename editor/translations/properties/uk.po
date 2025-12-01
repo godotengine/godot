@@ -44,7 +44,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-27 08:07+0000\n"
+"PO-Revision-Date: 2025-10-05 09:02+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -474,7 +474,7 @@ msgid "World"
 msgstr "Світ"
 
 msgid "Map Use Async Iterations"
-msgstr "Карта Використовуйте асинхронні ітерації"
+msgstr "Карта Використання асинхронні ітерації"
 
 msgid "Region Use Async Iterations"
 msgstr "Використати регіону асинхронних ітерацій"
@@ -489,7 +489,7 @@ msgid "Avoidance Use Multiple Threads"
 msgstr "Уникнення використання кількох потоків"
 
 msgid "Avoidance Use High Priority Threads"
-msgstr "Уникнення. Використовуйте потоки з високим пріоритетом"
+msgstr "Уникнення використання потоків з високим пріоритетом"
 
 msgid "Pathfinding"
 msgstr "Пошук шляху"
@@ -501,13 +501,13 @@ msgid "Baking"
 msgstr "Випічка"
 
 msgid "Use Crash Prevention Checks"
-msgstr "Використовуйте перевірки запобігання збоям"
+msgstr "Використовувати перевірки запобігання аварій"
 
 msgid "Baking Use Multiple Threads"
-msgstr "Випічка Використовуйте кілька ниток"
+msgstr "Випічка з використанням кількох ниток"
 
 msgid "Baking Use High Priority Threads"
-msgstr "Випічка. Використовуйте потоки з високим пріоритетом"
+msgstr "Випічка Використання потоків високого пріоритету"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
@@ -1158,7 +1158,7 @@ msgid "Keep Global Rest on Leftovers"
 msgstr "Зберігайте Global Rest на залишках"
 
 msgid "Use Global Pose"
-msgstr "Використовуйте глобальну позу"
+msgstr "Використовувати Глобальну Позу"
 
 msgid "Original Skeleton Name"
 msgstr "Оригінальна назва скелета"
@@ -1419,10 +1419,10 @@ msgid "Import as Skeleton Bones"
 msgstr "Імпортувати як кістки скелета"
 
 msgid "Use Name Suffixes"
-msgstr "Використовуйте суфікси імен"
+msgstr "Використовувати суфікси імен"
 
 msgid "Use Node Type Suffixes"
-msgstr "Використовуйте суфікси типів вузлів"
+msgstr "Використовувати суфікси типів вузлів"
 
 msgid "Meshes"
 msgstr "Меші"
@@ -1762,7 +1762,7 @@ msgid "Selectable"
 msgstr "Можливість вибору"
 
 msgid "Use Folding"
-msgstr "Використовуйте складування"
+msgstr "Використовувати складування"
 
 msgid "Name Split Ratio"
 msgstr "Коефіцієнт розподілу імені"
@@ -1837,7 +1837,7 @@ msgid "Texture Region Size"
 msgstr "Розмір області текстури"
 
 msgid "Use Texture Padding"
-msgstr "Використовуйте Texture Padding"
+msgstr "Використовувати текстурного відступу"
 
 msgid "Atlas Coords"
 msgstr "Атласні координати"
@@ -1918,7 +1918,7 @@ msgid "Use Embedded Menu"
 msgstr "Використання вбудованого меню"
 
 msgid "Use Native File Dialogs"
-msgstr "Використовуйте рідні діалоги файлів"
+msgstr "Використовувати рідні діалоги файлів"
 
 msgid "Expand to Title"
 msgstr "Розгорнути до заголовка"
@@ -2095,7 +2095,7 @@ msgid "Accent Color"
 msgstr "Колір акценту"
 
 msgid "Use System Accent Color"
-msgstr "Використовуйте колір системного акценту"
+msgstr "Використовувати колір системного акценту"
 
 msgid "Contrast"
 msgstr "Контрастність"
@@ -2434,10 +2434,10 @@ msgid "Open Script When Connecting Signal to Existing Method"
 msgstr "Відкрити скрипт під час підключення сигналу до існуючого методу"
 
 msgid "Use Default Word Separators"
-msgstr "Використовуйте роздільники слів за умовчанням"
+msgstr "Використовувати роздільники слів за умовчанням"
 
 msgid "Use Custom Word Separators"
-msgstr "Використовуйте спеціальні роздільники слів"
+msgstr "Використовувати спеціальні роздільники слів"
 
 msgid "Custom Word Separators"
 msgstr "Спеціальні роздільники слів"
@@ -3940,7 +3940,7 @@ msgid "GLB Data"
 msgstr "Дані GLB"
 
 msgid "Use Named Skin Binds"
-msgstr "Використовуйте іменовані обшивки"
+msgstr "Використовувати іменовані обшивки"
 
 msgid "Buffers"
 msgstr "Буфери"
@@ -4207,7 +4207,7 @@ msgid "Position Steps"
 msgstr "Позиційні кроки"
 
 msgid "Use Enhanced Internal Edge Removal"
-msgstr "Використовуйте покращене видалення внутрішніх країв"
+msgstr "Використовувати покращене видалення внутрішніх країв"
 
 msgid "Generate All Kinematic Contacts"
 msgstr "Створити всі кінематичні контакти"
@@ -4573,7 +4573,7 @@ msgid "Layer Viewport"
 msgstr "Вікно перегляду шару"
 
 msgid "Use Android Surface"
-msgstr "Використовуйте Android Surface"
+msgstr "Використовувати Android Surface"
 
 msgid "Android Surface Size"
 msgstr "Розмір поверхні Android"
@@ -4774,7 +4774,7 @@ msgid "One Click Deploy Clear Previous Install"
 msgstr "Розгортання в один клік, очищення попередньої інсталяції"
 
 msgid "Use Wi-Fi for Remote Debug"
-msgstr "Використовуйте Wi-Fi для віддаленого налагодження"
+msgstr "Використовувати Wi-Fi для віддаленого налагодження"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Хост віддаленого налагодження Wi-Fi"
@@ -4798,7 +4798,7 @@ msgid "Gradle Build"
 msgstr "Збірка Gradle"
 
 msgid "Use Gradle Build"
-msgstr "Використовуйте Gradle Build"
+msgstr "Використовувати Gradle Build"
 
 msgid "Gradle Build Directory"
 msgstr "Каталог збірок Gradle"
@@ -5245,7 +5245,7 @@ msgid "HTTP Port"
 msgstr "Порт HTTP"
 
 msgid "Use TLS"
-msgstr "Використовуйте TLS"
+msgstr "Використовувати TLS"
 
 msgid "TLS Key"
 msgstr "Ключ TLS"
@@ -5524,7 +5524,7 @@ msgid "Randomness"
 msgstr "Випадковість"
 
 msgid "Use Fixed Seed"
-msgstr "Використовуйте фіксоване насіння"
+msgstr "Використовувати фіксоване насіння"
 
 msgid "Lifetime Randomness"
 msgstr "Довічна випадковість"
@@ -5875,7 +5875,7 @@ msgid "Avoidance Priority"
 msgstr "Пріоритет уникнення"
 
 msgid "Use Custom"
-msgstr "Використовуйте Custom"
+msgstr "Використовувати налаштування"
 
 msgid "Path Custom Color"
 msgstr "Користувацький колір шляху"
@@ -5917,7 +5917,7 @@ msgid "Navigation Polygon"
 msgstr "Навігаційний полігон"
 
 msgid "Use Edge Connections"
-msgstr "Використовуйте Edge Connections"
+msgstr "Використовувати граничних з'єднань"
 
 msgid "Skew"
 msgstr "Перекіс"
@@ -6335,7 +6335,7 @@ msgid "Collision Enabled"
 msgstr "Зіткнення ввімкнено"
 
 msgid "Use Kinematic Bodies"
-msgstr "Використовуйте кінематичні тіла"
+msgstr "Використовувати кінематичні тіла"
 
 msgid "Physics Quadrant Size"
 msgstr "Розмір квадранта фізики"
@@ -6395,7 +6395,7 @@ msgid "Override Pose"
 msgstr "Перевизначити позу"
 
 msgid "Use External Skeleton"
-msgstr "Використовуйте зовнішній скелет"
+msgstr "Використовувати зовнішній скелет"
 
 msgid "External Skeleton"
 msgstr "Зовнішній скелет"
@@ -6603,7 +6603,7 @@ msgid "Vertical Alignment"
 msgstr "Вертикальне вирівнювання"
 
 msgid "Uppercase"
-msgstr "ВЕРХНІЙ РЕГІСТР"
+msgstr "Верхній Регістр"
 
 msgid "Autowrap Trim Flags"
 msgstr "Прапорці обрізки автообгортки"
@@ -6735,7 +6735,7 @@ msgid "Shadowmask Mode"
 msgstr "Режим тіньової маски"
 
 msgid "Use Texture for Bounces"
-msgstr "Використовуйте текстуру для відскоків"
+msgstr "Використовувати текстуру для відскоків"
 
 msgid "Interior"
 msgstr "Зсередини"
@@ -6786,7 +6786,7 @@ msgid "Primary Rotation Axis"
 msgstr "Основна вісь обертання"
 
 msgid "Use Secondary Rotation"
-msgstr "Використовуйте вторинне обертання"
+msgstr "Використовувати вторинне обертання"
 
 msgid "Origin Settings"
 msgstr "Налаштування джерела"
@@ -6810,7 +6810,7 @@ msgid "Angle Limitation"
 msgstr "Обмеження кута"
 
 msgid "Use Angle Limitation"
-msgstr "Використовуйте обмеження кута"
+msgstr "Використовувати обмеження кута"
 
 msgid "Symmetry Limitation"
 msgstr "Обмеження симетрії"
@@ -6858,7 +6858,7 @@ msgid "Path Height Offset"
 msgstr "Зміщення висоти шляху"
 
 msgid "Use 3D Avoidance"
-msgstr "Використовуйте 3D Avoidance"
+msgstr "Використовувати 3D-уникнення"
 
 msgid "Keep Y Velocity"
 msgstr "Зберігайте швидкість Y"
@@ -6897,7 +6897,7 @@ msgid "Rotation Mode"
 msgstr "Режим повороту"
 
 msgid "Use Model Front"
-msgstr "Використовуйте передню частину моделі"
+msgstr "Використовувати передню частину моделі"
 
 msgid "Tilt Enabled"
 msgstr "Нахил увімкнено"
@@ -7188,10 +7188,10 @@ msgid "VehicleBody3D Motion"
 msgstr "VehicleBody3D Рух"
 
 msgid "Use as Traction"
-msgstr "Використовуйте як тягу"
+msgstr "Використовувати як тяги"
 
 msgid "Use as Steering"
-msgstr "Використовуйте як кермо"
+msgstr "Використовувати як кермо"
 
 msgid "Wheel"
 msgstr "Колесо"
@@ -7269,7 +7269,7 @@ msgid "Override Tip Basis"
 msgstr "Перевизначити основу кінця"
 
 msgid "Use Magnet"
-msgstr "Використовуйте магніт"
+msgstr "Використовувати магніт"
 
 msgid "Magnet"
 msgstr "Магніт"
@@ -7305,7 +7305,7 @@ msgid "Sorting"
 msgstr "Сортування"
 
 msgid "Use AABB Center"
-msgstr "Використовуйте AABB Center"
+msgstr "Використовувати Центр AABB"
 
 msgid "Geometry"
 msgstr "Геометрія"
@@ -7347,7 +7347,7 @@ msgid "Propagation"
 msgstr "Навігація"
 
 msgid "Use Two Bounces"
-msgstr "Використовуйте два відскоки"
+msgstr "Використовувати два відскоки"
 
 msgid "Body Tracker"
 msgstr "Відстеження тіла"
@@ -7377,7 +7377,7 @@ msgid "Advance on Start"
 msgstr "Перехід на старт"
 
 msgid "Use Custom Timeline"
-msgstr "Використовуйте спеціальну шкалу часу"
+msgstr "Використовувати спеціальну шкалу часу"
 
 msgid "Timeline Length"
 msgstr "Тривалість шкали часу"
@@ -7659,7 +7659,7 @@ msgid "Indentation"
 msgstr "Відступ"
 
 msgid "Use Spaces"
-msgstr "Використовуйте пробіли"
+msgstr "Використовувати пробіли"
 
 msgid "Automatic"
 msgstr "Автоматичний"
@@ -8418,7 +8418,7 @@ msgid "All Tabs in Front"
 msgstr "Усі вкладки спереду"
 
 msgid "Use Hidden Tabs for Min Size"
-msgstr "Використовуйте приховані вкладки для мінімального розміру"
+msgstr "Використовувати приховані вкладки для мінімального розміру"
 
 msgid "Tab Focus Mode"
 msgstr "Режим фокусування вкладки"
@@ -8704,13 +8704,13 @@ msgid "Screen Space AA"
 msgstr "Екранний простір AA"
 
 msgid "Use TAA"
-msgstr "Використовуйте TAA"
+msgstr "Використовувати TAA"
 
 msgid "Use Debanding"
-msgstr "Використовуйте дебендування"
+msgstr "Використовувати дебендування"
 
 msgid "Use Occlusion Culling"
-msgstr "Використовуйте відсікання оклюзії"
+msgstr "Використовувати відсікання оклюзії"
 
 msgid "Mesh LOD"
 msgstr "Сітка LOD"
@@ -8788,7 +8788,7 @@ msgid "Disable 3D"
 msgstr "Вимкнути тривимірність"
 
 msgid "Use XR"
-msgstr "Використовуйте XR"
+msgstr "Використовувати XR"
 
 msgid "Own World 3D"
 msgstr "Власний світ 3D"
@@ -8812,7 +8812,7 @@ msgid "Debug Draw"
 msgstr "Діагностика"
 
 msgid "Use HDR 2D"
-msgstr "Використовуйте HDR 2D"
+msgstr "Використовувати HDR 2D"
 
 msgid "Scaling 3D"
 msgstr "Масштабування 3D"
@@ -9034,7 +9034,7 @@ msgid "Default Joint Settings"
 msgstr "Параметри спільного використання за замовчуванням"
 
 msgid "Use Gravity"
-msgstr "Використовуйте гравітацію"
+msgstr "Використовувати гравітацію"
 
 msgid "Bone Index"
 msgstr "Кістковий індекс"
@@ -9568,7 +9568,7 @@ msgid "SDFGI"
 msgstr "SDFGI"
 
 msgid "Use Occlusion"
-msgstr "Використовуйте оклюзію"
+msgstr "Використовувати оклюзію"
 
 msgid "Read Sky Light"
 msgstr "Читайте Світла Небо"
@@ -9793,7 +9793,7 @@ msgid "Vertex Color"
 msgstr "Вершина"
 
 msgid "Use as Albedo"
-msgstr "Використовуйте як Альбедо"
+msgstr "Використовувати як Альбедо"
 
 msgid "Is sRGB"
 msgstr "Є sRGB"
@@ -9922,10 +9922,10 @@ msgid "Point Size"
 msgstr "Розмір крапки"
 
 msgid "Use Particle Trails"
-msgstr "Використовуйте сліди частинок"
+msgstr "Використовувати сліди частинок"
 
 msgid "Use Z Clip Scale"
-msgstr "Використовуйте шкалу Z-кліпу"
+msgstr "Використовувати шкалу Z-кліпу"
 
 msgid "Z Clip Scale"
 msgstr "Шкала Z-кліпу"
@@ -9982,10 +9982,10 @@ msgid "Transform Format"
 msgstr "Формат перетворення"
 
 msgid "Use Colors"
-msgstr "Використовуйте кольори"
+msgstr "Використовувати кольори"
 
 msgid "Use Custom Data"
-msgstr "Використовуйте спеціальні дані"
+msgstr "Використовувати спеціальні дані"
 
 msgid "Instance Count"
 msgstr "Екземпляр"
@@ -10147,7 +10147,7 @@ msgid "Influence over Life"
 msgstr "Вплив на життя"
 
 msgid "Use Scale"
-msgstr "Використовуйте масштаб"
+msgstr "Використовувати масштаб"
 
 msgid "Amount at End"
 msgstr "Сума в кінці"
@@ -11935,7 +11935,7 @@ msgid "Keep Data"
 msgstr "Зберігати дані"
 
 msgid "Use Half Res Pass"
-msgstr "Використовуйте половина роздільстю пасс"
+msgstr "Використовувати пас Half Res"
 
 msgid "Use Quarter Res Pass"
 msgstr "Використайте Пропуск у чвертьфінал"
@@ -12016,7 +12016,7 @@ msgid "Time Rollover Secs"
 msgstr "Перехід часу в секундах"
 
 msgid "Use Physical Light Units"
-msgstr "Використовуйте фізичні світлові одиниці"
+msgstr "Використовувати фізичні світлові одиниці"
 
 msgid "Soft Shadow Filter Quality"
 msgstr "Якість фільтра м'яких тіней"
@@ -12043,7 +12043,7 @@ msgid "Shader Cache"
 msgstr "Кеш шейдерів"
 
 msgid "Use Zstd Compression"
-msgstr "Використовуйте стиснення Zstd"
+msgstr "Використовувати стиснення Zstd"
 
 msgid "Strip Debug"
 msgstr "Налагодження смуги"
@@ -12082,7 +12082,7 @@ msgid "GI"
 msgstr "GI"
 
 msgid "Use Half Resolution"
-msgstr "Використовуйте половинну роздільну здатність"
+msgstr "Використовувати половинну роздільну здатність"
 
 msgid "Overrides"
 msgstr "Перевизначення"
@@ -12103,7 +12103,7 @@ msgid "Default Filters"
 msgstr "Фільтри за замовчуванням"
 
 msgid "Use Nearest Mipmap Filter"
-msgstr "Використовуйте найближчий фільтр Mipmap"
+msgstr "Використовувати найближчий фільтр Mipmap"
 
 msgid "Depth of Field"
 msgstr "Глибина різкості"
@@ -12193,7 +12193,7 @@ msgid "Lightmap GI"
 msgstr "Lightmap GI"
 
 msgid "Use Bicubic Filter"
-msgstr "Використовуйте бікубічний фільтр"
+msgstr "Використовувати бікубічний фільтр"
 
 msgid "Probe Ray Count"
 msgstr "Підрахунок променів зонда"

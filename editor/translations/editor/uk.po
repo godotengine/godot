@@ -62,12 +62,13 @@
 # Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim5@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim0@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-27 08:07+0000\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -1663,7 +1664,7 @@ msgid "Track is not of type Node3D, can't insert key"
 msgstr "Доріжка не належить до типу Node3D, ключ не можна вставити"
 
 msgid "Track is not of type MeshInstance3D, can't insert key"
-msgstr "Доріжка не належить до типу Node3D, не вдається вставити ключ"
+msgstr "Трек не належить до типу MeshInstance3D, неможливо вставити ключ"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Шлях доріжки є некоректним, отже не можна додавати ключ методу."
@@ -9441,7 +9442,7 @@ msgid "Loading emission mask requires ParticleProcessMaterial."
 msgstr "Для завантаження емісійної маски потрібен ParticleProcessMaterial."
 
 msgid "GPUParticles2D"
-msgstr "CPUParticles2D"
+msgstr "GPUParticles2D"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Перетворити на CPUParticles2D"
@@ -9699,7 +9700,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Створити вільну позу з кісток"
 
 msgid "Skeleton2D"
-msgstr "Skeleton 2D"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Відновити вільну позу"
@@ -9765,7 +9766,7 @@ msgid "Sprite's region needs to be enabled in the inspector."
 msgstr "Регіон спрайта потрібно увімкнути в інспекторі."
 
 msgid "Sprite2D"
-msgstr "Sprite 2D"
+msgstr "Sprite2D"
 
 msgid "Drag to Resize Region Rect"
 msgstr "Перетягніть, щоб змінити розмір прямокутника області"
@@ -12251,7 +12252,7 @@ msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
 
 msgid "Convert to GPUParticles3D"
-msgstr "Перетворити на GPUParticles3D"
+msgstr "Конвертувати в GPUParticles3D"
 
 msgid "Curve Point #"
 msgstr "Точку кривої #"
@@ -12377,7 +12378,7 @@ msgid "Revert"
 msgstr "Повернути"
 
 msgid "Skeleton3D"
-msgstr "Skeleton 3D"
+msgstr "Skeleton3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Скинути всі пози кісток"
@@ -12602,7 +12603,7 @@ msgid "Clear Guides"
 msgstr "Вилучити напрямні"
 
 msgid "Create Custom Bone2D(s) from Node(s)"
-msgstr "Створити нетипові кістки2D з вузла(ів)"
+msgstr "Створення власних Bone2D з вузла(ів)"
 
 msgid "Zoom to 3.125%"
 msgstr "Масштаб у 3,125%"
@@ -14424,7 +14425,7 @@ msgid "Toggle color channel preview selection."
 msgstr "Перемикання попереднього перегляду колірного каналу."
 
 msgid "Move GradientTexture2D Fill Point"
-msgstr "Перемістити точку заповнення Gradient Texture2D"
+msgstr "Перемістити точку заливки GradientTexture2D"
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Поміняти точки заповнення GradientTexture2D"
@@ -18328,8 +18329,8 @@ msgstr "Видалити всі вершини?"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
-"Для роботи цього вузла слід встановити або створити ресурс «Навігаційна "
-"сітка»."
+"Для роботи цього вузла необхідно встановити або створити ресурс "
+"NavigationMesh."
 
 msgid ""
 "Cannot generate navigation mesh because it does not belong to the edited "
@@ -18366,7 +18367,7 @@ msgstr ""
 "потім створюючи вершини та полігони навігаційної сіті."
 
 msgid "Clear NavigationMesh"
-msgstr "Очистити навігаційну сітку"
+msgstr "Очистити NavigationMesh"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Очищає внутрішні вершини та полігони NavigationMesh."
@@ -19196,13 +19197,6 @@ msgstr "UUID запиту на нотаріальне засвідчення: \"
 
 msgid "The notarization process generally takes less than an hour."
 msgstr "Процес нотаріального засвідчення зазвичай займає менше години."
-
-msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Ви можете відстежувати прогрес, якщо відкриєте термінал і виконаєте таку "
-"команду:"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "

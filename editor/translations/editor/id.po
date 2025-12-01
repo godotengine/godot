@@ -72,13 +72,15 @@
 # Belang Sumerlang <belangsumerlang@gmail.com>, 2025.
 # Wahyu Azizi <wahyuazizi03@gmail.com>, 2025.
 # Agung Adhinata <adhi0asta@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Dandihk <n00b38d@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-28 06:30+0000\n"
-"Last-Translator: Agung Adhinata <adhi0asta@gmail.com>\n"
+"PO-Revision-Date: 2025-10-22 04:02+0000\n"
+"Last-Translator: Dandihk <n00b38d@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -86,7 +88,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Belum disetel"
@@ -1828,6 +1830,9 @@ msgstr "Terapkan snapping pada kursor timeline."
 msgid "Apply snapping to selected key(s)."
 msgstr "Terapkan snapping pada kunci yang dipilih."
 
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Terapkan snapping ke FPS bilangan bulat terdekat."
+
 msgid "Animation step value."
 msgstr "Nilai langkah animasi."
 
@@ -1839,6 +1844,9 @@ msgstr "FPS"
 
 msgid "Fit to panel"
 msgstr "Mengepaskan ke Panel"
+
+msgid "Auto Fit Bezier"
+msgstr "Pemasangan Otomatis Bezier"
 
 msgid "Edit"
 msgstr "Sunting"
@@ -2051,6 +2059,21 @@ msgstr "Salin Seleksi"
 msgid "Animation Change Keyframe Time"
 msgstr "Animasi Ubah Waktu Keyframe"
 
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Nama penanda hanya dapat diubah dengan mengklik kanan penanda tersebut di "
+"editor animasi dan memilih \"Ubah Nama Penanda\", untuk memastikan semua nama "
+"penanda bersifat unik."
+
+msgid "Marker:"
+msgstr "Penanda:"
+
+msgid "Multi Edit Marker Color"
+msgstr "Penanda Multi Edit Warna"
+
 msgid "Add Audio Track Clip"
 msgstr "Tambah Clip Trek Audio"
 
@@ -2065,6 +2088,9 @@ msgstr "Root"
 
 msgid "Path:"
 msgstr "Jalur:"
+
+msgid "Title"
+msgstr "Judul"
 
 msgid "Author"
 msgstr "Pencipta"
@@ -2388,6 +2414,12 @@ msgstr "Jalan Lingkar"
 msgid "Volume"
 msgstr "Volume"
 
+msgid "Channel %d, Left VU"
+msgstr "Saluran %d, VU Kiri"
+
+msgid "Send"
+msgstr "Kirim"
+
 msgid "Bus Options"
 msgstr "Pilihan Bus"
 
@@ -2593,6 +2625,9 @@ msgstr ""
 msgid "Set %s"
 msgstr "Setel %s"
 
+msgid "Session %d"
+msgstr "Sesi %d"
+
 msgid "Debug"
 msgstr "Debug"
 
@@ -2620,6 +2655,9 @@ msgid ""
 msgstr ""
 "Menyimpan cabang sebagai skena hanya memerlukan satu node, tetapi Anda telah "
 "memilih %d node."
+
+msgid "Expression to evaluate"
+msgstr "Ekspresi untuk mengevaluasi"
 
 msgid "Updating assets on target device:"
 msgstr "Memperbarui aset di perangkat target:"
@@ -2786,6 +2824,9 @@ msgstr "RAM Video"
 msgid "Skip Breakpoints"
 msgstr "Lewati Breakpoint"
 
+msgid "Ignore Error Breaks"
+msgstr "Abaikan Pemutusan Kesalahan"
+
 msgid "Thread:"
 msgstr "Untai:"
 
@@ -2803,6 +2844,9 @@ msgstr "Bentangkan Semua"
 
 msgid "Collapse All"
 msgstr "Lipat Semua"
+
+msgid "Evaluator"
+msgstr "Penilai"
 
 msgid "Profiler"
 msgstr "Pembuat profil"
@@ -2859,6 +2903,9 @@ msgstr ""
 "Metode ini dipanggil oleh mesin.\n"
 "Metode ini dapat diganti untuk menyesuaikan perilaku bawaan."
 
+msgid "This method is required to be overridden when extending its base class."
+msgstr "Metode ini perlu ditimpa saat memperluas kelas dasarnya."
+
 msgid ""
 "This method has no side effects.\n"
 "It does not modify the object in any way."
@@ -2872,6 +2919,9 @@ msgid ""
 msgstr ""
 "Metode ini tidak membutuhkan instance untuk dipanggil.\n"
 "Metode ini dapat dipanggil secara langsung menggunakan nama kelas."
+
+msgid "This method must be implemented to complete the abstract class."
+msgstr "Metode ini harus diimplementasikan untuk melengkapi kelas abstrak."
 
 msgid "No return value."
 msgstr "Tidak ada nilai pengembalian."
@@ -3158,6 +3208,9 @@ msgstr "Kelas ini ditandai sebagai usang."
 msgid "This class is marked as experimental."
 msgstr "Kelas ini ditandai sebagai eksperimental."
 
+msgid "Matches the \"%s\" keyword."
+msgstr "Cocok dengan kata kunci \"%s\"."
+
 msgid "This member is marked as deprecated."
 msgstr "Anggota ini ditandai sebagai tidak digunakan lagi."
 
@@ -3172,6 +3225,9 @@ msgstr "Posisi Pengait"
 
 msgid "Make Floating"
 msgstr "Membuat Floating"
+
+msgid "Link to: %s"
+msgstr "Tautan ke: %s"
 
 msgid "Favorites:"
 msgstr "Favorit:"
@@ -3257,6 +3313,12 @@ msgstr "Menggandakan folder:"
 
 msgid "Create Folder"
 msgstr "Buat berkas"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Apakah Anda ingin mengonversi berkas-berkas ini ke %s? (Operasi ini tidak "
+"dapat dibatalkan!)"
 
 msgid "New Inherited Scene"
 msgstr "Skena Warisan Baru"
@@ -3387,6 +3449,9 @@ msgstr "Buka folder/file yang dipilih sebelumnya."
 msgid "Go to next selected folder/file."
 msgstr "Buka folder/file yang dipilih berikutnya."
 
+msgid "Dock Placement"
+msgstr "Penempatan Dock"
+
 msgid "Filter Files"
 msgstr "Filter File"
 
@@ -3505,6 +3570,12 @@ msgstr "Perluas Non-Default"
 
 msgid "Property Name Style"
 msgstr "Gaya Nama Properti"
+
+msgid "Raw (e.g. \"%s\")"
+msgstr "Mentah (e.g. \"%s\")"
+
+msgid "Localized (e.g. \"Z Index\")"
+msgstr "Dilokalkan (e.g. \"Indek Z\")"
 
 msgid "Localization not available for current language."
 msgstr "Lokalisasi tidak tersedia untuk bahasa saat ini."
@@ -3629,6 +3700,9 @@ msgstr "Hapus node \"%s\" dan anak-anaknya?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Hapus node \"%s\"?"
+
+msgid "Some nodes are referenced by animation tracks."
+msgstr "Beberapa node direferensikan oleh trek animasi."
 
 msgid "Saving the branch as a scene requires having a scene open in the editor."
 msgstr "Menyimpan cabang sebagai skena membutuhkan skena terbuka di editor."
@@ -5356,6 +5430,9 @@ msgstr "Tidak ada sub-resourc yang ditemukan."
 msgid "Open a list of sub-resources."
 msgstr "Buka daftar sub-sumber daya."
 
+msgid " (recently opened)"
+msgstr " Baru-baru Ini Dibuka"
+
 msgid ""
 "Hold %s to round to integers.\n"
 "Hold Shift for more precise changes."
@@ -6439,9 +6516,6 @@ msgstr "Masker Emisi"
 msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
 msgstr "Menghasilkan Visibility Kotak (Menunggu Simulasi Partikel)"
 
-msgid "GPUParticles2D"
-msgstr "GPUPartikel2D"
-
 msgid "Convert to CPUParticles2D"
 msgstr "Konversikan menjadi CPUParticles2D"
 
@@ -6727,15 +6801,6 @@ msgid ""
 "Source: %d\n"
 "Atlas coordinates: %s\n"
 "Alternative: 0"
-msgstr ""
-"Sumber: %d\n"
-" Koordinat Atlas: %s\n"
-" Alternatif: 0"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
 msgstr ""
 "Sumber: %d\n"
 " Koordinat Atlas: %s\n"
@@ -7335,6 +7400,9 @@ msgstr "Ortogonal Belakang"
 
 msgid "Rear Perspective"
 msgstr "Perspektif Belakang"
+
+msgid "[auto]"
+msgstr "[otomatis]"
 
 msgid "Locked"
 msgstr "Terkunci"
@@ -8798,6 +8866,9 @@ msgstr "Tambahkan Fitur"
 msgid "East Asian Language"
 msgstr "Bahasa Asia Timur"
 
+msgid "Variation"
+msgstr "Variasi"
+
 msgid "Unable to preview font"
 msgstr "Tidak dapat melihat pratinjau font"
 
@@ -9694,6 +9765,9 @@ msgstr "Skrip Internal:"
 
 msgid "Attach Node Script"
 msgstr "Lampirkan Skrip Node"
+
+msgid "Current value: "
+msgstr "Nilai Sekarang: "
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Gagal membuka '%s'. Berkas telah dipindah atau dihapus."
@@ -10759,9 +10833,6 @@ msgstr ""
 msgid "Boolean constant."
 msgstr "Konstanta Boolean."
 
-msgid "'%s' input parameter for all shader modes."
-msgstr "Parameter masukan '% s' untuk semua mode shader."
-
 msgid "Input parameter."
 msgstr "Parameter masukan."
 
@@ -11526,13 +11597,6 @@ msgstr "Identifier bundel tidak valid:"
 
 msgid "Notarization"
 msgstr "Notarisasi"
-
-msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Anda dapat memeriksa kemajuan secara manual dengan membuka Terminal dan "
-"menjalankan perintah berikut:"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "

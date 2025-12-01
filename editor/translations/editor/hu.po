@@ -43,13 +43,15 @@
 # Dfo <s.daneee@gmail.com>, 2025.
 # therealmate <hellogaming91@gmail.com>, 2025.
 # Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>, 2025.
+# Rémi Verschelde <remi@godotengine.org>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-25 19:02+0000\n"
-"Last-Translator: Nagy-Kollár Vince <nagy.kollar.vince@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:07+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -2829,11 +2831,6 @@ msgstr "Elnevezések amik _-al kezdődnek foglaltak a szerkesztő metaadatoknak.
 msgid "On"
 msgstr "Be"
 
-msgid "(%d change)"
-msgid_plural "(%d changes)"
-msgstr[0] "Bezárja és menti a változásokat?"
-msgstr[1] "Bezárja és menti a változásokat?"
-
 msgid "Resize Array"
 msgstr "Tömb átméretezése"
 
@@ -3064,6 +3061,9 @@ msgstr "Kibocsátási Maszk Betöltése"
 msgid "Emission Mask"
 msgstr "Kibocsátási Maszk"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Konvertálás CPUParticles2D-re"
 
@@ -3189,9 +3189,6 @@ msgstr "Rács Y eltolása:"
 
 msgid "Sync Bones to Polygon"
 msgstr "Csontok Szinkronizálása Sokszögre"
-
-msgid "Skeleton2D"
-msgstr "Csontváz2D"
 
 msgid "Update Preview"
 msgstr "Előnézet frissítése"
@@ -3540,6 +3537,12 @@ msgstr "Felületi Pontok"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Felületi Pontok + Normálok (Irányított)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Görbe Pont #"
 
@@ -3569,6 +3572,9 @@ msgstr "Sokszög Szerkesztése (Pont Eltávolítása)"
 
 msgid "Create physical bones"
 msgstr "Fizikai csontok létrehozása"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Insert Key (Existing Tracks)"
 msgstr "Kulcs Beszúrása (Meglévő Nyomvonalakra)"

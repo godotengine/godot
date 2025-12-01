@@ -194,7 +194,7 @@
 # Timur <linvej736@gmail.com>, 2024.
 # Mikhail <mikhail.khadzhaev832@gmail.com>, 2024.
 # Roman Yakimov <rmn.ykimov@gmail.com>, 2024.
-# Andrey Razin <AndreyRazinWork@yandex.ru>, 2024.
+# Andrey Razin <AndreyRazinWork@yandex.ru>, 2024, 2025.
 # Tim Zh <tim3@mail.ru>, 2024.
 # Lev73 <asusgamens@gmail.com>, 2024.
 # LLIax <aultero@gmail.com>, 2024.
@@ -226,13 +226,15 @@
 # Dzheihun Bayramov <jigulevsky@gmail.com>, 2025.
 # Russian Rage <acexform@gmail.com>, 2025.
 # Сергей Казорин <kazorin@basealt.ru>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# zhoeshin <ayron64632723837@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-20 16:45+0000\n"
-"Last-Translator: arkology <arkology11@gmail.com>\n"
+"PO-Revision-Date: 2025-11-23 15:51+0000\n"
+"Last-Translator: Andrey Razin <AndreyRazinWork@yandex.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -241,7 +243,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -2322,7 +2324,7 @@ msgid "Open asset details"
 msgstr "Открыть подробную информацию по ассетам"
 
 msgid "Title"
-msgstr "Заголовок"
+msgstr "Название"
 
 msgid "Category"
 msgstr "Категория"
@@ -2580,7 +2582,7 @@ msgid "The following files failed extraction from asset \"%s\":"
 msgstr "Следующие файлы не удалось извлечь из ассета «%s»:"
 
 msgid "(and %s more files)"
-msgstr "(и еще %s файлов)"
+msgstr "(и ещё %d файлов)"
 
 msgid "Asset \"%s\" installed successfully!"
 msgstr "Ассет «%s» успешно установлен!"
@@ -9389,7 +9391,7 @@ msgid "Unmute game audio."
 msgstr "Включить звук в игре."
 
 msgid "Mute game audio."
-msgstr "Отключить звук в игре."
+msgstr "Заглушить звук в игре"
 
 msgid "Alt+RMB: Show list of all nodes at position clicked."
 msgstr "Alt+ПКМ: Показать список всех узлов в позиции щелчка."
@@ -10313,7 +10315,7 @@ msgid "Select all layers"
 msgstr "Выбрать все слои"
 
 msgid "Select all TileMapLayers in scene"
-msgstr "Выбрать все слои карты тайлов в сцене"
+msgstr "Выбрать все TileMapLayers (Cлои Карты Тайлов) в сцене"
 
 msgid "Highlight Selected TileMap Layer"
 msgstr "Выделить выбранный слой карты тайлов"
@@ -14701,7 +14703,7 @@ msgid "example: scripts,scenes/*/test.gd"
 msgstr "пример: scripts,scenes/*/test.gd"
 
 msgid "Excludes:"
-msgstr "Включает:"
+msgstr "Исключает:"
 
 msgid "Exclude the files with the following expressions. Use \",\" to separate."
 msgstr ""
@@ -15246,7 +15248,7 @@ msgid "Built-in actions are always shown when searching."
 msgstr "Встроенные действия всегда отображаются при поиске."
 
 msgid "Action %s"
-msgstr "Действия: %s"
+msgstr "Действия %s"
 
 msgid "Cannot Revert - Action is same as initial"
 msgstr "Невозможно вернуться — действие аналогично первоначальному"
@@ -17960,7 +17962,7 @@ msgstr ""
 "TYPE_*, классом или скриптом."
 
 msgid "Value argument is a previously freed instance."
-msgstr "Аргумент значения — ранее высвобожденный экземпляр."
+msgstr "Значение аргумента - это ранее освобожденный экземпляр класса."
 
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Экспортировать сцену в файл glTF 2.0"
@@ -18028,7 +18030,7 @@ msgstr ""
 "включить снова в настройках проекта."
 
 msgid "Disabling '.blend' file import requires restarting the editor."
-msgstr "Для отключения импорта файлов «.blend» необходим перезапуск редактора."
+msgstr "Отключение импорта файлов '.blend' требует перезапуска редактора."
 
 msgid "GridMap Delete Selection"
 msgstr "GridMap: удалить выделенное"
@@ -18533,7 +18535,8 @@ msgstr "Удалить все точки?"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
-"Чтобы этот узел работал, необходимо задать или создать ресурс сетки навигации."
+"Чтобы этот узел работал, необходимо задать или создать ресурс NavigationMesh "
+"(Сетка Навигации)."
 
 msgid ""
 "Cannot generate navigation mesh because it does not belong to the edited "
@@ -18560,7 +18563,7 @@ msgid "Bake"
 msgstr "Запекание"
 
 msgid "Bake NavigationMesh"
-msgstr "Запечь сетку навигации"
+msgstr "Запечь NavigationMesh"
 
 msgid ""
 "Bakes the NavigationMesh by first parsing the scene for source geometry and "
@@ -18571,10 +18574,10 @@ msgstr ""
 "навигации."
 
 msgid "Clear NavigationMesh"
-msgstr "Очистить сетку навигации"
+msgstr "Очистить NavigationMesh"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
-msgstr "Очищает внутренние вершины и полигоны сетки навигации."
+msgstr "Очищает внутренние вершины и полигоны NavigationMesh."
 
 msgid "Baking NavigationMesh ..."
 msgstr "Запечь NavigationMesh (Сетку Навигации)..."
@@ -19392,13 +19395,6 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Процесс подтверждения обычно занимает менее часа."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Можно проверить ход выполнения вручную, открыв терминал и выполнив следующую "
-"команду:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -20023,8 +20019,8 @@ msgstr ""
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
-"У этой кости отсутствует правильная поза покоя. Перейдите к узлу Skeleton2D и "
-"установите её."
+"У этой кости отсутствует правильная поза REST (покоя). Перейдите к узлу "
+"Skeleton2D и установите её."
 
 msgid ""
 "The TileMap node is deprecated as it is superseded by the use of multiple "
@@ -20033,10 +20029,12 @@ msgid ""
 "panel with this node selected, click the toolbox icon in the top-right corner "
 "and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
 msgstr ""
-"Узел TileMap устарел и заменён использованием нескольких узлов TileMapLayer.\n"
-"Чтобы преобразовать TileMap в несколько TileMapLayer, откройте нижнюю панель "
-"TileMap, выбрав этот узел, щёлкните значок инструментов в правом верхнем углу "
-"и выберите «Извлечь слои как отдельные узлы TileMapLayer»."
+"Узел TileMap устарел, поскольку он заменен использованием нескольких узлов "
+"TileMapLayer.\n"
+"Чтобы преобразовать TileMap в набор узлов TileMapLayer, откройте нижнюю "
+"панель TileMap с выбранным этим узлом, щелкните значок панели инструментов в "
+"правом верхнем углу и выберите «Извлечь слои TileMap как отдельные узлы "
+"TileMapLayer»."
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
@@ -21485,7 +21483,7 @@ msgid "Expected a string constant."
 msgstr "Ожидалась строковая константа."
 
 msgid "Expected ',' or ')' after string constant."
-msgstr "Ожидалось «,» или «)» после строковой константы."
+msgstr "Ожидалось ',' или ')' после константы строки."
 
 msgid "Can only specify '%s' once."
 msgstr "Можно указать «%s» только один раз."

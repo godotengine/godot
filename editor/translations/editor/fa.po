@@ -59,13 +59,15 @@
 # Arshia Borzoo <arshi.ahoora@gmail.com>, 2025.
 # Dr-helicopter <hashmya1@gmail.com>, 2025.
 # "Mahdi B. Jahani" <kelbowonl@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Mazdak Parnian <mazdak.parniandg@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-25 19:02+0000\n"
-"Last-Translator: \"Mahdi B. Jahani\" <kelbowonl@gmail.com>\n"
+"PO-Revision-Date: 2025-11-29 09:20+0000\n"
+"Last-Translator: Mazdak Parnian <mazdak.parniandg@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -73,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "تنظیم نشده"
@@ -9305,7 +9307,7 @@ msgid "Snap Camera2D Limits to the Viewport"
 msgstr "محدودیت‌های Camera2D برای Viewport را بررسی کنید"
 
 msgid "Camera2D"
-msgstr "دوربین دوبعدی"
+msgstr "دوربین دو بعدی"
 
 msgid "Snap the Limits to the Viewport"
 msgstr "چفت محدودیت‌ها به دیدگستره"
@@ -9609,7 +9611,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "ساختن ژست استراحت از استخوان‌ها"
 
 msgid "Skeleton2D"
-msgstr "استخوان‌بندی دوبعدی"
+msgstr "اسکلت دو بعدی"
 
 msgid "Reset to Rest Pose"
 msgstr "تنظیم مجدد به حالت استراحت"
@@ -9656,9 +9658,6 @@ msgstr "تبدیل به MeshInstance2D"
 msgid "Invalid geometry, can't create polygon."
 msgstr "هندسه نامعتبر است، نمی‌توان چندضلعی ساخت."
 
-msgid "Convert to Polygon2D"
-msgstr "تبدیل به چندضلعی دوبعدی"
-
 msgid "Invalid geometry, can't create collision polygon."
 msgstr "هندسه نامعتبر است، نمی‌توان چندضلعی برخوردگاه ساخت."
 
@@ -9673,9 +9672,6 @@ msgstr "ساخت هم‌نیای LightOccluder2D"
 
 msgid "Sprite's region needs to be enabled in the inspector."
 msgstr "منطقه اسپرایت باید در بخش بازرس فعال شود."
-
-msgid "Sprite2D"
-msgstr "اسپرایت‌دوبعدی"
 
 msgid "Drag to Resize Region Rect"
 msgstr "برای تغییر اندازه ناحیه، بکشید"
@@ -9979,13 +9975,6 @@ msgstr "TileMap انتخاب‌شده لایه‌ای برای ویرایش ند
 msgid "The edited layer is disabled or invisible"
 msgstr "لایه ویرایش‌شده غیرفعال یا نامرئی است"
 
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"گرهٔ نقشه‌کاشی یا لایهٔ نقشه‌کاشی، بنمایهٔ دسته‌کاشی‌ای ندارد.\n"
-"یک بنمایهٔ دسته‌کاشی در ویژگی دسته‌کاشی درون بازرس بساز یا بارکن."
-
 msgid "Select Next Tile Map Layer"
 msgstr "گزینش لایهٔ نقشه‌کاشی بعدی"
 
@@ -10006,9 +9995,6 @@ msgstr "گزینش همهٔ لایه‌ها"
 
 msgid "Select all TileMapLayers in scene"
 msgstr "گزینش همهٔ TileMapLayer های درون صحنه"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "برجسته‌سازی لایهٔ نقشه‌کاشی برگزیده"
 
 msgid "Toggle grid visibility."
 msgstr "روشن/خاموش کردن پدیداری توری."
@@ -11756,9 +11742,6 @@ msgstr "در حال زایش اِی.اِی.بی.بی پدیداری (منتظر 
 msgid "Generate Visibility AABB"
 msgstr "ایجاد AABB نمایان بودن"
 
-msgid "\"%s\" doesn't inherit from Node3D."
-msgstr "«%s» از گرهٔ سه‌بعدی ارث نمی‌برد."
-
 msgid "\"%s\" doesn't contain geometry."
 msgstr "«%s» دارای هندسه نیست."
 
@@ -11898,9 +11881,6 @@ msgstr "بازگردانی استخوان"
 
 msgid "Revert"
 msgstr "بازگردانی"
-
-msgid "Skeleton3D"
-msgstr "استخوان‌بندی سه‌بعدی"
 
 msgid "Apply All Poses to Rests"
 msgstr "اعمال تمام حالات به استراحت‌ها"
@@ -16430,11 +16410,6 @@ msgstr "پاک‌کردن NavigationPolygon"
 msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
 msgstr "حاشیه‌ها، رئوس و چندضلعی‌های داخلی NavigationPolygon را پاک می‌کند."
 
-msgid ""
-"A NavigationPolygon resource must be set or created for this node to work."
-msgstr ""
-"یک بنمایهٔ NavigationMesh باید برای این گره نشانده یا ساخته شود تا کار کند."
-
 msgid "Change Start Position"
 msgstr "دگرش نهشت آغازین"
 
@@ -17052,13 +17027,6 @@ msgstr "شناسه UUID درخواست یادداشت‌گذاری: «%s»"
 msgid "The notarization process generally takes less than an hour."
 msgstr "فرآیند یادداشت‌گذاری معمولاً کمتر از یک ساعت طول می‌کشد."
 
-msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"شما می‌توانید با گشودن پایانه و اجرای فرمان زیر به روش دستی پیشرفت را بررسی "
-"کنید:"
-
 msgid "Xcode command line tools are not installed."
 msgstr "ابزارهای فرمان خط ایکس‌کد نصب‌شده نیستند."
 
@@ -17403,16 +17371,6 @@ msgstr ""
 "می‌کند."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"این گره هیچ شکلی ندارد، پس نمی‌تواند با دیگر شیء‌ها برخورد یا تعامل داشته "
-"باشد.\n"
-"برای تعریف کردن شکل آن، می‌توانید یک (CollisionShape2D) یا (CollisionShape2D) "
-"را به‌عنوان فرزند به آن بیفزایید."
-
-msgid ""
 "CollisionPolygon2D only serves to provide a collision shape to a "
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
@@ -17471,13 +17429,6 @@ msgid ""
 msgstr ""
 "یک PhysicalBone2D تنها زمانی کار می‌کند که گره والد آن یک Skeleton2D یا یک "
 "PhysicalBone2D دیگر باشد!"
-
-msgid ""
-"A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! "
-"Please set a Bone2D node in the inspector."
-msgstr ""
-"یک استخوان دوبعدی فیزیکی برای کارکردن نیاز دارد تا به یک استخوان دوبعدی "
-"واگذار شود! لطفا یک گرهٔ استخوان دوبعدی درون بازرس بنشانید."
 
 msgid ""
 "A PhysicalBone2D node should have a Joint2D-based child node to keep bones "
@@ -18027,13 +17978,6 @@ msgstr ""
 "فاصلهٔ انتقال محو روی ۰ تنظیم شده است.\n"
 "برای رفع این مشکل، مقدار حاشیهٔ انتهایی برد دید را به عددی بزرگ‌تر از ۰ افزایش "
 "دهید."
-
-msgid ""
-"GeometryInstance3D visibility range transparency fade is only available when "
-"using the Forward+ rendering method."
-msgstr ""
-"محدوده شفافیت کاهش دید هندسه‌نمونه‌۳‌بعدی تنها زمانی در دسترس است که از روش رندر "
-"Forward+ استفاده شود."
 
 msgid "Plotting Meshes"
 msgstr "ترسیم مش‌ها"

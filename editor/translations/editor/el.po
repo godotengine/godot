@@ -32,13 +32,14 @@
 # "Anthony V." <anthonyv156@outlook.com>, 2024.
 # Giannis Krommydas <john1052004@gmail.com>, 2025.
 # Dimitris Kapsacheilis <loljimycool@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-17 22:02+0000\n"
-"Last-Translator: Dimitris Kapsacheilis <loljimycool@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:07+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Απενεργοποίηση"
@@ -4364,11 +4365,17 @@ msgstr "Εικονοστοιχεία Προσανατολισμένου Περι
 msgid "Emission Mask"
 msgstr "Μάσκα εκπομπής"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Μετατροπή σε CPUParticles2D"
 
 msgid "Generation Time (sec):"
 msgstr "Χρόνος Παραγωγής (sec):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "Αφαίρεση σημείου από την καμπύλη"
@@ -4557,9 +4564,6 @@ msgstr "Ορισμός Στάσης Αδράνειας σε Οστά"
 
 msgid "Create Rest Pose from Bones"
 msgstr "Δημιουργία Στάσης Αδράνειας από Οστά"
-
-msgid "Skeleton2D"
-msgstr "Σκελετός2D"
 
 msgid "Create Polygon2D"
 msgstr "Δημιουργία Polygon2D"
@@ -5232,6 +5236,12 @@ msgstr "Σημεία επιφάνειας"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Σημεία επιφάνειας + Κανονικό δίανυσμα (Κατευθηνόμενο)"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Curve Point #"
 msgstr "Σημείο καμπύλης #"
 
@@ -5256,9 +5266,6 @@ msgstr "Διαχωρισμός τμήματος (στην καμπύλη)"
 msgid "Move Joint"
 msgstr "Μετακίνηση Άρθρωσης"
 
-msgid "Create Polygon3D"
-msgstr "Δημιουργία 3D Πολυγώνου"
-
 msgid "Edit Poly"
 msgstr "Επεγεργασία πολυγώνου"
 
@@ -5267,6 +5274,9 @@ msgstr "Επεγεργασία πολυγώνου (Αφαίρεση σημείο
 
 msgid "Create physical bones"
 msgstr "Δημιουργία φυσικών οστών"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Μάσκα μεταγλώττισης για εισαγόμενα κλειδιά."
@@ -6196,9 +6206,6 @@ msgstr "Αυτόματο κόψιμο"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Δημιουργία Καρέ από Φύλλο Sprite"
-
-msgid "Swap GradientTexture2D Fill Points"
-msgstr "Εναλλαγή σημείων γεμίσματος 2D με υφή διαβάθμισης"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Εναλλαγή σημείων γεμίσματος διαβάθμισης"
@@ -7581,11 +7588,6 @@ msgstr "Εξερχόμενα RPC"
 msgid "Create Navigation Polygon"
 msgstr "Δημιουργία πολυγώνου πλοήγησης"
 
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Ένας πόρος πλέγματος πλοήγησης θα πρέπει να έχει ορισθεί ή δημιουργηθεί για "
-"να δουλέψει αυτός ο κόμβος."
-
 msgid "Invalid public key for APK expansion."
 msgstr "Μη έγκυρο δημόσιο κλειδί (public key) για επέκταση APK."
 
@@ -7680,13 +7682,6 @@ msgstr "Δεν ήταν δυνατή η αποσυμπίεση του προσω
 
 msgid "Stop and uninstall"
 msgstr "Διακοπή και απεγκατάσταση"
-
-msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Μπορείτε να ελέγξετε την πρόοδο χειροκίνητα ανοίγοντας ένα τερματικό και "
-"εκτελώντας την ακόλουθη εντολή:"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
@@ -7791,9 +7786,6 @@ msgstr ""
 "αλληλεπιδράσει με άλλα αντικείμενα.\n"
 "Εξετάστε την προσθήκη ενός παιδιού CollisionShape2D ή CollisionPolygon2D για "
 "να ορίσετε το σχήμα του."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Ένα άδειο ColisionPollygon2D δεν επηρεάζει τη σύγκρουση."
 
 msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
 msgstr ""

@@ -15,13 +15,14 @@
 # Peter Lauris <peterlauris@gmail.com>, 2023.
 # GGLVXD <85647114+GGLVXD@users.noreply.github.com>, 2024.
 # Oskars Putāns <o.putaans@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-14 11:35+0000\n"
-"Last-Translator: Oskars Putāns <o.putaans@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Neiestatīts"
@@ -981,9 +982,6 @@ msgstr "Pievienot Bezjē Celiņu"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot atslēgu."
-
-msgid "Track is not of type MeshInstance3D, can't insert key"
-msgstr "Celiņš nepieder tipam , nevar ievietot atslēgu"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot metodes atslēgu."
@@ -1962,9 +1960,6 @@ msgstr "Saglabāt & aizvērt"
 msgid "%d more files or folders"
 msgstr "%d vēl faili vai mapes"
 
-msgid "%d more folders"
-msgstr "%s vēl mapes"
-
 msgid "%d more files"
 msgstr "%d vēl faili"
 
@@ -2764,8 +2759,14 @@ msgstr "Izveidot Daudzstūri"
 msgid "Edit Polygon"
 msgstr "Rediģēt Daudzstūri"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Konvertēt uz CPUParticles2D"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Please Confirm..."
 msgstr "Lūdzu apstipriniet..."
@@ -2890,9 +2891,6 @@ msgstr "Iestatīt Miera Pozu Kauliem"
 msgid "Create Rest Pose from Bones"
 msgstr "Izveidot Miera Pozu no Kauliem"
 
-msgid "Skeleton2D"
-msgstr "Skelets2D"
-
 msgid "Reset to Rest Pose"
 msgstr "Atiestatīt uz atpūtas pozu"
 
@@ -2980,8 +2978,11 @@ msgstr "Lineāla Režīms"
 msgid "Pre"
 msgstr "iepriekš"
 
-msgid "Create Polygon3D"
-msgstr "Izveidot Daudzstūris3D"
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
 
 msgid "Edit Poly"
 msgstr "Rediģēt Daudzstūri"
@@ -2997,6 +2998,9 @@ msgstr ""
 
 msgid "Add Bone Metadata"
 msgstr "Pievienot Kaulu Metadatus"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Scale Step:"
 msgstr "Mainīt Soļa Mērogu:"

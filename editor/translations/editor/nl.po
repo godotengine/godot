@@ -88,13 +88,14 @@
 # Cas Vankrunkelsven <cas.vankrunkelsven@protonmail.com>, 2025.
 # Sven Slootweg <admin@cryto.net>, 2025.
 # Max de Kroon <dekroon.mja@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-18 03:38+0000\n"
-"Last-Translator: Max de Kroon <dekroon.mja@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:07+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -6719,6 +6720,9 @@ msgstr "Schaal:"
 msgid "Rotating %s degrees."
 msgstr "Roteren %s graden."
 
+msgid "Rotating %f degrees."
+msgstr "Roteren %f graden."
+
 msgid "View"
 msgstr "Weergeven"
 
@@ -8471,9 +8475,6 @@ msgstr "Mobiele renderer"
 
 msgid "Vulkan"
 msgstr "Vulkan"
-
-msgid "D3D12"
-msgstr "Direct3D 12"
 
 msgid "Metal"
 msgstr "Metal"

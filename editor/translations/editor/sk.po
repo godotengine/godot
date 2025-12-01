@@ -23,13 +23,14 @@
 # Gelissean <gelu586@gmail.com>, 2024.
 # Bobo <ctiborboborkapor@gmail.com>, 2024.
 # David Chorváth <dadulo33@gmail.com>, 2024.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-22 12:18+0000\n"
-"Last-Translator: Richard <rgarlik@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "Nenastavené"
@@ -4218,6 +4219,9 @@ msgstr "Mriežka"
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Táto kostra nemá žiadne kosti, vytvorte nejaké detské Bone2D nody."
 
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
+
 msgid "Polygon2D Preview"
 msgstr "Predzobraziť Polygon2D"
 
@@ -4977,6 +4981,9 @@ msgstr "Nedá sa exportovať SkeletonProfile pre Skeleton3D node bez kosti."
 
 msgid "Export Skeleton Profile As..."
 msgstr "Exportovať Skeleton profil ako..."
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Translation mask for inserting keys."
 msgstr "Prekladová maska na vkladanie kľúčov."

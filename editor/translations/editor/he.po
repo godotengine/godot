@@ -41,13 +41,15 @@
 # Walter Le <ravkavonline.shun821@passinbox.com>, 2025.
 # Nimrod Perez <nimrod.peretz@gmail.com>, 2025.
 # Eli Silver <elinxsilver@gmail.com>, 2025.
+# exceeding speed <gevaor.tech@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-13 00:48+0000\n"
-"Last-Translator: Nimrod Perez <nimrod.peretz@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:08+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -56,7 +58,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "ביטול הגדרה"
@@ -133,6 +135,9 @@ msgstr "ג׳ויסטיק 4 ציר-Y"
 msgid "Unknown Joypad Axis"
 msgstr "ציר ג׳ויפד לא ידוע"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "ג׳ויפאד על ציר %d (%s) עם הערך %.2f"
+
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "כפתור פעולה, Sony Cross, Xbox A, Nintendo B"
 
@@ -169,6 +174,24 @@ msgstr "כרית כיוונית שמאל"
 msgid "D-pad Right"
 msgstr "כרית כיוונית ימין"
 
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, מיקרופון PS5, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "משוט 1 Xbox"
+
+msgid "Xbox Paddle 2"
+msgstr "משוט 2 Xbox"
+
+msgid "Xbox Paddle 3"
+msgstr "משוט 3 Xbox"
+
+msgid "Xbox Paddle 4"
+msgstr "משוט 4 Xbox"
+
+msgid "PS4/5 Touchpad"
+msgstr "משטח מגע PS4/5"
+
 msgid "Joypad Button %d"
 msgstr "כפתור אמצעי %d"
 
@@ -191,6 +214,24 @@ msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
 msgstr "מסך נגרר עם %s נקודות נגיעה במיקום (%s) עם מהירות של (%s)"
 
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "הגדל מחווה ב-(%s) עם מקדם %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "‎תנועת הזזה ב־(%s) עם שינוי (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "קלט MIDI בערוץ=%s הודעה %s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "אירוע קלט עם קיצור=%s"
+
+msgid " or "
+msgstr " או "
+
+msgid "Action has no bound inputs"
+msgstr "לפעולה אין קלטים משויכים"
+
 msgid "Accept"
 msgstr "אישור"
 
@@ -200,11 +241,26 @@ msgstr "בחירה"
 msgid "Cancel"
 msgstr "ביטול"
 
+msgid "Focus Next"
+msgstr "מיקוד הבא"
+
+msgid "Focus Prev"
+msgstr "מיקוד הקודם"
+
 msgid "Up"
 msgstr "העלאה"
 
 msgid "Down"
 msgstr "הורדה"
+
+msgid "Page Up"
+msgstr "עמוד למעלה"
+
+msgid "Page Down"
+msgstr "עמוד למטה"
+
+msgid "Home"
+msgstr "בית"
 
 msgid "End"
 msgstr "סוף"
@@ -218,11 +274,20 @@ msgstr "העתקה"
 msgid "Paste"
 msgstr "הדבקה"
 
+msgid "Toggle Tab Focus Mode"
+msgstr "‎החלפת מצב מיקוד לשוניות"
+
 msgid "Undo"
 msgstr "ביטול"
 
 msgid "Redo"
 msgstr "ביצוע חוזר"
+
+msgid "Completion Query"
+msgstr "‎שאילתת השלמה"
+
+msgid "New Line"
+msgstr "קו חדש"
 
 msgid "New Blank Line"
 msgstr "שורה חדשה ריקה"
@@ -230,11 +295,71 @@ msgstr "שורה חדשה ריקה"
 msgid "New Line Above"
 msgstr "שורה חדשה מעל"
 
+msgid "Indent"
+msgstr "הזחה"
+
+msgid "Dedent"
+msgstr "הסרת הזחה"
+
+msgid "Backspace"
+msgstr "מחק אחורה"
+
+msgid "Backspace Word"
+msgstr "מחק מילה"
+
+msgid "Backspace all to Left"
+msgstr "מחק הכל לשמאל"
+
 msgid "Delete"
 msgstr "מחיקה"
 
 msgid "Delete Word"
 msgstr "מחק מילה"
+
+msgid "Delete all to Right"
+msgstr "מחק הכל לימין"
+
+msgid "Caret Left"
+msgstr "סמן שמאלה"
+
+msgid "Caret Word Left"
+msgstr "סמן מילה שמאלה"
+
+msgid "Caret Right"
+msgstr "סמן ימינה"
+
+msgid "Caret Word Right"
+msgstr "סמן מילה ימינה"
+
+msgid "Caret Up"
+msgstr "סמן למעלה"
+
+msgid "Caret Down"
+msgstr "סמן למטה"
+
+msgid "Caret Line Start"
+msgstr "סמן התחלת השורה"
+
+msgid "Caret Line End"
+msgstr "סמן סוף השורה"
+
+msgid "Caret Page Up"
+msgstr "סמן עמוד למעלה"
+
+msgid "Caret Page Down"
+msgstr "סמן עמוד למטה"
+
+msgid "Caret Document Start"
+msgstr "‎סמן תחילת המסמך"
+
+msgid "Caret Document End"
+msgstr "‎סמן סוף המסמך"
+
+msgid "Caret Add Below"
+msgstr "סמן הוסף מתחת"
+
+msgid "Caret Add Above"
+msgstr "סמן הוסף מעל"
 
 msgid "Scroll Up"
 msgstr "גלול מעלה"
@@ -251,17 +376,50 @@ msgstr "בחר מילה תחת הסמן"
 msgid "Add Selection for Next Occurrence"
 msgstr "הוסף את הבחירה עבור ההתרחשות הבאה"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "דלג על הבחירה עבור ההתרחשות הבאה"
+
 msgid "Clear Carets and Selection"
 msgstr "ניקוי הסמנים והבחירה"
 
+msgid "Toggle Insert Mode"
+msgstr "‎החלפת מצב הוספה"
+
 msgid "Submit Text"
 msgstr "ערוך טקסט"
+
+msgid "Duplicate Nodes"
+msgstr "‎שכפול צמתים"
+
+msgid "Delete Nodes"
+msgstr "מחיקת צמתים"
+
+msgid "Follow Input Port Connection"
+msgstr "‎עקוב אחרי חיבור כניסת הפורט"
+
+msgid "Follow Output Port Connection"
+msgstr "‎עקוב אחרי חיבור יציאת הפורט"
 
 msgid "Go Up One Level"
 msgstr "עלה רמה אחת"
 
 msgid "Refresh"
 msgstr "ריענון"
+
+msgid "Show Hidden"
+msgstr "הצג קבצים מוסתרים"
+
+msgid "Swap Input Direction"
+msgstr "החלף כיוון קלט"
+
+msgid "Start Unicode Character Input"
+msgstr "התחל קלט תו יוניקוד"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "ColorPicker: מחק תבנית"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "‎נגישות: גרירה ושחרור באמצעות המקלדת"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "קלט שגוי %d (לא הועבר) בתוך הביטוי"
@@ -337,6 +495,21 @@ msgstr "הדבקת מפתח(ות)"
 
 msgid "Delete Selected Key(s)"
 msgstr "מחיקת מפתח(ות) שנבחרו"
+
+msgid "Make Handles Free"
+msgstr "שחרר ידיות"
+
+msgid "Make Handles Linear"
+msgstr "הפוך ידיות לליניאריות"
+
+msgid "Make Handles Balanced"
+msgstr "‎הפוך ידיות למאוזנות"
+
+msgid "Make Handles Mirrored"
+msgstr "שקף ידיות"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "‎הפוך ידיות למאוזנות (מגע אוטומטי)"
 
 msgid "Add Bezier Point"
 msgstr "הוסף נקודת בזייה"
@@ -875,9 +1048,6 @@ msgstr "שנה מרווח הנפשה"
 msgid "Rearrange Tracks"
 msgstr "סדר רצועות מחדש"
 
-msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
-msgstr "רצועות שינוי־צורה חלות רק על מפרקים מבוססי־מרחב."
-
 msgid "Add Track"
 msgstr "הוספת רצועה"
 
@@ -1110,9 +1280,6 @@ msgstr "התקבל:"
 
 msgid "Asset Download Error:"
 msgstr "שגיאת הורדת נכס:"
-
-msgid "Downloading (%s / %s)..."
-msgstr "הורדה (%s% / s)..."
 
 msgid "Downloading..."
 msgstr "הורדה…"
@@ -3152,6 +3319,12 @@ msgstr "הוספת נקודה"
 msgid "Convert to Parallax2D"
 msgstr "המרה ל־Parallax2D"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
+
 msgid "Delete Point"
 msgstr "מחיקת נקודה"
 
@@ -3182,6 +3355,9 @@ msgstr "רשת"
 
 msgid "Configure Grid:"
 msgstr "הגדר רשת:"
+
+msgid "Skeleton2D"
+msgstr "Skeleton2D"
 
 msgid "Advanced"
 msgstr "מתקדם"
@@ -3345,6 +3521,12 @@ msgstr "הטיה (מעלות):"
 msgid "Scale (ratio):"
 msgstr "שינוי קנה מידה (יחס):"
 
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Split Path"
 msgstr "פיצול נתיב"
 
@@ -3356,6 +3538,9 @@ msgstr "עריכת מצולע"
 
 msgid "Edit Poly (Remove Point)"
 msgstr "עריכת מצולע (הסרת נקודה)"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
 
 msgid "Configure Snap"
 msgstr "הגדרת הצמדה"

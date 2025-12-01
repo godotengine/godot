@@ -78,13 +78,14 @@
 # Augusto Milão <augusto.milao01@gmail.com>, 2025.
 # Pedro Mateus <pedropmateus91@gmail.com>, 2025.
 # Diogo Gomes <dgomes@graphnode.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-29 08:02+0000\n"
-"Last-Translator: AegisTTN <tc.dev04@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:09+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -9329,7 +9330,7 @@ msgid "CPUParticles2D"
 msgstr "CPUParticles2D"
 
 msgid "Convert to GPUParticles2D"
-msgstr "Converter para CPUParticles2D"
+msgstr "Converter para GPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "Remover Ponto da curva"
@@ -9572,9 +9573,6 @@ msgstr "Definir Pose de Descanso para Ossos"
 
 msgid "Create Rest Pose from Bones"
 msgstr "Criar Pose de Descanso a partir de Ossos"
-
-msgid "Skeleton2D"
-msgstr "Esqueleto2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Pôr Ossos em Pose de Descanso"
@@ -10947,9 +10945,6 @@ msgstr ""
 msgid "UV Channel Debug"
 msgstr "Depuração Canal UV"
 
-msgid "Create NavigationMesh"
-msgstr "Criar Malha de Navegação"
-
 msgid ""
 "Before converting a rendering mesh to a navigation mesh, please verify:\n"
 "\n"
@@ -12099,9 +12094,6 @@ msgstr "Converter para CPUParticles3D"
 msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
 
-msgid "Convert to GPUParticles3D"
-msgstr "Converter para CPUParticles3D"
-
 msgid "Curve Point #"
 msgstr "Ponto da curva #"
 
@@ -12223,9 +12215,6 @@ msgstr "Reverter Osso"
 
 msgid "Revert"
 msgstr "Reverter"
-
-msgid "Skeleton3D"
-msgstr "Esqueleto3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Redefinir Todas as Posturas do Osso"
@@ -14202,9 +14191,6 @@ msgstr "Alternar Painel Inferior de SpriteFrames"
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "Mover ponto de preenchimento GradientTexture2D"
-
-msgid "Swap GradientTexture2D Fill Points"
-msgstr "Trocar pontos de preenchimento do Gradiente de Textura 2D"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Trocar Pontos de Preenchimento de Gradiente"
@@ -17897,9 +17883,6 @@ msgstr "Definir end_position"
 msgid "Create Navigation Polygon"
 msgstr "Criar Polígono de navegação"
 
-msgid "Bake NavigationPolygon"
-msgstr "Preparar Polígono de navegação"
-
 msgid ""
 "Bakes the NavigationPolygon by first parsing the scene for source geometry "
 "and then creating the navigation polygon vertices and polygons."
@@ -17907,9 +17890,6 @@ msgstr ""
 "Prepara o NavigationPolygon analisando primeiro a cena quanto à geometria de "
 "origem e, em seguida, criando os vértices de polígonos e polígono de "
 "navegação."
-
-msgid "Clear NavigationPolygon"
-msgstr "Limpar Polígono de navegação"
 
 msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
 msgstr "Limpa os contornos, vértices e polígonos internos do NavigationPolygon."
@@ -17991,18 +17971,12 @@ msgstr ""
 "Não é possível gerar a malha de navegação porque o recurso foi importado de "
 "outro tipo."
 
-msgid "Bake NavigationMesh"
-msgstr "Preparar Malha de Navegação"
-
 msgid ""
 "Bakes the NavigationMesh by first parsing the scene for source geometry and "
 "then creating the navigation mesh vertices and polygons."
 msgstr ""
 "Prepara o NavigationMesh analisando primeiro a cena em busca da geometria de "
 "origem e, em seguida, criando os vértices e polígonos da malha de navegação."
-
-msgid "Clear NavigationMesh"
-msgstr "Limpar Malha de Navegação"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Limpa os vértices e polígonos internos do NavigationMesh."
@@ -18777,13 +18751,6 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "O processo de notarização geralmente leva menos que uma hora."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Pode verificar o progresso manualmente abrindo um Terminal e a executar o "
-"seguinte comando:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -19396,10 +19363,6 @@ msgstr "Esta corrente de Bone2D deve terminar num nó Skeleton2D."
 
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr "Um Bone2D só funciona com um nó progenitor Skeleton2D ou Bone2D."
-
-msgid ""
-"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr "Falta uma pose DESCANSO a este osso. Vá ao nó Skeleton2D e defina uma."
 
 msgid ""
 "The TileMap node is deprecated as it is superseded by the use of multiple "

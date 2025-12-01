@@ -101,12 +101,13 @@
 # Tenium <eymenb2xxx@gmail.com>, 2025.
 # Metin Hakan Yılmaz <metinhakan04@hotmail.com>, 2025.
 # Murat Ugur <muratyer1005@gmail.com>, 2025.
+# Sueda Ünlü <sue.unlu@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-14 17:49+0000\n"
+"PO-Revision-Date: 2025-11-27 12:11+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -115,7 +116,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -1530,6 +1531,9 @@ msgstr "Sistem Sonçaresine İzin Ver"
 msgid "Force Autohinter"
 msgstr "Oto-İpucunu Zorla"
 
+msgid "Modulate Color Glyphs"
+msgstr "Renk Kabartmalarını Değiştir"
+
 msgid "Hinting"
 msgstr "İpucu"
 
@@ -1661,6 +1665,9 @@ msgstr "Normal Kaynağı"
 
 msgid "Process"
 msgstr "İşlem"
+
+msgid "Blue"
+msgstr "Mavi"
 
 msgid "Fix Alpha Border"
 msgstr "Alfa Kenarını Düzelt"
@@ -1912,6 +1919,9 @@ msgstr "Proje Yöneticisi Ekranı"
 msgid "Connection"
 msgstr "Bağlantı"
 
+msgid "Check for Updates"
+msgstr "Güncellemeleri Denetle"
+
 msgid "Use Embedded Menu"
 msgstr "Gömülü Menüyü Kullan"
 
@@ -2122,6 +2132,9 @@ msgstr "Dokunmatik Ekran"
 msgid "Scale Gizmo Handles"
 msgstr "Alet Tutamaçlarını Ölçekle"
 
+msgid "Touch Actions Panel"
+msgstr "Dokunma Eylemleri Paneli"
+
 msgid "Scene Tabs"
 msgstr "Sahne Sekmeleri"
 
@@ -2310,6 +2323,9 @@ msgstr "Bildirme Listesi"
 
 msgid "Appearance"
 msgstr "Dış görünüş"
+
+msgid "Enable Inline Color Picker"
+msgstr "Satır İçi Renk Seçiciyi Etkinleştir"
 
 msgid "Caret"
 msgstr "İmleç"
@@ -3618,6 +3634,33 @@ msgstr "Eklentileri Hariç Tut"
 
 msgid "Renamed in Godot 4 Hint"
 msgstr "Godot 4 İpucu'nda yeniden adlandırıldı"
+
+msgid "Unassigned Variable"
+msgstr "Atanmamış Değişken"
+
+msgid "Unused Signal"
+msgstr "Kullanılmayan Sinyal"
+
+msgid "Unreachable Code"
+msgstr "Ulaşılamayan Kod"
+
+msgid "Unreachable Pattern"
+msgstr "Ulaşılamaz Desen"
+
+msgid "Unsafe Property Access"
+msgstr "Güvenilir Olmayan Özellik Erişimi"
+
+msgid "Unsafe Method Access"
+msgstr "Güvenilir Olmayan Yöntem Erişimi"
+
+msgid "Missing Tool"
+msgstr "Eksik Araç"
+
+msgid "Assert Always True"
+msgstr "Her Zaman True Olarak Belirt"
+
+msgid "Assert Always False"
+msgstr "Her Zaman False Olarak Belirt"
 
 msgid "Language Server"
 msgstr "Dil Sunucusu"

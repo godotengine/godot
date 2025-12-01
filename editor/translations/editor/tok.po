@@ -6,12 +6,13 @@
 # Dark King <damir@t1c.ru>, 2024.
 # Julia Allen <juliaallen0626@gmail.com>, 2024.
 # Bee Crankson <ProfB.crankson@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-06-15 23:06+0000\n"
-"Last-Translator: Bee Crankson <ProfB.crankson@gmail.com>\n"
+"PO-Revision-Date: 2025-10-13 10:09+0000\n"
+"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
 "Language-Team: Toki Pona <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tok/>\n"
 "Language: tok\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.12-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Unset"
 msgstr "ala"
@@ -2969,7 +2970,7 @@ msgid "CPUParticles2D"
 msgstr "CPUParticles2D"
 
 msgid "Convert to GPUParticles2D"
-msgstr "o ante tawa ijo pali CPUParticles2D"
+msgstr "o ante tawa ijo pali GPUParticles2D"
 
 msgid "Remove Point from Curve"
 msgstr "o weka e lili tan linja"
@@ -3060,9 +3061,6 @@ msgstr "o ante tu e ma anpa ni: ijo pi linja mute"
 
 msgid "Polygon"
 msgstr "ijo pi linja mute"
-
-msgid "Skeleton2D"
-msgstr "ijo pali Skeleton2D"
 
 msgid "Create Polygon2D"
 msgstr "o pali sin e ijo Polygon2D"
@@ -3580,9 +3578,6 @@ msgstr "o tu e nasin"
 
 msgid "Create Polygon3D"
 msgstr "o pali sin e ijo Polygon3D"
-
-msgid "Skeleton3D"
-msgstr "ijo pali Skeleton3D"
 
 msgid "Rotate %d CanvasItems"
 msgstr "o sike e ijo CanvasItem %d"
@@ -5144,13 +5139,6 @@ msgstr "ijo pali B li wile PhysicsBody2D"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "ijo pali A en ijo pali B li wile ijo pali ante PhysicsBody2D"
-
-msgid ""
-"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
-"parent node!"
-msgstr ""
-"ijo pali PhysicalBode2D li pona kepeken mama Skeleton2D anu mama "
-"PhysicalBone2D ante taso!"
 
 msgid ""
 "The TileMap node is deprecated as it is superseded by the use of multiple "

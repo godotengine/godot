@@ -36,7 +36,7 @@
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
 # Brian <brian@brianthe.dev>, 2021.
 # Helmi Hibatullah <helmihibatullah393@gmail.com>, 2022.
-# ProgrammerIndonesia 44 <elo.jhy@gmail.com>, 2022.
+# ProgrammerIndonesia 44 <elo.jhy@gmail.com>, 2022, 2025.
 # Rizky Ramadhan <rizkyterm@gmail.com>, 2022.
 # Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
@@ -56,13 +56,14 @@
 # Andika Wiratana <andikawiratana@gmail.com>, 2025.
 # Fungki <fungki4444@gmail.com>, 2025.
 # Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>, 2025.
+# Dandihk <n00b38d@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-24 19:04+0000\n"
-"Last-Translator: Muhammad Affan Fahrozi <m.affanfahrozi@protonmail.com>\n"
+"PO-Revision-Date: 2025-10-26 15:03+0000\n"
+"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -255,8 +256,17 @@ msgstr "Subjendela"
 msgid "Embed Subwindows"
 msgstr "Menyematkan Subjendela"
 
+msgid "Frame Pacing"
+msgstr "Konsistensi kecepatan bingkai"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Aktifkan Konsistensi kecepatan bingkai"
+
+msgid "Swappy Mode"
+msgstr "Mode Swappy"
 
 msgid "Physics"
 msgstr "Fisika"
@@ -265,7 +275,7 @@ msgid "2D"
 msgstr "2D"
 
 msgid "Run on Separate Thread"
-msgstr "Jalankan di Thread Terpisah"
+msgstr "Jalankan di Utas Terpisah"
 
 msgid "3D"
 msgstr "3D"
@@ -407,6 +417,9 @@ msgstr "Deskriptor Maksimum per Pool"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "Deskriptor Maksimum per Bingkai"
 
 msgid "Max Sampler Descriptors per Frame"
 msgstr "Deskriptor Sampler Maks perframe"

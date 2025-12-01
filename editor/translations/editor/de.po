@@ -127,12 +127,14 @@
 # Elias Pozewaunig <elias.pozewaunig@it-gymnasium.at>, 2025.
 # Lukas Test <outlet_catchable536@simplelogin.com>, 2025.
 # Fox-Alpha <fox-alpha@tarnhoerner.de>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Winfried Gerlach <firmen@schoech.de>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-09-23 15:23+0000\n"
+"PO-Revision-Date: 2025-11-12 15:51+0000\n"
 "Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
@@ -141,7 +143,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Nicht gesetzt"
@@ -9615,7 +9617,7 @@ msgid "Loading emission mask requires ParticleProcessMaterial."
 msgstr "Das Laden der Emissionenmaske benötigt ParticleProcessMaterial."
 
 msgid "GPUParticles2D"
-msgstr "CPU-Partikel-2D"
+msgstr "GPUParticles2D"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Zu CPUParticles2D konvertieren"
@@ -9624,7 +9626,7 @@ msgid "Generation Time (sec):"
 msgstr "Erzeugungszeit (s):"
 
 msgid "CPUParticles2D"
-msgstr "CPU-Partikel-2D"
+msgstr "CPUParticles2D"
 
 msgid "Convert to GPUParticles2D"
 msgstr "Zu GPUParticles2D konvertieren"
@@ -9875,7 +9877,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Standardpose aus Knochen erstellen"
 
 msgid "Skeleton2D"
-msgstr "Skelett2D"
+msgstr "Skeleton2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Zu Standardpose zurücksetzen"
@@ -11304,7 +11306,7 @@ msgid "UV Channel Debug"
 msgstr "UV-Channel-Debug"
 
 msgid "Create NavigationMesh"
-msgstr "Navigation-Mesh erzeugen"
+msgstr "NavigationMesh erzeugen"
 
 msgid ""
 "Before converting a rendering mesh to a navigation mesh, please verify:\n"
@@ -12470,13 +12472,13 @@ msgid "Create Emission Points"
 msgstr "Erzeuge Emissionspunkte"
 
 msgid "GPUParticles3D"
-msgstr "GPU-Partikel-3D"
+msgstr "GPUParticles3D"
 
 msgid "Convert to CPUParticles3D"
 msgstr "Zu CPUParticles3D konvertieren"
 
 msgid "CPUParticles3D"
-msgstr "CPU-Partikel-3D"
+msgstr "CPUParticles3D"
 
 msgid "Convert to GPUParticles3D"
 msgstr "Zu GPUParticles3D konvertieren"
@@ -12609,7 +12611,7 @@ msgid "Revert"
 msgstr "Revertieren"
 
 msgid "Skeleton3D"
-msgstr "Skelett3D"
+msgstr "Skeleton3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Alle Knochen-Posen zurücksetzen"
@@ -14657,10 +14659,10 @@ msgid "Toggle color channel preview selection."
 msgstr "Farbkanalvorschauauswahl ein-/ausschalten."
 
 msgid "Move GradientTexture2D Fill Point"
-msgstr "GrandientTexture2D-Füllpunkte verschieben"
+msgstr "GradientTexture2D-Füllpunkt verschieben"
 
 msgid "Swap GradientTexture2D Fill Points"
-msgstr "GrandientTexture2D-Füllpunkte vertauschen"
+msgstr "GradientTexture2D-Füllpunkte vertauschen"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Gradientenfüllpunkte vertauschen"
@@ -18544,7 +18546,7 @@ msgstr ""
 "werden."
 
 msgid "Clear NavigationPolygon"
-msgstr "Leere Navigationspolygon"
+msgstr "NavigationPolygon leeren"
 
 msgid "Clears the internal NavigationPolygon outlines, vertices and polygons."
 msgstr "Leert die interne NavigationPolygon-Umrisse, Vertices und Polygone."
@@ -18647,7 +18649,7 @@ msgstr ""
 "werden."
 
 msgid "Clear NavigationMesh"
-msgstr "Navigations-Mesh leeren"
+msgstr "NavigationMesh leeren"
 
 msgid "Clears the internal NavigationMesh vertices and polygons."
 msgstr "Leert die internen NavigationMesh Ecken und Polygone."
@@ -19498,13 +19500,6 @@ msgid "The notarization process generally takes less than an hour."
 msgstr "Der Notarisierungprozess dauert gewöhnlich weniger als eine Stunde."
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Der Fortschritt kann manuell mithilfe des folgenden Befehls in der Konsole "
-"überprüft werden:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -20141,7 +20136,7 @@ msgstr ""
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
-"Dieser Bone hat keine korrekte Standardpose. Diese kann am Skeleton2D-Node "
+"Dieser Bone hat keine korrekte REST-Pose. Diese kann am Skeleton2D-Node "
 "festgelegt werden."
 
 msgid ""

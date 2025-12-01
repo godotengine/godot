@@ -29,13 +29,16 @@
 # labmem014 <52si53zac@mozmail.com>, 2025.
 # Joona Nousiainen <nousiainej@proton.me>, 2025.
 # Ellen <catskulllss@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Leo Peltola <leopeltola@gmail.com>, 2025.
+# sevonj <100710152+sevonj@users.noreply.github.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-26 18:02+0000\n"
-"Last-Translator: voeron <olsio@hotmail.com>\n"
+"PO-Revision-Date: 2025-11-08 15:51+0000\n"
+"Last-Translator: sevonj <100710152+sevonj@users.noreply.github.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -43,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Unset"
 msgstr "Asettamaton"
@@ -2986,6 +2989,9 @@ msgstr "Lista näyttömuistin käytöstä resurssikohtaisesti:"
 msgid "Total:"
 msgstr "Yhteensä:"
 
+msgid "Video RAM Total"
+msgstr "Video-RAM yhteensä"
+
 msgid "Export list to a CSV file"
 msgstr "Vie lista CSV tiedostoon"
 
@@ -4305,6 +4311,9 @@ msgstr "Aseta varjostin"
 msgid "Toggle Editable Children"
 msgstr "Ota käyttöön muokattavat alisolmut"
 
+msgid "Cut Node(s)"
+msgstr "Leikkaa solmu(t)"
+
 msgid "Remove Node(s)"
 msgstr "Poista solmu(t)"
 
@@ -4419,6 +4428,9 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Juurisolmua ei voi liittää samaan kohtaukseen."
+
+msgid "Paste Node(s) as Sibling of %s"
+msgstr "Liitä solmu(t) %s sisaruksina"
 
 msgid "Paste Node(s) as Child of %s"
 msgstr "Liitä solmu(t) %s Jälkeläisinä"
@@ -4882,7 +4894,7 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ei voi ladata uudelleen kohtausta, jota ei ole koskaan tallennettu."
 
 msgid "Save & Reload"
-msgstr "Tallenna & Lataa Uudelleen"
+msgstr "Tallenna & lataa uudelleen"
 
 msgid "Save before reloading the scene?"
 msgstr "Tallenna ennen kohtauksen uudelleenlataamista?"
@@ -4893,7 +4905,7 @@ msgstr ""
 "uudelleenlataamista?"
 
 msgid "Stop & Reload"
-msgstr "Pysäytä & Lataa Uudelleen"
+msgstr "Pysäytä & lataa uudelleen"
 
 msgid "Stop running project before exiting the editor?"
 msgstr "Pysäytä projektin suorittaminen ennen editorista poistumista?"
@@ -4902,7 +4914,7 @@ msgid "Stop & Quit"
 msgstr "Pysäytä & Poistu"
 
 msgid "Save modified resources before reloading?"
-msgstr "Tallennetaanko muokatut resurssit ennen uudelleen lataamista?"
+msgstr "Tallenna muokatut resurssit ennen uudelleenlataamista?"
 
 msgid "Save & Quit"
 msgstr "Tallenna ja lopeta"
@@ -5148,7 +5160,7 @@ msgstr ""
 "käyttöoikeudet ovat puutteelliset."
 
 msgid "Preparing scenes for reload"
-msgstr "Valmistellaan kohtauksia uudelleen lataamista varten"
+msgstr "Valmistellaan kohtauksia uudelleenlataausta varten"
 
 msgid "Analyzing scene %s"
 msgstr "Analysoidaan kohtausta %s"
@@ -5157,7 +5169,7 @@ msgid "Preparation done."
 msgstr "Valmistelut valmiit."
 
 msgid "Scenes reloading"
-msgstr "Kohtaukset lataamassa uudelleen"
+msgstr "Kohtauksia ladataan uudelleen"
 
 msgid "Reloading..."
 msgstr "Ladataan uudelleen..."
@@ -5272,7 +5284,7 @@ msgid "MeshLibrary..."
 msgstr "Mesh-kirjastoksi..."
 
 msgid "Reload Saved Scene"
-msgstr "Lataa tallennettu kohtaus uudelleen"
+msgstr "Uudelleenlataa tallennettu kohtaus"
 
 msgid "Close Scene"
 msgstr "Sulje kohtaus"
@@ -5316,8 +5328,11 @@ msgstr "Työkalut"
 msgid "Orphan Resource Explorer..."
 msgstr "Irrallisten resurssien hallinta..."
 
+msgid "Upgrade Project Files..."
+msgstr "Päivitä projekti-tiedostot..."
+
 msgid "Reload Current Project"
-msgstr "Lataa uudelleen nykyinen projekti"
+msgstr "Uudelleenlataa nykyinen projekti"
 
 msgid "Quit to Project List"
 msgstr "Poistu projektiluetteloon"
@@ -5330,6 +5345,9 @@ msgstr "Editorin ulkoasu"
 
 msgid "Take Screenshot"
 msgstr "Ota kuvakaappaus"
+
+msgid "Screenshots are stored in the user data folder (\"user://\")."
+msgstr "Kuvakaappaukset tallennetaan käyttäjän data-kansioon (\"user://\")."
 
 msgid "Toggle Fullscreen"
 msgstr "Vaihda koko näytön tila"
@@ -5400,8 +5418,14 @@ msgstr ""
 "valitaan Eteenpäin+.\n"
 "- Web-alustalla käytetään aina yhteensopivuusrenderointimenetelmää."
 
+msgid "Rendering Method"
+msgstr "Renderöintimetodi"
+
 msgid "Save & Restart"
 msgstr "Tallenna & käynnistä uudelleen"
+
+msgid "Update Mode"
+msgstr "Päivitystila"
 
 msgid "Update Continuously"
 msgstr "Päivitä jatkuvasti"
@@ -5421,8 +5445,14 @@ msgstr "Tarkastaja"
 msgid "Node"
 msgstr "Solmu"
 
+msgid "Open Node Dock"
+msgstr "Avaa solmutelakka"
+
 msgid "History"
 msgstr "Historia"
+
+msgid "Open History Dock"
+msgstr "Avaa historiatelakka"
 
 msgid "Don't Save"
 msgstr "Älä tallenna"
@@ -5458,7 +5488,10 @@ msgid "The following files are newer on disk:"
 msgstr "Seuraavat tiedostot ovat uudempia levyllä:"
 
 msgid "Reload from disk"
-msgstr "Lataa uudelleen levyltä"
+msgstr "Uudelleenlataa levyltä"
+
+msgid "Ignore external changes"
+msgstr "Jätä ulkoiset muutokset huomioimatta"
 
 msgid "Project data folder (.godot) is missing. Please restart editor."
 msgstr ""
@@ -5466,6 +5499,9 @@ msgstr ""
 
 msgid "Restart"
 msgstr "Käynnistä uudelleen"
+
+msgid "Create/Override Version Control Metadata..."
+msgstr "Luo/korvaa versionhallintajärjestelmän metadata..."
 
 msgid "Version Control Settings..."
 msgstr "Versionhallintajärjestelmän Asetukset..."
@@ -5482,6 +5518,9 @@ msgstr "Latausvirheet"
 msgid "Select Current"
 msgstr "Valitse nykyinen"
 
+msgid "Open Project Settings"
+msgstr "Avaa projektiasetukset"
+
 msgid "Open 2D Editor"
 msgstr "Avaa 2D-editori"
 
@@ -5490,6 +5529,9 @@ msgstr "Avaa 3D-editori"
 
 msgid "Open Script Editor"
 msgstr "Avaa skriptieditori"
+
+msgid "Open Game View"
+msgstr "Avaa pelinäkymä"
 
 msgid "Open Asset Library"
 msgstr "Avaa asset-kirjasto"
@@ -5917,6 +5959,9 @@ msgstr ""
 "Tälle versiolle ei löytynyt ladattavia linkkejä. Suora lataaminen on "
 "mahdollista vain virallisilla versioilla."
 
+msgid "Disconnected"
+msgstr "Yhteys katkaistu"
+
 msgid "Resolving"
 msgstr "Selvitetään"
 
@@ -5926,8 +5971,14 @@ msgstr "Ei voi selvittää"
 msgid "Can't Connect"
 msgstr "Ei voi yhdistää"
 
+msgid "Connected"
+msgstr "Yhdistetty"
+
 msgid "Downloading"
 msgstr "Ladataan"
+
+msgid "TLS Handshake Error"
+msgstr "TLS-kättelyvirhe"
 
 msgid "Can't open the export templates file."
 msgstr "Vientimallien tiedostoa ei voida avata."
@@ -6701,7 +6752,7 @@ msgid "Go to parent folder."
 msgstr "Siirry yläkansioon."
 
 msgid "Refresh files."
-msgstr "Lataa uudelleen tiedostot."
+msgstr "Päivitä tiedostot."
 
 msgid "(Un)favorite current folder."
 msgstr "Kansio suosikkeihin."
@@ -7723,17 +7774,8 @@ msgstr "Keskitetty"
 msgid "Capture Colors from Pixel"
 msgstr "Nappaa Värit Pikselistä"
 
-msgid "GPUParticles2D"
-msgstr "GPUPartikkelit2D"
-
-msgid "Convert to CPUParticles2D"
-msgstr "Muunna CPUParticles2D solmuksi"
-
 msgid "Generation Time (sec):"
 msgstr "Luontiaika (s):"
-
-msgid "CPUParticles2D"
-msgstr "CPUPartikkelit2D"
 
 msgid "Remove Point from Curve"
 msgstr "Poista pisteet käyrästä"
@@ -7920,9 +7962,6 @@ msgstr "Aseta lepoasento luille"
 
 msgid "Create Rest Pose from Bones"
 msgstr "Luo lepoasento luista"
-
-msgid "Skeleton2D"
-msgstr "Luuranko2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Palauta lepoasentoon"
@@ -8865,14 +8904,8 @@ msgstr "Pinnan pisteet"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Pinnan pisteet+normaali (suunnattu)"
 
-msgid "GPUParticles3D"
-msgstr "GPUPartikkelit3D"
-
 msgid "Convert to CPUParticles3D"
 msgstr "Muunna CPUParticles3D:ksi"
-
-msgid "CPUParticles3D"
-msgstr "CPUPartikkelit3D"
 
 msgid "Curve Point #"
 msgstr "Käyrän piste #"
@@ -8909,9 +8942,6 @@ msgstr "Muokkaa polygonia (poista piste)"
 
 msgid "Create physical bones"
 msgstr "Luo fyysiset luut"
-
-msgid "Skeleton3D"
-msgstr "Luuranko3D"
 
 msgid "Create Physical Skeleton"
 msgstr "Luo Fyysinen Luuranko"
@@ -9945,9 +9975,6 @@ msgstr ""
 msgid "Invalid file, not a PackedScene resource."
 msgstr "Virheellinen tiedosto, ei ole PackedScene resurssi."
 
-msgid "Reload the scene to reflect its most actual state."
-msgstr "Lataa kohtaus uudelleen vastaamaan sen todellisinta tilaa."
-
 msgid "Batch Rename"
 msgstr "Niputettu uudelleennimeäminen"
 
@@ -10531,7 +10558,7 @@ msgid "Import Theme..."
 msgstr "Tuo teema..."
 
 msgid "Reload Theme"
-msgstr "Lataa teema uudelleen"
+msgstr "Uudelleenlataa teema"
 
 msgid "Close All"
 msgstr "Sulje kaikki"
@@ -11037,6 +11064,9 @@ msgstr "Muokkaa Pikanäppäintä: %s"
 msgid "Common"
 msgstr "Yleinen"
 
+msgid "Event %d"
+msgstr "Tapahtuma %d"
+
 msgid "Editor Settings"
 msgstr "Editorin asetukset"
 
@@ -11089,7 +11119,7 @@ msgid "Joystick 2 Up"
 msgstr "Tatti 2 Ylös"
 
 msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
-msgstr "Oikea liipaisin, Sony L2, Xbox LT, tattiohjain 2 alas"
+msgstr "Oikea liipaisin, Sony L2, Xbox RT, tattiohjain 2 alas"
 
 msgid "Joystick 3 Left"
 msgstr "Tatti 3 Vasemmalle"
@@ -11212,13 +11242,16 @@ msgid "Close File"
 msgstr "Sulje Tiedosto"
 
 msgid "Shader Editor"
-msgstr "Varjostin Editori"
+msgstr "Varjostineditori"
+
+msgid "Global shader parameter '%s' already exists."
+msgstr "Globaali varjostinparametri '%s' on jo olemassa."
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Varoitukset tulisi korjata virheiden välttämisen vuoksi."
 
 msgid "Reload"
-msgstr "Lataa uudelleen"
+msgstr "Uudelleenlataa"
 
 msgid "Resave"
 msgstr "Tallenna uudelleen"
@@ -12358,13 +12391,6 @@ msgid "Invalid bundle identifier:"
 msgstr "Virheellinen bundle-tunniste:"
 
 msgid ""
-"You can check progress manually by opening a Terminal and running the "
-"following command:"
-msgstr ""
-"Voit tarkistaa edistymisen manuaalisesti avaamalla Terminaalin ja "
-"suorittamalla seuraavan komennon:"
-
-msgid ""
 "Run the following command to staple the notarization ticket to the exported "
 "application (optional):"
 msgstr ""
@@ -12651,28 +12677,6 @@ msgstr ""
 "Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
 "passes)."
 
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D toimii törmäysmuotona ainoastaan CollisionObject3D "
-"solmusta perityille solmuille.\n"
-"Käytä sitä ainoastaan Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, "
-"jne. alla antaaksesi niille muodon."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D toimii törmäysmuotona ainoastaan CollisionObject3D solmusta "
-"perityille solmuille.\n"
-"Käytä sitä ainoastaan Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, "
-"jne. alla antaaksesi niille muodon."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "Tämä kappale sivuutetaan, kunnes asetat meshin."
 
@@ -12747,7 +12751,7 @@ msgid ""
 "Shader keywords cannot be used as parameter names.\n"
 "Choose another name."
 msgstr ""
-"Varjostin avainsanoja ei voi käyttää parametrien niminä.\n"
+"Varjostimen avainsanoja ei voi käyttää parametrien niminä.\n"
 "Valitse toinen nimi."
 
 msgid ""
@@ -12900,10 +12904,3 @@ msgstr "Vakio '%s' on määritelty, mutta ei käytetty."
 
 msgid "The local variable '%s' is declared but never used."
 msgstr "Lokaali muuttuja '%s' on määritelty, mutta ei käytetty."
-
-msgid ""
-"The total size of the %s for this shader on this device has been exceeded (%d/"
-"%d). The shader may not work correctly."
-msgstr ""
-"%s suurin sallittu koko tälle varjostimelle tällä laitteella on ylitetty (%d/"
-"%d). Varjostin ei välttämättä toimi oikein."
