@@ -123,9 +123,9 @@
 				[b]Note:[/b] The size parameter is the size of the view projected onto the near plane. It is either the width or height, according to the value of [member keep_aspect].
 				[codeblock]
 				# If you want to match a given FOV, this formula might be helpful:
-				var fov:float = 75.0
-				var z_near:float = 0.1
-				var size:float = z_near * tan(deg_to_rad(fov / 2.0)) * 2.0
+				var fov = 75.0
+				var z_near = 0.1
+				var size = z_near * tan(deg_to_rad(fov / 2.0)) * 2.0
 				[/codeblock]
 			</description>
 		</method>
