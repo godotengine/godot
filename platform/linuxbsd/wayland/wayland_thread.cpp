@@ -4330,7 +4330,7 @@ void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, b
 		// possible to destroy the frame more than once, by setting the visibility
 		// to false multiple times and thus crashing.
 		if (visible_current != visible_target) {
-			print_verbose(vformat("Setting libdecor frame visibility to %d", visible_target));
+			print_verbose(vformat("Setting libdecor frame visibility to %s", visible_target));
 			libdecor_frame_set_visibility(ws.libdecor_frame, visible_target);
 		}
 	}
