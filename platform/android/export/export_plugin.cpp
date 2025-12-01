@@ -3956,6 +3956,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		android_editor_gradle_runner->run_gradle(
 				project_path,
 				build_path.substr(project_path.length()),
+				export_path.path_join(export_filename),
 				cmdline,
 				copy_args);
 #else
