@@ -5461,10 +5461,7 @@ Error BindingsGenerator::_generate_cs_interface_method(const TypeInterface &p_it
 	}
 
 	const TypeInterface *return_type = _get_type_or_null(p_imethod.return_type);
-	if (!return_type) {
-		ERR_PRINT("Return type '" + p_imethod.return_type.cname.operator String() + "' not found for method '" + p_imethod.name + "' in interface I" + p_itype.proxy_name + ".");
-		return ERR_INVALID_DATA;
-	}
+	ERR_FAIL_NULL_V_MSG(return_type, ERR_INVALID_DATA, vformat("Return type '%s' not found for method '%s' in interface I%s.", p_imethod.return_type.cname.operator String(), p_imethod.name, p_itype.proxy_name));
 
 	// Only for non-span version to avoid duplication.
 	if (!p_use_span && p_imethod.method_doc && p_imethod.method_doc->description.size()) {
@@ -5473,9 +5470,9 @@ Error BindingsGenerator::_generate_cs_interface_method(const TypeInterface &p_it
 
 		if (summary_lines.size()) {
 			p_output.append("\n" INDENT1 "/// <summary>\n");
-			for (int i = 0; i < summary_lines.size(); i++) {
+			for (const String &summary_line : summary_lines) {
 				p_output.append(INDENT1 "/// ");
-				p_output.append(summary_lines[i]);
+				p_output.append(summary_line);
 				p_output.append("\n");
 			}
 			p_output.append(INDENT1 "/// </summary>\n");
@@ -5499,10 +5496,7 @@ Error BindingsGenerator::_generate_cs_interface_method(const TypeInterface &p_it
 	bool first_arg = true;
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
 		const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-		if (!arg_type) {
-			ERR_PRINT("Argument type '" + iarg.type.cname.operator String() + "' not found for method '" + p_imethod.name + "' in interface I" + p_itype.proxy_name + ".");
-			continue;
-		}
+		ERR_CONTINUE_MSG(!arg_type, vformat("Argument type '%s' not found for method '%s' in interface I%s.", iarg.type.cname.operator String(), p_imethod.name, p_itype.proxy_name));
 
 		if (!first_arg) {
 			p_output.append(", ");
@@ -5565,9 +5559,9 @@ Error BindingsGenerator::_generate_cs_interface(const TypeInterface &p_itype, co
 
 			if (summary_lines.size()) {
 				output.append("/// <summary>\n");
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (const String &summary_line : summary_lines) {
 					output.append("/// ");
-					output.append(summary_lines[i]);
+					output.append(summary_line);
 					output.append("\n");
 				}
 				output.append("/// </summary>\n");
@@ -5600,8 +5594,7 @@ Error BindingsGenerator::_generate_cs_interface(const TypeInterface &p_itype, co
 				output.append(base_type.proxy_name);
 			}
 		} else {
-			ERR_PRINT("Base type '" + p_itype.base_name.operator String() + "' does not exist for interface I" + p_itype.proxy_name + ".");
-			return ERR_INVALID_DATA;
+			ERR_FAIL_V_MSG(ERR_INVALID_DATA, vformat("Base type '%s' does not exist for interface I%s.", p_itype.base_name.operator String(), p_itype.proxy_name));
 		}
 	}
 
@@ -5676,9 +5669,9 @@ Error BindingsGenerator::_generate_cs_interface(const TypeInterface &p_itype, co
 
 			if (summary_lines.size()) {
 				output.append(INDENT1 "/// <summary>\n");
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (const String &summary_line : summary_lines) {
 					output.append(INDENT1 "/// ");
-					output.append(summary_lines[i]);
+					output.append(summary_line);
 					output.append("\n");
 				}
 				output.append(INDENT1 "/// </summary>\n");
@@ -5729,9 +5722,9 @@ Error BindingsGenerator::_generate_cs_interface(const TypeInterface &p_itype, co
 
 			if (summary_lines.size()) {
 				output.append("\n" INDENT1 "/// <summary>\n");
-				for (int i = 0; i < summary_lines.size(); i++) {
+				for (const String &summary_line : summary_lines) {
 					output.append(INDENT1 "/// ");
-					output.append(summary_lines[i]);
+					output.append(summary_line);
 					output.append("\n");
 				}
 				output.append(INDENT1 "/// </summary>\n");
