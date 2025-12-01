@@ -97,20 +97,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+#ifndef ANDROID_ENABLED
 	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
-#ifndef ANDROID_ENABLED
+
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
-#else
+#else // ANDROID_ENABLED
 	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
-#endif
+#endif // ANDROID_ENABLED
 
 	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
@@ -223,6 +224,7 @@ public:
 
 	virtual bool should_update_export_options() override;
 
+#ifndef ANDROID_ENABLED
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
@@ -240,6 +242,7 @@ public:
 	virtual String get_device_architecture(int p_index) const override;
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
+#endif // ANDROID_ENABLED
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 
