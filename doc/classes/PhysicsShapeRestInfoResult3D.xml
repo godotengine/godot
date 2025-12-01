@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsShapeRestInfoResult3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the nearest collision information of a shape query.
+	</brief_description>
+	<description>
+		This class contains the collision data computed by [method PhysicsDirectSpaceState3D.get_rest_info].
+		If the shape collides with multiple objects, only the nearest collision is stored.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
+			The unique ID of the colliding shape.
+		</member>
+		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid" default="RID()">
+			The [RID] of the colliding shape.
+		</member>
+		<member name="collider_shape" type="int" setter="" getter="get_collider_shape" default="0">
+			The shape index of the colliding shape.
+		</member>
+		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity" default="Vector3(0, 0, 0)">
+			The linear velocity of the colliding object. If the object is an [Area3D], the result is [code]Vector3(0, 0, 0)[/code].
+		</member>
+		<member name="collision_normal" type="Vector3" setter="" getter="get_collision_normal" default="Vector3(0, 0, 0)">
+			The collision normal at the intersection point, pointing away from the colliding shape.
+		</member>
+		<member name="collision_point" type="Vector3" setter="" getter="get_collision_point" default="Vector3(0, 0, 0)">
+			The collision point on the colliding shape.
+		</member>
+	</members>
+</class>

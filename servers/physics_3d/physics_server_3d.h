@@ -126,6 +126,7 @@ class PhysicsShapeQueryParameters3D;
 class PhysicsShapeIntersectionResult3D;
 class PhysicsShapeCastResult3D;
 class PhysicsShapeCollisionResult3D;
+class PhysicsShapeRestInfoResult3D;
 
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
@@ -136,7 +137,7 @@ private:
 	bool _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult3D> rp_result);
 	bool _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCastResult3D> rp_result);
 	bool _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCollisionResult3D> rp_result);
-	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
+	bool _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeRestInfoResult3D> rp_result);
 
 protected:
 	static void _bind_methods();
@@ -147,6 +148,7 @@ protected:
 	TypedArray<Dictionary> _intersect_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 	TypedArray<Vector3> _collide_shape_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info_bind_compat_113970(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -1072,6 +1074,25 @@ public:
 
 	Vector3 get_collision_point_a(int p_collision_index = 0) const;
 	Vector3 get_collision_point_b(int p_collision_index = 0) const;
+};
+
+class PhysicsShapeRestInfoResult3D : public RefCounted {
+	GDCLASS(PhysicsShapeRestInfoResult3D, RefCounted);
+
+	PhysicsDirectSpaceState3D::ShapeRestInfo result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	PhysicsDirectSpaceState3D::ShapeRestInfo *get_result_ptr() { return &result; }
+
+	Vector3 get_collision_point() const;
+	Vector3 get_collision_normal() const;
+	RID get_collider_rid() const;
+	ObjectID get_collider_id() const;
+	int get_collider_shape() const;
+	Vector3 get_collider_velocity() const;
 };
 
 class PhysicsTestMotionParameters3D : public RefCounted {

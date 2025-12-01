@@ -34,17 +34,12 @@
 			</description>
 		</method>
 		<method name="get_rest_info">
-			<return type="Dictionary" />
+			<return type="bool" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
+			<param index="1" name="result" type="PhysicsShapeRestInfoResult3D" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
-				[code]collider_id[/code]: The colliding object's ID.
-				[code]linear_velocity[/code]: The colliding object's velocity [Vector3]. If the object is an [Area3D], the result is [code](0, 0, 0)[/code].
-				[code]normal[/code]: The collision normal of the query shape at the intersection point, pointing away from the intersecting object.
-				[code]point[/code]: The intersection point.
-				[code]rid[/code]: The intersecting object's [RID].
-				[code]shape[/code]: The shape index of the colliding shape.
-				If the shape did not intersect anything, then an empty dictionary is returned instead.
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters3D] object, against the space.
+				If the shape collides with one or more shapes, this method returns [code]true[/code] and writes the nearest collision information into the [PhysicsShapeRestInfoResult3D] object passed in [code skip-lint]result[/code]. If no collisions occur, it returns [code]false[/code].
 				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object.
 			</description>
 		</method>
