@@ -922,8 +922,8 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 	uint32_t lightmap_captures_used = 0;
 
 	Plane near_plane = Plane(-p_render_data->scene_data->cam_transform.basis.get_column(Vector3::AXIS_Z), p_render_data->scene_data->cam_transform.origin);
-	near_plane.d += p_render_data->scene_data->cam_projection.get_z_near();
-	float z_max = p_render_data->scene_data->cam_projection.get_z_far() - p_render_data->scene_data->cam_projection.get_z_near();
+	near_plane.d += p_render_data->scene_data->z_near;
+	float z_max = p_render_data->scene_data->z_far - p_render_data->scene_data->z_near;
 
 	RenderList *rl = &render_list[p_render_list];
 	_update_dirty_geometry_instances();
@@ -943,7 +943,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		GeometryInstanceForwardClustered *inst = static_cast<GeometryInstanceForwardClustered *>((*p_render_data->instances)[i]);
 
 		Vector3 center = inst->transform.origin;
-		if (p_render_data->scene_data->cam_orthogonal) {
+		if (p_render_data->scene_data->cam_is_orthogonal) {
 			if (inst->use_aabb_center) {
 				center = inst->transformed_aabb.get_support(-near_plane.normal);
 			}
@@ -1070,7 +1070,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 		float lod_distance = 0.0;
 
-		if (p_render_data->scene_data->cam_orthogonal) {
+		if (p_render_data->scene_data->cam_is_orthogonal) {
 			lod_distance = 1.0;
 		} else {
 			Vector3 aabb_min = inst->transformed_aabb.position;
@@ -1299,7 +1299,7 @@ void RenderForwardClustered::_debug_draw_cluster(Ref<RenderSceneBuffersRD> p_ren
 ////////////////////////////////////////////////////////////////////////////////
 // FOG SHADER
 
-void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Frustum &p_cam_frustum, bool p_cam_is_orthogonal, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
@@ -1367,7 +1367,7 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 		settings.sky = &sky;
 		settings.gi = &gi;
 
-		RendererRD::Fog::get_singleton()->volumetric_fog_update(settings, p_cam_projection, p_cam_transform, p_prev_cam_inv_transform, p_shadow_atlas, p_directional_light_count, p_use_directional_shadows, p_positional_light_count, p_voxel_gi_count, p_fog_volumes);
+		RendererRD::Fog::get_singleton()->volumetric_fog_update(settings, p_cam_frustum, p_cam_is_orthogonal, p_cam_transform, p_prev_cam_inv_transform, p_shadow_atlas, p_directional_light_count, p_use_directional_shadows, p_positional_light_count, p_voxel_gi_count, p_fog_volumes);
 	}
 }
 
@@ -1619,7 +1619,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		// This only works as we don't filter our cluster by depth buffer.
 		// If we ever make this optimization we should make it optional and only use it in mono.
 		// What we win by filtering out a few lights, we loose by having to do the work double for stereo.
-		current_cluster_builder->begin(p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, !p_render_data->reflection_probe.is_valid());
+		current_cluster_builder->begin(p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_frustum, !p_render_data->reflection_probe.is_valid());
 	}
 
 	bool using_shadows = true;
@@ -1647,7 +1647,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	if (rb_data.is_valid()) {
 		RENDER_TIMESTAMP("Update Volumetric Fog");
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
-		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
+		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_frustum, p_render_data->scene_data->cam_is_orthogonal, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
 	}
 }
 
@@ -2761,6 +2761,7 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = !p_flip_y; // Q: Why is this inverted? Do we assume flip in shadow logic?
 	scene_data.cam_projection = p_projection;
+	scene_data.cam_frustum = p_projection.get_projection_planes(Transform3D());
 	scene_data.cam_transform = p_transform;
 	scene_data.view_projection[0] = p_projection;
 	scene_data.z_far = p_zfar;
@@ -2859,6 +2860,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = true;
 	scene_data.cam_projection = p_cam_projection;
+	scene_data.cam_frustum = p_cam_projection.get_projection_planes(Transform3D());
 	scene_data.cam_transform = p_cam_transform;
 	scene_data.view_projection[0] = p_cam_projection;
 	scene_data.z_near = 0.0;
@@ -2898,13 +2900,14 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
+void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Frustum &p_cam_frustum, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
+	scene_data.cam_frustum = p_cam_frustum;
 	scene_data.cam_transform = p_cam_transform;
 	scene_data.view_projection[0] = p_cam_projection;
 	scene_data.dual_paraboloid_side = 0;
@@ -3086,6 +3089,7 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 		float v_size = half_size[up_axis];
 		float d_size = half_size[i] * 2.0;
 		scene_data.cam_projection.set_orthogonal(-h_size, h_size, -v_size, v_size, 0, d_size);
+		scene_data.cam_frustum.set_orthogonal(-h_size, h_size, -v_size, v_size, 0, d_size);
 		//print_line("pass: " + itos(i) + " cam hsize: " + rtos(h_size) + " vsize: " + rtos(v_size) + " dsize " + rtos(d_size));
 
 		Transform3D to_bounds;

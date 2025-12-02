@@ -129,7 +129,7 @@ private:
 public:
 	// Before each pass with a different camera, you must call this so the culler can pre-create
 	// the camera frustum planes and corner points in world space which are used for the culling.
-	bool prepare_camera(const Transform3D &p_cam_transform, const Projection &p_cam_matrix);
+	bool prepare_camera(const Transform3D &p_cam_transform, const Frustum &p_cam_frustum);
 
 	// REGULAR LIGHTS (SPOT, OMNI).
 	// These are prepared then used for culling one by one, single threaded.

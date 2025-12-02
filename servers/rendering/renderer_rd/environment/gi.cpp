@@ -3120,7 +3120,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(2)) > 0);
 
 				Projection cm;
+				Frustum fm;
 				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
+				fm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
 
 				if (RendererSceneRenderRD::get_singleton()->cull_argument.size() == 0) {
 					RendererSceneRenderRD::get_singleton()->cull_argument.push_back(nullptr);
@@ -3132,7 +3134,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					exposure_normalization = gi->voxel_gi_get_baked_exposure_normalization(probe);
 				}
 
-				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
+				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, fm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
 
 				Vector3 ps = octree_size / gi->voxel_gi_get_bounds(probe).size;
 				float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space

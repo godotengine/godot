@@ -517,7 +517,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
 				float z_near = p_render_data->scene_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->scene_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_compute(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_compute(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_is_orthogonal);
 			};
 		} else {
 			// Set framebuffers.
@@ -540,7 +540,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
 				float z_near = p_render_data->scene_data->view_projection[i].get_z_near();
 				float z_far = p_render_data->scene_data->view_projection[i].get_z_far();
-				bokeh_dof->bokeh_dof_raster(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_orthogonal);
+				bokeh_dof->bokeh_dof_raster(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_is_orthogonal);
 			}
 		}
 		RD::get_singleton()->draw_command_end_label();
@@ -1040,7 +1040,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 				RID base = light_storage->light_instance_get_base_light(light);
 
 				if (light_storage->light_get_type(base) == RS::LIGHT_DIRECTIONAL) {
-					debug_effects->draw_shadow_frustum(light, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, dest_fb, Rect2(Size2(), size));
+					debug_effects->draw_shadow_frustum(light, p_render_data->scene_data->cam_frustum, p_render_data->scene_data->cam_is_orthogonal, p_render_data->scene_data->cam_transform, dest_fb, Rect2(Size2(), size));
 				}
 			}
 		}
@@ -1310,8 +1310,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		// Our first camera is used by default
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
-		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
-		scene_data.cam_frustum = p_camera_data->is_frustum;
+		scene_data.cam_frustum = p_camera_data->main_frustum;
+		scene_data.cam_is_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.cam_is_frustum = p_camera_data->is_frustum;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 		scene_data.taa_frame_count = p_camera_data->taa_frame_count;
@@ -1332,8 +1333,8 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			scene_data.prev_view_projection[v] = p_prev_camera_data->view_projection[v];
 		}
 
-		scene_data.z_near = p_camera_data->main_projection.get_z_near();
-		scene_data.z_far = p_camera_data->main_projection.get_z_far();
+		scene_data.z_near = p_camera_data->main_frustum.get_z_near();
+		scene_data.z_far = p_camera_data->main_frustum.get_z_far();
 
 		// this should be the same for all cameras..
 		const float lod_distance_multiplier = p_camera_data->main_projection.get_lod_multiplier();
@@ -1427,8 +1428,8 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	_render_scene(&render_data, clear_color);
 }
 
-void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
-	_render_material(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_instances, p_framebuffer, p_region, 1.0);
+void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Frustum &p_cam_frustum, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+	_render_material(p_cam_transform, p_cam_projection, p_cam_frustum, p_cam_orthogonal, p_instances, p_framebuffer, p_region, 1.0);
 }
 
 void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) {
