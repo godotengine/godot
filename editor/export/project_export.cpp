@@ -1401,27 +1401,6 @@ void ProjectExportDialog::_open_export_template_manager() {
 	EditorNode::get_singleton()->open_export_template_manager();
 }
 
-void ProjectExportDialog::_validate_export_path(const String &p_path) {
-	// Disable export via OK button or Enter key if LineEdit has an empty filename
-	bool invalid_path = (p_path.get_file().get_basename().is_empty());
-
-	// Check if state change before needlessly messing with signals
-	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-	if (!invalid_path && !export_project->get_ok_button()->is_disabled()) {
-		return;
-	}
-
-	if (invalid_path) {
-		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	} else {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-}
-
 void ProjectExportDialog::_export_project() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
@@ -1446,16 +1425,6 @@ void ProjectExportDialog::_export_project() {
 			export_project->set_current_file(default_filename);
 		}
 	}
-
-	// Ensure that signal is connected if previous attempt left it disconnected
-	// with _validate_export_path.
-	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
-	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
-		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
-	}
-
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_file_dialog();
 }
@@ -2041,7 +2010,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
-	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));

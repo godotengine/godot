@@ -1003,6 +1003,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_color("folder_icon_color", "FileDialog", (p_config.dark_icon_and_font ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(p_config.accent_color, 0.7));
 		p_theme->set_color("file_disabled_color", "FileDialog", p_config.font_disabled_color);
 
+		p_theme->set_constant("thumbnail_size", "EditorFileDialog", p_config.thumb_size);
+
 		// PopupDialog.
 		p_theme->set_stylebox(SceneStringName(panel), "PopupDialog", p_config.dialog_style);
 

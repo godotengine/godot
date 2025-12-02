@@ -31,6 +31,7 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
@@ -261,7 +262,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_title(TTR("Open Shader / Choose Location"));
 	file_browse->set_ok_button_text(TTR("Open"));
 
-	file_browse->set_disable_overwrite_warning(true);
+	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 
 	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
