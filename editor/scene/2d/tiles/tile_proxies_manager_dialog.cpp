@@ -96,7 +96,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	Array proxies = tile_set->get_source_level_tile_proxies();
 	for (int i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
-		String text = vformat("%s", proxy[0]).rpad(5) + "-> " + vformat("%s", proxy[1]);
+		String text = vformat("%s", proxy[0]).rpad(5) + U"→ " + vformat("%s", proxy[1]);
 		int id = source_level_list->add_item(text);
 		source_level_list->set_item_metadata(id, proxy[0]);
 	}
@@ -104,7 +104,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	proxies = tile_set->get_coords_level_tile_proxies();
 	for (int i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
-		String text = vformat("%s, %s", proxy[0], proxy[1]).rpad(17) + "-> " + vformat("%s, %s", proxy[2], proxy[3]);
+		String text = vformat("%s, %s", proxy[0], proxy[1]).rpad(17) + U"→ " + vformat("%s, %s", proxy[2], proxy[3]);
 		int id = coords_level_list->add_item(text);
 		coords_level_list->set_item_metadata(id, proxy.slice(0, 2));
 	}
@@ -112,7 +112,7 @@ void TileProxiesManagerDialog::_update_lists() {
 	proxies = tile_set->get_alternative_level_tile_proxies();
 	for (int i = 0; i < proxies.size(); i++) {
 		Array proxy = proxies[i];
-		String text = vformat("%s, %s, %s", proxy[0], proxy[1], proxy[2]).rpad(24) + "-> " + vformat("%s, %s, %s", proxy[3], proxy[4], proxy[5]);
+		String text = vformat("%s, %s, %s", proxy[0], proxy[1], proxy[2]).rpad(24) + U"→ " + vformat("%s, %s, %s", proxy[3], proxy[4], proxy[5]);
 		int id = alternative_level_list->add_item(text);
 		alternative_level_list->set_item_metadata(id, proxy.slice(0, 3));
 	}

@@ -367,7 +367,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					show_error_diag = true;
 					const Ref<PackedScene> scene = res;
 					if (scene.is_valid()) {
-						error_dialog->set_text(TTR("The file you selected is an imported scene from a 3D model such as glTF or FBX.\n\nIn Godot, 3D models can be imported as either scenes or animation libraries, which is why they show up here.\n\nIf you want to use animations from this 3D model, open the Advanced Import Settings\ndialog and save the animations using Actions... -> Set Animation Save Paths,\nor import the whole scene as a single AnimationLibrary in the Import dock."));
+						error_dialog->set_text(TTR(U"The file you selected is an imported scene from a 3D model such as glTF or FBX.\n\nIn Godot, 3D models can be imported as either scenes or animation libraries, which is why they show up here.\n\nIf you want to use animations from this 3D model, open the Advanced Import Settings\ndialog and save the animations using Actions... → Set Animation Save Paths,\nor import the whole scene as a single AnimationLibrary in the Import dock."));
 					} else {
 						error_dialog->set_text(TTR("The file you selected is not a valid AnimationLibrary.\n\nIf the animations you want are inside of this file, save them to a separate file first."));
 					}
