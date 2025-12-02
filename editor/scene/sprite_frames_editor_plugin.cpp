@@ -2410,6 +2410,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
 
 	split_sheet_dialog = memnew(ConfirmationDialog);
+	split_sheet_dialog->set_flag(Window::FLAG_MAXIMIZE_DISABLED, false);
 	add_child(split_sheet_dialog);
 	split_sheet_dialog->set_title(TTRC("Select Frames"));
 	split_sheet_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_sheet_add_frames));
@@ -2654,7 +2655,9 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	file_split_sheet->set_title(TTRC("Create Frames from Sprite Sheet"));
 	file_split_sheet->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_split_sheet);
-	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet));
+	// Deferred so file dialog is hidden when sprite sheet dialog popups. Otherwise, after allowing
+	// sprite sheet dialog to be maximized, it would complain about already having exclusive child window.
+	file_split_sheet->connect("file_selected", callable_mp(this, &SpriteFramesEditor::_prepare_sprite_sheet), CONNECT_DEFERRED);
 
 	// Config scale.
 	scale_ratio = 1.2f;
