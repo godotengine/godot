@@ -30,8 +30,6 @@
 
 #include "editor_vcs_interface.h"
 
-#include "core/error/error_macros.h"
-#include "core/io/file_access.h"
 #include "editor/editor_node.h"
 
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
