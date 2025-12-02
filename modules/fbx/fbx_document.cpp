@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
@@ -2678,7 +2679,14 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				fbx_uvs.write[i] = { (ufbxw_real)uv0[i].x, (ufbxw_real)uv0[i].y };
 			}
 			ufbxw_vec2_buffer uvs_buffer = ufbxw_copy_vec2_array(write_scene, fbx_uvs.ptr(), fbx_uvs.size());
-			ufbxw_mesh_set_uvs(write_scene, fbx_mesh, 0, uvs_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+			// Create indices matching vertex order to avoid buggy index generation path
+			Vector<int32_t> uv_indices;
+			uv_indices.resize(uv0.size());
+			for (int i = 0; i < uv0.size(); i++) {
+				uv_indices.write[i] = i;
+			}
+			ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
+			ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, 0, uvs_buffer, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
 		}
 
 		// Get second UV set if available
@@ -2690,7 +2698,14 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				fbx_uvs.write[i] = { (ufbxw_real)uv1[i].x, (ufbxw_real)uv1[i].y };
 			}
 			ufbxw_vec2_buffer uvs_buffer = ufbxw_copy_vec2_array(write_scene, fbx_uvs.ptr(), fbx_uvs.size());
-			ufbxw_mesh_set_uvs(write_scene, fbx_mesh, 1, uvs_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
+			// Create indices matching vertex order to avoid buggy index generation path
+			Vector<int32_t> uv_indices;
+			uv_indices.resize(uv1.size());
+			for (int i = 0; i < uv1.size(); i++) {
+				uv_indices.write[i] = i;
+			}
+			ufbxw_int_buffer uv_indices_buffer = ufbxw_copy_int_array(write_scene, uv_indices.ptr(), uv_indices.size());
+			ufbxw_mesh_set_uvs_indexed(write_scene, fbx_mesh, 1, uvs_buffer, uv_indices_buffer, UFBXW_ATTRIBUTE_MAPPING_VERTEX);
 		}
 
 		// Get vertex colors if available
@@ -3059,18 +3074,47 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 	}
 
+	// Prepare scene before saving (recommended by ufbx_write API)
+	// This validates and prepares the scene structure for export
+	ufbxw_prepare_scene(write_scene, nullptr); // Use default prepare options
+
+	// Ensure the output directory exists
+	String dir = p_path.get_base_dir();
+	if (!dir.is_empty()) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da.is_valid() && !da->dir_exists(dir)) {
+			Error mkdir_err = da->make_dir_recursive(dir);
+			if (mkdir_err != OK) {
+				ERR_PRINT("FBX export: Failed to create directory: " + dir);
+				ufbxw_free_scene(write_scene);
+				return ERR_FILE_CANT_WRITE;
+			}
+		}
+	}
+
 	// Initialize save options with format (0 = Binary, 1 = ASCII)
+	// Version defaults to 7500 if not set (handled by ufbx_write internally)
 	ufbxw_save_opts save_opts = {};
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
+	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
+
+	// Convert path to absolute path for ufbx_write
+	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	if (abs_path.is_empty()) {
+		abs_path = p_path; // Fallback to original path if globalize fails
+	}
 
 	// Write FBX file
 	ufbxw_error error = {};
-	bool success = ufbxw_save_file(write_scene, p_path.utf8().get_data(), &save_opts, &error);
+	bool success = ufbxw_save_file(write_scene, abs_path.utf8().get_data(), &save_opts, &error);
 	ufbxw_free_scene(write_scene);
 
 	if (!success) {
 		if (error.type != UFBXW_ERROR_NONE) {
 			ERR_PRINT("FBX write error: " + String::utf8(error.description, (int)error.description_length));
+			ERR_PRINT("FBX write path: " + abs_path);
+		} else {
+			ERR_PRINT("FBX write failed with unknown error. Path: " + abs_path);
 		}
 		return ERR_FILE_CANT_WRITE;
 	}
