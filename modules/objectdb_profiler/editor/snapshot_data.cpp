@@ -264,7 +264,7 @@ void GameStateSnapshot::_get_rc_cycles(
 		SnapshotDataObject *next_obj = p_obj->snapshot->objects[next_child.value];
 		String next_name = next_obj == p_source_obj ? "self" : next_obj->get_name();
 		String current_name = p_obj == p_source_obj ? "self" : p_obj->get_name();
-		String child_path = current_name + "[\"" + next_child.key + "\"] -> " + next_name;
+		String child_path = current_name + "[\"" + next_child.key + U"\"] → " + next_name;
 		if (p_current_path != "") {
 			child_path = p_current_path + "\n" + child_path;
 		}

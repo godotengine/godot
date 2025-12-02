@@ -758,7 +758,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (closest_for_tooltip >= 0) {
 				String from = transition_lines[closest_for_tooltip].from_node;
 				String to = transition_lines[closest_for_tooltip].to_node;
-				String tooltip = from + " -> " + to;
+				String tooltip = from + U" → " + to;
 				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
 				state_machine_draw->set_tooltip_text("");
@@ -2222,7 +2222,7 @@ bool EditorAnimationMultiTransitionEdit::_get(const StringName &p_name, Variant 
 	StringName prop = String(p_name).get_slicec('/', 1);
 
 	if (prop == "transition_path") {
-		r_property = String(transitions[index].from) + " -> " + transitions[index].to;
+		r_property = String(transitions[index].from) + U" → " + transitions[index].to;
 		return true;
 	}
 
