@@ -34,8 +34,13 @@ void GPUParticles2D::_restart_bind_compat_92089() {
 	restart(false);
 }
 
+void GPUParticles2D::_request_particles_process_bind_compat_109142(real_t p_time) {
+	request_particles_process(p_time, 0.);
+}
+
 void GPUParticles2D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("restart"), &GPUParticles2D::_restart_bind_compat_92089);
+	ClassDB::bind_compatibility_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles2D::_request_particles_process_bind_compat_109142);
 }
 
 #endif // DISABLE_DEPRECATED

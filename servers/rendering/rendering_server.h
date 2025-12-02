@@ -89,6 +89,7 @@ protected:
 	void _canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
 	void _instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated);
 	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
+	void _particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -785,7 +786,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
-	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) = 0;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual = 0.0) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;

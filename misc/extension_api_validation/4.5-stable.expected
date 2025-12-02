@@ -174,3 +174,14 @@ Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_unique_name
 Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_use_named_skin_binds': is_const changed value in new API, from false to true.
 
 GLTFState getters made const. Compatibility methods registered.
+
+
+GH-109142
+---------
+Validate extension JSON: Error: Field 'classes/CPUParticles3D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/CPUParticles2D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/GPUParticles2D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/GPUParticles3D/methods/request_particles_process/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/particles_request_process_time/arguments': size changed value in new API, from 2 to 3.
+
+Optional argument added. Compatibility methods registered.

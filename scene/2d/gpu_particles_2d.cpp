@@ -366,8 +366,15 @@ uint32_t GPUParticles2D::get_seed() const {
 	return seed;
 }
 
-void GPUParticles2D::request_particles_process(real_t p_requested_process_time) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+void GPUParticles2D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
+	if (p_requested_process_time > 0.0) {
+		emitting = true;
+		RS::get_singleton()->particles_set_emitting(particles, true);
+	}
+	if (p_request_process_time_residual > 0.0) {
+		emitting = false;
+	}
 }
 
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
@@ -878,7 +885,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles2D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &GPUParticles2D::request_particles_process, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);

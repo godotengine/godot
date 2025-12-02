@@ -55,9 +55,10 @@
 		<method name="request_particles_process">
 			<return type="void" />
 			<param index="0" name="process_time" type="float" />
+			<param index="1" name="process_time_residual" type="float" default="0.0" />
 			<description>
-				Requests the particles to process for extra process time during a single frame.
-				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
+				Requests the particles to process for extra process time during a single frame, while the particles are not emitting.
+				[b]Note:[/b] Supplying a value greater than zero turns emission off.
 			</description>
 		</method>
 		<method name="restart">
