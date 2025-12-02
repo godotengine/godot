@@ -2546,7 +2546,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (node_name.is_empty()) {
 			node_name = "Node" + itos(i);
 		}
-		ufbxw_set_name(write_scene, fbx_node.id, node_name.utf8().get_data());
+		// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+		CharString node_name_utf8 = node_name.utf8();
+		ufbxw_set_name_len(write_scene, fbx_node.id, node_name_utf8.get_data(), node_name_utf8.length());
 
 		// Set transform
 		Transform3D transform = gltf_node->transform;
@@ -2625,7 +2627,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (mesh_name.is_empty()) {
 			mesh_name = "Mesh" + itos(mesh_i);
 		}
-		ufbxw_set_name(write_scene, fbx_mesh.id, mesh_name.utf8().get_data());
+		// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+		CharString mesh_name_utf8 = mesh_name.utf8();
+		ufbxw_set_name_len(write_scene, fbx_mesh.id, mesh_name_utf8.get_data(), mesh_name_utf8.length());
 
 		// Process surfaces - try all surfaces until we find one with valid data
 		// For CSG and other meshes, the first surface might be empty
@@ -2829,7 +2833,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (mat_name.is_empty()) {
 			mat_name = "Material" + itos(mat_i);
 		}
-		ufbxw_set_name(write_scene, material_id, mat_name.utf8().get_data());
+		// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+		CharString mat_name_utf8 = mat_name.utf8();
+		ufbxw_set_name_len(write_scene, material_id, mat_name_utf8.get_data(), mat_name_utf8.length());
 
 		gltf_to_fbx_materials[mat_i] = fbx_material;
 
@@ -2903,7 +2909,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			if (cam_name.is_empty()) {
 				cam_name = "Camera" + itos(cam_i);
 			}
-			ufbxw_set_name(write_scene, fbx_camera.id, cam_name.utf8().get_data());
+			// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+			CharString cam_name_utf8 = cam_name.utf8();
+			ufbxw_set_name_len(write_scene, fbx_camera.id, cam_name_utf8.get_data(), cam_name_utf8.length());
 
 			// TODO: Set camera properties (FOV, near/far planes, projection type)
 			// ufbx_write may need property setters for camera-specific properties
@@ -2941,7 +2949,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			if (light_name.is_empty()) {
 				light_name = "Light" + itos(light_i);
 			}
-			ufbxw_set_name(write_scene, fbx_light.id, light_name.utf8().get_data());
+			// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+			CharString light_name_utf8 = light_name.utf8();
+			ufbxw_set_name_len(write_scene, fbx_light.id, light_name_utf8.get_data(), light_name_utf8.length());
 
 			// Set light properties
 			Color light_color = gltf_light->get_color();
@@ -3024,7 +3034,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Set skin name if available
 		String skin_name = gltf_skin->get_name();
 		if (!skin_name.is_empty()) {
-			ufbxw_set_name(write_scene, fbx_skin_deformer.id, skin_name.utf8().get_data());
+			// Use utf8() to get CharString, then use length() to avoid strlen on boundary strings
+			CharString skin_name_utf8 = skin_name.utf8();
+			ufbxw_set_name_len(write_scene, fbx_skin_deformer.id, skin_name_utf8.get_data(), skin_name_utf8.length());
 		}
 
 		gltf_to_fbx_skins[skin_i] = fbx_skin_deformer;
@@ -3187,14 +3199,13 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
 
-	// Use StreamPeerBuffer for memory-based write stream to avoid fseek/fwrite issues
-	// This writes to a StreamPeerBuffer first, then saves to file using Godot's FileAccess
+	// Use PackedByteArray for memory-based write stream to avoid fseek/fwrite issues
+	// This writes to a PackedByteArray first, then saves to file using Godot's FileAccess
+	// Note: PackedByteArray is used instead of StreamPeerBuffer because ufbx_write requires
+	// true random-access writes at specific offsets, which StreamPeerBuffer (cursor-based)
+	// cannot efficiently provide. PackedByteArray allows direct memory access via ptrw().
 	struct MemoryWriteStream {
-		Ref<StreamPeerBuffer> buffer;
-		
-		MemoryWriteStream() {
-			buffer.instantiate();
-		}
+		PackedByteArray buffer;
 		
 		static bool write_fn(void *user, uint64_t offset, const void *data, size_t size) {
 			MemoryWriteStream *stream = (MemoryWriteStream*)user;
@@ -3219,7 +3230,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			int64_t size_i64 = (int64_t)size;
 			
 			// Calculate required end position, checking for overflow
-			int64_t current_size = stream->buffer->get_size();
+			int64_t current_size = stream->buffer.size();
 			int64_t end = offset_i64 + size_i64;
 			
 			// Check for integer overflow in addition
@@ -3229,17 +3240,24 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				return false; // Overflow detected
 			}
 			
-			// Resize buffer if needed
+			// Resize buffer if needed (must do this before getting ptrw())
 			// Need to resize if: offset >= current_size OR end > current_size
 			// This handles the off-by-one: if offset == current_size, we need to resize
 			// We need at least (offset + size) bytes, so resize to 'end'
 			if (offset_i64 >= current_size || end > current_size) {
 				// Resize to end (which is offset + size)
-				stream->buffer->resize(end);
+				// After resize, valid indices are 0 to (end-1)
+				// We write from offset to (offset+size-1), which is valid if offset < end and offset+size <= end
+				Error resize_err = stream->buffer.resize(end);
+				if (resize_err != OK) {
+					ERR_PRINT("FBX write stream: resize() failed - requested=" + itos(end) + 
+					          ", error=" + itos((int)resize_err));
+					return false; // Resize failed
+				}
 				
 				// Verify resize succeeded and allocated enough space
 				// Re-check size after resize in case it changed
-				int64_t new_size = stream->buffer->get_size();
+				int64_t new_size = stream->buffer.size();
 				if (new_size < end) {
 					ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
 					          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
@@ -3248,17 +3266,30 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 				}
 			}
 			
-			// Seek to the target offset for random access write
-			stream->buffer->seek(offset_i64);
-			
-			// Write data using StreamPeerBuffer's put_data method
-			Error write_err = stream->buffer->put_data((const uint8_t *)data, size_i64);
-			if (write_err != OK) {
-				ERR_PRINT("FBX write stream: put_data() failed - offset=" + itos(offset_i64) + 
-				          ", size=" + itos(size_i64) + ", error=" + itos((int)write_err));
-				return false; // Write failed
+			// Get writable pointer AFTER resize (important: pointer may change after resize)
+			uint8_t *w = stream->buffer.ptrw();
+			if (!w) {
+				ERR_PRINT("FBX write stream: ptrw() returned null");
+				return false; // Failed to get writable pointer
 			}
 			
+			// Final bounds check before memcpy (defensive programming)
+			// After resize to 'end', buffer_size should be >= end, so offset+size should be valid
+			int64_t buffer_size = stream->buffer.size();
+			
+			// Check both: offset must be within bounds AND offset+size must be within bounds
+			// This handles edge cases where offset == buffer_size (which is out of bounds)
+			if (offset_i64 < 0 || offset_i64 >= buffer_size || offset_i64 + size_i64 > buffer_size) {
+				// This should not happen after resize, but if it does, it's an error
+				ERR_PRINT("FBX write stream: bounds check failed - offset=" + itos(offset_i64) + 
+				          ", size=" + itos(size_i64) + ", buffer_size=" + itos(buffer_size) +
+				          ", end=" + itos(end) + ", current_size=" + itos(current_size));
+				return false; // Out of bounds
+			}
+			
+			// Write directly to buffer at offset (random access, no cursor)
+			// Safe: we've verified 0 <= offset < buffer_size and offset+size <= buffer_size above
+			memcpy(w + offset_i64, data, size);
 			return true;
 		}
 		
@@ -3300,9 +3331,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		return ERR_FILE_CANT_WRITE;
 	}
 	
-	// Get the data array from StreamPeerBuffer and write to file
-	Vector<uint8_t> buffer_data = mem_stream.buffer->get_data_array();
-	file->store_buffer(buffer_data);
+	// Write PackedByteArray buffer to file
+	file->store_buffer(mem_stream.buffer.ptr(), mem_stream.buffer.size());
 	file->flush();
 	file.unref();
 
