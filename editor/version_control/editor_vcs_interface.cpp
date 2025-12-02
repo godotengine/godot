@@ -388,19 +388,16 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
         } else {
             f = FileAccess::open(path, FileAccess::WRITE);
         }
-        if (f.is_valid()) {
-            String current_content = f->get_as_text();
-            if (current_content.find("* text=auto eol=lf") == -1) {
-                f->seek_end();
-                if (!current_content.is_empty()) {
-                    f->store_line("");
-                }
-                f->store_line("# Normalize EOL for all files that Git considers text files.");
-                f->store_line("* text=auto eol=lf");
+        ERR_FAIL_COND_MSG(f.is_null(), "Could not open .gitattributes for writing.");
+        current_content = f->get_as_text();
+        if (!current_content.contains("* text=auto eol=lf")) {
+            f->seek_end();
+            if (!current_content.is_empty()) {
+                f->store_line("");
             }
-            f->close();
-        } else {
-             ERR_FAIL_MSG("Could not open .gitattributes for writing.");
+            f->store_line("# Normalize EOL for all files that Git considers text files.");
+            f->store_line("* text=auto eol=lf");
         }
+        f->close();
     }
 }
