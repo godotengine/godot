@@ -42,6 +42,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -821,8 +822,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	animations_menu->clear();
 	animations_to_add.clear();
 
-	List<StringName> animation_names;
-	tree->get_animation_list(&animation_names);
+	LocalVector<StringName> animation_names = tree->get_sorted_animation_list();
 	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);

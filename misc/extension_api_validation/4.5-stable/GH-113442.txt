@@ -1,0 +1,6 @@
+GH-113442
+---------
+Validate extension JSON: Error: Field 'classes/Animation/methods/get_length/return_value': meta changed value in new API, from "float" to "double".
+Validate extension JSON: Error: Field 'classes/Animation/methods/set_length/arguments/0': meta changed value in new API, from "float" to "double".
+
+Return type and parameter changed from real_t to double to match internals. No compatibility methods registered because GDExtension FFI already uses double.
