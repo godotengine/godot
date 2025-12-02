@@ -1943,9 +1943,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	// Editor inspector.
 	{
 		// Panel.
-		Ref<StyleBoxEmpty> editor_inspector_panel = p_config.base_empty_style->duplicate();
-		editor_inspector_panel->set_content_margin_all(p_config.base_margin * 2 * EDSCALE);
-		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", editor_inspector_panel);
+		p_theme->set_stylebox(SceneStringName(panel), "EditorInspector", p_config.base_empty_style);
 
 		// Vertical separation between inspector categories and sections.
 		p_theme->set_constant("v_separation", "EditorInspector", Math::ceil(p_config.base_margin * 0.5 * EDSCALE));
