@@ -199,7 +199,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
 
-	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
 	void _export_all_dialog();

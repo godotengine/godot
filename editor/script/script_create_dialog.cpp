@@ -459,7 +459,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 		file_browse->set_title(TTR("Open Script"));
 	}
 
-	file_browse->set_disable_overwrite_warning(true);
+	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 	List<String> extensions;
 
