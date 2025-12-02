@@ -382,7 +382,7 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 		}
 		f->close();
 		path = p_dir.path_join(".gitattributes");
-		f = Ref<FileAccess>(); 
+		f = Ref<FileAccess>();
 		if (FileAccess::exists(path)) {
 			f = FileAccess::open(path, FileAccess::READ_WRITE);
 		} else {
