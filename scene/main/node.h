@@ -276,8 +276,10 @@ private:
 
 		bool use_placeholder : 1;
 
+#ifdef DEBUG_ENABLED
 		bool display_folded : 1;
 		bool editable_instance : 1;
+#endif
 
 		bool ready_notified : 1;
 		bool ready_first : 1;
@@ -621,8 +623,13 @@ public:
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
 
+#ifdef DEBUG_ENABLED
 	void set_editable_instance(Node *p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
+#else
+	void set_editable_instance(Node *p_node, bool p_editable) {}
+	bool is_editable_instance(const Node *p_node) const { return false; }
+#endif
 	Node *get_deepest_editable_node(Node *p_start_node) const;
 
 #ifdef TOOLS_ENABLED
@@ -788,8 +795,13 @@ public:
 
 	void update_configuration_warnings();
 
+#ifdef DEBUG_ENABLED
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
+#else
+	void set_display_folded(bool p_folded) {}
+	bool is_displayed_folded() const { return false; }
+#endif
 
 	/* NETWORK */
 
