@@ -412,6 +412,15 @@ String OS_AppleEmbedded::get_resource_dir() const {
 #endif
 }
 
+String OS_AppleEmbedded::get_bundle_resource_dir() const {
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str) {
+		return OS_Unix::get_bundle_resource_dir();
+	} else {
+		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+	}
+}
+
 String OS_AppleEmbedded::get_locale() const {
 	NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject;
 
