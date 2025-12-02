@@ -47,6 +47,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
+#include "servers/audio/audio_effect.h"
 #include "servers/audio/audio_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
@@ -219,6 +220,227 @@ Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool do_mute = p_args[0];
 	AudioServer::get_singleton()->set_debug_mute(do_mute);
+	return OK;
+}
+
+Error SceneDebugger::_msg_sync_audio_buses(const Array &p_args) {
+	// Accept a serializable dictionary of bus data and apply it live.
+	if (p_args.size() != 1 || p_args[0].get_type() != Variant::DICTIONARY) {
+		return ERR_INVALID_DATA;
+	}
+
+	Dictionary layout = p_args[0];
+	if (!layout.has("buses")) {
+		return ERR_INVALID_DATA;
+	}
+
+	Array buses = layout["buses"];
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return ERR_UNAVAILABLE;
+	}
+
+	// Ensure we can safely apply while a scene is running.
+	if (!SceneTree::get_singleton() || !SceneTree::get_singleton()->get_root()) {
+		return ERR_UNAVAILABLE;
+	}
+
+	// Resize bus count to match.
+	const int target_count = buses.size();
+	int current_count = as->get_bus_count();
+	// Add buses if needed.
+	while (current_count < target_count) {
+		as->add_bus(-1);
+		current_count++;
+	}
+	// Remove extra buses (but never remove Master at index 0).
+	while (current_count > target_count && current_count > 1) {
+		as->remove_bus(current_count - 1);
+		current_count--;
+	}
+
+	// Apply per-bus properties.
+	const int apply_count = MIN(current_count, target_count);
+	for (int i = 0; i < apply_count; i++) {
+		Dictionary b = buses[i];
+		if (b.has("name")) {
+			const String want = String(b["name"]);
+			if (as->get_bus_name(i) != want) {
+				as->set_bus_name(i, want);
+			}
+		}
+		if (b.has("send")) {
+			const StringName want = StringName(String(b["send"]));
+			if (as->get_bus_send(i) != want) {
+				as->set_bus_send(i, want);
+			}
+		}
+		if (b.has("volume_db")) {
+			const float want = (float)b["volume_db"];
+			if (!Math::is_equal_approx(as->get_bus_volume_db(i), want)) {
+				as->set_bus_volume_db(i, want);
+			}
+		}
+		if (b.has("solo")) {
+			const bool want = (bool)b["solo"];
+			if (as->is_bus_solo(i) != want) {
+				as->set_bus_solo(i, want);
+			}
+		}
+		if (b.has("mute")) {
+			const bool want = (bool)b["mute"];
+			if (as->is_bus_mute(i) != want) {
+				as->set_bus_mute(i, want);
+			}
+		}
+		if (b.has("bypass")) {
+			const bool want = (bool)b["bypass"];
+			if (as->is_bus_bypassing_effects(i) != want) {
+				as->set_bus_bypass_effects(i, want);
+			}
+		}
+
+		// Effects: update in place to minimize interruptions (minimal-diff using LCS).
+		if (b.has("effects") && Variant(b["effects"]).get_type() == Variant::ARRAY) {
+			Array effects = b["effects"];
+			const int curr_count = as->get_bus_effect_count(i);
+			const int incoming_count = effects.size();
+
+			// Gather current and desired class sequences.
+			Vector<String> curr;
+			curr.resize(curr_count);
+			for (int e = 0; e < curr_count; e++) {
+				Ref<AudioEffect> ex = as->get_bus_effect(i, e);
+				curr.write[e] = ex.is_valid() ? ex->get_class() : String();
+			}
+			Vector<String> want;
+			want.resize(incoming_count);
+			for (int e = 0; e < incoming_count; e++) {
+				Dictionary fx = effects[e];
+				want.write[e] = fx.has("class") ? String(fx["class"]) : String();
+			}
+
+			// Compute LCS of class names.
+			const int n = curr.size();
+			const int m = want.size();
+			Vector<Vector<int>> dp;
+			dp.resize(n + 1);
+			for (int ii = 0; ii <= n; ii++) {
+				dp.write[ii].resize(m + 1);
+				for (int jj = 0; jj <= m; jj++) {
+					dp.write[ii].write[jj] = 0;
+				}
+			}
+			for (int ii = 1; ii <= n; ii++) {
+				for (int jj = 1; jj <= m; jj++) {
+					if (curr[ii - 1] == want[jj - 1]) {
+						dp.write[ii].write[jj] = dp[ii - 1][jj - 1] + 1;
+					} else {
+						dp.write[ii].write[jj] = MAX(dp[ii - 1][jj], dp[ii][jj - 1]);
+					}
+				}
+			}
+
+			// Build LCS sequence (class names) without push_front by filling backwards.
+			Vector<String> lcs;
+			{
+				const int lcs_len = dp[n][m];
+				lcs.resize(lcs_len);
+				int pos = lcs_len - 1;
+				int ii = n, jj = m;
+				while (ii > 0 && jj > 0) {
+					if (curr[ii - 1] == want[jj - 1]) {
+						if (pos >= 0) {
+							lcs.write[pos] = curr[ii - 1];
+							pos--;
+						}
+						ii--;
+						jj--;
+					} else if (dp[ii - 1][jj] >= dp[ii][jj - 1]) {
+						ii--;
+					} else {
+						jj--;
+					}
+				}
+			}
+
+			// Transform current chain into desired using LCS-guided edits.
+			int ci = 0, wi = 0, li = 0;
+			while (li < lcs.size()) {
+				// Remove non-LCS from current at position ci.
+				while (ci < as->get_bus_effect_count(i)) {
+					Ref<AudioEffect> ex = as->get_bus_effect(i, ci);
+					String ex_class = ex.is_valid() ? ex->get_class() : String();
+					if (ex_class == lcs[li]) {
+						break;
+					}
+					as->remove_bus_effect(i, ci); // removal shifts next into this index
+				}
+				// Insert missing desired until we reach LCS token.
+				while (wi < want.size() && want[wi] != lcs[li]) {
+					const String class_name = want[wi];
+					if (!class_name.is_empty()) {
+						Ref<AudioEffect> afxr = Object::cast_to<AudioEffect>(ClassDB::instantiate(class_name));
+						if (afxr.is_valid()) {
+							as->add_bus_effect(i, afxr, ci);
+							ci++; // advance past inserted
+						}
+					}
+					wi++;
+				}
+				// Skip the LCS token in both sequences.
+				if (ci < as->get_bus_effect_count(i)) {
+					ci++;
+				}
+				if (wi < want.size()) {
+					wi++;
+				}
+				li++;
+			}
+			// Remove any remaining extras from current.
+			while (ci < as->get_bus_effect_count(i)) {
+				as->remove_bus_effect(i, ci);
+			}
+			// Append any remaining desired.
+			while (wi < want.size()) {
+				const String class_name = want[wi];
+				if (!class_name.is_empty()) {
+					Ref<AudioEffect> afxr = Object::cast_to<AudioEffect>(ClassDB::instantiate(class_name));
+					if (afxr.is_valid()) {
+						as->add_bus_effect(i, afxr, -1);
+					}
+				}
+				wi++;
+			}
+
+			// Apply parameters and enabled flags for all incoming effects.
+			for (int e = 0; e < incoming_count; e++) {
+				Dictionary fx = effects[e];
+				const int final_count = as->get_bus_effect_count(i);
+				Ref<AudioEffect> eff = (e < final_count) ? as->get_bus_effect(i, e) : Ref<AudioEffect>();
+				if (eff.is_valid() && fx.has("params") && Variant(fx["params"]).get_type() == Variant::DICTIONARY) {
+					Dictionary params = fx["params"];
+					LocalVector<Variant> keys = params.get_key_list();
+					for (const Variant &k : keys) {
+						const StringName prop = StringName(String(k));
+						const Variant &val = params[k];
+						Variant cur = eff->get(prop);
+						if (cur != val) {
+							eff->set(prop, val);
+						}
+					}
+				}
+				if (fx.has("enabled") && e < final_count) {
+					bool want_enabled = (bool)fx["enabled"];
+					if (as->is_bus_effect_enabled(i, e) != want_enabled) {
+						as->set_bus_effect_enabled(i, e, want_enabled);
+					}
+				}
+			}
+		}
+	}
+
 	return OK;
 }
 
@@ -539,6 +761,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["next_frame"] = _msg_next_frame;
 	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
+	message_handlers["sync_audio_buses"] = _msg_sync_audio_buses;
 	message_handlers["override_cameras"] = _msg_override_cameras;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
@@ -1766,6 +1989,10 @@ void RuntimeNodeSelect::_update_input_state() {
 }
 
 void RuntimeNodeSelect::_process_frame() {
+#ifdef DEBUG_ENABLED
+	// Stream audio peaks to the editor UI at low frequency.
+	SceneDebugger::send_audio_peaks();
+#endif
 #ifndef _3D_DISABLED
 	if (camera_freelook) {
 		Transform3D transform = _get_cursor_transform();
@@ -3017,4 +3244,65 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 }
 #endif // _3D_DISABLED
 
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void SceneDebugger::_send_audio_peaks() {
+	// Throttle to ~10 Hz using a frame counter (avoids OS tick queries).
+	static int frame_counter = 0;
+	static int stride = 6;
+	// Adjust stride based on current FPS (~10 Hz target).
+	const double fps = MAX(1.0, Engine::get_singleton()->get_frames_per_second());
+	const int new_stride = CLAMP(int(Math::round(fps / 10.0)), 1, 30);
+	if (new_stride != stride) {
+		stride = new_stride;
+		frame_counter = 0; // resync
+	}
+	if ((++frame_counter % stride) != 0) {
+		return;
+	}
+
+	if (!EngineDebugger::is_active()) {
+		return;
+	}
+	// Skip while scene is suspended to avoid stale peak snapshots.
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_suspended()) {
+		return;
+	}
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return;
+	}
+
+	Array payload;
+	const int bus_count = as->get_bus_count();
+	for (int i = 0; i < bus_count; i++) {
+		const int cc = as->get_bus_channels(i);
+		PackedFloat32Array lefts;
+		PackedFloat32Array rights;
+		PackedByteArray actives;
+		lefts.resize(cc);
+		rights.resize(cc);
+		actives.resize(cc);
+		for (int c = 0; c < cc; c++) {
+			lefts.write[c] = as->get_bus_peak_volume_left_db(i, c);
+			rights.write[c] = as->get_bus_peak_volume_right_db(i, c);
+			actives.write[c] = as->is_bus_channel_active(i, c) ? uint8_t(1) : uint8_t(0);
+		}
+		Array bus_arr;
+		bus_arr.push_back(i);
+		bus_arr.push_back(lefts);
+		bus_arr.push_back(rights);
+		bus_arr.push_back(actives);
+		payload.push_back(bus_arr);
+	}
+
+	EngineDebugger::get_singleton()->send_message("scene:audio_peaks", payload);
+}
+
+void SceneDebugger::send_audio_peaks() {
+	_send_audio_peaks();
+}
 #endif // DEBUG_ENABLED

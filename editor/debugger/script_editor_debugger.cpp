@@ -65,6 +65,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
+#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_stream.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display/display_server.h"
 
@@ -461,6 +463,57 @@ void ScriptEditorDebugger::_msg_scene_debug_mute_audio(uint64_t p_thread_id, con
 	// This is handled by SceneDebugger, we need to ignore here to not show a warning.
 }
 
+void ScriptEditorDebugger::_msg_scene_audio_peaks(uint64_t p_thread_id, const Array &p_data) {
+	if (p_data.is_empty()) {
+		return;
+	}
+	const Array &payload = p_data; // payload is the array of per-bus dictionaries.
+	remote_bus_peaks.clear();
+	for (int i = 0; i < payload.size(); i++) {
+		Array bus_arr = payload[i];
+		if (bus_arr.size() != 4) {
+			continue;
+		}
+		int bus_index = int(bus_arr[0]);
+		PackedFloat32Array lefts = bus_arr[1];
+		PackedFloat32Array rights = bus_arr[2];
+		PackedByteArray actives = bus_arr[3];
+		const int cc = MIN(lefts.size(), MIN(rights.size(), actives.size()));
+		Vector<ChannelPeak> v;
+		v.resize(cc);
+		for (int c = 0; c < cc; c++) {
+			ChannelPeak cp;
+			cp.l_db = lefts[c];
+			cp.r_db = rights[c];
+			cp.active = actives[c] != 0;
+			v.write[c] = cp;
+		}
+		remote_bus_peaks[bus_index] = v;
+	}
+	remote_bus_peaks_last_ms = OS::get_singleton()->get_ticks_msec();
+}
+
+bool ScriptEditorDebugger::get_remote_audio_bus_peaks(int p_bus_index, Vector<float> &r_left_db, Vector<float> &r_right_db, Vector<bool> &r_active) const {
+	// Require fresh data (avoid stale display when session stops).
+	const uint64_t now = OS::get_singleton()->get_ticks_msec();
+	if (now > remote_bus_peaks_last_ms + 500) {
+		return false;
+	}
+	const Vector<ChannelPeak> *peaks = remote_bus_peaks.getptr(p_bus_index);
+	if (!peaks) {
+		return false;
+	}
+	r_left_db.resize(peaks->size());
+	r_right_db.resize(peaks->size());
+	r_active.resize(peaks->size());
+	for (int i = 0; i < peaks->size(); i++) {
+		const ChannelPeak &cp = (*peaks)[i];
+		r_left_db.write[i] = cp.l_db;
+		r_right_db.write[i] = cp.r_db;
+		r_active.write[i] = cp.active;
+	}
+	return true;
+}
 void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data) {
 	vmem_tree->clear();
 	TreeItem *root = vmem_tree->create_item();
@@ -994,6 +1047,7 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["scene:inspect_object"] = &ScriptEditorDebugger::_msg_scene_inspect_object;
 #endif // DISABLE_DEPRECATED
 	parse_message_handlers["scene:debug_mute_audio"] = &ScriptEditorDebugger::_msg_scene_debug_mute_audio;
+	parse_message_handlers["scene:audio_peaks"] = &ScriptEditorDebugger::_msg_scene_audio_peaks;
 	parse_message_handlers["servers:memory_usage"] = &ScriptEditorDebugger::_msg_servers_memory_usage;
 	parse_message_handlers["servers:drawn"] = &ScriptEditorDebugger::_msg_servers_drawn;
 	parse_message_handlers["stack_dump"] = &ScriptEditorDebugger::_msg_stack_dump;
@@ -1750,6 +1804,75 @@ void ScriptEditorDebugger::reload_all_scripts() {
 
 void ScriptEditorDebugger::reload_scripts(const Vector<String> &p_script_paths) {
 	_put_msg("reload_scripts", Variant(p_script_paths).operator Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+}
+
+void ScriptEditorDebugger::sync_audio_buses() {
+	// Send a minimal, serializable snapshot of audio buses to the running game.
+	if (!is_session_active()) {
+		return;
+	}
+
+	AudioServer *as = AudioServer::get_singleton();
+	if (!as) {
+		return;
+	}
+
+	Dictionary layout;
+	Array buses;
+	const int bus_count = as->get_bus_count();
+	for (int i = 0; i < bus_count; i++) {
+		Dictionary b;
+		b["name"] = as->get_bus_name(i);
+		b["send"] = String(as->get_bus_send(i));
+		b["volume_db"] = as->get_bus_volume_db(i);
+		b["solo"] = as->is_bus_solo(i);
+		b["mute"] = as->is_bus_mute(i);
+		b["bypass"] = as->is_bus_bypassing_effects(i);
+		// Effects
+		Array effects;
+		const int effect_count = as->get_bus_effect_count(i);
+		for (int j = 0; j < effect_count; j++) {
+			Dictionary fx;
+			Ref<AudioEffect> effect = as->get_bus_effect(i, j);
+			fx["class"] = effect.is_valid() ? effect->get_class() : String();
+			fx["enabled"] = as->is_bus_effect_enabled(i, j);
+			// Serialize simple parameters for the effect.
+			Dictionary params;
+			if (effect.is_valid()) {
+				List<PropertyInfo> plist;
+				effect->get_property_list(&plist, true);
+				for (const PropertyInfo &pi : plist) {
+					// Only serialize editor-exposed properties and skip non-data entries.
+					if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+						continue;
+					}
+					// Skip categories and internal fields.
+					if (pi.type == Variant::NIL || pi.name.is_empty()) {
+						continue;
+					}
+					// Avoid complex/unsupported types across the debugger channel.
+					if (pi.type == Variant::OBJECT || pi.type == Variant::RID) {
+						continue;
+					}
+					params[pi.name] = effect->get(pi.name);
+				}
+			}
+			fx["params"] = params;
+			effects.push_back(fx);
+		}
+		b["effects"] = effects;
+		buses.push_back(b);
+	}
+	layout["buses"] = buses;
+
+	Array layout_data;
+	layout_data.push_back(layout);
+	// Skip sending if unchanged since last time.
+	if (last_sent_audio_layout == layout) {
+		return;
+	}
+	last_sent_audio_layout = layout;
+	_put_msg("scene:sync_audio_buses", layout_data);
 }
 
 bool ScriptEditorDebugger::is_skip_breakpoints() const {

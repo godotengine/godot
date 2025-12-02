@@ -675,6 +675,12 @@ void EditorDebuggerNode::reload_scripts(const Vector<String> &p_script_paths) {
 	});
 }
 
+void EditorDebuggerNode::sync_audio_buses() {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->sync_audio_buses();
+	});
+}
+
 void EditorDebuggerNode::debug_next() {
 	get_current_debugger()->debug_next();
 }
