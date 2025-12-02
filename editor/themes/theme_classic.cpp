@@ -35,6 +35,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/resources/compressed_texture.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
@@ -1580,6 +1581,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		Ref<StyleBoxFlat> style_widget_scroll_container = p_config.button_style_focus->duplicate();
 		p_theme->set_stylebox("focus", "ScrollContainer", style_widget_scroll_container);
+
+		// Hide scroll hints.
+		Ref<CompressedTexture2D> empty_texture;
+		empty_texture.instantiate();
+		p_theme->set_icon("scroll_hint_vertical", "ScrollContainer", empty_texture);
+		p_theme->set_icon("scroll_hint_horizontal", "ScrollContainer", empty_texture);
+		p_theme->set_icon("scroll_hint", "Tree", empty_texture);
 
 		// This stylebox is used in 3d and 2d viewports (no borders).
 		Ref<StyleBoxFlat> style_content_panel_vp = p_config.content_panel_style->duplicate();
