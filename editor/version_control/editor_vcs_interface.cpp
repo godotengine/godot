@@ -368,22 +368,19 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
         } else {
             f = FileAccess::open(path, FileAccess::WRITE);
         }
-        if (f.is_valid()) {
-            String current_content = f->get_as_text();
+        ERR_FAIL_COND_MSG(f.is_null(), "Could not open .gitignore for writing.");
+        String current_content = f->get_as_text();
 
-            if (current_content.find(".godot/") == -1) {
-                f->seek_end();
-                if (!current_content.is_empty()) {
-                    f->store_line("");
-                }
-                f->store_line("# Godot 4+ specific ignores");
-                f->store_line(".godot/");
-                f->store_line("/android/");
+        if (!current_content.contains(".godot/")) {
+            f->seek_end();
+            if (!current_content.is_empty()) {
+               f->store_line("");
             }
-            f->close();
-        } else {
-            ERR_FAIL_MSG("Could not open .gitignore for writing.");
+            f->store_line("# Godot 4+ specific ignores");
+            f->store_line(".godot/");
+            f->store_line("/android/");
         }
+        f->close();
         path = p_dir.path_join(".gitattributes");
         f = Ref<FileAccess>(); 
         if (FileAccess::exists(path)) {
