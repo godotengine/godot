@@ -107,7 +107,9 @@ private:
 	// Enable eye tracked foveation
 	XrSystemFoveationEyeTrackedPropertiesMETA meta_foveation_eye_tracked_properties;
 	XrFoveationEyeTrackedProfileCreateInfoMETA meta_foveation_eye_tracked_create_info;
+#ifdef VULKAN_ENABLED
 	XrVulkanSwapchainCreateInfoMETA meta_vulkan_swapchain_create_info;
+#endif
 
 	// OpenXR API call wrappers
 	EXT_PROTO_XRRESULT_FUNC3(xrCreateFoveationProfileFB, (XrSession), session, (const XrFoveationProfileCreateInfoFB *), create_info, (XrFoveationProfileFB *), profile);
