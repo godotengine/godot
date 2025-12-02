@@ -39,6 +39,7 @@
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
@@ -1328,6 +1329,7 @@ ProjectManager::ProjectManager() {
 			EditorSettings::create();
 		}
 		EditorSettings::get_singleton()->set_optimize_save(false); // Just write settings as they come.
+		undo_redo_manager = memnew(EditorUndoRedoManager);
 
 		{
 			bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
@@ -1950,4 +1952,6 @@ ProjectManager::~ProjectManager() {
 	}
 
 	EditorThemeManager::finalize();
+
+	memdelete(undo_redo_manager);
 }

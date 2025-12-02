@@ -48,7 +48,9 @@ EditorUndoRedoManager::History &EditorUndoRedoManager::get_or_create_history(int
 		history.id = p_idx;
 		history_map[p_idx] = history;
 
-		EditorNode::get_singleton()->get_log()->register_undo_redo(history.undo_redo);
+		if (EditorNode::get_singleton()) {
+			EditorNode::get_singleton()->get_log()->register_undo_redo(history.undo_redo);
+		}
 		EditorDebuggerNode::get_singleton()->register_undo_redo(history.undo_redo);
 	}
 	return history_map[p_idx];
@@ -67,12 +69,14 @@ int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	}
 
 	if (Node *node = Object::cast_to<Node>(p_object)) {
-		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		if (EditorNode::get_singleton()) {
+			Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-		if (edited_scene && (node == edited_scene || edited_scene->is_ancestor_of(node))) {
-			int idx = EditorNode::get_editor_data().get_current_edited_scene_history_id();
-			if (idx > 0) {
-				history_id = idx;
+			if (edited_scene && (node == edited_scene || edited_scene->is_ancestor_of(node))) {
+				int idx = EditorNode::get_editor_data().get_current_edited_scene_history_id();
+				if (idx > 0) {
+					history_id = idx;
+				}
 			}
 		}
 	}

@@ -38,6 +38,7 @@ class EditorAbout;
 class EditorAssetLibrary;
 class EditorFileDialog;
 class EditorTitleBar;
+class EditorUndoRedoManager;
 class HFlowContainer;
 class LineEdit;
 class MarginContainer;
@@ -62,6 +63,7 @@ class ProjectManager : public Control {
 	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
+	EditorUndoRedoManager *undo_redo_manager = nullptr;
 
 	void _build_icon_type_cache(Ref<Theme> p_theme);
 
