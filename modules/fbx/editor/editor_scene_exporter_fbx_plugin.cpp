@@ -35,9 +35,11 @@
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/import/3d/scene_import_settings.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/popup_menu.h"
 
 String SceneExporterFBXPlugin::get_plugin_name() const {
 	return "ConvertFBX2";
@@ -119,7 +121,8 @@ void SceneExporterFBXPlugin::_export_scene_as_fbx() {
 		ERR_PRINT(vformat("FBX save scene error %s.", itos(err)));
 	}
 	int export_format = _export_settings->get_export_format(); // 0 = Binary, 1 = ASCII
-	err = _fbx_document->write_to_filesystem(state, export_path, export_format);
+	_fbx_document->set_export_format(export_format);
+	err = _fbx_document->write_to_filesystem(state, export_path);
 	if (err != OK) {
 		ERR_PRINT(vformat("FBX save scene error %s.", itos(err)));
 	}

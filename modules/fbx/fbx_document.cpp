@@ -2487,7 +2487,7 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
 
-Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path, int p_format) {
+Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 #ifdef UFBX_WRITE_AVAILABLE
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
@@ -3061,7 +3061,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	// Initialize save options with format (0 = Binary, 1 = ASCII)
 	ufbxw_save_opts save_opts = {};
-	save_opts.format = (ufbxw_save_format)p_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
+	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 
 	// Write FBX file
 	ufbxw_error error = {};

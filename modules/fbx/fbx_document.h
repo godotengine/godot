@@ -44,6 +44,7 @@ class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
 
 	int _naming_version = 2;
+	int export_format = 0; // 0 = Binary, 1 = ASCII
 
 public:
 	enum {
@@ -64,7 +65,9 @@ public:
 
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
-	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path, int p_format = 0) override;
+	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
+	void set_export_format(int p_format) { export_format = p_format; }
+	int get_export_format() const { return export_format; }
 
 	void set_naming_version(int p_version);
 	int get_naming_version() const;

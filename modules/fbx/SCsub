@@ -22,6 +22,7 @@ env_fbx.Prepend(CPPPATH=[thirdparty_dir + "test/ufbx"])
 env_thirdparty = env_fbx.Clone()
 env_thirdparty.disable_warnings()
 
+# Common defines for both ufbx.c and ufbx_write.c
 env_thirdparty.Append(
     CPPDEFINES=[
         "UFBX_NO_SUBDIVISION",
@@ -31,14 +32,20 @@ env_thirdparty.Append(
         "UFBX_NO_INDEX_GENERATION",
         "UFBX_NO_SKINNING_EVALUATION",
         "UFBX_NO_FORMAT_OBJ",
-        "UFBX_HEADER_PATH=<test/ufbx/ufbx.h>",  # ufbx_write.c needs to know where ufbx.h is
     ]
 )
+
+# UFBX_HEADER_PATH is only needed for ufbx.c, not ufbx_write.c
+# ufbx_write.c includes ufbx_write.h which doesn't need this define
+env_ufbx = env_thirdparty.Clone()
+env_ufbx.Append(CPPDEFINES=[("UFBX_HEADER_PATH", '\\"test/ufbx/ufbx.h\\"')])
 
 # ufbx_write is now always available since we're using it to replace ufbx
 env_thirdparty.Append(CPPDEFINES=["UFBX_WRITE_AVAILABLE"])
 
-env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+# Compile ufbx.c with UFBX_HEADER_PATH, ufbx_write.c without it
+env_ufbx.add_source_files(thirdparty_obj, ufbx_sources)
+env_thirdparty.add_source_files(thirdparty_obj, ufbx_write_sources)
 env.modules_sources += thirdparty_obj
 
 # Godot source files
