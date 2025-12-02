@@ -568,6 +568,8 @@ class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
+	friend class AnimationTrackEditor;
+
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
 	Vector2 icon_size;
@@ -578,7 +580,7 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTrackEditor *editor = nullptr;
 
 	bool hovered = false;
-
+	LocalVector<AnimationTrackEdit *> track_edits;
 	void _zoom_changed();
 
 protected:
