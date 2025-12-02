@@ -4933,7 +4933,7 @@ FindBar::FindBar() {
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
-	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	hide_button->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(hide_button);
 }
 
