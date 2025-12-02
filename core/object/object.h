@@ -585,6 +585,7 @@ public:
 	// Store on each object a bitfield to quickly test whether it is derived from some "key" classes
 	// that are commonly tested in performance sensitive code.
 	// Ensure unsigned to bitpack.
+	// If you want to add more classes, please make sure to edit the Object::_ancestry field.
 	enum class AncestralClass : unsigned int {
 		REF_COUNTED = 1 << 0,
 		NODE = 1 << 1,
@@ -603,6 +604,8 @@ public:
 		COLLISION_OBJECT_3D = 1 << 12,
 		PHYSICS_BODY_3D = 1 << 13,
 		MESH_INSTANCE_3D = 1 << 14,
+		// Used a lot in AnimationMixer, SkeletonModifier3D and BoneAttachment3D.
+		SKELETON_3D = 1 << 15,
 	};
 
 	static constexpr AncestralClass static_ancestral_class = (AncestralClass)0;
@@ -653,7 +656,7 @@ private:
 	void _initialize();
 	void _postinitialize();
 
-	uint32_t _ancestry : 15;
+	uint32_t _ancestry : 16;
 
 	bool _block_signals : 1;
 	bool _can_translate : 1;
