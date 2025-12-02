@@ -2632,31 +2632,37 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
 		// uint64_t format = importer_mesh->get_surface_format(surface_i); // Unused for now
 
-		// Get vertices
+		// Get vertices - meshes must have vertices
 		Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
-		if (vertices.size() > 0) {
-			// Convert Vector3 to ufbxw_vec3
-			Vector<ufbxw_vec3> fbx_vertices;
-			fbx_vertices.resize(vertices.size());
-			for (int i = 0; i < vertices.size(); i++) {
-				fbx_vertices.write[i] = { (ufbxw_real)vertices[i].x, (ufbxw_real)vertices[i].y, (ufbxw_real)vertices[i].z };
-			}
-			ufbxw_vec3_buffer vertices_buffer = ufbxw_copy_vec3_array(write_scene, fbx_vertices.ptr(), fbx_vertices.size());
-			ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
+		if (vertices.size() == 0) {
+			// Skip meshes without vertices
+			continue;
 		}
+		
+		// Convert Vector3 to ufbxw_vec3
+		Vector<ufbxw_vec3> fbx_vertices;
+		fbx_vertices.resize(vertices.size());
+		for (int i = 0; i < vertices.size(); i++) {
+			fbx_vertices.write[i] = { (ufbxw_real)vertices[i].x, (ufbxw_real)vertices[i].y, (ufbxw_real)vertices[i].z };
+		}
+		ufbxw_vec3_buffer vertices_buffer = ufbxw_copy_vec3_array(write_scene, fbx_vertices.ptr(), fbx_vertices.size());
+		ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
 
-		// Get indices (triangles)
+		// Get indices (triangles) - meshes should have triangles
 		Vector<int> indices = surface_arrays[Mesh::ARRAY_INDEX];
-		if (indices.size() > 0) {
-			// Convert to int32_t
-			Vector<int32_t> fbx_indices;
-			fbx_indices.resize(indices.size());
-			for (int i = 0; i < indices.size(); i++) {
-				fbx_indices.write[i] = (int32_t)indices[i];
-			}
-			ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, fbx_indices.ptr(), fbx_indices.size());
-			ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
+		if (indices.size() == 0) {
+			// Skip meshes without triangles (they're not renderable)
+			continue;
 		}
+		
+		// Convert to int32_t
+		Vector<int32_t> fbx_indices;
+		fbx_indices.resize(indices.size());
+		for (int i = 0; i < indices.size(); i++) {
+			fbx_indices.write[i] = (int32_t)indices[i];
+		}
+		ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, fbx_indices.ptr(), fbx_indices.size());
+		ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
 
 		// Get normals
 		Vector<Vector3> normals = surface_arrays[Mesh::ARRAY_NORMAL];
@@ -3078,16 +3084,41 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	// This validates and prepares the scene structure for export
 	ufbxw_prepare_scene(write_scene, nullptr); // Use default prepare options
 
+	// Check if scene has any content
+	bool has_content = false;
+	if (gltf_to_fbx_nodes.size() > 0 || gltf_to_fbx_meshes.size() > 0) {
+		has_content = true;
+	}
+	if (!has_content) {
+		ERR_PRINT("FBX export: Scene has no content to export (no nodes or meshes)");
+		ufbxw_free_scene(write_scene);
+		return ERR_INVALID_DATA;
+	}
+
+	// Convert path to absolute path for ufbx_write
+	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	if (abs_path.is_empty()) {
+		abs_path = p_path; // Fallback to original path if globalize fails
+	}
+
 	// Ensure the output directory exists
-	String dir = p_path.get_base_dir();
+	String dir = abs_path.get_base_dir();
 	if (!dir.is_empty()) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (da.is_valid() && !da->dir_exists(dir)) {
-			Error mkdir_err = da->make_dir_recursive(dir);
-			if (mkdir_err != OK) {
-				ERR_PRINT("FBX export: Failed to create directory: " + dir);
-				ufbxw_free_scene(write_scene);
-				return ERR_FILE_CANT_WRITE;
+		// Try filesystem access first (for absolute paths), then resources
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (!da.is_valid()) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		}
+		if (da.is_valid()) {
+			String current_dir = da->get_current_dir();
+			if (!da->dir_exists(dir)) {
+				Error mkdir_err = da->make_dir_recursive(dir);
+				if (mkdir_err != OK) {
+					ERR_PRINT("FBX export: Failed to create directory: " + dir);
+					ERR_PRINT("FBX export: Current directory: " + current_dir);
+					ufbxw_free_scene(write_scene);
+					return ERR_FILE_CANT_WRITE;
+				}
 			}
 		}
 	}
@@ -3098,12 +3129,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
 
-	// Convert path to absolute path for ufbx_write
-	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
-	if (abs_path.is_empty()) {
-		abs_path = p_path; // Fallback to original path if globalize fails
-	}
-
 	// Write FBX file
 	ufbxw_error error = {};
 	bool success = ufbxw_save_file(write_scene, abs_path.utf8().get_data(), &save_opts, &error);
@@ -3111,8 +3136,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	if (!success) {
 		if (error.type != UFBXW_ERROR_NONE) {
-			ERR_PRINT("FBX write error: " + String::utf8(error.description, (int)error.description_length));
+			String error_desc = String::utf8(error.description, (int)error.description_length);
+			ERR_PRINT("FBX write error: " + error_desc);
 			ERR_PRINT("FBX write path: " + abs_path);
+			ERR_PRINT("FBX write error type: " + itos((int)error.type));
+			ERR_PRINT("FBX write error function: " + String::utf8(error.function.data, (int)error.function.length));
 		} else {
 			ERR_PRINT("FBX write failed with unknown error. Path: " + abs_path);
 		}
