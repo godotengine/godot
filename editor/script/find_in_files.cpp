@@ -33,10 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -1293,6 +1292,17 @@ void FindInFilesPanel::_bind_methods() {
 //-----------------------------------------------------------------------------
 
 FindInFilesContainer::FindInFilesContainer() {
+	set_name(TTRC("Search Results"));
+	set_icon_name("Search");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Search Results Bottom Panel")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+	set_closable(true);
+	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+	set_clip_contents(false);
+
 	_tabs = memnew(TabContainer);
 	_tabs->set_tabs_visible(false);
 	add_child(_tabs);
@@ -1311,7 +1321,7 @@ FindInFilesContainer::FindInFilesContainer() {
 	_tabs_context_menu->add_item(TTRC("Close All Tabs"), PANEL_CLOSE_ALL);
 	_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FindInFilesContainer::_bar_menu_option));
 
-	EditorNode::get_bottom_panel()->connect(SceneStringName(theme_changed), callable_mp(this, &FindInFilesContainer::_on_theme_changed));
+	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &FindInFilesContainer::_on_theme_changed));
 }
 
 FindInFilesPanel *FindInFilesContainer::_create_new_panel() {
@@ -1364,18 +1374,12 @@ void FindInFilesContainer::_bind_methods() {
 			PropertyInfo(Variant::INT, "end")));
 
 	ADD_SIGNAL(MethodInfo("files_modified", PropertyInfo(Variant::STRING, "paths")));
-
-	ADD_SIGNAL(MethodInfo("close_button_clicked"));
 }
 
 void FindInFilesContainer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			// TODO: Replace this hack once FindInFilesContainer is converted to a dock. It should be in the constructor.
-			EditorDock *parent = Object::cast_to<EditorDock>(get_parent());
-			if (parent) {
-				parent->set_clip_contents(false);
-			}
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("closed", callable_mp(this, &FindInFilesContainer::_on_dock_closed));
 		} break;
 	}
 }
@@ -1406,7 +1410,7 @@ void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPan
 	p_panel->queue_free();
 	_update_bar_visibility();
 	if (_tabs->get_tab_count() == 0) {
-		emit_signal(SNAME("close_button_clicked"));
+		close();
 	}
 }
 
@@ -1481,4 +1485,13 @@ void FindInFilesContainer::_bar_input(const Ref<InputEvent> &p_input) {
 		_tabs_context_menu->reset_size();
 		_tabs_context_menu->popup();
 	}
+}
+
+void FindInFilesContainer::_on_dock_closed() {
+	while (_tabs->get_tab_count() > 0) {
+		Control *tab = _tabs->get_tab_control(0);
+		_tabs->remove_child(tab);
+		tab->queue_free();
+	}
+	_update_bar_visibility();
 }
