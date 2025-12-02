@@ -40,7 +40,7 @@ StringName AnimationNodeAnimation::get_animation() const {
 	return animation;
 }
 
-Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
+LocalVector<StringName> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
@@ -79,9 +79,9 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::get_node_time_info() const {
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "animation" && get_editable_animation_list) {
-		Vector<String> names = get_editable_animation_list();
+		LocalVector<StringName> names = get_editable_animation_list();
 		String anims;
-		for (int i = 0; i < names.size(); i++) {
+		for (uint32_t i = 0; i < names.size(); i++) {
 			if (i > 0) {
 				anims += ",";
 			}

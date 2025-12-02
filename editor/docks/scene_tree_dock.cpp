@@ -1961,10 +1961,7 @@ bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delet
 	if (ap) {
 		Node *root = ap->get_node(ap->get_root_node());
 		if (root && !p_to_delete.find(root)) {
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
-
-			for (const StringName &E : anims) {
+			for (const StringName &E : ap->get_sorted_animation_list()) {
 				Ref<Animation> anim = ap->get_animation(E);
 				if (anim.is_null()) {
 					continue;
@@ -2216,15 +2213,13 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 		}
 
 		if (!points_to_other_animation_player) {
-			List<StringName> anims;
-			mixer->get_animation_list(&anims);
 			Node *root = mixer->get_node(mixer->get_root_node());
 
 			if (root) {
 				HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(root);
 				NodePath new_root_path = found_root_path ? found_root_path->value : root->get_path();
 				if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
-					for (const StringName &E : anims) {
+					for (const StringName &E : mixer->get_sorted_animation_list()) {
 						Ref<Animation> anim = mixer->get_animation(E);
 						if (!r_rem_anims->has(anim)) {
 							r_rem_anims->insert(anim, HashSet<int>());
