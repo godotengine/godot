@@ -27,6 +27,8 @@ elif env["platform"] == "macos":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK", "VK_USE_PLATFORM_METAL_EXT"])
 elif env["platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WIN32_KHR"])
+elif env["platform"] == "openharmony":
+    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_OHOS"])
 
 # Build Vulkan memory allocator and volk
 env_thirdparty_vma = env.Clone()
