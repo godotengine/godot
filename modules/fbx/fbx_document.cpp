@@ -3070,7 +3070,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	if (!success) {
 		if (error.type != UFBXW_ERROR_NONE) {
-			ERR_PRINT("FBX write error: " + String(error.description, (int)error.description_length));
+			ERR_PRINT("FBX write error: " + String::utf8(error.description, (int)error.description_length));
 		}
 		return ERR_FILE_CANT_WRITE;
 	}
