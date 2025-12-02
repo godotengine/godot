@@ -1437,6 +1437,19 @@ void EditorNode::_sources_changed(bool p_exist) {
 		if (!singleton->cmdline_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
+
+		// Set initial focus for screen reader users.
+		if (get_tree()->is_accessibility_enabled()) {
+			TabContainer *tab_container = EditorDockManager::get_singleton()->get_dock_tab_container(SceneTreeDock::get_singleton());
+			if (tab_container && tab_container->get_current_tab_control() == SceneTreeDock::get_singleton()) {
+				// Scene dock is active - focus the scene tree.
+				SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->grab_focus();
+			} else if (tab_container) {
+				// Another tab is active (e.g., Import) - focus the tab bar so user can switch.
+				tab_container->get_tab_bar()->grab_focus();
+			}
+		}
+
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
 }
