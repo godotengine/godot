@@ -782,7 +782,7 @@ bool SceneTree::process(double p_time) {
 void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 	_THREAD_SAFE_METHOD_
 	const List<Ref<SceneTreeTimer>>::Element *L = timers.back(); // Last element.
-	const double unscaled_delta = Engine::get_singleton()->get_process_step();
+	const double unscaled_delta = p_physics_frame ? Engine::get_singleton()->get_physics_step() : Engine::get_singleton()->get_process_step();
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
@@ -815,7 +815,7 @@ void SceneTree::process_tweens(double p_delta, bool p_physics) {
 	_THREAD_SAFE_METHOD_
 	// This methods works similarly to how SceneTreeTimers are handled.
 	const List<Ref<Tween>>::Element *L = tweens.back();
-	const double unscaled_delta = Engine::get_singleton()->get_process_step();
+	const double unscaled_delta = p_physics ? Engine::get_singleton()->get_physics_step() : Engine::get_singleton()->get_process_step();
 
 	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
 		List<Ref<Tween>>::Element *N = E->next();
