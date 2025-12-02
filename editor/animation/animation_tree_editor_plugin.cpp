@@ -176,9 +176,6 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 
 void AnimationTreeEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
-		} break;
 		case NOTIFICATION_PROCESS: {
 			ObjectID root;
 			if (tree && tree->get_root_animation_node().is_valid()) {
@@ -193,6 +190,11 @@ void AnimationTreeEditor::_notification(int p_what) {
 				edit_path(edited_path);
 			}
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
 		} break;
@@ -256,20 +258,33 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 }
 
 AnimationTreeEditor::AnimationTreeEditor() {
-	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
-	path_edit = memnew(ScrollContainer);
-	add_child(path_edit);
-	path_edit->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	path_hb = memnew(HBoxContainer);
-	path_edit->add_child(path_hb);
-	path_hb->add_child(memnew(Label(TTR("Path:"))));
-
-	add_child(memnew(HSeparator));
-
 	singleton = this;
+	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
+
+	set_name(TTRC("AnimationTree"));
+	set_icon_name("AnimationTreeDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+
+	VBoxContainer *main_vbox_container = memnew(VBoxContainer);
+	add_child(main_vbox_container);
+
+	path_edit = memnew(ScrollContainer);
+	path_edit->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	main_vbox_container->add_child(path_edit);
+
+	path_hb = memnew(HBoxContainer);
+	path_hb->add_child(memnew(Label(TTR("Path:"))));
+	path_edit->add_child(path_hb);
+
+	main_vbox_container->add_child(memnew(HSeparator));
+
 	editor_base = memnew(MarginContainer);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(editor_base);
+	main_vbox_container->add_child(editor_base);
 
 	add_plugin(memnew(AnimationNodeBlendTreeEditor));
 	add_plugin(memnew(AnimationNodeBlendSpace1DEditor));
@@ -287,24 +302,17 @@ bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
 
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		//editor->hide_animation_player_editors();
-		//editor->animation_panel_make_visible(true);
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(anim_tree_editor);
-		anim_tree_editor->set_process(true);
+		anim_tree_editor->make_visible();
 	} else {
-		if (anim_tree_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
-		anim_tree_editor->set_process(false);
+		anim_tree_editor->close();
 	}
+
+	anim_tree_editor->set_process(p_visible);
 }
 
 AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(anim_tree_editor);
+	anim_tree_editor->close();
 }
