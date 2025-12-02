@@ -252,6 +252,8 @@ private:
 
 	LocalVector<Track *> tracks;
 
+	LocalVector<StringName> collapsed_groups;
+
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
@@ -525,6 +527,9 @@ public:
 	PackedStringArray get_marker_names() const;
 	Color get_marker_color(const StringName &p_name) const;
 	void set_marker_color(const StringName &p_name, const Color &p_color);
+
+	void set_group_collapsed(const StringName &p_group_name, bool p_collapsed);
+	bool get_group_collapsed(const StringName &p_group_name);
 
 	void set_length(real_t p_length);
 	real_t get_length() const;

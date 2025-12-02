@@ -79,6 +79,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		return true;
+	} else if (prop_name == SNAME("collapsed_groups")) {
+		Array groups = p_value;
+		collapsed_groups.clear();
+		for (const StringName group_name : groups) {
+			collapsed_groups.push_back(group_name);
+		}
 	} else if (prop_name.begins_with("tracks/")) {
 		int track = prop_name.get_slicec('/', 1).to_int();
 		String what = prop_name.get_slicec('/', 2);
@@ -500,6 +506,12 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		r_ret = markers;
+	} else if (prop_name == SNAME("collapsed_groups")) {
+		Array groups;
+		for (const StringName &group_name : collapsed_groups) {
+			groups.push_back(group_name);
+		}
+		r_ret = groups;
 	} else if (prop_name == "length") {
 		r_ret = length;
 	} else if (prop_name == "loop_mode") {
@@ -870,6 +882,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "_compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "markers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "collapsed_groups", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	for (uint32_t i = 0; i < tracks.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -3292,6 +3305,18 @@ Color Animation::get_marker_color(const StringName &p_name) const {
 
 void Animation::set_marker_color(const StringName &p_name, const Color &p_color) {
 	marker_colors[p_name] = p_color;
+}
+
+void Animation::set_group_collapsed(const StringName &p_group_name, bool p_collapsed) {
+	if (p_collapsed && !collapsed_groups.has(p_group_name)) {
+		collapsed_groups.push_back(p_group_name);
+	} else if (!p_collapsed && collapsed_groups.has(p_group_name)) {
+		collapsed_groups.erase(p_group_name);
+	}
+}
+
+bool Animation::get_group_collapsed(const StringName &p_group_name) {
+	return collapsed_groups.has(p_group_name);
 }
 
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {

@@ -3918,7 +3918,13 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 			draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), v_line_color, Math::round(EDSCALE));
 
 			int ofs = stylebox_header->get_margin(SIDE_LEFT);
+			Ref<Texture2D> collapse_icon = get_theme_icon(track_edits_visible ? SNAME("arrow") : SNAME("arrow_collapsed"), SNAME("Tree"));
+			Size2 collapse_icon_size = collapse_icon->get_size();
+			draw_texture_rect(collapse_icon, Rect2(Point2(ofs, (get_size().height - collapse_icon_size.y) / 2 + v_margin_offset).round(), collapse_icon_size));
+
+			ofs += h_separation + collapse_icon_size.x;
 			draw_texture_rect(icon, Rect2(Point2(ofs, (get_size().height - icon_size.y) / 2 + v_margin_offset).round(), icon_size));
+
 			ofs += h_separation + icon_size.x;
 			draw_string(font, Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size) + v_margin_offset).round(), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
 
@@ -3945,14 +3951,25 @@ void AnimationTrackEditGroup::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
-		Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
 
-		if (node_name_rect.has_point(pos)) {
-			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-			editor_selection->clear();
-			Node *n = root->get_node_or_null(node);
-			if (n) {
-				editor_selection->add_node(n);
+		Rect2 left_side_rect = Rect2(0, 0, get_size().height, get_size().height);
+		if (left_side_rect.has_point(pos)) {
+			track_edits_visible = !track_edits_visible;
+			for (AnimationTrackEdit *i : track_edits) {
+				i->set_visible(track_edits_visible);
+			}
+
+			editor->get_current_animation()->set_group_collapsed(node_name, !track_edits_visible);
+			queue_redraw();
+		} else {
+			Rect2 node_name_rect = Rect2(0, 0, timeline->get_name_limit(), get_size().height);
+			if (node_name_rect.has_point(pos)) {
+				EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+				editor_selection->clear();
+				Node *n = root->get_node_or_null(node);
+				if (n) {
+					editor_selection->add_node(n);
+				}
 			}
 		}
 	}
@@ -5312,6 +5329,10 @@ void AnimationTrackEditor::_update_tracks() {
 			track_edit->set_in_group(true);
 			group_sort[base_path]->add_child(track_edit);
 
+			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(group_sort[base_path]->get_child(0));
+			ERR_FAIL_NULL_MSG(g, "The first child of this group's VBoxContainer isn't an AnimationTrackEditGroup. Collapsing this animation group may not work.");
+			g->add_track_edit(track_edit);
+
 		} else {
 			track_edit->set_in_group(false);
 		}
@@ -5360,6 +5381,14 @@ void AnimationTrackEditor::_update_tracks() {
 
 		for (VBoxContainer *vb : group_containers) {
 			track_vbox->add_child(vb);
+
+			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(vb->get_child(0));
+			if (g) {
+				g->track_edits_visible = !animation->get_group_collapsed(g->node_name);
+				for (AnimationTrackEdit *i : g->track_edits) {
+					i->set_visible(g->track_edits_visible);
+				}
+			}
 		}
 
 	} else {
