@@ -515,6 +515,7 @@ public:
 	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(Node *p_sibling, bool p_force_readable_name = false);
 	void remove_child(Node *p_child);
+	void clear_children(bool p_deferred = true, bool p_include_internal = true);
 
 	/// Optimal way to iterate the children of this node.
 	/// The caller is responsible to ensure:
