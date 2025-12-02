@@ -43,7 +43,6 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
-#include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -57,7 +56,6 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_bar.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -1070,7 +1068,7 @@ void ProjectManager::_apply_project_tags() {
 
 void ProjectManager::_set_new_tag_name(const String p_name) {
 	create_tag_dialog->get_ok_button()->set_disabled(true);
-	if (p_name.strip_edges().is_empty()) {
+	if (p_name.is_empty()) {
 		tag_error->set_text(TTRC("Tag name can't be empty."));
 		return;
 	}
@@ -1372,7 +1370,7 @@ ProjectManager::ProjectManager() {
 		FileDialog::set_get_thumbnail_callback(callable_mp_static(ProjectManager::_file_dialog_get_thumbnail));
 
 		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
-		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+		FileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
@@ -1439,26 +1437,6 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
-		bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
-		if (global_menu) {
-			MenuBar *main_menu_bar = memnew(MenuBar);
-			main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
-			main_menu_bar->set_prefer_global_menu(true);
-			left_hbox->add_child(main_menu_bar);
-
-			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
-				PopupMenu *window_menu = memnew(PopupMenu);
-				window_menu->set_system_menu(NativeMenu::WINDOW_MENU_ID);
-				window_menu->set_name(TTRC("Window"));
-				main_menu_bar->add_child(window_menu);
-			}
-			if (NativeMenu::get_singleton()->has_system_menu(NativeMenu::HELP_MENU_ID)) {
-				PopupMenu *help_menu = memnew(PopupMenu);
-				help_menu->set_system_menu(NativeMenu::HELP_MENU_ID);
-				help_menu->set_name(TTRC("Help"));
-				main_menu_bar->add_child(help_menu);
-			}
-		}
 		if (can_expand) {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
@@ -1966,7 +1944,6 @@ ProjectManager::ProjectManager() {
 
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
-	EditorInspector::cleanup_plugins();
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
