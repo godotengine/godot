@@ -566,7 +566,7 @@ void ProjectDialog::ok_pressed() {
 			project_features.push_back("Mobile");
 		} else if (renderer_type == "gl_compatibility") {
 			project_features.push_back("GL Compatibility");
-			// Also change the default rendering method for the mobile override.
+			// Also change the default renderer for the mobile override.
 			initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
 		} else {
 			WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
