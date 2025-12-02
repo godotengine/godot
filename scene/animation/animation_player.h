@@ -96,7 +96,7 @@ private:
 		bool seeked = false;
 		bool internal_seeked = false;
 		bool started = false;
-		List<Blend> blend;
+		LocalVector<Blend> blend;
 	} playback;
 
 	struct BlendKey {

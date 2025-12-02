@@ -69,13 +69,11 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 		TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 		while (nodes.size()) {
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
 
 			Ref<AnimationLibrary> unmapped_al;
 			unmapped_al.instantiate();
 
-			for (const StringName &name : anims) {
+			for (const StringName &name : ap->get_sorted_animation_list()) {
 				Ref<Animation> anim = ap->get_animation(name);
 				int track_len = anim->get_track_count();
 				Vector<int> remove_indices;
