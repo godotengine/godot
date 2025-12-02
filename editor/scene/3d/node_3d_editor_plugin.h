@@ -663,11 +663,7 @@ public:
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
-<<<<<<< HEAD
 		TOOL_MODE_SELECT,
-=======
-		TOOL_MODE_TRANSFORM,
->>>>>>> 1be78cb127 (Rename Select Mode to Transform Mode, and create a new Select Mode without transform gizmo)
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
@@ -768,11 +764,7 @@ private:
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
-<<<<<<< HEAD
 		MENU_TOOL_SELECT,
-=======
-		MENU_TOOL_TRANSFORM,
->>>>>>> 1be78cb127 (Rename Select Mode to Transform Mode, and create a new Select Mode without transform gizmo)
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
