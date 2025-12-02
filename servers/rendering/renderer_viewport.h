@@ -79,9 +79,9 @@ public:
 		bool use_occlusion_culling = false;
 		bool occlusion_buffer_dirty = false;
 
-		DisplayServer::WindowID viewport_to_screen;
+		DisplayServer::WindowID viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 		Rect2 viewport_to_screen_rect;
-		bool viewport_render_direct_to_screen;
+		bool viewport_render_direct_to_screen = false;
 
 		bool disable_2d = false;
 		RS::ViewportEnvironmentMode disable_environment = RS::VIEWPORT_ENVIRONMENT_INHERIT;
@@ -116,6 +116,7 @@ public:
 
 		bool transparent_bg = false;
 		bool use_hdr_2d = false;
+		float window_output_max_value = 1.0;
 
 		uint32_t canvas_cull_mask = 0xffffffff;
 
@@ -158,6 +159,7 @@ public:
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
 			use_hdr_2d = false;
+			window_output_max_value = 1.0;
 
 			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
@@ -207,6 +209,7 @@ private:
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
+	DisplayServer::WindowID _get_containing_window(Viewport *p_viewport);
 
 	int occlusion_rays_per_thread = 512;
 
