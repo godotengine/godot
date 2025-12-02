@@ -2573,6 +2573,31 @@ void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked--;
 }
 
+void Node::add_connection_owner(Node *p_owner, Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable, bool is_inherited) {
+	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+	if (is_inherited) {
+		data.inherited_connections.insert(hash);
+	} else {
+		data.connection_owners[hash] = p_owner;
+	}
+}
+
+// Returns true if the connection data comes from a scene this node inherits.
+bool Node::is_connection_inherited(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
+	uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+	return data.inherited_connections.has(hash);
+}
+
+Node *Node::get_connection_owner(Node *p_to_node, const StringName &p_signal_name, const Callable &p_callable) const {
+	for (const KeyValue<uint32_t, Node *> &E : data.connection_owners) {
+		uint32_t hash = HashMapHasherDefault::hash(p_to_node) ^ p_signal_name.hash() ^ p_callable.get_method().hash();
+		if (E.key == hash) {
+			return E.value;
+		}
+	}
+	return nullptr; // The connection was just added (not instantiated) so it doesn't have an owner.
+}
+
 void Node::_propagate_deferred_notification(int p_notification, bool p_reverse) {
 	ERR_FAIL_COND(!is_inside_tree());
 
