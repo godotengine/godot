@@ -534,7 +534,9 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 #endif // _3D_DISABLED
-
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		MONITOR_TYPE_MEMORY,
+#endif
 	};
 	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
 
