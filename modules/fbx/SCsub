@@ -6,6 +6,9 @@ Import("env_modules")
 
 env_fbx = env_modules.Clone()
 
+# ufbx_write is now always available since we're using it to replace ufbx
+env_fbx.Append(CPPDEFINES=["UFBX_WRITE_AVAILABLE"])
+
 # Thirdparty source files
 
 thirdparty_obj = []
@@ -39,9 +42,6 @@ env_thirdparty.Append(
 # ufbx_write.c includes ufbx_write.h which doesn't need this define
 env_ufbx = env_thirdparty.Clone()
 env_ufbx.Append(CPPDEFINES=[("UFBX_HEADER_PATH", '\\"test/ufbx/ufbx.h\\"')])
-
-# ufbx_write is now always available since we're using it to replace ufbx
-env_thirdparty.Append(CPPDEFINES=["UFBX_WRITE_AVAILABLE"])
 
 # Compile ufbx.c with UFBX_HEADER_PATH, ufbx_write.c without it
 env_ufbx.add_source_files(thirdparty_obj, ufbx_sources)

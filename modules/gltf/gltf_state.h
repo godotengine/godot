@@ -49,6 +49,7 @@
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
+	friend class FBXDocument;
 	friend class GLTFNode;
 
 public:

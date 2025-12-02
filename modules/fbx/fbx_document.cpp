@@ -2629,7 +2629,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// For multiple surfaces, we could create multiple meshes or combine them
 		int surface_i = 0;
 		Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
-		uint64_t format = importer_mesh->get_surface_format(surface_i);
+		// uint64_t format = importer_mesh->get_surface_format(surface_i); // Unused for now
 
 		// Get vertices
 		Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
@@ -3000,12 +3000,12 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 						// Note: FBX typically uses a single skin deformer per mesh, so we use the first surface
 						Array surface_arrays = importer_mesh->get_surface_arrays(0);
 						if (surface_arrays.size() > Mesh::ARRAY_MAX) {
-							Array bones_array = surface_arrays[Mesh::ARRAY_BONES];
-							Array weights_array = surface_arrays[Mesh::ARRAY_WEIGHTS];
+							Variant bones_variant = surface_arrays[Mesh::ARRAY_BONES];
+							Variant weights_variant = surface_arrays[Mesh::ARRAY_WEIGHTS];
 
-							if (bones_array.get_type() == Variant::PACKED_INT32_ARRAY && weights_array.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
-								PackedInt32Array bones = bones_array;
-								PackedFloat32Array weights = weights_array;
+							if (bones_variant.get_type() == Variant::PACKED_INT32_ARRAY && weights_variant.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+								PackedInt32Array bones = bones_variant;
+								PackedFloat32Array weights = weights_variant;
 
 								if (bones.size() == weights.size() && bones.size() > 0) {
 									// Determine number of weights per vertex (4 or 8)
@@ -3070,7 +3070,7 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 	if (!success) {
 		if (error.type != UFBXW_ERROR_NONE) {
-			ERR_PRINT("FBX write error: " + String(error.description.data, (int)error.description.length));
+			ERR_PRINT("FBX write error: " + String(error.description, (int)error.description_length));
 		}
 		return ERR_FILE_CANT_WRITE;
 	}
