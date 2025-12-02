@@ -227,7 +227,7 @@ public:
 		Vector<Variant> defargs;
 		defargs.resize(p_method_info->default_argument_count);
 		for (uint32_t i = 0; i < p_method_info->default_argument_count; i++) {
-			defargs.write[i] = *static_cast<Variant *>(p_method_info->default_arguments[i]);
+			defargs.write[i] = *from_gdextension<Variant>(p_method_info->default_arguments[i]);
 		}
 
 		set_default_arguments(defargs);

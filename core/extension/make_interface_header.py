@@ -67,9 +67,7 @@ extern "C" {
                 check_allowed_keys(type, ["name", "kind"], ["const", "parent", "description", "deprecated"])
                 if "parent" in type and type["parent"] not in handles:
                     raise UnknownTypeError(type["parent"], type["name"])
-                # @todo In the future, let's write these as `struct *` so the compiler can help us with type checking.
-                type["type"] = "void*" if not type.get("const", False) else "const void*"
-                write_simple_type(file, type)
+                write_handle_type(file, type)
                 handles.append(type["name"])
             elif kind == "alias":
                 check_allowed_keys(type, ["name", "kind", "type"], ["description", "deprecated"])
@@ -206,6 +204,12 @@ def make_deprecated_note(type):
     if "deprecated" not in type:
         return ""
     return f" /* {type['deprecated']} */"
+
+
+def write_handle_type(file, type):
+    base_name = type.get("parent", type["name"])
+    const = "const " if type.get("const", False) else ""
+    file.write(f"typedef {const}struct {base_name}_T *{type['name']};{make_deprecated_note(type)}\n")
 
 
 def write_simple_type(file, type):

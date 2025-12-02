@@ -762,10 +762,10 @@ public:
 			StringName prop_name = p_property.name;
 			GDExtensionPropertyInfo gdext_prop = {
 				(GDExtensionVariantType)p_property.type,
-				&prop_name,
-				&p_property.class_name,
+				to_gdextension(&prop_name),
+				to_gdextension(&p_property.class_name),
 				(uint32_t)p_property.hint,
-				&p_property.hint_string,
+				to_gdextension(&p_property.hint_string),
 				p_property.usage,
 			};
 			if (native_info->validate_property_func(instance, &gdext_prop)) {
@@ -781,13 +781,13 @@ public:
 
 	virtual bool property_can_revert(const StringName &p_name) const override {
 		if (native_info->property_can_revert_func) {
-			return native_info->property_can_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name);
+			return native_info->property_can_revert_func(instance, to_gdextension(&p_name));
 		}
 		return false;
 	}
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		if (native_info->property_get_revert_func) {
-			return native_info->property_get_revert_func(instance, (GDExtensionConstStringNamePtr)&p_name, (GDExtensionVariantPtr)&r_ret);
+			return native_info->property_get_revert_func(instance, to_gdextension(&p_name), to_gdextension(&r_ret));
 		}
 		return false;
 	}
