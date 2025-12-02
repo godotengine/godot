@@ -254,7 +254,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 
-		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
+		if (BuildConfig.BUILD_TYPE == "debug" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
 		}
 
@@ -404,7 +404,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun getCommandLine(): MutableList<String> {
 		val params = super.getCommandLine()
-		if (BuildConfig.BUILD_TYPE == "dev" && !params.contains("--benchmark")) {
+		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}
 		return params
