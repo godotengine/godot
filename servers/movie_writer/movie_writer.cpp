@@ -114,7 +114,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String path = p_base_path.get_basename();
+	String path = p_base_path.get_base_dir();
 	if (path.is_relative_path()) {
 		path = "res://" + path;
 	}
