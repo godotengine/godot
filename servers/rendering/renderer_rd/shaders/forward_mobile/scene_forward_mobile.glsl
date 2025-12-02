@@ -163,6 +163,10 @@ ivec2 multiview_uv(ivec2 uv) {
 }
 #endif // !USE_MULTIVIEW
 
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) out vec2 point_coord_interp;
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -305,7 +309,7 @@ void vertex_shader(in vec3 vertex,
 		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
 		uint stride = 3 + 1 + 1; //particles always uses this format
 
-		uint offset = trail_size * stride * gl_InstanceIndex;
+		uint offset = trail_size * stride * INSTANCE_INDEX;
 
 #ifdef COLOR_USED
 		vec4 pcolor;
@@ -347,7 +351,7 @@ void vertex_shader(in vec3 vertex,
 
 #else
 		uint stride = multimesh_stride();
-		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
+		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
 		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -463,6 +467,10 @@ void vertex_shader(in vec3 vertex,
 #endif
 	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_SIZE_USED
+	float point_size = 1.0;
+#endif
 
 	{
 #CODE : VERTEX
@@ -665,6 +673,27 @@ void vertex_shader(in vec3 vertex,
 #ifdef MODE_RENDER_MOTION_VECTORS
 	screen_position_output = gl_Position;
 #endif // MODE_RENDER_MOTION_VECTORS
+
+#ifdef POINT_SIZE_USED
+	if (sc_emulate_point_size) {
+		vec2 point_coords[6] = vec2[](
+				vec2(0, 1),
+				vec2(0, 0),
+				vec2(1, 1),
+				vec2(0, 0),
+				vec2(1, 0),
+				vec2(1, 1));
+
+		vec2 point_coord = point_coords[gl_VertexIndex % 6];
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+
+#ifdef POINT_COORD_USED
+		point_coord_interp = point_coord;
+#endif
+	} else {
+		gl_PointSize = point_size;
+	}
+#endif
 }
 
 void main() {
@@ -933,6 +962,10 @@ ivec2 multiview_uv(ivec2 uv) {
 	return uv;
 }
 #endif // !USE_MULTIVIEW
+
+#if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
+layout(location = 14) in vec2 point_coord_interp;
+#endif
 
 //defines to keep compatibility with vertex
 
@@ -1210,6 +1243,19 @@ void main() {
 			scene_data.view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+#ifdef POINT_COORD_USED
+#ifdef POINT_SIZE_USED
+	vec2 point_coord;
+	if (sc_emulate_point_size) {
+		point_coord = point_coord_interp;
+	} else {
+		point_coord = gl_PointCoord;
+	}
+#else // !POINT_SIZE_USED
+	vec2 point_coord = vec2(0.5);
+#endif
+#endif
 
 	{
 #CODE : FRAGMENT

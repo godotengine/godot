@@ -6282,6 +6282,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
 		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
 			return framebuffer_depth_resolve;
+		case SUPPORTS_POINT_SIZE:
+			return true;
 		default:
 			return false;
 	}

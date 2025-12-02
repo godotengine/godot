@@ -215,6 +215,20 @@ half sc_luminance_multiplier() {
 	return half(sc_packed_2());
 }
 
+layout(constant_id = 3) const bool sc_emulate_point_size = false;
+
+#ifdef POINT_SIZE_USED
+
+#define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
+#define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
+
+#else
+
+#define VERTEX_INDEX gl_VertexIndex
+#define INSTANCE_INDEX gl_InstanceIndex
+
+#endif
+
 // Like the luminance multiplier, but it is only for sky and reflection probes
 // since they are always LDR.
 #define REFLECTION_MULTIPLIER half(2.0)
