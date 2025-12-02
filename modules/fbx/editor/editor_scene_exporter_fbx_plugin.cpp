@@ -128,3 +128,15 @@ void SceneExporterFBXPlugin::_export_scene_as_fbx() {
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
+
+void SceneExporterFBXPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_PREDELETE: {
+			// Clear inspector edit target to prevent use-after-free
+			if (_settings_inspector) {
+				_settings_inspector->edit(nullptr);
+			}
+		} break;
+	}
+}

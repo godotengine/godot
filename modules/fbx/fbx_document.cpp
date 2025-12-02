@@ -2626,18 +2626,42 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 		ufbxw_set_name(write_scene, fbx_mesh.id, mesh_name.utf8().get_data());
 
-		// Process the first surface (FBX typically uses one mesh per surface)
-		// For multiple surfaces, we could create multiple meshes or combine them
+		// Process surfaces - try all surfaces until we find one with valid data
+		// For CSG and other meshes, the first surface might be empty
+		bool surface_found = false;
 		int surface_i = 0;
-		Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
-		// uint64_t format = importer_mesh->get_surface_format(surface_i); // Unused for now
-
-		// Get vertices - meshes must have vertices
-		Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
-		if (vertices.size() == 0) {
-			// Skip meshes without vertices
+		Array surface_arrays;
+		
+		for (surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
+			surface_arrays = importer_mesh->get_surface_arrays(surface_i);
+			
+			// Get vertices - meshes must have vertices
+			Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+			if (vertices.size() == 0) {
+				continue; // Try next surface
+			}
+			
+			// Get indices (triangles) - meshes should have triangles
+			Vector<int> indices = surface_arrays[Mesh::ARRAY_INDEX];
+			if (indices.size() == 0) {
+				continue; // Try next surface
+			}
+			
+			// Found a valid surface
+			surface_found = true;
+			break;
+		}
+		
+		if (!surface_found) {
+			// No valid surface found, skip this mesh
 			continue;
 		}
+		
+		// Process the valid surface we found
+		// uint64_t format = importer_mesh->get_surface_format(surface_i); // Unused for now
+		
+		// Get vertices
+		Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
 		
 		// Convert Vector3 to ufbxw_vec3
 		Vector<ufbxw_vec3> fbx_vertices;
@@ -2648,12 +2672,8 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		ufbxw_vec3_buffer vertices_buffer = ufbxw_copy_vec3_array(write_scene, fbx_vertices.ptr(), fbx_vertices.size());
 		ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
 
-		// Get indices (triangles) - meshes should have triangles
+		// Get indices (triangles)
 		Vector<int> indices = surface_arrays[Mesh::ARRAY_INDEX];
-		if (indices.size() == 0) {
-			// Skip meshes without triangles (they're not renderable)
-			continue;
-		}
 		
 		// Convert to int32_t
 		Vector<int32_t> fbx_indices;

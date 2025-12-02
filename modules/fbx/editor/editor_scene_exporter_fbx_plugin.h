@@ -54,6 +54,9 @@ class SceneExporterFBXPlugin : public EditorPlugin {
 	void _popup_fbx_export_dialog();
 	void _export_scene_as_fbx();
 
+protected:
+	void _notification(int p_what);
+
 public:
 	virtual String get_plugin_name() const override;
 	bool has_main_screen() const override;
