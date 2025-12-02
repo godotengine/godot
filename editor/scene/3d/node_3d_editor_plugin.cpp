@@ -8897,6 +8897,7 @@ void Node3DEditor::_textures_save_pressed() {
 	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/default_max_dimension", int(textures_max_slider->get_value()));
 	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_enabled", textures_budget_enable->is_pressed());
 	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_mb", textures_budget_slider->get_value());
+	ProjectSettings::get_singleton()->save();
 	textures_popup->hide();
 }
 
