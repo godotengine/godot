@@ -608,6 +608,7 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
+	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
 	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED

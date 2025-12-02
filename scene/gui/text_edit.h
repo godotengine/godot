@@ -853,6 +853,7 @@ public:
 	// Text manipulation
 	void clear();
 
+	void _set_text(const String &p_text, bool p_emit_signal = false);
 	void set_text(const String &p_text);
 	String get_text() const;
 

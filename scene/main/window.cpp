@@ -1860,8 +1860,8 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void Window::_window_input_text(const String &p_text) {
-	push_text_input(p_text);
+void Window::_window_input_text(const String &p_text, bool p_emit_signal) {
+	_push_text_input(p_text, p_emit_signal);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {

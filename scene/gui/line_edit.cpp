@@ -2109,22 +2109,39 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	}
 }
 
-void LineEdit::set_text(String p_text) {
+void LineEdit::_set_text(String p_text, bool p_emit_signal) {
 	clear_internal();
+
+	String previous_text = get_text();
 	insert_text_at_caret(p_text);
-	_create_undo_state();
+
+	if (get_text() != previous_text) {
+		_create_undo_state();
+		if (p_emit_signal) {
+			_text_changed();
+		}
+	}
 
 	queue_redraw();
 	caret_column = 0;
 	scroll_offset = 0.0;
 }
 
+void LineEdit::set_text(String p_text) {
+	_set_text(p_text);
+}
+
 void LineEdit::set_text_with_selection(const String &p_text) {
 	Selection selection_copy = selection;
 
 	clear_internal();
+
+	String previous_text = get_text();
 	insert_text_at_caret(p_text);
-	_create_undo_state();
+
+	if (get_text() != previous_text) {
+		_create_undo_state();
+	}
 
 	int tlen = text.length();
 	selection = selection_copy;
@@ -3299,6 +3316,10 @@ void LineEdit::_validate_property(PropertyInfo &p_property) const {
 }
 
 void LineEdit::_bind_methods() {
+	// Private exposed API.
+	ClassDB::bind_method(D_METHOD("_set_text", "text", "emit_signal"), &LineEdit::_set_text, DEFVAL(false));
+
+	// Public API.
 	ClassDB::bind_method(D_METHOD("has_ime_text"), &LineEdit::has_ime_text);
 	ClassDB::bind_method(D_METHOD("cancel_ime"), &LineEdit::cancel_ime);
 	ClassDB::bind_method(D_METHOD("apply_ime"), &LineEdit::apply_ime);
