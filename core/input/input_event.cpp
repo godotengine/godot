@@ -405,7 +405,7 @@ String InputEventKey::as_text_physical_keycode() const {
 	if (physical_keycode != Key::NONE) {
 		kc = keycode_get_string(physical_keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -422,7 +422,7 @@ String InputEventKey::as_text_keycode() const {
 	if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -439,7 +439,7 @@ String InputEventKey::as_text_key_label() const {
 	if (key_label != Key::NONE) {
 		kc = keycode_get_string(key_label);
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -471,13 +471,13 @@ String InputEventKey::as_text() const {
 	String kc;
 
 	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
-		kc = keycode_get_string(key_label) + " (Unicode)";
+		kc = keycode_get_string(key_label) + " - Unicode";
 	} else if (keycode != Key::NONE) {
 		kc = keycode_get_string(keycode);
 	} else if (physical_keycode != Key::NONE) {
-		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
+		kc = keycode_get_string(physical_keycode) + " - " + RTR("Physical");
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -508,7 +508,7 @@ String InputEventKey::_to_string() {
 		kc = itos((int64_t)physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = "(" + RTR("Unset") + ")";
+		kc = "(" + RTR("unset") + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
