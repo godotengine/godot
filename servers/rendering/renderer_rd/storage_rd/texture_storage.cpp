@@ -3169,7 +3169,7 @@ void TextureStorage::update_decal_atlas() {
 	tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	tformat.width = decal_atlas.size.width;
 	tformat.height = decal_atlas.size.height;
-	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 	tformat.texture_type = RD::TEXTURE_TYPE_2D;
 	tformat.mipmaps = decal_atlas.mipmaps;
 	tformat.shareable_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
@@ -3202,6 +3202,44 @@ void TextureStorage::update_decal_atlas() {
 		}
 	}
 
+	//HashMap<void*, Vector<RID>> temp_textures;
+	//for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
+	//	DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+	//	if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
+	//		Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
+	//		const int max_lods = 11;
+	//		Texture *src_tex = get_texture(E.key);
+	//		Vector<RID> blurred_textures;
+
+	//		int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
+	//		for (int j = 0; j < l2; j++) {
+	//			Rect2 uv_rect = t->uv_rect;
+	//			float b = pow(2, j);
+	//			uv_rect.position.x += size.x;
+	//			uv_rect.position.y += size.y - size.y / b;
+	//			uv_rect.size = size / (b * 2);
+	//			Vector2i blur = Vector2i(b, b);
+
+	//			RD::TextureFormat tf_temp;
+	//			Vector2i mip_size = uv_rect.size * decal_atlas.size;
+	//			tf_temp.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	//			tf_temp.width = mip_size.width;
+	//			tf_temp.height = mip_size.height;
+	//			tf_temp.texture_type = RD::TEXTURE_TYPE_2D;
+	//			tf_temp.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	//			tf_temp.mipmaps = 1;
+	//			RID blur_tex = RD::get_singleton()->texture_create(tf_temp, RD::TextureView());
+	//			blurred_textures.push_back(blur_tex);
+	//			Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
+	//			//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
+	//			copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+	//		}
+	//		temp_textures[t] = blurred_textures;
+
+	//	}
+
+	//}
+
 	RID prev_texture;
 	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
 		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
@@ -3215,7 +3253,7 @@ void TextureStorage::update_decal_atlas() {
 
 				// Make area light MIPs
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
-
+				int temp_tex_count = 0;
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
@@ -3229,19 +3267,44 @@ void TextureStorage::update_decal_atlas() {
 					if (t->area_light_users >= 0) { // TODO: if an area light texture, copy the filtered version.
 						Vector2 size = Vector2(t->uv_rect.size.x * 2.0 / 3.0, t->uv_rect.size.y);
 						const int max_lods = 11;
+						Vector2 size_pixels = size * decal_atlas.size;
 						int l2 = MIN(floor(log2(MIN(size.x * decal_atlas.size.x, size.y * decal_atlas.size.y))), max_lods);
 						for (int j = 0; j < l2; j++) {
 							Rect2 uv_rect = t->uv_rect;
+							float b = pow(2, j);
 							uv_rect.position.x += size.x;
-							uv_rect.position.y += size.y - size.y / pow(2, j);
-							uv_rect.size = size / pow(2, j + 1);
+							uv_rect.position.y += size.y - size.y / b;
+							uv_rect.size = size / (b * 2);
+
 							// TODO: should / could we use copy_to_fb_rect instead?
-							copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+							//copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, uv_rect, draw_list, false, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.RD::TextureFormat tf_temp;
+
+							Vector2i mip_size = uv_rect.size * decal_atlas.size;
+							RD::TextureFormat tf_blur;
+							tf_blur.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+							tf_blur.width = mip_size.width;
+							tf_blur.height = mip_size.height;
+							tf_blur.texture_type = RD::TEXTURE_TYPE_2D;
+							tf_blur.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+							tf_blur.mipmaps = 1;
+							RID blur_tex = RD::get_singleton()->texture_create(tf_blur, RD::TextureView());
+							Rect2i copy_rect = Rect2i(Vector2i(0, 0), mip_size);
+							//copy_effects->copy_to_rect(src_tex->rd_texture, temp_textures[t], copy_rect, false, false, true);
+							copy_effects->gaussian_blur(src_tex->rd_texture, blur_tex, copy_rect, mip_size, false); // TODO: verify what to do about panorama_to_dp if its also used for omni lights.
+
+							copy_effects->copy_to_atlas_fb(blur_tex, mm.fb, uv_rect, draw_list, false, false);
+							temp_tex_count++;
+							RD::get_singleton()->free_rid(blur_tex);
+							// mm.texture does not work, since it does not have usage bit assigned. but we need to use a texture, not a framebuffer.
 						}
 					}
 				}
 
 				RD::get_singleton()->draw_list_end();
+
+				for (int i = 0; i < temp_tex_count; i++) {
+					//RD::get_singleton()->free_rid(temp_textures[i]);
+				}
 
 				prev_texture = mm.texture;
 			} else {
