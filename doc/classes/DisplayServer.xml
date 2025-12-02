@@ -788,6 +788,10 @@
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
 				[b]Note:[/b] On Android and macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+				[b]Note:[/b] On Android, this method uses the Android Storage Access Framework (SAF).
+				The file picker returns a URI instead of a filesystem path. This URI can be passed directly to [FileAccess] to perform read/write operations.
+				When using [constant FILE_DIALOG_MODE_OPEN_DIR], it returns a tree URI that grants full access to the selected directory. File operations inside this directory can be performed by passing a path in the form [code]treeUri#relative/path/to/file[/code] to [FileAccess].
+				Tree URIs should be saved and reused; they remain valid across app restarts as long as the directory is not moved, renamed, or deleted.
 			</description>
 		</method>
 		<method name="file_dialog_with_options_show">
