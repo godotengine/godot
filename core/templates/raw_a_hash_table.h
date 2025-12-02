@@ -70,7 +70,9 @@ static_assert(sizeof(RawAHashTableMetadata) == 8);
  *	Element pointers are not stable as they can break in the case of a deletion or rehash.
  *
  */
-template <typename TKey,
+template <
+		typename Derived,
+		typename TKey,
 		typename Hasher,
 		typename Comparator>
 class RawAHashTable {
@@ -96,11 +98,23 @@ protected:
 		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
 	}
 
-	_FORCE_INLINE_ virtual const TKey &_get_key(uint32_t p_idx) const = 0;
-	_FORCE_INLINE_ virtual void _resize_elements(uint32_t p_new_capacity) = 0;
-	_FORCE_INLINE_ virtual bool _is_elements_valid() const = 0;
-	_FORCE_INLINE_ virtual void _clear_elements() = 0;
-	_FORCE_INLINE_ virtual void _free_elements() = 0;
+	// CRTP (https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
+	// The following methods should be implemented by the derived class without the `_v` prefix.
+	_FORCE_INLINE_ const TKey &_v_get_key(uint32_t p_idx) const {
+		return static_cast<const Derived *>(this)->_get_key(p_idx);
+	}
+	_FORCE_INLINE_ void _v_resize_elements(uint32_t p_new_capacity) {
+		static_cast<Derived *>(this)->_resize_elements(p_new_capacity);
+	}
+	_FORCE_INLINE_ bool _v_is_elements_valid() const {
+		return static_cast<const Derived *>(this)->_is_elements_valid();
+	}
+	_FORCE_INLINE_ void _v_clear_elements() {
+		static_cast<Derived *>(this)->_clear_elements();
+	}
+	_FORCE_INLINE_ void _v_free_elements() {
+		static_cast<Derived *>(this)->_free_elements();
+	}
 
 	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
@@ -117,20 +131,20 @@ protected:
 	}
 
 	_FORCE_INLINE_ bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
-		if (unlikely(!_is_elements_valid())) {
+		if (unlikely(!_v_is_elements_valid())) {
 			return false; // Failed lookups, no _elements.
 		}
 		return _lookup_idx_with_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
 	}
 
 	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
-		if (unlikely(!_is_elements_valid())) {
+		if (unlikely(!_v_is_elements_valid())) {
 			return false; // Failed lookups, no _elements.
 		}
 
 		uint32_t meta_idx = p_hash & _capacity_mask;
 		RawAHashTableMetadata metadata = _metadata[meta_idx];
-		if (metadata.hash == p_hash && _eq(_get_key(metadata.element_idx), p_key)) {
+		if (metadata.hash == p_hash && _eq(_v_get_key(metadata.element_idx), p_key)) {
 			r_element_idx = metadata.element_idx;
 			r_meta_idx = meta_idx;
 			return true;
@@ -145,7 +159,7 @@ protected:
 		uint32_t distance = 1;
 		while (true) {
 			metadata = _metadata[meta_idx];
-			if (metadata.hash == p_hash && _eq(_get_key(metadata.element_idx), p_key)) {
+			if (metadata.hash == p_hash && _eq(_v_get_key(metadata.element_idx), p_key)) {
 				r_element_idx = metadata.element_idx;
 				r_meta_idx = meta_idx;
 				return true;
@@ -211,7 +225,7 @@ protected:
 		RawAHashTableMetadata *old_map_data = _metadata;
 
 		_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static_zeroed(sizeof(RawAHashTableMetadata) * real_capacity));
-		_resize_elements(_get_resize_count(_capacity_mask) + 1);
+		_v_resize_elements(_get_resize_count(_capacity_mask) + 1);
 
 		if (_size != 0) {
 			for (uint32_t i = 0; i < real_old_capacity; i++) {
@@ -238,12 +252,12 @@ public:
 	}
 
 	void clear() {
-		if (!_is_elements_valid() || _size == 0) {
+		if (!_v_is_elements_valid() || _size == 0) {
 			return;
 		}
 
 		_clear_metadata();
-		_clear_elements();
+		_v_clear_elements();
 
 		_size = 0;
 	}
@@ -257,7 +271,7 @@ public:
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
-		if (!_is_elements_valid()) {
+		if (!_v_is_elements_valid()) {
 			_capacity_mask = MAX(4u, p_new_capacity);
 			_capacity_mask = next_power_of_2(_capacity_mask) - 1;
 			return; // Unallocated yet.
@@ -272,9 +286,9 @@ public:
 	}
 
 	void reset() {
-		if (_is_elements_valid()) {
-			_clear_elements();
-			_free_elements();
+		if (_v_is_elements_valid()) {
+			_v_clear_elements();
+			_v_free_elements();
 			Memory::free_static(_metadata);
 		}
 		_capacity_mask = INITIAL_CAPACITY - 1;

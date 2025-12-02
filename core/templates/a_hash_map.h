@@ -50,8 +50,8 @@
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class AHashMap final : public RawAHashTable<TKey, Hasher, Comparator> {
-	using Base = RawAHashTable<TKey, Hasher, Comparator>;
+class AHashMap final : public RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator> {
+	using Base = RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator>;
 
 	using Base::_capacity_mask;
 	using Base::_clear_metadata;
@@ -77,19 +77,23 @@ public:
 	using Base::size;
 
 protected:
-	virtual const TKey &_get_key(uint32_t p_idx) const override {
+	// `friend` declaration is needed, otherwise RawAHashTable was not able to read encapsulated methods.
+	// Type aliases seem to be broken with friend declarations.
+	friend class RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator>;
+
+	const TKey &_get_key(uint32_t p_idx) const {
 		return _elements[p_idx].key;
 	}
 
-	virtual void _resize_elements(uint32_t p_new_capacity) override {
+	void _resize_elements(uint32_t p_new_capacity) {
 		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * p_new_capacity));
 	}
 
-	virtual bool _is_elements_valid() const override {
+	bool _is_elements_valid() const {
 		return _elements != nullptr;
 	}
 
-	virtual void _clear_elements() override {
+	void _clear_elements() {
 		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
 			for (uint32_t i = 0; i < _size; i++) {
 				_elements[i].key.~TKey();
@@ -98,7 +102,7 @@ protected:
 		}
 	}
 
-	virtual void _free_elements() override {
+	void _free_elements() {
 		Memory::free_static(_elements);
 		_elements = nullptr;
 	}
