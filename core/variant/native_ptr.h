@@ -150,7 +150,7 @@ struct PtrToArg<GDExtensionConstPtr<T>> {
 template <typename T>
 struct PtrToArg<GDExtensionPtr<T>> {
 	_FORCE_INLINE_ static GDExtensionPtr<T> convert(const void *p_ptr) {
-		return GDExtensionPtr<T>(reinterpret_cast<const T *>(p_ptr));
+		return GDExtensionPtr<T>(reinterpret_cast<T *>(const_cast<void *>(p_ptr)));
 	}
 	typedef T *EncodeT;
 	_FORCE_INLINE_ static void encode(GDExtensionPtr<T> p_val, void *p_ptr) {

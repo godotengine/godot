@@ -116,11 +116,9 @@ public:
 	PhysicsDirectBodyState3DExtension();
 };
 
-typedef PhysicsDirectSpaceState3D::RayResult PhysicsServer3DExtensionRayResult;
 typedef PhysicsDirectSpaceState3D::ShapeResult PhysicsServer3DExtensionShapeResult;
 typedef PhysicsDirectSpaceState3D::ShapeRestInfo PhysicsServer3DExtensionShapeRestInfo;
 
-GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionRayResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeRestInfo)
 
