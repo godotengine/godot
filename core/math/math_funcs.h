@@ -597,15 +597,17 @@ _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
 
 _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta) {
 	double difference = angle_difference(p_from, p_to);
-	double abs_difference = abs(difference);
-	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
+	if (p_delta < 0.0 && is_zero_approx(difference)) { // prevent lock-up when delta is negative
+		return p_from + p_delta;
+	}
+	return move_toward(p_from, p_from + difference, p_delta);
 }
 _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 	float difference = angle_difference(p_from, p_to);
-	float abs_difference = abs(difference);
-	// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-	return p_from + CLAMP(p_delta, abs_difference - (float)PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
+	if (p_delta < 0.0f && is_zero_approx(difference)) { // prevent lock-up when delta is negative
+		return p_from + p_delta;
+	}
+	return move_toward(p_from, p_from + difference, p_delta);
 }
 
 _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
