@@ -982,7 +982,7 @@ void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			_update_editor_settings();
 		} break;
 
