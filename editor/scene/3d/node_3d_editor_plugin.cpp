@@ -9702,7 +9702,7 @@ Node3DEditor::Node3DEditor() {
 
 	snap_enabled = false;
 	snap_key_enabled = false;
-	tool_mode = TOOL_MODE_SELECT;
+	tool_mode = TOOL_MODE_TRANSFORM;
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
@@ -9723,7 +9723,6 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q, true));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
@@ -9766,6 +9765,7 @@ Node3DEditor::Node3DEditor() {
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
 	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_MODE_TRANSFORM]->set_pressed(true);
 	tool_button[TOOL_MODE_TRANSFORM]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_TRANSFORM));
 	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_transform", TTRC("Transform Mode"), Key::V, true));
 	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut_context(this);
