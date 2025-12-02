@@ -68,6 +68,11 @@ skip = [
 	"platform/android/java/lib/src/main/java/com/*",
 	"platform/web/package-lock.json",
 ]
+ignore-regex = [
+	# Regexes:
+	#  "\\b(_?[a-z][A-Z][_a-zA-Z0-9]+?)\\b": Prevent { pEvent ==> prevent }.
+    "\\b(_?[a-z][A-Z][_a-zA-Z0-9]+?)\\b"
+]
 ignore-words-list = [
 	"breaked",
 	"cancelled",

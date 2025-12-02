@@ -437,26 +437,27 @@ void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_call
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
+template <typename... Args>
+void DisplayServerAndroid::_window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const {
 	if (p_callable.is_valid()) {
 		if (p_deferred) {
-			p_callable.call_deferred(p_arg);
+			p_callable.call_deferred(p_rest_args...);
 		} else {
-			p_callable.call(p_arg);
+			p_callable.call(p_rest_args...);
 		}
 	}
 }
 
 void DisplayServerAndroid::send_window_event(DisplayServer::WindowEvent p_event, bool p_deferred) const {
-	_window_callback(window_event_callback, int(p_event), p_deferred);
+	_window_callback(window_event_callback, p_deferred, int(p_event));
 }
 
 void DisplayServerAndroid::send_input_event(const Ref<InputEvent> &p_event) const {
-	_window_callback(input_event_callback, p_event);
+	_window_callback(input_event_callback, false, p_event);
 }
 
 void DisplayServerAndroid::send_input_text(const String &p_text) const {
-	_window_callback(input_text_callback, p_text);
+	_window_callback(input_text_callback, false, p_text, false);
 }
 
 void DisplayServerAndroid::_dispatch_input_events(const Ref<InputEvent> &p_event) {
