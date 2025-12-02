@@ -1,0 +1,38 @@
+diff --git a/thirdparty/volk/volk.c b/thirdparty/volk/volk.c
+index b0bc01beee..2d9491438f 100644
+--- a/thirdparty/volk/volk.c
++++ b/thirdparty/volk/volk.c
+@@ -410,6 +410,9 @@ static void volkGenLoadInstance(void* context, PFN_vkVoidFunction (*load)(void*,
+ #if defined(VK_NV_optical_flow)
+ 	vkGetPhysicalDeviceOpticalFlowImageFormatsNV = (PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV)load(context, "vkGetPhysicalDeviceOpticalFlowImageFormatsNV");
+ #endif /* defined(VK_NV_optical_flow) */
++#if defined(VK_OHOS_surface)
++	vkCreateSurfaceOHOS = (PFN_vkCreateSurfaceOHOS)load(context, "vkCreateSurfaceOHOS");
++#endif /* defined(VK_OHOS_surface) */
+ #if defined(VK_QNX_screen_surface)
+ 	vkCreateScreenSurfaceQNX = (PFN_vkCreateScreenSurfaceQNX)load(context, "vkCreateScreenSurfaceQNX");
+ 	vkGetPhysicalDeviceScreenPresentationSupportQNX = (PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX)load(context, "vkGetPhysicalDeviceScreenPresentationSupportQNX");
+@@ -3058,6 +3061,9 @@ PFN_vkCmdBindShadingRateImageNV vkCmdBindShadingRateImageNV;
+ PFN_vkCmdSetCoarseSampleOrderNV vkCmdSetCoarseSampleOrderNV;
+ PFN_vkCmdSetViewportShadingRatePaletteNV vkCmdSetViewportShadingRatePaletteNV;
+ #endif /* defined(VK_NV_shading_rate_image) */
++#if defined(VK_OHOS_surface)
++PFN_vkCreateSurfaceOHOS vkCreateSurfaceOHOS;
++#endif /* defined(VK_OHOS_surface) */
+ #if defined(VK_QCOM_tile_properties)
+ PFN_vkGetDynamicRenderingTilePropertiesQCOM vkGetDynamicRenderingTilePropertiesQCOM;
+ PFN_vkGetFramebufferTilePropertiesQCOM vkGetFramebufferTilePropertiesQCOM;
+diff --git a/thirdparty/volk/volk.h b/thirdparty/volk/volk.h
+index 17326c64f0..d7546f23f7 100644
+--- a/thirdparty/volk/volk.h
++++ b/thirdparty/volk/volk.h
+@@ -1909,6 +1909,9 @@ extern PFN_vkCmdBindShadingRateImageNV vkCmdBindShadingRateImageNV;
+ extern PFN_vkCmdSetCoarseSampleOrderNV vkCmdSetCoarseSampleOrderNV;
+ extern PFN_vkCmdSetViewportShadingRatePaletteNV vkCmdSetViewportShadingRatePaletteNV;
+ #endif /* defined(VK_NV_shading_rate_image) */
++#if defined(VK_OHOS_surface)
++extern PFN_vkCreateSurfaceOHOS vkCreateSurfaceOHOS;
++#endif /* defined(VK_OHOS_surface) */
+ #if defined(VK_QCOM_tile_properties)
+ extern PFN_vkGetDynamicRenderingTilePropertiesQCOM vkGetDynamicRenderingTilePropertiesQCOM;
+ extern PFN_vkGetFramebufferTilePropertiesQCOM vkGetFramebufferTilePropertiesQCOM;
