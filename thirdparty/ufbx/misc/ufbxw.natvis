@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="ufbxw_string">
+		<DisplayString Condition="length!=~(size_t)0">{data,[length]s}</DisplayString>
+		<DisplayString Condition="length==~(size_t)0">{data,s}</DisplayString>
+	</Type>
+	<Type Name="ufbxw_int_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxw_vec3_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+</AutoVisualizer>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="ufbxw_node_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_id_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_uint32_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_prop_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_prop_type_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_element_slot_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxw_string_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_element_type_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_object_type_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_save_object_type_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxw_keyframe_real_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_buffer_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_buffer_transform_data_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_mesh_attribute_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_anim_key_attr_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_id_span"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_ktime_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_float_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_binary_node_header_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_write_buffer_ptr_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_write_chunk_ptr_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_write_reloc_list"><DisplayString>{{ count={count} }}</DisplayString><Expand><ArrayItems><Size>count</Size><ValuePointer>data</ValuePointer></ArrayItems></Expand></Type>
+	<Type Name="ufbxwi_props">
+		<DisplayString>{{ count={count} }}</DisplayString>
+		<Expand>
+			<CustomListItems MaxItemsPerView="512" ExcludeView="Test">
+				<Variable Name="i" InitialValue="0" />
+				<Size>count</Size>
+				<Loop>
+					<Break Condition="i == capacity" />
+					<If Condition="props[i].token">
+						<Item>props[i]</Item>
+					</If>
+					<Exec>i += 1</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="ufbxwi_element">
+		<DisplayString>{{ type={(ufbxw_element_type)(id &gt;&gt; 48),en} name={name} }}</DisplayString>
+		<Expand>
+			<Item Name="type">(ufbxw_element_type)(id &gt;&gt; 48),en</Item>
+			<Item Name="index">(unsigned)id</Item>
+			<Item Name="props">props</Item>
+			<Item Name="data" Condition="(ufbxw_element_type)(id &gt;&gt; 48) == UFBXW_ELEMENT_NODE">(ufbxwi_node*)data</Item>
+			<Item Name="data" Condition="(ufbxw_element_type)(id &gt;&gt; 48) == UFBXW_ELEMENT_ANIM_CURVE">(ufbxwi_anim_curve*)data</Item>
+			<Item Name="data" Condition="(ufbxw_element_type)(id &gt;&gt; 48) == UFBXW_ELEMENT_ANIM_PROP">(ufbxwi_anim_prop*)data</Item>
+			<Item Name="data" Condition="(ufbxw_element_type)(id &gt;&gt; 48) == UFBXW_ELEMENT_ANIM_LAYER">(ufbxwi_anim_layer*)data</Item>
+			<Item Name="data" Condition="(ufbxw_element_type)(id &gt;&gt; 48) == UFBXW_ELEMENT_ANIM_STACK">(ufbxwi_anim_stack*)data</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>
+

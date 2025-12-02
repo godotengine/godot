@@ -1,0 +1,25 @@
+{
+    "dependencies": [
+        {
+            "name": "sfs",
+            "url": "https://github.com/bqqbarbhg/sfs",
+            "files": "sfs.py"
+        },
+        {
+            "name": "ufbx",
+            "url": "https://github.com/ufbx/ufbx",
+            "branch": "integration",
+            "files": [
+                {
+                    "root": "../test/ufbx",
+                    "files": ["ufbx.h", "ufbx.c"]
+                },
+                {
+                    "root": "../misc",
+                    "remoteRoot": "misc",
+                    "files": ["ufbx.natvis"]
+                }
+            ]
+        }
+    ]
+}

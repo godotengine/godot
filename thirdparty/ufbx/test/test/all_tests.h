@@ -1,0 +1,11 @@
+
+#include "test_basic.h"
+#include "test_errors.h"
+#include "test_mesh.h"
+#include "test_animation.h"
+#include "test_skin.h"
+#include "test_blend_shape.h"
+#include "test_light.h"
+#include "test_camera.h"
+#include "test_deflate.h"
+#include "test_ascii.h"
