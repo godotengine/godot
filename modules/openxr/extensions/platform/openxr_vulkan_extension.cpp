@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
@@ -203,6 +203,32 @@ void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_f
 	vulkan_queue_index = p_queue_index;
 }
 
+bool OpenXRVulkanExtension::use_fragment_density_offsets() {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return false;
+	}
+
+	return fb_foveation->is_foveation_eye_tracked_enabled();
+}
+
+void OpenXRVulkanExtension::get_fragment_density_offsets(LocalVector<VkOffset2D> &r_vk_offsets, const Vector2i &p_granularity) {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return;
+	}
+
+	LocalVector<Vector2i> offsets;
+	fb_foveation->get_fragment_density_offsets(offsets);
+
+	r_vk_offsets.reserve(offsets.size());
+	for (Vector2i offset : offsets) {
+		offset = ((offset + p_granularity / 2) / p_granularity) * p_granularity;
+
+		r_vk_offsets.push_back(VkOffset2D{ offset.x, offset.y });
+	}
+}
+
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
@@ -326,15 +352,15 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			break;
 		case VK_FORMAT_D32_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D24_UNORM_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		default:
 			// continue with our default value

@@ -756,6 +756,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
@@ -1089,6 +1094,16 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	}
 
 	return OK;
+}
+
+String OS_Unix::get_cwd() const {
+	String dir;
+	char real_current_dir_name[2048];
+	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ".");
+	if (dir.append_utf8(real_current_dir_name) != OK) {
+		dir = real_current_dir_name;
+	}
+	return dir;
 }
 
 bool OS_Unix::has_environment(const String &p_var) const {

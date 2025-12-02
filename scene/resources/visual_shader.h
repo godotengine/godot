@@ -597,6 +597,7 @@ public:
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
+		QUAL_INSTANCE_INDEX,
 		QUAL_MAX,
 	};
 
@@ -604,6 +605,7 @@ private:
 	String parameter_name = "";
 	Qualifier qualifier = QUAL_NONE;
 	bool global_code_generated = false;
+	int instance_index = 0;
 
 protected:
 	static void _bind_methods();
@@ -622,6 +624,9 @@ public:
 
 	void set_global_code_generated(bool p_enabled);
 	bool is_global_code_generated() const;
+
+	void set_instance_index(int p_index);
+	int get_instance_index() const;
 
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
 	virtual bool is_convertible_to_constant() const = 0;

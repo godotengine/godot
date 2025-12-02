@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (body).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -840,6 +840,10 @@
 
     if ( hints->contours != hints->embedded.contours )
       FT_FREE( hints->contours );
+    if ( hints->contour_y_minima != hints->embedded.contour_y_minima )
+      FT_FREE( hints->contour_y_minima );
+    if ( hints->contour_y_maxima != hints->embedded.contour_y_maxima )
+      FT_FREE( hints->contour_y_maxima );
     hints->max_contours = 0;
     hints->num_contours = 0;
 
@@ -896,18 +900,29 @@
     {
       if ( !hints->contours )
       {
-        hints->contours     = hints->embedded.contours;
+        hints->contours         = hints->embedded.contours;
+        hints->contour_y_minima = hints->embedded.contour_y_minima;
+        hints->contour_y_maxima = hints->embedded.contour_y_maxima;
+
         hints->max_contours = AF_CONTOURS_EMBEDDED;
       }
     }
     else if ( new_max > old_max )
     {
       if ( hints->contours == hints->embedded.contours )
-        hints->contours = NULL;
+      {
+        hints->contours         = NULL;
+        hints->contour_y_minima = NULL;
+        hints->contour_y_maxima = NULL;
+      }
 
       new_max = ( new_max + 3 ) & ~3; /* round up to a multiple of 4 */
 
       if ( FT_RENEW_ARRAY( hints->contours, old_max, new_max ) )
+        goto Exit;
+      if ( FT_RENEW_ARRAY( hints->contour_y_minima, old_max, new_max ) )
+        goto Exit;
+      if ( FT_RENEW_ARRAY( hints->contour_y_maxima, old_max, new_max ) )
         goto Exit;
 
       hints->max_contours = new_max;
@@ -1324,7 +1339,7 @@
   af_glyph_hints_align_edge_points( AF_GlyphHints  hints,
                                     AF_Dimension   dim )
   {
-    AF_AxisHints  axis          = & hints->axis[dim];
+    AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
     AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;

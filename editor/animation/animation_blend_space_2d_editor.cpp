@@ -288,7 +288,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		tree->set(get_blend_position_path(), blend_pos);
 
+		dragging_blend_position = true;
 		blend_space_draw->queue_redraw();
+	}
+
+	if (mb.is_valid() && !mb->is_pressed() && dragging_blend_position && mb->get_button_index() == MouseButton::LEFT) {
+		dragging_blend_position = false;
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -311,7 +316,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_space_draw->queue_redraw();
 	}
 
-	if (mm.is_valid() && !dragging_selected_attempt && ((tool_select->is_pressed() && mm->is_shift_pressed()) || tool_blend->is_pressed()) && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
+	if (mm.is_valid() && dragging_blend_position && !dragging_selected_attempt && ((tool_select->is_pressed() && mm->is_shift_pressed()) || tool_blend->is_pressed()) && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		Vector2 blend_pos = (mm->get_position() / blend_space_draw->get_size());
 		blend_pos.y = 1.0 - blend_pos.y;
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
@@ -421,7 +426,7 @@ void AnimationNodeBlendSpace2DEditor::_update_tool_erase() {
 void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
 
-	if (p_tool == 2) {
+	if (p_tool == 3) {
 		Vector<Vector2> bl_points;
 		for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 			bl_points.push_back(blend_space->get_blend_point_position(i));
@@ -1118,4 +1123,5 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	dragging_selected = false;
 	dragging_selected_attempt = false;
+	dragging_blend_position = false;
 }

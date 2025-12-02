@@ -143,16 +143,6 @@ class TextServerAdvanced : public TextServerExtension {
 	GDCLASS(TextServerAdvanced, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
-	struct NumSystemData {
-		HashSet<StringName> lang;
-		String digits;
-		String percent_sign;
-		String exp_l;
-		String exp_u;
-	};
-
-	Vector<NumSystemData> num_systems;
-
 	struct FeatureInfo {
 		StringName name;
 		Variant::Type vtype = Variant::INT;
@@ -173,7 +163,6 @@ class TextServerAdvanced : public TextServerExtension {
 	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
-	void _insert_num_systems_lang();
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
 
@@ -709,7 +698,8 @@ class TextServerAdvanced : public TextServerExtension {
 	struct FontPriorityList {
 		friend class TextServerAdvanced;
 
-		const int MAX_PRIORITY = 2;
+		const int PRIORITY_SKIP = 100; // Font already used.
+		const int PRIORITY_MAX = 2;
 		int current_priority = 0;
 		uint32_t current_index = 0;
 		uint32_t font_count = 0;
@@ -733,7 +723,7 @@ class TextServerAdvanced : public TextServerExtension {
 			fonts.reserve(font_count);
 			if (font_count > 0) {
 				fonts.push_back(p_fonts[0]);
-				unprocessed_fonts[0].second = 0;
+				unprocessed_fonts[0].second = PRIORITY_SKIP;
 				current_index++;
 			}
 		}
@@ -742,15 +732,15 @@ class TextServerAdvanced : public TextServerExtension {
 			return font_count;
 		}
 
-		_FORCE_INLINE_ int _get_priority(const RID &font) {
-			return text_server->_font_is_script_supported(font, *script_code) ? (text_server->_font_is_language_supported(font, *language) ? 0 : 1) : 2;
+		_FORCE_INLINE_ int _get_priority(const RID &p_font) {
+			return text_server->_font_is_script_supported(p_font, *script_code) ? (text_server->_font_is_language_supported(p_font, *language) ? 0 : 1) : 2;
 		}
 
-		RID operator[](uint32_t index) {
-			if (index < fonts.size()) {
-				return fonts[index];
+		RID operator[](uint32_t p_index) {
+			if (p_index < fonts.size()) {
+				return fonts[p_index];
 			}
-			while (current_priority < MAX_PRIORITY || current_index < font_count) {
+			while (current_priority < PRIORITY_MAX || current_index < font_count) {
 				if (current_index >= font_count) {
 					current_priority++;
 					current_index = 0;
@@ -761,9 +751,10 @@ class TextServerAdvanced : public TextServerExtension {
 					priority = _get_priority(font);
 				}
 				if (priority == current_priority) {
+					unprocessed_fonts[current_index].second = PRIORITY_SKIP;
 					fonts.push_back(font);
-					if (index < fonts.size()) {
-						return fonts[index];
+					if (p_index < fonts.size()) {
+						return fonts[p_index];
 					}
 				}
 				current_index++;
@@ -1032,6 +1023,7 @@ public:
 	MODBIND2R(RID, create_shaped_text, Direction, Orientation);
 
 	MODBIND1(shaped_text_clear, const RID &);
+	MODBIND1R(RID, shaped_text_duplicate, const RID &);
 
 	MODBIND2(shaped_text_set_direction, const RID &, Direction);
 	MODBIND1RC(Direction, shaped_text_get_direction, const RID &);
@@ -1060,6 +1052,7 @@ public:
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, double);
+	MODBIND2RC(bool, shaped_text_has_object, const RID &, const Variant &);
 	MODBIND1RC(String, shaped_get_text, const RID &);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
@@ -1116,10 +1109,6 @@ public:
 	MODBIND1RC(double, shaped_text_get_underline_thickness, const RID &);
 
 	MODBIND1RC(PackedInt32Array, shaped_text_get_character_breaks, const RID &);
-
-	MODBIND2RC(String, format_number, const String &, const String &);
-	MODBIND2RC(String, parse_number, const String &, const String &);
-	MODBIND1RC(String, percent_sign, const String &);
 
 	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int64_t);
 	MODBIND2RC(PackedInt32Array, string_get_character_breaks, const String &, const String &);

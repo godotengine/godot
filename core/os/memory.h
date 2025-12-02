@@ -41,7 +41,16 @@ constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
 }
 
-// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+#if defined(__MINGW32__) && !defined(__MINGW64__)
+// Note: Using hardcoded value, since the value can end up different in different compile units on 32-bit windows
+// due to a compiler bug (see GH-113145)
+static constexpr size_t MAX_ALIGN = 16;
+static_assert(MAX_ALIGN % alignof(max_align_t) == 0);
+#else
+static constexpr size_t MAX_ALIGN = alignof(max_align_t);
+#endif
+
+// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ MAX_ALIGN
 //             ┌─────────────────┬──┬────────────────┬──┬───────────...
 //             │ uint64_t        │░░│ uint64_t       │░░│ T[]
 //             │ alloc size      │░░│ element count  │░░│ data
@@ -50,7 +59,7 @@ constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 
 inline constexpr size_t SIZE_OFFSET = 0;
 inline constexpr size_t ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
-inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
+inline constexpr size_t DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), MAX_ALIGN);
 
 template <bool p_ensure_zero = false>
 void *alloc_static(size_t p_bytes, bool p_pad_align = false);
@@ -95,6 +104,10 @@ public:
 	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
+// Works around an issue where memnew_placement (char *) would call the p_description version.
+inline void *operator new(size_t p_size, char *p_dest) {
+	return operator new(p_size, (void *)p_dest);
+}
 void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool
 void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)); ///< operator new that takes a description and uses MemoryStaticPool
 

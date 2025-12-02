@@ -107,17 +107,17 @@
 			</description>
 		</method>
 		<method name="get_end_bone_direction" qualifiers="const">
-			<return type="int" enum="SpringBoneSimulator3D.BoneDirection" />
+			<return type="int" enum="SkeletonModifier3D.BoneDirection" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the end bone's tail direction of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+				Returns the tail direction of the end bone of the bone chain when [method is_end_bone_extended] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_end_bone_length" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the end bone's tail length of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+				Returns the end bone tail length of the bone chain when [method is_end_bone_extended] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_end_bone_name" qualifiers="const">
@@ -219,7 +219,7 @@
 			</description>
 		</method>
 		<method name="get_joint_rotation_axis" qualifiers="const">
-			<return type="int" enum="SpringBoneSimulator3D.RotationAxis" />
+			<return type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="joint" type="int" />
 			<description>
@@ -232,7 +232,7 @@
 			<param index="1" name="joint" type="int" />
 			<description>
 				Returns the rotation axis vector for the specified joint in the bone chain. This vector represents the axis around which the joint can rotate. It is determined based on the rotation axis set for the joint.
-				If [method get_joint_rotation_axis] is [constant ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
+				If [method get_joint_rotation_axis] is [constant SkeletonModifier3D.ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_joint_stiffness" qualifiers="const">
@@ -272,7 +272,7 @@
 			</description>
 		</method>
 		<method name="get_rotation_axis" qualifiers="const">
-			<return type="int" enum="SpringBoneSimulator3D.RotationAxis" />
+			<return type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the rotation axis of the bone chain.
@@ -283,7 +283,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the rotation axis vector of the bone chain. This vector represents the axis around which the bone chain can rotate. It is determined based on the rotation axis set for the bone chain.
-				If [method get_rotation_axis] is [constant ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
+				If [method get_rotation_axis] is [constant SkeletonModifier3D.ROTATION_AXIS_ALL], this method returns [code]Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_stiffness" qualifiers="const">
@@ -311,7 +311,7 @@
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the end bone is extended to have the tail.
+				Returns [code]true[/code] if the end bone is extended to have a tail.
 			</description>
 		</method>
 		<method name="reset">
@@ -410,7 +410,7 @@
 		<method name="set_end_bone_direction">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
-			<param index="1" name="bone_direction" type="int" enum="SpringBoneSimulator3D.BoneDirection" />
+			<param index="1" name="bone_direction" type="int" enum="SkeletonModifier3D.BoneDirection" />
 			<description>
 				Sets the end bone tail direction of the bone chain when [method is_end_bone_extended] is [code]true[/code].
 			</description>
@@ -454,9 +454,8 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [param enabled] is [code]true[/code], the end bone is extended to have the tail.
-				The extended tail config is allocated to the last element in the joint list.
-				In other words, if you set [param enabled] is [code]false[/code], the config of last element in the joint list has no effect in the simulated result.
+				If [param enabled] is [code]true[/code], the end bone is extended to have a tail.
+				The extended tail config is allocated to the last element in the joint list. In other words, if you set [param enabled] to [code]false[/code], the config of the last element in the joint list has no effect in the simulated result.
 			</description>
 		</method>
 		<method name="set_gravity">
@@ -534,10 +533,10 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="joint" type="int" />
-			<param index="2" name="axis" type="int" enum="SpringBoneSimulator3D.RotationAxis" />
+			<param index="2" name="axis" type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<description>
 				Sets the rotation axis at [param joint] in the bone chain's joint list when [method is_config_individual] is [code]true[/code].
-				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant ROTATION_AXIS_CUSTOM], you can specify any axis.
+				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
 				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
 			</description>
 		</method>
@@ -549,7 +548,7 @@
 			<description>
 				Sets the rotation axis vector for the specified joint in the bone chain.
 				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
-				If the vector length is [code]0[/code], it is considered synonymous with [constant ROTATION_AXIS_ALL].
+				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.ROTATION_AXIS_ALL].
 			</description>
 		</method>
 		<method name="set_joint_stiffness">
@@ -597,10 +596,10 @@
 		<method name="set_rotation_axis">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
-			<param index="1" name="axis" type="int" enum="SpringBoneSimulator3D.RotationAxis" />
+			<param index="1" name="axis" type="int" enum="SkeletonModifier3D.RotationAxis" />
 			<description>
 				Sets the rotation axis of the bone chain. If set to a specific axis, it acts like a hinge joint. The value is cached in each joint setting in the joint list.
-				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant ROTATION_AXIS_CUSTOM], you can specify any axis.
+				The axes are based on the [method Skeleton3D.get_bone_rest]'s space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
 				[b]Note:[/b] The rotation axis vector and the forward vector shouldn't be colinear to avoid unintended rotation since [SpringBoneSimulator3D] does not factor in twisting forces.
 			</description>
 		</method>
@@ -611,7 +610,7 @@
 			<description>
 				Sets the rotation axis vector of the bone chain. The value is cached in each joint setting in the joint list.
 				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
-				If the vector length is [code]0[/code], it is considered synonymous with [constant ROTATION_AXIS_ALL].
+				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.ROTATION_AXIS_ALL].
 			</description>
 		</method>
 		<method name="set_stiffness">
@@ -638,32 +637,15 @@
 			The constant force that always affected bones. It is equal to the result when the parent [Skeleton3D] moves at this speed in the opposite direction.
 			This is useful for effects such as wind and anti-gravity.
 		</member>
+		<member name="mutable_bone_axes" type="bool" setter="set_mutable_bone_axes" getter="are_bone_axes_mutable" default="true">
+			If [code]true[/code], the solver retrieves the bone axis from the bone pose every frame.
+			If [code]false[/code], the solver retrieves the bone axis from the bone rest and caches it, which increases performance slightly, but position changes in the bone pose made before processing this [SpringBoneSimulator3D] are ignored.
+		</member>
 		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
 			The number of settings.
 		</member>
 	</members>
 	<constants>
-		<constant name="BONE_DIRECTION_PLUS_X" value="0" enum="BoneDirection">
-			Enumerated value for the +X axis.
-		</constant>
-		<constant name="BONE_DIRECTION_MINUS_X" value="1" enum="BoneDirection">
-			Enumerated value for the -X axis.
-		</constant>
-		<constant name="BONE_DIRECTION_PLUS_Y" value="2" enum="BoneDirection">
-			Enumerated value for the +Y axis.
-		</constant>
-		<constant name="BONE_DIRECTION_MINUS_Y" value="3" enum="BoneDirection">
-			Enumerated value for the -Y axis.
-		</constant>
-		<constant name="BONE_DIRECTION_PLUS_Z" value="4" enum="BoneDirection">
-			Enumerated value for the +Z axis.
-		</constant>
-		<constant name="BONE_DIRECTION_MINUS_Z" value="5" enum="BoneDirection">
-			Enumerated value for the -Z axis.
-		</constant>
-		<constant name="BONE_DIRECTION_FROM_PARENT" value="6" enum="BoneDirection">
-			Enumerated value for the axis from a parent bone to the child bone.
-		</constant>
 		<constant name="CENTER_FROM_WORLD_ORIGIN" value="0" enum="CenterFrom">
 			The world origin is defined as center.
 		</constant>
@@ -674,21 +656,6 @@
 		<constant name="CENTER_FROM_BONE" value="2" enum="CenterFrom">
 			The bone pose origin of the parent [Skeleton3D] specified by [method set_center_bone] is defined as center.
 			If [Node3D] is not found, the parent [Skeleton3D] is treated as center.
-		</constant>
-		<constant name="ROTATION_AXIS_X" value="0" enum="RotationAxis">
-			Enumerated value for the rotation of the X axis.
-		</constant>
-		<constant name="ROTATION_AXIS_Y" value="1" enum="RotationAxis">
-			Enumerated value for the rotation of the Y axis.
-		</constant>
-		<constant name="ROTATION_AXIS_Z" value="2" enum="RotationAxis">
-			Enumerated value for the rotation of the Z axis.
-		</constant>
-		<constant name="ROTATION_AXIS_ALL" value="3" enum="RotationAxis">
-			Enumerated value for the unconstrained rotation.
-		</constant>
-		<constant name="ROTATION_AXIS_CUSTOM" value="4" enum="RotationAxis">
-			Enumerated value for an optional rotation axis. See also [method set_joint_rotation_axis_vector].
 		</constant>
 	</constants>
 </class>

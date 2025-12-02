@@ -157,9 +157,6 @@ class ResourceImporterScene : public ResourceImporter {
 	static Vector<Ref<EditorSceneFormatImporter>> scene_importers;
 	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
 
-	static ResourceImporterScene *scene_singleton;
-	static ResourceImporterScene *animation_singleton;
-
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_STATIC,
@@ -237,8 +234,6 @@ class ResourceImporterScene : public ResourceImporter {
 
 public:
 	static const String material_extension[3];
-	static ResourceImporterScene *get_scene_singleton() { return scene_singleton; }
-	static ResourceImporterScene *get_animation_singleton() { return animation_singleton; }
 
 	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
@@ -301,8 +296,7 @@ public:
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 
-	ResourceImporterScene(const String &p_scene_import_type = "PackedScene", bool p_singleton = false);
-	~ResourceImporterScene();
+	ResourceImporterScene(const String &p_scene_import_type = "PackedScene");
 
 	template <typename M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);

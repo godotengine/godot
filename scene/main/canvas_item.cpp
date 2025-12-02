@@ -136,27 +136,24 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RID ci = get_canvas_item();
-	RenderingServer::get_singleton()->canvas_item_clear(ci);
-	//todo updating = true - only allow drawing here
+	if (draw_commands_dirty) {
+		RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+		draw_commands_dirty = false;
+	}
+
 	if (is_visible_in_tree()) {
 		drawing = true;
-		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
-		}
+		TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringName(draw));
 		GDVIRTUAL_CALL(_draw);
 		current_item_drawn = nullptr;
-		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(0.0);
-		}
+		TextServer::set_current_drawn_item_oversampling(0.0);
 		drawing = false;
+		draw_commands_dirty = true;
 	}
-	//todo updating = false
-	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
+	pending_update = false; // Don't change to false until finished drawing (avoid recursive update).
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
@@ -282,7 +279,6 @@ void CanvasItem::_enter_canvas() {
 		}
 	}
 
-	pending_update = false;
 	queue_redraw();
 
 	notification(NOTIFICATION_ENTER_CANVAS);

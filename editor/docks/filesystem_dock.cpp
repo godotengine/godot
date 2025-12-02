@@ -43,6 +43,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/dependency_editor.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/gui/editor_dir_dialog.h"
@@ -236,8 +237,8 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 	if (has_custom_color) {
-		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * ITEM_COLOR_SCALE);
-		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? ITEM_ALPHA_MIN : ITEM_ALPHA_MAX));
+		subdirectory_item->set_icon_modulate(0, editor_is_dark_icon_and_font ? custom_color : custom_color * ITEM_COLOR_SCALE);
+		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_icon_and_font ? ITEM_ALPHA_MIN : ITEM_ALPHA_MAX));
 	} else {
 		TreeItem *parent = subdirectory_item->get_parent();
 		if (parent) {
@@ -286,8 +287,6 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		const String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-
 		// Build the list of the files to display.
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
@@ -336,7 +335,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->select(0);
 				file_item->set_as_cursor(0);
 			}
-			if (main_scene == file_metadata) {
+			if (main_scene_path == file_metadata) {
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, file_item->get_instance_id()));
@@ -494,6 +493,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				} else {
 					toolbar2_hbc->show();
 				}
+				button_file_list_display_mode->hide();
 
 				_update_tree(get_uncollapsed_paths());
 				file_list_vb->hide();
@@ -513,6 +513,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				tree->ensure_cursor_is_visible();
 				toolbar2_hbc->hide();
+				button_file_list_display_mode->show();
 				_update_tree(get_uncollapsed_paths());
 
 				file_list_vb->show();
@@ -613,8 +614,6 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_button_sort->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			button_dock_placement->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-
 			if (is_layout_rtl()) {
 				button_hist_next->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 				button_hist_prev->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
@@ -630,9 +629,9 @@ void FileSystemDock::_notification(int p_what) {
 			// Update editor dark theme & always show folders states from editor settings, redraw if needed.
 			bool do_redraw = false;
 
-			bool new_editor_is_dark_theme = EditorThemeManager::is_dark_theme();
-			if (new_editor_is_dark_theme != editor_is_dark_theme) {
-				editor_is_dark_theme = new_editor_is_dark_theme;
+			bool new_editor_is_dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
+			if (new_editor_is_dark_icon_and_font != editor_is_dark_icon_and_font) {
+				editor_is_dark_icon_and_font = new_editor_is_dark_icon_and_font;
 				do_redraw = true;
 			}
 
@@ -1080,7 +1079,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(-1, bd);
 					files->set_item_selectable(-1, false);
-					if (!editor_is_dark_theme && inherited_folder_color != default_folder_color) {
+					if (!editor_is_dark_icon_and_font && inherited_folder_color != default_folder_color) {
 						files->set_item_icon_modulate(-1, inherited_folder_color * ITEM_COLOR_SCALE);
 					} else {
 						files->set_item_icon_modulate(-1, inherited_folder_color);
@@ -1098,7 +1097,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(-1, dpath);
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
-					if (!editor_is_dark_theme && this_folder_color != default_folder_color) {
+					if (!editor_is_dark_icon_and_font && this_folder_color != default_folder_color) {
 						this_folder_color *= ITEM_COLOR_SCALE;
 					}
 					files->set_item_icon_modulate(-1, this_folder_color);
@@ -1129,7 +1128,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	sort_file_info_list(file_list, file_sort);
 
 	// Fills the ItemList control node from the FileInfos.
-	const String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 	for (FileInfo &E : file_list) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
@@ -1163,7 +1161,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			files->set_item_metadata(item_index, fpath);
 		}
 
-		if (fpath == main_scene) {
+		if (fpath == main_scene_path) {
 			files->set_item_custom_fg_color(item_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		}
 
@@ -1877,6 +1875,10 @@ void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 	_try_duplicate_item(to_duplicate, p_path);
 }
 
+void FileSystemDock::_move_confirm() {
+	_move_operation_confirm(confirm_move_to_dir, confirm_to_copy);
+}
+
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 	overwrite_dialog->hide();
 	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
@@ -2390,7 +2392,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_MAIN_SCENE: {
 			// Set as main scene with selected scene file.
 			if (p_selected.size() == 1) {
-				ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_selected[0]));
+				main_scene_path = ResourceUID::path_to_uid(p_selected[0]);
+				ProjectSettings::get_singleton()->set("application/run/main_scene", main_scene_path);
 				ProjectSettings::get_singleton()->save();
 				_update_tree(get_uncollapsed_paths());
 				_update_file_list(true);
@@ -2706,18 +2709,22 @@ void FileSystemDock::_resource_created() {
 		fpath = fpath.get_base_dir();
 	}
 
-	String type_name = new_resource_dialog->get_selected_type();
+	const String type_name = new_resource_dialog->get_selected_type();
 	if (type_name == "Shader") {
-		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 0);
-		make_shader_dialog->popup_centered();
-		return;
-	} else if (type_name == "VisualShader") {
-		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, 1);
+		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, type_name);
 		make_shader_dialog->popup_centered();
 		return;
 	} else if (type_name == "ShaderInclude") {
-		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, 2);
+		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, type_name);
 		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "VisualShader") {
+		make_shader_dialog->config(fpath.path_join("new_shader"), false, false, type_name);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (ClassDB::is_parent_class(type_name, "Script")) {
+		make_script_dialog->config("Node", fpath.path_join("new_script"), false, false);
+		make_script_dialog->popup_centered();
 		return;
 	}
 
@@ -2737,6 +2744,10 @@ void FileSystemDock::_resource_created() {
 
 	EditorNode::get_singleton()->push_item(r);
 	EditorNode::get_singleton()->save_resource_as(Ref<Resource>(r), fpath);
+}
+
+void FileSystemDock::_script_or_shader_created(const Ref<Resource> &p_resource) {
+	EditorNode::get_singleton()->push_item(p_resource.ptr());
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
@@ -2785,10 +2796,6 @@ void FileSystemDock::_rescan() {
 
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
-}
-
-void FileSystemDock::_change_bottom_dock_placement() {
-	EditorDockManager::get_singleton()->bottom_dock_show_placement_popup(button_dock_placement->get_screen_rect(), this);
 }
 
 void FileSystemDock::_change_split_mode() {
@@ -3129,11 +3136,19 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.is_empty()) {
+				String move_confirm_text;
+				confirm_move_to_dir = to_dir;
+
 				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					_move_operation_confirm(to_dir, true);
+					move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					confirm_to_copy = true;
 				} else {
-					_move_operation_confirm(to_dir);
+					move_confirm_text = vformat(TTRN("Move %d selected item to \"%s\"?", "Move %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
+					confirm_to_copy = false;
 				}
+
+				move_confirm_dialog->set_text(move_confirm_text);
+				move_confirm_dialog->popup_centered();
 			}
 		} else if (favorite) {
 			// Add the files from favorites.
@@ -3311,7 +3326,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
-				if (ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene")) != filenames[0]) {
+				if (main_scene_path != filenames[0]) {
 					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MENU_MAIN_SCENE);
 				}
 			} else {
@@ -3393,7 +3408,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			for (const KeyValue<String, Color> &E : folder_colors) {
 				folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), E.key.capitalize());
 
-				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_theme ? E.value : E.value * 2);
+				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_icon_and_font ? E.value : E.value * 2);
 				folder_colors_menu->set_item_metadata(-1, E.key);
 			}
 		}
@@ -3609,6 +3624,7 @@ void FileSystemDock::_tree_empty_selected() {
 	if (file_list_vb->is_visible()) {
 		_update_file_list(false);
 	}
+	_update_selection_changed();
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3699,6 +3715,16 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
 	callable_mp(this, &FileSystemDock::_update_import_dock).call_deferred();
+}
+
+void FileSystemDock::_update_selection_changed() {
+	Vector<String> selection;
+	selection.append_array(_tree_get_selected());
+	selection.append_array(_file_list_get_selected());
+	if (prev_selection != selection) {
+		prev_selection = selection;
+		emit_signal(SNAME("selection_changed"));
+	}
 }
 
 void FileSystemDock::_tree_mouse_exited() {
@@ -3908,6 +3934,8 @@ void FileSystemDock::_update_import_dock() {
 		return;
 	}
 
+	_update_selection_changed();
+
 	// List selected.
 	Vector<String> selected;
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
@@ -3981,6 +4009,12 @@ void FileSystemDock::_feature_profile_changed() {
 
 void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
+
+	const String &current_main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+	if (main_scene_path != current_main_scene_path) {
+		main_scene_path = current_main_scene_path;
+		update_all();
+	}
 }
 
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
@@ -4050,10 +4084,11 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 }
 
 void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
-	horizontal = p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL;
-	if (button_dock_placement->is_visible() == horizontal) {
+	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
+	if (horizontal == new_horizontal) {
 		return;
 	}
+	horizontal = new_horizontal;
 
 	if (horizontal) {
 		path_hb->reparent(toolbar_hbc, false);
@@ -4083,7 +4118,6 @@ void FileSystemDock::update_layout(EditorDock::DockLayout p_layout) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 0));
 	}
-	button_dock_placement->set_visible(horizontal);
 }
 
 void FileSystemDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const {
@@ -4165,6 +4199,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 	ADD_SIGNAL(MethodInfo("folder_color_changed"));
+	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
@@ -4174,8 +4209,8 @@ FileSystemDock::FileSystemDock() {
 	set_name(TTRC("FileSystem"));
 	set_icon_name("Folder");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
-	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_BR);
-	set_available_layouts(DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL);
+	set_default_slot(DockConstants::DOCK_SLOT_LEFT_BR);
+	set_available_layouts(DOCK_LAYOUT_ALL);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
 
@@ -4212,7 +4247,7 @@ FileSystemDock::FileSystemDock() {
 
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 
-	editor_is_dark_theme = EditorThemeManager::is_dark_theme();
+	editor_is_dark_icon_and_font = EditorThemeManager::is_dark_icon_and_font();
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -4228,14 +4263,14 @@ FileSystemDock::FileSystemDock() {
 	toolbar_hbc->add_child(nav_hbc);
 
 	button_hist_prev = memnew(Button);
-	button_hist_prev->set_flat(true);
+	button_hist_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_prev->set_tooltip_text(TTRC("Go to previous selected folder/file."));
 	nav_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
-	button_hist_next->set_flat(true);
+	button_hist_next->set_theme_type_variation(SceneStringName(FlatButton));
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_hist_next->set_tooltip_text(TTRC("Go to next selected folder/file."));
@@ -4254,13 +4289,6 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
-
-	button_dock_placement = memnew(Button);
-	button_dock_placement->set_theme_type_variation("FlatMenuButton");
-	button_dock_placement->set_accessibility_name(TTRC("Dock Placement"));
-	button_dock_placement->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_bottom_dock_placement));
-	button_dock_placement->hide();
-	toolbar_hbc->add_child(button_dock_placement);
 
 	toolbar2_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar2_hbc);
@@ -4412,9 +4440,12 @@ FileSystemDock::FileSystemDock() {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTRC("Create Script"));
 	add_child(make_script_dialog);
+	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
 
 	make_shader_dialog = memnew(ShaderCreateDialog);
 	add_child(make_shader_dialog);
+	make_shader_dialog->connect("shader_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
+	make_shader_dialog->connect("shader_include_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
@@ -4425,6 +4456,10 @@ FileSystemDock::FileSystemDock() {
 	add_child(conversion_dialog);
 	conversion_dialog->set_ok_button_text(TTRC("Convert"));
 	conversion_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_convert_dialog_action));
+
+	move_confirm_dialog = memnew(ConfirmationDialog);
+	add_child(move_confirm_dialog);
+	move_confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_move_confirm));
 
 	uncollapsed_paths_before_search = Vector<String>();
 
@@ -4439,6 +4474,8 @@ FileSystemDock::FileSystemDock() {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
+	main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
 	add_resource_tooltip_plugin(memnew(EditorAudioStreamTooltipPlugin));
 }

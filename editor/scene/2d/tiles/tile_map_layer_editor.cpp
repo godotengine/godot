@@ -37,6 +37,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
@@ -50,6 +51,12 @@
 
 TileMapLayer *TileMapLayerSubEditorPlugin::_get_edited_layer() const {
 	return ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
+}
+
+void TileMapLayerSubEditorPlugin::_add_to_output_if_tile_changed(HashMap<Vector2i, TileMapCell> &p_output, const TileMapLayer *p_layer, Vector2i p_coords, const TileMapCell &p_cell) {
+	if (p_cell != p_layer->get_cell(p_coords)) {
+		p_output[p_coords] = p_cell;
+	}
 }
 
 void TileMapLayerSubEditorPlugin::draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin) {
@@ -128,18 +135,7 @@ void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
 		return;
 	}
 
-	bool has_scene_tile = false;
-	for (const KeyValue<Vector2i, TileMapCell> &E : selection_pattern->get_pattern()) {
-		if (Object::cast_to<TileSetScenesCollectionSource>(tile_set->get_source(E.value.source_id).ptr())) {
-			has_scene_tile = true;
-			break;
-		}
-	}
-
-	if (has_scene_tile) {
-		_set_transform_buttons_state({}, { transform_button_rotate_left, transform_button_rotate_right, transform_button_flip_h, transform_button_flip_v },
-				TTR("Can't transform scene tiles."));
-	} else if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE && selection_pattern->get_size() != Vector2i(1, 1)) {
+	if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE && selection_pattern->get_size() != Vector2i(1, 1)) {
 		_set_transform_buttons_state({ transform_button_flip_h, transform_button_flip_v }, { transform_button_rotate_left, transform_button_rotate_right },
 				TTR("Can't rotate patterns when using non-square tile grid."));
 	} else {
@@ -184,6 +180,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 	}
 	sources_list->set_meta("old_source", old_source);
 	sources_list->clear();
+	sources_list->tile_set = Ref<TileSet>();
 
 	TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer) {
@@ -194,6 +191,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 	if (tile_set.is_null()) {
 		return;
 	}
+	sources_list->tile_set = tile_set;
 
 	if (!tile_set->has_source(old_source)) {
 		old_source = -1;
@@ -1072,7 +1070,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 			// Paint a random tile.
 			Vector<Vector2i> line = TileMapLayerEditor::get_line(edited_layer, tile_set->local_to_map(p_from_mouse_pos), tile_set->local_to_map(p_to_mouse_pos));
 			for (int i = 0; i < line.size(); i++) {
-				output.insert(line[i], _pick_random_tile(pattern));
+				_add_to_output_if_tile_changed(output, edited_layer, line[i], _pick_random_tile(pattern));
 			}
 		} else {
 			// Paint the pattern.
@@ -1089,7 +1087,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 				Vector2i top_left = line[i] * pattern->get_size() + offset;
 				for (int j = 0; j < used_cells.size(); j++) {
 					Vector2i coords = tile_set->map_pattern(top_left, used_cells[j], pattern);
-					output.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
+					_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
 				}
 			}
 		}
@@ -1129,7 +1127,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 			for (int x = 0; x < rect.size.x; x++) {
 				for (int y = 0; y < rect.size.y; y++) {
 					Vector2i coords = rect.position + Vector2i(x, y);
-					output.insert(coords, _pick_random_tile(pattern));
+					_add_to_output_if_tile_changed(output, edited_layer, coords, _pick_random_tile(pattern));
 				}
 			}
 		} else {
@@ -1141,7 +1139,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 					for (int j = 0; j < used_cells.size(); j++) {
 						Vector2i coords = pattern_coords + used_cells[j];
 						if (rect.has_point(coords)) {
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
+							_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
 						}
 					}
 				}
@@ -1192,16 +1190,16 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 							(source_cell.source_id != TileSet::INVALID_SOURCE || boundaries.has_point(coords))) {
 						if (!p_erase && random_tile_toggle->is_pressed()) {
 							// Paint a random tile.
-							output.insert(coords, _pick_random_tile(pattern));
+							_add_to_output_if_tile_changed(output, edited_layer, coords, _pick_random_tile(pattern));
 						} else {
 							// Paint the pattern.
 							Vector2i pattern_coords = (coords - p_coords) % pattern->get_size(); // Note: it would be good to have posmodv for Vector2i.
 							pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern->get_size().x : pattern_coords.x;
 							pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 							if (pattern->has_cell(pattern_coords)) {
-								output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
+								_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
 							} else {
-								output.insert(coords, TileMapCell());
+								_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell());
 							}
 						}
 
@@ -1238,16 +1236,16 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 						(source_cell.source_id != TileSet::INVALID_SOURCE || boundaries.has_point(coords))) {
 					if (!p_erase && random_tile_toggle->is_pressed()) {
 						// Paint a random tile.
-						output.insert(coords, _pick_random_tile(pattern));
+						_add_to_output_if_tile_changed(output, edited_layer, coords, _pick_random_tile(pattern));
 					} else {
 						// Paint the pattern.
 						Vector2i pattern_coords = (coords - p_coords) % pattern->get_size(); // Note: it would be good to have posmodv for Vector2i.
 						pattern_coords.x = pattern_coords.x < 0 ? pattern_coords.x + pattern->get_size().x : pattern_coords.x;
 						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 						if (pattern->has_cell(pattern_coords)) {
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
+							_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell(pattern->get_cell_source_id(pattern_coords), pattern->get_cell_atlas_coords(pattern_coords), pattern->get_cell_alternative_tile(pattern_coords)));
 						} else {
-							output.insert(coords, TileMapCell());
+							_add_to_output_if_tile_changed(output, edited_layer, coords, TileMapCell());
 						}
 					}
 				}
@@ -2227,7 +2225,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
-	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	picker_button->set_tooltip_text(vformat(TTR("Alternatively hold %s with other tools to pick tile."), find_keycode_name(key)));
 	picker_button->connect(SceneStringName(pressed), callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	picker_button->set_accessibility_name(TTRC("Pick"));
@@ -2376,20 +2374,11 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 	sources_bottom_actions->add_child(source_sort_button);
 
-	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
-	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	sources_list->set_stretch_ratio(0.25);
-	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
-	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	sources_list->set_theme_type_variation("ItemListSecondary");
+	sources_list = memnew(TileSetSourceItemList);
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect("item_activated", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::display_tile_set_editor_panel).unbind(1));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
-	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list));
 	split_container_left_side->add_child(sources_list);
 	split_container_left_side->add_child(sources_bottom_actions);
@@ -2529,7 +2518,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
 		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+			_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
 			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
@@ -2546,7 +2535,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 				}
 			}
 			if (in_map_terrain_pattern != kv.value) {
-				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+				_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 			}
 		}
 	}
@@ -2576,7 +2565,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
 		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
-			output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+			_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
 			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
@@ -2593,7 +2582,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_terrain_p
 				}
 			}
 			if (in_map_terrain_pattern != kv.value) {
-				output[kv.key] = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+				_add_to_output_if_tile_changed(output, edited_layer, kv.key, tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value));
 			}
 		}
 	}
@@ -4409,6 +4398,16 @@ void TileMapLayerEditor::set_show_layer_selector(bool p_show_layer_selector) {
 
 TileMapLayerEditor::TileMapLayerEditor() {
 	set_process_internal(true);
+	set_name(TTRC("TileMap"));
+	set_icon_name("TileMapDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Open TileMap Dock")));
+	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+
+	VBoxContainer *main_box_container = memnew(VBoxContainer);
+	add_child(main_box_container);
 
 	// Shortcuts.
 	ED_SHORTCUT("tiles_editor/select_next_layer", TTRC("Select Next Tile Map Layer"), Key::PAGEDOWN);
@@ -4434,7 +4433,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	// --- TileMap toolbar ---
 	tile_map_toolbar = memnew(HFlowContainer);
 	tile_map_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(tile_map_toolbar);
+	main_box_container->add_child(tile_map_toolbar);
 
 	// Tabs.
 	tile_map_toolbar->add_child(tabs_bar);
@@ -4521,10 +4520,10 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	cant_edit_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	cant_edit_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	cant_edit_label->hide();
-	add_child(cant_edit_label);
+	main_box_container->add_child(cant_edit_label);
 
 	for (unsigned int tab_index = 0; tab_index < tabs_data.size(); tab_index++) {
-		add_child(tabs_data[tab_index].panel);
+		main_box_container->add_child(tabs_data[tab_index].panel);
 		tabs_data[tab_index].panel->set_v_size_flags(SIZE_EXPAND_FILL);
 		tabs_data[tab_index].panel->set_visible(tab_index == 0);
 		tabs_data[tab_index].panel->set_h_size_flags(SIZE_EXPAND_FILL);

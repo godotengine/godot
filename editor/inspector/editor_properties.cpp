@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/string/translation_server.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -870,6 +871,10 @@ void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
+OptionButton *EditorPropertyEnum::get_option_button() {
+	return options;
+}
+
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
@@ -925,7 +930,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		} else {
-			current_val = 1 << i;
+			current_val = 1u << i;
 		}
 		flag_values.push_back(current_val);
 
@@ -956,9 +961,7 @@ EditorPropertyFlags::EditorPropertyFlags() {
 
 void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
-	if (renamed_layer_index == INT32_MAX) {
-		return;
-	}
+	ERR_FAIL_INDEX(renamed_layer_index, names.size());
 	String name = names[renamed_layer_index];
 	rename_dialog->set_title(vformat(TTR("Renaming layer %d:"), renamed_layer_index + 1));
 	rename_dialog_text->set_text(name);
@@ -977,7 +980,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 		return;
 	}
 	names.set(renamed_layer_index, new_name);
-	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1 << renamed_layer_index));
+	tooltips.set(renamed_layer_index, new_name + "\n" + vformat(TTR("Bit %d, value %d"), renamed_layer_index, 1u << renamed_layer_index));
 	emit_signal(SNAME("rename_confirmed"), renamed_layer_index, new_name);
 }
 
@@ -1049,8 +1052,8 @@ void EditorPropertyLayersGrid::_update_hovered(const Vector2 &p_position) {
 	}
 
 	// Remove highlight when no square is hovered.
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != HOVERED_INDEX_NONE) {
+		hovered_index = HOVERED_INDEX_NONE;
 		queue_redraw();
 	}
 }
@@ -1060,32 +1063,31 @@ void EditorPropertyLayersGrid::_on_hover_exit() {
 		expand_hovered = false;
 		queue_redraw();
 	}
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != HOVERED_INDEX_NONE) {
+		hovered_index = HOVERED_INDEX_NONE;
 		queue_redraw();
+	}
+	if (dragging) {
+		dragging = false;
 	}
 }
 
 void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
-	if (hovered_index != INT32_MAX) {
+	if (hovered_index != HOVERED_INDEX_NONE) {
 		// Toggle the flag.
 		// We base our choice on the hovered flag, so that it always matches the hovered flag.
 		if (p_replace) {
 			// Replace all flags with the hovered flag ("solo mode"),
 			// instead of toggling the hovered flags while preserving other flags' state.
-			if (value == uint32_t(1 << hovered_index)) {
+			if (value == 1u << hovered_index) {
 				// If the flag is already enabled, enable all other items and disable the current flag.
 				// This allows for quicker toggling.
-				value = INT32_MAX - (1 << hovered_index);
+				value = ~value;
 			} else {
-				value = 1 << hovered_index;
+				value = 1u << hovered_index;
 			}
 		} else {
-			if (value & (1 << hovered_index)) {
-				value &= ~(1 << hovered_index);
-			} else {
-				value |= (1 << hovered_index);
-			}
+			value ^= 1u << hovered_index;
 		}
 
 		emit_signal(SNAME("flag_changed"), value);
@@ -1104,16 +1106,29 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 	const Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid()) {
 		_update_hovered(mm->get_position());
+		if (dragging && hovered_index != HOVERED_INDEX_NONE && dragging_value_to_set != bool(value & (1u << hovered_index))) {
+			value ^= 1u << hovered_index;
+			emit_signal(SNAME("flag_changed"), value);
+			queue_redraw();
+		}
 		return;
 	}
 
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		_update_hovered(mb->get_position());
-		_update_flag(mb->is_command_or_control_pressed());
+		bool replace_mode = mb->is_command_or_control_pressed();
+		_update_flag(replace_mode);
+		if (!replace_mode && hovered_index != HOVERED_INDEX_NONE) {
+			dragging = true;
+			dragging_value_to_set = bool(value & (1u << hovered_index));
+		}
+	}
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		dragging = false;
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		if (hovered_index != INT32_MAX) {
+		if (hovered_index != HOVERED_INDEX_NONE) {
 			renamed_layer_index = hovered_index;
 			layer_rename->set_position(get_screen_position() + mb->get_position());
 			layer_rename->reset_size();
@@ -1166,7 +1181,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 				for (int i = 0; i < 2; i++) {
 					for (int j = 0; j < layer_group_size; j++) {
-						const bool on = value & (1 << layer_index);
+						const bool on = value & (1u << layer_index);
 						Rect2 rect2 = Rect2(ofs, Size2(bsize, bsize));
 
 						color.a = on ? 0.6 : 0.2;
@@ -1356,7 +1371,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 		}
 
 		names.push_back(name);
-		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i));
+		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1u << i));
 	}
 
 	grid->names = names;
@@ -1391,7 +1406,7 @@ void EditorPropertyLayers::_button_pressed() {
 		}
 		layers->add_check_item(name, i);
 		int idx = layers->get_item_index(i);
-		layers->set_item_checked(idx, grid->value & (1 << i));
+		layers->set_item_checked(idx, grid->value & (1u << i));
 	}
 
 	if (layers->get_item_count() == 0) {
@@ -1413,13 +1428,9 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 		ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {
-		if (grid->value & (1 << p_menu)) {
-			grid->value &= ~(1 << p_menu);
-		} else {
-			grid->value |= (1 << p_menu);
-		}
+		grid->value ^= 1u << p_menu;
 		grid->queue_redraw();
-		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
+		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1u << p_menu));
 		_grid_changed(grid->value);
 	}
 }
@@ -1698,7 +1709,6 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = CLAMP(val, -1'000'000, 1'000'000);
 
 		emit_changed(get_edited_property(), val);
-		easing_draw->queue_redraw();
 	}
 }
 
@@ -1746,10 +1756,15 @@ void EditorPropertyEasing::_draw_easing() {
 	} else {
 		decimals = 1;
 	}
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TS->format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+
+	const String &formatted = TranslationServer::get_singleton()->format_number(rtos(exp).pad_decimals(decimals), _get_locale());
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), formatted, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 }
 
 void EditorPropertyEasing::update_property() {
+	float val = get_edited_property_value();
+	spin->set_value_no_signal(val);
+
 	easing_draw->queue_redraw();
 }
 
@@ -1757,22 +1772,15 @@ void EditorPropertyEasing::_set_preset(int p_preset) {
 	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
 
 	emit_changed(get_edited_property(), preset_value[p_preset]);
-	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_setup_spin() {
 	spin->setup_and_show();
-	spin->get_line_edit()->set_text(TS->format_number(rtos(get_edited_property_value())));
+	spin->get_line_edit()->set_text(TranslationServer::get_singleton()->format_number(rtos(get_edited_property_value()), _get_locale()));
 	spin->show();
 }
 
 void EditorPropertyEasing::_spin_value_changed(double p_value) {
-	// 0 is a singularity, but both positive and negative values
-	// are otherwise allowed. Enforce 0+ as workaround.
-	if (Math::is_zero_approx(p_value)) {
-		p_value = 0.00001;
-	}
-
 	// Limit to a reasonable value to prevent the curve going into infinity,
 	// which can cause crashes and other issues.
 	p_value = CLAMP(p_value, -1'000'000, 1'000'000);
@@ -2799,7 +2807,9 @@ void EditorPropertyColor::_picker_created() {
 }
 
 void EditorPropertyColor::_popup_opening() {
-	EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	if (EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	}
 	last_color = picker->get_pick_color();
 	was_checked = !is_checkable() || is_checked();
 }
@@ -3019,7 +3029,7 @@ void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
-	if (p_drag_data["type"] != "nodes") {
+	if (!p_drag_data.has("type") || p_drag_data["type"] != "nodes") {
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
@@ -3087,7 +3097,7 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	assign->set_text(target_node->get_name());
-	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
+	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
 void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
@@ -3567,6 +3577,8 @@ void EditorPropertyResource::update_property() {
 	}
 
 	resource_picker->set_edited_resource_no_check(res);
+	const Ref<Resource> &real_res = get_edited_property_value();
+	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
 }
 
 void EditorPropertyResource::collapse_all_folding() {
@@ -3864,6 +3876,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				Vector<String> option_names;
 				if (p_hint_text.begins_with(";")) {
+					// This is not supported officially. Only for `interface/editor/editor_language`.
 					for (const String &option : p_hint_text.split(";", false)) {
 						options.append(option.get_slicec('/', 0));
 						option_names.append(option.get_slicec('/', 1));

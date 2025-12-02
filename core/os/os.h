@@ -132,6 +132,8 @@ public:
 
 	static OS *get_singleton();
 
+	static bool prefer_meta_over_ctrl();
+
 	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
 	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
 	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
@@ -203,6 +205,7 @@ public:
 	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 	virtual Error set_cwd(const String &p_cwd);
+	virtual String get_cwd() const;
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;

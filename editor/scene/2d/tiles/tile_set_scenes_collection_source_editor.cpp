@@ -76,7 +76,7 @@ bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_s
 }
 
 bool TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_null()) {
 		return false;
 	}
 	String name = p_name;
@@ -114,7 +114,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 	}
 
 	// Disconnect to changes.
-	if (tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_valid()) {
 		tile_set_scenes_collection_source->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
@@ -123,7 +123,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 	source_id = p_source_id;
 
 	// Connect to changes.
-	if (tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_valid()) {
 		if (!tile_set_scenes_collection_source->is_connected(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 			tile_set_scenes_collection_source->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
@@ -134,7 +134,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::ed
 
 // -- Proxy object used by the tile inspector --
 bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_null()) {
 		return false;
 	}
 
@@ -166,7 +166,7 @@ bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_set(const Strin
 }
 
 bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_null()) {
 		return false;
 	}
 
@@ -185,7 +185,7 @@ bool TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get(const Strin
 }
 
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	if (!tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_null()) {
 		return;
 	}
 
@@ -255,8 +255,8 @@ void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_p
 	int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add a Scene Tile"));
-	undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", scene, scene_id);
-	undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+	undo_redo->add_do_method(*tile_set_scenes_collection_source, "create_scene_tile", scene, scene_id);
+	undo_redo->add_undo_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
 	undo_redo->commit_action();
 	_update_scenes_list();
 	_update_action_buttons();
@@ -270,8 +270,8 @@ void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove a Scene Tile"));
-	undo_redo->add_do_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
-	undo_redo->add_undo_method(tile_set_scenes_collection_source, "create_scene_tile", tile_set_scenes_collection_source->get_scene_tile_scene(scene_id), scene_id);
+	undo_redo->add_do_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+	undo_redo->add_undo_method(*tile_set_scenes_collection_source, "create_scene_tile", tile_set_scenes_collection_source->get_scene_tile_scene(scene_id), scene_id);
 	undo_redo->commit_action();
 	_update_scenes_list();
 	_update_action_buttons();
@@ -280,7 +280,7 @@ void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 
 void TileSetScenesCollectionSourceEditor::_update_source_inspector() {
 	// Update the proxy object.
-	scenes_collection_source_proxy_object->edit(tile_set, tile_set_scenes_collection_source, tile_set_source_id);
+	scenes_collection_source_proxy_object->edit(tile_set, *tile_set_scenes_collection_source, tile_set_source_id);
 }
 
 void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
@@ -290,7 +290,7 @@ void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
 	// Update the proxy object.
 	if (has_atlas_tile_selected) {
 		int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
-		tile_proxy_object->edit(tile_set_scenes_collection_source, scene_id);
+		tile_proxy_object->edit(*tile_set_scenes_collection_source, scene_id);
 	}
 
 	// Update visibility.
@@ -304,7 +304,7 @@ void TileSetScenesCollectionSourceEditor::_update_action_buttons() {
 }
 
 void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
-	if (!tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_null()) {
 		return;
 	}
 
@@ -405,12 +405,12 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_tile_set);
 	}
 
-	if (p_tile_set == tile_set && p_tile_set_scenes_collection_source == tile_set_scenes_collection_source && p_source_id == tile_set_source_id && new_read_only_state == read_only) {
+	if (p_tile_set == tile_set && p_tile_set_scenes_collection_source == *tile_set_scenes_collection_source && p_source_id == tile_set_source_id && new_read_only_state == read_only) {
 		return;
 	}
 
 	// Remove listener for old objects.
-	if (tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_valid()) {
 		tile_set_scenes_collection_source->disconnect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
@@ -430,7 +430,7 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 	}
 
 	// Add the listener again.
-	if (tile_set_scenes_collection_source) {
+	if (tile_set_scenes_collection_source.is_valid()) {
 		tile_set_scenes_collection_source->connect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
@@ -456,8 +456,8 @@ void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, c
 				int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add a Scene Tile"));
-				undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
-				undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+				undo_redo->add_do_method(*tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
+				undo_redo->add_undo_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
 				undo_redo->commit_action();
 			}
 		}

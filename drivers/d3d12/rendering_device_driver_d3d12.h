@@ -109,10 +109,6 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool native_16bit_ops = false;
 	};
 
-	struct StorageBufferCapabilities {
-		bool storage_buffer_16_bit_access_is_supported = false;
-	};
-
 	struct FormatCapabilities {
 		bool relaxed_casting_supported = false;
 	};
@@ -138,17 +134,17 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	FragmentShadingRateCapabilities fsr_capabilities;
 	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
-	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
 	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
+	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
 
 	class CPUDescriptorsHeapPool;
 
 	struct CPUDescriptorsHeapHandle {
-		ID3D12DescriptorHeap *heap = nullptr;
+		ComPtr<ID3D12DescriptorHeap> heap;
 		CPUDescriptorsHeapPool *pool = nullptr;
 		uint32_t offset = 0;
 		uint32_t base_offset = 0;
@@ -162,7 +158,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		Mutex mutex;
 
 		struct FreeBlockInfo {
-			ID3D12DescriptorHeap *heap = nullptr;
+			ComPtr<ID3D12DescriptorHeap> heap;
 			uint32_t global_offset = 0; // Global offset in an address space shared by all the heaps.
 			uint32_t base_offset = 0; // The offset inside the space of this heap.
 			uint32_t size = 0;
@@ -323,16 +319,30 @@ private:
 		uint64_t size = 0;
 		struct {
 			bool usable_as_uav : 1;
+			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
+
+		bool is_dynamic() const { return flags.is_dynamic; }
+	};
+
+	struct BufferDynamicInfo : BufferInfo {
+		uint32_t frame_idx = UINT32_MAX;
+		uint8_t *persistent_ptr = nullptr;
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
 	};
 
 public:
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
@@ -354,13 +364,10 @@ private:
 
 		TextureInfo *main_texture = nullptr;
 
-		UINT mapped_subresource = UINT_MAX;
-		SelfList<TextureInfo> pending_clear{ this };
 #ifdef DEBUG_ENABLED
 		bool created_from_extension = false;
 #endif
 	};
-	SelfList<TextureInfo>::List textures_pending_clear;
 
 	HashMap<DXGI_FORMAT, uint32_t> format_sample_counts_mask_cache;
 	Mutex format_sample_counts_mask_cache_mutex;
@@ -385,8 +392,6 @@ public:
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
-	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
@@ -415,7 +420,7 @@ private:
 	};
 
 public:
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) override final;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) override final;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) override final;
 
 	/******************/
@@ -501,11 +506,21 @@ private:
 	struct FramebufferInfo;
 	struct RenderPassInfo;
 	struct RenderPassState {
+		struct AttachmentLayout {
+			struct AspectLayout {
+				TextureLayout cur_layout = TEXTURE_LAYOUT_UNDEFINED;
+				TextureLayout expected_layout = TEXTURE_LAYOUT_UNDEFINED;
+			};
+
+			AspectLayout aspect_layouts[TEXTURE_ASPECT_MAX];
+		};
+
 		uint32_t current_subpass = UINT32_MAX;
 		const FramebufferInfo *fb_info = nullptr;
 		const RenderPassInfo *pass_info = nullptr;
 		CD3DX12_RECT region_rect = {};
 		bool region_is_all = false;
+		LocalVector<AttachmentLayout> attachment_layouts;
 
 		const VertexFormatInfo *vf_info = nullptr;
 		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_views[8] = {};
@@ -705,6 +720,7 @@ private:
 
 		struct RecentBind {
 			uint64_t segment_serial = 0;
+			uint32_t dynamic_state_mask = 0;
 			uint32_t root_signature_crc = 0;
 			struct {
 				TightLocalVector<RootDescriptorTable> resources;
@@ -712,6 +728,8 @@ private:
 			} root_tables;
 			int uses = 0;
 		} recent_binds[4]; // A better amount may be empirically found.
+
+		TightLocalVector<BufferDynamicInfo const *, uint32_t> dynamic_buffers;
 
 #ifdef DEV_ENABLED
 		// Filthy, but useful for dev.
@@ -726,6 +744,7 @@ private:
 public:
 	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) override final;
 	virtual void uniform_set_free(UniformSetID p_uniform_set) override final;
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const override final;
 
 	// ----- COMMANDS -----
 
@@ -733,8 +752,7 @@ public:
 
 private:
 	void _command_check_descriptor_sets(CommandBufferID p_cmd_buffer);
-	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute);
-	void _command_bind_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, bool p_for_compute);
+	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets, bool p_for_compute);
 
 public:
 	/******************/
@@ -769,7 +787,7 @@ public:
 	};
 
 	struct PipelineInfo {
-		ID3D12PipelineState *pso = nullptr;
+		ComPtr<ID3D12PipelineState> pso;
 		const ShaderInfo *shader_info = nullptr;
 		RenderPipelineInfo render_info;
 	};
@@ -811,6 +829,7 @@ public:
 	virtual void command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_clear_values) override final;
 
 private:
+	void _render_pass_enhanced_barriers_flush(CommandBufferID p_cmd_buffer);
 	void _end_render_pass(CommandBufferID p_cmd_buffer);
 
 public:
@@ -823,8 +842,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) override final;
@@ -835,7 +853,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) override final;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) override final;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) override final;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) override final;
 
 private:
@@ -871,8 +889,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
-	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override final;

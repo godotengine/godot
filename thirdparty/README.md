@@ -323,9 +323,9 @@ Patches:
   * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
   * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
-  * Upstream: https://fonts.google.com/specimen/Open+Sans
-  * Version: 1.10 (downloaded from Google Fonts in February 2021)
-  * License: Apache 2.0
+  * Upstream: https://github.com/googlefonts/opensans
+  * Version: git (bd7e37632246368c60fdcbd374dbf9bad11969b6, 2023)
+  * License: OFL-1.1
 - `Vazirmatn*.woff2`:
   * Upstream: https://github.com/rastikerdar/vazirmatn
   * Version: 33.003 (83629f877e8f084cc07b47030b5d3a0ff06c76ec, 2022)
@@ -340,8 +340,8 @@ for UI.
 
 ## freetype
 
-- Upstream: https://www.freetype.org
-- Version: 2.13.3 (42608f77f20749dd6ddc9e0536788eaad70ea4b5, 2024)
+- Upstream: https://gitlab.freedesktop.org/freetype/freetype
+- Version: 2.14.1 (526ec5c47b9ebccc4754c85ac0c0cdf7c85a5e9b, 2025)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -566,7 +566,7 @@ Patches:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: 1.3.5 (e1774cd77f471443541596e09078e78fdc342e4f, 2021)
+- Version: 1.3.6 (be05b13e98b048f0b5a0f5fa8ce514d56db5f822, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -579,7 +579,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.48 (ea127968204cc5d10f3fc9250c306b9e8cbd9b80, 2025)
+- Version: 1.6.51 (49363adcfaf098748d7a4c8c624ad8c45a8c3a86, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -864,7 +864,7 @@ Files extracted from the upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.52 (a664705dee0b1041096d1e21b539bf9fb2489f00, 2025)
+- Version: 1.1.53 (75c53b6e853dc12c7b3c771edc9c9c841b15faaa, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -888,6 +888,8 @@ Exclude:
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
 
+Additional:
+- Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
 ## pcre2
 
@@ -973,6 +975,7 @@ Patches:
 - `0004-errno-include.patch` (GH-108354)
 - `0005-fix-libudev-dbus.patch` (GH-108373)
 - `0006-fix-cs-environ.patch` (GH-109283)
+- `0007-macos-joypad-name.patch` (GH-110500)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.
@@ -1190,6 +1193,10 @@ Files extracted from upstream source:
 - `unstable/xdg-foreign/README`
 - `unstable/xdg-foreign/xdg-foreign-unstable-v1.xml`
 - `COPYING`
+
+The following files are extracted from thirdparty sources:
+
+- `mesa/wayland-drm.xml`: https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-25.3.0/src/egl/wayland/wayland-drm/wayland-drm.xml
 
 
 ## wslay

@@ -240,7 +240,7 @@ public:
 		int volume = 50;
 		float pitch = 1.f;
 		float rate = 1.f;
-		int id = 0;
+		int64_t id = 0;
 	};
 
 	enum TTSUtteranceEvent {
@@ -260,13 +260,13 @@ public:
 	virtual TypedArray<Dictionary> tts_get_voices() const;
 	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false);
 	virtual void tts_pause();
 	virtual void tts_resume();
 	virtual void tts_stop();
 
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
-	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
+	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int64_t p_id, int p_pos = 0);
 
 	virtual bool is_dark_mode_supported() const { return false; }
 	virtual bool is_dark_mode() const { return false; }

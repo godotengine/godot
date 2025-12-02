@@ -463,6 +463,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_debugger->set_lines_left(1);
 				break;
 
+			} else if (command == "out") {
+				script_debugger->set_depth(1);
+				script_debugger->set_lines_left(1);
+				break;
+
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
@@ -673,8 +678,8 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			reload_all_scripts = false;
 		} else if (!script_paths_to_reload.is_empty()) {
 			Array scripts_to_reload;
-			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
-				String path = script_paths_to_reload[i];
+			for (const Variant &v : script_paths_to_reload) {
+				const String &path = v;
 				Error err = OK;
 				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));

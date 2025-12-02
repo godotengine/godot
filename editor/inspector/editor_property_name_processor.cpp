@@ -59,7 +59,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
-	return EditorSettings::get_singleton() && EDITOR_GET("interface/editor/editor_language") != "en";
+	return EditorSettings::get_singleton() && EditorSettings::get_singleton()->get_language() != "en";
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -216,6 +216,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ik"] = "IK";
 	capitalize_string_remaps["image@2x"] = "Image @2x";
 	capitalize_string_remaps["image@3x"] = "Image @3x";
+	capitalize_string_remaps["ime"] = "IME";
 	capitalize_string_remaps["iod"] = "IOD";
 	capitalize_string_remaps["ios"] = "iOS";
 	capitalize_string_remaps["ip"] = "IP";
@@ -269,6 +270,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["rv64"] = "rv64";
 	capitalize_string_remaps["s3tc"] = "S3TC";
 	capitalize_string_remaps["scp"] = "SCP";
+	capitalize_string_remaps["scrcpy"] = "scrcpy";
 	capitalize_string_remaps["sdf"] = "SDF";
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";

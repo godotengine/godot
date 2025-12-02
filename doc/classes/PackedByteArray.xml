@@ -47,7 +47,7 @@
 				Appends a [PackedByteArray] at the end of this array.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="int" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -213,7 +213,7 @@
 				[b]Note:[/b] Decompression is not guaranteed to work with data not compressed by Godot, for example if data compressed with the deflate compression mode lacks a checksum or header.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
 				Creates a copy of the array, and returns it.
@@ -342,7 +342,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the byte at the given [param index] in the array. If [param index] out-of-bounds or negative, this method fails and returns [code]0[/code].
+				Returns the byte at the given [param index] in the array. If [param index] is out-of-bounds or negative, this method fails and returns [code]0[/code].
 				This method is similar (but not identical) to the [code][][/code] operator. Most notably, when this method fails, it doesn't pause project execution if run from the editor.
 			</description>
 		</method>

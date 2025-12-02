@@ -61,7 +61,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		min_size.x = largest_child_min_size.x;
 		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
 		if (v_scroll_show && v_scroll->get_parent() == this) {
-			min_size.x += v_scroll->get_minimum_size().x;
+			min_size.x += v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
 		}
 	}
 
@@ -69,7 +69,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		min_size.y = largest_child_min_size.y;
 		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
 		if (h_scroll_show && h_scroll->get_parent() == this) {
-			min_size.y += h_scroll->get_minimum_size().y;
+			min_size.y += h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
 		}
 	}
 
@@ -353,11 +353,11 @@ void ScrollContainer::_reposition_children() {
 	bool reserve_vscroll = _is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE;
 
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
-		size.y -= h_scroll->get_minimum_size().y;
+		size.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
 	}
 
 	if (reserve_vscroll) {
-		size.x -= v_scroll->get_minimum_size().x;
+		size.x -= v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -772,6 +772,9 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_v_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, focus_style, "focus");

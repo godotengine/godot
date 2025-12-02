@@ -8,6 +8,7 @@
 		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents. If no maximum size is set, or if it is set to [code]0[/code], the [PopupMenu] height will be limited by its parent rect.
 		All [code]set_*[/code] methods allow negative item indices, i.e. [code]-1[/code] to access the last item, [code]-2[/code] to select the second-to-last item, and so on.
 		[b]Incremental search:[/b] Like [ItemList] and [Tree], [PopupMenu] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
+		[b]Note:[/b] [PopupMenu] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
 	</description>
 	<tutorials>
@@ -540,7 +541,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the text for the item at the given index to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -659,8 +660,9 @@
 			If [code]true[/code], [MenuBar] will use native menu when supported.
 			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
 		</member>
-		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
+		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.2">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
+			[b]Note:[/b] If the mouse is exiting a submenu item with an open submenu and enters a different submenu item, the submenu popup delay time is affected by the direction of the mouse movement toward the open submenu. If the mouse is moving toward the submenu, the open submenu will wait approximately [code]0.5[/code] seconds before closing, which then allows the hovered submenu item to open. This additional delay allows the mouse time to move to the open submenu across other menu items without prematurely closing. If the mouse is not moving toward the open submenu, for example in a downward direction, the open submenu will close immediately.
 		</member>
 		<member name="system_menu_id" type="int" setter="set_system_menu" getter="get_system_menu" enum="NativeMenu.SystemMenus" default="0">
 			If set to one of the values of [enum NativeMenu.SystemMenus], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
@@ -678,14 +680,14 @@
 		<signal name="id_pressed">
 			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when an item of some [param id] is pressed or its accelerator is activated.
+				Emitted when an item of some [param id] is pressed. Also emitted when its accelerator is activated on macOS.
 				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
 			</description>
 		</signal>
 		<signal name="index_pressed">
 			<param index="0" name="index" type="int" />
 			<description>
-				Emitted when an item of some [param index] is pressed or its accelerator is activated.
+				Emitted when an item of some [param index] is pressed. Also emitted when its accelerator is activated on macOS.
 			</description>
 		</signal>
 		<signal name="menu_changed">
@@ -715,6 +717,9 @@
 		</theme_item>
 		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the labeled separator.
+		</theme_item>
+		<theme_item name="gutter_compact" data_type="constant" type="int" default="1">
+			If not [code]0[/code], the icon gutter will be merged with the checkbox gutter when possible. This acts as a boolean.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between the item's elements.

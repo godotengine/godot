@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/popup.h"
+#include "scene/main/canvas_layer.h"
 
 class Label;
 class VBoxContainer;
 class Font;
 
-class CreditsRoll : public Popup {
-	GDCLASS(CreditsRoll, Popup);
+class CreditsRoll : public CanvasLayer {
+	GDCLASS(CreditsRoll, CanvasLayer);
 
 	enum class LabelSize {
 		NORMAL,
@@ -57,6 +57,9 @@ class CreditsRoll : public Popup {
 	Label *_create_label(const String &p_with_text, LabelSize p_size = LabelSize::NORMAL);
 	void _create_nothing(int p_size = -1);
 	String _build_string(const char *const *p_from) const;
+	void _visibility_changed();
+
+	virtual void input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);

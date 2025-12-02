@@ -281,7 +281,8 @@ class LightmapperRD : public Lightmapper {
 
 		int half_search_window;
 		float filter_strength;
-		float pad[2];
+		uint32_t slice_count;
+		uint32_t pad;
 	};
 
 	BakeError _blit_meshes_into_atlas(int p_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata);

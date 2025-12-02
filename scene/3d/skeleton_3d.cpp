@@ -942,7 +942,7 @@ void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 			return;
 		}
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 		if (update_flags == UPDATE_FLAG_NONE && !updating) {
 			notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON); // It must never be called more than once in a single frame.
 		}
@@ -1177,7 +1177,7 @@ void Skeleton3D::_process_modifiers() {
 		if (saving && !mod->is_processed_on_saving()) {
 			continue;
 		}
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
 			LocalVector<Transform3D> old_poses;

@@ -431,18 +431,63 @@ public:
 #endif // DEBUG_ENABLED
 };
 
-typedef NavigationServer2D *(*NavigationServer2DCallback)();
-
 /// Manager used for the server singleton registration
-class NavigationServer2DManager {
-	static NavigationServer2DCallback create_callback;
+class NavigationServer2DManager : public Object {
+	GDCLASS(NavigationServer2DManager, Object);
+
+	static inline NavigationServer2DManager *singleton = nullptr;
+
+	struct ClassInfo {
+		String name;
+		Callable create_callback;
+
+		ClassInfo() {}
+
+		ClassInfo(const String &p_name, const Callable &p_create_callback) :
+				name(p_name),
+				create_callback(p_create_callback) {}
+
+		ClassInfo(const ClassInfo &p_ci) :
+				name(p_ci.name),
+				create_callback(p_ci.create_callback) {}
+
+		void operator=(const ClassInfo &p_ci) {
+			name = p_ci.name;
+			create_callback = p_ci.create_callback;
+		}
+	};
+
+	Vector<ClassInfo> navigation_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
 
 public:
-	static void set_default_server(NavigationServer2DCallback p_callback);
-	static NavigationServer2D *new_default_server();
+	static const String setting_property_name;
+
+	static NavigationServer2DManager *get_singleton();
+
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name);
+	int get_servers_count();
+	String get_server_name(int p_id);
+	NavigationServer2D *new_default_server();
+	NavigationServer2D *new_server(const String &p_name);
+
+	NavigationServer2DManager();
+	~NavigationServer2DManager();
 
 	static void initialize_server();
 	static void finalize_server();
+
+	static void initialize_server_manager();
+	static void finalize_server_manager();
+	static NavigationServer2D *create_dummy_server_callback();
 };
 
 VARIANT_ENUM_CAST(NavigationServer2D::ProcessInfo);

@@ -46,7 +46,7 @@ class Control : public CanvasItem {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;

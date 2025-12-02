@@ -58,6 +58,7 @@ using namespace godot;
 
 class ScriptIterator {
 	static const int PAREN_STACK_DEPTH = 128;
+	static const int EMOJI_STACK_DEPTH = 32;
 
 public:
 	struct ScriptRange {

@@ -53,7 +53,7 @@
 				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
-		<method name="get_scene" qualifiers="const">
+		<method name="get_scene" qualifiers="const" deprecated="Use [method EditorInterface.get_edited_scene_root] instead.">
 			<return type="Node" />
 			<description>
 				Returns the edited (current) scene's root [Node]. Equivalent of [method EditorInterface.get_edited_scene_root].

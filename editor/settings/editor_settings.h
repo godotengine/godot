@@ -89,8 +89,10 @@ private:
 	static Ref<EditorSettings> singleton;
 
 	HashSet<String> changed_settings;
+	mutable String auto_language;
 
 	mutable Ref<ConfigFile> project_metadata;
+	bool project_metadata_dirty = false;
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
@@ -124,6 +126,9 @@ private:
 #ifndef DISABLE_DEPRECATED
 	void _remove_deprecated_settings();
 #endif
+
+	// Bind helpers.
+	Vector<String> _get_shortcut_list();
 
 protected:
 	static void _bind_methods();
@@ -170,6 +175,7 @@ public:
 
 	void set_project_metadata(const String &p_section, const String &p_key, const Variant &p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, const Variant &p_default) const;
+	void save_project_metadata();
 
 	void set_favorites(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
@@ -186,11 +192,14 @@ public:
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 	static float get_auto_display_scale();
+	String get_language() const;
 
-	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<Shortcut> get_shortcut(const String &p_name) const;
+	void _add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void remove_shortcut(const String &p_path);
+	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;
+	bool has_shortcut(const String &p_path) const;
+	Ref<Shortcut> get_shortcut(const String &p_path) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);

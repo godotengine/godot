@@ -214,8 +214,6 @@ public:
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
 	}
-
-	ScriptExtension() {}
 };
 
 typedef ScriptLanguage::ProfilingInfo ScriptLanguageExtensionProfilingInfo;
@@ -427,6 +425,7 @@ public:
 						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
 					}
 				}
+				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}

@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (specification).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -222,6 +222,9 @@ FT_BEGIN_HEADER
   /* the distance to the next point is very small */
 #define AF_FLAG_NEAR  ( 1U << 5 )
 
+  /* prevent the auto-hinter from adding such a point to a segment */
+#define AF_FLAG_IGNORE  ( 1U << 6 )
+
 
   /* edge hint flags */
 #define AF_EDGE_NORMAL  0
@@ -229,6 +232,7 @@ FT_BEGIN_HEADER
 #define AF_EDGE_SERIF    ( 1U << 1 )
 #define AF_EDGE_DONE     ( 1U << 2 )
 #define AF_EDGE_NEUTRAL  ( 1U << 3 ) /* edge aligns to a neutral blue zone */
+#define AF_EDGE_NO_BLUE  ( 1U << 4 ) /* do not align edge to blue zone     */
 
 
   typedef struct AF_PointRec_*    AF_Point;
@@ -303,6 +307,7 @@ FT_BEGIN_HEADER
 
   } AF_EdgeRec;
 
+
 #define AF_SEGMENTS_EMBEDDED  18   /* number of embedded segments   */
 #define AF_EDGES_EMBEDDED     12   /* number of embedded edges      */
 
@@ -346,9 +351,11 @@ FT_BEGIN_HEADER
     FT_Int           num_points;    /* number of used points      */
     AF_Point         points;        /* points array               */
 
-    FT_Int           max_contours;  /* number of allocated contours */
-    FT_Int           num_contours;  /* number of used contours      */
-    AF_Point*        contours;      /* contours array               */
+    FT_Int           max_contours;     /* number of allocated contours    */
+    FT_Int           num_contours;     /* number of used contours         */
+    AF_Point*        contours;         /* contours array                  */
+    FT_Pos*          contour_y_minima; /* array with y maxima of contours */
+    FT_Pos*          contour_y_maxima; /* array with y minima of contours */
 
     AF_AxisHintsRec  axis[AF_DIMENSION_MAX];
 
@@ -357,11 +364,13 @@ FT_BEGIN_HEADER
                                     /* implementations         */
     AF_StyleMetrics  metrics;
 
-    /* Two arrays to avoid allocation penalty.            */
+    /* Some arrays to avoid allocation penalty.           */
     /* The `embedded' structure must be the last element! */
     struct
     {
       AF_Point       contours[AF_CONTOURS_EMBEDDED];
+      FT_Pos         contour_y_minima[AF_CONTOURS_EMBEDDED];
+      FT_Pos         contour_y_maxima[AF_CONTOURS_EMBEDDED];
       AF_PointRec    points[AF_POINTS_EMBEDDED];
     } embedded;
 

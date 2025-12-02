@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import contextlib
 import glob
@@ -9,9 +11,9 @@ import sys
 import textwrap
 import zlib
 from collections import OrderedDict
-from io import StringIO, TextIOBase
+from io import StringIO
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
+from typing import Generator, TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -729,11 +731,14 @@ def get_compiler_version(env):
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
-                if split[0] == "catalog_productDisplayVersion":
-                    sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                if split[0] == "catalog_productSemanticVersion":
+                    match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
+                    if match is not None:
+                        ret["major"] = int(match.group(1))
+                        ret["minor"] = int(match.group(2))
+                        ret["patch"] = int(match.group(3))
+                        # Semantic suffix (i.e. insiders+11116.177)
+                        ret["metadata2"] = match.group(4)
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
@@ -1550,8 +1555,8 @@ def generate_copyright_header(filename: str) -> str:
 @contextlib.contextmanager
 def generated_wrapper(
     path: str,
-    guard: Optional[bool] = None,
-) -> Generator[TextIOBase, None, None]:
+    guard: bool | None = None,
+) -> Generator[TextIO, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1623,13 +1628,13 @@ def to_escaped_cstring(value: str) -> str:
     return value.translate(C_ESCAPE_TABLE)
 
 
-def to_raw_cstring(value: Union[str, List[str]]) -> str:
+def to_raw_cstring(value: str | list[str]) -> str:
     MAX_LITERAL = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
 
-    split: List[bytes] = []
+    split: list[bytes] = []
     offset = 0
     encoded = value.encode()
 

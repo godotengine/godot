@@ -30,6 +30,7 @@
 
 #include "animation_bezier_editor.h"
 
+#include "core/string/translation_server.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -303,13 +304,25 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 			const int v_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationBezierTrackEdit"));
 
+			const String &lang = _get_locale();
+
 			if (has_focus(true)) {
-				draw_rect(Rect2(Point2(), get_size()), focus_color, false, Math::round(EDSCALE));
+				draw_rect(Rect2(Point2(1, 1), get_size() - Point2(1, 1)), focus_color, false, Math::round(EDSCALE));
+			}
+
+			int right_limit = get_size().width;
+
+			// Unavailable timeline.
+			{
+				int px = (editor->get_current_animation()->get_length() - timeline->get_value()) * timeline->get_zoom_scale() + timeline->get_name_limit();
+				px = MAX(px, timeline->get_name_limit());
+				Rect2 rect = Rect2(px, 0, right_limit - px, get_size().height);
+				if (rect.size.width > 0) {
+					draw_rect(rect, Color(0, 0, 0, 0.2));
+				}
 			}
 
 			draw_line(Point2(limit, 0), Point2(limit, get_size().height), v_line_color, Math::round(EDSCALE));
-
-			int right_limit = get_size().width;
 
 			track_v_scroll_max = v_separation;
 
@@ -412,7 +425,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					if (node) {
 						int ofs = 0;
 
-						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
+						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 
 						text = node->get_name();
 						ofs += h_separation;
@@ -577,7 +590,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						draw_line(Point2(limit, i), Point2(right_limit, i), lc, Math::round(EDSCALE));
 						Color c = color;
 						c.a *= 0.5;
-						draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::snapped((iv + 1) * scale, step))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
+
+						const String &formatted = TranslationServer::get_singleton()->format_number(rtos(Math::snapped((iv + 1) * scale, step)), lang);
+						draw_string(font, Point2(limit + 8, i - 2), formatted, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, c);
 					}
 
 					first = false;
@@ -716,8 +731,12 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 							ep.point_rect.size = bezier_icon->get_size();
 							if (is_selected) {
 								draw_texture(selected_icon, ep.point_rect.position);
-								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.0001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
-								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+
+								const String &formatted_offset = TranslationServer::get_singleton()->format_number(rtos(Math::snapped(offset, 0.0001)), lang);
+								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + formatted_offset, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+
+								const String &formatted_value = TranslationServer::get_singleton()->format_number(rtos(Math::snapped(value, 0.001)), lang);
+								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + formatted_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
 							} else {
 								Color track_color = Color(1, 1, 1, 1);
 								if (i != selected_track) {

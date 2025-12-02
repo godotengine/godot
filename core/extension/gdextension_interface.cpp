@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gdextension_interface.h"
+#include "gdextension_interface.gen.h"
 
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
@@ -817,13 +817,11 @@ static GDExtensionPtrOperatorEvaluator gdextension_variant_get_ptr_operator_eval
 }
 static GDExtensionPtrBuiltInMethod gdextension_variant_get_ptr_builtin_method(GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_method, GDExtensionInt p_hash) {
 	const StringName method = *reinterpret_cast<const StringName *>(p_method);
-	uint32_t hash = Variant::get_builtin_method_hash(Variant::Type(p_type), method);
-	if (hash != p_hash) {
-		ERR_PRINT_ONCE("Error getting method " + method + ", hash mismatch.");
-		return nullptr;
+	GDExtensionPtrBuiltInMethod ptr = (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method_with_compatibility(Variant::Type(p_type), method, p_hash);
+	if (!ptr) {
+		ERR_PRINT("Error getting method " + method + ", missing or hash mismatch.");
 	}
-
-	return (GDExtensionPtrBuiltInMethod)Variant::get_ptr_builtin_method(Variant::Type(p_type), method);
+	return ptr;
 }
 static GDExtensionPtrConstructor gdextension_variant_get_ptr_constructor(GDExtensionVariantType p_type, int32_t p_constructor) {
 	return (GDExtensionPtrConstructor)Variant::get_ptr_constructor(Variant::Type(p_type), p_constructor);

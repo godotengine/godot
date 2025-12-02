@@ -61,7 +61,7 @@ OpenXRFBUpdateSwapchainExtension::~OpenXRFBUpdateSwapchainExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRFBUpdateSwapchainExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME] = &fb_swapchain_update_state_ext;
@@ -105,17 +105,7 @@ void OpenXRFBUpdateSwapchainExtension::on_instance_destroyed() {
 }
 
 bool OpenXRFBUpdateSwapchainExtension::is_enabled() const {
-	if (rendering_driver == "vulkan") {
-		return fb_swapchain_update_state_ext && fb_swapchain_update_state_vulkan_ext;
-	} else if (rendering_driver == "opengl3") {
-#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
-		return fb_swapchain_update_state_ext && fb_swapchain_update_state_opengles_ext;
-#else
-		return fb_swapchain_update_state_ext;
-#endif
-	}
-
-	return false;
+	return fb_swapchain_update_state_ext;
 }
 
 bool OpenXRFBUpdateSwapchainExtension::is_android_ext_enabled() const {

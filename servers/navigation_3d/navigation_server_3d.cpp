@@ -1033,25 +1033,16 @@ bool NavigationServer3D::get_debug_avoidance_enabled() const {
 
 static NavigationServer3D *navigation_server_3d = nullptr;
 
-NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
-
-void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
-	create_callback = p_callback;
-}
-
-NavigationServer3D *NavigationServer3DManager::new_default_server() {
-	if (create_callback == nullptr) {
-		return nullptr;
-	}
-
-	return create_callback();
-}
-
 void NavigationServer3DManager::initialize_server() {
 	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
-	// Init 3D Navigation Server
-	navigation_server_3d = NavigationServer3DManager::new_default_server();
+	// Init 3D Navigation Server.
+	navigation_server_3d = NavigationServer3DManager::get_singleton()->new_server(
+			GLOBAL_GET(NavigationServer3DManager::setting_property_name));
+	if (!navigation_server_3d) {
+		// Navigation server not found, use the default.
+		navigation_server_3d = NavigationServer3DManager::get_singleton()->new_default_server();
+	}
 
 	// Fall back to dummy if no default server has been registered.
 	if (!navigation_server_3d) {
@@ -1069,4 +1060,102 @@ void NavigationServer3DManager::finalize_server() {
 	navigation_server_3d->finish();
 	memdelete(navigation_server_3d);
 	navigation_server_3d = nullptr;
+}
+
+const String NavigationServer3DManager::setting_property_name(PNAME("navigation/3d/navigation_engine"));
+
+void NavigationServer3DManager::on_servers_changed() {
+	String navigation_servers_enum_str("DEFAULT");
+	for (int i = get_servers_count() - 1; 0 <= i; --i) {
+		navigation_servers_enum_str += "," + get_server_name(i);
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, navigation_servers_enum_str));
+	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
+	ProjectSettings::get_singleton()->set_as_basic(setting_property_name, true);
+}
+
+void NavigationServer3DManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_server", "name", "create_callback"), &NavigationServer3DManager::register_server);
+	ClassDB::bind_method(D_METHOD("set_default_server", "name", "priority"), &NavigationServer3DManager::set_default_server);
+}
+
+NavigationServer3DManager *NavigationServer3DManager::get_singleton() {
+	return singleton;
+}
+
+void NavigationServer3DManager::register_server(const String &p_name, const Callable &p_create_callback) {
+	ERR_FAIL_COND(find_server_id(p_name) != -1);
+	navigation_servers.push_back(ClassInfo(p_name, p_create_callback));
+	on_servers_changed();
+}
+
+void NavigationServer3DManager::set_default_server(const String &p_name, int p_priority) {
+	const int id = find_server_id(p_name);
+	ERR_FAIL_COND(id == -1); // Not found
+	if (default_server_priority < p_priority) {
+		default_server_id = id;
+		default_server_priority = p_priority;
+	}
+}
+
+int NavigationServer3DManager::find_server_id(const String &p_name) {
+	for (int i = navigation_servers.size() - 1; 0 <= i; --i) {
+		if (p_name == navigation_servers[i].name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int NavigationServer3DManager::get_servers_count() {
+	return navigation_servers.size();
+}
+
+String NavigationServer3DManager::get_server_name(int p_id) {
+	ERR_FAIL_INDEX_V(p_id, get_servers_count(), "");
+	return navigation_servers[p_id].name;
+}
+
+NavigationServer3D *NavigationServer3DManager::new_default_server() {
+	if (default_server_id == -1) {
+		return nullptr;
+	}
+	Variant ret;
+	Callable::CallError ce;
+	navigation_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	return Object::cast_to<NavigationServer3D>(ret.get_validated_object());
+}
+
+NavigationServer3D *NavigationServer3DManager::new_server(const String &p_name) {
+	int id = find_server_id(p_name);
+	if (id == -1) {
+		return nullptr;
+	} else {
+		Variant ret;
+		Callable::CallError ce;
+		navigation_servers[id].create_callback.callp(nullptr, 0, ret, ce);
+		ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+		return Object::cast_to<NavigationServer3D>(ret.get_validated_object());
+	}
+}
+
+NavigationServer3D *NavigationServer3DManager::create_dummy_server_callback() {
+	return memnew(NavigationServer3DDummy);
+}
+
+NavigationServer3DManager::NavigationServer3DManager() {
+}
+
+NavigationServer3DManager::~NavigationServer3DManager() {
+}
+
+void NavigationServer3DManager::initialize_server_manager() {
+	ERR_FAIL_COND(singleton != nullptr);
+	singleton = memnew(NavigationServer3DManager);
+}
+
+void NavigationServer3DManager::finalize_server_manager() {
+	ERR_FAIL_NULL(singleton);
+	memdelete(singleton);
 }

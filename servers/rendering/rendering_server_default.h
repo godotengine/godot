@@ -74,7 +74,7 @@ class RenderingServerDefault : public RenderingServer {
 	uint64_t print_frame_profile_ticks_from = 0;
 	uint32_t print_frame_profile_frame_count = 0;
 
-	mutable CommandQueueMT command_queue;
+	mutable CommandQueueMT command_queue = CommandQueueMT(true);
 
 	Thread::ID server_thread = Thread::MAIN_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
@@ -424,6 +424,7 @@ public:
 	FUNC2(multimesh_set_physics_interpolated, RID, bool)
 	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
+	FUNC1(multimesh_instances_reset_physics_interpolation, RID)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)

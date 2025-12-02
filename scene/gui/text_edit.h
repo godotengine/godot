@@ -642,9 +642,12 @@ private:
 		int line_spacing = 1;
 		int wrap_offset = 10;
 
-		Color background_color = Color(1, 1, 1);
 		Color current_line_color = Color(1, 1, 1);
 		Color word_highlighted_color = Color(1, 1, 1);
+
+#ifndef DISABLE_DEPRECATED
+		Color background_color = Color(1, 1, 1);
+#endif // DISABLE_DEPRECATED
 	} theme_cache;
 
 	bool window_has_focus = true;

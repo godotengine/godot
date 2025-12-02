@@ -68,17 +68,17 @@ void SpriteBase3D::_propagate_color_changed() {
 void SpriteBase3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!pending_update) {
-				_im_update();
-			}
+			_im_update();
+		} break;
 
+		case NOTIFICATION_PARENTED: {
 			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 			if (parent_sprite) {
 				pI = parent_sprite->children.push_back(this);
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_UNPARENTED: {
 			if (parent_sprite) {
 				parent_sprite->children.erase(pI);
 				pI = nullptr;
@@ -417,15 +417,21 @@ Vector3::Axis SpriteBase3D::get_axis() const {
 }
 
 void SpriteBase3D::_im_update() {
+	if (!redraw_needed) {
+		return;
+	}
 	_draw();
+	redraw_needed = false;
 
 	pending_update = false;
-
-	//texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 }
 
 void SpriteBase3D::_queue_redraw() {
 	// The 3D equivalent of CanvasItem.queue_redraw().
+	redraw_needed = true;
+	if (!is_inside_tree()) {
+		return;
+	}
 	if (pending_update) {
 		return;
 	}
@@ -667,7 +673,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0000001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
@@ -1431,8 +1437,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	int frame_count = frames->get_frame_count(animation);
-	if (animation == StringName() || frame_count == 0) {
+	if (animation == StringName() || frames->get_frame_count(animation) == 0) {
 		stop();
 		return;
 	} else if (!frames->get_animation_names().has(animation)) {
@@ -1442,7 +1447,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 	}
 
 	if (std::signbit(get_playing_speed())) {
-		set_frame_and_progress(frame_count - 1, 1.0);
+		set_frame_and_progress(frames->get_frame_count(animation) - 1, 1.0);
 	} else {
 		set_frame_and_progress(0, 0.0);
 	}

@@ -253,7 +253,7 @@ void EditorNode3DGizmo::_update_bvh() {
 
 	float effective_icon_size = selectable_icon_size > 0.0f ? selectable_icon_size : 0.0f;
 	Vector3 icon_size_vector3 = Vector3(effective_icon_size, effective_icon_size, effective_icon_size);
-	AABB aabb(spatial_node->get_position() - icon_size_vector3 * 100.0f, icon_size_vector3 * 200.0f);
+	AABB aabb(transform.origin - icon_size_vector3 * 100.0f, icon_size_vector3 * 200.0f);
 
 	for (const Vector3 &segment_end : collision_segments) {
 		aabb.expand_to(transform.xform(segment_end));

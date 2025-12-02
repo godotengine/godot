@@ -123,6 +123,7 @@ GotoLinePopup::GotoLinePopup() {
 	vbc->add_child(l);
 
 	line_input = memnew(LineEdit);
+	line_input->set_emoji_menu_enabled(false);
 	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	line_input->set_select_all_on_focus(true);
 	line_input->connect(SceneStringName(text_changed), callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
@@ -1671,6 +1672,7 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_files_pressed() {
 	ERR_FAIL_NULL(toggle_files_list);
 	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", toggle_files_list->is_visible());
 	update_toggle_files_button();
 }
 
@@ -1867,8 +1869,8 @@ void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_cod
 	code_complete_ud = p_ud;
 }
 
-void CodeTextEditor::set_toggle_list_control(Control *p_control) {
-	toggle_files_list = p_control;
+void CodeTextEditor::set_toggle_list_control(Control *p_toggle_list_control) {
+	toggle_files_list = p_toggle_list_control;
 }
 
 void CodeTextEditor::show_toggle_files_button() {

@@ -40,8 +40,7 @@ class Translation : public Resource {
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
 
-	String locale = "en";
-
+public:
 	struct MessageKey {
 		StringName msgctxt;
 		StringName msgid;
@@ -55,6 +54,9 @@ class Translation : public Resource {
 			return msgctxt == p_key.msgctxt && msgid == p_key.msgid;
 		}
 	};
+
+private:
+	String locale = "en";
 
 	HashMap<MessageKey, Vector<StringName>, MessageKey> translation_map;
 

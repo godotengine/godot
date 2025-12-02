@@ -170,7 +170,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			if (property_name == "script" && property_value.get_type() == Variant::OBJECT && !property_value.is_null()) {
 				// Parse built-in script.
 				Ref<Script> s = Object::cast_to<Script>(property_value);
-				if (!s->is_built_in()) {
+				if (s.is_null() || !s->is_built_in()) {
 					continue;
 				}
 
@@ -178,7 +178,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), r_translations);
 				}
-			} else if (node_type == "FileDialog" && property_name == "filters") {
+			} else if ((node_type == "FileDialog" || node_type == "EditorFileDialog") && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
 				Vector<String> str_values = property_value;
 				for (int k = 0; k < str_values.size(); k++) {

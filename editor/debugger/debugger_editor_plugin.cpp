@@ -35,7 +35,6 @@
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -47,6 +46,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	ED_SHORTCUT("debugger/step_into", TTRC("Step Into"), Key::F11);
 	ED_SHORTCUT("debugger/step_over", TTRC("Step Over"), Key::F10);
+	ED_SHORTCUT("debugger/step_out", TTRC("Step Out"), KeyModifierMask::ALT | Key::F11);
 	ED_SHORTCUT("debugger/break", TTRC("Break"));
 	ED_SHORTCUT("debugger/continue", TTRC("Continue"), Key::F12);
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTRC("Debug with External Editor"));
@@ -55,8 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_bottom_panel()->add_item(TTRC("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
-	debugger->set_tool_button(db);
+	EditorDockManager::get_singleton()->add_dock(debugger);
 
 	// Main editor debug menu.
 	debug_menu = p_debug_menu;

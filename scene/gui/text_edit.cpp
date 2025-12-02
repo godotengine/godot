@@ -772,9 +772,6 @@ void TextEdit::_notification(int p_what) {
 			bool rtl = is_layout_rtl();
 			int lines_drawn = 0;
 
-			RID selection_start;
-			RID selection_end;
-
 			for (int i = 0; i < text.size(); i++) {
 				text.update_accessibility(i, ae);
 				const Ref<TextParagraph> &ac_buf = text.get_line_data(i);
@@ -877,6 +874,7 @@ void TextEdit::_notification(int p_what) {
 			window_has_focus = false;
 			draw_caret = false;
 			queue_redraw();
+			set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -956,9 +954,11 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_line_count() + 1;
 
+#ifndef DISABLE_DEPRECATED
 			if (theme_cache.background_color.a > 0.01) {
 				RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
+#endif // DISABLE_DEPRECATED
 
 			Vector<BraceMatchingData> brace_matching;
 			if (highlight_matching_braces_enabled) {
@@ -2482,6 +2482,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
+				set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
 				click_select_held->stop();
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
@@ -3891,7 +3892,6 @@ void TextEdit::show_emoji_and_symbol_picker() {
 void TextEdit::set_emoji_menu_enabled(bool p_enabled) {
 	if (emoji_menu_enabled != p_enabled) {
 		emoji_menu_enabled = p_enabled;
-		_update_context_menu();
 	}
 }
 
@@ -7650,7 +7650,10 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, line_spacing);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, wrap_offset);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, background_color);
+#endif // DISABLE_DEPRECATED
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, word_highlighted_color);
 
@@ -8409,7 +8412,10 @@ void TextEdit::_update_selection_mode_pointer(bool p_initial) {
 		carets.write[caret_index].selection.word_begin_column = column;
 		carets.write[caret_index].selection.word_end_column = column;
 	} else {
-		select(get_selection_origin_line(caret_index), get_selection_origin_column(caret_index), line, column, caret_index);
+		int origin_line = get_selection_origin_line(caret_index);
+		bool is_new_selection_dir_right = line > origin_line || (line == origin_line && column >= carets[caret_index].selection.word_begin_column);
+		int origin_col = is_new_selection_dir_right ? carets[caret_index].selection.word_begin_column : carets[caret_index].selection.word_end_column;
+		select(origin_line, origin_col, line, column, caret_index);
 	}
 	adjust_viewport_to_caret(caret_index);
 
@@ -8476,7 +8482,7 @@ void TextEdit::_update_selection_mode_line(bool p_initial) {
 	int line = pos.y;
 	int caret_index = get_caret_count() - 1;
 
-	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line();
+	int origin_line = p_initial && !has_selection(caret_index) ? line : get_selection_origin_line(caret_index);
 	bool line_below = line >= origin_line;
 	int origin_col = line_below ? 0 : get_line(origin_line).length();
 	int caret_line = line_below ? line + 1 : line;

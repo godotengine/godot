@@ -77,15 +77,6 @@ android {
     }
 
     sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            test.java.srcDirs = ['srcTest/java']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
-        }
-
         debug.jniLibs.srcDirs = ['libs/debug']
         dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
