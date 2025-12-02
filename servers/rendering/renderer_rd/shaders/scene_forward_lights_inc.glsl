@@ -1113,7 +1113,8 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 		vec3 ly = L[3] - L[0];
 		vec3 ln = cross(lx, ly);
 
-		float d = dot(L[0], ln) / dot(F, ln);
+		float dist_x_area = dot(L[0], ln);
+		float d = dist_x_area / dot(F, ln);
 		vec3 isec = d * F;
 
 		//uv = vec2(dot(li, lx) / dot(lx, lx), dot(li, ly) / dot(ly, ly));
@@ -1128,7 +1129,7 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 		uv.y = dot(li, ly_) / dot(ly_, ly_); // Puv.y = dot(V2_, P) / dot(V2_, V2_);
 		uv.x = dot(li, lx) * inv_dot_lxlx - dot_lxy * inv_dot_lxlx * uv.y; // Puv.x = dot(V1, P)*inv_dot_V1_V1 - dot_V1_V2*inv_dot_V1_V1*Puv.y ;
 
-		lod = abs(dot(L[0], ln)) / pow(dot(ln, ln), 0.75);
+		lod = abs(dist_x_area) / pow(dot(ln, ln), 0.75);
 		lod = log(2048.0 * lod) / log(3.0);
 	}
 	//return clamp(abs(F), 0.0, 1.0);
@@ -1136,7 +1137,7 @@ vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[5]) {
 	float margin = 0.0; //0.25 / 4.0;
 	vec2 sample_pos = clamp(uv, 0.0 + margin, 1.0 - margin) * texture_rect.zw;
 	//return textureLod(sampler2D(decal_atlas_srgb, light_projector_sampler), texture_rect.xy + sample_pos, 0.0).xyz; // todo: do we need a unique area_texture sampler?
-	return fetch_ltc_lod(uv, texture_rect, lod);
+	return fetch_ltc_lod(vec2(1.0) - uv, texture_rect, lod);
 }
 
 vec3 fetch_ltc_filtered_texture(vec4 texture_rect, vec3 L[5], float roughness) {
