@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
+#include "core/io/stream_peer.h"
 #include "core/io/image.h"
 #include "core/math/color.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -3149,9 +3150,41 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
 
-	// Write FBX file
+	// Use memory-based write stream to avoid fseek/fwrite issues
+	// This writes to a PackedByteArray first, then saves to file using Godot's FileAccess
+	// Using PackedByteArray directly for random-access writes (StreamPeerBuffer has cursor issues)
+	struct MemoryWriteStream {
+		PackedByteArray buffer;
+		
+		static bool write_fn(void *user, uint64_t offset, const void *data, size_t size) {
+			MemoryWriteStream *stream = (MemoryWriteStream*)user;
+			size_t end = (size_t)offset + size;
+			
+			// Resize buffer if needed (PackedByteArray handles this safely)
+			if (end > (size_t)stream->buffer.size()) {
+				stream->buffer.resize((int)end);
+			}
+			
+			// Write directly to buffer at offset (random access, no cursor)
+			uint8_t *w = stream->buffer.ptrw();
+			memcpy(w + offset, data, size);
+			return true;
+		}
+		
+		static void close_fn(void *user) {
+			// Nothing to do - buffer is managed by Godot
+		}
+	};
+	
+	MemoryWriteStream mem_stream;
+	ufbxw_write_stream stream = {};
+	stream.write_fn = MemoryWriteStream::write_fn;
+	stream.close_fn = MemoryWriteStream::close_fn;
+	stream.user = &mem_stream;
+
+	// Write FBX to memory buffer
 	ufbxw_error error = {};
-	bool success = ufbxw_save_file(write_scene, abs_path.utf8().get_data(), &save_opts, &error);
+	bool success = ufbxw_save_stream(write_scene, &stream, &save_opts, &error);
 	ufbxw_free_scene(write_scene);
 
 	if (!success) {
@@ -3166,6 +3199,20 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 		return ERR_FILE_CANT_WRITE;
 	}
+
+	// Write buffer to file using Godot's FileAccess
+	Error file_err;
+	Ref<FileAccess> file = FileAccess::open(abs_path, FileAccess::WRITE, &file_err);
+	if (file.is_null()) {
+		ERR_PRINT("FBX export: Failed to open file for writing: " + abs_path);
+		ERR_PRINT("FBX export: FileAccess error code: " + itos(file_err));
+		return ERR_FILE_CANT_WRITE;
+	}
+	
+	// Write the complete buffer to file
+	file->store_buffer(mem_stream.buffer.ptr(), mem_stream.buffer.size());
+	file->flush();
+	file.unref();
 
 	return OK;
 #else
