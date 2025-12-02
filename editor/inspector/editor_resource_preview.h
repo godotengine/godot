@@ -53,7 +53,8 @@ protected:
 	class DrawRequester : public Object {
 		Semaphore semaphore;
 
-		Variant _post_semaphore();
+		void _post_semaphore();
+		void _prepare_draw(RID p_viewport);
 
 	public:
 		void request_and_wait(RID p_viewport);
