@@ -38,6 +38,7 @@
 class Button;
 class EditorFileDialog;
 class ScrollContainer;
+class RichTextLabel;
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
@@ -45,6 +46,16 @@ class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+
+protected:
+	RichTextLabel *create_error_label_node();
+
+	void _meta_clicked(Variant p_meta);
+
+	void update_error_message(const AnimationTree *p_tree, PanelContainer *p_error_panel, RichTextLabel *p_error_label, const String *p_other_errors = nullptr);
+
+private:
+	String last_error_key;
 };
 
 class AnimationTreeEditor : public EditorDock {
