@@ -2293,11 +2293,11 @@ void fragment() {
 )");
 	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
 
-	ED_SHORTCUT("animation_editor/stop_animation", TTRC("Pause/Stop Animation"), Key::S);
-	ED_SHORTCUT("animation_editor/play_animation", TTRC("Play Animation"), Key::D);
-	ED_SHORTCUT("animation_editor/play_animation_backwards", TTRC("Play Animation Backwards"), Key::A);
-	ED_SHORTCUT("animation_editor/play_animation_from_start", TTRC("Play Animation from Start"), KeyModifierMask::SHIFT + Key::D);
-	ED_SHORTCUT("animation_editor/play_animation_from_end", TTRC("Play Animation Backwards from End"), KeyModifierMask::SHIFT + Key::A);
+	ED_SHORTCUT("animation_editor/stop_animation", TTRC("Pause/Stop Animation"), Key::S, true);
+	ED_SHORTCUT("animation_editor/play_animation", TTRC("Play Animation"), Key::D, true);
+	ED_SHORTCUT("animation_editor/play_animation_backwards", TTRC("Play Animation Backwards"), Key::A, true);
+	ED_SHORTCUT("animation_editor/play_animation_from_start", TTRC("Play Animation from Start"), KeyModifierMask::SHIFT + Key::D, true);
+	ED_SHORTCUT("animation_editor/play_animation_from_end", TTRC("Play Animation Backwards from End"), KeyModifierMask::SHIFT + Key::A, true);
 }
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
