@@ -731,6 +731,8 @@ public:
 	}
 
 	String get_framebuffer_error(GLenum p_status);
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override {}
 };
 
 inline String TextureStorage::get_framebuffer_error(GLenum p_status) {

@@ -307,7 +307,10 @@
 		<constant name="NAVIGATION_3D_OBSTACLE_COUNT" value="58" enum="Monitor">
 			Number of active navigation obstacles in the [NavigationServer3D].
 		</constant>
-		<constant name="MONITOR_MAX" value="59" enum="Monitor">
+		<constant name="RENDER_STREAMING_TEXTURE_MEM_USED" value="59" enum="Monitor">
+			The amount of texture memory used by texture streaming (in bytes). This represents the current VRAM usage of streamed textures at their currently loaded mipmap levels.
+		</constant>
+		<constant name="MONITOR_MAX" value="60" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 		<constant name="MONITOR_TYPE_QUANTITY" value="0" enum="MonitorType">
