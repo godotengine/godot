@@ -96,7 +96,8 @@ class DisplayServerAndroid : public DisplayServer {
 
 	Callable file_picker_callback;
 
-	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
+	template <typename... Args>
+	void _window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 

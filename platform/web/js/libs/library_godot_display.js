@@ -30,7 +30,7 @@
 
 const GodotDisplayVK = {
 
-	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners'],
+	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInput'],
 	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); });',
 	$GodotDisplayVK: {
 		textinput: null,
@@ -61,6 +61,17 @@ const GodotDisplayVK = {
 					input_cb(c_str, elem.selectionEnd);
 					GodotRuntime.free(c_str);
 				}, false);
+				if (what === 'input') {
+					// Handling the "Enter" key.
+					const onKey = (pEvent, pEventName) => {
+						if (pEvent.key !== 'Enter') {
+							return;
+						}
+						GodotInput.onKeyEvent(pEventName === 'keydown', pEvent);
+					};
+					GodotEventListeners.add(elem, 'keydown', (pEvent) => onKey(pEvent, 'keydown'), false);
+					GodotEventListeners.add(elem, 'keyup', (pEvent) => onKey(pEvent, 'keyup'), false);
+				}
 				GodotEventListeners.add(elem, 'blur', function (evt) {
 					elem.style.display = 'none';
 					elem.readonly = true;
