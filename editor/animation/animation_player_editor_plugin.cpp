@@ -151,12 +151,16 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_changed", callable_mp(this, &AnimationPlayerEditor::_find_player));
 
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
+
+			_update_playback_tooltips();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			}
+
+			_update_playback_tooltips();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -1202,6 +1206,14 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	}
 }
 
+void AnimationPlayerEditor::_update_playback_tooltips() {
+	stop->set_tooltip_text(TTR("Pause/Stop Animation") + " (" + ED_GET_SHORTCUT("animation_editor/stop_animation")->get_as_text() + ")");
+	play->set_tooltip_text(TTR("Play Animation from Start") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_from_start")->get_as_text() + ")");
+	play_from->set_tooltip_text(TTR("Play Animation") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation")->get_as_text() + ")");
+	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_backwards")->get_as_text() + ")");
+	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End") + " (" + ED_GET_SHORTCUT("animation_editor/play_animation_from_end")->get_as_text() + ")");
+}
+
 void AnimationPlayerEditor::_ensure_dummy_player() {
 	bool dummy_exists = is_dummy && player && original_node;
 	if (dummy_exists) {
@@ -2054,27 +2066,22 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
-	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation(SceneStringName(FlatButton));
-	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation(SceneStringName(FlatButton));
-	play->set_tooltip_text(TTR("Play Animation from Start"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation(SceneStringName(FlatButton));
-	play_from->set_tooltip_text(TTR("Play Animation"));
 	playback_container->add_child(play_from);
 
 	frame = memnew(SpinBox);

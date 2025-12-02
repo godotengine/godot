@@ -211,6 +211,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _set_controls_disabled(bool p_disabled);
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
+	void _update_playback_tooltips();
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
