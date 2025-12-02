@@ -263,8 +263,8 @@ public:
 			}
 
 			RSG::material_storage->shader_initialize(shader, false);
-			RSG::material_storage->shader_set_code(shader, p_code);
 			RSG::material_storage->shader_set_path_hint(shader, p_path_hint);
+			RSG::material_storage->shader_set_code(shader, p_code);
 		} else {
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_initialize, shader, false);
 			command_queue.push(RSG::material_storage, &RendererMaterialStorage::shader_set_code, shader, p_code);
