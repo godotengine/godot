@@ -2636,14 +2636,27 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		for (surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
 			surface_arrays = importer_mesh->get_surface_arrays(surface_i);
 			
+			// Check if array is valid and has required size
+			if (surface_arrays.size() < Mesh::ARRAY_MAX) {
+				continue; // Invalid array, try next surface
+			}
+			
 			// Get vertices - meshes must have vertices
-			Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+			Variant vertex_var = surface_arrays[Mesh::ARRAY_VERTEX];
+			if (vertex_var.get_type() != Variant::PACKED_VECTOR3_ARRAY) {
+				continue; // Invalid vertex data, try next surface
+			}
+			Vector<Vector3> vertices = vertex_var;
 			if (vertices.size() == 0) {
 				continue; // Try next surface
 			}
 			
 			// Get indices (triangles) - meshes should have triangles
-			Vector<int> indices = surface_arrays[Mesh::ARRAY_INDEX];
+			Variant index_var = surface_arrays[Mesh::ARRAY_INDEX];
+			if (index_var.get_type() != Variant::PACKED_INT32_ARRAY && index_var.get_type() != Variant::NIL) {
+				continue; // Invalid index data, try next surface
+			}
+			Vector<int> indices = index_var;
 			if (indices.size() == 0) {
 				continue; // Try next surface
 			}
@@ -2661,8 +2674,12 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Process the valid surface we found
 		// uint64_t format = importer_mesh->get_surface_format(surface_i); // Unused for now
 		
-		// Get vertices
-		Vector<Vector3> vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+		// Get vertices (re-fetch to ensure we have the correct data)
+		Variant vertex_var = surface_arrays[Mesh::ARRAY_VERTEX];
+		if (vertex_var.get_type() != Variant::PACKED_VECTOR3_ARRAY) {
+			continue; // Safety check failed, skip this mesh
+		}
+		Vector<Vector3> vertices = vertex_var;
 		
 		// Convert Vector3 to ufbxw_vec3
 		Vector<ufbxw_vec3> fbx_vertices;
@@ -2674,7 +2691,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		ufbxw_mesh_set_vertices(write_scene, fbx_mesh, vertices_buffer);
 
 		// Get indices (triangles)
-		Vector<int> indices = surface_arrays[Mesh::ARRAY_INDEX];
+		Variant index_var = surface_arrays[Mesh::ARRAY_INDEX];
+		if (index_var.get_type() != Variant::PACKED_INT32_ARRAY && index_var.get_type() != Variant::NIL) {
+			continue; // Invalid index data, skip this mesh
+		}
+		Vector<int> indices = index_var;
 		
 		// Convert to int32_t
 		Vector<int32_t> fbx_indices;
@@ -2686,7 +2707,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		ufbxw_mesh_set_triangles(write_scene, fbx_mesh, indices_buffer);
 
 		// Get normals
-		Vector<Vector3> normals = surface_arrays[Mesh::ARRAY_NORMAL];
+		Variant normal_var = surface_arrays[Mesh::ARRAY_NORMAL];
+		Vector<Vector3> normals;
+		if (normal_var.get_type() == Variant::PACKED_VECTOR3_ARRAY) {
+			normals = normal_var;
+		}
 		if (normals.size() > 0) {
 			Vector<ufbxw_vec3> fbx_normals;
 			fbx_normals.resize(normals.size());
@@ -2698,7 +2723,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 
 		// Get UVs (texture coordinates)
-		Vector<Vector2> uv0 = surface_arrays[Mesh::ARRAY_TEX_UV];
+		Variant uv0_var = surface_arrays[Mesh::ARRAY_TEX_UV];
+		Vector<Vector2> uv0;
+		if (uv0_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+			uv0 = uv0_var;
+		}
 		if (uv0.size() > 0) {
 			Vector<ufbxw_vec2> fbx_uvs;
 			fbx_uvs.resize(uv0.size());
@@ -2717,7 +2746,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 
 		// Get second UV set if available
-		Vector<Vector2> uv1 = surface_arrays[Mesh::ARRAY_TEX_UV2];
+		Variant uv1_var = surface_arrays[Mesh::ARRAY_TEX_UV2];
+		Vector<Vector2> uv1;
+		if (uv1_var.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
+			uv1 = uv1_var;
+		}
 		if (uv1.size() > 0) {
 			Vector<ufbxw_vec2> fbx_uvs;
 			fbx_uvs.resize(uv1.size());
@@ -2736,7 +2769,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 
 		// Get vertex colors if available
-		Vector<Color> colors = surface_arrays[Mesh::ARRAY_COLOR];
+		Variant color_var = surface_arrays[Mesh::ARRAY_COLOR];
+		Vector<Color> colors;
+		if (color_var.get_type() == Variant::PACKED_COLOR_ARRAY) {
+			colors = color_var;
+		}
 		if (colors.size() > 0) {
 			Vector<ufbxw_vec4> fbx_colors;
 			fbx_colors.resize(colors.size());
@@ -3150,24 +3187,78 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	save_opts.format = (ufbxw_save_format)export_format; // 0 = UFBXW_SAVE_FORMAT_BINARY, 1 = UFBXW_SAVE_FORMAT_ASCII
 	save_opts.version = 7500; // FBX 7.5 format (commonly used and well-supported)
 
-	// Use memory-based write stream to avoid fseek/fwrite issues
-	// This writes to a PackedByteArray first, then saves to file using Godot's FileAccess
-	// Using PackedByteArray directly for random-access writes (StreamPeerBuffer has cursor issues)
+	// Use StreamPeerBuffer for memory-based write stream to avoid fseek/fwrite issues
+	// This writes to a StreamPeerBuffer first, then saves to file using Godot's FileAccess
 	struct MemoryWriteStream {
-		PackedByteArray buffer;
+		Ref<StreamPeerBuffer> buffer;
+		
+		MemoryWriteStream() {
+			buffer.instantiate();
+		}
 		
 		static bool write_fn(void *user, uint64_t offset, const void *data, size_t size) {
 			MemoryWriteStream *stream = (MemoryWriteStream*)user;
-			size_t end = (size_t)offset + size;
 			
-			// Resize buffer if needed (PackedByteArray handles this safely)
-			if (end > (size_t)stream->buffer.size()) {
-				stream->buffer.resize((int)end);
+			// Check for overflow
+			if (size == 0) {
+				return true; // Nothing to write
 			}
 			
-			// Write directly to buffer at offset (random access, no cursor)
-			uint8_t *w = stream->buffer.ptrw();
-			memcpy(w + offset, data, size);
+			// Convert to int64_t for Godot's 64-bit integer system
+			// Check for overflow: offset and size must fit in int64_t
+			if (offset > (uint64_t)INT64_MAX) {
+				ERR_PRINT("FBX write stream: offset too large - offset=" + itos((int64_t)offset));
+				return false; // Offset exceeds INT64_MAX
+			}
+			if (size > (size_t)INT64_MAX) {
+				ERR_PRINT("FBX write stream: size too large - size=" + itos((int64_t)size));
+				return false; // Size exceeds INT64_MAX
+			}
+			
+			int64_t offset_i64 = (int64_t)offset;
+			int64_t size_i64 = (int64_t)size;
+			
+			// Calculate required end position, checking for overflow
+			int64_t current_size = stream->buffer->get_size();
+			int64_t end = offset_i64 + size_i64;
+			
+			// Check for integer overflow in addition
+			if (end < offset_i64 || end < size_i64) {
+				ERR_PRINT("FBX write stream: integer overflow - offset=" + itos(offset_i64) + 
+				          ", size=" + itos(size_i64) + ", end=" + itos(end));
+				return false; // Overflow detected
+			}
+			
+			// Resize buffer if needed
+			// Need to resize if: offset >= current_size OR end > current_size
+			// This handles the off-by-one: if offset == current_size, we need to resize
+			// We need at least (offset + size) bytes, so resize to 'end'
+			if (offset_i64 >= current_size || end > current_size) {
+				// Resize to end (which is offset + size)
+				stream->buffer->resize(end);
+				
+				// Verify resize succeeded and allocated enough space
+				// Re-check size after resize in case it changed
+				int64_t new_size = stream->buffer->get_size();
+				if (new_size < end) {
+					ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
+					          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
+					          ", size=" + itos(size_i64));
+					return false; // Resize didn't allocate enough
+				}
+			}
+			
+			// Seek to the target offset for random access write
+			stream->buffer->seek(offset_i64);
+			
+			// Write data using StreamPeerBuffer's put_data method
+			Error write_err = stream->buffer->put_data((const uint8_t *)data, size_i64);
+			if (write_err != OK) {
+				ERR_PRINT("FBX write stream: put_data() failed - offset=" + itos(offset_i64) + 
+				          ", size=" + itos(size_i64) + ", error=" + itos((int)write_err));
+				return false; // Write failed
+			}
+			
 			return true;
 		}
 		
@@ -3209,8 +3300,9 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		return ERR_FILE_CANT_WRITE;
 	}
 	
-	// Write the complete buffer to file
-	file->store_buffer(mem_stream.buffer.ptr(), mem_stream.buffer.size());
+	// Get the data array from StreamPeerBuffer and write to file
+	Vector<uint8_t> buffer_data = mem_stream.buffer->get_data_array();
+	file->store_buffer(buffer_data);
 	file->flush();
 	file.unref();
 
