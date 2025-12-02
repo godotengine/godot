@@ -982,7 +982,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 
 	anim->set_animation(animations_to_add[p_index]);
 
-	String base_name = animations_to_add[p_index].validate_node_name();
+	String base_name = String(animations_to_add[p_index]).validate_node_name();
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
@@ -1660,7 +1660,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
-			error_label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
+			error_label->add_theme_color_override(SNAME("default_color"), theme_cache.error_color);
 
 			tool_select->set_button_icon(theme_cache.tool_icon_select);
 			tool_create->set_button_icon(theme_cache.tool_icon_create);
@@ -1691,24 +1691,14 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
 			if (error_time > 0) {
-				error = error_text;
 				error_time -= get_process_delta_time();
-			} else {
-				error = tree->get_editor_error_message();
 			}
 
-			if (error.is_empty() && playback.is_null()) {
+			if (playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
 
-			if (error != error_label->get_text()) {
-				error_label->set_text(error);
-				if (!error.is_empty()) {
-					error_panel->show();
-				} else {
-					error_panel->hide();
-				}
-			}
+			update_error_message(tree, error_panel, error_label, &error);
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -2163,8 +2153,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
-	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
 	error_panel->hide();
 
