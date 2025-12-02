@@ -131,14 +131,7 @@ android {
     }
 
     buildTypes {
-        dev {
-            initWith debug
-            applicationIdSuffix ".dev"
-            manifestPlaceholders += [editorBuildSuffix: " (dev)"]
-        }
-
         debug {
-            initWith release
             applicationIdSuffix ".debug"
             manifestPlaceholders += [editorBuildSuffix: " (debug)"]
             signingConfig signingConfigs.debug
@@ -147,6 +140,14 @@ android {
         release {
             if (hasReleaseSigningConfigs()) {
                 signingConfig signingConfigs.release
+            } else {
+                // We default to the debug signingConfigs when the release signing configs are not
+                // available (e.g: development in Android Studio).
+                signingConfig signingConfigs.debug
+                // In addition, we update the application ID to allow installing an Android studio release build
+                // side by side with a production build from the store.
+                applicationIdSuffix ".release"
+                manifestPlaceholders += [editorBuildSuffix: " (release)"]
             }
         }
     }

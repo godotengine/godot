@@ -27,8 +27,6 @@ allprojects {
 }
 
 configurations {
-    // Initializes a placeholder for the devImplementation dependency configuration.
-    devImplementation {}
     // Initializes a placeholder for the monoImplementation dependency configuration.
     monoImplementation {}
 }
@@ -52,7 +50,6 @@ dependencies {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
-        devImplementation fileTree(dir: 'libs/dev', include: ['**/*.jar', '*.aar'])
         releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
     }
 
@@ -205,18 +202,6 @@ android {
             }
         }
 
-        dev {
-            initWith debug
-            // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for Godot gradle builds.
-            zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
-        }
-
         release {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
@@ -250,7 +235,6 @@ android {
     sourceSets {
         main.res.srcDirs += ['res']
         debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
-        dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
     }
 
@@ -328,9 +312,6 @@ module, so we're ensuring the ':app:preBuild' task is set to run after those tas
  */
 if (rootProject.tasks.findByPath("copyDebugAARToAppModule") != null) {
     preBuild.mustRunAfter(rootProject.tasks.named("copyDebugAARToAppModule"))
-}
-if (rootProject.tasks.findByPath("copyDevAARToAppModule") != null) {
-    preBuild.mustRunAfter(rootProject.tasks.named("copyDevAARToAppModule"))
 }
 if (rootProject.tasks.findByPath("copyReleaseAARToAppModule") != null) {
     preBuild.mustRunAfter(rootProject.tasks.named("copyReleaseAARToAppModule"))
