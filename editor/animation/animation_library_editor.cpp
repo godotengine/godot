@@ -374,7 +374,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					continue;
 				}
 
-				List<StringName> libs;
+				LocalVector<StringName> libs;
 				mixer->get_animation_library_list(&libs);
 				bool is_already_added = false;
 				for (const StringName &K : libs) {
@@ -684,7 +684,7 @@ void AnimationLibraryEditor::update_tree() {
 	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	TreeItem *root = tree->create_item();
-	List<StringName> libs;
+	LocalVector<StringName> libs;
 	Vector<uint64_t> collapsed_lib_ids = _load_mixer_libs_folding();
 
 	mixer->get_animation_library_list(&libs);
@@ -951,7 +951,7 @@ String AnimationLibraryEditor::_get_mixer_signature() const {
 	String signature = String();
 
 	// Get all libraries sorted for consistency
-	List<StringName> libs;
+	LocalVector<StringName> libs;
 	mixer->get_animation_library_list(&libs);
 	libs.sort_custom<StringName::AlphCompare>();
 
