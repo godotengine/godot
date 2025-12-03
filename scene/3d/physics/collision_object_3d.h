@@ -123,7 +123,7 @@ protected:
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
 
-	GDVIRTUAL5(_input_event, Camera3D *, Ref<InputEvent>, Vector3, Vector3, int)
+	GDVIRTUAL5(_input_event, RequiredParam<Camera3D>, RequiredParam<InputEvent>, Vector3, Vector3, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)
 public:
@@ -157,7 +157,7 @@ public:
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
 
-	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape);
+	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape3D> p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape3D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;

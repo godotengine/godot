@@ -494,9 +494,9 @@ void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
 	data.blocked--;
 }
 
-void Node::move_child(Node *p_child, int p_index) {
+void Node::move_child(RequiredParam<Node> rp_child, int p_index) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Moving child node positions inside the SceneTree is only allowed from the main thread. Use call_deferred(\"move_child\",child,index).");
-	ERR_FAIL_NULL(p_child);
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
 
 	_update_children_cache();
@@ -1720,9 +1720,9 @@ void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, I
 	_add_child_nocheck(p_child, p_child->data.name, p_internal);
 }
 
-void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
+void Node::add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
-	ERR_FAIL_NULL(p_sibling);
+	EXTRACT_PARAM_OR_FAIL(p_sibling, rp_sibling);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
@@ -1732,9 +1732,9 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
-void Node::remove_child(Node *p_child) {
+void Node::remove_child(RequiredParam<Node> rp_child) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
-	ERR_FAIL_NULL(p_child);
+	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
 	ERR_FAIL_COND(p_child->data.parent != this);
 
@@ -2039,9 +2039,9 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	return ret;
 }
 
-void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Node::reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_parent);
+	EXTRACT_PARAM_OR_FAIL(p_parent, rp_parent);
 	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
 	ERR_FAIL_COND_MSG(p_parent == this, vformat("Can't reparent '%s' to itself.", p_parent->get_name()));
 
@@ -2136,8 +2136,8 @@ Window *Node::get_last_exclusive_window() const {
 	return w;
 }
 
-bool Node::is_ancestor_of(const Node *p_node) const {
-	ERR_FAIL_NULL_V(p_node, false);
+bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
 	Node *p = p_node->data.parent;
 	while (p) {
 		if (p == this) {
@@ -2149,10 +2149,10 @@ bool Node::is_ancestor_of(const Node *p_node) const {
 	return false;
 }
 
-bool Node::is_greater_than(const Node *p_node) const {
+bool Node::is_greater_than(RequiredParam<const Node> rp_node) const {
 	// parent->get_child(1) > parent->get_child(0) > parent
 
-	ERR_FAIL_NULL_V(p_node, false);
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
 	ERR_FAIL_COND_V(!data.tree, false);
 	ERR_FAIL_COND_V(p_node->data.tree != data.tree, false);
 
@@ -2326,8 +2326,8 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
-	ERR_FAIL_NULL_V(p_node, NodePath());
+NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_path) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, NodePath());
 
 	if (this == p_node) {
 		return NodePath(".");
@@ -2673,9 +2673,9 @@ String Node::get_editor_description() const {
 	return data.editor_description;
 }
 
-void Node::set_editable_instance(Node *p_node, bool p_editable) {
+void Node::set_editable_instance(RequiredParam<Node> rp_node, bool p_editable) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_node);
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(!is_ancestor_of(p_node));
 	if (!p_editable) {
 		p_node->data.editable_instance = false;
@@ -2689,10 +2689,8 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	p_node->_emit_editor_state_changed();
 }
 
-bool Node::is_editable_instance(const Node *p_node) const {
-	if (!p_node) {
-		return false; // Easier, null is never editable. :)
-	}
+bool Node::is_editable_instance(RequiredParam<const Node> rp_node) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
 	ERR_FAIL_COND_V(!is_ancestor_of(p_node), false);
 	return p_node->data.editable_instance;
 }
@@ -3206,9 +3204,9 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(Node *p_node, bool p_keep_groups) {
+void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 	ERR_THREAD_GUARD
-	ERR_FAIL_NULL(p_node);
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	ERR_FAIL_COND(p_node->data.parent);
 
 	List<Node *> owned = data.owned;

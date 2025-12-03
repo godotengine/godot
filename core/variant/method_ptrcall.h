@@ -253,8 +253,8 @@ struct PtrToArg<T *> {
 		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
+	_FORCE_INLINE_ static void encode(const T *p_var, void *p_ptr) {
+		*((T **)p_ptr) = const_cast<T *>(p_var);
 	}
 };
 
@@ -264,8 +264,8 @@ struct PtrToArg<const T *> {
 		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef const Object *EncodeT;
-	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
-		*((T **)p_ptr) = p_var;
+	_FORCE_INLINE_ static void encode(const T *p_var, void *p_ptr) {
+		*((T **)p_ptr) = const_cast<T *>(p_var);
 	}
 };
 

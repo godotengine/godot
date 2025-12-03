@@ -620,4 +620,17 @@ TEST_CASE("[Object] RequiredParam Ref<T>") {
 	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
 }
 
+TEST_CASE("[Object] RequiredResult") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredResult<RefCounted> required = ref;
+
+	Ref<RefCounted> unpacked = required;
+	Variant var = Ref<RefCounted>(required);
+
+	CHECK_EQ(ref, unpacked);
+	CHECK_EQ(ref, var);
+}
+
 } // namespace TestObject

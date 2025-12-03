@@ -32,6 +32,9 @@
 
 #include "core/variant/variant.h"
 
+// Using `RequiredResult<T>` as the return type indicates that null will only be returned in the case of an error.
+// This allows GDExtension language bindings to use the appropriate error handling mechanism for that language
+// when null is returned (for example, throwing an exception), rather than simply returning the value.
 template <typename T>
 class RequiredResult {
 	static_assert(!is_fully_defined_v<T> || std::is_base_of_v<Object, T>, "T must be an Object subtype");
@@ -43,9 +46,9 @@ public:
 private:
 	ptr_type _value = ptr_type();
 
+public:
 	_FORCE_INLINE_ RequiredResult() = default;
 
-public:
 	RequiredResult(const RequiredResult &p_other) = default;
 	RequiredResult(RequiredResult &&p_other) = default;
 	RequiredResult &operator=(const RequiredResult &p_other) = default;
@@ -123,12 +126,13 @@ public:
 		return _value;
 	}
 
-	_FORCE_INLINE_ operator ptr_type() {
+	_FORCE_INLINE_ operator ptr_type() const {
 		return _value;
 	}
 
-	_FORCE_INLINE_ operator Variant() const {
-		return Variant(_value);
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<RefCounted, T> && std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ operator Ref<T_Other>() const {
+		return Ref<T_Other>(_value);
 	}
 
 	_FORCE_INLINE_ element_type *operator*() const {
@@ -140,6 +144,10 @@ public:
 	}
 };
 
+// Using `RequiredParam<T>` as an argument type indicates that passing null as that parameter is an error,
+// that will prevent the method from doing its intended function.
+// This allows GDExtension bindings to use language-specific mechanisms to prevent users from passing null,
+// because it is never valid to do so.
 template <typename T>
 class RequiredParam {
 	static_assert(!is_fully_defined_v<T> || std::is_base_of_v<Object, T>, "T must be an Object subtype");
