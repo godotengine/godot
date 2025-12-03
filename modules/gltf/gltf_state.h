@@ -158,6 +158,7 @@ protected:
 	int _get_animation_players_count_bind_compat_113172(int p_anim_player_index);
 	AnimationPlayer *_get_animation_player_bind_compat_113172(int p_anim_player_index);
 	Variant _get_additional_data_bind_compat_113172(const StringName &p_extension_name);
+	HandleBinaryImageMode _get_handle_binary_image_mode_bind_compat_113172();
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 

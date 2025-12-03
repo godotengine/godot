@@ -171,6 +171,10 @@ Variant GLTFState::_get_additional_data_bind_compat_113172(const StringName &p_e
 	return get_additional_data(p_extension_name);
 }
 
+GLTFState::HandleBinaryImageMode GLTFState::_get_handle_binary_image_mode_bind_compat_113172() {
+	return get_handle_binary_image_mode();
+}
+
 void GLTFState::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_handle_binary_image"), &GLTFState::_get_handle_binary_image_bind_compat_113172);
 	ClassDB::bind_compatibility_method(D_METHOD("get_json"), &GLTFState::_get_json_bind_compat_113172);
@@ -207,6 +211,7 @@ void GLTFState::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_animation_players_count", "idx"), &GLTFState::_get_animation_players_count_bind_compat_113172);
 	ClassDB::bind_compatibility_method(D_METHOD("get_animation_player", "idx"), &GLTFState::_get_animation_player_bind_compat_113172);
 	ClassDB::bind_compatibility_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::_get_additional_data_bind_compat_113172);
+	ClassDB::bind_compatibility_method(D_METHOD("get_handle_binary_image_mode"), &GLTFState::_get_handle_binary_image_mode_bind_compat_113172);
 }
 
 #endif // DISABLE_DEPRECATED
