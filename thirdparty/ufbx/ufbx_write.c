@@ -7557,9 +7557,10 @@ static void ufbxwi_base64_encode_blob(ufbxwi_save_context *sc, const ufbxw_blob 
 	
 	// Calculate output size: (len + 2) / 3 * 4
 	size_t out_size = ((len + 2) / 3) * 4;
-	char *dst = ufbxwi_write_reserve_at_least(sc, out_size);
-	if (!dst) return;
+	ufbxwi_mutable_void_span dst_span = ufbxwi_write_reserve_at_least(sc, out_size);
+	if (!dst_span.data || dst_span.count < out_size) return;
 	
+	char *dst = (char*)dst_span.data;
 	size_t i = 0;
 	size_t out_pos = 0;
 	
