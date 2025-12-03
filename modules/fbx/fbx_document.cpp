@@ -2491,6 +2491,25 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 
 // Helper struct and functions for memory-based FBX writing
 // These must be at file scope (not inside write_to_filesystem) to avoid "function definition not allowed" errors
+//
+// NOTE: There is a known issue where ufbx_write library passes corrupted 'size' parameter
+// on the second write callback call when ASAN is enabled. The corrupted value appears to be
+// a pointer address (e.g., 0x1051e3dd0) instead of the actual size. This has been observed
+// on ARM64 macOS with AddressSanitizer enabled.
+//
+// Attempted fixes (none resolved the root cause):
+// 1. extern "C" linkage - ensures C calling convention
+// 2. __attribute__((no_sanitize("address"))) - prevents ASAN from intercepting callback
+// 3. C wrapper pattern - separates C/C++ boundary with explicit wrappers
+//
+// Current workaround: Sanity check rejects size > 256MB to prevent crashes.
+// The export fails gracefully instead of crashing, but the underlying issue remains.
+//
+// Possible root causes:
+// - ASAN instrumentation interfering with function pointer calls
+// - ARM64 calling convention mismatch in ufbx_write library
+// - Bug in ufbx_write when calling function pointers multiple times
+//
 struct FBXMemoryWriteStream {
 	PackedByteArray buffer;
 };
