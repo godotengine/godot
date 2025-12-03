@@ -1311,7 +1311,7 @@ void LineEdit::_notification(int p_what) {
 			float text_off_x = x_ofs + scroll_offset;
 
 			if (accessibility_text_root_element.is_null()) {
-				accessibility_text_root_element = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height);
+				accessibility_text_root_element = DisplayServer::get_singleton()->accessibility_create_sub_text_edit_elements(ae, using_placeholder ? RID() : text_rid, text_height, -1, true);
 			}
 
 			Transform2D text_xform;
