@@ -3040,16 +3040,27 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			}
 
 			// Track material index for this surface
+			// Instance materials are the active materials from MeshInstance3D (primary source, like GLTF export)
+			// Surface materials from ImporterMesh are the mesh defaults (fallback)
 			int32_t surface_material_index = -1;
+			Ref<Material> surface_material;
+			
+			// First try instance material (active material from MeshInstance3D node)
 			if (surface_i < instance_materials.size()) {
-				Ref<Material> surface_material = instance_materials[surface_i];
-				if (surface_material.is_valid()) {
-					// Find the material index in state->materials
-					for (int mat_i = 0; mat_i < state->materials.size(); mat_i++) {
-						if (state->materials[mat_i] == surface_material) {
-							surface_material_index = mat_i;
-							break;
-						}
+				surface_material = instance_materials[surface_i];
+			}
+			
+			// If no instance material, fall back to surface material from mesh
+			if (surface_material.is_null()) {
+				surface_material = importer_mesh->get_surface_material(surface_i);
+			}
+			
+			if (surface_material.is_valid()) {
+				// Find the material index in state->materials
+				for (int mat_i = 0; mat_i < state->materials.size(); mat_i++) {
+					if (state->materials[mat_i] == surface_material) {
+						surface_material_index = mat_i;
+						break;
 					}
 				}
 			}
