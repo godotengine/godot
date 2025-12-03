@@ -139,7 +139,7 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false, const String &parent_path = String());
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
@@ -167,7 +167,7 @@ private:
 
 	friend class ResourceFormatImporter;
 
-	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
+	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress, const String &parent_path = String());
 
 	static ResourceLoadedCallback _loaded_callback;
 
@@ -189,6 +189,7 @@ private:
 		Error error = OK;
 		Ref<Resource> resource;
 		HashSet<String> sub_tasks;
+		String parent_path;
 
 		bool awaited : 1; // If it's in the pool, this helps not awaiting from more than one dependent thread.
 		bool need_wait : 1;
