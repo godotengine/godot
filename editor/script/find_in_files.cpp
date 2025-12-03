@@ -33,10 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "core/string/string_builder.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -97,6 +99,10 @@ void FindInFiles::set_whole_words(bool p_whole_word) {
 
 void FindInFiles::set_match_case(bool p_match_case) {
 	_match_case = p_match_case;
+}
+
+void FindInFiles::set_regex(bool p_regex) {
+	_regex_active = p_regex;
 }
 
 void FindInFiles::set_folder(const String &folder) {
@@ -280,7 +286,23 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 	}
 }
 
+static TypedDictionary<Variant, String> _get_regex_captures(const Ref<RegExMatch> p_match) {
+	TypedDictionary<Variant, String> dict;
+	for (const KeyValue<Variant, Variant> &name : p_match->get_names()) {
+		dict[name.key] = p_match->get_string(name.value);
+	}
+	const PackedStringArray &strings = p_match->get_strings();
+	for (int group_i = 0; group_i < strings.size(); group_i++) {
+		dict[group_i] = strings[group_i];
+	}
+	return dict;
+}
+
 void FindInFiles::_scan_file(const String &fpath) {
+	static Ref<RegEx> regex = memnew(RegEx);
+	if (regex->get_pattern() != _pattern) {
+		regex->compile(_pattern, false);
+	}
 	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
 	if (f.is_null()) {
 		print_verbose(String("Cannot open file ") + fpath);
@@ -288,7 +310,6 @@ void FindInFiles::_scan_file(const String &fpath) {
 	}
 
 	int line_number = 0;
-
 	while (!f->eof_reached()) {
 		// Line number starts at 1.
 		++line_number;
@@ -297,9 +318,15 @@ void FindInFiles::_scan_file(const String &fpath) {
 		int end = 0;
 
 		String line = f->get_line();
-
-		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
-			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
+		if (_regex_active) {
+			for (Variant match : regex->search_all(line)) {
+				const Ref<RegExMatch> typed = match;
+				emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, typed->get_start(0), typed->get_end(0), line, _get_regex_captures(typed));
+			}
+		} else {
+			while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
+				emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line, TypedDictionary<Variant, String>());
+			}
 		}
 	}
 }
@@ -383,8 +410,23 @@ FindInFilesDialog::FindInFilesDialog() {
 		_match_case_checkbox->set_text(TTRC("Match Case"));
 		hbc->add_child(_match_case_checkbox);
 
+		_regex_checkbox = memnew(CheckBox);
+		_regex_checkbox->set_text(TTRC("Use RegEx"));
+		_regex_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesDialog::_on_regex_checkbox_toggled));
+		hbc->add_child(_regex_checkbox);
+
 		gc->add_child(hbc);
 	}
+
+	_regex_status_label_filler = memnew(Control);
+	_regex_status_label_filler->hide();
+	gc->add_child(_regex_status_label_filler);
+
+	_regex_status_panel = memnew(EditorValidationPanel);
+	_regex_status_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_regex_status_panel->hide();
+	_regex_status_panel->add_line(0);
+	gc->add_child(_regex_status_panel);
 
 	Label *folder_label = memnew(Label);
 	folder_label->set_text(TTRC("Folder:"));
@@ -463,6 +505,8 @@ FindInFilesDialog::FindInFilesDialog() {
 	cancel_button->set_text(TTRC("Cancel"));
 
 	_mode = SEARCH_MODE;
+
+	_regex = memnew(RegEx);
 }
 
 void FindInFilesDialog::set_search_text(const String &text) {
@@ -525,6 +569,10 @@ bool FindInFilesDialog::is_match_case() const {
 
 bool FindInFilesDialog::is_whole_words() const {
 	return _whole_words_checkbox->is_pressed();
+}
+
+bool FindInFilesDialog::is_regex() const {
+	return _regex_checkbox->is_pressed();
 }
 
 String FindInFilesDialog::get_folder() const {
@@ -619,13 +667,12 @@ void FindInFilesDialog::custom_action(const String &p_action) {
 void FindInFilesDialog::_on_search_text_modified(const String &text) {
 	ERR_FAIL_NULL(_find_button);
 	ERR_FAIL_NULL(_replace_button);
-
-	_find_button->set_disabled(get_search_text().is_empty());
-	_replace_button->set_disabled(get_search_text().is_empty());
+	update_search_parameters();
 }
 
 void FindInFilesDialog::_on_search_text_submitted(const String &text) {
 	// This allows to trigger a global search without leaving the keyboard.
+	update_search_parameters();
 	if (!_find_button->is_disabled()) {
 		if (_mode == SEARCH_MODE) {
 			custom_action("find");
@@ -646,6 +693,18 @@ void FindInFilesDialog::_on_replace_text_submitted(const String &text) {
 			custom_action("replace");
 		}
 	}
+}
+
+void FindInFilesDialog::_on_regex_checkbox_toggled(bool p_toggled) {
+	update_search_parameters();
+}
+
+void FindInFilesDialog::update_search_parameters() {
+	bool valid = validate_search_text(get_search_text());
+	_find_button->set_disabled(!valid);
+	_replace_button->set_disabled(!valid);
+	_regex_status_panel->set_visible(is_regex());
+	_regex_status_label_filler->set_visible(is_regex());
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
@@ -677,6 +736,24 @@ String FindInFilesDialog::validate_filter_wildcard(const String &p_expression) c
 	}
 
 	return ret;
+}
+
+bool FindInFilesDialog::validate_search_text(const String &p_text) {
+	if (is_regex()) {
+		if (p_text.is_empty()) {
+			_regex_status_panel->set_message(0, TTRC("Expression is empty"), EditorValidationPanel::MSG_ERROR);
+			return false;
+		}
+		Error compile_error = _regex->compile(p_text, false);
+		if (compile_error == OK) {
+			_regex_status_panel->set_message(0, TTRC("Expression is valid"), EditorValidationPanel::MSG_OK);
+			return true;
+		}
+		_regex_status_panel->set_message(0, _regex->get_compile_error(), EditorValidationPanel::MSG_ERROR);
+		return false;
+	} else {
+		return !p_text.is_empty();
+	}
 }
 
 void FindInFilesDialog::_bind_methods() {
@@ -892,7 +969,7 @@ void FindInFilesPanel::_notification(int p_what) {
 	}
 }
 
-void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, int begin, int end, String text) {
+void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, int begin, int end, String text, const TypedDictionary<Variant, String> &p_captures) {
 	TreeItem *file_item;
 	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
 	Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
@@ -945,6 +1022,7 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 	r.begin = begin;
 	r.end = end;
 	r.begin_trimmed = begin - chars_removed + start.size() - 1;
+	r.captures = p_captures;
 	_result_items[item] = r;
 
 	if (_with_replace) {
@@ -1007,7 +1085,7 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 
 	Rect2 match_rect = rect;
 	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 1;
+	match_rect.size.x = font->get_string_size(item_text.substr(r.begin, r.end - r.begin), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 1;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
@@ -1185,6 +1263,67 @@ private:
 	Vector<char> _line_buffer;
 };
 
+// Reimplements a limited subset of the PCRE replacement syntax.
+static String _fake_regex_sub(const String &p_pattern, const TypedDictionary<Variant, String> &p_captures) {
+	StringBuilder sb;
+	for (int i = 0; i < p_pattern.length(); i++) {
+		char32_t ch = p_pattern[i];
+		if (ch != '$') {
+			sb.append(String::chr(ch));
+			continue;
+		}
+		if (i + 1 < p_pattern.length()) {
+			int peek = 1;
+			int start_i = i + peek;
+			ch = p_pattern[start_i];
+			if (ch == '$') {
+				// $$
+				sb.append("$");
+				i++;
+				continue;
+			} else if (ch >= '0' && ch <= '9') {
+				// $<number>
+				for (; i + peek < p_pattern.length(); peek++) {
+					ch = p_pattern[i + peek];
+					if (ch < '0' || ch > '9') {
+						break;
+					}
+				}
+				int num = p_pattern.substr(start_i, peek - 1).to_int();
+				Variant result = p_captures.get(num, Variant());
+				if (result.get_type() != Variant::NIL) {
+					// If the number is a valid capture group name, append it and consume the peeked digits.
+					sb.append(result);
+					i += peek - 1;
+					continue;
+				}
+			} else if (ch == '{') {
+				for (;; peek++) {
+					if (i + peek >= p_pattern.length()) {
+						goto not_matched;
+					}
+					ch = p_pattern[i + peek];
+					if (ch == '}') {
+						break;
+					}
+				}
+				// It needs to be `start_i + 1` because pattern[start_i] is '{'.
+				// peek needs two subtracted, because when the loop breaks it points at the curly brace and start_i has one added.
+				Variant result = p_captures.get(p_pattern.substr(start_i + 1, peek - 2), Variant());
+				if (result.get_type() != Variant::NIL) {
+					// If the number is a valid capture group name, append it and consume the peeked digits.
+					sb.append(result);
+					i += peek;
+					continue;
+				}
+			}
+		}
+	not_matched:
+		sb.append("$");
+	}
+	return sb.as_string();
+}
+
 void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text) {
 	// If the file is already open, I assume the editor will reload it.
 	// If there are unsaved changes, the user will be asked on focus,
@@ -1205,6 +1344,7 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 
 	for (int i = 0; i < locations.size(); ++i) {
 		int repl_line_number = locations[i].line_number;
+		const TypedDictionary<Variant, String> &repl_captures = locations[i].captures;
 
 		while (current_line < repl_line_number) {
 			buffer += line;
@@ -1216,16 +1356,23 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 		int repl_begin = locations[i].begin + offset;
 		int repl_end = locations[i].end + offset;
 
-		int _;
-		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
-			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
-			continue;
+		String replacement_text = new_text;
+
+		if (_finder->is_regex()) {
+			replacement_text = _fake_regex_sub(new_text, repl_captures);
+		} else {
+			int _;
+			if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
+				// Make sure the replace is still valid in case the file was tampered with.
+				// RegEx matches are ignored in this case, since they have their own matching logic that doesn't work with find_next.
+				print_verbose(vformat("Occurrence no longer matches, replace will be ignored in %s: line %d, col %d", fpath, repl_line_number, repl_begin));
+				continue;
+			}
 		}
 
-		line = line.left(repl_begin) + new_text + line.substr(repl_end);
+		line = line.left(repl_begin) + replacement_text + line.substr(repl_end);
 		// Keep an offset in case there are successive replaces in the same line.
-		offset += new_text.length() - (repl_end - repl_begin);
+		offset += replacement_text.length() - (repl_end - repl_begin);
 	}
 
 	buffer += line;

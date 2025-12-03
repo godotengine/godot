@@ -4141,6 +4141,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	f->set_filter(find_in_files_dialog->get_filter());
 	f->set_includes(find_in_files_dialog->get_includes());
 	f->set_excludes(find_in_files_dialog->get_excludes());
+	f->set_regex(find_in_files_dialog->is_regex());
 
 	panel->set_with_replace(with_replace);
 	panel->set_replace_text(find_in_files_dialog->get_replace_text());
