@@ -7547,6 +7547,50 @@ static void ufbxwi_ascii_dom_string(ufbxwi_save_context *sc, const char *str, si
 	ufbxwi_write(sc, "\"", 1);
 }
 
+// Base64 encoding for blob data in ASCII format
+static void ufbxwi_base64_encode_blob(ufbxwi_save_context *sc, const ufbxw_blob *blob)
+{
+	static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	
+	const uint8_t *data = (const uint8_t*)blob->data;
+	size_t len = blob->size;
+	
+	// Calculate output size: (len + 2) / 3 * 4
+	size_t out_size = ((len + 2) / 3) * 4;
+	char *dst = ufbxwi_write_reserve_at_least(sc, out_size);
+	if (!dst) return;
+	
+	size_t i = 0;
+	size_t out_pos = 0;
+	
+	// Process groups of 3 bytes
+	for (; i + 2 < len; i += 3) {
+		uint32_t val = ((uint32_t)data[i] << 16) | ((uint32_t)data[i + 1] << 8) | (uint32_t)data[i + 2];
+		dst[out_pos++] = base64_chars[(val >> 18) & 0x3F];
+		dst[out_pos++] = base64_chars[(val >> 12) & 0x3F];
+		dst[out_pos++] = base64_chars[(val >> 6) & 0x3F];
+		dst[out_pos++] = base64_chars[val & 0x3F];
+	}
+	
+	// Handle remaining bytes
+	if (i < len) {
+		uint32_t val = (uint32_t)data[i] << 16;
+		if (i + 1 < len) {
+			val |= (uint32_t)data[i + 1] << 8;
+		}
+		dst[out_pos++] = base64_chars[(val >> 18) & 0x3F];
+		dst[out_pos++] = base64_chars[(val >> 12) & 0x3F];
+		if (i + 1 < len) {
+			dst[out_pos++] = base64_chars[(val >> 6) & 0x3F];
+		} else {
+			dst[out_pos++] = '=';
+		}
+		dst[out_pos++] = '=';
+	}
+	
+	ufbxwi_write_commit(sc, out_pos);
+}
+
 static void ufbxwi_ascii_dom_write(ufbxwi_save_context *sc, const char *tag, const char *fmt, va_list args, bool open)
 {
 	ufbxwi_ascii_indent(sc);
@@ -7625,6 +7669,14 @@ static void ufbxwi_ascii_dom_write(ufbxwi_save_context *sc, const char *tag, con
 			ufbxwi_token token = va_arg(args, ufbxwi_token);
 			ufbxw_string str = sc->scene->string_pool.tokens.data[token];
 			ufbxwi_ascii_dom_string(sc, str.data, str.length);
+		} break;
+		case 'R': {
+			ufbxw_blob value = va_arg(args, ufbxw_blob);
+			// Write blob as base64-encoded string in ASCII format
+			// FBX ASCII format uses base64 for binary data
+			ufbxwi_write(sc, "\"", 1);
+			ufbxwi_base64_encode_blob(sc, &value);
+			ufbxwi_write(sc, "\"", 1);
 		} break;
 		default:
 			ufbxwi_unreachable("bad format specifier");
@@ -8549,7 +8601,7 @@ static void ufbxwi_save_props(ufbxwi_save_context *sc, const ufbxwi_element *ele
 			} break;
 			case UFBXW_PROP_DATA_BLOB: {
 				const ufbxw_blob *d = (const ufbxw_blob*)data;
-				ufbxw_assert(0 && "TODO");
+				ufbxwi_dom_value(sc, "P", "SSSCR", name, type->type, type->sub_type, flags, *d);
 			} break;
 			case UFBXW_PROP_DATA_USER_INT: {
 				const ufbxw_user_int *d = (const ufbxw_user_int*)data;
@@ -10272,6 +10324,11 @@ ufbxw_abi void ufbxw_add_string(ufbxw_scene *scene, ufbxw_id id, const char *pro
 	ufbxw_string str;
 	if (!ufbxwi_intern_string(&scene->string_pool, &str, value, strlen(value))) return;
 	ufbxwi_add_prop(scene, id, prop, strlen(prop), type, &str, UFBXW_PROP_DATA_STRING);
+}
+
+ufbxw_abi void ufbxw_add_blob(ufbxw_scene *scene, ufbxw_id id, const char *prop, ufbxw_prop_type type, ufbxw_blob value)
+{
+	ufbxwi_add_prop(scene, id, prop, strlen(prop), type, &value, UFBXW_PROP_DATA_BLOB);
 }
 
 ufbxw_abi bool ufbxw_get_bool(ufbxw_scene *scene, ufbxw_id id, const char *prop)

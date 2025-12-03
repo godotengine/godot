@@ -3694,22 +3694,30 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 			}
 		}
 
-		// Set texture file path if we have image data
+		// Embed image data directly in FBX file instead of saving as external file
 		if (image.is_valid()) {
-			// Save image to the same directory as the FBX file
-			String image_path = state->get_base_path().path_join(tex_name + ".png");
-
-			// Try to save the image
-			Error save_err = image->save_png(image_path);
-			if (save_err == OK) {
-				// Set texture filename property (FBX uses "FileName" property for textures)
-				CharString image_path_utf8 = image_path.utf8();
-				ufbxw_set_string(write_scene, texture_id, "FileName", image_path_utf8.get_data());
-			} else {
-				// If saving failed, try with relative path
-				String rel_path = tex_name + ".png";
-				CharString rel_path_utf8 = rel_path.utf8();
-				ufbxw_set_string(write_scene, texture_id, "FileName", rel_path_utf8.get_data());
+			// Save image to PNG buffer for embedding
+			PackedByteArray png_data = image->save_png_to_buffer();
+			if (png_data.size() > 0) {
+				// Store PNG data in a persistent buffer (needs to survive until save)
+				// Store it in a static map keyed by texture_id to keep it alive
+				static HashMap<ufbxw_id, Vector<uint8_t>> embedded_texture_data;
+				Vector<uint8_t> &stored_data = embedded_texture_data[texture_id];
+				stored_data.resize(png_data.size());
+				memcpy(stored_data.ptrw(), png_data.ptr(), png_data.size());
+				
+				// Create blob from stored PNG data
+				ufbxw_blob content_blob;
+				content_blob.data = stored_data.ptr();
+				content_blob.size = stored_data.size();
+				
+				// Set filename (required by FBX format, even for embedded content)
+				String filename_only = tex_name + ".png";
+				CharString filename_utf8 = filename_only.utf8();
+				ufbxw_set_string(write_scene, texture_id, "FileName", filename_utf8.get_data());
+				
+				// Add Content property as blob to embed image data in FBX file
+				ufbxw_add_blob(write_scene, texture_id, "Content", UFBXW_PROP_TYPE_BLOB, content_blob);
 			}
 		}
 
