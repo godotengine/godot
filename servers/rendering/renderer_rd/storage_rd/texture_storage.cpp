@@ -32,7 +32,6 @@
 
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
-#include "core/error/error_macros.h"
 #include "material_storage.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 
@@ -4558,6 +4557,6 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 
 void TextureStorage::texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
-	ERR_FAIL_NULL_MSG(tex, "Invalid texture RID");
+	ERR_FAIL_NULL_MSG(tex, "Invalid texture RID.");
 	tex->streaming_state = p_streaming_state;
 }

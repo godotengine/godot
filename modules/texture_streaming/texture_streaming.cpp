@@ -28,22 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/config/project_settings.h"
-#include "core/error/error_macros.h"
-#include "core/math/random_pcg.h"
-#include "core/object/callable_method_pointer.h"
-#include "core/object/object.h"
-#include "core/os/mutex.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
-#include "core/templates/rid.h"
-#include "core/templates/sort_array.h"
-#include "core/typedefs.h"
-#include "core/variant/callable.h"
-#include "servers/rendering/rendering_server.h"
-#include <sys/types.h>
-
 #include "texture_streaming.h"
+
+#include "core/config/project_settings.h"
+#include "core/templates/sort_array.h"
+#include "servers/rendering/rendering_server.h"
+
+#include <sys/types.h>
 
 // Uncomment to enable function-level timing instrumentation for debugging.
 // This prints slow function execution times and phase breakdowns.
@@ -136,13 +127,13 @@ RID TextureStreaming::texture_configure_streaming(RID p_texture, Image::Format p
 	ERR_FAIL_COND_V(p_texture.is_null(), RID());
 	ERR_FAIL_COND_V(p_width == 0, RID());
 	ERR_FAIL_COND_V(p_height == 0, RID());
-	ERR_FAIL_COND_V(p_reload_callable.is_null(), RID());
+	ERR_FAIL_COND_V(!p_reload_callable.is_valid(), RID());
 
 	return push_and_wait<RID>("_texture_configure_streaming_impl", this, &TextureStreaming::_texture_configure_streaming_impl,
 			p_texture, p_format, p_width, p_height, p_min_resolution, p_max_resolution, p_reload_callable);
 }
 
-void TextureStreaming::_texture_configure_streaming_impl(Completion<RID> *p_completion, RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution, int p_max_resolution, Callable p_reload_callable) {
+void TextureStreaming::_texture_configure_streaming_impl(Completion<RID> *p_completion, RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution, int p_max_resolution, const Callable &p_reload_callable) {
 	print_verbose(vformat("TextureStreaming: Configuring streaming for texture RID(%d) size(%dx%d) format(%d) min_res(%d) max_res(%d)",
 			p_texture.get_id(), p_width, p_height, int(p_format), p_min_resolution, p_max_resolution));
 
@@ -391,7 +382,7 @@ RID TextureStreaming::feedback_buffer_get_next() {
 	ERR_NOT_ON_RENDER_THREAD_V(RID());
 	MutexLock lock(buffer_pool_mutex);
 
-	RID buffer = RID();
+	RID buffer;
 	if (buffer_pool.size() > 0) {
 		// Use a buffer from the pool
 		buffer = buffer_pool[buffer_pool.size() - 1];
@@ -429,7 +420,7 @@ uint32_t TextureStreaming::feedback_buffer_material_index(RID p_material) {
 	return UINT32_MAX;
 }
 
-void TextureStreaming::feedback_handle_data(PackedByteArray p_array, RID p_buffer) {
+void TextureStreaming::feedback_handle_data(const PackedByteArray &p_array, RID p_buffer) {
 	if (TextureStreaming::get_singleton() == nullptr) {
 		return;
 	}
@@ -447,7 +438,7 @@ void TextureStreaming::feedback_handle_data(PackedByteArray p_array, RID p_buffe
 
 void TextureStreaming::_process_material_feedback_buffer(MaterialFeedbackBuffer *p_mb, uint64_t p_ticks_msec) {
 	uint32_t *data_ptr = (uint32_t *)p_mb->data.ptrw();
-	ERR_FAIL_COND(data_ptr == nullptr);
+	ERR_FAIL_NULL(data_ptr);
 
 	// Distribute feedback to materials and their associated textures
 	// OPTIMIZATION: Hold the lock for the entire loop instead of per-iteration.

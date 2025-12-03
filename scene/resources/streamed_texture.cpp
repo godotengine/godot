@@ -30,12 +30,11 @@
 
 #include "streamed_texture.h"
 
-#include "compressed_texture.h"
 #include "core/config/project_settings.h"
-#include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/compressed_texture.h"
 
 #include "modules/modules_enabled.gen.h"
 

@@ -44,7 +44,7 @@ class ResourceImporterStreamedTexture : public ResourceImporter {
 
 	enum {
 		MAKE_ROUGHNESS_FLAG = 1,
-		MAKE_NORMAL_FLAG = 2
+		MAKE_NORMAL_FLAG = 2,
 	};
 
 	Mutex mutex;

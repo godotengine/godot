@@ -31,7 +31,6 @@
 #include "resource_importer_streamed_texture.h"
 
 #include "core/config/project_settings.h"
-#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "editor/file_system/editor_file_system.h"
@@ -273,7 +272,7 @@ void ResourceImporterStreamedTexture::update_imports() {
 
 		if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
 			print_line(
-					vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."),
+					vformat("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded).",
 							String(E.key)));
 
 			cf->set_value("params", "compress/normal_map", 1);
@@ -282,7 +281,7 @@ void ResourceImporterStreamedTexture::update_imports() {
 
 		if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
 			print_line(
-					vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."),
+					vformat("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s.",
 							String(E.key), E.value.normal_path_for_roughness));
 
 			cf->set_value("params", "roughness/mode", E.value.channel_for_roughness + 2);

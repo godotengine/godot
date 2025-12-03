@@ -36,8 +36,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -50,7 +48,9 @@ class DirectionalLight3D;
 class EditorData;
 class EditorSelection;
 class EditorSpinSlider;
+class HSlider;
 class HSplitContainer;
+class Label;
 class LineEdit;
 class MenuButton;
 class Node3DEditor;
@@ -949,7 +949,7 @@ private:
 		TEXTURE_QUALITY_HIGH,
 		TEXTURE_QUALITY_VERY_HIGH,
 		TEXTURE_QUALITY_MAX,
-		TEXTURE_QUALITY_MANUAL
+		TEXTURE_QUALITY_MANUAL,
 	};
 
 	DirectionalLight3D *preview_sun = nullptr;

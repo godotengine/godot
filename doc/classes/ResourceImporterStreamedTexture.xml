@@ -4,7 +4,7 @@
 		Imports an image as a streaming-capable texture for dynamic mipmap loading.
 	</brief_description>
 	<description>
-		This importer creates [StreamedTexture2D] resources that support dynamic mipmap streaming. When texture streaming is enabled in Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]), these textures can have their mipmap levels dynamically loaded and unloaded based on usage, significantly reducing VRAM consumption for projects with many large textures.
+		This importer creates [StreamedTexture2D] resources that support dynamic mipmap streaming. When texture streaming is enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]), these textures can have their mipmap levels dynamically loaded and unloaded based on usage, significantly reducing VRAM consumption for projects with many large textures.
 		The streaming system monitors which textures are visible in each frame and loads appropriate mipmap levels accordingly. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded, while textures being displayed up close are loaded at higher resolutions.
 		For textures that don't need streaming support, use [ResourceImporterTexture] instead.
 	</description>

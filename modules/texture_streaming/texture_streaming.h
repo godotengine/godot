@@ -30,22 +30,11 @@
 
 #pragma once
 
-#include "core/error/error_macros.h"
 #include "core/io/image.h"
-#include "core/math/math_funcs.h"
-#include "core/object/object.h"
 #include "core/os/condition_variable.h"
-#include "core/os/mutex.h"
-#include "core/os/os.h"
 #include "core/os/thread.h"
-#include "core/string/print_string.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/simple_type.h"
 #include "core/templates/tuple.h"
-#include "core/typedefs.h"
-#include "core/variant/callable.h"
 
 // TextureStreaming singleton
 class TextureStreaming : public Object {
@@ -450,9 +439,9 @@ private:
 
 	std::atomic<uint64_t> texture_streaming_total_memory = 0;
 
-	void feedback_handle_data(PackedByteArray p_array, RID p_buffer);
+	void feedback_handle_data(const PackedByteArray &p_array, RID p_buffer);
 
-	RID current_feedback_buffer = RID();
+	RID current_feedback_buffer;
 	void feedback_frame_done_callback();
 	void feedback_frame_done_callback_render_thread();
 	RID feedback_buffer_get_next();
@@ -525,7 +514,7 @@ private:
 	}
 
 	// Internal implementations called on feedback thread
-	void _texture_configure_streaming_impl(Completion<RID> *p_completion, RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution, int p_max_resolution, Callable p_reload_callable);
+	void _texture_configure_streaming_impl(Completion<RID> *p_completion, RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution, int p_max_resolution, const Callable &p_reload_callable);
 	void _texture_update_impl(CompletionVoid *p_completion, RID p_rid, int p_width, int p_height, int p_min_resolution, int p_max_resolution);
 	void _texture_remove_impl(CompletionVoid *p_completion, RID p_rid);
 
@@ -541,7 +530,7 @@ public:
 	RID feedback_buffer_get_uniform_rid();
 
 	// Texture API - safe from any thread
-	RID texture_configure_streaming(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution = 0, int p_max_resolution = 0, Callable p_reload_callable = nullptr);
+	RID texture_configure_streaming(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_resolution = 0, int p_max_resolution = 0, Callable p_reload_callable = Callable());
 	void texture_update(RID p_rid, int p_width, int p_height, int p_min_resolution, int p_max_resolution);
 	void texture_remove(RID p_rid);
 

@@ -40,7 +40,6 @@ class ResourceImporterStreamedTexture;
 class StreamedTexture2D : public Texture2D {
 	GDCLASS(StreamedTexture2D, Texture2D);
 
-private:
 	struct StreamedTexture2DLoadData {
 		uint32_t width = 0;
 		uint32_t height = 0;

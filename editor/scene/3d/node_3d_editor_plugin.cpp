@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/input/input_event.h"
 #include "core/input/input_map.h"
 #include "core/math/math_funcs.h"
 #include "core/math/projection.h"
@@ -8866,7 +8865,7 @@ void Node3DEditor::_textures_preset_pressed(int p_preset) {
 }
 
 void Node3DEditor::_textures_min_size_changed(float p_value) {
-	textures_min_edit->set_text(vformat(TTR("%d"), 1u << int(p_value)));
+	textures_min_edit->set_text(vformat("%d", 1u << int(p_value)));
 	float max_value = textures_max_slider->get_value();
 	if (p_value > max_value) {
 		textures_max_slider->set_value(p_value);
@@ -8874,7 +8873,7 @@ void Node3DEditor::_textures_min_size_changed(float p_value) {
 	_textures_apply_settings();
 }
 void Node3DEditor::_textures_max_size_changed(float p_value) {
-	textures_max_edit->set_text(vformat(TTR("%d"), 1u << int(p_value)));
+	textures_max_edit->set_text(vformat("%d", 1u << int(p_value)));
 	float min_value = textures_min_slider->get_value();
 	if (p_value < min_value) {
 		textures_min_slider->set_value(p_value);

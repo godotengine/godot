@@ -7,7 +7,7 @@
 		The TextureStreaming singleton manages dynamic loading and unloading of texture mipmap levels based on what is visible in the current frame. This allows projects with many large textures to significantly reduce VRAM usage while maintaining visual quality for visible textures.
 		Texture streaming works by analyzing shader feedback to determine which textures are actively being used and at what resolution they're being displayed. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded, while textures being displayed up close are loaded at higher resolutions.
 		The system includes a memory budget feature that automatically manages texture resolutions to stay within a specified VRAM limit. When the budget is exceeded, the system prioritizes textures based on how recently they were used and how much screen space they occupy.
-		[b]Note:[/b] Texture streaming must be enabled in Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]) and textures must be imported with streaming support to use this feature.
+		[b]Note:[/b] Texture streaming must be enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]) and textures must be imported with streaming support to use this feature.
 	</description>
 	<tutorials>
 	</tutorials>
