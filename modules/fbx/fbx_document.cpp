@@ -3478,7 +3478,11 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 									// Set weights if we have any
 									// vertex_indices and cluster_weights should always be the same size since we push to both in the same iteration
 									if (vertex_indices.size() > 0) {
-										ERR_FAIL_COND_MSG(vertex_indices.size() != cluster_weights.size(), "Vertex indices and weights arrays must be the same size");
+										// Safety check: arrays should match since we push to both in the same iteration
+										if (vertex_indices.size() != cluster_weights.size()) {
+											ERR_PRINT("FBX export: Vertex indices and weights arrays size mismatch");
+											continue;
+										}
 										ufbxw_int_buffer indices_buffer = ufbxw_copy_int_array(write_scene, vertex_indices.ptr(), vertex_indices.size());
 										ufbxw_real_buffer weights_buffer = ufbxw_copy_real_array(write_scene, cluster_weights.ptr(), cluster_weights.size());
 										ufbxw_skin_cluster_set_weights(write_scene, fbx_cluster, indices_buffer, weights_buffer);
