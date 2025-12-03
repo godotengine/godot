@@ -2503,15 +2503,20 @@ extern "C" {
 static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
 	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
 	
-	// Debug logging - capture all parameters
+	// Debug logging - capture all parameters with addresses
+	// Cast pointers to uint64_t for printing (Godot doesn't support %p format)
+	uint64_t data_addr = (uint64_t)(uintptr_t)data;
+	uint64_t user_addr = (uint64_t)(uintptr_t)user;
+	
 	// Verify user pointer is valid before dereferencing
 	if (user == nullptr) {
 		ERR_PRINT("FBX write_fn: user pointer is NULL!");
 		return false;
 	}
 	
-	print_line(vformat("FBX write_fn CALLED: offset=%d, size=%d, data_valid=%d, user_valid=%d", 
-	                   (int64_t)offset, (int64_t)size, data != nullptr ? 1 : 0, user != nullptr ? 1 : 0));
+	// Log all parameters including addresses to diagnose parameter corruption
+	print_line(vformat("FBX write_fn CALLED: offset=%d (0x%x), size=%d (0x%x), data_addr=0x%x, user_addr=0x%x", 
+	                   (int64_t)offset, (uint64_t)offset, (int64_t)size, (uint64_t)size, data_addr, user_addr));
 	
 	// Check for overflow
 	if (size == 0) {
@@ -2522,6 +2527,13 @@ static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, s
 	// Sanity check: Reject obviously invalid size values (likely memory corruption)
 	// Normal FBX write chunks should be much smaller than 256MB
 	const size_t MAX_REASONABLE_WRITE_SIZE = 256 * 1024 * 1024; // 256MB
+	
+	// Check if corrupted size matches the data pointer (indicates parameter shift)
+	if (size > MAX_REASONABLE_WRITE_SIZE && (uint64_t)size == data_addr) {
+		ERR_PRINT(vformat("FBX write_fn: CRITICAL - size parameter matches data pointer address! "
+		                  "This indicates parameter misalignment. offset=%d, size=0x%x, data_addr=0x%x",
+		                  (int64_t)offset, (uint64_t)size, data_addr));
+	}
 	if (size > MAX_REASONABLE_WRITE_SIZE) {
 		ERR_PRINT(vformat("FBX write stream: INVALID size detected - size=%d (0x%x) exceeds max=%d. "
 		                  "This likely indicates memory corruption or ABI mismatch. offset=%d",

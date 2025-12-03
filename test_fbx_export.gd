@@ -30,7 +30,7 @@ func _run():
 	var gltf_state = GLTFState.new()
 	
 	# Set binary format (default)
-	fbx_doc.export_format = 0
+	fbx_doc.set_export_format(0)
 	
 	print("Appending scene to FBX state...")
 	var err_append = fbx_doc.append_from_scene(root, gltf_state)
