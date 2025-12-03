@@ -143,11 +143,11 @@ protected:
 	virtual String _to_string() override;
 
 public:
-	RequiredResult<PropertyTweener> tween_property(RequiredParam<const Object> p_target, const NodePath &p_property, Variant p_to, double p_duration);
+	RequiredResult<PropertyTweener> tween_property(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_to, double p_duration);
 	RequiredResult<IntervalTweener> tween_interval(double p_time);
 	RequiredResult<CallbackTweener> tween_callback(const Callable &p_callback);
 	RequiredResult<MethodTweener> tween_method(const Callable &p_callback, const Variant p_from, Variant p_to, double p_duration);
-	RequiredResult<SubtweenTweener> tween_subtween(RequiredParam<Tween> p_subtween);
+	RequiredResult<SubtweenTweener> tween_subtween(RequiredParam<Tween> rp_subtween);
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(double p_delta);
@@ -160,7 +160,7 @@ public:
 	bool is_valid();
 	void clear();
 
-	RequiredResult<Tween> bind_node(RequiredParam<const Node> p_node);
+	RequiredResult<Tween> bind_node(RequiredParam<const Node> rp_node);
 	RequiredResult<Tween> set_process_mode(TweenProcessMode p_mode);
 	TweenProcessMode get_process_mode() const;
 	RequiredResult<Tween> set_pause_mode(TweenPauseMode p_mode);
