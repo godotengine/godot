@@ -168,6 +168,8 @@ class AudioStream : public Resource {
 	float tagged_offsets[MAX_TAGGED_OFFSETS];
 
 protected:
+	Ref<AudioStreamPlayback> _playback;
+
 	static void _bind_methods();
 
 	GDVIRTUAL0RC_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
@@ -214,6 +216,8 @@ public:
 	virtual Ref<AudioSample> generate_sample() const;
 
 	virtual bool is_meta_stream() const { return false; }
+
+	~AudioStream();
 };
 
 // Microphone
