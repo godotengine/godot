@@ -2495,28 +2495,23 @@ struct FBXMemoryWriteStream {
 	PackedByteArray buffer;
 };
 
-// Use extern "C" linkage to ensure ABI compatibility with ufbx (C library)
-// Without this, C++ name mangling can cause parameter corruption when called from C code
-// __attribute__((no_sanitize("address"))) prevents ASAN from intercepting this callback
-extern "C" {
-
-static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
-	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
+// C++ implementation function (can use C++ features)
+static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset, const void *data, size_t size) {
 	
 	// Debug logging - capture all parameters with addresses
 	// Cast pointers to uint64_t for printing (Godot doesn't support %p format)
 	uint64_t data_addr = (uint64_t)(uintptr_t)data;
-	uint64_t user_addr = (uint64_t)(uintptr_t)user;
+	uint64_t stream_addr = (uint64_t)(uintptr_t)stream;
 	
-	// Verify user pointer is valid before dereferencing
-	if (user == nullptr) {
-		ERR_PRINT("FBX write_fn: user pointer is NULL!");
+	// Verify stream pointer is valid before dereferencing
+	if (stream == nullptr) {
+		ERR_PRINT("FBX write_fn: stream pointer is NULL!");
 		return false;
 	}
 	
 	// Log all parameters including addresses to diagnose parameter corruption
-	print_line(vformat("FBX write_fn CALLED: offset=%d (0x%x), size=%d (0x%x), data_addr=0x%x, user_addr=0x%x", 
-	                   (int64_t)offset, (uint64_t)offset, (int64_t)size, (uint64_t)size, data_addr, user_addr));
+	print_line(vformat("FBX write_fn CALLED: offset=%d (0x%x), size=%d (0x%x), data_addr=0x%x, stream_addr=0x%x", 
+	                   (int64_t)offset, (uint64_t)offset, (int64_t)size, (uint64_t)size, data_addr, stream_addr));
 	
 	// Check for overflow
 	if (size == 0) {
@@ -2631,9 +2626,36 @@ static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, s
 	return true;
 }
 
-static void fbx_memory_close_fn(void *user) __attribute__((no_sanitize("address"))) {
+// C++ implementation for close function
+static void fbx_memory_close_impl(FBXMemoryWriteStream *stream) {
 	// Nothing to do - buffer is managed by Godot
-	(void)user; // Avoid unused parameter warning
+	(void)stream; // Avoid unused parameter warning
+}
+
+// C wrapper functions with extern "C" linkage to ensure correct calling convention
+// These are the actual callbacks that ufbx calls, which then delegate to C++ implementations
+extern "C" {
+
+// C wrapper for write function - ensures proper parameter passing at C/C++ boundary
+static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
+	// Immediately validate and cast user pointer
+	if (user == nullptr) {
+		return false;
+	}
+	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
+	
+	// Call C++ implementation with validated parameters
+	// This ensures the C calling convention is preserved at the ufbx boundary
+	return fbx_memory_write_impl(stream, offset, data, size);
+}
+
+// C wrapper for close function
+static void fbx_memory_close_fn(void *user) __attribute__((no_sanitize("address"))) {
+	if (user == nullptr) {
+		return;
+	}
+	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
+	fbx_memory_close_impl(stream);
 }
 
 } // extern "C"
