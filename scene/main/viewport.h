@@ -609,9 +609,9 @@ public:
 	Vector2 get_camera_rect_size() const;
 
 	void push_text_input(const String &p_text);
-	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
 	void notify_mouse_entered();
 	void notify_mouse_exited();
