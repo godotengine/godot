@@ -39,6 +39,9 @@
 namespace TracyInternal {
 static bool configured = false;
 
+static const char dummy_string[] = "dummy";
+static tracy::SourceLocationData dummy_source_location = tracy::SourceLocationData{ dummy_string, dummy_string, dummy_string, 0, 0 };
+
 // Implementation similar to StringName.
 struct StringInternData {
 	StringName name;
@@ -109,12 +112,14 @@ const StringInternData *_intern_name(const StringName &p_name) {
 }
 
 const char *intern_name(const StringName &p_name) {
+	ERR_FAIL_COND_V(!configured, dummy_string);
+
 	MutexLock lock(TracyInternTable::mutex);
 	return _intern_name(p_name)->name_utf8.get_data();
 }
 
 const tracy::SourceLocationData *intern_source_location(const void *p_function_ptr, const StringName &p_file, const StringName &p_function, uint32_t p_line) {
-	CRASH_COND(!configured);
+	ERR_FAIL_COND_V(!configured, &dummy_source_location);
 
 	const uint32_t hash = HashMapHasherDefault::hash(p_function_ptr);
 	const uint32_t idx = hash & TracyInternTable::TABLE_MASK;
