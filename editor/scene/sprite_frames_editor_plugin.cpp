@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -316,13 +317,15 @@ void SpriteFramesEditor::_sheet_update_zoom_label() {
 	// (like in most image editors). Its lower bound is clamped to 1 as some people
 	// lower the editor scale to increase the available real estate,
 	// even if their display doesn't have a particularly low DPI.
+	TranslationServer *translation_server = TranslationServer::get_singleton();
+	String locale = translation_server->get_tool_locale();
 	if (sheet_zoom >= 10) {
-		zoom_text = TS->format_number(rtos(Math::round((sheet_zoom / MAX(1, EDSCALE)) * 100)));
+		zoom_text = translation_server->format_number(rtos(Math::round((sheet_zoom / MAX(1, EDSCALE)) * 100)), locale);
 	} else {
 		// 2 decimal places if the zoom is below 10%, 1 decimal place if it's below 1000%.
-		zoom_text = TS->format_number(rtos(Math::snapped((sheet_zoom / MAX(1, EDSCALE)) * 100, (sheet_zoom >= 0.1) ? 0.1 : 0.01)));
+		zoom_text = translation_server->format_number(rtos(Math::snapped((sheet_zoom / MAX(1, EDSCALE)) * 100, (sheet_zoom >= 0.1) ? 0.1 : 0.01)), locale);
 	}
-	zoom_text += " " + TS->percent_sign();
+	zoom_text += " " + translation_server->get_percent_sign(locale);
 	split_sheet_zoom_reset->set_text(zoom_text);
 }
 
