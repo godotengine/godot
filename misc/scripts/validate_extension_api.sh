@@ -51,17 +51,14 @@ get_expected_output()
 }
 
 while read -r file; do
-    reference_file="$(mktemp)"
     validate="$(mktemp)"
     validation_output="$(mktemp)"
     allowed_errors="$(mktemp)"
     expected_errors="$(mktemp)"
     get_expected_output "$file"
 
-    # Download the reference extension_api.json
-    wget -nv --retry-on-http-error=503 --tries=5 --timeout=60 -cO "$reference_file" "https://raw.githubusercontent.com/godotengine/godot-cpp/godot-$reference_tag/gdextension/extension_api.json" || has_problems=1
     # Validate the current API against the reference
-    "$1" --headless --validate-extension-api "$reference_file" 2>&1 | tee "$validate" | awk '!/^Validate extension JSON:/' - || true
+    "$1" --headless --validate-extension-api "$api_validation_dir/$reference_tag-reference.json" 2>&1 | tee "$validate" | awk '!/^Validate extension JSON:/' - || true
     # Collect the expected and actual validation errors
     awk '/^Validate extension JSON:/' - < "$validate" | sort > "$validation_output"
     awk '/^Validate extension JSON:/' - < "$expected_errors" | sort > "$allowed_errors"
@@ -80,7 +77,7 @@ while read -r file; do
         has_problems=1
     fi
 
-    rm -f "$reference_file" "$validate" "$validation_output" "$allowed_errors" "$expected_errors"
+    rm -f "$validate" "$validation_output" "$allowed_errors" "$expected_errors"
 done <<< "$(find "$api_validation_dir" -name "*.expected")"
 
 exit $has_problems
