@@ -2689,8 +2689,10 @@ void Node::set_editable_instance(RequiredParam<Node> rp_node, bool p_editable) {
 	p_node->_emit_editor_state_changed();
 }
 
-bool Node::is_editable_instance(RequiredParam<const Node> rp_node) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
+bool Node::is_editable_instance(const Node *p_node) const {
+	if (!p_node) {
+		return false; // Easier, null is never editable. :)
+	}
 	ERR_FAIL_COND_V(!is_ancestor_of(p_node), false);
 	return p_node->data.editable_instance;
 }

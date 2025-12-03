@@ -622,7 +622,7 @@ public:
 	String get_editor_description() const;
 
 	void set_editable_instance(RequiredParam<Node> rp_node, bool p_editable);
-	bool is_editable_instance(RequiredParam<const Node> rp_node) const;
+	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
 
 #ifdef TOOLS_ENABLED
