@@ -153,24 +153,31 @@ class RequiredParam {
 	static_assert(!is_fully_defined_v<T> || std::is_base_of_v<Object, T>, "T must be an Object subtype");
 
 public:
+	static constexpr bool is_ref = std::is_base_of_v<RefCounted, T>;
+
 	using element_type = T;
-	using ptr_type = std::conditional_t<std::is_base_of_v<RefCounted, T>, Ref<T>, T *>;
+	using extracted_type = std::conditional_t<is_ref, const Ref<T> &, T *>;
+	using persistent_type = std::conditional_t<is_ref, Ref<T>, T *>;
 
 private:
-	ptr_type _value = ptr_type();
+	T *_value = nullptr;
 
 	_FORCE_INLINE_ RequiredParam() = default;
 
 public:
 	// These functions should not be called directly, they are only for internal use.
-	_FORCE_INLINE_ ptr_type _internal_ptr_dont_use() const { return _value; }
-	_FORCE_INLINE_ bool _is_null_dont_use() const {
-		if constexpr (std::is_base_of_v<RefCounted, T>) {
-			return _value.is_null();
+	_FORCE_INLINE_ extracted_type _internal_ptr_dont_use() const {
+		if constexpr (is_ref) {
+			// Pretend _value is a Ref, for ease of use with existing `const Ref &` accepting APIs.
+			// This only works as long as Ref is internally T *.
+			// The double indirection should be optimized away by the compiler.
+			static_assert(sizeof(Ref<T>) == sizeof(T *));
+			return *((const Ref<T> *)&_value);
 		} else {
-			return _value == nullptr;
+			return _value;
 		}
 	}
+	_FORCE_INLINE_ bool _is_null_dont_use() const { return _value == nullptr; }
 	_FORCE_INLINE_ static RequiredParam<T> _err_return_dont_use() { return RequiredParam<T>(); }
 
 	// Prevent erroneously assigning null values by explicitly removing nullptr constructor/assignment.
@@ -202,20 +209,11 @@ public:
 
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
 	_FORCE_INLINE_ RequiredParam(const Ref<T_Other> &p_ref) :
-			_value(p_ref) {}
+			_value(*p_ref) {}
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
 	_FORCE_INLINE_ RequiredParam &operator=(const Ref<T_Other> &p_ref) {
-		_value = p_ref;
+		_value = *p_ref;
 		return *this;
-	}
-
-	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredParam(Ref<T_Other> &&p_ref) :
-			_value(std::move(p_ref)) {}
-	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
-	_FORCE_INLINE_ RequiredParam &operator=(Ref<T_Other> &&p_ref) {
-		_value = std::move(p_ref);
-		return &this;
 	}
 
 	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
@@ -242,7 +240,7 @@ public:
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Required object \"" _STR(m_param) "\" is null.", m_msg, m_editor); \
 		return m_retval;                                                                                                       \
 	}                                                                                                                          \
-	typename std::decay_t<decltype(m_param)>::ptr_type m_name = m_param._internal_ptr_dont_use();                              \
+	typename std::decay_t<decltype(m_param)>::extracted_type m_name = m_param._internal_ptr_dont_use();                        \
 	static_assert(true)
 
 // These macros are equivalent to the ERR_FAIL_NULL*() family of macros, only for RequiredParam<T> instead of raw pointers.
