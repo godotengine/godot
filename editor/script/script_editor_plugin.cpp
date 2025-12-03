@@ -4146,9 +4146,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	panel->set_replace_text(find_in_files_dialog->get_replace_text());
 	panel->start_search();
 
-	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
 	find_in_files_button->show();
-	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(const PackedStringArray &paths) {
