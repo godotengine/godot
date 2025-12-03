@@ -33,6 +33,7 @@
 #include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 #include "rendering_shader_container_d3d12.h"
 #include "servers/rendering/rendering_device_driver.h"
@@ -71,6 +72,7 @@ class RenderingContextDriverD3D12;
 namespace D3D12MA {
 class Allocation;
 class Allocator;
+class VirtualBlock;
 }; // namespace D3D12MA
 
 struct IDXGIAdapter;
@@ -143,106 +145,51 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	String pipeline_cache_id;
 	D3D12_HEAP_TYPE dynamic_persistent_upload_heap = D3D12_HEAP_TYPE_UPLOAD;
 
-	class CPUDescriptorsHeapPool;
-
-	struct CPUDescriptorsHeapHandle {
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
-		CPUDescriptorsHeapPool *pool = nullptr;
-		uint32_t offset = 0;
-		uint32_t base_offset = 0;
-		uint32_t count = 0;
-		uint32_t nonce = 0;
-
-		uint32_t global_offset() const { return offset + base_offset; }
-	};
-
-	class CPUDescriptorsHeapPool {
-		Mutex mutex;
-
-		struct FreeBlockInfo {
-			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
-			uint32_t global_offset = 0; // Global offset in an address space shared by all the heaps.
-			uint32_t base_offset = 0; // The offset inside the space of this heap.
-			uint32_t size = 0;
-			uint32_t nonce = 0;
+	struct DescriptorHeap {
+		struct Allocation {
+			uint64_t virtual_alloc_handle = {}; // This is the handle value in "D3D12MA::VirtualAllocation".
+			D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = {};
+			D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = {};
 		};
 
-		struct FreeBlockSortIndexSort {
-			_FORCE_INLINE_ bool operator()(const uint32_t &p_l, const uint32_t &p_r) const {
-				return p_l > p_r;
-			}
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+		D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = {};
+		D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = {};
+		uint32_t increment_size = 0;
+
+		Microsoft::WRL::ComPtr<D3D12MA::VirtualBlock> virtual_block;
+
+		Error initialize(ID3D12Device *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_num_descriptors, bool p_shader_visible);
+
+		Error allocate(uint32_t p_descriptor_count, Allocation &r_allocation);
+		void free(const Allocation &p_allocation);
+	};
+
+	// Some IHVs do not allow creating descriptor heaps beyond a certain limit, so they must be pooled.
+	struct CPUDescriptorHeapPool {
+		struct Allocation : DescriptorHeap::Allocation {
+			uint32_t heap_index = UINT_MAX;
 		};
 
-		typedef RBMap<uint32_t, FreeBlockInfo> OffsetTableType;
-		typedef RBMap<uint32_t, List<uint32_t>, FreeBlockSortIndexSort> SizeTableType;
+		BinaryMutex mutex;
+		LocalVector<DescriptorHeap> heaps;
 
-		OffsetTableType free_blocks_by_offset;
-		SizeTableType free_blocks_by_size;
-		uint32_t current_offset = 0;
-		uint32_t current_nonce = 0;
+		D3D12_DESCRIPTOR_HEAP_TYPE type = {};
+		uint32_t increment_size = 0;
 
-		void add_to_size_map(const FreeBlockInfo &p_block);
-		void remove_from_size_map(const FreeBlockInfo &p_block);
-		void verify();
+		void initialize(ID3D12Device *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type);
 
-	public:
-		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
-		Error release(const CPUDescriptorsHeapHandle &p_result);
+		Error allocate(uint32_t p_descriptor_count, ID3D12Device *p_device, Allocation &r_allocation);
+		void free(const Allocation &p_allocation);
 	};
 
-	class CPUDescriptorsHeapPools {
-		CPUDescriptorsHeapPool pools[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+	DescriptorHeap resource_descriptor_heap;
+	DescriptorHeap sampler_descriptor_heap;
+	CPUDescriptorHeapPool resource_descriptor_heap_pool;
+	CPUDescriptorHeapPool rtv_descriptor_heap_pool;
+	CPUDescriptorHeapPool dsv_descriptor_heap_pool;
 
-	public:
-		Error allocate(ID3D12Device *p_device, const D3D12_DESCRIPTOR_HEAP_DESC &p_desc, CPUDescriptorsHeapHandle &r_result);
-	};
-
-	struct CPUDescriptorsHeapWalker {
-		uint32_t handle_size = 0;
-		uint32_t handle_count = 0;
-		D3D12_CPU_DESCRIPTOR_HANDLE first_cpu_handle = {};
-		uint32_t handle_index = 0;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE get_curr_cpu_handle();
-		_FORCE_INLINE_ void rewind() { handle_index = 0; }
-		void advance(uint32_t p_count = 1);
-		uint32_t get_current_handle_index() const { return handle_index; }
-		uint32_t get_free_handles() { return handle_count - handle_index; }
-		bool is_at_eof() { return handle_index == handle_count; }
-	};
-
-	struct GPUDescriptorsHeapWalker : CPUDescriptorsHeapWalker {
-		D3D12_GPU_DESCRIPTOR_HANDLE first_gpu_handle = {};
-
-		D3D12_GPU_DESCRIPTOR_HANDLE get_curr_gpu_handle();
-	};
-
-	class CPUDescriptorsHeap {
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		CPUDescriptorsHeapHandle handle;
-		uint32_t handle_size = 0;
-
-	public:
-		CPUDescriptorsHeap() = default;
-		Error allocate(RenderingDeviceDriverD3D12 *p_driver, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
-		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
-		~CPUDescriptorsHeap();
-		CPUDescriptorsHeapWalker make_walker() const;
-	};
-
-	class GPUDescriptorsHeap {
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
-		uint32_t handle_size = 0;
-
-	public:
-		Error allocate(RenderingDeviceDriverD3D12 *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count);
-		uint32_t get_descriptor_count() const { return desc.NumDescriptors; }
-		ID3D12DescriptorHeap *get_heap() const { return heap.Get(); }
-		GPUDescriptorsHeapWalker make_walker() const;
-	};
-
-	CPUDescriptorsHeapPools cpu_descriptor_pool;
+	CPUDescriptorHeapPool::Allocation null_rtv_alloc;
 
 	struct {
 		Microsoft::WRL::ComPtr<ID3D12CommandSignature> draw;
@@ -317,10 +264,10 @@ private:
 	/*****************/
 
 	struct BufferInfo : public ResourceInfo {
+		D3D12_GPU_VIRTUAL_ADDRESS gpu_virtual_address = {};
 		DataFormat texel_format = DATA_FORMAT_MAX;
 		uint64_t size = 0;
 		struct {
-			bool usable_as_uav : 1;
 			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
 
@@ -406,6 +353,13 @@ public:
 	/*****************/
 private:
 	LocalVector<D3D12_SAMPLER_DESC> samplers;
+
+	struct SamplerDescriptorHeapAllocation : DescriptorHeap::Allocation {
+		uint32_t key = 0;
+		uint32_t use_count = 1;
+	};
+
+	RBMap<uint32_t, SamplerDescriptorHeapAllocation> sampler_descriptor_heap_allocations;
 
 public:
 	virtual SamplerID sampler_create(const SamplerState &p_state) final override;
@@ -551,6 +505,9 @@ private:
 		LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
 		uint32_t res_barriers_count = 0;
 		uint32_t res_barriers_batch = 0;
+
+		CPUDescriptorHeapPool::Allocation uav_alloc;
+		CPUDescriptorHeapPool::Allocation rtv_alloc;
 	};
 
 public:
@@ -596,9 +553,10 @@ private:
 	struct FramebufferInfo {
 		bool is_screen = false;
 		Size2i size;
+
 		TightLocalVector<uint32_t> attachments_handle_inds; // RTV heap index for color; DSV heap index for DSV.
-		CPUDescriptorsHeap rtv_heap;
-		CPUDescriptorsHeap dsv_heap; // Used only for depth-stencil attachments.
+		CPUDescriptorHeapPool::Allocation rtv_alloc;
+		CPUDescriptorHeapPool::Allocation dsv_alloc; // Used only for depth-stencil attachments.
 
 		TightLocalVector<TextureID> attachments; // Color and depth-stencil. Used if not screen.
 		TextureID vrs_attachment;
@@ -645,25 +603,18 @@ private:
 			ResourceClass res_class = RES_CLASS_INVALID;
 			UniformType type = UNIFORM_TYPE_MAX;
 			uint32_t length = UINT32_MAX;
-#ifdef DEV_ENABLED
 			bool writable = false;
-#endif
-			struct RootSignatureLocation {
-				uint32_t root_param_idx = UINT32_MAX;
-				uint32_t range_idx = UINT32_MAX;
-			};
-			struct {
-				RootSignatureLocation resource;
-				RootSignatureLocation sampler;
-			} root_sig_locations;
+			uint32_t resource_descriptor_offset = UINT32_MAX;
+			uint32_t sampler_descriptor_offset = UINT32_MAX;
+			uint32_t root_param_idx = UINT32_MAX;
 		};
 
 		struct UniformSet {
 			TightLocalVector<UniformBindingInfo> bindings;
-			struct {
-				uint32_t resources = 0;
-				uint32_t samplers = 0;
-			} num_root_params;
+			uint32_t resource_root_param_idx = UINT32_MAX;
+			uint32_t resource_descriptor_count = 0;
+			uint32_t sampler_root_param_idx = UINT32_MAX;
+			uint32_t sampler_descriptor_count = 0;
 		};
 
 		TightLocalVector<UniformSet> sets;
@@ -701,16 +652,16 @@ public:
 	/*********************/
 
 private:
-	struct RootDescriptorTable {
-		uint32_t root_param_idx = UINT32_MAX;
-		D3D12_GPU_DESCRIPTOR_HANDLE start_gpu_handle = {};
-	};
-
 	struct UniformSetInfo {
-		struct {
-			CPUDescriptorsHeap resources;
-			CPUDescriptorsHeap samplers;
-		} desc_heaps;
+		DescriptorHeap::Allocation resource_descriptor_heap_alloc;
+		SamplerDescriptorHeapAllocation *sampler_descriptor_heap_alloc = nullptr;
+
+		struct DynamicBuffer {
+			BufferDynamicInfo const *info = nullptr;
+			uint32_t binding = UINT_MAX;
+		};
+
+		TightLocalVector<DynamicBuffer> dynamic_buffers;
 
 		struct StateRequirement {
 			ResourceInfo *resource = nullptr;
@@ -718,29 +669,8 @@ private:
 			D3D12_RESOURCE_STATES states = {};
 			uint64_t shader_uniform_idx_mask = 0;
 		};
+
 		TightLocalVector<StateRequirement> resource_states;
-
-		struct RecentBind {
-			uint64_t segment_serial = 0;
-			uint32_t dynamic_state_mask = 0;
-			uint32_t root_signature_crc = 0;
-			struct {
-				TightLocalVector<RootDescriptorTable> resources;
-				TightLocalVector<RootDescriptorTable> samplers;
-			} root_tables;
-			int uses = 0;
-		} recent_binds[4]; // A better amount may be empirically found.
-
-		TightLocalVector<BufferDynamicInfo const *, uint32_t> dynamic_buffers;
-
-#ifdef DEV_ENABLED
-		// Filthy, but useful for dev.
-		struct ResourceDescInfo {
-			D3D12_DESCRIPTOR_RANGE_TYPE type;
-			D3D12_SRV_DIMENSION srv_dimension;
-		};
-		TightLocalVector<ResourceDescInfo> resources_desc_info;
-#endif
 	};
 
 public:
@@ -754,7 +684,7 @@ public:
 
 private:
 	void _command_check_descriptor_sets(CommandBufferID p_cmd_buffer);
-	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets, bool p_for_compute);
+	DescriptorHeap::Allocation _command_allocate_per_frame_descriptor();
 
 public:
 	/******************/
@@ -942,35 +872,12 @@ public:
 	/********************/
 private:
 	struct FrameInfo {
-		struct {
-			GPUDescriptorsHeap resources;
-			GPUDescriptorsHeap samplers;
-			CPUDescriptorsHeap aux;
-			CPUDescriptorsHeap rtv;
-		} desc_heaps;
-		struct {
-			GPUDescriptorsHeapWalker resources;
-			GPUDescriptorsHeapWalker samplers;
-			CPUDescriptorsHeapWalker aux;
-			CPUDescriptorsHeapWalker rtv;
-		} desc_heap_walkers;
-		struct {
-			bool resources = false;
-			bool samplers = false;
-			bool aux = false;
-			bool rtv = false;
-		} desc_heaps_exhausted_reported;
-		CD3DX12_CPU_DESCRIPTOR_HANDLE null_rtv_handle = {}; // For [[MANUAL_SUBPASSES]].
-		uint32_t segment_serial = 0;
-
-#ifdef DEV_ENABLED
-		uint32_t uniform_set_reused = 0;
-#endif
+		LocalVector<DescriptorHeap::Allocation> descriptor_allocations;
+		uint32_t descriptor_allocation_count = 0;
 	};
 	TightLocalVector<FrameInfo> frames;
 	uint32_t frame_idx = 0;
 	uint32_t frames_drawn = 0;
-	uint32_t segment_serial = 0;
 	bool segment_begun = false;
 	HashMap<uint64_t, bool> has_comp_alpha;
 

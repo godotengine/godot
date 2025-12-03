@@ -1813,12 +1813,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/rendering_device/pipeline_cache/save_chunk_size_mb", PROPERTY_HINT_RANGE, "0.000001,64.0,0.001,or_greater"), 3.0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vulkan/max_descriptors_per_pool", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
-	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PROPERTY_HINT_RANGE, "512,262144");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", 1024);
-	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PROPERTY_HINT_RANGE, "256,2048");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
-	custom_prop_info["rendering/rendering_device/d3d12/max_misc_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors", 65536);
+	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors", PROPERTY_HINT_RANGE, "512,1000000");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors", 1024);
+	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors", PROPERTY_HINT_RANGE, "256,2048");
 
 	// The default value must match the minor part of the Agility SDK version
 	// installed by the scripts provided in the repository
