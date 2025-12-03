@@ -46,6 +46,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
+		// Ignore the scroll hints.
 		if (c == h_scroll || c == v_scroll || c == focus_panel) {
 			continue;
 		}
@@ -364,7 +365,7 @@ void ScrollContainer::_reposition_children() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
-		if (!c || c->is_internal()) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
@@ -770,7 +771,7 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c || c->is_internal()) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 
