@@ -2540,7 +2540,7 @@ void FBXDocument::_apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vecto
 			Mesh::PrimitiveType prim = importer_mesh->get_surface_primitive_type(surf_idx);
 			const uint64_t fmt_compress_flags = importer_mesh->get_surface_format(surf_idx);
 			Array arr = importer_mesh->get_surface_arrays(surf_idx);
-			String name = importer_mesh->get_surface_name(surf_idx);
+			String surface_name = importer_mesh->get_surface_name(surf_idx);
 			Dictionary lods;
 			// Get LODs
 			for (int lod_i = 0; lod_i < importer_mesh->get_surface_lod_count(surf_idx); lod_i++) {
@@ -2578,7 +2578,7 @@ void FBXDocument::_apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vecto
 			surf_data_dictionary.bsarr = blendshapes;
 			surf_data_dictionary.lods = lods;
 			surf_data_dictionary.fmt_compress_flags = fmt_compress_flags;
-			surf_data_dictionary.name = name;
+			surf_data_dictionary.name = surface_name;
 			surf_data_dictionary.mat = mat;
 			
 			surf_data_by_mesh.push_back(surf_data_dictionary);
@@ -2597,10 +2597,10 @@ void FBXDocument::_apply_scale_to_gltf_state(Ref<GLTFState> p_state, const Vecto
 			const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
 			const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
 			const uint64_t fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
-			const String name = surf_data_by_mesh[surf_idx].name;
+			const String surface_name = surf_data_by_mesh[surf_idx].name;
 			const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
 			
-			importer_mesh->add_surface(prim, arr, bsarr, lods, mat, name, fmt_compress_flags);
+			importer_mesh->add_surface(prim, arr, bsarr, lods, mat, surface_name, fmt_compress_flags);
 		}
 	}
 
@@ -3756,20 +3756,20 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect albedo/diffuse texture
 		Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 		if (albedo_texture.is_valid()) {
-			// Find texture index in state->images
-			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-				if (gltf_texture.is_null()) {
-					continue;
-				}
-				GLTFImageIndex image_idx = gltf_texture->get_src_image();
-				if (image_idx >= 0 && image_idx < state->images.size() && state->images[image_idx] == albedo_texture) {
-					if (gltf_to_fbx_textures.has(tex_i)) {
-						ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
-						// Connect texture to material's DiffuseColor property
-						ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "DiffuseColor");
+			// Find image index directly using find() like GLTF export does
+			GLTFImageIndex image_idx = state->images.find(albedo_texture);
+			if (image_idx >= 0) {
+				// Find texture index that references this image
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+						if (gltf_to_fbx_textures.has(tex_i)) {
+							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+							// Connect texture to material's DiffuseColor property
+							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "DiffuseColor");
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}
@@ -3777,18 +3777,75 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		// Connect normal texture
 		Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 		if (normal_texture.is_valid()) {
-			for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-				Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-				if (gltf_texture.is_null()) {
-					continue;
-				}
-				GLTFImageIndex image_idx = gltf_texture->get_src_image();
-				if (image_idx >= 0 && image_idx < state->images.size() && state->images[image_idx] == normal_texture) {
-					if (gltf_to_fbx_textures.has(tex_i)) {
-						ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
-						ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "NormalMap");
+			// Find image index directly using find() like GLTF export does
+			GLTFImageIndex image_idx = state->images.find(normal_texture);
+			if (image_idx >= 0) {
+				// Find texture index that references this image
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+						if (gltf_to_fbx_textures.has(tex_i)) {
+							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "NormalMap");
+						}
+						break;
 					}
-					break;
+				}
+			}
+		}
+
+		// Connect metallic texture
+		Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
+		if (metallic_texture.is_valid()) {
+			GLTFImageIndex image_idx = state->images.find(metallic_texture);
+			if (image_idx >= 0) {
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+						if (gltf_to_fbx_textures.has(tex_i)) {
+							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "ReflectionFactor");
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		// Connect roughness texture
+		Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
+		if (roughness_texture.is_valid()) {
+			GLTFImageIndex image_idx = state->images.find(roughness_texture);
+			if (image_idx >= 0) {
+				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+					if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+						if (gltf_to_fbx_textures.has(tex_i)) {
+							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "Shininess");
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		// Connect ambient occlusion texture
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION)) {
+			Ref<Texture2D> ao_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION);
+			if (ao_texture.is_valid()) {
+				GLTFImageIndex image_idx = state->images.find(ao_texture);
+				if (image_idx >= 0) {
+					for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+						Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+						if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+							if (gltf_to_fbx_textures.has(tex_i)) {
+								ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+								ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "AmbientFactor");
+							}
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -3797,18 +3854,19 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			if (emission_texture.is_valid()) {
-				for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
-					Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
-					if (gltf_texture.is_null()) {
-						continue;
-					}
-					GLTFImageIndex image_idx = gltf_texture->get_src_image();
-					if (image_idx >= 0 && image_idx < state->images.size() && state->images[image_idx] == emission_texture) {
-						if (gltf_to_fbx_textures.has(tex_i)) {
-							ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
-							ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "EmissiveColor");
+				// Find image index directly using find() like GLTF export does
+				GLTFImageIndex image_idx = state->images.find(emission_texture);
+				if (image_idx >= 0) {
+					// Find texture index that references this image
+					for (int tex_i = 0; tex_i < state->textures.size(); tex_i++) {
+						Ref<GLTFTexture> gltf_texture = state->textures[tex_i];
+						if (gltf_texture.is_valid() && gltf_texture->get_src_image() == image_idx) {
+							if (gltf_to_fbx_textures.has(tex_i)) {
+								ufbxw_id texture_id = gltf_to_fbx_textures[tex_i];
+								ufbxw_connect_prop(write_scene, texture_id, "", fbx_material.id, "EmissiveColor");
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
