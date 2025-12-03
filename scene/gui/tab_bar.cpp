@@ -223,7 +223,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (mb->is_pressed()) {
+		if (mb->is_pressed() != switch_on_release) {
 			Point2 pos = mb->get_position();
 			bool selecting = mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT);
 
