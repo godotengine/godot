@@ -864,7 +864,7 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 		return;
 	}
 
-	if (!docks_visible) {
+	if (!docks_visible && p_dock->get_parent() != EditorNode::get_bottom_panel()) {
 		return;
 	}
 
@@ -912,7 +912,7 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 		return;
 	}
 	docks_visible = p_show;
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
 		dock_slots[i].container->set_visible(docks_visible && dock_slots[i].container->get_tab_count() > 0);
 	}
 	_update_layout();
