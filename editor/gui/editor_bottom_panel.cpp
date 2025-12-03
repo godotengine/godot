@@ -115,10 +115,10 @@ void EditorBottomPanel::_repaint() {
 	pin_button->set_visible(!panel_collapsed);
 	expand_button->set_visible(!panel_collapsed);
 	if (expand_button->is_pressed()) {
-		EditorNode::get_top_split()->set_visible(panel_collapsed);
+		_expand_button_toggled(!panel_collapsed);
+	} else {
+		_theme_changed();
 	}
-
-	_theme_changed();
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
