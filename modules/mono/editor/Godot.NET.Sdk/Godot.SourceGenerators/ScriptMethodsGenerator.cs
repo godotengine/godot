@@ -487,6 +487,9 @@ namespace Godot.SourceGenerators
                 // Check if this is a packed array type
                 bool isPackedArray = MarshalUtils.IsPackedArrayType(memberType);
 
+                // Check if this is a NodePath type
+                bool isNodePath = MarshalUtils.IsNodePathType(memberType);
+
                 source.Append("        ");
 
                 if (isString)
@@ -498,6 +501,11 @@ namespace Godot.SourceGenerators
                 {
                     // For StringName, initialize with new StringName() instead of throwing
                     source.Append($"this.{memberName} ??= new global::Godot.StringName();\n");
+                }
+                else if (isNodePath)
+                {
+                    // For NodePath, initialize with new NodePath() instead of throwing
+                    source.Append($"this.{memberName} ??= new global::Godot.NodePath();\n");
                 }
                 else if (isPackedArray)
                 {
