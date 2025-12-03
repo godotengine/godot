@@ -179,6 +179,9 @@
 		<theme_item name="bar_arrow" data_type="icon" type="Texture2D">
 			The texture for the arrow grabber.
 		</theme_item>
+		<theme_item name="color_copy" data_type="icon" type="Texture2D">
+			The icon for the button that copies the color in text format to the clipboard.
+		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
