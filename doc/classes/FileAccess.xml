@@ -238,7 +238,7 @@
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				Returns [code]true[/code] if the [b]hidden[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -304,7 +304,7 @@
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				Returns [code]true[/code] if the [b]read only[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
@@ -417,15 +417,15 @@
 			<return type="void" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file). This changes the value returned by [method get_position].
+				Sets the file cursor to the specified position in bytes, from the beginning of the file. This changes the value returned by [method get_position].
 			</description>
 		</method>
 		<method name="seek_end">
 			<return type="void" />
 			<param index="0" name="position" type="int" default="0" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). This changes the value returned by [method get_position].
-				[b]Note:[/b] This is an offset, so you should use negative numbers or the file cursor will be at the end of the file.
+				Sets the file cursor to the specified position in bytes, from the end of the file. This changes the value returned by [method get_position].
+				[b]Note:[/b] This is an offset, so you should use negative numbers otherwise the file cursor will be at the end of the file.
 			</description>
 		</method>
 		<method name="set_extended_attribute" qualifiers="static">
@@ -565,7 +565,7 @@
 			<param index="0" name="values" type="PackedStringArray" />
 			<param index="1" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
-				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Stores the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>

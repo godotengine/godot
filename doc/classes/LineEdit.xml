@@ -261,7 +261,7 @@
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
-			Text alignment as defined in the [enum HorizontalAlignment] enum.
+			The text's horizontal alignment.
 		</member>
 		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
 			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
