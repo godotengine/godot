@@ -2516,38 +2516,19 @@ struct FBXMemoryWriteStream {
 
 // C++ implementation function (can use C++ features)
 static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset, const void *data, size_t size) {
-	
-	// Debug logging - capture all parameters with addresses
-	// Cast pointers to uint64_t for printing (Godot doesn't support %p format)
-	uint64_t data_addr = (uint64_t)(uintptr_t)data;
-	uint64_t stream_addr = (uint64_t)(uintptr_t)stream;
-	
 	// Verify stream pointer is valid before dereferencing
 	if (stream == nullptr) {
-		ERR_PRINT("FBX write_fn: stream pointer is NULL!");
 		return false;
 	}
 	
-	// Log all parameters including addresses to diagnose parameter corruption
-	print_line(vformat("FBX write_fn CALLED: offset=%d (0x%x), size=%d (0x%x), data_addr=0x%x, stream_addr=0x%x", 
-	                   (int64_t)offset, (uint64_t)offset, (int64_t)size, (uint64_t)size, data_addr, stream_addr));
-	
-	// Check for overflow
+	// Check for empty write
 	if (size == 0) {
-		print_line("FBX write_fn: size==0, returning true");
 		return true; // Nothing to write
 	}
 	
 	// Sanity check: Reject obviously invalid size values (likely memory corruption)
 	// Normal FBX write chunks should be much smaller than 256MB
 	const size_t MAX_REASONABLE_WRITE_SIZE = 256 * 1024 * 1024; // 256MB
-	
-	// Check if corrupted size matches the data pointer (indicates parameter shift)
-	if (size > MAX_REASONABLE_WRITE_SIZE && (uint64_t)size == data_addr) {
-		ERR_PRINT(vformat("FBX write_fn: CRITICAL - size parameter matches data pointer address! "
-		                  "This indicates parameter misalignment. offset=%d, size=0x%x, data_addr=0x%x",
-		                  (int64_t)offset, (uint64_t)size, data_addr));
-	}
 	if (size > MAX_REASONABLE_WRITE_SIZE) {
 		ERR_PRINT(vformat("FBX write stream: INVALID size detected - size=%d (0x%x) exceeds max=%d. "
 		                  "This likely indicates memory corruption or ABI mismatch. offset=%d",
@@ -2573,9 +2554,6 @@ static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset,
 	int64_t current_size = stream->buffer.size();
 	int64_t end = offset_i64 + size_i64;
 	
-	print_line(vformat("FBX write_fn: offset_i64=%d, size_i64=%d, current_size=%d, end=%d", 
-	                   offset_i64, size_i64, current_size, end));
-	
 	// Check for integer overflow in addition
 	if (end < offset_i64 || end < size_i64) {
 		ERR_PRINT("FBX write stream: integer overflow - offset=" + itos(offset_i64) + 
@@ -2588,7 +2566,6 @@ static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset,
 	// This handles the off-by-one: if offset == current_size, we need to resize
 	// We need at least (offset + size) bytes, so resize to 'end'
 	if (offset_i64 >= current_size || end > current_size) {
-		print_line(vformat("FBX write_fn: RESIZING buffer from %d to %d", current_size, end));
 		// Resize to end (which is offset + size)
 		// After resize, valid indices are 0 to (end-1)
 		// We write from offset to (offset+size-1), which is valid if offset < end and offset+size <= end
@@ -2602,15 +2579,12 @@ static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset,
 		// Verify resize succeeded and allocated enough space
 		// Re-check size after resize in case it changed
 		int64_t new_size = stream->buffer.size();
-		print_line(vformat("FBX write_fn: AFTER RESIZE new_size=%d (requested=%d)", new_size, end));
 		if (new_size < end) {
 			ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
 			          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
 			          ", size=" + itos(size_i64));
 			return false; // Resize didn't allocate enough
 		}
-	} else {
-		print_line(vformat("FBX write_fn: NO RESIZE needed (current_size=%d >= end=%d)", current_size, end));
 	}
 	
 	// Get writable pointer AFTER resize (important: pointer may change after resize)
@@ -2624,9 +2598,6 @@ static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset,
 	// After resize to 'end', buffer_size should be >= end, so offset+size should be valid
 	int64_t buffer_size = stream->buffer.size();
 	
-	print_line(vformat("FBX write_fn: BEFORE MEMCPY - offset_i64=%d, size_i64=%d, buffer_size=%d", 
-	                   offset_i64, size_i64, buffer_size));
-	
 	// Check both: offset must be within bounds AND offset+size must be within bounds
 	// This handles edge cases where offset == buffer_size (which is out of bounds)
 	if (offset_i64 < 0 || offset_i64 >= buffer_size || offset_i64 + size_i64 > buffer_size) {
@@ -2639,9 +2610,7 @@ static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset,
 	
 	// Write directly to buffer at offset (random access, no cursor)
 	// Safe: we've verified 0 <= offset < buffer_size and offset+size <= buffer_size above
-	print_line(vformat("FBX write_fn: EXECUTING MEMCPY..."));
 	memcpy(w + offset_i64, data, size);
-	print_line(vformat("FBX write_fn: MEMCPY SUCCESS, returning true"));
 	return true;
 }
 
@@ -2656,36 +2625,7 @@ static void fbx_memory_close_impl(FBXMemoryWriteStream *stream) {
 extern "C" {
 
 // C wrapper for write function - ensures proper parameter passing at C/C++ boundary
-// Use __attribute__((noinline)) to prevent compiler from optimizing away parameter checks
-static bool __attribute__((noinline)) fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
-	// Log raw parameter values immediately upon entry (before any processing)
-	// This captures what the compiler actually received from the caller
-	uint64_t raw_user = (uint64_t)(uintptr_t)user;
-	uint64_t raw_offset = (uint64_t)offset;
-	uint64_t raw_data = (uint64_t)(uintptr_t)data;
-	uint64_t raw_size = (uint64_t)size;
-	
-	print_line(vformat("FBX write_fn RAW PARAMS: user=0x%x, offset=0x%x, data=0x%x, size=0x%x (size=%d)",
-	                   raw_user, raw_offset, raw_data, raw_size, (int64_t)raw_size));
-	
-	// Check if size looks like a pointer (high bit set, typical of heap addresses)
-	if (raw_size > 0x100000000ULL && raw_size < 0x8000000000000000ULL) {
-		ERR_PRINT(vformat("FBX write_fn: size parameter looks like a pointer! "
-		                  "size=0x%x (decimal: %d). This suggests parameter corruption at call site.",
-		                  raw_size, (int64_t)raw_size));
-		
-		// Check if size matches any of the other parameters (would indicate parameter shift)
-		if (raw_size == raw_data) {
-			ERR_PRINT("FBX write_fn: CRITICAL - size matches data pointer! Parameter shift detected.");
-		}
-		if (raw_size == raw_user) {
-			ERR_PRINT("FBX write_fn: CRITICAL - size matches user pointer! Parameter shift detected.");
-		}
-		if (raw_size == raw_offset) {
-			ERR_PRINT("FBX write_fn: CRITICAL - size matches offset! Parameter shift detected.");
-		}
-	}
-	
+static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
 	// Immediately validate and cast user pointer
 	if (user == nullptr) {
 		return false;
