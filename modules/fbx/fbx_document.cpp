@@ -2510,143 +2510,8 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 // - ARM64 calling convention mismatch in ufbx_write library
 // - Bug in ufbx_write when calling function pointers multiple times
 //
-struct FBXMemoryWriteStream {
-	PackedByteArray buffer;
-};
-
-// C++ implementation function (can use C++ features)
-static bool fbx_memory_write_impl(FBXMemoryWriteStream *stream, uint64_t offset, const void *data, size_t size) {
-	// Verify stream pointer is valid before dereferencing
-	if (stream == nullptr) {
-		return false;
-	}
-	
-	// Check for empty write
-	if (size == 0) {
-		return true; // Nothing to write
-	}
-	
-	// Sanity check: Reject obviously invalid size values (likely memory corruption)
-	// Normal FBX write chunks should be much smaller than 256MB
-	const size_t MAX_REASONABLE_WRITE_SIZE = 256 * 1024 * 1024; // 256MB
-	if (size > MAX_REASONABLE_WRITE_SIZE) {
-		ERR_PRINT(vformat("FBX write stream: INVALID size detected - size=%d (0x%x) exceeds max=%d. "
-		                  "This likely indicates memory corruption or ABI mismatch. offset=%d",
-		                  (int64_t)size, (int64_t)size, (int64_t)MAX_REASONABLE_WRITE_SIZE, (int64_t)offset));
-		return false; // Reject invalid size to prevent crash
-	}
-	
-	// Convert to int64_t for Godot's 64-bit integer system
-	// Check for overflow: offset and size must fit in int64_t
-	if (offset > (uint64_t)INT64_MAX) {
-		ERR_PRINT("FBX write stream: offset too large - offset=" + itos((int64_t)offset));
-		return false; // Offset exceeds INT64_MAX
-	}
-	if (size > (size_t)INT64_MAX) {
-		ERR_PRINT("FBX write stream: size too large - size=" + itos((int64_t)size));
-		return false; // Size exceeds INT64_MAX
-	}
-	
-	int64_t offset_i64 = (int64_t)offset;
-	int64_t size_i64 = (int64_t)size;
-	
-	// Calculate required end position, checking for overflow
-	int64_t current_size = stream->buffer.size();
-	int64_t end = offset_i64 + size_i64;
-	
-	// Check for integer overflow in addition
-	if (end < offset_i64 || end < size_i64) {
-		ERR_PRINT("FBX write stream: integer overflow - offset=" + itos(offset_i64) + 
-		          ", size=" + itos(size_i64) + ", end=" + itos(end));
-		return false; // Overflow detected
-	}
-	
-	// Resize buffer if needed (must do this before getting ptrw())
-	// Need to resize if: offset >= current_size OR end > current_size
-	// This handles the off-by-one: if offset == current_size, we need to resize
-	// We need at least (offset + size) bytes, so resize to 'end'
-	if (offset_i64 >= current_size || end > current_size) {
-		// Resize to end (which is offset + size)
-		// After resize, valid indices are 0 to (end-1)
-		// We write from offset to (offset+size-1), which is valid if offset < end and offset+size <= end
-		Error resize_err = stream->buffer.resize(end);
-		if (resize_err != OK) {
-			ERR_PRINT("FBX write stream: resize() failed - requested=" + itos(end) + 
-			          ", error=" + itos((int)resize_err));
-			return false; // Resize failed
-		}
-		
-		// Verify resize succeeded and allocated enough space
-		// Re-check size after resize in case it changed
-		int64_t new_size = stream->buffer.size();
-		if (new_size < end) {
-			ERR_PRINT("FBX write stream: resize allocated insufficient space - requested=" + itos(end) + 
-			          ", actual=" + itos(new_size) + ", offset=" + itos(offset_i64) +
-			          ", size=" + itos(size_i64));
-			return false; // Resize didn't allocate enough
-		}
-	}
-	
-	// Get writable pointer AFTER resize (important: pointer may change after resize)
-	uint8_t *w = stream->buffer.ptrw();
-	if (!w) {
-		ERR_PRINT("FBX write stream: ptrw() returned null");
-		return false; // Failed to get writable pointer
-	}
-	
-	// Final bounds check before memcpy (defensive programming)
-	// After resize to 'end', buffer_size should be >= end, so offset+size should be valid
-	int64_t buffer_size = stream->buffer.size();
-	
-	// Check both: offset must be within bounds AND offset+size must be within bounds
-	// This handles edge cases where offset == buffer_size (which is out of bounds)
-	if (offset_i64 < 0 || offset_i64 >= buffer_size || offset_i64 + size_i64 > buffer_size) {
-		// This should not happen after resize, but if it does, it's an error
-		ERR_PRINT("FBX write stream: bounds check failed - offset=" + itos(offset_i64) + 
-		          ", size=" + itos(size_i64) + ", buffer_size=" + itos(buffer_size) +
-		          ", end=" + itos(end) + ", current_size=" + itos(current_size));
-		return false; // Out of bounds
-	}
-	
-	// Write directly to buffer at offset (random access, no cursor)
-	// Safe: we've verified 0 <= offset < buffer_size and offset+size <= buffer_size above
-	memcpy(w + offset_i64, data, size);
-	return true;
-}
-
-// C++ implementation for close function
-static void fbx_memory_close_impl(FBXMemoryWriteStream *stream) {
-	// Nothing to do - buffer is managed by Godot
-	(void)stream; // Avoid unused parameter warning
-}
-
-// C wrapper functions with extern "C" linkage to ensure correct calling convention
-// These are the actual callbacks that ufbx calls, which then delegate to C++ implementations
-extern "C" {
-
-// C wrapper for write function - ensures proper parameter passing at C/C++ boundary
-static bool fbx_memory_write_fn(void *user, uint64_t offset, const void *data, size_t size) __attribute__((no_sanitize("address"))) {
-	// Immediately validate and cast user pointer
-	if (user == nullptr) {
-		return false;
-	}
-	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
-	
-	// Call C++ implementation with validated parameters
-	// This ensures the C calling convention is preserved at the ufbx boundary
-	return fbx_memory_write_impl(stream, offset, data, size);
-}
-
-// C wrapper for close function
-static void fbx_memory_close_fn(void *user) __attribute__((no_sanitize("address"))) {
-	if (user == nullptr) {
-		return;
-	}
-	FBXMemoryWriteStream *stream = (FBXMemoryWriteStream *)user;
-	fbx_memory_close_impl(stream);
-}
-
-} // extern "C"
+// NOTE: We now use ufbxw_save_file() directly instead of stream callbacks
+// to avoid all callback parameter corruption issues.
 
 Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 #ifdef UFBX_WRITE_AVAILABLE
@@ -3363,23 +3228,16 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 	// storage or calling convention differences across thread boundaries
 	// Leave thread_pool empty (all function pointers NULL) to force single-threaded operation
 
-	// Use PackedByteArray for memory-based write stream to avoid fseek/fwrite issues
-	// This writes to a PackedByteArray first, then saves to file using Godot's FileAccess
-	// Note: PackedByteArray is used instead of StreamPeerBuffer because ufbx_write requires
-	// true random-access writes at specific offsets, which StreamPeerBuffer (cursor-based)
-	// cannot efficiently provide. PackedByteArray allows direct memory access via ptrw().
+	// Use direct file API (ufbxw_save_file) instead of stream callbacks
+	// This avoids callback parameter corruption issues entirely by writing directly to file
+	// Convert path to UTF-8 C string for ufbx_write
+	CharString path_utf8 = abs_path.utf8();
+	const char *path_cstr = path_utf8.get_data();
 	
-	FBXMemoryWriteStream mem_stream;
-	ufbxw_write_stream stream = {};
-	stream.write_fn = fbx_memory_write_fn;
-	stream.close_fn = fbx_memory_close_fn;
-	// Store raw pointer to mem_stream - explicitly use address-of operator (not C++ reference)
-	// mem_stream is a local variable that stays in scope for the entire function
-	stream.user = (void *)(&mem_stream);
-
-	// Write FBX to memory buffer
+	// Write FBX directly to file using ufbx_write's file API
+	// This bypasses all callback mechanisms and avoids stack corruption
 	ufbxw_error error = {};
-	bool success = ufbxw_save_stream(write_scene, &stream, &save_opts, &error);
+	bool success = ufbxw_save_file(write_scene, path_cstr, &save_opts, &error);
 	ufbxw_free_scene(write_scene);
 
 	if (!success) {
@@ -3394,20 +3252,6 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 		}
 		return ERR_FILE_CANT_WRITE;
 	}
-
-	// Write buffer to file using Godot's FileAccess
-	Error file_err;
-	Ref<FileAccess> file = FileAccess::open(abs_path, FileAccess::WRITE, &file_err);
-	if (file.is_null()) {
-		ERR_PRINT("FBX export: Failed to open file for writing: " + abs_path);
-		ERR_PRINT("FBX export: FileAccess error code: " + itos(file_err));
-		return ERR_FILE_CANT_WRITE;
-	}
-	
-	// Write PackedByteArray buffer to file
-	file->store_buffer(mem_stream.buffer.ptr(), mem_stream.buffer.size());
-	file->flush();
-	file.unref();
 
 	return OK;
 #else
