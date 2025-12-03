@@ -178,6 +178,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *split_sheet_zoom_out = nullptr;
 	Button *split_sheet_zoom_reset = nullptr;
 	Button *split_sheet_zoom_in = nullptr;
+	Button *split_sheet_zoom_fit = nullptr;
 	Button *toggle_settings_button = nullptr;
 	OptionButton *split_sheet_order = nullptr;
 	EditorFileDialog *file_split_sheet = nullptr;
@@ -276,10 +277,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_update_zoom_label();
 	void _sheet_zoom_on_position(float p_zoom, const Vector2 &p_position);
 	void _sheet_zoom_in();
 	void _sheet_zoom_out();
 	void _sheet_zoom_reset();
+	void _sheet_zoom_fit();
 	void _sheet_order_selected(int p_option);
 	void _sheet_select_all_frames();
 	void _sheet_clear_all_frames();
