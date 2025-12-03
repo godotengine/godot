@@ -430,18 +430,15 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						node = root->get_node(path);
 					}
 
-					String text;
-
 					if (node) {
-						int ofs = 0;
+						int ofs = h_separation;
 
 						Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 
-						text = node->get_name();
-						ofs += h_separation;
-
-						TextLine text_buf = TextLine(text, font, font_size);
-						text_buf.set_width(limit - ofs - icon->get_width() - h_separation);
+						TextLine text_buf = TextLine(node->get_name(), font, font_size);
+						int total_icon_width = icon->get_width() + solo->get_width() + visibility_visible->get_width() + lock->get_width() + remove->get_width();
+						int total_icon_separation = h_separation * 5;
+						text_buf.set_width(limit - ofs - total_icon_width - total_icon_separation);
 
 						int h = MAX(text_buf.get_size().y, icon->get_height());
 
